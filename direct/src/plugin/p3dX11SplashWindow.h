@@ -25,6 +25,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include <vector>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DX11SplashWindow
 // Description : This is the Windows implementation of the
@@ -45,6 +47,7 @@ public:
 
 protected:
   virtual void button_click_detected();
+  virtual void set_bstate(ButtonState bstate);
 
 private:
   void start_subprocess();
@@ -79,11 +82,18 @@ private:
   void receive_command();
 
   void redraw();
-  bool paint_image(X11ImageData &image);
   void make_window();
   void setup_gc();
-  void update_image(X11ImageData &image, bool &needs_redraw); 
   void close_window();
+
+  void update_image(X11ImageData &image); 
+  void compose_image();
+  bool scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height,
+                   X11ImageData &image);
+
+  void compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0_height,
+                          const vector<unsigned char> &image1, int image1_width, int image1_height,
+                          const vector<unsigned char> &image2, int image2_width, int image2_height);
 
 private:
   // Data members that are stored in the subprocess.
@@ -91,21 +101,20 @@ private:
   public:
     inline X11ImageData();
     inline ~X11ImageData();
-    void dump_image();
-    void dump_resized_image();
 
     string _filename;
     bool _filename_changed;
-    XImage *_image;
-
-    XImage *_resized_image;
-    int _resized_width, _resized_height;
+    string _data;
   };
 
   X11ImageData _background_image;
   X11ImageData _button_ready_image;
   X11ImageData _button_rollover_image;
   X11ImageData _button_click_image;
+
+  XImage *_composite_image;
+  int _composite_width, _composite_height;
+  bool _needs_new_composite;
 
   bool _subprocess_continue;
   

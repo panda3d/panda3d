@@ -462,11 +462,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
     }
   }
 
-  if (_bstate != bstate) {
-    _bstate = bstate;
-    // If we've changed button states, we need to refresh the window.
-    refresh();
-  }
+  set_bstate(bstate);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -482,6 +478,21 @@ void P3DSplashWindow::
 button_click_detected() {
   assert(_inst != NULL);
   _inst->splash_button_clicked();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bstate
+//       Access: Protected, Virtual
+//  Description: Changes the button state as the mouse interacts with
+//               it.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bstate(ButtonState bstate) {
+  if (_bstate != bstate) {
+    _bstate = bstate;
+    // If we've changed button states, we need to refresh the window.
+    refresh();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

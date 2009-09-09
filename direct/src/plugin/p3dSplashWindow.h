@@ -80,7 +80,16 @@ protected:
   void set_button_range(const ImageData &image);
   void set_mouse_data(int mouse_x, int mouse_y, bool mouse_down);
 
+  // The current visual state of the button.
+  enum ButtonState {
+    BS_hidden,
+    BS_ready,
+    BS_rollover,
+    BS_click,
+  };
+
   virtual void button_click_detected();
+  virtual void set_bstate(ButtonState bstate);
   virtual void refresh();
 
 protected:
@@ -99,14 +108,6 @@ protected:
   int _mouse_x, _mouse_y;
   bool _mouse_down;
   bool _button_depressed;
-
-  // The current visual state of the button.
-  enum ButtonState {
-    BS_hidden,
-    BS_ready,
-    BS_rollover,
-    BS_click,
-  };
   ButtonState _bstate;
 };
 

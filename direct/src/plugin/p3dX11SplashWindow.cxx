@@ -44,6 +44,8 @@ P3DX11SplashWindow(P3DInstance *inst) :
   INIT_THREAD(_read_thread);
 
   // Init for subprocess
+  _composite_image = NULL;
+  _needs_new_composite = false;
   _display = None;
   _window = None;
   _screen = 0;
@@ -182,12 +184,26 @@ void P3DX11SplashWindow::
 button_click_detected() {
   // This method is called in the child process, and must relay
   // the information to the parent process.
-  cerr << "click detected\n";
-
   TiXmlDocument doc;
   TiXmlElement *xcommand = new TiXmlElement("click");
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::set_bstate
+//       Access: Protected, Virtual
+//  Description: Changes the button state as the mouse interacts with
+//               it.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+set_bstate(ButtonState bstate) {
+  if (_bstate != bstate) {
+    // When the button state changes, we need to remake the composite
+    // image.
+    _needs_new_composite = true;
+    P3DSplashWindow::set_bstate(bstate);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -473,13 +489,12 @@ subprocess_run() {
             event.xconfigure.height != _win_height) {
           _win_width = event.xconfigure.width;
           _win_height = event.xconfigure.height;
+
+          set_button_range(_button_ready_image);
           
-          // If the window changes size, we need to recompute all of the
-          // resized images.
-          _background_image.dump_resized_image();
-          _button_ready_image.dump_resized_image();
-          _button_rollover_image.dump_resized_image();
-          _button_click_image.dump_resized_image();
+          // If the window changes size, we need to recompute the
+          // composed image.
+          _needs_new_composite = true;
         }
         needs_redraw = true;
         break;
@@ -498,10 +513,15 @@ subprocess_run() {
       }
     }
 
-    update_image(_background_image, needs_redraw);
-    update_image(_button_ready_image, needs_redraw);
-    update_image(_button_rollover_image, needs_redraw);
-    update_image(_button_click_image, needs_redraw);
+    update_image(_background_image);
+    update_image(_button_ready_image);
+    update_image(_button_rollover_image);
+    update_image(_button_click_image);
+
+    if (_needs_new_composite) {
+      needs_redraw = true;
+      compose_image();
+    }
 
     if (_bstate != prev_bstate) {
       needs_redraw = true;
@@ -689,78 +709,14 @@ receive_command() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 redraw() {
-  XClearWindow(_display, _window);
+  if (_composite_image == NULL) {
+    XClearWindow(_display, _window);
 
-  paint_image(_background_image);
-
-  switch (_bstate) {
-  case BS_hidden:
-    break;
-  case BS_ready:
-    paint_image(_button_ready_image);
-    break;
-  case BS_rollover:
-    if (!paint_image(_button_rollover_image)) {
-      paint_image(_button_ready_image);
-    }
-    break;
-  case BS_click:
-    if (!paint_image(_button_click_image)) {
-      paint_image(_button_ready_image);
-    }
-    break;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::paint_image
-//       Access: Private
-//  Description: Draws the indicated image, centered within the
-//               window.  Returns true on success, false if the image
-//               is not defined.
-////////////////////////////////////////////////////////////////////
-bool P3DX11SplashWindow::
-paint_image(X11ImageData &image) {
-  if (image._image == NULL) {
-    return false;
-  }
-
-  // We have an image. Let's see how we can output it.
-  if (image._width <= _win_width && image._height <= _win_height) {
-    // It fits within the window - just draw it.
-    XPutImage(_display, _window, _graphics_context, image._image, 0, 0, 
-              (_win_width - image._width) / 2, (_win_height - image._height) / 2,
-              image._width, image._height);
-  } else if (image._resized_image != NULL) {
-    // We have a resized image already, draw that one.
-    XPutImage(_display, _window, _graphics_context, image._resized_image, 0, 0, 
-              (_win_width - image._resized_width) / 2, (_win_height - image._resized_height) / 2,
-              image._resized_width, image._resized_height);
   } else {
-    // Yuck, the bad case - we need to scale it down.
-    double scale = min((double) _win_width  / (double) image._width,
-                       (double) _win_height / (double) image._height);
-    image._resized_width = (int)(image._width * scale);
-    image._resized_height = (int)(image._height * scale);
-    char *new_data = (char*) malloc(4 * _win_width * _win_height);
-    image._resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                                  ZPixmap, 0, (char *) new_data, _win_width, _win_height, 32, 0);
-    double x_ratio = ((double) image._width) / ((double) image._resized_width);
-    double y_ratio = ((double) image._height) / ((double) image._resized_height);
-    for (int x = 0; x < _win_width; ++x) {
-      for (int y = 0; y < _win_height; ++y) {
-        XPutPixel(image._resized_image, x, y, 
-                  XGetPixel(image._image,
-                            (int)clamp(x * x_ratio, 0, image._width),
-                            (int)clamp(y * y_ratio, 0, image._height)));
-      }
-    }
-    XPutImage(_display, _window, _graphics_context, image._resized_image, 0, 0,
-              (_win_width - image._resized_width) / 2, (_win_height - image._resized_height) / 2,
-              image._resized_width, image._resized_height);
+    XPutImage(_display, _window, _graphics_context, _composite_image, 0, 0, 
+              (_win_width - _composite_width) / 2, (_win_height - _composite_height) / 2,
+              _composite_width, _composite_height);
   }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -876,10 +832,10 @@ setup_gc() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 close_window() {
-  _background_image.dump_image();
-  _button_ready_image.dump_image();
-  _button_rollover_image.dump_image();
-  _button_click_image.dump_image();
+  if (_composite_image != NULL) {
+    XDestroyImage(_composite_image);
+    _composite_image = NULL;
+  }
   
   if (_bar_context != None) {
     if (_bar_context != _graphics_context) {
@@ -918,97 +874,288 @@ close_window() {
 //               If the image is changed, sets needs_redraw to true.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-update_image(X11ImageData &image, bool &needs_redraw) {
+update_image(X11ImageData &image) {
   if (!image._filename_changed) {
     // No changes.
     return;
   }
   image._filename_changed = false;
-  needs_redraw = true;
 
-  // Clear the old image.
-  image.dump_image();
+  // We'll need to rebuild the composite image.
+  _needs_new_composite = true;
 
   // Go read the image.
   string data;
-  if (!read_image_data(image, data, image._filename)) {
+  if (!read_image_data(image, image._data, image._filename)) {
+    return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::compose_image
+//       Access: Private
+//  Description: Constructs the XImage to display onscreen.  It's a
+//               composition of the background image and/or one of the
+//               button images, scaled to fit the window.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+compose_image() {
+  if (_composite_image != NULL) {
+    XDestroyImage(_composite_image);
+    _composite_image = NULL;
+  }
+  _needs_new_composite = false;
+
+  vector<unsigned char> image1;
+  int image1_width = 0, image1_height = 0;
+  scale_image(image1, image1_width, image1_height, _background_image);
+
+  vector<unsigned char> image2;
+  int image2_width = 0, image2_height = 0;
+
+  switch (_bstate) {
+  case BS_hidden:
+    break;
+  case BS_ready:
+    scale_image(image2, image2_width, image2_height, _button_ready_image);
+    break;
+  case BS_rollover:
+    if (!scale_image(image2, image2_width, image2_height, _button_rollover_image)) {
+      scale_image(image2, image2_width, image2_height, _button_ready_image);
+    }
+    break;
+  case BS_click:
+    if (!scale_image(image2, image2_width, image2_height, _button_click_image)) {
+      scale_image(image2, image2_width, image2_height, _button_ready_image);
+    }
+    break;
+  }
+
+  if (image1.empty() && image2.empty()) {
+    // We have no image.  Never mind.
     return;
   }
 
+  if (image2.empty()) {
+    // We have no button image; image1 will serve as the result.
+
+  } else {
+    // We do have a button image.  Compose the button image on top of
+    // the background image (or on top of a white image if we have no
+    // background).
+
+    // We compose them here on the client, because X11 doesn't
+    // natively provide an alpha-blending mechanism (at least, not
+    // without the XRender extension).
+    vector<unsigned char> image0;
+    int image0_width, image0_height;
+    compose_two_images(image0, image0_width, image0_height,
+                       image1, image1_width, image1_height,
+                       image2, image2_width, image2_height);
+    image1.swap(image0);
+    image1_width = image0_width;
+    image1_height = image0_height;
+  }
+
+  // Now construct an XImage from the result.
   Visual *dvisual = DefaultVisual(_display, _screen);
   double r_ratio = dvisual->red_mask / 255.0;
   double g_ratio = dvisual->green_mask / 255.0;
   double b_ratio = dvisual->blue_mask / 255.0;
-  uint32_t *new_data = (uint32_t*)malloc(4 * image._width * image._height);
+  int data_length = 4 * image1_width * image1_height;
+  assert(data_length == image1.size());
+  uint32_t *new_data = (uint32_t*)malloc(data_length);
 
-  if (image._num_channels == 4) {
-    int j = 0;
-    for (int i = 0; i < 4 * image._width * image._height; i += 4) {
-      unsigned int r, g, b;
-      r = (unsigned int)(data[i+0] * r_ratio);
-      g = (unsigned int)(data[i+1] * g_ratio);
-      b = (unsigned int)(data[i+2] * b_ratio);
-      new_data[j++] = (r & dvisual->red_mask) |
-                      (g & dvisual->green_mask) |
-                      (b & dvisual->blue_mask);
-    }
-  } else if (image._num_channels == 3) {
-    int j = 0;
-    for (int i = 0; i < 3 * image._width * image._height; i += 3) {
-      unsigned int r, g, b;
-      r = (unsigned int)(data[i+0] * r_ratio);
-      g = (unsigned int)(data[i+1] * g_ratio);
-      b = (unsigned int)(data[i+2] * b_ratio);
-      new_data[j++] = (r & dvisual->red_mask) |
-                      (g & dvisual->green_mask) |
-                      (b & dvisual->blue_mask);
-    }
-  } else if (image._num_channels == 1) {
-    // A grayscale image.  Replicate out the channels.
-    for (int i = 0; i < image._width * image._height; ++i) {
-      unsigned int r, g, b;
-      r = (unsigned int)(data[i] * r_ratio);
-      g = (unsigned int)(data[i] * g_ratio);
-      b = (unsigned int)(data[i] * b_ratio);
-      new_data[i] = (r & dvisual->red_mask) |
-                    (g & dvisual->green_mask) |
-                    (b & dvisual->blue_mask);
-    }
+  int j = 0;
+  for (int i = 0; i < data_length; i += 4) {
+    unsigned int r, g, b;
+    r = (unsigned int)(image1[i+0] * r_ratio);
+    g = (unsigned int)(image1[i+1] * g_ratio);
+    b = (unsigned int)(image1[i+2] * b_ratio);
+    new_data[j++] = ((r & dvisual->red_mask) |
+                     (g & dvisual->green_mask) |
+                     (b & dvisual->blue_mask));
   }
 
   // Now load the image.
-  image._image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                              ZPixmap, 0, (char *)new_data, image._width, image._height, 32, 0);
+  _composite_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+                                  ZPixmap, 0, (char *)new_data, image1_width, image1_height, 32, 0);
+  _composite_width = image1_width;
+  _composite_height = image1_height;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::X11ImageData::dump_image
-//       Access: Public
-//  Description: Frees the previous image data.
+//     Function: P3DX11SplashWindow::scale_image
+//       Access: Private
+//  Description: Scales the image into the window size, and expands it
+//               to four channels.  Returns true if the image is
+//               valid, false if it is empty.
 ////////////////////////////////////////////////////////////////////
-void P3DX11SplashWindow::X11ImageData::
-dump_image() {
-  if (_image != NULL) {
-    XDestroyImage(_image);
-    _image = NULL;
+bool P3DX11SplashWindow::
+scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height,
+            X11ImageData &image) {
+  if (image._data.empty()) {
+    return false;
   }
-  if (_resized_image != NULL) {
-    XDestroyImage(_resized_image);
-    _resized_image = NULL;
+
+  const unsigned char *orig_data = (const unsigned char *)image._data.data();
+  int row_stride = image._width * image._num_channels;
+  int data_length = image._height * row_stride;
+  assert(data_length == image._data.size());
+
+  if (image._width <= _win_width && image._height <= _win_height) {
+    // It fits within the window - just keep it.
+    image0_width = image._width;
+    image0_height = image._height;
+    int new_row_stride = image0_width * 4;
+    int new_data_length = image0_height * new_row_stride;
+
+    image0.clear();
+    image0.reserve(new_data_length);
+    image0.insert(image0.begin(), new_data_length, 0);
+    unsigned char *new_data = &image0[0];
+
+    if (image._num_channels == 4) {
+      // Easy case.  Already four channels.
+      assert(data_length == new_data_length && row_stride == new_row_stride);
+      memcpy(new_data, orig_data, data_length);
+
+    } else if (image._num_channels == 3) {
+      // Expand three channels to four.
+      for (int yi = 0; yi < image._height; ++yi) {
+        const unsigned char *sp = orig_data + yi * row_stride;
+        unsigned char *dp = new_data + yi * new_row_stride;
+        for (int xi = 0; xi < image._width; ++xi) {
+          dp[0] = sp[0];
+          dp[1] = sp[1];
+          dp[2] = sp[2];
+          dp[3] = 0xff;
+          sp += 3;
+          dp += 4;
+        }
+      }
+    } else if (image._num_channels == 1) {
+      // A grayscale image.  Replicate out the channels.
+      for (int yi = 0; yi < image._height; ++yi) {
+        const unsigned char *sp = orig_data + yi * row_stride;
+        unsigned char *dp = new_data + yi * new_row_stride;
+        for (int xi = 0; xi < image._width; ++xi) {
+          dp[0] = sp[0];
+          dp[1] = sp[0];
+          dp[2] = sp[0];
+          dp[3] = 0xff;
+          sp += 1;
+          dp += 4;
+        }
+      }
+    }
+
+  } else {
+    // Yuck, the bad case - we need to scale it down.
+    double scale = min((double)_win_width  / (double)image._width,
+                       (double)_win_height / (double)image._height);
+    image0_width = (int)(image._width * scale);
+    image0_height = (int)(image._height * scale);
+    int new_row_stride = image0_width * 4;
+    int new_data_length = image0_height * new_row_stride;
+
+    image0.clear();
+    image0.reserve(new_data_length);
+    image0.insert(image0.begin(), new_data_length, 0);
+    unsigned char *new_data = &image0[0];
+
+    for (int yi = 0; yi < image0_height; ++yi) {
+      int orig_yi = (yi * image._height) / image0_height;
+      const unsigned char *sp = orig_data + orig_yi * row_stride;
+      unsigned char *dp = new_data + yi * new_row_stride;
+      for (int xi = 0; xi < image0_width; ++xi) {
+        int orig_xi = (xi * image._width) / image0_width;
+        const unsigned char *spx = sp + orig_xi * image._num_channels;
+        if (image._num_channels == 4) {
+          dp[0] = spx[0];
+          dp[1] = spx[1];
+          dp[2] = spx[2];
+          dp[3] = spx[3];
+        } else if (image._num_channels == 3) {
+          dp[0] = spx[0];
+          dp[1] = spx[1];
+          dp[2] = spx[2];
+          dp[3] = 0xff;
+        } else if (image._num_channels == 1) {
+          dp[0] = spx[0];
+          dp[1] = spx[0];
+          dp[2] = spx[0];
+          dp[3] = 0xff;
+        }
+        dp += 4;
+      }
+    }
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::X11ImageData::dump_resized_image
-//       Access: Public
-//  Description: Frees the previous resized image data only, retaining
-//               the original image data.
+//     Function: P3DX11SplashWindow::compose_two_images
+//       Access: Private
+//  Description: Constructs into image0 the alpha-composite of image1
+//               beneath image2.
 ////////////////////////////////////////////////////////////////////
-void P3DX11SplashWindow::X11ImageData::
-dump_resized_image() {
-  if (_resized_image != NULL) {
-    XDestroyImage(_resized_image);
-    _resized_image = NULL;
+void P3DX11SplashWindow::
+compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0_height,
+                   const vector<unsigned char> &image1, int image1_width, int image1_height,
+                   const vector<unsigned char> &image2, int image2_width, int image2_height) {
+  // First, the resulting image size is the larger of the two.
+  image0_width = max(image1_width, image2_width);
+  image0_height = max(image1_height, image2_height);
+
+  int new_row_stride = image0_width * 4;
+  int new_data_length = image0_height * new_row_stride;
+
+  // Now copy in the first image.  If the first image exactly fills
+  // the output image, this is easy.
+  if (image1_width == image0_width && image1_height == image0_height) {
+    image0 = image1;
+
+  } else {
+    // If the first image doesn't fill it, it's only a little bit more
+    // work.  Start by finding the top-left pixel.
+    int xo = (image0_width - image1_width) / 2;
+    int yo = (image0_height - image1_height) / 2;
+
+    // Initialize the image to all white pixels.
+    image0.clear();
+    image0.reserve(new_data_length);
+    image0.insert(image0.begin(), new_data_length, 0xff);
+
+    int image0_row_stride = image0_width * 4;
+    int image1_row_stride = image1_width * 4;
+    for (int yi = 0; yi < image1_height; ++yi) {
+      const unsigned char *sp = &image1[0] + yi * image1_row_stride;
+      unsigned char *dp = &image0[0] + (yi + yo) * image0_row_stride;
+      memcpy(dp + xo * 4, sp, image1_row_stride);
+    }
+  }
+
+  // Now blend in the second image.  Find the top-left pixel.
+  int xo = (image0_width - image2_width) / 2;
+  int yo = (image0_height - image2_height) / 2;
+
+  int image0_row_stride = image0_width * 4;
+  int image2_row_stride = image2_width * 4;
+
+  for (int yi = 0; yi < image2_height; ++yi) {
+    const unsigned char *sp = &image2[0] + yi * image2_row_stride;
+    unsigned char *dp = &image0[0] + (yi + yo) * image0_row_stride;
+    dp += xo * 4;
+    for (int xi = 0; xi < image2_width; ++xi) {
+      double alpha = (double)sp[3] / 255.0;
+      dp[0] = (unsigned char)(dp[0] + alpha * (sp[0] - dp[0]));
+      dp[1] = (unsigned char)(dp[1] + alpha * (sp[1] - dp[1]));
+      dp[2] = (unsigned char)(dp[2] + alpha * (sp[2] - dp[2]));
+      dp += 4;
+      sp += 4;
+    }
   }
 }
 

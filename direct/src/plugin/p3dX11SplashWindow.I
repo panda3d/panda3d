@@ -21,10 +21,6 @@
 inline P3DX11SplashWindow::X11ImageData::
 X11ImageData() {
   _filename_changed = false;
-  _image = NULL;
-  _resized_image = NULL;
-  _resized_width = 0;
-  _resized_height = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,6 +30,5 @@ X11ImageData() {
 ////////////////////////////////////////////////////////////////////
 inline P3DX11SplashWindow::X11ImageData::
 ~X11ImageData() {
-  dump_image();
 }
 
