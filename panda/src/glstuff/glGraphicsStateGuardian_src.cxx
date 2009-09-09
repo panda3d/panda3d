@@ -8458,8 +8458,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
       // we grab the mipmap pointer first, if it is NULL we grab the
       // normal mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
+      CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
-        CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
+        ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage == (const unsigned char *)NULL) {
           GLCAT.warning()
             << "No mipmap level " << n << " defined for " << tex->get_name()
@@ -8587,9 +8588,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
     
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
- 	  const unsigned char * image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
+      const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
+      CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
-        CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
+        ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage == (const unsigned char *)NULL) {
           GLCAT.warning()
             << "No mipmap level " << n << " defined for " << tex->get_name()

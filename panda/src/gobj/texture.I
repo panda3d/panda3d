@@ -2199,3 +2199,14 @@ have_textures_power_2() {
   return (_textures_power_2 != ATS_UNSPECIFIED);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::RamImage::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Texture::RamImage::
+RamImage() :
+  _page_size(0),
+  _pointer_image(NULL)
+{
+}
