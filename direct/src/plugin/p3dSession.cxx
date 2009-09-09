@@ -762,6 +762,9 @@ start_p3dpython(P3DInstance *inst) {
 #ifdef _WIN32
     "SYSTEMROOT", "USERPROFILE", "COMSPEC", "PANDA_ROOT",
 #endif
+#ifdef HAVE_X11
+    "DISPLAY",
+#endif
     NULL
   };
   for (int ki = 0; keep[ki] != NULL; ++ki) {
