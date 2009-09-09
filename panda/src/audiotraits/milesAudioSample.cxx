@@ -132,6 +132,9 @@ stop() {
   // _paused.  play() accesses _paused to help in the situation where
   // someone calls play on an inactive sound().
 
+  // it fixes audio bug, I don't understand the reasoning of the above comment
+  _paused = false; 
+
   if (_sample != 0) {
     AIL_end_sample(_sample);
 
