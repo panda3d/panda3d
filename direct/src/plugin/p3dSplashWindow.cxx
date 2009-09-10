@@ -167,6 +167,10 @@ read_image_data(ImageData &image, string &data,
   image._num_channels = 0;
   data.clear();
 
+  if (image_filename.empty()) {
+    return false;
+  }
+
   // We only support JPEG or PNG images.
   FILE *fp = fopen(image_filename.c_str(), "rb");
   if (fp == NULL) {
@@ -283,7 +287,6 @@ read_image_data_jpeg(ImageData &image, string &data,
 bool P3DSplashWindow::
 read_image_data_png(ImageData &image, string &data,
                     FILE *fp, const string &image_filename) {
-  cerr << "read_image_data_png\n";
   png_structp png;
   png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
                                 png_error, png_warning);
@@ -320,29 +323,20 @@ read_image_data_png(ImageData &image, string &data,
   png_get_IHDR(png, info, &width, &height,
                &bit_depth, &color_type, NULL, NULL, NULL);
 
-  cerr
-    << "width = " << width << " height = " << height << " bit_depth = "
-    << bit_depth << " color_type = " << color_type << "\n";
-
   image._width = width;
   image._height = height;
 
   switch (color_type) {
   case PNG_COLOR_TYPE_RGB:
-    cerr
-      << "PNG_COLOR_TYPE_RGB\n";
     image._num_channels = 3;
     break;
 
   case PNG_COLOR_TYPE_RGB_ALPHA:
-    cerr
-      << "PNG_COLOR_TYPE_RGB_ALPHA\n";
     image._num_channels = 4;
     break;
 
   default:
-    cerr
-      << "Unsupported color type: " << color_type << "\n";
+    nout << "Unsupported color type: " << color_type << "\n";
     png_destroy_read_struct(&png, &info, NULL);
     return false;
   }
@@ -354,8 +348,6 @@ read_image_data_png(ImageData &image, string &data,
   }
 
   png_destroy_read_struct(&png, &info, NULL);
-
-  cerr << "successfully read\n";
   return true;
 }
 

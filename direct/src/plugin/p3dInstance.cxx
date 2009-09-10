@@ -918,7 +918,6 @@ splash_button_clicked() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 scan_app_desc_file(TiXmlDocument *doc) {
-  cerr << "scan_app_desc_file\n";
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xpackage = doc->FirstChildElement("package");
@@ -1285,6 +1284,7 @@ make_splash_window() {
   set_background_image(IT_download);
 
   // Go get the required images.
+  bool any_standard_images = false;
   for (int i = 0; i < (int)IT_none; ++i) {
     string token_keyword = string(_image_type_names[i]) + "_img";
     if (!_fparams.has_token(token_keyword)) {
@@ -1292,11 +1292,7 @@ make_splash_window() {
       // image.  We do this via the P3DPackage interface, so we can
       // use the cached version on disk if it's good.
       _image_files[i]._use_standard_image = true;
-      if (_image_package == NULL) {
-        P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
-        _image_package = host->get_package("images", "");
-        _image_package->add_instance(this);
-      }
+      any_standard_images = true;
       
     } else {
       // We have an explicit image specified for this slot, so just
@@ -1319,6 +1315,16 @@ make_splash_window() {
       download->set_filename(_image_files[i]._temp_filename->get_filename());
       
       start_download(download);
+    }
+  }
+
+  if (any_standard_images) {
+    // If any of the images requires an image from the standard image
+    // package, go get that package.
+    if (_image_package == NULL) {
+      P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+      _image_package = host->get_package("images", "");
+      _image_package->add_instance(this);
     }
   }
 }

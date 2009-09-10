@@ -211,6 +211,7 @@ begin_info_download() {
 
   if (_info_ready) {
     // Already downloaded.
+    report_info_ready();
     return;
   }
 
