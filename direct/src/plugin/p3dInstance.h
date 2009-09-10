@@ -101,6 +101,7 @@ public:
 
   TiXmlElement *make_xml();
   void splash_button_clicked();
+  void play_button_clicked();
 
 private:
   class ImageDownload : public P3DFileDownload {

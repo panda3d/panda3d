@@ -15,7 +15,6 @@
 #include "p3dMainObject.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
-#include "p3dUndefinedObject.h"
 #include "p3dStringObject.h"
 #include "p3dInstanceManager.h"
 
@@ -184,7 +183,9 @@ set_property(const string &property, P3D_object *value) {
 bool P3DMainObject::
 has_method(const string &method_name) {
   // Some special-case methods implemented in-place.
-  if (method_name == "read_game_log") {
+  if (method_name == "start") {
+    return true;
+  } else if (method_name == "read_game_log") {
     return true;
   } else if (method_name == "read_system_log") {
     return true;
@@ -214,10 +215,12 @@ has_method(const string &method_name) {
 P3D_object *P3DMainObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
-  if (method_name == "read_game_log") {
-    return call_read_game_log();
+  if (method_name == "start") {
+    return call_start(params, num_params);
+  } else if (method_name == "read_game_log") {
+    return call_read_game_log(params, num_params);
   } else if (method_name == "read_system_log") {
-    return call_read_system_log();
+    return call_read_system_log(params, num_params);
   }
 
   if (_pyobj == NULL) {
@@ -295,41 +298,47 @@ set_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::call_start
+//       Access: Private
+//  Description: Starts the process remotely, as if the start button
+//               had been clicked.  Only applicable if the application
+//               was in the ready state.  Returns true if the
+//               application is now started, false otherwise.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+call_start(P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (_inst == NULL) {
+    return inst_mgr->new_bool_object(false);
+  }
+
+  if (!_inst->is_started()) {
+    _inst->play_button_clicked();
+  }
+   
+  return inst_mgr->new_bool_object(_inst->is_started());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DMainObject::call_read_game_log
 //       Access: Private
 //  Description: Reads the entire logfile as a string, and returns it
 //               to the calling JavaScript process.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
-call_read_game_log() {
+call_read_game_log(P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (_inst == NULL) {
-    return new P3DUndefinedObject();
+    return inst_mgr->new_undefined_object();
   }
 
   P3DSession *session = _inst->get_session();
   if (session == NULL) {
-    return new P3DUndefinedObject();
+    return inst_mgr->new_undefined_object();
   }
 
   string log_pathname = session->get_log_pathname();
-  ifstream log(log_pathname.c_str(), ios::in);
-
-  // Get the size of the file.
-  log.seekg(0, ios::end);
-  size_t size = (size_t)log.tellg();
-  log.seekg(0, ios::beg);
-
-  // Read the entire file into memory all at once.
-  char *buffer = new char[size];
-  if (buffer == NULL) {
-    return NULL;
-  }
-
-  log.read(buffer, size);
-  P3D_object *result = new P3DStringObject(buffer, size);
-  delete[] buffer;
-  
-  return result;
+  return read_log(log_pathname, params, num_params);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,18 +348,42 @@ call_read_game_log() {
 //               the installation process.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
-call_read_system_log() {
+call_read_system_log(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   string log_pathname = inst_mgr->get_log_pathname();
+  return read_log(log_pathname, params, num_params);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::call_read_log
+//       Access: Private
+//  Description: The generic log-reader function.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   ifstream log(log_pathname.c_str(), ios::in);
+
+  // Check the parameter, if any--if specified, it specifies the last
+  // n bytes to retrieve.
+  int max_bytes = 0;
+  if (num_params > 0) {
+    max_bytes = P3D_OBJECT_GET_INT(params[0]);
+  }
 
   // Get the size of the file.
   log.seekg(0, ios::end);
   size_t size = (size_t)log.tellg();
-  log.seekg(0, ios::beg);
 
-  // Read the entire file into memory all at once.
+  if (max_bytes > 0 && max_bytes < size) {
+    // Apply the limit.
+    log.seekg(size - max_bytes, ios::beg);
+    size = (size_t)max_bytes;
+  } else {
+    // Read the entire file.
+    log.seekg(0, ios::beg);
+  }
+
   char *buffer = new char[size];
   if (buffer == NULL) {
     return NULL;

@@ -67,8 +67,11 @@ public:
   void set_instance(P3DInstance *inst);
 
 private:
-  P3D_object *call_read_game_log();
-  P3D_object *call_read_system_log();
+  P3D_object *call_start(P3D_object *params[], int num_params);
+  P3D_object *call_read_game_log(P3D_object *params[], int num_params);
+  P3D_object *call_read_system_log(P3D_object *params[], int num_params);
+  P3D_object *read_log(const string &log_pathname, 
+                       P3D_object *params[], int num_params);
 
 private:
   P3D_object *_pyobj;

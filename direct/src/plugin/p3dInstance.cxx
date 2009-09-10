@@ -898,12 +898,27 @@ make_xml() {
 //     Function: P3DInstance::splash_button_clicked
 //       Access: Public
 //  Description: Called by the P3DSplashWindow code when the user
-//               clicks the play button visible on the splash window.
+//               clicks the button visible on the splash window.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 splash_button_clicked() {
-  // If we haven't launched yet, launch now.
   if (_session == NULL) {
+    play_button_clicked();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::play_button_clicked
+//       Access: Public
+//  Description: Called to start the game by the user clicking the
+//               "play" button, or by JavaScript calling start().
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+play_button_clicked() {
+  if (_session == NULL) {
+    if (_splash_window != NULL) {
+      _splash_window->set_button_active(false);
+    }
     set_background_image(IT_launch);
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->start_instance(this);
@@ -1529,6 +1544,7 @@ start_next_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
+  send_notify("onready");
   if (_auto_start) {
     set_background_image(IT_launch);
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();

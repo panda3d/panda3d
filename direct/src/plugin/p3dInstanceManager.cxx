@@ -321,6 +321,11 @@ set_p3d_filename(P3DInstance *inst, bool is_local,
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 start_instance(P3DInstance *inst) {
+  if (inst->is_started()) {
+    // Already started.
+    return true;
+  }
+
   P3DSession *session;
   Sessions::iterator si = _sessions.find(inst->get_session_key());
   if (si == _sessions.end()) {
