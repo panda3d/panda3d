@@ -1,3 +1,3 @@
 from direct.directbase.DirectStart import *
 import LevelEditor
-l = LevelEditor.LevelEditor()
+base.l = LevelEditor.LevelEditor()

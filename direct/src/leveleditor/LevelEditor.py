@@ -5527,6 +5527,6 @@ class LEAvatar(LocalAvatar.LocalAvatar):
     def getAutoRun(self):
         return 0
 
-l = LevelEditor()
+base.l = LevelEditor()
 run()
 
