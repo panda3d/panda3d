@@ -1,3 +1,7 @@
-from direct.directbase.DirectStart import *
 import LevelEditor
-base.l = LevelEditor.LevelEditor()
+
+base.le = LevelEditor.LevelEditor()
+# You should define LevelEditor instance as
+# base.le so it can be reached in global scope
+
+run()
