@@ -103,6 +103,8 @@ P3DInstance(P3D_request_ready_func *func,
   _shared_mmap_size = 0;
   _swbuffer = NULL;
   _reversed_buffer = NULL;
+  // We have to start with _mouse_active true; firefox doesn't send
+  // activate events.
   _mouse_active = true;
   _frame_timer = NULL;
 #endif  // __APPLE__

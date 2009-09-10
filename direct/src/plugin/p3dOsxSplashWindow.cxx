@@ -29,7 +29,9 @@ P3DOsxSplashWindow(P3DInstance *inst) :
 {
   _install_progress = 0;
   _got_wparams = false;
-  _mouse_active = false;
+  // We have to start with _mouse_active true; firefox doesn't send
+  // activate events.
+  _mouse_active = true;
   _toplevel_window = NULL;
 }
 
@@ -183,7 +185,7 @@ handle_event(P3D_event_data event) {
   if (port_changed) {
     QDSwapPort(port_save, NULL);
   }
-
+  
   switch (er->what) {
   case updateEvt:
     paint_window();
