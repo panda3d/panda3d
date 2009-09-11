@@ -702,8 +702,15 @@ void P3DPackage::
 extract_archive() {
   string source_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
   P3DMultifileReader reader;
-  if (!reader.extract_all(source_pathname, _package_dir,
-                          this, download_portion + uncompress_portion, extract_portion)) {
+  if (!reader.open_read(source_pathname)) {
+    nout << "Couldn't read " << _uncompressed_archive.get_filename() << "\n";
+    report_done(false);
+    return;
+  }
+
+  if (!reader.extract_all(_package_dir, this, 
+                          download_portion + uncompress_portion, 
+                          extract_portion)) {
     nout << "Failure extracting " << _uncompressed_archive.get_filename()
          << "\n";
     report_done(false);

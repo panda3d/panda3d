@@ -38,7 +38,7 @@ P3D_initialize(int api_version, const char *contents_filename,
                const char *download_url, bool verify_contents,
                const char *platform,
                const char *log_directory, const char *log_basename,
-               bool keep_cwd) {
+               bool trusted_environment) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -74,7 +74,7 @@ P3D_initialize(int api_version, const char *contents_filename,
   bool result = inst_mgr->initialize(contents_filename, download_url,
                                      verify_contents, platform,
                                      log_directory, log_basename,
-                                     keep_cwd);
+                                     trusted_environment);
   RELEASE_LOCK(_api_lock);
   return result;
 }

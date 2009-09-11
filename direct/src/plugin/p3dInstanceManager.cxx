@@ -35,7 +35,10 @@
 #else
 #include <sys/stat.h>
 #include <signal.h>
+#include <dirent.h>
 #endif
+
+#include <stdio.h>
 
 static ofstream logfile;
 ostream *nout_stream = &logfile;
@@ -52,7 +55,7 @@ P3DInstanceManager() {
   _is_initialized = false;
   _next_temp_filename_counter = 1;
   _unique_id = 0;
-  _keep_cwd = false;
+  _trusted_environment = false;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -157,8 +160,8 @@ bool P3DInstanceManager::
 initialize(const string &contents_filename, const string &download_url,
            bool verify_contents,
            const string &platform, const string &log_directory,
-           const string &log_basename, bool keep_cwd) {
-  _keep_cwd = keep_cwd;
+           const string &log_basename, bool trusted_environment) {
+  _trusted_environment = trusted_environment;
   _root_dir = find_root_dir();
   _verify_contents = verify_contents;
   _platform = platform;
@@ -254,6 +257,12 @@ initialize(const string &contents_filename, const string &download_url,
   if (_root_dir.empty()) {
     nout << "Could not find root directory.\n";
     return false;
+  }
+
+  // Make the certificate directory.
+  _certs_dir = _root_dir + "/certs";
+  if (!mkdir_complete(_certs_dir, nout)) {
+    nout << "Couldn't mkdir " << _certs_dir << "\n";
   }
 
   _is_initialized = true;
@@ -643,6 +652,176 @@ release_temp_filename(const string &filename) {
   nout << "release_temp_filename: " << filename << "\n";
   _temp_filenames.erase(filename);
   unlink(filename.c_str());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::find_cert
+//       Access: Public
+//  Description: Looks for the particular certificate in the cache of
+//               recognized certificates.  Returns true if it is
+//               found, false if not.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+find_cert(X509 *cert) {
+  // First, we need the DER representation.
+  string der = cert_to_der(cert);
+
+  // If we've previously found this certificate, we don't have to hit
+  // disk again.
+  ApprovedCerts::iterator ci = _approved_certs.find(der);
+  if (ci != _approved_certs.end()) {
+    return true;
+  }
+
+  // Well, we haven't found it already.  Look for it on disk.  For
+  // this, we hash the cert into a hex string.  This is similar to
+  // OpenSSL's get_by_subject() approach, except we hash the whole
+  // cert, not just the subject.  (Since we also store self-signed
+  // certs in this list, we can't trust the subject name alone.)
+
+  static const size_t hash_size = 16;
+  unsigned char md[hash_size];
+
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+  MD5_Update(&ctx, der.data(), der.size());
+  MD5_Final(md, &ctx);
+
+  string basename;
+  static const size_t keep_hash = 6;
+  for (size_t i = 0; i < keep_hash; ++i) {
+    int high = (md[i] >> 4) & 0xf;
+    int low = md[i] & 0xf;
+    basename += P3DInstanceManager::encode_hexdigit(high);
+    basename += P3DInstanceManager::encode_hexdigit(low);
+  }
+
+  string this_cert_dir = _certs_dir + "/" + basename;
+  nout << "looking in " << this_cert_dir << "\n";
+
+  vector<string> contents;
+  scan_directory(this_cert_dir, contents);
+
+  // Now look at each of the files in this directory and see if any of
+  // them matches the certificate.
+  vector<string>::iterator si;
+  for (si = contents.begin(); si != contents.end(); ++si) {
+    string filename = this_cert_dir + "/" + (*si);
+    X509 *x509 = NULL;
+    FILE *fp = fopen(filename.c_str(), "r");
+    if (fp != NULL) {
+      x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
+      fclose(fp);
+    }
+
+    if (x509 != NULL) {
+      string der2 = cert_to_der(x509);
+      // We might as well save this cert in the table for next time,
+      // even if it's not the one we're looking for right now.
+      _approved_certs.insert(der2);
+      
+      if (der == der2) {
+        return true;
+      }
+    }
+  }
+
+  // Nothing matched.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::cert_to_der
+//       Access: Public, Static
+//  Description: Converts the indicated certificate to its binary DER
+//               representation.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+cert_to_der(X509 *cert) {
+  int buffer_size = i2d_X509(cert, NULL);
+  unsigned char *buffer = new unsigned char[buffer_size];
+  unsigned char *p = buffer;
+  i2d_X509(cert, &p);
+  
+  string result((char *)buffer, buffer_size);
+  delete[] buffer;
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::scan_directory
+//       Access: Public, Static
+//  Description: Attempts to open the named filename as if it were a
+//               directory and looks for the non-hidden files within
+//               the directory.  Fills the given vector up with the
+//               sorted list of filenames that are local to this
+//               directory.
+//
+//               It is the user's responsibility to ensure that the
+//               contents vector is empty before making this call;
+//               otherwise, the new files will be appended to it.
+//
+//               Returns true on success, false if the directory could
+//               not be read for some reason.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+scan_directory(const string &dirname, vector<string> &contents) {
+#ifdef _WIN32
+  // Use Windows' FindFirstFile() / FindNextFile() to walk through the
+  // list of files in a directory.
+  size_t orig_size = contents.size();
+
+  string match = dirname + "\\*.*";
+  WIN32_FIND_DATA find_data;
+
+  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
+  if (handle == INVALID_HANDLE_VALUE) {
+    if (GetLastError() == ERROR_NO_MORE_FILES) {
+      // No matching files is not an error.
+      return true;
+    }
+    return false;
+  }
+
+  do {
+    string filename = find_data.cFileName;
+    if (filename != "." && filename != "..") {
+      contents.push_back(filename);
+    }
+  } while (FindNextFile(handle, &find_data));
+
+  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
+  FindClose(handle);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return scan_ok;
+
+#else  // _WIN32
+  // Use Posix's opendir() / readdir() to walk through the list of
+  // files in a directory.
+  size_t orig_size = contents.size();
+
+  DIR *root = opendir(dirname.c_str());
+  if (root == (DIR *)NULL) {
+    return false;
+  }
+
+  struct dirent *d;
+  d = readdir(root);
+  while (d != (struct dirent *)NULL) {
+    if (d->d_name[0] != '.') {
+      contents.push_back(d->d_name);
+    }
+    d = readdir(root);
+  }
+
+  closedir(root);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return true;
+
+#endif  // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////

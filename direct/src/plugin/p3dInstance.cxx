@@ -55,6 +55,10 @@ const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
   "play_ready",
   "play_rollover",
   "play_click",
+  "unauth",
+  "auth_ready",
+  "auth_rollover",
+  "auth_click",
   "none",  // Not really used.
 };
 
@@ -80,6 +84,7 @@ P3DInstance(P3D_request_ready_func *func,
   _current_button_image = IT_none;
   _got_fparams = false;
   _got_wparams = false;
+  _p3d_trusted = false;
 
   _fparams.set_tokens(tokens, num_tokens);
   _fparams.set_args(argc, argv);
@@ -89,6 +94,7 @@ P3DInstance(P3D_request_ready_func *func,
   _hidden = false;
   _allow_python_dev = false;
   _auto_start = false;
+  _auth_button_approved = false;
   _session = NULL;
   _panda3d = NULL;
   _splash_window = NULL;
@@ -116,6 +122,10 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object->set_string_property("downloadPackageDisplayName", "");
   _panda_script_object->set_bool_property("downloadComplete", false);
   _panda_script_object->set_string_property("status", "initial");
+
+  // We'll start off with the "download" image displayed in the splash
+  // window (when it opens), until we get stuff downloaded.
+  set_background_image(IT_download);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,50 +244,24 @@ set_p3d_url(const string &p3d_url) {
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
   _fparams.set_p3d_filename(p3d_filename);
+  _got_fparams = true;
 
   _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
-
-  // This also sets up some internal data based on the contents of the
-  // above file and the associated tokens.
-
-  // Extract the application desc file from the p3d file.
-  P3DMultifileReader reader;
-  stringstream sstream;
-  if (!reader.extract_one(p3d_filename, sstream, "p3d_info.xml")) {
-    nout << "No p3d_info.xml file found in " << p3d_filename << "\n";
-  } else {
-    sstream.seekg(0);
-    TiXmlDocument doc;
-    sstream >> doc;
-
-    // This also starts required packages downloading.  When all
-    // packages have been installed, we will start the instance.
-    scan_app_desc_file(&doc);
-  }
-
-  // For the moment, all sessions will be unique.  TODO: support
-  // multiple instances per session.
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  ostringstream strm;
-  strm << inst_mgr->get_unique_id();
-  _session_key = strm.str();
-
-  // Until we've done all of the above processing, we haven't fully
-  // committed to having fparams.  (Setting this flag down here
-  // instead of up there avoids starting the instance in
-  // scan_app_desc_file(), before we've had a chance to finish
-  // processing this method.)
-  _got_fparams = true;
 
   // Generate a special notification: onpluginload, indicating the
   // plugin has read its parameters and is ready to be queried (even
   // if Python has not yet started).
   send_notify("onpluginload");
 
-  // Now that we're all set up, start the instance if we're fully
-  // downloaded.
-  if (get_packages_ready() && _got_wparams) {
-    ready_to_start();
+  if (!_mf_reader.open_read(_fparams.get_p3d_filename())) {
+    nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
+    return;
+  }
+
+  if (check_p3d_signature()) {
+    mark_p3d_trusted();
+  } else {
+    mark_p3d_untrusted();
   }
 }
 
@@ -356,7 +340,7 @@ set_wparams(const P3DWindowParams &wparams) {
     _session->send_command(doc);
   }
 
-  if (get_packages_ready() && _got_fparams) {
+  if (get_packages_ready() && _p3d_trusted) {
     ready_to_start();
   }
 }
@@ -904,8 +888,34 @@ make_xml() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 splash_button_clicked() {
-  if (_session == NULL) {
+  if (!_p3d_trusted) {
+    auth_button_clicked();
+  } else if (_session == NULL) {
     play_button_clicked();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::auth_button_clicked
+//       Access: Public
+//  Description: Called to authorize the p3d file by the user clicking
+//               the red "auth" button.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+auth_button_clicked() {
+  // Here's where we need to invoke the authorization program.
+  cerr << "auth clicked\n";
+
+  // After the authorization program has returned, check the signature
+  // again.
+  if (check_p3d_signature()) {
+    // Set this flag to indicate that the user has clicked on the red
+    // "auth" button an successfully approved the application.  This
+    // eliminates the need to click on the green "start" button.
+    _auth_button_approved = true;
+    mark_p3d_trusted();
+  } else {
+    mark_p3d_untrusted();
   }
 }
 
@@ -913,17 +923,136 @@ splash_button_clicked() {
 //     Function: P3DInstance::play_button_clicked
 //       Access: Public
 //  Description: Called to start the game by the user clicking the
-//               "play" button, or by JavaScript calling start().
+//               green "play" button, or by JavaScript calling
+//               start().
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 play_button_clicked() {
   if (_session == NULL) {
-    if (_splash_window != NULL) {
-      _splash_window->set_button_active(false);
-    }
+    set_button_image(IT_none);
     set_background_image(IT_launch);
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->start_instance(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::check_p3d_signature
+//       Access: Private
+//  Description: Checks the signature(s) encoded in the p3d file, and
+//               looks to see if any of them are recognized.  Returns
+//               true if the signature is recognized and the file
+//               should be trusted, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+check_p3d_signature() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (inst_mgr->get_trusted_environment()) {
+    // If we're in a trusted environment (e.g. the panda3d command
+    // line, where we've already downloaded the p3d file separately),
+    // then everything is approved.
+    return true;
+  }
+
+  // Temporary hack: disabling further security checks until this code
+  // is complete.
+  return true;
+
+  nout << "check_p3d_signature\n";
+  int num_signatures = _mf_reader.get_num_signatures();
+  nout << "file has " << num_signatures << " signatures\n";
+
+  for (int i = 0; i < num_signatures; ++i) {
+    const P3DMultifileReader::CertChain &chain = _mf_reader.get_signature(i);
+
+    // Here's a certificate that has signed this multifile.
+    X509 *cert = chain[0]._cert;
+
+    // Look up the certificate to see if we've stored a copy in our
+    // certs dir.
+    if (inst_mgr->find_cert(cert)) {
+      return true;
+    }
+  }
+
+  // Couldn't find any approved certificates.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::mark_p3d_untrusted
+//       Access: Private
+//  Description: This is called internally when it has been determined
+//               that the p3d file can't (yet) be trusted, for
+//               instance because it lacks a signature, or because it
+//               is signed by an unrecognized certificate.  This puts
+//               up the red "auth" button and waits for the user to
+//               approve the app before continuing.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+mark_p3d_untrusted() {
+  // Failed test.
+  nout << "p3d untrusted\n";
+  set_background_image(IT_unauth);
+  set_button_image(IT_auth_ready);
+  make_splash_window();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::mark_p3d_trusted
+//       Access: Private
+//  Description: This is called internally when it has been determined
+//               that the p3d file can be trusted and started.  When
+//               this is called, the p3d file will be examined and
+//               made ready to start; it will not be started until
+//               this is called.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+mark_p3d_trusted() {
+  nout << "p3d trusted\n";
+  // Only call this once.
+  assert(!_p3d_trusted);
+
+  // Extract the application desc file from the p3d file.
+  stringstream sstream;
+  if (!_mf_reader.extract_one(sstream, "p3d_info.xml")) {
+    nout << "No p3d_info.xml file found in " << _fparams.get_p3d_filename() << "\n";
+    // TODO: fail.
+
+  } else {
+    sstream.seekg(0);
+    TiXmlDocument doc;
+    sstream >> doc;
+
+    // This also starts required packages downloading.  When all
+    // packages have been installed, we will start the instance.
+    scan_app_desc_file(&doc);
+  }
+
+  // Now we've got no further need to keep the _mf_reader open.
+  _mf_reader.close();
+
+  // For the moment, all sessions will be unique.  TODO: support
+  // multiple instances per session.
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  ostringstream strm;
+  strm << inst_mgr->get_unique_id();
+  _session_key = strm.str();
+
+  // Until we've done all of the above processing, we haven't fully
+  // committed to setting the trusted flag.  (Setting this flag down
+  // here instead of up there avoids starting the instance in
+  // scan_app_desc_file(), before we've had a chance to finish
+  // processing this method.)
+  _p3d_trusted = true;
+
+  // Notify JS that we've accepted the trust of the p3d file.
+  send_notify("ontrust");
+
+  // Now that we're all set up, start the instance if we're fully
+  // downloaded.
+  if (get_packages_ready() && _got_wparams) {
+    ready_to_start();
   }
 }
 
@@ -970,10 +1099,15 @@ scan_app_desc_file(TiXmlDocument *doc) {
   if (_fparams.lookup_token_int("auto_start") != 0) {
     _auto_start = true;
   }
+  if (_auth_button_approved) {
+    // But finally, if the user has already clicked through the red
+    // "auth" button, no need to present him/her with another green
+    // "play" button as well.
+    _auto_start = true;
+  }
+
   nout << "_auto_start = " << _auto_start << "\n";
 
-  // But auto_start will be set false if the p3d file has not been
-  // signed by an approved signature.  TODO.
 
   if (_hidden && _got_wparams) {
     _wparams.set_window_type(P3D_WT_hidden);
@@ -1284,9 +1418,10 @@ make_splash_window() {
     return;
   }
   if (_wparams.get_window_type() != P3D_WT_embedded && 
-      !_stuff_to_download && _auto_start) {
+      !_stuff_to_download && _auto_start && _p3d_trusted) {
     // If it's a toplevel or fullscreen window, then we don't want a
-    // splash window until we have stuff to download.
+    // splash window unless we have stuff to download, or a button to
+    // display.
     return;
   }
 
@@ -1295,10 +1430,6 @@ make_splash_window() {
   _splash_window->set_install_label(_install_label);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-
-  // Direct the "download" image to the background slot on the splash
-  // window for now, while we perform the download.
-  set_background_image(IT_download);
 
   // Go get the required images.
   bool any_standard_images = false;
@@ -1344,6 +1475,10 @@ make_splash_window() {
       _image_package->add_instance(this);
     }
   }
+
+  if (_current_button_image != IT_none) {
+    _splash_window->set_button_active(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1357,6 +1492,7 @@ make_splash_window() {
 void P3DInstance::
 set_background_image(ImageType image_type) {
   if (image_type != _current_background_image) {
+    nout << "setting background to " << _image_type_names[image_type] << "\n";
     // Remove the previous image.
     _image_files[_current_background_image]._image_placement = P3DSplashWindow::IP_none;
 
@@ -1387,6 +1523,7 @@ set_background_image(ImageType image_type) {
 void P3DInstance::
 set_button_image(ImageType image_type) {
   if (image_type != _current_button_image) {
+    nout << "setting button to " << _image_type_names[image_type] << "\n";
     // Remove the previous image.
     _image_files[_current_button_image]._image_placement = P3DSplashWindow::IP_none;
     if (_current_button_image != IT_none) {
@@ -1408,10 +1545,20 @@ set_button_image(ImageType image_type) {
         _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
         _splash_window->set_image_filename(_image_files[_current_button_image + 1]._filename, P3DSplashWindow::IP_button_rollover);
         _splash_window->set_image_filename(_image_files[_current_button_image + 2]._filename, P3DSplashWindow::IP_button_click);
+        _splash_window->set_button_active(true);
       } else {
-        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_ready);
-        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_rollover);
-        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_click);
+        _splash_window->set_button_active(false);
+      }
+    }
+
+  } else {
+    // We're not changing the button graphic, but we might be
+    // re-activating it.
+    if (_splash_window != NULL) {
+      if (_current_button_image != IT_none) {
+        _splash_window->set_button_active(true);
+      } else {
+        _splash_window->set_button_active(false);
       }
     }
   }
@@ -1532,7 +1679,7 @@ start_next_download() {
       _splash_window->set_install_label("");
     }
 
-    if (_got_wparams && _got_fparams) {
+    if (_got_wparams && _p3d_trusted) {
       ready_to_start();
     }
   }
@@ -1556,7 +1703,6 @@ ready_to_start() {
     // We're fully downloaded, and waiting for the user to click play.
     set_background_image(IT_ready);
     set_button_image(IT_play_ready);
-    _splash_window->set_button_active(true);
   }
 }
 

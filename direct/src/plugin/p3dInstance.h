@@ -22,6 +22,7 @@
 #include "p3dReferenceCount.h"
 #include "p3dSplashWindow.h"
 #include "p3dTemporaryFile.h"
+#include "p3dMultifileReader.h"
 #include "get_tinyxml.h"
 
 #ifdef __APPLE__
@@ -101,6 +102,7 @@ public:
 
   TiXmlElement *make_xml();
   void splash_button_clicked();
+  void auth_button_clicked();
   void play_button_clicked();
 
 private:
@@ -126,6 +128,7 @@ private:
   // The different kinds of image files we download for the splash
   // window.
   enum ImageType {
+    // Also update _image_type_names when you update this list.
     IT_download,
     IT_ready,
     IT_failed,
@@ -133,10 +136,17 @@ private:
     IT_play_ready,
     IT_play_rollover,
     IT_play_click,
+    IT_unauth,
+    IT_auth_ready,
+    IT_auth_rollover,
+    IT_auth_click,
     IT_none,                // Must be the last value
     IT_num_image_types,     // Not a real value
   };
 
+  bool check_p3d_signature();
+  void mark_p3d_untrusted();
+  void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
 
   void send_browser_script_object();
@@ -192,9 +202,12 @@ private:
 
   bool _got_fparams;
   P3DFileParams _fparams;
+  P3DMultifileReader _mf_reader;
 
   bool _got_wparams;
   P3DWindowParams _wparams;
+
+  bool _p3d_trusted;
 
   int _instance_id;
   string _session_key;
@@ -202,6 +215,7 @@ private:
   bool _hidden;
   bool _allow_python_dev;
   bool _auto_start;
+  bool _auth_button_approved;
 
   P3DSession *_session;
 

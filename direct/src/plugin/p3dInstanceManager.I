@@ -105,17 +105,21 @@ get_log_pathname() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_keep_cwd
+//     Function: P3DInstanceManager::get_trusted_environment
 //       Access: Public
-//  Description: Returns the value of the keep_cwd flag passed to the
-//               constructor.  This is true if the original working
-//               directory was valuable and meaningful, and should be
-//               preserved; or false if it is meaningless and should
-//               be changed.
+//  Description: Returns the value of the trusted_environment flag
+//               passed to the constructor.  If this is true, it means
+//               the environment we are running in is trusted and the
+//               p3d file is already vetted.  This means the current
+//               working directory will remain unchanged, and the p3d
+//               file will be run without checking its signature.
+//
+//               This should generally be true only when run by
+//               panda3d.exe, and not when run by the web plugin.
 ////////////////////////////////////////////////////////////////////
 inline bool P3DInstanceManager::
-get_keep_cwd() const {
-  return _keep_cwd;
+get_trusted_environment() const {
+  return _trusted_environment;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,4 +168,18 @@ new_bool_object(bool value) {
   P3D_object *obj = (value) ? _true_object : _false_object;
   P3D_OBJECT_INCREF(obj);
   return obj;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::encode_hexdigit
+//       Access: Public
+//  Description: Returns the hex digit corresponding to the
+//               indicated integer value.
+////////////////////////////////////////////////////////////////////
+inline char P3DInstanceManager::
+encode_hexdigit(int c) {
+  if (c >= 10) {
+    return c - 10 + 'a';
+  }
+  return c + '0';
 }

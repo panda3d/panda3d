@@ -474,8 +474,15 @@ class AppRunner(DirectObject):
         self.instanceId = instanceId
 
         self.tokens = tokens
-        self.tokenDict = dict(tokens)
         self.argv = argv
+
+        # We build up a token dictionary with care, so that if a given
+        # token appears twice in the token list, we record only the
+        # first value, not the second or later.  This is consistent
+        # with the internal behavior of the core API.
+        self.tokenDict = {}
+        for token, keyword in tokens:
+            self.tokenDict.setdefault(token, keyword)
 
         # Also store the arguments on sys, for applications that
         # aren't instance-ready.

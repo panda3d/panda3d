@@ -661,7 +661,7 @@ start_p3dpython(P3DInstance *inst) {
   // Change the current directory to the standard start directory, but
   // only if the runtime environment told us the original current
   // directory isn't meaningful.
-  _use_start_dir = !inst_mgr->get_keep_cwd();
+  _use_start_dir = !inst_mgr->get_trusted_environment();
   if (_use_start_dir) {
     mkdir_complete(_start_dir, nout);
   }

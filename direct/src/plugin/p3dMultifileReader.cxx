@@ -45,15 +45,46 @@ const int P3DMultifileReader::_current_minor_ver = 1;
 ////////////////////////////////////////////////////////////////////
 P3DMultifileReader::
 P3DMultifileReader() {
+  _is_open = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::open_read
+//       Access: Public
+//  Description: Opens the indicated file for reading.  Returns true
+//               on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DMultifileReader::
+open_read(const string &pathname) {
+  if (_is_open) {
+    close();
+  }
+  if (!read_header(pathname)) {
+    return false;
+  }
+
+  _is_open = true;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::close
+//       Access: Public
+//  Description: Closes the previously-opened file.
+////////////////////////////////////////////////////////////////////
+void P3DMultifileReader::
+close() {
+  _in.close();
+  _is_open = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMultifileReader::extract_all
 //       Access: Public
-//  Description: Reads the named multifile, and extracts all the
-//               expected extractable components within it to the
-//               indicated directory.  Returns true on success, false
-//               on failure.
+//  Description: Reads the multifile, and extracts all the expected
+//               extractable components within it to the indicated
+//               directory.  Returns true on success, false on
+//               failure.
 //
 //               The parameters package, start_progress, and
 //               progress_size are provided to make the appropriate
@@ -61,9 +92,10 @@ P3DMultifileReader() {
 //               during this operation.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-extract_all(const string &pathname, const string &to_dir,
+extract_all(const string &to_dir,
             P3DPackage *package, double start_progress, double progress_size) {
-  if (!read_header(pathname)) {
+  assert(_is_open);
+  if (_in.fail()) {
     return false;
   }
 
@@ -118,13 +150,14 @@ extract_all(const string &pathname, const string &to_dir,
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMultifileReader::extract_one
 //       Access: Public
-//  Description: Reads the named multifile, and extracts only the
-//               named component to the indicated stream.  Returns
-//               true on success, false on failure.
+//  Description: Reads the multifile, and extracts only the named
+//               component to the indicated stream.  Returns true on
+//               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-extract_one(const string &pathname, ostream &out, const string &filename) {
-  if (!read_header(pathname)) {
+extract_one(ostream &out, const string &filename) {
+  assert(_is_open);
+  if (_in.fail()) {
     return false;
   }
 
@@ -142,6 +175,42 @@ extract_one(const string &pathname, ostream &out, const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::get_num_signatures
+//       Access: Published
+//  Description: Returns the number of matching signatures found on
+//               the Multifile.  These signatures may be iterated via
+//               get_signature() and related methods.
+//
+//               A signature on this list is guaranteed to match the
+//               Multifile contents, proving that the Multifile has
+//               been unmodified since the signature was applied.
+//               However, this does not guarantee that the certificate
+//               itself is actually from who it says it is from; only
+//               that it matches the Multifile contents.  See
+//               validate_signature_certificate() to authenticate a
+//               particular certificate.
+////////////////////////////////////////////////////////////////////
+int P3DMultifileReader::
+get_num_signatures() const {
+  assert(_is_open);
+  ((P3DMultifileReader *)this)->check_signatures();
+  return _signatures.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::get_signature
+//       Access: Published
+//  Description: Returns the nth signature found on the Multifile.
+//               See the comments in get_num_signatures().
+////////////////////////////////////////////////////////////////////
+const P3DMultifileReader::CertChain &P3DMultifileReader::
+get_signature(int n) const {
+  static CertChain error_chain;
+  assert(n >= 0 && n < (int)_signatures.size());
+  return _signatures[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DMultifileReader::read_header
 //       Access: Private
 //  Description: Opens the named multifile and reads the header
@@ -150,7 +219,10 @@ extract_one(const string &pathname, ostream &out, const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
 read_header(const string &pathname) {
+  assert(!_is_open);
   _subfiles.clear();
+  _cert_special.clear();
+  _signatures.clear();
 
   _in.open(pathname.c_str(), ios::in | ios::binary);
   if (!_in) {
@@ -228,16 +300,19 @@ read_header(const string &pathname) {
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
 read_index() {
+  _last_data_byte = 0;
   unsigned int next_entry = read_uint32();
   if (!_in) {
     return false;
   }
   while (next_entry != 0) {
     Subfile s;
-    s._start = read_uint32();
-    s._length = read_uint32();
+    s._index_start = (size_t)_in.tellg();
+    s._index_length = 0;
+    s._data_start = read_uint32();
+    s._data_length = read_uint32();
     unsigned int flags = read_uint16();
-    if ((flags & 0x18) != 0) {
+    if ((flags & (SF_compressed | SF_encrypted)) != 0) {
       // Skip over the uncompressed length.
       read_uint32();
     }
@@ -255,9 +330,19 @@ read_index() {
     s._filename = string(buffer, name_length);
     delete[] buffer;
 
-    if (flags == 0) {
-      // We can only support subfiles with no particular flags set.
-      _subfiles.push_back(s);
+    s._index_length = (size_t)_in.tellg() - s._index_start;
+
+    if (flags & SF_signature) {
+      // A subfile with this bit set is a signature.
+      _cert_special.push_back(s);
+    } else {
+      // Otherwise, it's a regular file.
+      _last_data_byte = max(_last_data_byte, s.get_last_byte_pos());
+
+      if (flags == 0) {
+        // We can only support subfiles with no particular flags set.
+        _subfiles.push_back(s);
+      }
     }
 
     _in.seekg(next_entry);
@@ -279,12 +364,12 @@ read_index() {
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
 extract_subfile(ostream &out, const Subfile &s) {
-  _in.seekg(s._start);
+  _in.seekg(s._data_start);
 
-  static const size_t buffer_size = 1024;
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
   
-  size_t remaining_data = s._length;
+  size_t remaining_data = s._data_length;
   _in.read(buffer, min(buffer_size, remaining_data));
   size_t count = _in.gcount();
   while (count != 0) {
@@ -302,3 +387,120 @@ extract_subfile(ostream &out, const Subfile &s) {
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::check_signatures
+//       Access: Private
+//  Description: Walks through the list of _cert_special entries in
+//               the Multifile, moving any valid signatures found to
+//               _signatures.  After this call, _cert_special will be
+//               empty.
+//
+//               This does not check the validity of the certificates
+//               themselves.  It only checks that they correctly sign
+//               the Multifile contents.
+////////////////////////////////////////////////////////////////////
+void P3DMultifileReader::
+check_signatures() {
+  Subfiles::iterator pi;
+
+  for (pi = _cert_special.begin(); pi != _cert_special.end(); ++pi) {
+    Subfile *subfile = &(*pi);
+
+    // Extract the signature data and certificate separately.
+    _in.seekg(subfile->_data_start);
+    size_t sig_size = read_uint32();
+    char *sig = new char[sig_size];
+    _in.read(sig, sig_size);
+    if (_in.gcount() != sig_size) {
+      nout << "read failure\n";
+      delete[] sig;
+      return;
+    }
+
+    size_t num_certs = read_uint32();
+
+    // Read the remaining buffer of certificate data.
+    size_t bytes_read = (size_t)_in.tellg() - subfile->_data_start;
+    size_t buffer_size = subfile->_data_length - bytes_read;
+    char *buffer = new char[buffer_size];
+    _in.read(buffer, buffer_size);
+    if (_in.gcount() != buffer_size) {
+      nout << "read failure\n";
+      delete[] sig;
+      delete[] buffer;
+      return;
+    }
+
+    // Now convert each of the certificates to an X509 object, and
+    // store it in our CertChain.
+    CertChain chain;
+    EVP_PKEY *pkey = NULL;
+    if (buffer_size > 0) {
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
+      // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
+      const unsigned char *bp, *bp_end;
+#else
+      // Prior to 0.9.8, d2i_X509() accepted an unsigned char **.
+      unsigned char *bp, *bp_end;
+#endif
+      bp = (unsigned char *)&buffer[0];
+      bp_end = bp + buffer_size;
+      X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
+      while (num_certs > 0 && x509 != NULL) {
+        chain.push_back(CertRecord(x509));
+        --num_certs;
+        x509 = d2i_X509(NULL, &bp, bp_end - bp);
+      }
+      if (num_certs != 0 || x509 != NULL) {
+        nout << "Extra data in signature record.\n";
+      }
+    }
+
+    delete[] buffer;
+    
+    if (!chain.empty()) {
+      pkey = X509_get_pubkey(chain[0]._cert);
+    }
+    
+    if (pkey != NULL) {
+      EVP_MD_CTX *md_ctx;
+#if OPENSSL_VERSION_NUMBER >= 0x00907000L
+      md_ctx = EVP_MD_CTX_create();
+#else
+      md_ctx = new EVP_MD_CTX;
+#endif
+      EVP_VerifyInit(md_ctx, EVP_sha1());
+
+      // Read and hash the multifile contents, but only up till
+      // _last_data_byte.
+      _in.seekg(0);
+      streampos bytes_remaining = (streampos)_last_data_byte;
+      static const size_t buffer_size = 4096;
+      char buffer[buffer_size];
+      _in.read(buffer, min((streampos)buffer_size, bytes_remaining));
+      size_t count = _in.gcount();
+      while (count != 0) {
+        assert(count <= buffer_size);
+        EVP_VerifyUpdate(md_ctx, buffer, count);
+        bytes_remaining -= count;
+        _in.read(buffer, min((streampos)buffer_size, bytes_remaining));
+        count = _in.gcount();
+      }
+      assert(bytes_remaining == (streampos)0);
+      
+      // Now check that the signature matches the hash.
+      int verify_result = 
+        EVP_VerifyFinal(md_ctx, (unsigned char *)sig, 
+                        sig_size, pkey);
+      if (verify_result == 1) {
+        // The signature matches; save the certificate and its chain.
+        _signatures.push_back(chain);
+      }
+    }
+
+    delete[] sig;
+  }
+
+  _cert_special.clear();
+}

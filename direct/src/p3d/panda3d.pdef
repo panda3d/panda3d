@@ -46,10 +46,11 @@ class images(package):
             print "Could not locate %s" % (filename)
 
     # Also make a few special cases.  We use the same default image
-    # for download, ready, and launch.
+    # for download, ready, unauth, and launch.
     download = configDict.get('download_img', None)
     if download:
         configDict['ready_img'] = download
+        configDict['unauth_img'] = download
         configDict['launch_img'] = download
 
     config(**configDict)

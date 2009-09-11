@@ -26,6 +26,11 @@
 #include <signal.h>
 #endif
 
+#define OPENSSL_NO_KRB5
+#include "openssl/x509.h"
+#include "openssl/pem.h"
+#include "openssl/md5.h"
+
 class P3DInstance;
 class P3DSession;
 class P3DHost;
@@ -49,7 +54,7 @@ public:
                   const string &platform,
                   const string &log_directory,
                   const string &log_basename,
-                  bool keep_cwd);
+                  bool trusted_environment);
 
   inline bool is_initialized() const;
   inline bool get_verify_contents() const;
@@ -59,7 +64,7 @@ public:
   inline const string &get_platform() const;
   inline const string &get_log_directory() const;
   inline const string &get_log_pathname() const;
-  inline bool get_keep_cwd() const;
+  inline bool get_trusted_environment() const;
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func, 
@@ -92,9 +97,14 @@ public:
   string make_temp_filename(const string &extension);
   void release_temp_filename(const string &filename);
 
+  bool find_cert(X509 *cert);
+  static string cert_to_der(X509 *cert);
+
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
+  static inline char encode_hexdigit(int c);
+  static bool scan_directory(const string &dirname, vector<string> &contents);
 private:
   // The notify thread.  This thread runs only for the purpose of
   // generating asynchronous notifications of requests, to callers who
@@ -105,18 +115,22 @@ private:
 private:
   bool _is_initialized;
   string _root_dir;
+  string _certs_dir;
   bool _verify_contents;
   string _platform;
   string _log_directory;
   string _log_basename;
   string _log_pathname;
   string _temp_directory;
-  bool _keep_cwd;
+  bool _trusted_environment;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;
   P3D_object *_true_object;
   P3D_object *_false_object;
+
+  typedef set<string> ApprovedCerts;
+  ApprovedCerts _approved_certs;  
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;

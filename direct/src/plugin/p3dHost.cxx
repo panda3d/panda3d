@@ -293,8 +293,8 @@ determine_host_dir() {
   for (size_t i = 0; i < keep_hash; ++i) {
     int high = (md[i] >> 4) & 0xf;
     int low = md[i] & 0xf;
-    _host_dir += encode_hexdigit(high);
-    _host_dir += encode_hexdigit(low);
+    _host_dir += P3DInstanceManager::encode_hexdigit(high);
+    _host_dir += P3DInstanceManager::encode_hexdigit(low);
   }
 }
 

@@ -410,6 +410,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
   _mouse_down = mouse_down;
 
   ButtonState bstate = BS_hidden;
+  bool click_detected = false;
 
   if (!_button_active) {
     // The button isn't active, so it's hidden, regardless of the
@@ -439,7 +440,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
           // after a successful click.
           bstate = BS_hidden;
           _button_active = false;
-          button_click_detected();
+          click_detected = true;
         } else {
           bstate = BS_rollover;
         }
@@ -455,6 +456,13 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
   }
 
   set_bstate(bstate);
+
+  // If we detected a click operation in the above, make the callback
+  // here, at the end of the method, after we have finished updating
+  // the button state.
+  if (click_detected) {
+    button_click_detected();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

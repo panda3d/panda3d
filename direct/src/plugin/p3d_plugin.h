@@ -122,11 +122,11 @@ extern "C" {
    core API.  Note that the individual instances also have their own
    log_basename values.
 
-   Finally, keep_cwd should be set true if the current working
-   directory is meaningful and valuable to the user (for instance,
-   when this is launched via a command-line tool), or false if it
-   means nothing and can safely be reset.  Normally, a browser plugin
-   should set this false.
+   Finally, trusted_environment should be set true to indicate that
+   the environment and p3d file are already trusted.  If this is set,
+   the current working directory will remain unchanged, and the p3d
+   file will be run without checking its signature.  Normally, a
+   browser plugin should set this false.
 
    This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
@@ -137,7 +137,7 @@ P3D_initialize_func(int api_version, const char *contents_filename,
                     const char *download_url, bool verify_contents,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
-                    bool keep_cwd);
+                    bool trusted_environment);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to

@@ -56,7 +56,6 @@ private:
 
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);
-  static inline char encode_hexdigit(int c);
 
 private:
   string _host_dir;
