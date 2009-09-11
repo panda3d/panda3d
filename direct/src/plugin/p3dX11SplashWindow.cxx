@@ -710,12 +710,22 @@ receive_command() {
 void P3DX11SplashWindow::
 redraw() {
   if (_composite_image == NULL) {
+    // Clear the whole window, if there's no image.
     XClearWindow(_display, _window);
 
   } else {
+    // If we have an image, draw it.
+    int xo = (_win_width - _composite_width) / 2;
+    int yo = (_win_height - _composite_height) / 2;
     XPutImage(_display, _window, _graphics_context, _composite_image, 0, 0, 
-              (_win_width - _composite_width) / 2, (_win_height - _composite_height) / 2,
-              _composite_width, _composite_height);
+              xo, yo, _composite_width, _composite_height);
+
+    // Then clear the rectangles around it carefully (rather than just
+    // clearing the whole window first, to avoid flicking).
+    XClearArea(_display, _window, 0, 0, _win_width, yo, False);
+    XClearArea(_display, _window, 0, yo, xo, _composite_height, False);
+    XClearArea(_display, _window, _win_width - xo, yo, xo, _composite_height, False);
+    XClearArea(_display, _window, 0, _win_height - yo, _win_width, yo, False);
   }
 }
 
@@ -768,7 +778,7 @@ make_window() {
 
   long event_mask =
     ButtonPressMask | ButtonReleaseMask |
-    PointerMotionMask | StructureNotifyMask;
+    PointerMotionMask | StructureNotifyMask | ExposureMask;
 
   // Initialize window attributes
   XSetWindowAttributes wa;
