@@ -375,7 +375,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   log.seekg(0, ios::end);
   size_t size = (size_t)log.tellg();
 
-  if (max_bytes > 0 && max_bytes < size) {
+  if (max_bytes > 0 && max_bytes < (int)size) {
     // Apply the limit.
     log.seekg(size - max_bytes, ios::beg);
     size = (size_t)max_bytes;
