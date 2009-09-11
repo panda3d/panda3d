@@ -4193,8 +4193,8 @@ Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
   Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
   Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
-
-This is the package for the developers, install panda3d-runtime for the runtime files.
+  
+  This is the package for the developers, install panda3d-runtime for the runtime files.
 
 """
 
