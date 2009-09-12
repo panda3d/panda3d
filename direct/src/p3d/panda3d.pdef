@@ -30,10 +30,14 @@ class images(package):
         filename = Filename('plugin_images/%s' % (basename))
         found = filename.resolveFilename(getModelPath().getValue())
         if not found:
+            found = filename.resolveFilename("models")
+        if not found:
             # Then try a jpeg image.
             basename = '%s.jpg' % (name)
             filename = Filename('plugin_images/%s' % (basename))
             found = filename.resolveFilename(getModelPath().getValue())
+            if not found:
+                found = filename.resolveFilename("models")
             
         if found:
             # Add the image file to the package

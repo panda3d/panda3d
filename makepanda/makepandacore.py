@@ -1280,6 +1280,7 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (sys.platform.startswith("win")):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)

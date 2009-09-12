@@ -75,6 +75,7 @@ def usage(problem):
     print "compiled copy of Panda3D.  Command-line arguments are:"
     print ""
     print "  --help            (print the help message you're reading now)"
+    print "  --verbose         (print out more information)"
     print "  --installer       (build an installer)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --version         (set the panda version number)"
@@ -264,6 +265,7 @@ else:
 
 builtdir = os.path.join(os.path.abspath(GetOutputDir()))
 AddToPathEnv("PYTHONPATH", builtdir)
+AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
 if (sys.platform.startswith("win")):
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
 else:
@@ -938,6 +940,19 @@ def FreezePy(target, inputs, opts):
 
 ##########################################################################################
 #
+# Package
+#
+##########################################################################################
+
+def Package(target, inputs, opts):
+    # Invoke the ppackage script.
+    command = SDK["PYTHONEXEC"] + " direct/src/p3d/ppackage.py"
+    command += " -i \"" + GetOutputDir() + "/stage\""
+    command += " direct/src/p3d/panda3d.pdef"
+    oscmd(command)
+
+##########################################################################################
+#
 # CompileBundle
 #
 ##########################################################################################
@@ -993,6 +1008,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         else:
             ProgressOutput(progress, "Building frozen library", target)
         return FreezePy(target, inputs, opts)
+    elif (infile.endswith(".pdef")):
+        ProgressOutput(progress, "Building package from pdef file", infile)
+        return Package(target, inputs, opts)
     elif SUFFIX_LIB.count(origsuffix):
         ProgressOutput(progress, "Linking static library", target)
         return CompileLib(target, inputs, opts)
@@ -4008,6 +4026,14 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
 
 #
+# Build the runtime.
+#
+
+if (RUNTIME):
+  OPTS=['DIR:direct/src/p3d']
+  TargetAdd('panda3d', opts=OPTS, input='panda3d.pdef')
+
+#
 # Generate the models directory and samples directory
 #
 
@@ -4142,27 +4168,6 @@ try:
 except:
     SaveDependencyCache()
     raise
-
-##########################################################################################
-#
-# The Runtime
-#
-# This is a package that can be uploaded to a web server, to host panda3d versions
-# for the plugin.
-#
-##########################################################################################
-
-def MakeRuntime():
-    # Invoke the ppackage script.
-    command = SDK["PYTHONEXEC"] + " direct/src/p3d/ppackage.py"
-    command += " -i \"" + GetOutputDir() + "/stage\""
-    command += " direct/src/p3d/panda3d.pdef"
-    oscmd(command)
-    
-    print "Runtime output stored in \"" + GetOutputDir() + "/stage\"."
-
-if (RUNTIME != 0):
-    MakeRuntime()
 
 ##########################################################################################
 #
