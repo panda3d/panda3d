@@ -3168,11 +3168,15 @@ if (RUNTIME):
   if (PkgSkip("PYTHON")==0):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
     TargetAdd('plugin_p3dPythonRun.obj', opts=OPTS, input='p3dPythonRun.cxx')
+    TargetAdd('plugin_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
+    TargetAdd('plugin_run_p3dpython.obj', opts=OPTS, input='run_p3dpython.cxx')
     TargetAdd('p3dpython.exe', input='plugin_p3dCInstance.obj')
     TargetAdd('p3dpython.exe', input='plugin_binaryXml.obj')
     TargetAdd('p3dpython.exe', input='plugin_handleStream.obj')
     TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
     TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
+    TargetAdd('p3dpython.exe', input='plugin_p3dPythonMain.obj')
+    TargetAdd('p3dpython.exe', input='plugin_run_p3dpython.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
