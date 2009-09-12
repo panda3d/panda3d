@@ -473,11 +473,13 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
 //               notifies the instance.  It's a virtual method to give
 //               subclasses a chance to redirect this message to the
 //               main thread or process, as necessary.
+//
+//               Note that this method might be called in a sub-thread.
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
 button_click_detected() {
   assert(_inst != NULL);
-  _inst->splash_button_clicked();
+  _inst->splash_button_clicked_sub_thread();
 }
 
 ////////////////////////////////////////////////////////////////////

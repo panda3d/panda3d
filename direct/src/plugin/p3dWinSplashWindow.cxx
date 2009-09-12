@@ -220,12 +220,7 @@ unregister_window_class() {
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
 button_click_detected() {
-  // Since this message is detected in the sub-thread in the Windows
-  // case, we have to protect ourselves from re-entry by grabbing the
-  // global _api_lock.
-  ACQUIRE_LOCK(_api_lock);
   P3DSplashWindow::button_click_detected();
-  RELEASE_LOCK(_api_lock);
 }
 
 ////////////////////////////////////////////////////////////////////

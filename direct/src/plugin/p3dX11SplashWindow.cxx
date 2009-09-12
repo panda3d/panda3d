@@ -440,9 +440,7 @@ rt_handle_request(TiXmlDocument *doc) {
   // click notification.
   delete doc;
 
-  ACQUIRE_LOCK(_api_lock);
   P3DSplashWindow::button_click_detected();
-  RELEASE_LOCK(_api_lock);
 }
 
 ////////////////////////////////////////////////////////////////////

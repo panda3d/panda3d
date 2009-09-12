@@ -101,7 +101,8 @@ public:
   void request_refresh();
 
   TiXmlElement *make_xml();
-  void splash_button_clicked();
+  void splash_button_clicked_sub_thread();
+  void splash_button_clicked_main_thread();
   void auth_button_clicked();
   void play_button_clicked();
 

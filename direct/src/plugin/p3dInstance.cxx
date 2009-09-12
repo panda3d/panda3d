@@ -508,7 +508,9 @@ add_raw_request(TiXmlDocument *doc) {
   // Tell the world we've got a new request.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->signal_request_ready(this);
-  _session->signal_request_ready(this);
+  if (_session != NULL) {
+    _session->signal_request_ready(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -881,13 +883,36 @@ make_xml() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::splash_button_clicked
+//     Function: P3DInstance::splash_button_clicked_sub_thread
 //       Access: Public
-//  Description: Called by the P3DSplashWindow code when the user
-//               clicks the button visible on the splash window.
+//  Description: Called by the P3DSplashWindow code (maybe in a
+//               sub-thread) when the user clicks the button visible
+//               on the splash window.  This will forward the event to
+//               the main thread via the request callback mechanism.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-splash_button_clicked() {
+splash_button_clicked_sub_thread() {
+  cerr << "splash sub\n";
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlElement *xrequest = new TiXmlElement("request");
+  xrequest->SetAttribute("rtype", "notify");
+  xrequest->SetAttribute("message", "buttonclick");
+  doc->LinkEndChild(xrequest);
+
+  add_raw_request(doc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::splash_button_clicked_main_thread
+//       Access: Public
+//  Description: Called only in the main thread, indirectly from
+//               splash_button_clicked_sub_thread(), as the result of
+//               the user clicking on the button visible in the splash
+//               window.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+splash_button_clicked_main_thread() {
+  cerr << "splash main\n";
   if (!_p3d_trusted) {
     auth_button_clicked();
   } else if (_session == NULL) {
@@ -953,6 +978,17 @@ check_p3d_signature() {
     // then everything is approved.
     return true;
   }
+
+  /*
+  if (_browser_script_object != NULL) {
+    P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, "if (confirm('test')) { window.open('', 'test', ''); }");
+    cerr << "result = " << result << "\n";
+    if (result != NULL) {
+      cerr << "formatted: " << *result << "\n";
+      P3D_OBJECT_DECREF(result);
+    }
+  }
+  */
 
   // Temporary hack: disabling further security checks until this code
   // is complete.
@@ -1298,6 +1334,14 @@ handle_notify_request(const string &message) {
     CFRunLoopRef run_loop = CFRunLoopGetCurrent();
     CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
 #endif  // __APPLE__
+
+  } else if (message == "buttonclick") {
+    // We just got a special "button click" message from the
+    // sub-thread.  This case is a little unusual, as it came from the
+    // splash window and not from Python (we presumably haven't even
+    // started Python yet).  We use this as a sneaky way to forward
+    // the event from the sub-thread to the main thread.
+    splash_button_clicked_main_thread();
   }
 }
 
