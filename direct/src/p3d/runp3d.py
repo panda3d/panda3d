@@ -61,7 +61,7 @@ if __name__ == '__main__':
     runner.gotWindow = True
     try:
         argv = parseSysArgs()
-        runner.setP3DFilename(argv[0], tokens = [], argv = argv[1:],
+        runner.setP3DFilename(argv[0], tokens = [], argv = argv,
                               instanceId = 0, interactiveConsole = False)
     except ArgumentError, e:
         print e.args[0]
