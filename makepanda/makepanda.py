@@ -2634,7 +2634,7 @@ if PkgSkip("OPENSSL")==0:
 #
 
 if PkgSkip("ZLIB")==0:
-  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'ADVAPI']
+  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
   TargetAdd('multify.exe', input=['multify_multify.obj'])
