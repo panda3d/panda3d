@@ -339,6 +339,7 @@ if (COMPILER=="MSVC"):
     LibName("ADVAPI", "advapi32.lib")
     LibName("GLUT", "opengl32.lib")
     LibName("GLUT", "glu32.lib")
+    LibName("MSIMG", "msimg32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "strmiids.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
@@ -1301,9 +1302,9 @@ def WriteConfigSettings():
     if (RUNTIME):
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = ""
+        plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
 
@@ -3147,7 +3148,7 @@ if (RUNTIME):
   OPTS=['DIR:direct/src/plugin', 'PLUGIN', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
   
-  OPTS += ['ZLIB', 'JPEG']
+  OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
   TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
@@ -3162,7 +3163,7 @@ if (RUNTIME):
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
-  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL'])
+  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
