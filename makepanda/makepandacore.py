@@ -20,6 +20,7 @@ MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
 CUSTOM_OUTPUTDIR=False
 OPTIMIZE="3"
+VERBOSE=False
 
 ########################################################################
 ##
@@ -73,6 +74,31 @@ for (ver,key1,key2,subdir) in MAXVERSIONINFO:
 ########################################################################
 
 WARNINGS=[]
+THREADS={}
+HAVE_COLORS=False
+try:
+  import curses
+  curses.setupterm()
+  HAVE_COLORS=sys.stdout.isatty()
+except: pass
+
+def GetColor(color = None):
+    if not HAVE_COLORS: return ""
+    if color != None: color = color.lower()
+    if (color == "blue"):
+      return curses.tparm(curses.tigetstr("setf"), 1)
+    elif (color == "green"):
+      return curses.tparm(curses.tigetstr("setf"), 2)
+    elif (color == "cyan"):
+      return curses.tparm(curses.tigetstr("setf"), 3)
+    elif (color == "red"):
+      return curses.tparm(curses.tigetstr("setf"), 4)
+    elif (color == "magenta"):
+      return curses.tparm(curses.tigetstr("setf"), 5)
+    elif (color == "yellow"):
+      return curses.tparm(curses.tigetstr("setf"), 6)
+    else:
+      return curses.tparm(curses.tigetstr("sgr0"))
 
 def PrettyTime(t):
     t = int(t)
@@ -84,6 +110,25 @@ def PrettyTime(t):
     if (hours): return str(hours)+" hours "+str(minutes)+" min"
     if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
     return str(seconds)+" sec"
+
+def ProgressOutput(progress, msg, target = None):
+    if (threading.currentThread() == MAINTHREAD):
+        if (progress == None):
+            print msg
+        elif (progress >= 100.0):
+            print "%s[%s%d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+        else:
+            print "%s[%s %d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+    else:
+        global THREADS
+        ident = threading.currentThread().ident
+        if (ident not in THREADS):
+            THREADS[ident] = len(THREADS) + 1
+        print "%s[%sT%d%s] %s" % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"), msg),
+    if (target == None):
+        print GetColor()
+    else:
+        print "%s%s%s" % (GetColor("green"), target, GetColor())
 
 def exit(msg = ""):
     if (threading.currentThread() == MAINTHREAD):
@@ -115,7 +160,8 @@ def exit(msg = ""):
 ########################################################################
 
 def oscmd(cmd, ignoreError = False):
-    print cmd
+    if VERBOSE:
+        print GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor()
     sys.stdout.flush()
     if sys.platform == "win32":
         exe = cmd.split()[0]
@@ -174,13 +220,13 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
                 if (skip.count(file)==0):
                     cvs[file] = 1
         for file in actual.keys():
-            if (file not in cvs):
-                msg = "WARNING: %s is in %s, but not in CVS"%(file, dir)
+            if (file not in cvs and VERBOSE):
+                msg = "%sWARNING: %s is in %s, but not in CVS%s" % (GetColor("red"), GetColor("green") + file + GetColor(), GetColor("green") + dir + GetColor(), GetColor())
                 print msg
                 WARNINGS.append(msg)
         for file in cvs.keys():
-            if (file not in actual):
-                msg = "WARNING: %s is not in %s, but is in CVS"%(file, dir)
+            if (file not in actual and VERBOSE):
+                msg = "%sWARNING: %s is not in %s, but is in CVS%s" % (GetColor("red"), GetColor("green") + file + GetColor(), GetColor("green") + dir + GetColor(), GetColor())
                 print msg
                 WARNINGS.append(msg)
     results = actual.keys()
@@ -269,8 +315,8 @@ def NeedsBuild(files,others):
             return 0
         else:
             oldothers = BUILTFROMCACHE[key][0]
-            if (oldothers != others):
-                print "CAUTION: file dependencies changed: "+str(files)
+            if (oldothers != others and VERBOSE):
+                print "%sCAUTION:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor())
     return 1
 
 ########################################################################
@@ -639,6 +685,7 @@ def SetVC90CRTVersion(fn, ver):
 ##
 ## Gets or sets the output directory, by default "built".
 ## Gets or sets the optimize level.
+## Gets or sets the verbose flag.
 ##
 ########################################################################
 
@@ -656,6 +703,10 @@ def GetOptimize():
 def SetOptimize(optimize):
   global OPTIMIZE
   OPTIMIZE=optimize
+
+def SetVerbose(verbose):
+  global VERBOSE
+  VERBOSE=verbose
 
 ########################################################################
 ##

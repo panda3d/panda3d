@@ -34,7 +34,6 @@ THIRDPARTYLIBS=0
 VC90CRTVERSION=""
 INSTALLER=0
 GENMAN=0
-VERBOSE=1
 COMPRESSOR="zlib"
 THREADCOUNT=0
 CFLAGS=""
@@ -97,9 +96,9 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RUNTIME,GENMAN,RUNTIME_DISTRIBUTOR
-    global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
+    global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT,VERBOSE
     longopts = [
-        "help","distributor=",
+        "help","distributor=","verbose",
         "optimize=","everything","nothing","installer","runtime",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
@@ -112,6 +111,7 @@ def parseopts(args):
             if (option=="--help"): raise "usage"
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): RUNTIME_DISTRIBUTOR=value
             elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
@@ -525,7 +525,7 @@ IncDirectory("ALWAYS", GetOutputDir()+"/include")
 
 def printStatus(header,warnings):
     global VERBOSE
-    if VERBOSE >= -2:
+    if VERBOSE:
         print ""
         print "-------------------------------------------------------------------"
         print header
@@ -538,7 +538,6 @@ def printStatus(header,warnings):
         print "Makepanda: Optimize:",GetOptimize()
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
-        print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
         if (GENMAN): print "Makepanda: Generate API reference manual"
         else       : print "Makepanda: Don't generate API reference manual"
         if (sys.platform == "win32"):
@@ -978,7 +977,7 @@ def CompileBundle(target, inputs, opts):
 #
 ##########################################################################################
 
-def CompileAnything(target, inputs, opts):
+def CompileAnything(target, inputs, opts, progress = None):
     if (opts.count("DEPENDENCYONLY")):
         return
     if (len(inputs)==0):
@@ -986,31 +985,56 @@ def CompileAnything(target, inputs, opts):
     infile = inputs[0]
     origsuffix = GetOrigExt(target)
     if (target == "pandac/PandaModules.py"):
+        ProgressOutput(progress, "Generating 'pandac' tree")
         return RunGenPyCode(target, inputs, opts)
     elif (infile.endswith(".py")):
+        if (origsuffix==".exe"):
+            ProgressOutput(progress, "Building frozen executable", target)
+        else:
+            ProgressOutput(progress, "Building frozen library", target)
         return FreezePy(target, inputs, opts)
     elif SUFFIX_LIB.count(origsuffix):
+        ProgressOutput(progress, "Linking static library", target)
         return CompileLib(target, inputs, opts)
     elif SUFFIX_DLL.count(origsuffix):
+        if (origsuffix==".exe"):
+            ProgressOutput(progress, "Linking executable", target)
+        else:
+            ProgressOutput(progress, "Linking dynamic library", target)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
+        ProgressOutput(progress, "Building Interrogate database", target)
         return CompileIgate(target, inputs, opts)
     elif (origsuffix==".plugin"):
+        ProgressOutput(progress, "Building plugin bundle", target)
         return CompileBundle(target, inputs, opts)
     elif (origsuffix==".pz"):
+        ProgressOutput(progress, "Compressing", target)
         return CompileEggPZ(target, infile, opts)
     elif (origsuffix in [".res", ".rsrc"]):
+        ProgressOutput(progress, "Building resource object", target)
         return CompileResource(target, infile, opts)
     elif (origsuffix==".obj"):
-        if (infile.endswith(".cxx") or infile.endswith(".c") or infile.endswith(".mm")):
+        if (infile.endswith(".cxx")):
+            ProgressOutput(progress, "Building C++ object", target)
+            return CompileCxx(target, infile, opts)
+        elif (infile.endswith(".c")):
+            ProgressOutput(progress, "Building C object", target)
+            return CompileCxx(target, infile, opts)
+        elif (infile.endswith(".mm")):
+            ProgressOutput(progress, "Building Objective-C++ object", target)
             return CompileCxx(target, infile, opts)
         elif (infile.endswith(".yxx")):
+            ProgressOutput(progress, "Building Bison object", target)
             return CompileBison(target, infile, opts)
         elif (infile.endswith(".lxx")):
+            ProgressOutput(progress, "Building Flex object", target)
             return CompileFlex(target, infile, opts)
         elif (infile.endswith(".in")):
+            ProgressOutput(progress, "Building Interrogate object", target)
             return CompileImod(target, inputs, opts)
         elif (infile.endswith(".rc") or infile.endswith(".r")):
+            ProgressOutput(progress, "Building resource object", target)
             return CompileResource(target, infile, opts)
     exit("Don't know how to compile: "+target)
 
@@ -4100,10 +4124,12 @@ def ParallelMake(tasklist):
 
 
 def SequentialMake(tasklist):
+    i = 0
     for task in tasklist:
         if (NeedsBuild(task[2], task[3])):
-            apply(task[0], task[1])
+            apply(task[0], task[1] + [(i * 100.0) / len(tasklist)])
             JustBuilt(task[2], task[3])
+        i += 1
 
 def RunDependencyQueue(tasklist):
     if (THREADCOUNT!=0):
@@ -4187,7 +4213,7 @@ Priority: optional
 Architecture: ARCH
 Essential: no
 Depends: PYTHONV
-Recommends: python-profiler (>= PV)
+Recommends: panda3d-runtime, python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
@@ -4366,6 +4392,7 @@ def MakeInstallerOSX():
     oscmd("rm -rf Panda3D-tpl-rw")
 
 if (INSTALLER != 0):
+    ProgressOutput(100.0, "Building installer")
     if (sys.platform.startswith("win")):
         dbg = ""
         if (GetOptimize() <= 2): dbg = "-dbg"
