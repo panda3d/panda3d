@@ -76,9 +76,14 @@ for (ver,key1,key2,subdir) in MAXVERSIONINFO:
 WARNINGS=[]
 THREADS={}
 HAVE_COLORS=False
+SETF=""
 try:
   import curses
   curses.setupterm()
+  SETF=curses.tigetstr("setf")
+  if (SETF == None):
+    SETF=curses.tigetstr("setaf")
+  assert SETF != None
   HAVE_COLORS=sys.stdout.isatty()
 except: pass
 
@@ -86,17 +91,17 @@ def GetColor(color = None):
     if not HAVE_COLORS: return ""
     if color != None: color = color.lower()
     if (color == "blue"):
-      return curses.tparm(curses.tigetstr("setf"), 1)
+      return curses.tparm(SETF, 1)
     elif (color == "green"):
-      return curses.tparm(curses.tigetstr("setf"), 2)
+      return curses.tparm(SETF, 2)
     elif (color == "cyan"):
-      return curses.tparm(curses.tigetstr("setf"), 3)
+      return curses.tparm(SETF, 3)
     elif (color == "red"):
-      return curses.tparm(curses.tigetstr("setf"), 4)
+      return curses.tparm(SETF, 4)
     elif (color == "magenta"):
-      return curses.tparm(curses.tigetstr("setf"), 5)
+      return curses.tparm(SETF, 5)
     elif (color == "yellow"):
-      return curses.tparm(curses.tigetstr("setf"), 6)
+      return curses.tparm(SETF, 6)
     else:
       return curses.tparm(curses.tigetstr("sgr0"))
 
