@@ -117,6 +117,8 @@ def ProgressOutput(progress, msg, target = None):
             print msg
         elif (progress >= 100.0):
             print "%s[%s%d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+        elif (progress < 10.0):
+            print "%s[%s  %d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
         else:
             print "%s[%s %d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
     else:
@@ -146,6 +148,7 @@ def exit(msg = ""):
           os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
         print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
         print msg
+        print GetColor("red") + "Build terminated." + GetColor()
         sys.stdout.flush()
         sys.stderr.flush()
         os._exit(1)

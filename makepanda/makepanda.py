@@ -40,7 +40,7 @@ CFLAGS=""
 RUNTIME=0
 RUNTIME_VERSION="dev"
 RUNTIME_PLATFORM="other"
-RUNTIME_DISTRIBUTOR=""
+DISTRIBUTOR=""
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
@@ -96,7 +96,7 @@ def usage(problem):
     os._exit(0)
 
 def parseopts(args):
-    global INSTALLER,RUNTIME,GENMAN,RUNTIME_DISTRIBUTOR
+    global INSTALLER,RUNTIME,GENMAN,DISTRIBUTOR
     global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT,VERBOSE
     longopts = [
         "help","distributor=","verbose",
@@ -113,7 +113,7 @@ def parseopts(args):
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--verbose"): SetVerbose(True)
-            elif (option=="--distributor"): RUNTIME_DISTRIBUTOR=value
+            elif (option=="--distributor"): DISTRIBUTOR=value
             elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): PkgEnableAll()
@@ -169,13 +169,15 @@ os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if (RUNTIME):
     PkgDisable("PANDATOOL")
     
-    if (RUNTIME_DISTRIBUTOR.strip() == ""):
+    if (DISTRIBUTOR.strip() == ""):
         exit("You must provide a valid distributor name when making a plugin runtime build!")
 
     if (not CUSTOM_OUTPUTDIR):
-        SetOutputDir("built_" + RUNTIME_DISTRIBUTOR.strip())
+        SetOutputDir("built_" + DISTRIBUTOR.strip())
 
-    RUNTIME_VERSION = RUNTIME_DISTRIBUTOR.strip() + "_" + VERSION[:3]
+    RUNTIME_VERSION = DISTRIBUTOR.strip() + "_" + VERSION[:3]
+elif (DISTRIBUTOR == ""):
+    DISTRIBUTOR = "makepanda"
 
 if (sys.platform.startswith("win")):
     if (platform.architecture()[0] == "64bit"):
@@ -1356,30 +1358,30 @@ if os.path.isfile("direct/src/plugin/p3d_plugin_config.h"):
 ##########################################################################################
 
 PANDAVERSION_H="""
-#define PANDA_MAJOR_VERSION VERSION1
-#define PANDA_MINOR_VERSION VERSION2
-#define PANDA_SEQUENCE_VERSION VERSION2
-#undef  PANDA_OFFICIAL_VERSION
-#define PANDA_VERSION NVERSION
-#define PANDA_VERSION_STR "VERSION1.VERSION2.VERSION3"
-#define PANDA_DISTRIBUTOR "makepanda"
+#define PANDA_MAJOR_VERSION $VERSION1
+#define PANDA_MINOR_VERSION $VERSION2
+#define PANDA_SEQUENCE_VERSION $VERSION2
+#define PANDA_VERSION $NVERSION
+#define PANDA_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
+#define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
+#define PANDA_PACKAGE_VERSION_STR "$RUNTIME_VERSION"
 #define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
 """
 
 CHECKPANDAVERSION_CXX="""
 # include "dtoolbase.h"
-EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3 = 0;
+EXPCL_DTOOL int panda_version_$VERSION1_$VERSION2_$VERSION3 = 0;
 """
 
 CHECKPANDAVERSION_H="""
 # include "dtoolbase.h"
-extern EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3;
+extern EXPCL_DTOOL int panda_version_$VERSION1_$VERSION2_$VERSION3;
 # ifndef WIN32
 /* For Windows, exporting the symbol from the DLL is sufficient; the
       DLL will not load unless all expected public symbols are defined.
       Other systems may not mind if the symbol is absent unless we
       explictly write code that references it. */
-static int check_panda_version = panda_version_VERSION1_VERSION2_VERSION3;
+static int check_panda_version = panda_version_$VERSION1_$VERSION2_$VERSION3;
 # endif
 """
 def CreatePandaVersionFiles():
@@ -1388,24 +1390,26 @@ def CreatePandaVersionFiles():
     version3=int(VERSION.split(".")[2])
     nversion=version1*1000000+version2*1000+version3
     
-    pandaversion_h = PANDAVERSION_H.replace("VERSION1",str(version1))
-    pandaversion_h = pandaversion_h.replace("VERSION2",str(version2))
-    pandaversion_h = pandaversion_h.replace("VERSION3",str(version3))
-    pandaversion_h = pandaversion_h.replace("NVERSION",str(nversion))
-    if (RUNTIME):
-        pandaversion_h += "\n#define PANDA_PACKAGE_VERSION_STR \"" + RUNTIME_VERSION + "\""
+    pandaversion_h = PANDAVERSION_H.replace("$VERSION1",str(version1))
+    pandaversion_h = pandaversion_h.replace("$VERSION2",str(version2))
+    pandaversion_h = pandaversion_h.replace("$VERSION3",str(version3))
+    pandaversion_h = pandaversion_h.replace("$NVERSION",str(nversion))
+    pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
+    pandaversion_h = pandaversion_h.replace("$RUNTIME_VERSION",RUNTIME_VERSION)
+    if (DISTRIBUTOR == "cmu"):
+        pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION"
     else:
-        pandaversion_h += "\n#define PANDA_PACKAGE_VERSION_STR \"\""
+        pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION"
     
-    checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("VERSION1",str(version1))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION2",str(version2))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION3",str(version3))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("NVERSION",str(nversion))
+    checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
+    checkpandaversion_cxx = checkpandaversion_cxx.replace("$NVERSION",str(nversion))
     
-    checkpandaversion_h = CHECKPANDAVERSION_H.replace("VERSION1",str(version1))
-    checkpandaversion_h = checkpandaversion_h.replace("VERSION2",str(version2))
-    checkpandaversion_h = checkpandaversion_h.replace("VERSION3",str(version3))
-    checkpandaversion_h = checkpandaversion_h.replace("NVERSION",str(nversion))
+    checkpandaversion_h = CHECKPANDAVERSION_H.replace("$VERSION1",str(version1))
+    checkpandaversion_h = checkpandaversion_h.replace("$VERSION2",str(version2))
+    checkpandaversion_h = checkpandaversion_h.replace("$VERSION3",str(version3))
+    checkpandaversion_h = checkpandaversion_h.replace("$NVERSION",str(nversion))
 
     ConditionalWriteFile(GetOutputDir()+'/include/pandaVersion.h',        pandaversion_h)
     ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
@@ -4435,4 +4439,5 @@ if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
+print GetColor("green") + "Build successfully finished." + GetColor()
 
