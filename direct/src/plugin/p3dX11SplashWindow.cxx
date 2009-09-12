@@ -722,10 +722,18 @@ redraw() {
 
     // Then clear the rectangles around it carefully (rather than just
     // clearing the whole window first, to avoid flicking).
-    XClearArea(_display, _window, 0, 0, _win_width, yo, False);
-    XClearArea(_display, _window, 0, yo, xo, _composite_height, False);
-    XClearArea(_display, _window, _win_width - xo, yo, xo, _composite_height, False);
-    XClearArea(_display, _window, 0, _win_height - yo, _win_width, yo, False);
+    if (yo != 0 && _win_width != 0) {
+      // Top
+      XClearArea(_display, _window, 0, 0, _win_width, yo, False);
+      // Bottom
+      XClearArea(_display, _window, 0, _win_height - yo, _win_width, yo, False);
+    }
+    if (xo != 0 && _composite_height != 0) {
+      // Left
+      XClearArea(_display, _window, 0, yo, xo, _composite_height, False);
+      // Right
+      XClearArea(_display, _window, _win_width - xo, yo, xo, _composite_height, False);
+    }
   }
 }
 
