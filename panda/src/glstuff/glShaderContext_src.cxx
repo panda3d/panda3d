@@ -354,6 +354,9 @@ release_resources(GSG *gsg) {
   if (_cg_context) {
     cgDestroyContext(_cg_context);
     _cg_context  = 0;
+    if (_cg_vprogram != 0) cgDestroyProgram(_cg_vprogram);
+    if (_cg_fprogram != 0) cgDestroyProgram(_cg_fprogram);
+    if (_cg_gprogram != 0) cgDestroyProgram(_cg_gprogram);
     _cg_vprogram = 0;
     _cg_fprogram = 0;
     _cg_gprogram = 0;
@@ -491,6 +494,8 @@ issue_parameters(GSG *gsg, int altered) {
   if (!valid()) {
     return;
   }
+
+  //FIXME: this could be much faster if we used deferred parameter setting.
 
   for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
@@ -840,7 +845,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 ////////////////////////////////////////////////////////////////////
 #ifdef HAVE_CG
 void CLP(ShaderContext)::
-cg_report_errors() {
+  cg_report_errors() {
   CGerror err = cgGetError();
   if (err != CG_NO_ERROR) {
     GLCAT.error() << cgGetErrorString(err) << "\n";
