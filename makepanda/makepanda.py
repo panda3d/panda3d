@@ -1398,9 +1398,9 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RUNTIME_VERSION",RUNTIME_VERSION)
     if (DISTRIBUTOR == "cmu"):
-        pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION"
+        pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
-        pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION"
+        pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
     
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
