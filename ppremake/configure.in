@@ -73,6 +73,7 @@ else
     linux*) PLATFORM=Linux;;
     cygwin*) PLATFORM=Cygwin;;
     darwin*) PLATFORM=OSX;;
+    freebsd*) PLATFORM=FreeBSD;;
     *) echo "Cannot determine platform from $host_os; use --with-platform=name."
        exit 1;;
   esac
