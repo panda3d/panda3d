@@ -46,7 +46,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","X11","PANDATOOL"
+  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -475,7 +475,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
-    if (PkgSkip("X11")==0):        LibName("X11", "-lX11")
+    LibName("X11", "-lX11")
     LibName("XF86DGA", "-lXxf86dga")
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
