@@ -17,9 +17,13 @@
 #include "osxGraphicsPipe.h"
 #endif
 
-#ifdef IS_LINUX
+#ifdef HAVE_GLX
 #include "config_glxdisplay.h"
 #include "glxGraphicsPipe.h"
+#endif
+
+#if !defined(HAVE_WGL) && !defined(IS_OSX) && !defined(HAVE_GLX)
+#error One of HAVE_WGL, IS_OSX or HAVE_GLX must be defined when compiling pandagl!
 #endif
 
 // By including checkPandaVersion.h, we guarantee that runtime
@@ -68,7 +72,7 @@ get_pipe_type_pandagl() {
   return osxGraphicsPipe::get_class_type().get_index();
 #endif
 
-#ifdef IS_LINUX
+#ifdef HAVE_GLX
   return glxGraphicsPipe::get_class_type().get_index();
 #endif
 
