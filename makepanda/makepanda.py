@@ -46,7 +46,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
+  "OPENCV","FFMPEG","FCOLLADA","X11","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -475,6 +475,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
+    if (PkgSkip("X11")==0):        LibName("X11", "-lX11")
     LibName("XF86DGA", "-lXxf86dga")
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
@@ -567,6 +568,9 @@ def BracketNameWithQuotes(name):
     # Workaround for OSX bug - compiler doesn't like those flags quoted.
     if (name.startswith("-framework")): return name
     if (name.startswith("-dylib_file")): return name
+    
+    # Don't add quotes when it's not necessary.
+    if " " not in name: return name
     
     # Account for quoted name (leave as is) but quote everything else (e.g., to protect spaces within paths from improper parsing)
     if (name.startswith('"') and name.endswith('"')): return name
@@ -2799,7 +2803,7 @@ if (not sys.platform.startswith("win")):
 #
 
 if (sys.platform != "win32" and sys.platform != "darwin"):
-  OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11']
+  OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11', 'X11']
   TargetAdd('x11display_composite.obj', opts=OPTS, input='x11display_composite.cxx')
 
 #
@@ -2819,7 +2823,7 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -2972,6 +2976,12 @@ if (sys.platform == "darwin"):
   TargetAdd('tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
   TargetAdd('libtinydisplay.dll', input='tinydisplay_tinyOsxGraphicsWindow.obj')
   TargetAdd('libtinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
+elif (sys.platform == "win32"):
+  TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
+  TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
+else:
+  TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
+  TargetAdd('libtinydisplay.dll', opts=['X11'])
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
@@ -2980,9 +2990,6 @@ TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_3.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_4.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_table.obj')
 TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
-if (sys.platform == "win32"):
-  TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
-  TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
 
 #
 # DIRECTORY: direct/src/directbase/
@@ -3163,7 +3170,7 @@ if (RUNTIME):
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
-  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'MSIMG'])
+  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
@@ -3808,7 +3815,7 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/softprogs']
+    OPTS=['DIR:pandatool/src/softprogs', 'OPENSSL']
     TargetAdd('softcvs_softCVS.obj', opts=OPTS, input='softCVS.cxx')
     TargetAdd('softcvs_softFilename.obj', opts=OPTS, input='softFilename.cxx')
     TargetAdd('softcvs.exe', input='softcvs_softCVS.obj')
