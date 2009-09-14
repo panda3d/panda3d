@@ -84,7 +84,7 @@ set_wparams(const P3DWindowParams &wparams) {
       EventHandlerRef application_event_ref_ref1;
       EventTypeSpec list1[] = { 
         { kEventClassWindow, kEventWindowDrawContent },
-        //{ kEventClassWindow, kEventWindowUpdate },
+        { kEventClassWindow, kEventWindowBoundsChanged },
         { kEventClassMouse, kEventMouseUp },
         { kEventClassMouse, kEventMouseDown },
         { kEventClassMouse, kEventMouseMoved },
@@ -242,96 +242,76 @@ paint_window() {
   }
 
   GrafPtr out_port = NULL;
-  GrafPtr portSave = NULL;
-  Boolean portChanged = false;
-
   if (_toplevel_window != NULL) {
     GetPort(&out_port);
 
   } else {
     out_port = _wparams.get_parent_window()._port;
-    portChanged = QDSwapPort(out_port, &portSave);
   }
 
-  Rect r = { 0, 0, _win_height, _win_width }; 
-  ClipRect(&r);
-  EraseRect(&r);
+  CGContextRef context;
+  OSStatus err = CreateCGContextForPort(out_port, &context);
+  if (err != noErr) {
+    nout << "Couldn't create CG context\n";
+    return;
+  }
 
-  paint_image(out_port, _background_image);
+  //  Adjust for any SetOrigin calls on out_port
+  SyncCGContextOriginWithPort(context, out_port);
+  
+  //  Move the CG origin to the upper left of the port
+  Rect port_rect;
+  GetPortBounds(out_port, &port_rect);
+  CGContextTranslateCTM(context, 0, (float)(port_rect.bottom - port_rect.top));
+  
+  //  Flip the y axis so that positive Y points down
+  CGContextScaleCTM(context, 1.0, -1.0);
 
+  int width = port_rect.right - port_rect.left;
+  int height = port_rect.bottom - port_rect.top;
+  if (width != _win_width || height != _win_height) {
+    _win_width = width;
+    _win_height = height;
+    set_button_range(_button_ready_image);
+  }
+
+  // Clear the whole region to white before beginning.
+  CGRect region = { { 0, 0 }, { _win_width, _win_height } };
+
+  // Clear the entire progress bar to white.
+  CGColorRef white = CGColorGetConstantColor(kCGColorWhite);
+  CGContextBeginPath(context);
+  CGContextSetFillColorWithColor(context, white);
+  CGContextAddRect(context, region);
+  CGContextFillPath(context);
+
+  // Now paint in the image(s).
+  paint_image(context, _background_image);
   switch (_bstate) {
   case BS_hidden:
     break;
   case BS_ready:
-    paint_image(out_port, _button_ready_image);
+    paint_image(context, _button_ready_image);
     break;
   case BS_rollover:
-    if (!paint_image(out_port, _button_rollover_image)) {
-      paint_image(out_port, _button_ready_image);
+    if (!paint_image(context, _button_rollover_image)) {
+      paint_image(context, _button_ready_image);
     }
     break;
   case BS_click:
-    if (!paint_image(out_port, _button_click_image)) {
-      paint_image(out_port, _button_ready_image);
+    if (!paint_image(context, _button_click_image)) {
+      paint_image(context, _button_ready_image);
     }
     break;
   }
 
   // Draw the progress bar.  We don't draw this bar at all unless we
   // have nonzero progress.
-  int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
-  
   if (_install_progress != 0.0) {
-    Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
-    FrameRect(&rbar);
-
-    int progress_width = (int)((bar_width - 2) * _install_progress);
-    if (progress_width != 0) {
-      int progress = bar_x + 1 + progress_width;
-      Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
-      Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
-      RGBColor blue = { 27756, 42405, 57568 };
-      RGBForeColor(&blue);
-      PaintRect(&rdone);
-      EraseRect(&rneed);
-    }
-    
-    RGBColor black = { 0, 0, 0 };
-    RGBForeColor(&black);
-
-    if (!_install_label.empty()) {
-      // Now draw the install_label right above it.
-      TextFont(0);
-      TextFace(bold);
-      TextMode(srcOr);
-      TextSize(0);
-      
-      Point numer = { 1, 1 };
-      Point denom = { 1, 1 };
-      FontInfo font_info;
-      StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
-      int ascent = font_info.ascent * numer.v / denom.v;
-      int descent = font_info.descent * numer.v / denom.v;
-      
-      int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
-      int text_x = (_win_width - text_width) / 2;
-      int text_y = bar_y - descent - 8;
-      
-      Rect rtext = { text_y - ascent - 2, text_x - 2, 
-                     text_y + descent + 2, text_x + text_width + 2 }; 
-      EraseRect(&rtext);
-      
-      MoveTo(text_x, text_y);
-      DrawText(_install_label.data(), 0, _install_label.size());
-    }
+    paint_progress_bar(context);
   }
-    
-  if (_toplevel_window == NULL) {
-    if (portChanged) {
-      QDSwapPort(portSave, NULL);
-    }
-  }
+
+  CGContextRelease(context);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -348,13 +328,15 @@ load_image(OsxImageData &image, const string &image_filename) {
   }
 
   // Now we need to copy from the RGB (or RGBA) source image into the
-  // BGRA target image.
+  // BGRA target image.  We also flip the image upside-down here to
+  // compensate for the upside-down vertical scale on
+  // CGContextScaleCTM.
   int row_stride = image._width * image._num_channels;
   int new_row_stride = image._width * 4;
   image._raw_data = new char[new_row_stride * image._height];
   for (int yi = 0; yi < image._height; ++yi) {
     char *dest = image._raw_data + yi * new_row_stride;
-    const char *source = string_data.data() + yi * row_stride;
+    const char *source = string_data.data() + (image._height - 1 - yi) * row_stride;
     if (image._num_channels == 3) {
       // Source is RGB.
       for (int xi = 0; xi < image._width; ++xi) {
@@ -407,28 +389,16 @@ load_image(OsxImageData &image, const string &image_filename) {
 //               is not defined.
 ////////////////////////////////////////////////////////////////////
 bool P3DOsxSplashWindow::
-paint_image(GrafPtr out_port, const OsxImageData &image) {
+paint_image(CGContextRef context, const OsxImageData &image) {
   if (image._image == NULL) {
     return false;
   }
-
-  CGContextRef context;
-  QDErr err = QDBeginCGContext(out_port, &context);
-  if (err != noErr) {
-    nout << "Error: QDBeginCGContext\n";
-    return false;
-  }
-
-  // We have to rely on the clipping rectangle having been set up
-  // correctly in order to get the proper location to draw the image.
-  // This isn't completely right, because if the image is slightly
-  // offscreen, the top left of the clipping rectangle will no longer
-  // correspond to the top left of the original image.
-  CGRect rect = CGContextGetClipBoundingBox(context);
     
   // Determine the relative size of image and window.
   int win_cx = _win_width / 2;
   int win_cy = _win_height / 2;
+
+  CGRect rect = { { 0, 0 }, { 0, 0 } };
     
   if (image._width <= _win_width && image._height <= _win_height) {
     // The bitmap fits within the window; center it.
@@ -461,9 +431,90 @@ paint_image(GrafPtr out_port, const OsxImageData &image) {
 
   CGContextDrawImage(context, rect, image._image);
   
-  QDEndCGContext(out_port, &context);
-
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::paint_progress_bar
+//       Access: Private
+//  Description: Draws the progress bar and the label within the
+//               window.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+paint_progress_bar(CGContextRef context) {
+  int bar_x, bar_y, bar_width, bar_height;
+  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
+
+  // We offset the bar by half a pixel, so we'll be drawing the
+  // one-pixel line through the middle of a pixel, and it won't try to
+  // antialias itself into a half-black two-pixel line.
+  float bar_xf = bar_x + 0.5;
+  float bar_yf = bar_y - 0.5;
+
+  CGRect bar = { { bar_xf, bar_yf }, { bar_width, bar_height } };
+
+  // Clear the entire progress bar to white.
+  CGColorRef white = CGColorGetConstantColor(kCGColorWhite);
+  CGContextBeginPath(context);
+  CGContextSetFillColorWithColor(context, white);
+  CGContextAddRect(context, bar);
+  CGContextFillPath(context);
+
+  // Draw the interior of the progress bar in blue.
+  int progress_width = (int)((bar_width - 2) * _install_progress);
+  if (progress_width != 0) {
+    CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
+    CGColorRef blue = CGColorCreateGenericRGB(0.424, 0.647, 0.878, 1.0);
+    CGContextBeginPath(context);
+    CGContextSetFillColorWithColor(context, blue);
+    CGContextAddRect(context, prog);
+    CGContextFillPath(context);
+    CGColorRelease(blue);
+  }
+
+  // Draw the black stroke around the progress bar.
+  CGColorRef black = CGColorGetConstantColor(kCGColorBlack);
+  CGContextBeginPath(context);
+  CGContextSetLineWidth(context, 1);
+  CGContextSetStrokeColorWithColor(context, black);
+  CGContextAddRect(context, bar);
+  CGContextStrokePath(context);
+
+  if (!_install_label.empty()) {
+    // Now draw the install_label right above it.
+
+    CGContextSetTextMatrix(context, CGContextGetCTM(context));
+
+    // Choose a suitable font.
+    float text_height = 15.0;
+    CGContextSelectFont(context, "Helvetica", text_height, kCGEncodingMacRoman);
+
+    // Measure the text, for centering.
+    CGContextSetTextPosition(context, 0, 0);
+    CGContextSetTextDrawingMode(context, kCGTextInvisible);
+    CGContextShowText(context, _install_label.data(), _install_label.length());
+    CGPoint end_point = CGContextGetTextPosition(context);
+    float text_width = end_point.x;
+
+    int text_x = (_win_width - text_width) / 2;
+    int text_y = bar_y - text_height * 1.5;
+
+    // Clear the rectangle behind the text to white.
+    CGRect text_rect = { { text_x - 2, text_y - 2 }, { text_width + 4, text_height + 4 } };
+
+    CGContextBeginPath(context);
+    CGContextAddRect(context, text_rect);
+    CGContextSetFillColorWithColor(context, white);
+    CGContextFillPath(context);
+
+    // And finally, draw the text.
+    CGContextSetTextDrawingMode(context, kCGTextFill);
+    CGColorRef black = CGColorGetConstantColor(kCGColorBlack);
+    CGContextSetFillColorWithColor(context, black);
+
+    CGContextShowTextAtPoint(context, text_x, text_y + text_height, 
+                             _install_label.data(), _install_label.length());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,6 +546,16 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
   switch (the_class) {
   case kEventClassWindow:
     switch (kind) {
+    case kEventWindowBoundsChanged:
+      // If the window changes size, we have to repaint it.
+      refresh();
+
+      // We seem to get the mouse-down, but lose the mouse-up, event
+      // in this case, so infer it.
+      set_mouse_data(_mouse_x, _mouse_y, false);
+      result = noErr;
+      break;
+
     case kEventWindowDrawContent:
       paint_window();
       result = noErr;
@@ -531,8 +592,6 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
 
         set_mouse_data(point.h, point.v, _mouse_down);
       }
-      break;
-
       break;
     }
   }

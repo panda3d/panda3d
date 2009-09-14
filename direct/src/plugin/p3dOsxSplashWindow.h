@@ -49,7 +49,8 @@ private:
   class OsxImageData;
 
   void load_image(OsxImageData &image, const string &image_filename);
-  bool paint_image(GrafPtr out_port, const OsxImageData &image);
+  bool paint_image(CGContextRef context, const OsxImageData &image);
+  void paint_progress_bar(CGContextRef context);
 
   static pascal OSStatus
   st_event_callback(EventHandlerCallRef my_handler, EventRef event, 

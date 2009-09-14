@@ -174,4 +174,14 @@
 
 #end static_lib_target
 
+
+#begin bin_target
+  #define BUILD_TARGET $[HAVE_WX]
+  #define USE_PACKAGES wx openssl
+  #define TARGET p3dcert
+
+  #define SOURCES p3dCert.cxx
+#end bin_target
+
+
 #include $[THISDIRPREFIX]p3d_plugin_config.h.pp

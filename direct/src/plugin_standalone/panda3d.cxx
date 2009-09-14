@@ -973,7 +973,7 @@ URLGetter(P3D_instance *instance, int unique_id,
   HTTPClient *http = HTTPClient::get_global_ptr();
 
   _channel = http->make_channel(false);
-  //  _channel->set_download_throttle(true);
+  _channel->set_download_throttle(true);
   if (_post_data.empty()) {
     _channel->begin_get_document(_url);
   } else {

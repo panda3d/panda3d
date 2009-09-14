@@ -431,6 +431,11 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
         if (orig_bstate == BS_rollover || _button_depressed) {
           _button_depressed = true;
           bstate = BS_click;
+        } else {
+          // Otherwise, we're mousing over the button region with the
+          // button held down.  Hmm, don't think the button should
+          // light up.
+          bstate = BS_ready;
         }
       } else {
         _button_depressed = false;
