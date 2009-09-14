@@ -17,6 +17,11 @@
 #ifdef __APPLE__
 
 #include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
+
+#ifndef MAC_OS_X_VERSION_10_5
+  typedef float CGFloat;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DOsxSplashWindow::Constructor
@@ -268,14 +273,18 @@ paint_window() {
   CGContextScaleCTM(context, 1.0, -1.0);
 
   // Clear the whole region to white before beginning.
-  CGRect region = { { 0, 0 }, { _win_width, _win_height } };
+  static const CGFloat white_components[] = { 1, 1, 1, 1 };
+  CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
+  CGColorRef white = CGColorCreate(rgb_space, white_components);
 
-  // Clear the entire progress bar to white.
-  CGColorRef white = CGColorGetConstantColor(kCGColorWhite);
+  CGRect region = { { 0, 0 }, { _win_width, _win_height } };
   CGContextBeginPath(context);
   CGContextSetFillColorWithColor(context, white);
   CGContextAddRect(context, region);
   CGContextFillPath(context);
+
+  CGColorRelease(white);
+  CGColorSpaceRelease(rgb_space);
 
   // Now paint in the image(s).
   paint_image(context, _background_image);
@@ -303,6 +312,7 @@ paint_window() {
     paint_progress_bar(context);
   }
 
+  CGContextSynchronize(context);
   CGContextRelease(context);
 }
 
@@ -434,6 +444,16 @@ paint_image(CGContextRef context, const OsxImageData &image) {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 paint_progress_bar(CGContextRef context) {
+  // Get some colors we'll need.  We can't just use
+  // CGColorGetConstantColor(), since that requires 10.5.
+  static const CGFloat black_components[] = { 0, 0, 0, 1 };
+  static const CGFloat white_components[] = { 1, 1, 1, 1 };
+  static const CGFloat blue_components[] = { 0.424, 0.647, 0.878, 1 };
+  CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
+  CGColorRef black = CGColorCreate(rgb_space, black_components);
+  CGColorRef white = CGColorCreate(rgb_space, white_components);
+  CGColorRef blue = CGColorCreate(rgb_space, blue_components);
+
   int bar_x, bar_y, bar_width, bar_height;
   get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
@@ -446,7 +466,6 @@ paint_progress_bar(CGContextRef context) {
   CGRect bar = { { bar_xf, bar_yf }, { bar_width, bar_height } };
 
   // Clear the entire progress bar to white.
-  CGColorRef white = CGColorGetConstantColor(kCGColorWhite);
   CGContextBeginPath(context);
   CGContextSetFillColorWithColor(context, white);
   CGContextAddRect(context, bar);
@@ -456,16 +475,13 @@ paint_progress_bar(CGContextRef context) {
   int progress_width = (int)((bar_width - 2) * _install_progress);
   if (progress_width != 0) {
     CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
-    CGColorRef blue = CGColorCreateGenericRGB(0.424, 0.647, 0.878, 1.0);
     CGContextBeginPath(context);
     CGContextSetFillColorWithColor(context, blue);
     CGContextAddRect(context, prog);
     CGContextFillPath(context);
-    CGColorRelease(blue);
   }
 
   // Draw the black stroke around the progress bar.
-  CGColorRef black = CGColorGetConstantColor(kCGColorBlack);
   CGContextBeginPath(context);
   CGContextSetLineWidth(context, 1);
   CGContextSetStrokeColorWithColor(context, black);
@@ -501,12 +517,16 @@ paint_progress_bar(CGContextRef context) {
 
     // And finally, draw the text.
     CGContextSetTextDrawingMode(context, kCGTextFill);
-    CGColorRef black = CGColorGetConstantColor(kCGColorBlack);
     CGContextSetFillColorWithColor(context, black);
 
     CGContextShowTextAtPoint(context, text_x, text_y + text_height, 
                              _install_label.data(), _install_label.length());
   }
+
+  CGColorRelease(blue);
+  CGColorRelease(white);
+  CGColorRelease(black);
+  CGColorSpaceRelease(rgb_space);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -532,7 +552,6 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
   WindowRef window = NULL; 
   UInt32 the_class = GetEventClass(event);
   UInt32 kind = GetEventKind(event);
-  
   GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, 
                     sizeof(WindowRef), NULL, (void*) &window);
   switch (the_class) {
@@ -564,7 +583,6 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
 
     case kEventWindowDrawContent:
       paint_window();
-      result = noErr;
     };
     break;
 
