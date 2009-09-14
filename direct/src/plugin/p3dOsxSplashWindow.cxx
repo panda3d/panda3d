@@ -267,14 +267,6 @@ paint_window() {
   //  Flip the y axis so that positive Y points down
   CGContextScaleCTM(context, 1.0, -1.0);
 
-  int width = port_rect.right - port_rect.left;
-  int height = port_rect.bottom - port_rect.top;
-  if (width != _win_width || height != _win_height) {
-    _win_width = width;
-    _win_height = height;
-    set_button_range(_button_ready_image);
-  }
-
   // Clear the whole region to white before beginning.
   CGRect region = { { 0, 0 }, { _win_width, _win_height } };
 
@@ -549,6 +541,20 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
     case kEventWindowBoundsChanged:
       // If the window changes size, we have to repaint it.
       refresh();
+
+      // Also determine the new size.
+      {
+        Rect port_rect;
+        GrafPtr out_port = GetWindowPort(_toplevel_window);
+        GetPortBounds(out_port, &port_rect);
+        int width = port_rect.right - port_rect.left;
+        int height = port_rect.bottom - port_rect.top;
+        if (width != _win_width || height != _win_height) {
+          _win_width = width;
+          _win_height = height;
+          set_button_range(_button_ready_image);
+        }
+      }
 
       // We seem to get the mouse-down, but lose the mouse-up, event
       // in this case, so infer it.
