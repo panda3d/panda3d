@@ -4053,32 +4053,30 @@ if (RUNTIME):
 # Generate the models directory and samples directory
 #
 
-if (PkgSkip("PANDATOOL")==0):
+for model in GetDirectoryContents("dmodels/src/misc", ["*.egg", "*.flt"]):
+    eggpz = model[:-4] + ".egg.pz"
+    TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
 
-    for model in GetDirectoryContents("dmodels/src/misc", ["*.egg", "*.flt"]):
-        eggpz = model[:-4] + ".egg.pz"
-        TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
+for model in GetDirectoryContents("dmodels/src/gui", ["*.egg", "*.flt"]):
+    eggpz = model[:-4] + ".egg.pz"
+    TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
 
-    for model in GetDirectoryContents("dmodels/src/gui", ["*.egg", "*.flt"]):
-        eggpz = model[:-4] + ".egg.pz"
-        TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
+for model in GetDirectoryContents("models", ["*.egg", "*.flt"]):
+    eggpz = model[:-4] + ".egg.pz"
+    TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
 
-    for model in GetDirectoryContents("models", ["*.egg", "*.flt"]):
-        eggpz = model[:-4] + ".egg.pz"
-        TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
+CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
 
-    CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
-    CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
-    
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".jpg")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".png")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgb")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgba")
-    
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
-    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".jpg")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".png")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgb")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgba")
+
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
+CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
 ##########################################################################################
 #
