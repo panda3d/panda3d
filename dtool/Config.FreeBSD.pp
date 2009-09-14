@@ -21,8 +21,128 @@
 
 #define IS_FREEBSD 1
 
+// Compiler flags
+
+// How to invoke the C and C++ compilers.
+#if $[eq $[USE_COMPILER], GCC]
+  #define CC gcc
+  #define CXX g++
+
+  // gcc might run into template limits on some parts of Panda.
+  // I upped this from 25 to build on OS X (GCC 3.3) -- skyler.
+  #define C++FLAGS_GEN -ftemplate-depth-30
+#else
+  #define CC cc
+  #define CXX CC
+#endif
+
+// Linux doesn't (yet) have any funny architecture flags.
+#defer ARCH_FLAGS 
+
+// How to compile a C or C++ file into a .o file.  $[target] is the
+// name of the .o file, $[source] is the name of the source file,
+// $[ipath] is a space-separated list of directories to search for
+// include files, and $[flags] is a list of additional flags to pass
+// to the compiler.
+#defer COMPILE_C $[CC] $[CFLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+
+// What flags should be passed to both C and C++ compilers to enable
+// debug symbols?  This will be supplied when OPTIMIZE (above) is set
+// to 1, 2, or 3.
+#defer DEBUGFLAGS -g
+
+// What flags should be passed to both C and C++ compilers to enable
+// compiler optimizations?  This will be supplied when OPTIMIZE
+// (above) is set to 2, 3, or 4.
+#defer OPTFLAGS -O2
+
+// By convention, any source file that contains the string _no_opt_ in
+// its filename won't have the above compiler optimizations run for it.
+#defer no_opt $[findstring _no_opt_,$[source]]
+
+// What define variables should be passed to the compilers for each
+// value of OPTIMIZE?  We separate this so we can pass these same
+// options to interrogate, guaranteeing that the correct interfaces
+// are generated.  Do not include -D here; that will be supplied
+// automatically.
+#defer CDEFINES_OPT1 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 $[EXTRA_CDEFS]
+
+// What additional flags should be passed for each value of OPTIMIZE
+// (above)?  We separate out the compiler-optimization flags, above,
+// so we can compile certain files that give optimizers trouble (like
+// the output of lex and yacc) without them, but with all the other
+// relevant flags.
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[if $[no_opt],,$[OPTFLAGS]]
+
+// What additional flags should be passed to both compilers when
+// building shared (relocatable) sources?  Some architectures require
+// special support for this.
+#defer CFLAGS_SHARED -fPIC
+
+// How to generate a C or C++ executable from a collection of .o
+// files.  $[target] is the name of the binary to generate, and
+// $[sources] is the list of .o files.  $[libs] is a space-separated
+// list of dependent libraries, and $[lpath] is a space-separated list
+// of directories in which those libraries can be found.
+#defer LINK_BIN_C $[cc_ld] $[ARCH_FLAGS] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
+#defer LINK_BIN_C++ $[cxx_ld] $[ARCH_FLAGS] \
+ -o $[target] $[sources]\
+ $[flags]\
+ $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
+
+// How to generate a static C or C++ library.  $[target] is the
+// name of the library to generate, and $[sources] is the list of .o
+// files that will go into the library.
+#defer STATIC_LIB_C ar cru $[target] $[sources]
+#defer STATIC_LIB_C++ ar cru $[target] $[sources]
+
+// How to run ranlib, if necessary, after generating a static library.
+// $[target] is the name of the library.  Set this to the empty string
+// if ranlib is not necessary on your platform.
+#defer RANLIB ranlib $[target]
+
+// Where to put the so_locations file, used by an Irix MIPSPro
+// compiler, to generate a map of shared library memory locations.
+#defer SO_LOCATIONS $[DTOOL_INSTALL]/etc/so_locations
+
+
+// How to generate a shared C or C++ library.  $[source] and $[target]
+// as above, and $[libs] is a space-separated list of dependent
+// libraries, and $[lpath] is a space-separated list of directories in
+// which those libraries can be found.
+#defer SHARED_LIB_C $[cc_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#defer SHARED_LIB_C++ $[cxx_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#define BUNDLE_LIB_C++
+
+// How to install a data file or executable file.  $[local] is the
+// local name of the file to install, and $[dest] is the name of the
+// directory to put it in.
+
+// On Unix systems, we strongly prefer using the install program to
+// install files.  This has nice features like automatically setting
+// the permissions bits, and also is usually clever enough to install
+// a running program without crashing the running instance.  However,
+// it doesn't understanding installing a program from a subdirectory,
+// so we have to cd into the source directory first.
+#defer install_dash_p $[if $[KEEP_TIMESTAMPS],-p,]
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[install_dash_p] $[notdir $[local]] $[dest]/
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
+
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
+#if $[eq $[shell uname -m], x86_64] // if Linux is 64bit
+  #define SYSTEM_IGATE_FLAGS -D_LP64 -D__const=const -Dvolatile -Dmutable
+#else
+  #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile -Dmutable
+#endif
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -55,7 +175,7 @@
 // Do we have getopt() and/or getopt_long_only() built into the
 // system?
 #define HAVE_GETOPT 1
-#define HAVE_GETOPT_LONG_ONLY
+#define HAVE_GETOPT_LONG_ONLY 1
 
 // Are the above getopt() functions defined in getopt.h, or somewhere else?
 #define PHAVE_GETOPT_H 1
@@ -73,9 +193,11 @@
 // Can we safely call getenv() at static init time?
 #define STATIC_INIT_GETENV 1
 
-// Can we read the file /proc/self/environ to determine our
+// Can we read the files /proc/self/* to determine our
 // environment variables at static init time?
-#define HAVE_PROC_SELF_ENVIRON
+#define HAVE_PROC_CURPROC_FILE 1
+#define HAVE_PROC_CURPROC_MAP 1
+#define HAVE_PROC_CURPROC_CMDLINE 1
 
 // Do we have a global pair of argc/argv variables that we can read at
 // static init time?  Should we prototype them?  What are they called?
@@ -83,16 +205,6 @@
 #define PROTOTYPE_GLOBAL_ARGV
 #define GLOBAL_ARGV
 #define GLOBAL_ARGC
-
-// Can we read the file /proc/curproc/* to determine our
-// command-line arguments at static init time?
-#define HAVE_PROC_SELF_EXE
-#define HAVE_PROC_SELF_MAPS
-#define HAVE_PROC_SELF_ENVIRON
-#define HAVE_PROC_SELF_CMDLINE
-#define HAVE_PROC_CURPROC_FILE 1
-#define HAVE_PROC_CURPROC_MAP 1
-#define HAVE_PROC_CURPROC_CMDLINE 1
 
 // Should we include <iostream> or <iostream.h>?  Define PHAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
@@ -120,14 +232,22 @@
 #define PHAVE_IO_H
 
 // Do we have <malloc.h>?
-//#define PHAVE_MALLOC_H
-#define PHAVE_SYS_MALLOC_H 1
+#define PHAVE_MALLOC_H
 
 // Do we have <alloca.h>?
 #define PHAVE_ALLOCA_H
 
 // Do we have <locale.h>?
 #define PHAVE_LOCALE_H 1
+
+// Do we have <string.h>?
+#define PHAVE_STRING_H 1
+
+// Do we have <stdlib.h>?
+#define PHAVE_STDLIB_H 1
+
+// Do we have <limits.h>?
+#define PHAVE_LIMITS_H 1
 
 // Do we have <minmax.h>?
 #define PHAVE_MINMAX_H
@@ -153,12 +273,16 @@
 #define PHAVE_SYS_SOUNDCARD_H 1
 
 // Do we have <ucontext.h> (and therefore makecontext() / swapcontext())?
-#define PHAVE_UCONTEXT_H
+#define PHAVE_UCONTEXT_H 1
+
+// Do we have <linux/input.h> ? This enables us to use raw mouse input.
+#define PHAVE_LINUX_INPUT_H
 
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
-#define HAVE_POSIX_THREADS 1
+// We need 64-bit file i/o
+#define __USE_LARGEFILE64 1
 
 // Modern versions of gcc do support the latest STL allocator
 // definitions.
@@ -166,32 +290,5 @@
 
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .so
-
-#define PYTHON_IPATH /usr/local/include/python2.4
-#define PYTHON_LPATH /usr/local/lib/python2.4
-
-#define SSL_IPATH /usr/local/openssl
-//#define SSL_097 1
-
-#define JPEG_IPATH /usr/local/include
-#define JPEG_LPATH /usr/local/lib
-
-#define PNG_IPATH /usr/local/include
-#define PNG_LPATH /usr/local/lib
-
-#define TIFF_IPATH /usr/local/include
-#define TIFF_LPATH /usr/local/lib
-
-#define CC ccache cc
-#define CXX ccache c++
-
-//#define LOCAL_INCS /usr/local/include
-//#define LOCAL_LIBS /usr/local/lib
-//#defer ipath $[ipath] /usr/local/include
-//#defer lpath $[lpath] /usr/local/lib
-
-#defer EXTRA_IPATH $[EXTRA_IPATH] /usr/local/include
-#defer EXTRA_LPATH $[EXTRA_LPATH] /usr/local/lib
-//#defer alt_ipath $[alt_ipath] /usr/local/include
-//#defer alt_lpath $[alt_lpath] /usr/local/lib
-
+#define STATIC_LIB_EXT .a
+#define BUNDLE_EXT
