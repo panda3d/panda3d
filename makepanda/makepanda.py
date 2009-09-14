@@ -4053,15 +4053,19 @@ if (RUNTIME):
 # Generate the models directory and samples directory
 #
 
-for model in GetDirectoryContents("dmodels/src/misc", ["*.egg", "*.flt"]):
+model_extensions = ["*.egg"]
+if (PkgSkip("PANDATOOL")==0):
+    model_extensions.append("*.flt")
+
+for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
     eggpz = model[:-4] + ".egg.pz"
     TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
 
-for model in GetDirectoryContents("dmodels/src/gui", ["*.egg", "*.flt"]):
+for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
     eggpz = model[:-4] + ".egg.pz"
     TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
 
-for model in GetDirectoryContents("models", ["*.egg", "*.flt"]):
+for model in GetDirectoryContents("models", model_extensions):
     eggpz = model[:-4] + ".egg.pz"
     TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
 
