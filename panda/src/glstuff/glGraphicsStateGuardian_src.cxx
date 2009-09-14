@@ -6919,7 +6919,7 @@ set_state_and_transform(const RenderState *target,
   if (_target_shader != _state_shader) {
     //PStatTimer timer(_draw_set_state_shader_pcollector);
 #ifndef OPENGLES_1
-    do_issue_shader();
+    do_issue_shader(true);
 #endif
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
