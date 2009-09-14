@@ -3418,14 +3418,12 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(stencil_slot);
   }
      
-  if (_current_shader_context == 0) {
-    int fog_slot = FogAttrib::get_class_slot();
-    if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
-        !_state_mask.get_bit(fog_slot)) {
-      //PStatTimer timer(_draw_set_state_fog_pcollector);
-      do_issue_fog();
-      _state_mask.set_bit(fog_slot);
-    }
+  int fog_slot = FogAttrib::get_class_slot();
+  if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
+      !_state_mask.get_bit(fog_slot)) {
+    //PStatTimer timer(_draw_set_state_fog_pcollector);
+    do_issue_fog();
+    _state_mask.set_bit(fog_slot);
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();

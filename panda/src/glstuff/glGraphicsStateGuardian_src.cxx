@@ -7009,19 +7009,13 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(stencil_slot);
   }
 
-#ifndef OPENGLES_1
-  if (_current_shader_context == 0) {
-#endif
-    int fog_slot = FogAttrib::get_class_slot();
-    if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
-        !_state_mask.get_bit(fog_slot)) {
-      //PStatTimer timer(_draw_set_state_fog_pcollector);
-      do_issue_fog();
-      _state_mask.set_bit(fog_slot);
-    }
-#ifndef OPENGLES_1
+  int fog_slot = FogAttrib::get_class_slot();
+  if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
+      !_state_mask.get_bit(fog_slot)) {
+    //PStatTimer timer(_draw_set_state_fog_pcollector);
+    do_issue_fog();
+    _state_mask.set_bit(fog_slot);
   }
-#endif
 
   int scissor_slot = ScissorAttrib::get_class_slot();
   if (_target_rs->get_attrib(scissor_slot) != _state_rs->get_attrib(scissor_slot) ||
