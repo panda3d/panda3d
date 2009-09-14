@@ -672,6 +672,7 @@ class DirectSession(DirectObject):
         self.selectedNPReadout.reparentTo(hidden)
         self.selectedNPReadout.setText(' ')
         taskMgr.remove('followSelectedNodePath')
+        messenger.send('DIRECT_deselectAll')
 
     def setActiveParent(self, nodePath = None):
         # Record new parent
