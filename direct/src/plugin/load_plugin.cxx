@@ -127,7 +127,8 @@ load_plugin(const string &p3d_plugin_filename,
             const string &contents_filename, const string &download_url, 
             bool verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
-            bool trusted_environment) {
+            bool trusted_environment,
+            ostream &logfile) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
@@ -156,7 +157,7 @@ load_plugin(const string &p3d_plugin_filename,
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
-    cerr << "Couldn't load " << filename << "\n";
+    logfile << "Couldn't load " << filename << "\n";
     return false;
   }
 
@@ -168,7 +169,12 @@ load_plugin(const string &p3d_plugin_filename,
   module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
-    cerr << "Couldn't load " << filename << "\n";
+    const char *message = dlerror();
+    if (message == (char *)NULL) {
+      message = "No error";
+    }
+    logfile << "Couldn't load " << filename << ": " << message << "\n";
+
     return false;
   }
 
@@ -253,7 +259,7 @@ load_plugin(const string &p3d_plugin_filename,
       P3D_instance_feed_url_stream == NULL ||
       P3D_instance_handle_event == NULL) {
     
-    cerr
+    logfile
       << "Some function pointers not found:"
       << "\nP3D_initialize = " << P3D_initialize
       << "\nP3D_finalize = " << P3D_finalize
@@ -303,7 +309,7 @@ load_plugin(const string &p3d_plugin_filename,
                       log_directory.c_str(), log_basename.c_str(),
                       trusted_environment)) {
     // Oops, failure to initialize.
-    cerr << "Failed to initialize plugin (wrong API version?)\n";
+    logfile << "Failed to initialize plugin (wrong API version?)\n";
     unload_plugin();
     return false;
   }
