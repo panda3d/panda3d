@@ -712,6 +712,9 @@ def SetOptimize(optimize):
   global OPTIMIZE
   OPTIMIZE=optimize
 
+def GetVerbose():
+  return VERBOSE
+
 def SetVerbose(verbose):
   global VERBOSE
   VERBOSE=verbose

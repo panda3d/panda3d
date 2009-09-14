@@ -97,7 +97,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RUNTIME,GENMAN,DISTRIBUTOR
-    global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT,VERBOSE
+    global VERSION,COMPRESSOR,THREADCOUNT
     longopts = [
         "help","distributor=","verbose",
         "optimize=","everything","nothing","installer","runtime",
@@ -530,8 +530,7 @@ IncDirectory("ALWAYS", GetOutputDir()+"/include")
 ########################################################################
 
 def printStatus(header,warnings):
-    global VERBOSE
-    if VERBOSE:
+    if GetVerbose():
         print ""
         print "-------------------------------------------------------------------"
         print header
