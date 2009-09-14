@@ -1302,9 +1302,9 @@ def WriteConfigSettings():
     if (RUNTIME):
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
-        plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
-        plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
-        plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
 
