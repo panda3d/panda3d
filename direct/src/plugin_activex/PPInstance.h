@@ -18,7 +18,7 @@
 #include <math.h>
 #include "afxmt.h"
 
-#include "plugin/p3d_plugin.h"
+#include "p3d_plugin.h"
 #include "PPDownloadCallback.h"
 #include "PPLogger.h"
 

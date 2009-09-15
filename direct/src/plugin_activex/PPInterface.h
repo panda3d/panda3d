@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "plugin/p3d_plugin.h"
+#include "p3d_plugin.h"
 
 class PPInterface
 {

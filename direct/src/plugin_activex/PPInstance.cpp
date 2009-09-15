@@ -33,12 +33,10 @@
 #include "PPBrowserObject.h"
 #include "PPDownloadRequest.h"
 
-#include "wintools/sdk/tinyxml/tinyxml.h"
+#include "p3d_plugin_config.h"
+#include "tinyxml.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
-
-#define P3D_BASE_URL "http://www.ddrose.com/~drose/p3d_7/"
-//#define P3D_BASE_URL "file:///C:/p3dstage/"
 
 #define P3D_FILE_BASE_URL "http://www.ddrose.com/~drose/plugin/"
 //#define P3D_FILE_BASE_URL "file:///C:/temp/"
@@ -171,13 +169,18 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename, std::string&
     std::string localContentsFileName( tempFolderName, pathLength );
     localContentsFileName += P3D_CONTENTS_FILENAME;
 
-    std::string remoteContentsFilename( P3D_BASE_URL );
+    std::string hostUrl( PANDA_PACKAGE_HOST_URL );
+    if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
+      hostUrl += '/';
+    }
+
+    std::string remoteContentsFilename( hostUrl );
     remoteContentsFilename += P3D_CONTENTS_FILENAME;
 
     error = DownloadFile( remoteContentsFilename, localContentsFileName );
     if ( !error )
     {
-        std::string p3dRemoteModuleFileName( P3D_BASE_URL );
+        std::string p3dRemoteModuleFileName( hostUrl );
         error = ReadContents( localContentsFileName, p3dRemoteModuleFileName );
         if ( !error )
         {

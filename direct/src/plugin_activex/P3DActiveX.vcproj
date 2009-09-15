@@ -15,33 +15,36 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\..\.."
+				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\sdk\tinyxml"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="tinyxml_d.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="../../../wintools/built/lib"
+				IgnoreDefaultLibraryNames="LIBCI.LIB MSVCRTD.LIB MSVCRT.LIB"
 				ModuleDefinitionFile=".\P3DActiveX.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				ImportLibrary="$(OutDir)/P3DActiveX.lib"
-				TargetMachine="1"/>
+				TargetMachine="1"
+				FixedBaseAddress="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
@@ -77,15 +80,15 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\;..\..\.."
+				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\sdk\tinyxml"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -93,16 +96,19 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="tinyxml.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="../../../wintools/built/lib"
+				IgnoreDefaultLibraryNames="LIBCI.LIB MSVCRTD.LIB MSVCRT.LIB"
 				ModuleDefinitionFile=".\P3DActiveX.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				ImportLibrary="$(OutDir)/P3DActiveX.lib"
-				TargetMachine="1"/>
+				TargetMachine="1"
+				FixedBaseAddress="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
