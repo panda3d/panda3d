@@ -23,6 +23,7 @@
 
 #include "Mshtml.h"
 #include "atlconv.h"
+#include "comutil.h"
 
 #include <strstream>
 
@@ -284,15 +285,38 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return ( error = -1 );
     }
-    std::string p3dDllFilename, p3dFilename;
-    error = m_instance.DownloadP3DComponents( p3dDllFilename, p3dFilename );
+    CComPtr<IOleContainer> pOleContainer; 
+    HRESULT hr = m_spClientSite->GetContainer( &pOleContainer ); 
+    if ( FAILED( hr ) || !pOleContainer )
+    {
+        return ( error = -1 );
+    }
+    CComPtr<IHTMLDocument2> pHtml2Doc; 
+    hr = pOleContainer->QueryInterface( IID_IHTMLDocument, ( void** )&pHtml2Doc ); 
+    if ( FAILED( hr ) || !pHtml2Doc ) 
+    {
+        return ( error = -1 );
+    }
+    BSTR url;
+    hr = pHtml2Doc->get_URL( &url );
+    if ( FAILED( hr ) ||  !url ) 
+    {
+        return ( error = -1 );
+    }
+    m_hostingPageUrl = url;
+    m_hostingPageUrl.Replace( '\\', '/' );
+
+    ::SysFreeString( url );
+
+    std::string p3dDllFilename;
+    error = m_instance.DownloadP3DComponents( p3dDllFilename );
     if ( !error && !( p3dDllFilename.empty() ) )
     {
         error = m_instance.LoadPlugin( p3dDllFilename );
         if ( !error )
         {
             m_pPandaObject = new PPandaObject( this, NULL );
-            m_instance.Start( p3dFilename );
+            m_instance.Start( m_instance.GetP3DFilename( ) );
         }
     }
     return 0;

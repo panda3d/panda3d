@@ -33,14 +33,12 @@
 #include "PPBrowserObject.h"
 #include "PPDownloadRequest.h"
 
-#include "p3d_plugin_config.h"
 #include "get_tinyxml.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
 
-//#define P3D_FILE_BASE_URL "http://www.ddrose.com/~drose/plugin/"
-//#define P3D_FILE_BASE_URL "file:///C:/temp/"
-#define P3D_FILE_BASE_URL "file:///C:/cygwin/home/drose/"
+#define P3D_BASE_URL "http://www.ddrose.com/~drose/p3d_7/"
+//#define P3D_BASE_URL "file:///C:/p3dstage/"
 
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
@@ -160,7 +158,7 @@ int PPInstance::ReadContents( const std::string& contentsFilename, std::string& 
     return error;
 }
 
-int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename, std::string& p3dFilename  )
+int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 {
     int error(0);
 
@@ -170,10 +168,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename, std::string&
     std::string localContentsFileName( tempFolderName, pathLength );
     localContentsFileName += P3D_CONTENTS_FILENAME;
 
-    std::string hostUrl( PANDA_PACKAGE_HOST_URL );
-    if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
-      hostUrl += '/';
-    }
+    std::string hostUrl( P3D_BASE_URL );
 
     std::string remoteContentsFilename( hostUrl );
     remoteContentsFilename += P3D_CONTENTS_FILENAME;
@@ -196,19 +191,6 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename, std::string&
             if ( !error )
             {
                 p3dDllFilename = p3dLocalModuleFileName;
-
-                std::string p3dLocalFilename( tempFolderName );
-                p3dLocalFilename += GetP3DFilename( );
-
-                std::string p3dRemoteFilename( P3D_FILE_BASE_URL );
-                p3dRemoteFilename += GetP3DFilename( );
-
-                // Check for existance
-                if ( ::GetFileAttributes( p3dLocalFilename.c_str( ) ) == INVALID_FILE_ATTRIBUTES )
-                {
-                    error = DownloadFile( p3dRemoteFilename, p3dLocalFilename );
-                }
-                p3dFilename = p3dLocalFilename;
             }
         }
     }
@@ -360,8 +342,12 @@ int PPInstance::Start( const std::string& p3dFilename  )
     
     P3D_instance_setup_window( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, parent_window );
 
-    nout << "Starting new P3D instance " << p3dFilename << "\n";
-    if ( !P3D_instance_start( m_p3dInstance, true, p3dFilename.c_str() ) )
+    std::string p3dRemoteFilename( GetHostUrl() );
+    p3dRemoteFilename += p3dFilename;
+
+    nout << "Starting new P3D instance " << p3dRemoteFilename << "\n";
+
+    if ( !P3D_instance_start( m_p3dInstance, false, p3dRemoteFilename.c_str() ) )
     {
         nout << "Error starting P3D instance: " << GetLastError() << "\n"; 
     }
@@ -369,13 +355,21 @@ int PPInstance::Start( const std::string& p3dFilename  )
     return 1;
 }
 
-CString PPInstance::GetP3DFilename( )
+std::string PPInstance::GetHostUrl( )
 {
-    CString p3dFilename;
+    CString hostingPageLocation = m_parentCtrl.m_hostingPageUrl.Left( m_parentCtrl.m_hostingPageUrl.ReverseFind( '/' ) );;
+    std::string p3dRemoteFilename( hostingPageLocation );
+    p3dRemoteFilename += "/"; 
+    return p3dRemoteFilename; 
+}
+
+std::string PPInstance::GetP3DFilename( )
+{
+    std::string p3dFilename;
     for ( UINT i = 0; i < m_parentCtrl.m_parameters.size(); i++ )
     {
         std::pair< CString, CString > keyAndValue = m_parentCtrl.m_parameters[ i ];
-        if ( keyAndValue.first == "src" )
+        if ( keyAndValue.first == "data" )
         {
             p3dFilename = keyAndValue.second;
         }

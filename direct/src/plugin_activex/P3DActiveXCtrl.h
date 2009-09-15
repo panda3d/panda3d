@@ -80,6 +80,8 @@ public:
     // ActiveX properties <PARAM NAME="name" VALUE="value">
     std::vector< std::pair < CString, CString > > m_parameters; 
 
+    CString m_hostingPageUrl;
+
 protected:
     HRESULT ExchangeProperties( CPropExchange* pPropBag );
 

@@ -43,12 +43,15 @@ public:
     PPInstance( CP3DActiveXCtrl& parentCtrl );
     virtual ~PPInstance( );
 
-    int DownloadP3DComponents( std::string& p3dDllFilename, std::string& p3dFileName );
+    int DownloadP3DComponents( std::string& p3dDllFilename );
 
     int LoadPlugin( const std::string& dllFilename );
     int UnloadPlugin( void );
 
     int Start( const std::string& p3dFileName );
+
+    std::string GetHostUrl( );
+    std::string GetP3DFilename( );
 
     static void HandleRequestLoop();
 
@@ -63,7 +66,6 @@ protected:
     int DownloadFile( const std::string& from, const std::string& to );
     int ReadContents( const std::string& contentsFilename, std::string& p3dDllFilename );
 
-    CString GetP3DFilename( );
     void HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
 

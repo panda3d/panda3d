@@ -16,7 +16,7 @@
 #include "PPPandaObject.h"
 
 PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) : 
-    m_interface( interfac), m_p3dObject( p3dObject ), m_refs( 0 ), m_ptinfo( NULL )
+    m_interface( interfac ), m_p3dObject( p3dObject ), m_refs( 0 ), m_ptinfo( NULL )
 {
     if ( m_p3dObject )
     {
@@ -64,7 +64,9 @@ STDMETHODIMP PPandaObject::GetIDsOfNames(
     UNUSED(lcid);
 
     if(!IsEqualIID(riid, IID_NULL))
+    {
       return DISP_E_UNKNOWNINTERFACE;
+    }
 
     for ( UINT i = 0; i < cNames; i++ )
     {
@@ -136,6 +138,10 @@ STDMETHODIMP PPandaObject::Invoke(
     if(!IsEqualIID(riid, IID_NULL))
     {
         return DISP_E_UNKNOWNINTERFACE;
+    }
+    if ( !m_interface )
+    {
+        return E_FAIL;
     }
 
     CString& name( m_idsOfNames[dispidMember] );

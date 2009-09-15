@@ -15,7 +15,7 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -24,7 +24,7 @@
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -34,7 +34,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tinyxml_d.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../../wintools/built/lib"
@@ -80,13 +79,13 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\sdk\tinyxml"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
