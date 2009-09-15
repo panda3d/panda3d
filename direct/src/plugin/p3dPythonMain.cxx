@@ -80,9 +80,6 @@ main(int argc, char *argv[]) {
     }
   }
 
-  cerr << "handles: " << input_handle << ", " << output_handle << "\n";
-  cerr << "interactive_console = " << interactive_console << "\n";
-
   if (!run_p3dpython(program_name, archive_file, input_handle, output_handle, 
                      NULL, interactive_console)) {
     cerr << "Failure on startup.\n";

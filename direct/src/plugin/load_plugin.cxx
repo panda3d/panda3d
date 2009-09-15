@@ -157,7 +157,9 @@ load_plugin(const string &p3d_plugin_filename,
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
-    logfile << "Couldn't load " << filename << "\n";
+    logfile 
+      << "Couldn't load " << filename << ", error = " 
+      << GetLastError() << "\n";
     return false;
   }
 

@@ -457,6 +457,7 @@ class AppRunner(DirectObject):
             print "Couldn't find %s %s on %s" % (name, version, hostUrl)
             return
 
+        package.checkStatus()
         package.downloadDescFile(self.http)
         package.downloadPackage(self.http)
         package.installPackage(self)
