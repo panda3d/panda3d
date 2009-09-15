@@ -1,0 +1,9 @@
+; P3DActiveX.def : Declares the module parameters.
+
+LIBRARY      "P3DActiveX.OCX"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer PRIVATE

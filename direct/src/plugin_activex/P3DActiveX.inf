@@ -1,0 +1,12 @@
+[Add.Code]
+P3DActiveX.ocx=P3DActiveX.ocx
+P3DActiveX.inf=P3DActiveX.inf
+
+[P3DActiveX.ocx]
+file=thiscab
+clsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}
+RegisterServer=yes
+FileVersion=1,0,0,0
+
+[P3DActiveX.inf]
+file=thiscab

@@ -1,0 +1,51 @@
+// P3DActiveX.idl : type library source for ActiveX Control project.
+
+// This file will be processed by the MIDL compiler tool to
+// produce the type library (P3DActiveX.tlb) that will become a resource in
+// P3DActiveX.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(22A8FC5F-BC33-479A-8317-2BC816B8AB8A), version(1.0),
+  helpfile("P3DActiveX.hlp"),
+  helpstring("P3DActiveX ActiveX Control module"),
+  control ]
+library P3DActiveXLib
+{
+	importlib(STDOLE_TLB);
+
+	//  Primary dispatch interface for CP3DActiveXCtrl
+
+	[ uuid(76904D54-0CC5-4DBB-B022-F48B1E95183B),
+	  helpstring("Dispatch interface for P3DActiveX Control")]
+	dispinterface _DP3DActiveX
+	{
+		properties:
+        [id(1), helpstring("property main")] IDispatch*main;
+        methods:
+    };
+
+	//  Event dispatch interface for CP3DActiveXCtrl
+
+	[ uuid(1B2413ED-51C8-495E-B917-983C459B8FC7),
+	  helpstring("Event interface for P3DActiveX Control") ]
+	dispinterface _DP3DActiveXEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+    };
+
+	//  Class information for CP3DActiveXCtrl
+
+	[ uuid(924B4927-D3BA-41EA-9F7E-8A89194AB3AC),
+	  helpstring("P3DActiveX Control"), control ]
+	coclass P3DActiveX
+	{
+		[default] dispinterface _DP3DActiveX;
+		[default, source] dispinterface _DP3DActiveXEvents;
+	};
+
+};
