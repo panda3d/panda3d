@@ -123,6 +123,10 @@ run() {
 
   while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
     if (object != (TypedWritable *)NULL) {
+      ReferenceCount *ref_ptr = object->as_reference_count();
+      if (ref_ptr != NULL) {
+        ref_ptr->ref();
+      }
       objects.push_back(object);
     }
     object = bam_file.read_object();
