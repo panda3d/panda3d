@@ -30,11 +30,12 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _thread = NULL;
   _thread_id = 0;
   _hwnd = NULL;
-  _progress_bar = NULL;
-  _text_label = NULL;
+  _blue_brush = NULL;
   _thread_running = false;
-  _install_label_changed = false;
   _install_progress = 0.0;
+
+  _drawn_bstate = BS_hidden;
+  _drawn_progress = 0.0;
 
   INIT_LOCK(_install_lock);
 }
@@ -127,7 +128,6 @@ set_install_label(const string &install_label) {
   ACQUIRE_LOCK(_install_lock);
   if (_install_label != install_label) {
     _install_label = install_label;
-    _install_label_changed = true;
   }
   RELEASE_LOCK(_install_lock);
 
@@ -277,8 +277,6 @@ void P3DWinSplashWindow::
 thread_run() {
   make_window();
 
-  double last_progress = -1.0;
-
   MSG msg;
   int retval;
   retval = GetMessage(&msg, NULL, 0, 0);
@@ -291,17 +289,23 @@ thread_run() {
     DispatchMessage(&msg);
 
     ACQUIRE_LOCK(_install_lock);
-    double install_progress = _install_progress;
 
     update_image(_background_image);
     update_image(_button_ready_image);
     update_image(_button_rollover_image);
     update_image(_button_click_image);
 
-    if (_install_label_changed && _progress_bar != NULL) {
-      update_install_label(_install_label);
+    if (_drawn_label != _install_label) {
+      // The label has changed.  Redraw.
+      _drawn_label = _install_label;
+      InvalidateRect(_hwnd, NULL, TRUE);
     }
-    _install_label_changed = false;
+
+    if (_drawn_progress != _install_progress) {
+      _drawn_progress = _install_progress;
+      // Also redraw when the progress bar changes.
+      InvalidateRect(_hwnd, NULL, TRUE);
+    }
 
     if (_drawn_bstate != _bstate) {
       // The button has changed state.  Redraw it.
@@ -309,23 +313,6 @@ thread_run() {
       InvalidateRect(_hwnd, NULL, TRUE);
     }
     RELEASE_LOCK(_install_lock);
-
-    if (install_progress != last_progress) {
-      int progress = (int)(install_progress * 100.0);
-      if (_progress_bar == NULL) {
-        // Is it time to create the progress bar?
-        if (progress != 0) {
-          make_progress_bar();
-        }
-      } else {
-        // Update the progress bar.  We do this only within the
-        // thread, to ensure we don't get a race condition when
-        // starting or closing the thread.
-        SendMessage(_progress_bar, PBM_SETPOS, progress, 0);
-        
-        last_progress = install_progress;
-      }
-    }
 
     retval = GetMessage(&msg, NULL, 0, 0);
   }
@@ -405,47 +392,12 @@ make_window() {
   }
   SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)this);
   ShowWindow(_hwnd, SW_SHOWNORMAL);
+
+  _blue_brush = CreateSolidBrush(RGB(108, 165, 224));
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::make_progress_bar
-//       Access: Private
-//  Description: Creates the progress bar and label.  Runs
-//               within the sub-thread.  This is done a few seconds
-//               after the main window is created, to give us a chance
-//               to launch quickly without bothering the user.
-////////////////////////////////////////////////////////////////////
-void P3DWinSplashWindow::
-make_progress_bar() {
-  if (_progress_bar != NULL) {
-    return;
-  }
-
-  ACQUIRE_LOCK(_install_lock);
-  string install_label = _install_label;
-  double install_progress = _install_progress;
-  _install_label_changed = false;
-  RELEASE_LOCK(_install_lock);
-
-  HINSTANCE application = GetModuleHandle(NULL);
-  DWORD window_style = 
-    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-
-  int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
-
-  _progress_bar = 
-    CreateWindowEx(0, PROGRESS_CLASS, "", window_style,
-                   bar_x, bar_y, bar_width, bar_height,
-                   _hwnd, NULL, application, 0);
-  SendMessage(_progress_bar, PBM_SETPOS, (int)(install_progress * 100.0), 0);
-  ShowWindow(_progress_bar, SW_SHOWNORMAL);
-
-  update_install_label(install_label);
-}
-
-
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::update_install_label
 //       Access: Private
@@ -494,6 +446,7 @@ update_install_label(const string &install_label) {
                                _hwnd, NULL, application, 0);
   ShowWindow(_text_label, SW_SHOWNORMAL);
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::update_image
@@ -615,6 +568,11 @@ close_window() {
     CloseWindow(_hwnd);
     _hwnd = NULL;
   }
+  
+  if (_blue_brush != NULL) {
+    DeleteObject(_blue_brush);
+    _blue_brush = NULL;
+  }
 
   _background_image.dump_image();
   _button_ready_image.dump_image();
@@ -647,7 +605,7 @@ paint_window(HDC dc) {
   SelectObject(bdc, buffer);
 
   // Start by painting the background color.
-  FillRect(bdc, &rect, WHITE_BRUSH);
+  FillRect(bdc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
   // Then paint the background image on top of that.
   paint_image(bdc, _background_image);
@@ -669,6 +627,12 @@ paint_window(HDC dc) {
       paint_image(bdc, _button_ready_image);
     }
     break;
+  }
+
+  // Draw the progress bar.  We don't draw this bar at all unless we
+  // have nonzero progress.
+  if (_drawn_progress != 0.0) {
+    paint_progress_bar(bdc);
   }
 
   // Now blit the buffer to the window.
@@ -739,6 +703,60 @@ paint_image(HDC dc, const WinImageData &image) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::paint_progress_bar
+//       Access: Private
+//  Description: Draws the progress bar and the label within the
+//               window.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+paint_progress_bar(HDC dc) {
+  int bar_x, bar_y, bar_width, bar_height;
+  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
+
+  RECT bar_rect = { bar_x, bar_y, bar_x + bar_width, bar_y + bar_height };
+
+  // Clear the entire progress bar to white.
+  FillRect(dc, &bar_rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
+  // Draw the interior of the progress bar in blue.
+  int progress_width = (int)((bar_width - 2) * _drawn_progress);
+  if (progress_width != 0) {
+    RECT prog_rect = { bar_x, bar_y, bar_x + progress_width, bar_y + bar_height };
+    FillRect(dc, &prog_rect, _blue_brush);
+  }
+
+  // Now draw a black border around the progress bar.
+  FrameRect(dc, &bar_rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+
+  if (!_drawn_label.empty()) {
+    // Now draw the install_label right above it.
+
+    const char *text = _drawn_label.c_str();
+    HFONT font = (HFONT)GetStockObject(ANSI_VAR_FONT); 
+
+    // Measure the text, for centering.
+    SelectObject(dc, font);
+    SIZE text_size;
+    GetTextExtentPoint32(dc, text, strlen(text), &text_size);
+
+    int text_width = text_size.cx;
+    int text_height = text_size.cy;
+    int text_x = (_win_width - text_width) / 2;
+    int text_y = bar_y - (int)(text_height * 1.5);
+
+    // Clear the rectangle behind the text to white.
+    RECT text_rect = { text_x - 2, text_y - 2, text_x + text_width + 4, text_y + text_height + 4 };
+
+    FillRect(dc, &text_rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
+    // And finally, draw the text.
+    SetBkColor(dc, 0x00ffffff);
+    DrawText(dc, text, -1, &text_rect, 
+             DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::window_proc
 //       Access: Private
 //  Description: The windows event-processing handler.
@@ -766,6 +784,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     return true;
 
+    /*
   case WM_DRAWITEM:
     // Draw a text label placed within the window.
     {
@@ -784,6 +803,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                DT_VCENTER | DT_CENTER | DT_SINGLELINE);
     }
     return true;
+    */
 
   case WM_MOUSEMOVE: 
     set_mouse_data(LOWORD(lparam), HIWORD(lparam), _mouse_down);

@@ -58,13 +58,12 @@ private:
   static DWORD WINAPI win_thread_run(LPVOID data);
 
   void make_window();
-  void make_progress_bar();
-  void update_install_label(const string &install_label);
   void update_image(WinImageData &image);
   void close_window();
 
   void paint_window(HDC dc);
   bool paint_image(HDC dc, const WinImageData &image);
+  void paint_progress_bar(HDC dc);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   static LONG WINAPI st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -86,20 +85,20 @@ private:
   WinImageData _button_click_image;
 
   bool _got_install;
-  bool _install_label_changed;
   string _install_label;
   double _install_progress;
-  ButtonState _drawn_bstate;
   LOCK _install_lock;
+
+  ButtonState _drawn_bstate;
+  string _drawn_label;
+  double _drawn_progress;
 
   bool _thread_continue;
   bool _thread_running;
   HANDLE _thread;
   DWORD _thread_id;
   HWND _hwnd;
-
-  HWND _progress_bar;
-  HWND _text_label;
+  HBRUSH _blue_brush;
 
   static bool _registered_window_class;
 };
