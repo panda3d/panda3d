@@ -61,6 +61,8 @@ hanging_indent(ostream &out, const string &text, int first_indent_level,
   }
   indent(out, indent_level)
     << text.substr(start) << "\n";
+
+  return out;
 }
 
 void
