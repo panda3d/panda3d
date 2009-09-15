@@ -11,19 +11,17 @@
 
   #define LOCAL_LIBS plugin_common
 
-//  #define COMBINED_SOURCES \
-//    $[TARGET]_composite1.cxx
+  #define COMBINED_SOURCES \
+    $[TARGET]_composite1.cxx
 
   #define SOURCES \
     P3DActiveX.h P3DActiveXCtrl.h P3DActiveXPropPage.h P3DActiveXidl.h \
     PPBrowserObject.h PPDownloadCallback.h PPDownloadRequest.h \
     PPInstance.h PPInterface.h PPLogger.h PPPandaObject.h \
-    resource.h stdafx.h
-
-  #define SOURCES $[SOURCES] \
+    resource.h stdafx.h \
     P3DActiveX.idl
 
-  #define SOURCES $[SOURCES] \
+  #define INCLUDED_SOURCES \
     P3DActiveX.cpp P3DActiveXCtrl.cpp P3DActiveXPropPage.cpp \
     PPBrowserObject.cpp PPDownloadCallback.cpp PPDownloadRequest.cpp \
     PPInstance.cpp PPInterface.cpp PPLogger.cpp PPPandaObject.cpp \
