@@ -154,6 +154,9 @@ check_protocols() {
           string wrapper_name = "MakeSeq_" + clean_name + "_" + cpp_make_seq->_seq_name;
           MakeSeq *make_seq = new MakeSeq(wrapper_name, cpp_make_seq);
           _make_seqs.push_back(make_seq);
+
+          // Also add to the interrogate database.
+          builder.get_make_seq(cpp_make_seq, stype);
         }
       }
     }

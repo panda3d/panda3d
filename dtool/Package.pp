@@ -308,6 +308,13 @@
 #set FREETYPE_LPATH $[unixfilename $[FREETYPE_LPATH]]
 #set FREETYPE_LIBS $[FREETYPE_LIBS]
 
+#set WX_CONFIG $[WX_CONFIG]
+#set HAVE_WX $[HAVE_WX]
+#set WX_CFLAGS $[WX_CFLAGS]
+#set WX_IPATH $[unixfilename $[WX_IPATH]]
+#set WX_LPATH $[unixfilename $[WX_LPATH]]
+#set WX_LIBS $[WX_LIBS]
+
 
 #set MAYA_LOCATION $[unixfilename $[MAYA_LOCATION]]
 #set HAVE_MAYA $[HAVE_MAYA]
@@ -344,6 +351,16 @@
   #define FREETYPE_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
   #define FREETYPE_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
   #define FREETYPE_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
+#endif
+
+#if $[and $[HAVE_WX],$[WX_CONFIG]]
+  #define cflags $[shell $[WX_CONFIG] --cflags]
+  #define libs $[shell $[WX_CONFIG] --libs adv,html,xml,core,base]
+
+  #define WX_CFLAGS $[filter-out -I%,$[cflags]]
+  #define WX_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
+  #define WX_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
+  #define WX_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
 #if $[HAVE_PHYSX]

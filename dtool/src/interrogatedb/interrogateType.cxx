@@ -114,6 +114,7 @@ operator = (const InterrogateType &copy) {
   _destructor = copy._destructor;
   _elements = copy._elements;
   _methods = copy._methods;
+  _make_seqs = copy._make_seqs;
   _casts = copy._casts;
   _derivations = copy._derivations;
   _enum_values = copy._enum_values;
@@ -167,6 +168,7 @@ output(ostream &out) const {
   out << _destructor << " ";
   idf_output_vector(out, _elements);
   idf_output_vector(out, _methods);
+  idf_output_vector(out, _make_seqs);
   idf_output_vector(out, _casts);
   idf_output_vector(out, _derivations);
   idf_output_vector(out, _enum_values);
@@ -199,6 +201,7 @@ input(istream &in) {
 
   idf_input_vector(in, _elements);
   idf_input_vector(in, _methods);
+  idf_input_vector(in, _make_seqs);
   idf_input_vector(in, _casts);
   idf_input_vector(in, _derivations);
   idf_input_vector(in, _enum_values);
@@ -234,6 +237,11 @@ remap_indices(const IndexRemapper &remap) {
   }
   for (fi = _casts.begin(); fi != _casts.end(); ++fi) {
     (*fi) = remap.map_from(*fi);
+  }
+
+  MakeSeqs::iterator si;
+  for (si = _make_seqs.begin(); si != _make_seqs.end(); ++si) {
+    (*si) = remap.map_from(*si);
   }
 
   Derivations::iterator di;

@@ -44,6 +44,7 @@
 #include "cppTypeDeclaration.h"
 #include "cppEnumType.h"
 #include "cppCommentBlock.h"
+#include "cppMakeSeq.h"
 #include "pnotify.h"
 
 #include <ctype.h>
@@ -257,24 +258,17 @@ build() {
   for (di = parser._declarations.begin();
        di != parser._declarations.end();
        ++di) {
-    if ((*di)->get_subtype() == CPPDeclaration::ST_instance) 
-    {
+    if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
-      if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
-      {
+      if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
         // Here's a function declaration.
         scan_function(inst);
-
-      }
-      else 
-      {
+      } else {
         // Here's a data element declaration.
         scan_element(inst, (CPPStructType *)NULL, &parser);
       }
 
-    }
-    else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) 
-    {
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
       CPPTypedef *tdef = (*di)->as_typedef();
       if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
         // A typedef counts as a declaration.  This lets us pick up
@@ -1081,7 +1075,7 @@ scan_function(CPPInstance *function) {
       // declaration for the method (since it's appearing
       // out-of-scope).  We don't need to define a new method for it,
       // but we'd like to update the comment, if we have a comment.
-      update_method_comment(function, scope->get_struct_type(), scope);
+      update_function_comment(function, scope);
       return;
     }
   }
@@ -1094,6 +1088,11 @@ scan_function(CPPInstance *function) {
   if (function->_file.is_c_file()) {
     // This function declaration appears in a .C file.  We can only
     // export functions whose prototypes appear in an .h file.
+
+    string function_name = TypeManager::get_function_name(function);
+
+    // Still, we can update the comment, at least.
+    update_function_comment(function, scope);
     return;
   }
 
@@ -1680,17 +1679,36 @@ get_function(CPPInstance *function, string description,
 
     ifunction._flags |= flags;
 
-    // And/or the comment.
+    // Also, make sure this particular signature is defined.
+    pair<InterrogateFunction::Instances::iterator, bool> result = 
+      ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
+
+    InterrogateFunction::Instances::iterator ii = result.first;
+    bool inserted = result.second;
+
+    if (inserted) {
+      // If we just added the new signature, append the prototype.
+      ostringstream prototype;
+      function->output(prototype, 0, &parser, false);
+      prototype << ";";
+      ifunction._prototype += "\n" + prototype.str();
+    }
+
+    // Also set the comment.
     if (function->_leading_comment != (CPPCommentBlock *)NULL) {
       string comment = trim_blanks(function->_leading_comment->_comment);
       if (!ifunction._comment.empty()) {
         ifunction._comment += "\n\n";
       }
       ifunction._comment += comment;
-    }
 
-    // Also, make sure this particular signature is defined.
-    ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
+      // And update the particular wrapper comment.
+      if ((*ii).second->_leading_comment == NULL ||
+          function->_leading_comment->_comment.length() >
+          (*ii).second->_leading_comment->_comment.length()) {
+        (*ii).second->_leading_comment = function->_leading_comment;
+      }
+    }
 
     return index;
   }
@@ -1735,6 +1753,44 @@ get_function(CPPInstance *function, string description,
   ifunction->_expression = expression;
 
   InterrogateDatabase::get_ptr()->add_function(index, ifunction);
+
+  return index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::get_make_seq
+//       Access: Private
+//  Description: Adds the indicated make_seq to the database, if it is
+//               not already present.  In either case, returns the
+//               MakeSeq of the make_seq within the database.
+////////////////////////////////////////////////////////////////////
+MakeSeqIndex InterrogateBuilder::
+get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
+  string make_seq_name = struct_type->get_local_name(&parser) + "::MakeSeq_" + make_seq->_seq_name;
+
+  // First, check to see if it's already there.
+  MakeSeqsByName::const_iterator tni =
+    _make_seqs_by_name.find(make_seq_name);
+  if (tni != _make_seqs_by_name.end()) {
+    MakeSeqIndex index = (*tni).second;
+    return index;
+  }
+
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+  // It isn't here, so we'll have to define it.
+  MakeSeqIndex index = idb->get_next_index();
+  _make_seqs_by_name[make_seq_name] = index;
+
+  InterrogateMakeSeq imake_seq;
+  imake_seq._class = get_type(struct_type, false);
+  imake_seq._seq_name = make_seq->_seq_name;
+  imake_seq._num_name = make_seq->_num_name;
+  imake_seq._element_name = make_seq->_element_name;
+
+  idb->add_make_seq(index, imake_seq);
+
+  InterrogateType &itype = idb->update_type(imake_seq._class);
+  itype._make_seqs.push_back(index);
 
   return index;
 }
@@ -2228,18 +2284,17 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::update_method_comment
+//     Function: InterrogateBuilder::update_function_comment
 //       Access: Private
-//  Description: Updates the method definition in the database to
+//  Description: Updates the function definition in the database to
 //               include whatever comment is associated with this
 //               declaration.  This is called when we encounted a
-//               method definition outside of the class; the only new
-//               information this might include for us is the method
-//               comment.
+//               method definition outside of the class or function
+//               definition in a C++ file; the only new information
+//               this might include for us is the comment.
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
-update_method_comment(CPPInstance *function, CPPStructType *struct_type,
-                      CPPScope *scope) {
+update_function_comment(CPPInstance *function, CPPScope *scope) {
   if (function->_leading_comment == (CPPCommentBlock *)NULL) {
     // No comment anyway.  Forget it.
     return;
@@ -2256,6 +2311,14 @@ update_method_comment(CPPInstance *function, CPPStructType *struct_type,
   function->_type = ftype;
 
   string function_name = TypeManager::get_function_name(function);
+  string function_signature = TypeManager::get_function_signature(function);
+
+  if (ftype->_flags & CPPFunctionType::F_unary_op) {
+    // This is a unary operator function.  Name it differently so we
+    // don't consider it an overloaded version of a similarly-named
+    // binary operator.
+    function_name += "unary";
+  }
 
   // Now look it up.
   FunctionsByName::const_iterator tni =
@@ -2273,11 +2336,17 @@ update_method_comment(CPPInstance *function, CPPStructType *struct_type,
       ifunction._comment += "\n\n";
     }
     ifunction._comment += comment;
-    /*
-    if (comment.length() > ifunction._comment.length()) {
-      ifunction._comment = comment;
+
+    // Also update the particular wrapper comment.
+    InterrogateFunction::Instances::iterator ii = 
+      ifunction._instances->find(function_signature);
+    if (ii != ifunction._instances->end()) {
+      if ((*ii).second->_leading_comment == NULL ||
+          function->_leading_comment->_comment.length() >
+          (*ii).second->_leading_comment->_comment.length()) {
+        (*ii).second->_leading_comment = function->_leading_comment;
+      }
     }
-    */
   }
 }
 

@@ -311,6 +311,18 @@ interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper) {
 }
 
 bool
+interrogate_wrapper_has_comment(FunctionWrapperIndex wrapper) {
+  //cerr << "interrogate_wrapper_has_comment(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).has_comment();
+}
+
+const char *
+interrogate_wrapper_comment(FunctionWrapperIndex wrapper) {
+  //cerr << "interrogate_wrapper_comment(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).get_comment().c_str();
+}
+
+bool
 interrogate_wrapper_has_return_value(FunctionWrapperIndex wrapper) {
   //cerr << "interrogate_wrapper_has_return_value(" << wrapper << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).has_return_value();
@@ -388,6 +400,36 @@ FunctionWrapperIndex
 interrogate_get_wrapper_by_unique_name(const char *unique_name) {
   //cerr << "interrogate_get_wrapper_by_unique_name(" << unique_name << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper_by_unique_name(unique_name);
+}
+
+TypeIndex 
+interrogate_make_seq_class(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_class(" << make_seq << ")\n";
+  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_class();
+}
+
+const char *
+interrogate_make_seq_seq_name(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_seq_name(" << make_seq << ")\n";
+  static string result;
+  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_seq_name();
+  return result.c_str();
+}
+
+const char *
+interrogate_make_seq_num_name(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_num_name(" << make_seq << ")\n";
+  static string result;
+  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_num_name();
+  return result.c_str();
+}
+
+const char *
+interrogate_make_seq_element_name(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_element_name(" << make_seq << ")\n";
+  static string result;
+  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_element_name();
+  return result.c_str();
 }
 
 int
@@ -677,6 +719,18 @@ FunctionIndex
 interrogate_type_get_method(TypeIndex type, int n) {
   //cerr << "interrogate_type_get_method(" << type << ", " << n << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).get_method(n);
+}
+
+int
+interrogate_type_number_of_make_seqs(TypeIndex type) {
+  //cerr << "interrogate_type_number_of_make_seqs(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).number_of_make_seqs();
+}
+
+MakeSeqIndex
+interrogate_type_get_make_seq(TypeIndex type, int n) {
+  //cerr << "interrogate_type_get_make_seq(" << type << ", " << n << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).get_make_seq(n);
 }
 
 int

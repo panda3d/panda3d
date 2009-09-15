@@ -925,6 +925,18 @@
 // compiled-in font).
 #define COMPILE_IN_DEFAULT_FONT 1
 
+// We use wxWidgets--the C++ library, not the Python library--for
+// building the application p3dcert, which is needed only when
+// building the plugin/runtime system.  This uses a wx-config program,
+// similar to freetype, above.
+#defer WX_CONFIG $[if $[not $[WINDOWS_PLATFORM]],wx-config]
+#defer HAVE_WX $[or $[libtest $[WX_LPATH],$[WX_LIBS]],$[bintest $[WX_CONFIG]]]
+
+#define WX_CFLAGS 
+#define WX_IPATH
+#define WX_LPATH 
+#define WX_LIBS 
+
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 
 // Also, as of Maya 5.0 it seems the Maya library will not compile

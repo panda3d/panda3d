@@ -11,8 +11,10 @@
     interrogateDatabase.h interrogateElement.I  \
     interrogateElement.h interrogateFunction.I  \
     interrogateFunction.h interrogateFunctionWrapper.I  \
-    interrogateFunctionWrapper.h interrogateManifest.I  \
-    interrogateManifest.h interrogateType.I interrogateType.h  \
+    interrogateFunctionWrapper.h \
+    interrogateMakeSeq.I interrogateMakeSeq.h \
+    interrogateManifest.I interrogateManifest.h \
+    interrogateType.I interrogateType.h  \
     interrogate_datafile.I interrogate_datafile.h  \
     interrogate_interface.h interrogate_request.h \
     py_panda.h \
@@ -24,7 +26,9 @@
     indexRemapper.cxx  \
     interrogateComponent.cxx interrogateDatabase.cxx  \
     interrogateElement.cxx interrogateFunction.cxx  \
-    interrogateFunctionWrapper.cxx interrogateManifest.cxx  \
+    interrogateFunctionWrapper.cxx \
+    interrogateMakeSeq.cxx  \
+    interrogateManifest.cxx  \
     interrogateType.cxx interrogate_datafile.cxx  \
     interrogate_interface.cxx interrogate_request.cxx  \
     py_panda.cxx \

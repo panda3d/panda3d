@@ -380,6 +380,25 @@ get_element(ElementIndex element) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateDatabase::get_make_seq
+//       Access: Public
+//  Description: Returns the make_seq associated with the given
+//               MakeSeqIndex, if there is one.
+////////////////////////////////////////////////////////////////////
+const InterrogateMakeSeq &InterrogateDatabase::
+get_make_seq(MakeSeqIndex make_seq) {
+  static InterrogateMakeSeq bogus_make_seq;
+
+  check_latest();
+  MakeSeqMap::const_iterator si;
+  si = _make_seq_map.find(make_seq);
+  if (si == _make_seq_map.end()) {
+    return bogus_make_seq;
+  }
+  return (*si).second;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateDatabase::remove_type
 //       Access: Public
 //  Description: Erases the type from the database.
@@ -609,6 +628,19 @@ add_element(ElementIndex index, const InterrogateElement &element) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateDatabase::add_make_seq
+//       Access: Public
+//  Description: Adds the indicated make_seq to the database at
+//               the given index number.
+////////////////////////////////////////////////////////////////////
+void InterrogateDatabase::
+add_make_seq(MakeSeqIndex index, const InterrogateMakeSeq &make_seq) {
+  bool inserted =
+    _make_seq_map.insert(MakeSeqMap::value_type(index, make_seq)).second;
+  assert(inserted);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateDatabase::update_type
 //       Access: Public
 //  Description: Returns a non-const reference to the indicated type,
@@ -667,6 +699,18 @@ InterrogateElement &InterrogateDatabase::
 update_element(ElementIndex element) {
   check_latest();
   return _element_map[element];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateDatabase::update_make_seq
+//       Access: Public
+//  Description: Returns a non-const reference to the indicated
+//               make_seq, allowing the user to update it.
+////////////////////////////////////////////////////////////////////
+InterrogateMakeSeq &InterrogateDatabase::
+update_make_seq(MakeSeqIndex make_seq) {
+  check_latest();
+  return _make_seq_map[make_seq];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -743,6 +787,14 @@ remap_indices(int first_index, IndexRemapper &remap) {
     first_index++;
   }
 
+  MakeSeqMap new_make_seq_map;
+  MakeSeqMap::iterator si;
+  for (si = _make_seq_map.begin(); si != _make_seq_map.end(); ++si) {
+    remap.add_mapping((*si).first, first_index);
+    new_make_seq_map[first_index] = (*si).second;
+    first_index++;
+  }
+
   _next_index = first_index;
 
   _wrapper_map.swap(new_wrapper_map);
@@ -750,6 +802,7 @@ remap_indices(int first_index, IndexRemapper &remap) {
   _type_map.swap(new_type_map);
   _manifest_map.swap(new_manifest_map);
   _element_map.swap(new_element_map);
+  _make_seq_map.swap(new_make_seq_map);
 
   // Then, go back through and update all of the internal references.
   for (wi = _wrapper_map.begin(); wi != _wrapper_map.end(); ++wi) {
@@ -766,6 +819,9 @@ remap_indices(int first_index, IndexRemapper &remap) {
   }
   for (ei = _element_map.begin(); ei != _element_map.end(); ++ei) {
     (*ei).second.remap_indices(remap);
+  }
+  for (si = _make_seq_map.begin(); si != _make_seq_map.end(); ++si) {
+    (*si).second.remap_indices(remap);
   }
   GlobalFunctions::iterator gfi;
   for (gfi = _global_functions.begin(); gfi != _global_functions.end(); ++gfi) {
@@ -841,6 +897,12 @@ write(ostream &out, InterrogateModuleDef *def) const {
   ElementMap::const_iterator ei;
   for (ei = _element_map.begin(); ei != _element_map.end(); ++ei) {
     out << (*ei).first << " " << (*ei).second << "\n";
+  }
+
+  out << _make_seq_map.size() << "\n";
+  MakeSeqMap::const_iterator si;
+  for (si = _make_seq_map.begin(); si != _make_seq_map.end(); ++si) {
+    out << (*si).first << " " << (*si).second << "\n";
   }
 }
 
@@ -1078,6 +1140,26 @@ read_new(istream &in, InterrogateModuleDef *def) {
     }
   }
 
+  { // MakeSeqs.
+    int num_make_seqs;
+    in >> num_make_seqs;
+    if (in.fail()) {
+      return false;
+    }
+
+    while (num_make_seqs > 0) {
+      MakeSeqIndex index;
+      InterrogateMakeSeq make_seq(def);
+      in >> index >> make_seq;
+      if (in.fail()) {
+        return false;
+      }
+
+      add_make_seq(index, make_seq);
+      num_make_seqs--;
+    }
+  }
+
   return true;
 }
 
@@ -1190,6 +1272,16 @@ merge_from(const InterrogateDatabase &other) {
     const InterrogateElement &other_element = (*ei).second;
     add_element(other_element_index, other_element);
     update_element(other_element_index).remap_indices(remap);
+  }
+
+  MakeSeqMap::const_iterator si;
+  for (si = other._make_seq_map.begin();
+       si != other._make_seq_map.end();
+       ++si) {
+    MakeSeqIndex other_make_seq_index = (*si).first;
+    const InterrogateMakeSeq &other_make_seq = (*si).second;
+    add_make_seq(other_make_seq_index, other_make_seq);
+    update_make_seq(other_make_seq_index).remap_indices(remap);
   }
 
   _lookups_fresh = 0;

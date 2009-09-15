@@ -116,6 +116,11 @@
 #else
 #print - Did not find Freetype
 #endif
+#if $[HAVE_WX]
+#print + WxWidgets
+#else
+#print - Did not find WxWidgets
+#endif
 #if $[HAVE_GL]
 #print + OpenGL
 #elif $[HAVE_GLES2]

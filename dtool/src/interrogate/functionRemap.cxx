@@ -263,6 +263,11 @@ make_wrapper_entry(FunctionIndex function_index) {
   iwrapper._name = _wrapper_name;
   iwrapper._unique_name = _unique_name;
 
+  if (_cppfunc->_leading_comment != (CPPCommentBlock *)NULL) {
+    iwrapper._comment = InterrogateBuilder::trim_blanks(_cppfunc->_leading_comment->_comment);
+  }
+
+
   if (output_function_names) {
     // If we're keeping the function names, record that the wrapper is
     // callable.

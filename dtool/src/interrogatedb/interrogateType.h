@@ -83,6 +83,8 @@ public:
   INLINE ElementIndex get_element(int n) const;
   INLINE int number_of_methods() const;
   INLINE FunctionIndex get_method(int n) const;
+  INLINE int number_of_make_seqs() const;
+  INLINE MakeSeqIndex get_make_seq(int n) const;
 
   INLINE int number_of_casts() const;
   INLINE FunctionIndex get_cast(int n) const;
@@ -149,6 +151,9 @@ public:
   Elements _elements;
   Functions _methods;
   Functions _casts;
+
+  typedef vector<MakeSeqIndex> MakeSeqs;
+  MakeSeqs _make_seqs;
 
   enum DerivationFlags {
     DF_upcast               = 0x01,

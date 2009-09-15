@@ -51,6 +51,7 @@ operator = (const InterrogateFunctionWrapper &copy) {
   _return_type = copy._return_type;
   _return_value_destructor = copy._return_value_destructor;
   _unique_name = copy._unique_name;
+  _comment = copy._comment;
   _parameters = copy._parameters;
 }
 
@@ -186,6 +187,26 @@ parameter_is_this(int n) const {
 INLINE const string &InterrogateFunctionWrapper::
 get_unique_name() const {
   return _unique_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunctionWrapper::has_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateFunctionWrapper::
+has_comment() const {
+  return !_comment.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunctionWrapper::get_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const string &InterrogateFunctionWrapper::
+get_comment() const {
+  return _comment;
 }
 
 INLINE ostream &

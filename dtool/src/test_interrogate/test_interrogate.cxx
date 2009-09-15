@@ -40,6 +40,29 @@ indent(ostream &out, int indent_level) {
   return out;
 }
 
+// Indents one or more lines of text, breaking the text up at newline
+// characters.
+static ostream &
+hanging_indent(ostream &out, const string &text, int first_indent_level, 
+               int next_indent_level = -1) {
+  if (next_indent_level < 0) {
+    next_indent_level = first_indent_level;
+  }
+
+  size_t start = 0;
+  size_t newline = text.find('\n');
+  int indent_level = first_indent_level;
+  while (newline != string::npos) {
+    indent(out, indent_level)
+      << text.substr(start, newline - start) << "\n";
+    start = newline + 1;
+    newline = text.find('\n', start);
+    indent_level = next_indent_level;
+  }
+  indent(out, indent_level)
+    << text.substr(start) << "\n";
+}
+
 void
 show_type(int type, bool verbose = false) {
   cout << interrogate_type_name(type) << " ";
@@ -96,6 +119,11 @@ describe_wrapper(int wrapper, int indent_level) {
     cout << "\n";
   }
 
+  if (interrogate_wrapper_has_comment(wrapper)) {
+    string comment = interrogate_wrapper_comment(wrapper);
+    hanging_indent(cout, comment, indent_level + 2);
+  }
+      
 
   if (interrogate_wrapper_caller_manages_return_value(wrapper)) {
     indent(cout, indent_level + 2)
@@ -133,7 +161,9 @@ describe_function(int function, int indent_level) {
     << " (" << function << ")\n";
 
   indent(cout, indent_level + 2)
-    << "In C: " << interrogate_function_prototype(function) << "\n";
+    << "In C: ";
+  hanging_indent(cout, interrogate_function_prototype(function),
+                 0, indent_level + 2 + 6);
 
   if (interrogate_function_is_method(function)) {
     indent(cout, indent_level + 2)
@@ -176,7 +206,16 @@ describe_function(int function, int indent_level) {
     describe_wrapper(interrogate_function_python_wrapper(function, w),
                      indent_level + 4);
   }
+}
 
+void
+describe_make_seq(int make_seq, int indent_level) {
+  indent(cout, indent_level)
+    << "MakeSeq " << interrogate_make_seq_seq_name(make_seq)
+    << " (" << make_seq << "): " 
+    << interrogate_make_seq_num_name(make_seq)
+    << ", " << interrogate_make_seq_element_name(make_seq)
+    << "\n";
 }
 
 void
@@ -248,6 +287,12 @@ describe_type(int type, int indent_level) {
   indent(cout, indent_level) << "Type ";
   show_type(type, true);
   cout << "\n";
+
+  if (interrogate_type_has_comment(type)) {
+    string comment = interrogate_type_comment(type);
+    hanging_indent(cout, comment, indent_level + 2);
+  }
+      
   if (interrogate_type_is_nested(type)) {
     indent(cout, indent_level + 2)
       << "Nested within ";
@@ -351,6 +396,14 @@ describe_type(int type, int indent_level) {
       << num_methods << " methods:\n";
     for (int i = 0; i < num_methods; i++) {
       describe_function(interrogate_type_get_method(type, i), 6);
+    }
+  }
+  int num_make_seqs = interrogate_type_number_of_make_seqs(type);
+  if (num_make_seqs > 0) {
+    indent(cout, indent_level + 2)
+      << num_make_seqs << " make_seqs:\n";
+    for (int i = 0; i < num_make_seqs; i++) {
+      describe_make_seq(interrogate_type_get_make_seq(type, i), 6);
     }
   }
   int num_elements = interrogate_type_number_of_elements(type);

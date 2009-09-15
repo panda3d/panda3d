@@ -61,6 +61,7 @@ typedef int ElementIndex;
 typedef int TypeIndex;
 typedef int FunctionIndex;
 typedef int FunctionWrapperIndex;
+typedef int MakeSeqIndex;
 
 // Atomic types are those that are built in to C.  This enumerated
 // value is returned by interrogate_type_atomic_token() when a type is
@@ -276,6 +277,12 @@ EXPCL_DTOOLCONFIG const char *interrogate_wrapper_name(FunctionWrapperIndex wrap
 // wrapper function callable directly by its name.
 EXPCL_DTOOLCONFIG bool interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper);
 
+// This returns the C++ comment written for the function wrapper,
+// usually from the .cpp file.  There may be a different comment for
+// each overload of a given function.
+EXPCL_DTOOLCONFIG bool interrogate_wrapper_has_comment(FunctionWrapperIndex wrapper);
+EXPCL_DTOOLCONFIG const char *interrogate_wrapper_comment(FunctionWrapperIndex wrapper);
+
 // Every function wrapper has zero or more parameters and may or may
 // not have a return value.  Each parameter has a type and may or may
 // not have a name.  For member functions, the first parameter may be
@@ -341,6 +348,28 @@ EXPCL_DTOOLCONFIG const char *interrogate_wrapper_unique_name(FunctionWrapperInd
 // This function may be called without forcing a load of the complete
 // interrogate database.
 EXPCL_DTOOLCONFIG FunctionWrapperIndex interrogate_get_wrapper_by_unique_name(const char *unique_name);
+
+//////////////////////////////////////////////////////////////////////////
+//
+// MakeSeqs
+//
+//////////////////////////////////////////////////////////////////////////
+
+// These are special synthesized methods that iterate through a list.
+// They are generated in C++ code via the MAKE_SEQ macro.  The normal
+// pattern is that a pair of actual C++ methods like get_num_things()
+// and get_thing(n) are used to synthesize a new method called
+// get_things().
+
+// The class of which the make_seq is a method.
+EXPCL_DTOOLCONFIG TypeIndex interrogate_make_seq_class(MakeSeqIndex make_seq);
+
+// The name of the syntheized method, e.g. "get_things"
+EXPCL_DTOOLCONFIG const char *interrogate_make_seq_seq_name(MakeSeqIndex make_seq);
+// The name of the real method that returns the length, e.g. "get_num_things"
+EXPCL_DTOOLCONFIG const char *interrogate_make_seq_num_name(MakeSeqIndex make_seq);
+// The name of the real method that returns the nth element, e.g. "get_thing"
+EXPCL_DTOOLCONFIG const char *interrogate_make_seq_element_name(MakeSeqIndex make_seq);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -479,6 +508,10 @@ EXPCL_DTOOLCONFIG ElementIndex interrogate_type_get_element(TypeIndex type, int 
 // This is the set of exposed member functions in the struct or class.
 EXPCL_DTOOLCONFIG int interrogate_type_number_of_methods(TypeIndex type);
 EXPCL_DTOOLCONFIG FunctionIndex interrogate_type_get_method(TypeIndex type, int n);
+
+// This is the set of MAKE_SEQ wrappers in the struct or class.
+EXPCL_DTOOLCONFIG int interrogate_type_number_of_make_seqs(TypeIndex type);
+EXPCL_DTOOLCONFIG MakeSeqIndex interrogate_type_get_make_seq(TypeIndex type, int n);
 
 // A C++ class may also define a number of explicit cast operators,
 // which define how to convert an object of this type to an object of

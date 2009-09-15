@@ -349,6 +349,14 @@
   #define freetype_framework $[FREETYPE_FRAMEWORK]
 #endif
 
+#if $[HAVE_WX]
+  #define wx_ipath $[wildcard $[WX_IPATH]]
+  #define wx_lpath $[wildcard $[WX_LPATH]]
+  #define wx_cflags $[WX_CFLAGS]
+  #define wx_libs $[WX_LIBS]
+  #define wx_framework $[WX_FRAMEWORK]
+#endif
+
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]
   #define maya_ipath $[MAYA_LOCATION]/include
   #define maya_lpath $[MAYA_LOCATION]/lib

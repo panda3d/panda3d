@@ -23,6 +23,7 @@
 #include "interrogateFunctionWrapper.h"
 #include "interrogateManifest.h"
 #include "interrogateElement.h"
+#include "interrogateMakeSeq.h"
 #include "interrogate_request.h"
 
 #include <map>
@@ -64,6 +65,7 @@ public:
   const InterrogateFunctionWrapper &get_wrapper(FunctionWrapperIndex wrapper);
   const InterrogateManifest &get_manifest(ManifestIndex manifest);
   const InterrogateElement &get_element(ElementIndex element);
+  const InterrogateMakeSeq &get_make_seq(MakeSeqIndex element);
 
   INLINE TypeIndex lookup_type_by_name(const string &name);
   INLINE TypeIndex lookup_type_by_scoped_name(const string &name);
@@ -94,12 +96,14 @@ public:
                    const InterrogateFunctionWrapper &wrapper);
   void add_manifest(ManifestIndex index, const InterrogateManifest &manifest);
   void add_element(ElementIndex index, const InterrogateElement &element);
+  void add_make_seq(MakeSeqIndex index, const InterrogateMakeSeq &make_seq);
 
   InterrogateType &update_type(TypeIndex type);
   InterrogateFunction &update_function(FunctionIndex function);
   InterrogateFunctionWrapper &update_wrapper(FunctionWrapperIndex wrapper);
   InterrogateManifest &update_manifest(ManifestIndex manifest);
   InterrogateElement &update_element(ElementIndex element);
+  InterrogateMakeSeq &update_make_seq(MakeSeqIndex make_seq);
 
   int remap_indices(int first_index);
   int remap_indices(int first_index, IndexRemapper &remap);
@@ -133,6 +137,9 @@ private:
   ManifestMap _manifest_map;
   typedef map<ElementIndex, InterrogateElement> ElementMap;
   ElementMap _element_map;
+
+  typedef map<MakeSeqIndex, InterrogateMakeSeq> MakeSeqMap;
+  MakeSeqMap _make_seq_map;
 
   typedef vector<TypeIndex> GlobalTypes;
   GlobalTypes _global_types;

@@ -432,6 +432,30 @@ get_method(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::number_of_make_seqs
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int InterrogateType::
+number_of_make_seqs() const {
+  return _make_seqs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::get_make_seq
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE MakeSeqIndex InterrogateType::
+get_make_seq(int n) const {
+  if (n >= 0 && n < (int)_make_seqs.size()) {
+    return _make_seqs[n];
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_casts
 //       Access: Public
 //  Description:

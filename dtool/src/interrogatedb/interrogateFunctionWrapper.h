@@ -50,6 +50,9 @@ public:
 
   INLINE const string &get_unique_name() const;
 
+  INLINE bool has_comment() const;
+  INLINE const string &get_comment() const;
+
   void output(ostream &out) const;
   void input(istream &in);
 
@@ -72,6 +75,7 @@ private:
   TypeIndex _return_type;
   FunctionIndex _return_value_destructor;
   string _unique_name;
+  string _comment;
 
 public:
   // This nested class must be declared public just so we can declare

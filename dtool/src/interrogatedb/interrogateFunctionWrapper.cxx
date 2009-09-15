@@ -54,6 +54,7 @@ output(ostream &out) const {
       << _return_type << " "
       << _return_value_destructor << " ";
   idf_output_string(out, _unique_name);
+  idf_output_string(out, _comment);
   idf_output_vector(out, _parameters);
 }
 
@@ -71,6 +72,7 @@ input(istream &in) {
      >> _return_type
      >> _return_value_destructor;
   idf_input_string(in, _unique_name);
+  idf_input_string(in, _comment);
   idf_input_vector(in, _parameters);
 }
 

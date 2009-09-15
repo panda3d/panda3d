@@ -38,6 +38,7 @@ class CPPScope;
 class CPPIdentifier;
 class CPPNameComponent;
 class CPPManifest;
+class CPPMakeSeq;
 class InterrogateType;
 class InterrogateFunction;
 class FunctionRemap;
@@ -107,16 +108,17 @@ public:
                CPPStructType *struct_type, CPPScope *scope,
                int flags, const string &expression = string());
 
+  MakeSeqIndex
+  get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type);
+
   TypeIndex get_atomic_string_type();
-//  TypeIndex get_type(CPPType *type, bool global);
 
   void define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype);
   void define_wrapped_type(InterrogateType &itype, CPPPointerType *cpptype);
   void define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype);
   void define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                           TypeIndex type_index, bool forced);
-  void update_method_comment(CPPInstance *function, CPPStructType *struct_type,
-                             CPPScope *scope);
+  void update_function_comment(CPPInstance *function, CPPScope *scope);
   void define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
                      CPPStructType *struct_type, CPPScope *scope);
   void define_method(CPPInstance *function, InterrogateType &itype,
@@ -129,9 +131,11 @@ public:
 
   typedef map<string, TypeIndex> TypesByName;
   typedef map<string, FunctionIndex> FunctionsByName;
+  typedef map<string, MakeSeqIndex> MakeSeqsByName;
 
   TypesByName _types_by_name;
   FunctionsByName _functions_by_name;
+  MakeSeqsByName _make_seqs_by_name;
 
   typedef map<string, char> IncludeFiles;
   IncludeFiles _include_files;
