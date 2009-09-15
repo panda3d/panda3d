@@ -34,12 +34,13 @@
 #include "PPDownloadRequest.h"
 
 #include "p3d_plugin_config.h"
-#include "tinyxml.h"
+#include "get_tinyxml.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
 
-#define P3D_FILE_BASE_URL "http://www.ddrose.com/~drose/plugin/"
+//#define P3D_FILE_BASE_URL "http://www.ddrose.com/~drose/plugin/"
 //#define P3D_FILE_BASE_URL "file:///C:/temp/"
+#define P3D_FILE_BASE_URL "file:///C:/cygwin/home/drose/"
 
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
