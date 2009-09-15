@@ -148,3 +148,5 @@
 
 #defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[eq $[USE_COMPILER], MSVC9],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
 #defer LINK_BIN_C++ $[LINK_BIN_C]
+
+#defer MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[IDL_CDEFS:%=/D%] $[idl]

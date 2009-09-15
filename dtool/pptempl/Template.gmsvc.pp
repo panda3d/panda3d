@@ -377,7 +377,8 @@ $[varname] = $[sources]
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[or $[GENERATE_BUILDDATE],$[WIN_RESOURCE_FILE]]
   #define resource_file $[or $[WIN_RESOURCE_FILE],$[dtool_ver_dir_cyg]/version.rc]
-$[target] : $[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
+  #define tlb_depend $[patsubst %.idl,$[ODIR]/%.tlb,$[filter %.idl, $[get_sources]]]
+$[target] : $[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%] $[tlb_depend]
 
  // first generate builddate for rc compiler using compiler preprocessor
  #define ver_resource "$[ODIR]\$[lib_prefix]$[TARGET].res"
@@ -502,6 +503,13 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
+#foreach idl $[filter %.idl, $[get_sources]]
+  #define idl_basename $[basename $[idl]]
+$[ODIR]/$[idl_basename].tlb : $[ODIR]/$[idl_basename].h
+$[ODIR]/$[idl_basename].h : $[idl]
+$[TAB] $[MIDL_COMMAND]
+#end idl
+
 #end metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target
 
 
@@ -562,8 +570,6 @@ $[TAB] $[VERHEADER_GENERATOR_RULE]
 
 $[VERHEADER_DEPENDENTS] : $[verhdr_to_gen]
 #endif
-
-#define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl $[IDL_CDEFS:%=/D%]
 
 #define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
 #if $[idl_to_gen]
