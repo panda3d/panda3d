@@ -15,7 +15,7 @@
     $[TARGET]_composite1.cxx
 
   #define SOURCES \
-    P3DActiveX.h P3DActiveXCtrl.h P3DActiveXPropPage.h P3DActiveXidl.h \
+    P3DActiveX.h P3DActiveXCtrl.h P3DActiveXPropPage.h \
     PPBrowserObject.h PPDownloadCallback.h PPDownloadRequest.h \
     PPInstance.h PPInterface.h PPLogger.h PPPandaObject.h \
     resource.h stdafx.h \
