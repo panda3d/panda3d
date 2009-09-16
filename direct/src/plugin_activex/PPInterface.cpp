@@ -245,6 +245,10 @@ HRESULT PPInterface::P3DCallMethod( P3D_object* p3dObject, CString& name, DISPPA
         p3dobj_to_variant( varResult, p3dObjectResult );
         P3D_OBJECT_DECREF( p3dObjectResult );
     }
+    for ( UINT i = 0; i < pdispparams->cArgs; i++ )
+    {
+        P3D_OBJECT_DECREF( params[i] );
+    }
     delete [] params;
 
     return S_OK;
@@ -282,8 +286,8 @@ HRESULT PPInterface::P3DSetProperty( P3D_object* p3dObject, CString& name, DISPP
     COleVariant vaArg( pdispparams->rgvarg );
     P3D_object* param = variant_to_p3dobj( &vaArg );
     result = P3D_OBJECT_SET_PROPERTY( p3dObject, name, param );
+    P3D_OBJECT_DECREF( param );
 
-    delete param;
     return S_OK;
 }
 

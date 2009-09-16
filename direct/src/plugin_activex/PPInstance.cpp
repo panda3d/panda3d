@@ -33,18 +33,17 @@
 #include "PPBrowserObject.h"
 #include "PPDownloadRequest.h"
 
+#include "p3d_plugin_config.h"
 #include "get_tinyxml.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
-
-#define P3D_BASE_URL "http://www.ddrose.com/~drose/p3d_7/"
-//#define P3D_BASE_URL "file:///C:/p3dstage/"
-
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
 static HMODULE s_hP3DPluginDll = NULL;
+static int s_instanceCount = 0;
 
 P3D_initialize_func *P3D_initialize;
+P3D_finalize_func *P3D_finalize;
 P3D_new_instance_func *P3D_new_instance;
 P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
@@ -103,7 +102,7 @@ PPInstance::~PPInstance(  )
 {
     if ( m_p3dInstance )
     {
-        nout << "Finishing P3D instance \n";  
+        nout << this << ": Finishing P3D instance \n";  
         P3D_instance_finish( m_p3dInstance );
         m_p3dInstance = NULL;
     }
@@ -112,7 +111,7 @@ PPInstance::~PPInstance(  )
         P3D_OBJECT_DECREF( m_p3dObject );
         m_p3dObject = NULL;
     }
-    // UnloadPlugin();
+    UnloadPlugin();
 }
 
 int PPInstance::DownloadFile( const std::string& from, const std::string& to )
@@ -172,7 +171,10 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
     std::string localContentsFileName( tempFolderName, pathLength );
     localContentsFileName += P3D_CONTENTS_FILENAME;
 
-    std::string hostUrl( P3D_BASE_URL );
+    std::string hostUrl( PANDA_PACKAGE_HOST_URL );
+    if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
+      hostUrl += '/';
+    }
 
     std::string remoteContentsFilename( hostUrl );
     remoteContentsFilename += P3D_CONTENTS_FILENAME;
@@ -203,6 +205,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 
 int PPInstance::LoadPlugin( const std::string& dllFilename ) 
 {
+    s_instanceCount += 1;
     int error(0);
     if ( !s_hP3DPluginDll )
     {
@@ -217,6 +220,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 
         nout << "Loading " << filename << "\n";
         s_hP3DPluginDll = LoadLibrary( filename.c_str() );
+        nout << "got " << s_hP3DPluginDll << "\n";  
         if ( s_hP3DPluginDll == NULL ) 
         {
             // Couldn't load the DLL.
@@ -235,6 +239,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 
         // Now get all of the function pointers.
         P3D_initialize = (P3D_initialize_func *)GetProcAddress(s_hP3DPluginDll, "P3D_initialize");  
+        P3D_finalize = (P3D_finalize_func *)GetProcAddress(s_hP3DPluginDll, "P3D_finalize");  
         P3D_new_instance = (P3D_new_instance_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_instance");  
         P3D_instance_start = (P3D_instance_start_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_start");
         P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_finish");  
@@ -257,6 +262,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 
         // Ensure that all of the function pointers have been found.
         if (P3D_initialize == NULL ||
+            P3D_finalize == NULL ||
             P3D_new_instance == NULL ||
             P3D_instance_finish == NULL ||
             P3D_instance_get_request == NULL ||
@@ -274,14 +280,17 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         {
                 return ( error = 1 );
         }
-    }
-    // Successfully loaded.
-    nout << "Initializing P3D P3D_API_VERSION=" << P3D_API_VERSION << "\n";
-    if ( !P3D_initialize( P3D_API_VERSION, "", "", true, "", "", "", false ) ) 
-    {
-        // Oops, failure to initialize.
-        nout << "Error initializing P3D: " << GetLastError() << "\n"; 
-        return ( error = 1 );
+
+        // Successfully loaded.
+        nout << "Initializing P3D P3D_API_VERSION=" << P3D_API_VERSION << "\n";
+        if ( !P3D_initialize( P3D_API_VERSION, "", "", true, "", "", "", false ) ) 
+        {
+            // Oops, failure to initialize.
+            nout << "Error initializing P3D: " << GetLastError() << "\n"; 
+            ::FreeLibrary( s_hP3DPluginDll );
+            s_hP3DPluginDll = NULL;
+            return ( error = 1 );
+        }
     }
 
     return error ;
@@ -290,10 +299,15 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 int PPInstance::UnloadPlugin()
 {
     int error( 0 );
+    assert( s_instanceCount > 0 );
+    s_instanceCount -= 1;
 
-    if ( s_hP3DPluginDll )
+    if ( s_instanceCount == 0 && s_hP3DPluginDll != NULL )
     {
-        nout << "Unloading P3D dll \n";  
+        nout << "Finalizing P3D\n";
+        P3D_finalize();
+
+        nout << "Unloading P3D dll " << s_hP3DPluginDll << "\n";  
         if ( !::FreeLibrary( s_hP3DPluginDll ) )
         {
             nout << "Error unloading P3D dll :" << GetLastError << "\n";
@@ -342,6 +356,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
     CComPtr<IDispatch> pDispatch;
     PPBrowserObject *pobj = new PPBrowserObject( &m_parentCtrl, pDispatch );
     P3D_instance_set_browser_script_object( m_p3dInstance, pobj );
+    P3D_OBJECT_DECREF( pobj );
     
     m_p3dObject = P3D_instance_get_panda_script_object( m_p3dInstance );
     P3D_OBJECT_INCREF( m_p3dObject );
@@ -394,10 +409,7 @@ void PPInstance::HandleRequestLoop()
             CP3DActiveXCtrl* parent = ( CP3DActiveXCtrl* )(p3d_inst->_user_data);
             if ( parent )
             {
-                if ( parent->m_instance )
-                {
-                    parent->m_instance->HandleRequest( request );
-                }
+                parent->m_instance.HandleRequest( request );
             }
             else
             {
@@ -419,13 +431,13 @@ void PPInstance::HandleRequestGetUrl( void* data )
     const std::string &url = request->_request._get_url._url;
     CP3DActiveXCtrl* parent = static_cast<CP3DActiveXCtrl*> ( request->_instance->_user_data );
 
-    if ( !parent || !parent->m_instance )
+    if ( !parent )
     {
         return;
     }
 
     nout << "Handling P3D_RT_get_url request from " << url << "\n";
-    PPDownloadRequest p3dObjectDownloadRequest( *( parent->m_instance ), request ); 
+    PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
     PPDownloadCallback bsc( p3dObjectDownloadRequest );
     HRESULT hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
     if ( FAILED( hr ) )
