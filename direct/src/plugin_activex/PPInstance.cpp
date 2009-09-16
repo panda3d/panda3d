@@ -317,6 +317,10 @@ int PPInstance::UnloadPlugin()
         {  
             s_hP3DPluginDll = NULL;
         }
+
+        // This pointer is no longer valid and must be reset for next
+        // time.
+        PPBrowserObject::clear_class_definition();
     }
     return error;
 }

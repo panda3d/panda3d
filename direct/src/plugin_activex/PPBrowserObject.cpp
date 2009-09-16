@@ -183,6 +183,11 @@ int PPBrowserObject::get_repr( char* buffer, int buffer_length ) const
     return (int)result.GetLength();
 }
 
+void PPBrowserObject::clear_class_definition() 
+{
+    _browser_object_class = NULL;
+}
+
 P3D_class_definition* PPBrowserObject::get_class_definition() 
 {
     if ( _browser_object_class == NULL ) 
