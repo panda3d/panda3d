@@ -18,14 +18,12 @@
     P3DActiveX.h P3DActiveXCtrl.h P3DActiveXPropPage.h \
     PPBrowserObject.h PPDownloadCallback.h PPDownloadRequest.h \
     PPInstance.h PPInterface.h PPLogger.h PPPandaObject.h \
-    resource.h stdafx.h \
-    P3DActiveX.idl
+    resource.h P3DActiveX.idl
 
   #define INCLUDED_SOURCES \
     P3DActiveX.cpp P3DActiveXCtrl.cpp P3DActiveXPropPage.cpp \
     PPBrowserObject.cpp PPDownloadCallback.cpp PPDownloadRequest.cpp \
-    PPInstance.cpp PPInterface.cpp PPLogger.cpp PPPandaObject.cpp \
-    stdafx.cpp
+    PPInstance.cpp PPInterface.cpp PPLogger.cpp PPPandaObject.cpp
 
   #define EXTRA_CDEFS _USRDLL _WINDLL _AFXDLL _MBCS
   #define WIN_RESOURCE_FILE P3DActiveX.rc

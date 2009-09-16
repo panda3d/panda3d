@@ -8,4 +8,3 @@
 #include "PPInterface.cpp"
 #include "PPLogger.cpp"
 #include "PPPandaObject.cpp"
-#include "stdafx.cpp"
