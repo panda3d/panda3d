@@ -390,6 +390,17 @@ reload_implicit_pages() {
               "or \"mac\"."));
   PandaFileStreamBuf::_newline_mode = newline_mode;
 #endif  // USE_PANDAFILESTREAM
+
+#ifdef WIN32
+  // We don't necessarily want an error dialog when we fail to load a
+  // .dll file.  But sometimes it is useful for debugging.
+  if (ConfigVariableBool("show-dll-error-dialog", false)) {
+    SetErrorMode(0);
+  } else {
+    SetErrorMode(SEM_FAILCRITICALERRORS);
+  } 
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////

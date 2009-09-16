@@ -50,7 +50,6 @@ load_dso(const DSearchPath &path, const Filename &filename) {
     return NULL;
   }
   string os_specific = abspath.to_os_specific();
-  SetErrorMode(0);
   
   // Try using LoadLibraryEx, if possible.
   typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCTSTR, HANDLE, DWORD);
