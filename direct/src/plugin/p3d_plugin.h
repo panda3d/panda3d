@@ -604,10 +604,12 @@ P3D_new_float_object_func(double value);
 typedef P3D_object *
 P3D_new_string_object_func(const char *string, int length);
 
-/* Returns a new-reference pointer to the top-level scriptable object
-   of the instance.  Scripts running on the host may use this object
-   to communicate with the instance, by using the above methods to set
-   or query properties, and/or call methods, on the instance. */
+/* Returns a borrowed-reference pointer--*not* a new reference--to the
+   top-level scriptable object of the instance.  Scripts running on
+   the host may use this object to communicate with the instance, by
+   using the above methods to set or query properties, and/or call
+   methods, on the instance.  The caller should increment the
+   reference count when storing this object. */
 typedef P3D_object *
 P3D_instance_get_panda_script_object_func(P3D_instance *instance);
 
@@ -632,7 +634,7 @@ P3D_instance_get_panda_script_object_func(P3D_instance *instance);
    above. 
 
    Note that the object's constructor should initialize its reference
-   count to 1.  The instance will increment reference count as a
+   count to 1.  The instance will increment the reference count as a
    result of this call; the caller is responsible for calling DECREF
    on the object after this call to remove its own reference. */
 typedef void
