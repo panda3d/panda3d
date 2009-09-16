@@ -755,26 +755,68 @@ start_p3dpython(P3DInstance *inst) {
   // Populate the new process' environment.
   _env = string();
 
-  // These are the enviroment variables we forward from the current
-  // environment, if they are set.
-  const char *keep[] = {
-    "TMP", "TEMP", "HOME", "USER", 
+  if (!inst_mgr->get_trusted_environment()) {
+    // These are the enviroment variables we forward from the current
+    // environment, if they are set.
+    const char *keep[] = {
+      "TMP", "TEMP", "HOME", "USER", 
 #ifdef _WIN32
-    "SYSTEMROOT", "USERPROFILE", "COMSPEC", "PANDA_ROOT",
+      "SYSTEMROOT", "USERPROFILE", "COMSPEC", "PANDA_ROOT",
 #endif
 #ifdef HAVE_X11
-    "DISPLAY",
+      "DISPLAY",
 #endif
-    NULL
-  };
-  for (int ki = 0; keep[ki] != NULL; ++ki) {
-    char *value = getenv(keep[ki]);
-    if (value != NULL) {
-      _env += keep[ki];
-      _env += "=";
-      _env += value;
-      _env += '\0';
+      NULL
+    };
+    for (int ki = 0; keep[ki] != NULL; ++ki) {
+      char *value = getenv(keep[ki]);
+      if (value != NULL) {
+        _env += keep[ki];
+        _env += "=";
+        _env += value;
+        _env += '\0';
+      }
     }
+
+  } else {
+    // In a trusted environment, we forward *all* environment
+    // variables, except those defined specifically below.
+    const char *dont_keep[] = {
+      "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
+      "PYTHONPATH", "PYTHONHOME", "PRC_PATH", "PANDA_PRC_PATH",
+      NULL
+    };
+
+#ifdef _WIN32
+    // Windows has a leading underscore in the name, and the word
+    // "environ" is a keyword. (!)
+    extern char **_environ;
+    char **global_environ = _environ;
+#else
+    // Posix doesn't have an underscore.
+    extern char **environ;
+    char **global_environ = environ;
+#endif  // _WIN32
+
+    char **ep;
+    for (ep = global_environ; *ep != NULL; ++ep) {
+      string env = *ep;
+      size_t equals = env.find('=');
+      if (equals != string::npos) {
+        string var = env.substr(0, equals);
+        const char *varc = var.c_str();
+        bool found = false;
+        for (int i = 0; dont_keep[i] != NULL && !found; ++i) {
+          found = (strcmp(dont_keep[i], varc) == 0);
+        }
+        if (!found) {
+          // This variable is OK, keep it.
+          _env += env;
+          _env += '\0';
+        }
+      }
+    }
+
   }
 
   // Define some new environment variables.
