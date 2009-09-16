@@ -42,6 +42,8 @@
 
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
+static HMODULE s_hP3DPluginDll = NULL;
+
 P3D_initialize_func *P3D_initialize;
 P3D_new_instance_func *P3D_new_instance;
 P3D_instance_start_func *P3D_instance_start;
@@ -89,7 +91,7 @@ void P3D_NofificationSync(P3D_instance *instance)
 }
 
 PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
-    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_hP3DPluginDll( NULL ), m_handleRequestOnUIThread( true )
+    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true )
 {
     TCHAR tempFolderName[ MAX_PATH ];
     DWORD pathLength = ::GetTempPath( MAX_PATH, tempFolderName );
@@ -99,16 +101,18 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
 
 PPInstance::~PPInstance(  )
 {
-    if ( m_p3dObject )
-    {
-        P3D_OBJECT_DECREF( m_p3dObject );
-    }
     if ( m_p3dInstance )
     {
+        nout << "Finishing P3D instance \n";  
         P3D_instance_finish( m_p3dInstance );
         m_p3dInstance = NULL;
     }
-    UnloadPlugin();
+    if ( m_p3dObject )
+    {
+        P3D_OBJECT_DECREF( m_p3dObject );
+        m_p3dObject = NULL;
+    }
+    // UnloadPlugin();
 }
 
 int PPInstance::DownloadFile( const std::string& from, const std::string& to )
@@ -200,75 +204,77 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 int PPInstance::LoadPlugin( const std::string& dllFilename ) 
 {
     int error(0);
-    std::string filename( dllFilename );
-
-    if ( filename.empty() ) 
+    if ( !s_hP3DPluginDll )
     {
-        // Look for the plugin along the path.
-        filename = P3D_DEFAULT_PLUGIN_FILENAME;
-        filename += ".dll";
-    }
+        std::string filename( dllFilename );
 
-    nout << "Loading " << filename << "\n";
-    m_hP3DPluginDll = LoadLibrary( filename.c_str() );
-    if ( m_hP3DPluginDll == NULL ) 
-    {
-        // Couldn't load the DLL.
-        nout << "Error loading " << filename << " :" << GetLastError() << "\n";
-        return false;
-    }
-
-    char buffer[MAX_PATH];
-    if ( GetModuleFileName( m_hP3DPluginDll, buffer, MAX_PATH ) != 0 ) 
-    {
-        if ( GetLastError() != 0 ) 
+        if ( filename.empty() ) 
         {
-            filename = buffer;
+            // Look for the plugin along the path.
+            filename = P3D_DEFAULT_PLUGIN_FILENAME;
+            filename += ".dll";
+        }
+
+        nout << "Loading " << filename << "\n";
+        s_hP3DPluginDll = LoadLibrary( filename.c_str() );
+        if ( s_hP3DPluginDll == NULL ) 
+        {
+            // Couldn't load the DLL.
+            nout << "Error loading " << filename << " :" << GetLastError() << "\n";
+            return false;
+        }
+
+        char buffer[MAX_PATH];
+        if ( GetModuleFileName( s_hP3DPluginDll, buffer, MAX_PATH ) != 0 ) 
+        {
+            if ( GetLastError() != 0 ) 
+            {
+                filename = buffer;
+            }
+        }
+
+        // Now get all of the function pointers.
+        P3D_initialize = (P3D_initialize_func *)GetProcAddress(s_hP3DPluginDll, "P3D_initialize");  
+        P3D_new_instance = (P3D_new_instance_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_instance");  
+        P3D_instance_start = (P3D_instance_start_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_start");
+        P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_finish");  
+        P3D_instance_setup_window = (P3D_instance_setup_window_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_setup_window");
+        P3D_instance_get_request = (P3D_instance_get_request_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_get_request");  
+        P3D_check_request = (P3D_check_request_func *)GetProcAddress(s_hP3DPluginDll, "P3D_check_request");  
+        P3D_request_finish = (P3D_request_finish_func *)GetProcAddress(s_hP3DPluginDll, "P3D_request_finish");  
+        P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_feed_url_stream");  
+
+        P3D_instance_set_browser_script_object = (P3D_instance_set_browser_script_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_set_browser_script_object");
+        P3D_instance_get_panda_script_object = (P3D_instance_get_panda_script_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_get_panda_script_object");
+        P3D_make_class_definition = (P3D_make_class_definition_func *)GetProcAddress(s_hP3DPluginDll, "P3D_make_class_definition");
+
+        P3D_new_undefined_object = (P3D_new_undefined_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_undefined_object");
+        P3D_new_none_object = (P3D_new_none_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_none_object");
+        P3D_new_bool_object = (P3D_new_bool_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_bool_object");
+        P3D_new_int_object = (P3D_new_int_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_int_object");
+        P3D_new_float_object = (P3D_new_float_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_float_object");
+        P3D_new_string_object = (P3D_new_string_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_string_object");
+
+        // Ensure that all of the function pointers have been found.
+        if (P3D_initialize == NULL ||
+            P3D_new_instance == NULL ||
+            P3D_instance_finish == NULL ||
+            P3D_instance_get_request == NULL ||
+            P3D_check_request == NULL ||
+            P3D_request_finish == NULL ||
+            P3D_instance_get_panda_script_object == NULL ||
+            P3D_instance_set_browser_script_object == NULL ||
+            P3D_instance_feed_url_stream == NULL ||
+            P3D_make_class_definition == NULL ||
+            P3D_new_none_object == NULL ||
+            P3D_new_bool_object == NULL ||
+            P3D_new_int_object == NULL ||
+            P3D_new_float_object == NULL ||
+            P3D_new_string_object == NULL ) 
+        {
+                return ( error = 1 );
         }
     }
-
-    // Now get all of the function pointers.
-    P3D_initialize = (P3D_initialize_func *)GetProcAddress(m_hP3DPluginDll, "P3D_initialize");  
-    P3D_new_instance = (P3D_new_instance_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_instance");  
-    P3D_instance_start = (P3D_instance_start_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_start");
-    P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_finish");  
-    P3D_instance_setup_window = (P3D_instance_setup_window_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_setup_window");
-    P3D_instance_get_request = (P3D_instance_get_request_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_get_request");  
-    P3D_check_request = (P3D_check_request_func *)GetProcAddress(m_hP3DPluginDll, "P3D_check_request");  
-    P3D_request_finish = (P3D_request_finish_func *)GetProcAddress(m_hP3DPluginDll, "P3D_request_finish");  
-    P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_feed_url_stream");  
-
-    P3D_instance_set_browser_script_object = (P3D_instance_set_browser_script_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_set_browser_script_object");
-    P3D_instance_get_panda_script_object = (P3D_instance_get_panda_script_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_instance_get_panda_script_object");
-    P3D_make_class_definition = (P3D_make_class_definition_func *)GetProcAddress(m_hP3DPluginDll, "P3D_make_class_definition");
-
-    P3D_new_undefined_object = (P3D_new_undefined_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_undefined_object");
-    P3D_new_none_object = (P3D_new_none_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_none_object");
-    P3D_new_bool_object = (P3D_new_bool_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_bool_object");
-    P3D_new_int_object = (P3D_new_int_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_int_object");
-    P3D_new_float_object = (P3D_new_float_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_float_object");
-    P3D_new_string_object = (P3D_new_string_object_func *)GetProcAddress(m_hP3DPluginDll, "P3D_new_string_object");
-
-    // Ensure that all of the function pointers have been found.
-    if (P3D_initialize == NULL ||
-        P3D_new_instance == NULL ||
-        P3D_instance_finish == NULL ||
-        P3D_instance_get_request == NULL ||
-        P3D_check_request == NULL ||
-        P3D_request_finish == NULL ||
-        P3D_instance_get_panda_script_object == NULL ||
-        P3D_instance_set_browser_script_object == NULL ||
-        P3D_instance_feed_url_stream == NULL ||
-        P3D_make_class_definition == NULL ||
-        P3D_new_none_object == NULL ||
-        P3D_new_bool_object == NULL ||
-        P3D_new_int_object == NULL ||
-        P3D_new_float_object == NULL ||
-        P3D_new_string_object == NULL ) 
-    {
-            return ( error = 1 );
-    }
-
     // Successfully loaded.
     nout << "Initializing P3D P3D_API_VERSION=" << P3D_API_VERSION << "\n";
     if ( !P3D_initialize( P3D_API_VERSION, "", "", true, "", "", "", false ) ) 
@@ -285,17 +291,17 @@ int PPInstance::UnloadPlugin()
 {
     int error( 0 );
 
-    if ( m_hP3DPluginDll )
+    if ( s_hP3DPluginDll )
     {
         nout << "Unloading P3D dll \n";  
-        if ( !::FreeLibrary( m_hP3DPluginDll ) )
+        if ( !::FreeLibrary( s_hP3DPluginDll ) )
         {
             nout << "Error unloading P3D dll :" << GetLastError << "\n";
             error = 1;
         }
         else
         {  
-            m_hP3DPluginDll = NULL;
+            s_hP3DPluginDll = NULL;
         }
     }
     return error;
@@ -388,7 +394,10 @@ void PPInstance::HandleRequestLoop()
             CP3DActiveXCtrl* parent = ( CP3DActiveXCtrl* )(p3d_inst->_user_data);
             if ( parent )
             {
-                parent->m_instance.HandleRequest( request );
+                if ( parent->m_instance )
+                {
+                    parent->m_instance->HandleRequest( request );
+                }
             }
             else
             {
@@ -410,13 +419,13 @@ void PPInstance::HandleRequestGetUrl( void* data )
     const std::string &url = request->_request._get_url._url;
     CP3DActiveXCtrl* parent = static_cast<CP3DActiveXCtrl*> ( request->_instance->_user_data );
 
-    if ( !parent )
+    if ( !parent || !parent->m_instance )
     {
         return;
     }
 
-    nout << "Handling P3D_RT_get_url request from " << url << "\n";  
-    PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
+    nout << "Handling P3D_RT_get_url request from " << url << "\n";
+    PPDownloadRequest p3dObjectDownloadRequest( *( parent->m_instance ), request ); 
     PPDownloadCallback bsc( p3dObjectDownloadRequest );
     HRESULT hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
     if ( FAILED( hr ) )

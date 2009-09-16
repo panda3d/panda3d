@@ -73,7 +73,5 @@ protected:
     CP3DActiveXCtrl& m_parentCtrl;
     PPLogger m_logger;
 
-    HMODULE m_hP3DPluginDll;
-
     bool m_handleRequestOnUIThread;
 };
