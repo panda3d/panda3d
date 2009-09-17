@@ -33,6 +33,7 @@
 
 class P3DInstance;
 class P3DSession;
+class P3DAuthSession;
 class P3DHost;
 class FileSpec;
 class TiXmlElement;
@@ -75,6 +76,7 @@ public:
                         const string &p3d_filename);
   bool start_instance(P3DInstance *inst);
   void finish_instance(P3DInstance *inst);
+  P3DAuthSession *authorize_instance(P3DInstance *inst);
 
   P3DInstance *validate_instance(P3D_instance *instance);
 
@@ -98,6 +100,7 @@ public:
   void release_temp_filename(const string &filename);
 
   bool find_cert(X509 *cert);
+  string get_cert_dir(X509 *cert);
   static string cert_to_der(X509 *cert);
 
   static P3DInstanceManager *get_global_ptr();
@@ -134,6 +137,7 @@ private:
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;
+  P3DAuthSession *_auth_session;
 
   typedef map<string, P3DSession *> Sessions;
   Sessions _sessions;

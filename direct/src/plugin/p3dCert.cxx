@@ -14,6 +14,7 @@
 
 #include "p3dCert.h"
 #include "wx/cmdline.h"
+#include "wx/filename.h"
          
 #ifdef __WXMAC__
 #include <Carbon/Carbon.h>
@@ -85,6 +86,7 @@ IMPLEMENT_APP(P3DCertApp)
 ////////////////////////////////////////////////////////////////////
 bool P3DCertApp::
 OnInit() {
+  cerr << "OnInit\n";
   // call the base class initialization method, currently it only parses a
   // few common command-line options but it could be do more in the future
   if (!wxApp::OnInit()) {
@@ -103,8 +105,9 @@ OnInit() {
   SetFrontProcess(&psn);
 #endif
 
-  AuthDialog *dialog = new AuthDialog(_cert_filename, _ca_filename);
+  AuthDialog *dialog = new AuthDialog(_cert_filename, _cert_dir);
   SetTopWindow(dialog);
+  cerr << "got dialog " << dialog << "\n";
   dialog->Show(true);
 
   // Return true to enter the main loop and wait for user input.
@@ -132,7 +135,7 @@ OnInitCmdLine(wxCmdLineParser &parser) {
 bool P3DCertApp::
 OnCmdLineParsed(wxCmdLineParser &parser) {
   _cert_filename = parser.GetParam(0);
-  _ca_filename = parser.GetParam(1);
+  _cert_dir = parser.GetParam(1);
   return true;
 }
 
@@ -151,16 +154,19 @@ END_EVENT_TABLE()
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 AuthDialog::
-AuthDialog(const wxString &cert_filename, const wxString &ca_filename) : 
-  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition)
+AuthDialog(const wxString &cert_filename, const wxString &cert_dir) : 
+  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition),
+  _cert_dir(cert_dir)
 {
+  _view_cert_dialog = NULL;
+
   _cert = NULL;
   _stack = NULL;
   _verify_result = -1;
 
   read_cert_file(cert_filename);
   get_common_name();
-  verify_cert(ca_filename);
+  verify_cert();
   layout();
 }
 
@@ -171,6 +177,10 @@ AuthDialog(const wxString &cert_filename, const wxString &ca_filename) :
 ////////////////////////////////////////////////////////////////////
 AuthDialog::
 ~AuthDialog() {
+  if (_view_cert_dialog != NULL) {
+    _view_cert_dialog->Destroy();
+  }
+
   if (_cert != NULL) { 
     X509_free(_cert);
     _cert = NULL;
@@ -189,7 +199,7 @@ AuthDialog::
 void AuthDialog::
 run_clicked(wxCommandEvent &event) {
   cerr << "run\n";
-  Destroy();
+  approve_cert();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -200,6 +210,11 @@ run_clicked(wxCommandEvent &event) {
 void AuthDialog::
 view_cert_clicked(wxCommandEvent &event) {
   cerr << "view cert\n";
+  if (_view_cert_dialog != NULL) {
+    _view_cert_dialog->Destroy();
+  }
+  _view_cert_dialog = new ViewCertDialog(this, _cert);
+  _view_cert_dialog->Show();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +225,41 @@ view_cert_clicked(wxCommandEvent &event) {
 void AuthDialog::
 cancel_clicked(wxCommandEvent &event) {
   cerr << "cancel\n";
+  Destroy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuthDialog::approve_cert
+//       Access: Public
+//  Description: Writes the certificate into the _cert_dir, so
+//               that it will be found by the P3DInstanceManager and
+//               known to be approved.
+////////////////////////////////////////////////////////////////////
+void AuthDialog::
+approve_cert() {
+  assert(_cert != NULL);
+
+  // Make sure the directory exists.
+  wxFileName::Mkdir(_cert_dir, 0777, wxPATH_MKDIR_FULL);
+
+  // Look for an unused filename.
+  wxString pathname;
+  int i = 1;
+  while (true) {
+    pathname.Printf(wxT("%s/p%d.crt"), _cert_dir.c_str(), i);
+    if (!wxFileName::FileExists(pathname)) {
+      break;
+    }
+    ++i;
+  }
+
+  // Sure, there's a slight race condition right now: another process
+  // might attempt to create the same filename.  So what.
+  FILE *fp = fopen(pathname.mb_str(), "w");
+  if (fp != NULL) {
+    PEM_write_X509(fp, _cert);
+    fclose(fp);
+  }
   Destroy();
 }
 
@@ -246,7 +296,7 @@ read_cert_file(const wxString &cert_filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AuthDialog::get_common_name
-//       Access: Public
+//       Access: Private
 //  Description: Extracts the common_name from the certificate.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
@@ -286,12 +336,12 @@ get_common_name() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AuthDialog::verify_cert
-//       Access: Public
+//       Access: Private
 //  Description: Checks whether the certificate is valid by the chain
 //               and initializes _verify_status accordingly.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-verify_cert(const wxString &ca_filename) {
+verify_cert() {
   if (_cert == NULL) {
     _verify_result = -1;
     return;
@@ -301,17 +351,25 @@ verify_cert(const wxString &ca_filename) {
   X509_STORE *store = X509_STORE_new();
   X509_STORE_set_default_paths(store);
 
-  // Read the trusted certificates.
-  FILE *fp = fopen(ca_filename.mb_str(), "r");
-  if (fp == NULL) {
-    cerr << "Couldn't read " << ca_filename << "\n";
-  } else {
-    X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
-    while (c != NULL) {
-      X509_STORE_add_cert(store, c);
-      c = PEM_read_X509(fp, NULL, NULL, (void *)"");
+  // Find the ca-bundle.crt.
+  char *p3dcert_root = getenv("P3DCERT_ROOT");
+  if (p3dcert_root != NULL) {
+    wxString ca_filename = p3dcert_root;
+    ca_filename += "/ca-bundle.crt";
+    
+    // Read the trusted certificates.
+    cerr << "Reading " << ca_filename.mb_str() << "\n";;
+    FILE *fp = fopen(ca_filename.mb_str(), "r");
+    if (fp == NULL) {
+      cerr << "Couldn't read " << ca_filename.mb_str() << "\n";
+    } else {
+      X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
+      while (c != NULL) {
+        X509_STORE_add_cert(store, c);
+        c = PEM_read_X509(fp, NULL, NULL, (void *)"");
+      }
+      fclose(fp);
     }
-    fclose(fp);
   }
 
   // Create the X509_STORE_CTX for verifying the cert and chain.
@@ -429,4 +487,103 @@ get_text(wxString &header, wxString &text) {
     header = _T("Unverified signature!");
     text.Printf(generic_error_cert_text, _verify_result);
   }
+}
+
+
+// The event table for ViewCertDialog.
+BEGIN_EVENT_TABLE(ViewCertDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, ViewCertDialog::run_clicked)
+    EVT_BUTTON(wxID_CANCEL, ViewCertDialog::cancel_clicked)
+END_EVENT_TABLE()
+
+////////////////////////////////////////////////////////////////////
+//     Function: ViewCertDialog::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ViewCertDialog::
+ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
+  wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition),
+  _auth_dialog(auth_dialog),
+  _cert(cert)
+{
+  layout();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ViewCertDialog::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ViewCertDialog::
+~ViewCertDialog() {
+  if (_auth_dialog != NULL) {
+    _auth_dialog->_view_cert_dialog = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ViewCertDialog::run_clicked
+//       Access: Public
+//  Description: The user clicks the "Run" button.
+////////////////////////////////////////////////////////////////////
+void ViewCertDialog::
+run_clicked(wxCommandEvent &event) {
+  cerr << "run\n";
+  if (_auth_dialog != NULL){ 
+    _auth_dialog->approve_cert();
+  }
+  Destroy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ViewCertDialog::run_clicked
+//       Access: Public
+//  Description: The user clicks the "Cancel" button.
+////////////////////////////////////////////////////////////////////
+void ViewCertDialog::
+cancel_clicked(wxCommandEvent &event) {
+  cerr << "cancel\n";
+  Destroy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ViewCertDialog::layout
+//       Access: Private
+//  Description: Arranges the text and controls within the dialog.
+////////////////////////////////////////////////////////////////////
+void ViewCertDialog::
+layout() {
+  // Format the certificate text for display in the dialog.
+  assert(_cert != NULL);
+
+  BIO *mbio = BIO_new(BIO_s_mem());
+  X509_print(mbio, _cert);
+
+  char *pp;
+  long pp_size = BIO_get_mem_data(mbio, &pp);
+  wxString cert_body(pp, wxConvUTF8, pp_size);
+  BIO_free(mbio);
+
+  wxPanel *panel = new wxPanel(this);
+  wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
+
+  wxStaticText *text1 = new wxStaticText
+    (panel, wxID_ANY, cert_body, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+  vsizer->Add(text1, 0, wxCENTER | wxALL, 10);
+
+  // Create the run / cancel buttons.
+  wxBoxSizer *bsizer = new wxBoxSizer(wxHORIZONTAL);
+
+  wxButton *run_button = new wxButton(panel, wxID_OK, _T("Run"));
+  bsizer->Add(run_button, 0, wxALIGN_CENTER | wxALL, 5);
+
+  wxButton *cancel_button = new wxButton(panel, wxID_CANCEL, _T("Cancel"));
+  bsizer->Add(cancel_button, 0, wxALIGN_CENTER | wxALL, 5);
+
+  vsizer->Add(bsizer, 0, wxALIGN_CENTER | wxALL, 5);
+
+  panel->SetSizer(vsizer);
+  panel->SetAutoLayout(true);
+  vsizer->Fit(this);
 }

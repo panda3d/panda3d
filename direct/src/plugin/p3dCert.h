@@ -27,6 +27,8 @@
 #include <stdio.h>
 using namespace std;
 
+class ViewCertDialog;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DCertApp
 // Description : This is the wxApp that drives this application.
@@ -39,7 +41,7 @@ public:
 
 private:
   wxString _cert_filename;
-  wxString _ca_filename;
+  wxString _cert_dir;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -54,30 +56,59 @@ private:
 ////////////////////////////////////////////////////////////////////
 class AuthDialog : public wxDialog {
 public:
-  AuthDialog(const wxString &cert_filename, const wxString &ca_filename);
+  AuthDialog(const wxString &cert_filename, const wxString &cert_dir);
   virtual ~AuthDialog();
 
   void run_clicked(wxCommandEvent &event);
   void view_cert_clicked(wxCommandEvent &event);
   void cancel_clicked(wxCommandEvent &event);
 
+  void approve_cert();
+
 private:
   void read_cert_file(const wxString &cert_filename);
   void get_common_name();
-  void verify_cert(const wxString &ca_filename);
+  void verify_cert();
 
   void layout();
   void get_text(wxString &header, wxString &text);
+
+public:
+  ViewCertDialog *_view_cert_dialog;
 
 private:
   // any class wishing to process wxWidgets events must use this macro
   DECLARE_EVENT_TABLE()
 
+  wxString _cert_dir;
   X509 *_cert;
   STACK *_stack;
 
   wxString _common_name;
   int _verify_result;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : ViewCertDialog
+// Description : This is the detailed view of the particular
+//               certificate.
+////////////////////////////////////////////////////////////////////
+class ViewCertDialog : public wxDialog {
+public:
+  ViewCertDialog(AuthDialog *auth_dialog, X509 *cert);
+  virtual ~ViewCertDialog();
+
+  void run_clicked(wxCommandEvent &event);
+  void cancel_clicked(wxCommandEvent &event);
+
+private:
+  void layout();
+
+private:
+  DECLARE_EVENT_TABLE()
+
+  AuthDialog *_auth_dialog;
+  X509 *_cert;
 };
 
 #endif

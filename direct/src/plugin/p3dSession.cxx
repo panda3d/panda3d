@@ -816,7 +816,6 @@ start_p3dpython(P3DInstance *inst) {
         }
       }
     }
-
   }
 
   // Define some new environment variables.
@@ -963,13 +962,6 @@ start_p3dpython(P3DInstance *inst) {
   _pipe_read.open_read(from_fd[0]);
   _pipe_write.open_write(to_fd[1]);
 #endif // _WIN32
-
-  // Create the error stream for log output.  This means opening the
-  // logfile, if we have one, or keeping the standard error if we
-  // don't.
-#ifdef _WIN32
-#else  // _WIN32
-#endif  // _WIN32
 
   // Get the filename of the Panda3D multifile.  We need to pass this
   // to p3dpython.

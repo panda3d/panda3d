@@ -25,6 +25,7 @@
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
+    p3dAuthSession.h p3dAuthSession.I \
     p3dBoolObject.h \
     p3dConcreteSequence.h \
     p3dConcreteStruct.h \
@@ -57,6 +58,7 @@
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
+    p3dAuthSession.cxx \
     p3dBoolObject.cxx \
     p3dConcreteSequence.cxx \
     p3dConcreteStruct.cxx \

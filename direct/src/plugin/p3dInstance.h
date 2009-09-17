@@ -106,6 +106,9 @@ public:
   void auth_button_clicked();
   void play_button_clicked();
 
+  void auth_finished_sub_thread();
+  void auth_finished_main_thread();
+
 private:
   class ImageDownload : public P3DFileDownload {
   public:
@@ -209,6 +212,9 @@ private:
   P3DWindowParams _wparams;
 
   bool _p3d_trusted;
+  
+  // For downloading the p3dcert authorization program.
+  P3DPackage *_p3dcert_package;
 
   int _instance_id;
   string _session_key;
@@ -219,6 +225,7 @@ private:
   bool _auth_button_approved;
 
   P3DSession *_session;
+  P3DAuthSession *_auth_session;
 
 #ifdef __APPLE__
   // On OSX, we have to get a copy of the framebuffer data back from
@@ -275,6 +282,7 @@ private:
   BakedRequests _baked_requests;
 
   friend class P3DSession;
+  friend class P3DAuthSession;
   friend class ImageDownload;
   friend class P3DWindowParams;
   friend class P3DPackage;

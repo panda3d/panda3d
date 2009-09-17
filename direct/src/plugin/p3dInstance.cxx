@@ -85,6 +85,7 @@ P3DInstance(P3D_request_ready_func *func,
   _got_fparams = false;
   _got_wparams = false;
   _p3d_trusted = false;
+  _p3dcert_package = NULL;
 
   _fparams.set_tokens(tokens, num_tokens);
   _fparams.set_args(argc, argv);
@@ -96,6 +97,7 @@ P3DInstance(P3D_request_ready_func *func,
   _auto_start = false;
   _auth_button_approved = false;
   _session = NULL;
+  _auth_session = NULL;
   _panda3d = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
@@ -140,6 +142,12 @@ P3DInstance::
 ~P3DInstance() {
   assert(_session == NULL);
 
+  if (_auth_session != NULL) {
+    _auth_session->shutdown(false);
+    unref_delete(_auth_session);
+    _auth_session = NULL;
+  }
+
   P3D_OBJECT_XDECREF(_browser_script_object);
 
   nout << "panda_script_object ref = "
@@ -157,6 +165,11 @@ P3DInstance::
   if (_image_package != NULL) {
     _image_package->remove_instance(this);
     _image_package = NULL;
+  }
+
+  if (_p3dcert_package != NULL) {
+    _p3dcert_package->remove_instance(this);
+    _p3dcert_package = NULL;
   }
 
   if (_splash_window != NULL) {
@@ -929,20 +942,18 @@ splash_button_clicked_main_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 auth_button_clicked() {
-  // Here's where we need to invoke the authorization program.
   cerr << "auth clicked\n";
 
-  // After the authorization program has returned, check the signature
-  // again.
-  if (check_p3d_signature()) {
-    // Set this flag to indicate that the user has clicked on the red
-    // "auth" button an successfully approved the application.  This
-    // eliminates the need to click on the green "start" button.
-    _auth_button_approved = true;
-    mark_p3d_trusted();
-  } else {
-    mark_p3d_untrusted();
+  // Delete the previous session and create a new one.
+  if (_auth_session != NULL) {
+    _auth_session->shutdown(false);
+    unref_delete(_auth_session);
+    _auth_session = NULL;
   }
+  
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  _auth_session = inst_mgr->authorize_instance(this);
+  _auth_session->ref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -959,6 +970,49 @@ play_button_clicked() {
     set_background_image(IT_launch);
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->start_instance(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::auth_finished_sub_thread
+//       Access: Public
+//  Description: Called by the P3DAuthSession code in a sub-thread
+//               when the auth dialog exits (for instance, because the
+//               user approved the certificate, or cancelled).
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+auth_finished_sub_thread() {
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlElement *xrequest = new TiXmlElement("request");
+  xrequest->SetAttribute("rtype", "notify");
+  xrequest->SetAttribute("message", "authfinished");
+  doc->LinkEndChild(xrequest);
+
+  add_raw_request(doc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::auth_finished_main_thread
+//       Access: Public
+//  Description: Called only in the main thread, indirectly from
+//               auth_finished_sub_thread(), as the result of
+//               the user closing the auth dialog.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+auth_finished_main_thread() {
+  // After the authorization program has returned, check the signature
+  // again.
+  if (check_p3d_signature()) {
+    // Set this flag to indicate that the user has clicked on the red
+    // "auth" button and successfully approved the application's
+    // certificate.  This eliminates the need to click on the green
+    // "start" button.
+    _auth_button_approved = true;
+    mark_p3d_trusted();
+
+  } else {
+    // Still untrusted.
+    mark_p3d_untrusted();
   }
 }
 
@@ -984,10 +1038,7 @@ check_p3d_signature() {
   // is complete.
   return true;
 
-  nout << "check_p3d_signature\n";
   int num_signatures = _mf_reader.get_num_signatures();
-  nout << "file has " << num_signatures << " signatures\n";
-
   for (int i = 0; i < num_signatures; ++i) {
     const P3DMultifileReader::CertChain &chain = _mf_reader.get_signature(i);
 
@@ -1019,6 +1070,27 @@ void P3DInstance::
 mark_p3d_untrusted() {
   // Failed test.
   nout << "p3d untrusted\n";
+
+  if (_p3dcert_package == NULL) {
+    // We have to go download this package.
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+    _p3dcert_package = host->get_package("p3dcert", "");
+    if (_p3dcert_package != NULL) {
+      _p3dcert_package->add_instance(this);
+    }
+    
+    // When the package finishes downloading, we will come back here.
+    return;
+  }
+
+  if (!_p3dcert_package->get_ready()) {
+    // Wait for it to finish downloading.
+    return;
+  }
+
+  // OK, we've got the authorization program; we can put up the red
+  // button now.
   set_background_image(IT_unauth);
   set_button_image(IT_auth_ready);
   make_splash_window();
@@ -1332,6 +1404,10 @@ handle_notify_request(const string &message) {
     // started Python yet).  We use this as a sneaky way to forward
     // the event from the sub-thread to the main thread.
     splash_button_clicked_main_thread();
+
+  } else if (message == "authfinished") {
+    // Similarly for the "auth finished" message.
+    auth_finished_main_thread();
   }
 }
 
@@ -1506,7 +1582,9 @@ make_splash_window() {
     if (_image_package == NULL) {
       P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
       _image_package = host->get_package("images", "");
-      _image_package->add_instance(this);
+      if (_image_package != NULL) {
+        _image_package->add_instance(this);
+      }
     }
   }
 
@@ -1607,9 +1685,18 @@ set_button_image(ImageType image_type) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
-  if (package == _image_package) {
-    // A special case: the image package gets immediately downloaded,
-    // without waiting for anything else.
+  if (package == _image_package || package == _p3dcert_package) {
+    // A special case: the image package and the p3dcert package get
+    // immediately downloaded, without waiting for anything else.
+    if (package == _p3dcert_package) {
+      // If we're downloading p3dcert, though, put up a progress bar.
+      make_splash_window();
+      if (_splash_window != NULL) {
+        _splash_window->set_install_progress(0.0);
+        _splash_window->set_install_label("Getting Authorization Dialog");
+      }
+    }
+
     package->activate_download();
     return;
   }
@@ -1785,6 +1872,18 @@ report_instance_progress(double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_progress(P3DPackage *package, double progress) {
+  if (package == _image_package) {
+    // Ignore this.
+    return;
+  }
+  if (package == _p3dcert_package) {
+    // This gets its own progress bar.
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(progress);
+    }
+    return;
+  }
+
   if (_download_package_index >= (int)_downloading_packages.size() ||
       package != _downloading_packages[_download_package_index]) {
     // Quietly ignore a download progress report from an unexpected
@@ -1822,6 +1921,7 @@ report_package_done(P3DPackage *package, bool success) {
       nout << "No <config> entry in image package\n";
       return;
     }
+    cerr << "downloaded image_package\n";
     for (int i = 0; i < (int)IT_none; ++i) {
       if (_image_files[i]._use_standard_image) {
         // This image indexes into the package.  Go get the standard
@@ -1838,11 +1938,28 @@ report_package_done(P3DPackage *package, bool success) {
           // still exists, put it up.
           if (_splash_window != NULL &&
               _image_files[i]._image_placement != P3DSplashWindow::IP_none) {
+            cerr << "putting up image " << i << "\n";
             P3DSplashWindow::ImagePlacement image_placement = _image_files[i]._image_placement;
             _splash_window->set_image_filename(image_filename, image_placement);
           }
         }
       }
+    }
+    return;
+  }
+
+  if (package == _p3dcert_package) {
+    // Another special case: successfully downloading p3dcert means we
+    // can enable the auth button.
+
+    // Take down the download progress.
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(0.0);
+      _splash_window->set_install_label("");
+    }
+
+    if (success) {
+      mark_p3d_untrusted();
     }
     return;
   }

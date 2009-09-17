@@ -15,6 +15,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
+#include "p3dAuthSession.h"
 #include "p3dHost.h"
 #include "p3d_plugin_config.h"
 #include "p3dWinSplashWindow.h"
@@ -67,6 +68,8 @@ P3DInstanceManager() {
   _true_object = new P3DBoolObject(true);
   _false_object = new P3DBoolObject(false);
 
+  _auth_session = NULL;
+
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to
   // this application.
@@ -109,6 +112,11 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
+
+  if (_auth_session != NULL) {
+    unref_delete(_auth_session);
+    _auth_session = NULL;
+  }
 
   Hosts::iterator hi;
   for (hi = _hosts.begin(); hi != _hosts.end(); ++hi) {
@@ -379,6 +387,29 @@ finish_instance(P3DInstance *inst) {
   }
 
   unref_delete(inst);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::authorize_instance
+//       Access: Public
+//  Description: Creates a new P3DAuthSession object, to pop up a
+//               window for the user to authorize the certificate on
+//               this instance.  Automatically terminates any
+//               previously-created P3DAuthSession.
+////////////////////////////////////////////////////////////////////
+P3DAuthSession *P3DInstanceManager::
+authorize_instance(P3DInstance *inst) {
+  if (_auth_session != NULL) {
+    // We only want one auth_session window open at a time, to
+    // minimize user confusion, so close any previous window.
+    _auth_session->shutdown(true);
+    unref_delete(_auth_session);
+    _auth_session = NULL;
+  }
+
+  _auth_session = new P3DAuthSession(inst);
+  _auth_session->ref();
+  return _auth_session;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -678,25 +709,7 @@ find_cert(X509 *cert) {
   // OpenSSL's get_by_subject() approach, except we hash the whole
   // cert, not just the subject.  (Since we also store self-signed
   // certs in this list, we can't trust the subject name alone.)
-
-  static const size_t hash_size = 16;
-  unsigned char md[hash_size];
-
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
-  MD5_Update(&ctx, der.data(), der.size());
-  MD5_Final(md, &ctx);
-
-  string basename;
-  static const size_t keep_hash = 6;
-  for (size_t i = 0; i < keep_hash; ++i) {
-    int high = (md[i] >> 4) & 0xf;
-    int low = md[i] & 0xf;
-    basename += P3DInstanceManager::encode_hexdigit(high);
-    basename += P3DInstanceManager::encode_hexdigit(low);
-  }
-
-  string this_cert_dir = _certs_dir + "/" + basename;
+  string this_cert_dir = get_cert_dir(cert);
   nout << "looking in " << this_cert_dir << "\n";
 
   vector<string> contents;
@@ -728,6 +741,36 @@ find_cert(X509 *cert) {
 
   // Nothing matched.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_cert_dir
+//       Access: Public
+//  Description: Returns the directory searched for this particular
+//               certificate.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+get_cert_dir(X509 *cert) {
+  string der = cert_to_der(cert);
+
+  static const size_t hash_size = 16;
+  unsigned char md[hash_size];
+
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+  MD5_Update(&ctx, der.data(), der.size());
+  MD5_Final(md, &ctx);
+
+  string basename;
+  static const size_t keep_hash = 6;
+  for (size_t i = 0; i < keep_hash; ++i) {
+    int high = (md[i] >> 4) & 0xf;
+    int low = md[i] & 0xf;
+    basename += P3DInstanceManager::encode_hexdigit(high);
+    basename += P3DInstanceManager::encode_hexdigit(low);
+  }
+
+  return _certs_dir + "/" + basename;
 }
 
 ////////////////////////////////////////////////////////////////////

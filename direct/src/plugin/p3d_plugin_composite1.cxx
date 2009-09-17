@@ -1,4 +1,5 @@
 #include "p3d_plugin.cxx"
+#include "p3dAuthSession.cxx"
 #include "p3dBoolObject.cxx"
 #include "p3dConcreteSequence.cxx"
 #include "p3dConcreteStruct.cxx"
