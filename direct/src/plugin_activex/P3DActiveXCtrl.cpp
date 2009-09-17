@@ -308,6 +308,46 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     ::SysFreeString( url );
 
+    CComPtr<IHTMLElementCollection> pHtmlElementCollect;
+    hr = pHtml2Doc->get_scripts( &pHtmlElementCollect );
+    if ( FAILED( hr ) || !pHtmlElementCollect )
+    {
+        return ( error = -1 );
+    }
+    long collectionLength = 0;
+    hr = pHtmlElementCollect->get_length( &collectionLength );
+    if ( FAILED( hr ) || !pHtmlElementCollect )
+    {
+        return ( error = -1 );
+    }
+    if ( collectionLength < 1 )
+    {
+        // javascript engine was not specified on the page.
+        // hence we need to initialize it by infusing javascript 
+        // element tags
+
+        CComPtr<IHTMLElement> spHtmlElement; 
+        hr = pHtml2Doc->createElement( CComBSTR( "script" ), &spHtmlElement );
+        if ( SUCCEEDED( hr ) && spHtmlElement )
+        {
+            hr = spHtmlElement->put_language( CComBSTR( "javascript" ) );
+            if ( SUCCEEDED( hr ) )
+            {
+                CComPtr<IHTMLDOMNode> spElementDomNode;
+                hr = spHtmlElement->QueryInterface( IID_IHTMLDOMNode, ( void** )&spElementDomNode );
+                if ( SUCCEEDED( hr ) && spElementDomNode )
+                {
+                    CComPtr<IHTMLDOMNode> spHtmlDomNode;
+                    hr = pHtml2Doc->QueryInterface( IID_IHTMLDOMNode, ( void** )&spHtmlDomNode );
+                    if ( SUCCEEDED( hr ) && spHtmlDomNode )
+                    {
+                        CComPtr<IHTMLDOMNode> newNode;
+                        hr = spHtmlDomNode->appendChild( spElementDomNode, &newNode );
+                    }
+                }                    
+            }
+        }
+    }
     std::string p3dDllFilename;
     error = m_instance.DownloadP3DComponents( p3dDllFilename );
     if ( !error && !( p3dDllFilename.empty() ) )
