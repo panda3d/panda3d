@@ -353,6 +353,7 @@
   #define wx_ipath $[wildcard $[WX_IPATH]]
   #define wx_lpath $[wildcard $[WX_LPATH]]
   #define wx_cflags $[WX_CFLAGS]
+  #define wx_lflags $[WX_LFLAGS]
   #define wx_libs $[WX_LIBS]
   #define wx_framework $[WX_FRAMEWORK]
 #endif

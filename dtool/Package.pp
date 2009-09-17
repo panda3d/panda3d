@@ -360,6 +360,7 @@
   #define WX_CFLAGS $[filter-out -I%,$[cflags]]
   #define WX_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
   #define WX_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
+  #define WX_LFLAGS $[filter-out -l%,$[libs]]
   #define WX_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
