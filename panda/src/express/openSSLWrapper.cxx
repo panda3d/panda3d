@@ -42,6 +42,13 @@ OpenSSLWrapper() {
   if (!ca_bundle_filename.empty()) {
     load_certificates(ca_bundle_filename);
   }
+
+  int num_certs = ssl_certificates.get_num_unique_values();
+  for (int ci = 0; ci < num_certs; ci++) {
+    string cert_file = ssl_certificates.get_unique_value(ci);
+    Filename filename = Filename::expand_from(cert_file);
+    load_certificates(filename);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

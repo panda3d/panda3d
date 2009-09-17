@@ -54,6 +54,7 @@ extern ConfigVariableBool keep_temporary_files;
 extern EXPCL_PANDAEXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;
 extern ConfigVariableFilename ca_bundle_filename;
+extern ConfigVariableList ssl_certificates;
 
 // Expose the Config variable for Python access.
 BEGIN_PUBLISH
