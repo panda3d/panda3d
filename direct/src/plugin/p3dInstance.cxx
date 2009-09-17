@@ -932,22 +932,6 @@ auth_button_clicked() {
   // Here's where we need to invoke the authorization program.
   cerr << "auth clicked\n";
 
-  /*
-  assert(_splash_window != NULL);
-  int num_signatures = _mf_reader.get_num_signatures();
-  if (num_signatures > 0) {
-    // Ask the user to approve the first certificate.
-    _splash_window->show_auth_dialog(_mf_reader.get_signature(0));
-
-  } else {
-    // Unsigned application!  We'll give the user a dialog to tell him
-    // the bad news.  Presumbly the "user" here is the developer
-    // attempting to host his own application in a web page.
-    _splash_window->show_auth_dialog(P3DMultifileReader::CertChain());
-  }
-  */
-
-  /*
   // After the authorization program has returned, check the signature
   // again.
   if (check_p3d_signature()) {
@@ -959,7 +943,6 @@ auth_button_clicked() {
   } else {
     mark_p3d_untrusted();
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////

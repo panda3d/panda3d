@@ -18,7 +18,6 @@
 #include "p3d_plugin_common.h"
 #include "p3dFileParams.h"
 #include "p3dWindowParams.h"
-#include "p3dMultifileReader.h"
 
 class P3DInstance;
 
@@ -58,9 +57,6 @@ public:
   virtual bool handle_event(P3D_event_data event);
 
   virtual void set_button_active(bool flag);
-
-  virtual void show_auth_dialog(const P3DMultifileReader::CertChain &cert_chain);
-
 
 protected:
   // This ImageData base class provides minimal functionality for

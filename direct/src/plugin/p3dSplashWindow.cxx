@@ -153,17 +153,6 @@ set_button_active(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::show_auth_dialog
-//       Access: Public, Virtual
-//  Description: Pops up a P3DAuthDialog of a type appropriate to the
-//               current platform, to allow the user to approve (or
-//               deny) the indicated certificate chain.
-////////////////////////////////////////////////////////////////////
-void P3DSplashWindow::
-show_auth_dialog(const P3DMultifileReader::CertChain &cert_chain) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::read_image_data
 //       Access: Protected
 //  Description: Reads the image filename and sets image parameters
