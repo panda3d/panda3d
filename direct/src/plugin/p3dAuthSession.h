@@ -78,6 +78,6 @@ private:
   THREAD _wait_thread;
 };
 
-#include "P3DAuthSession.I"
+#include "p3dAuthSession.I"
 
 #endif

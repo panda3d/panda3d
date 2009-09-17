@@ -268,7 +268,6 @@ wt_thread_run() {
   pid_t result = waitpid(_p3dcert_pid, &status, WNOHANG);
   if (result == -1) {
     perror("waitpid");
-    break;
   }
       
   nout << "p3dcert process has successfully stopped.\n";
