@@ -33,6 +33,11 @@ egg-object-type-polylight       <Scalar> polylight { 1 }
 egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
 egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
 egg-object-type-indexed         <Scalar> indexed { 1 }
+egg-object-type-seq10           <Switch> { 1 } <Scalar> fps { 10 }
+egg-object-type-seq8            <Switch> { 1 } <Scalar> fps { 8 }
+egg-object-type-seq6            <Switch> { 1 } <Scalar>  fps { 6 }
+egg-object-type-seq4            <Switch> { 1 } <Scalar>  fps { 4 }
+egg-object-type-seq2            <Switch> { 1 } <Scalar>  fps { 2 }
 
 egg-object-type-binary          <Scalar> alpha { binary }
 egg-object-type-dual            <Scalar> alpha { dual }
