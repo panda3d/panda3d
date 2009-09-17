@@ -113,4 +113,12 @@ egg-object-type-ghost           <Scalar> collide-mask { 0 }
 # renders the object in add mode instead of the normal opaque mode.
 egg-object-type-glow            <Scalar> blend { add }
 
+
+# This names the ca-bundle.crt file in its standard installation dir.
+# This is useful for validating https servers correctly.  It is also
+# used when packaging up the p3dcert application for publish.
+#define install_dir $[$[upcase $[PACKAGE]]_INSTALL]
+#define install_data_dir $[or $[INSTALL_DATA_DIR],$[install_dir]/shared]
+ssl-certificates $[install_data_dir]/ca-bundle.crt
+
 #end 20_panda.prc

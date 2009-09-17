@@ -70,7 +70,11 @@ ConfigVariableDouble collect_tcp_interval
 ("collect-tcp-interval", 0.2);
 
 ConfigVariableList ssl_certificates
-("ssl-certificates");
+("ssl-certificates",
+ PRC_DESC("This names one or more certificate authority files for OpenSSL "
+          "to use to verify whether SSL certificates are trusted or not.  "
+          "The file(s) named by this setting should contain one or more "
+          "PEM-formatted certificates from trusted certificate authorities."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libexpress
