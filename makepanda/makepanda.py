@@ -2998,6 +2998,14 @@ if (PkgSkip("PYTHON")==0):
   OPTS=['DIR:direct/src/directbase', 'BUILDING:DIRECT']
   TargetAdd('directbase_directbase.obj', opts=OPTS, input='directbase.cxx')
 
+  TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
+  TargetAdd('packpanda.exe', input='packpanda.obj')
+  TargetAdd('packpanda.exe', opts=['WINUSER'])
+
+  TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx') 	 
+  TargetAdd('eggcacher.exe', input='eggcacher.obj') 	 
+  TargetAdd('eggcacher.exe', opts=['WINUSER'])
+
 #
 # DIRECTORY: direct/src/dcparser/
 #
@@ -4031,14 +4039,6 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
-
-#
-# Freeze whatever we need to freeze.
-#
-
-if (PkgSkip("PYTHON")==0):
-  TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
-  TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
 
 #
 # Build the runtime.
