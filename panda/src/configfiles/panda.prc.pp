@@ -119,6 +119,6 @@ egg-object-type-glow            <Scalar> blend { add }
 # used when packaging up the p3dcert application for publish.
 #define install_dir $[$[upcase $[PACKAGE]]_INSTALL]
 #define install_data_dir $[or $[INSTALL_DATA_DIR],$[install_dir]/shared]
-ssl-certificates $[install_data_dir]/ca-bundle.crt
+ca-bundle-filename $[install_data_dir]/ca-bundle.crt
 
 #end 20_panda.prc

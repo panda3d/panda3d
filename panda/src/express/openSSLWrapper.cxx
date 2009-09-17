@@ -39,11 +39,8 @@ OpenSSLWrapper() {
   X509_STORE_set_default_paths(_x509_store);
 
   // Load in any default certificates listed in the Config.prc file.
-  int num_certs = ssl_certificates.get_num_unique_values();
-  for (int ci = 0; ci < num_certs; ci++) {
-    string cert_file = ssl_certificates.get_unique_value(ci);
-    Filename filename = Filename::expand_from(cert_file);
-    load_certificates(filename);
+  if (!ca_bundle_filename.empty()) {
+    load_certificates(ca_bundle_filename);
   }
 }
 
