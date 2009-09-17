@@ -100,6 +100,9 @@ P3DInstance(P3D_request_ready_func *func,
   _splash_window = NULL;
   _instance_window_opened = false;
   _stuff_to_download = false;
+  _download_package_index = 0;
+  _total_download_size = 0;
+  _total_downloaded = 0;
   
   INIT_LOCK(_request_lock);
   _requested_stop = false;
@@ -892,7 +895,6 @@ make_xml() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 splash_button_clicked_sub_thread() {
-  cerr << "splash sub\n";
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlElement *xrequest = new TiXmlElement("request");
   xrequest->SetAttribute("rtype", "notify");
@@ -912,7 +914,6 @@ splash_button_clicked_sub_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 splash_button_clicked_main_thread() {
-  cerr << "splash main\n";
   if (!_p3d_trusted) {
     auth_button_clicked();
   } else if (_session == NULL) {
@@ -931,6 +932,7 @@ auth_button_clicked() {
   // Here's where we need to invoke the authorization program.
   cerr << "auth clicked\n";
 
+  /*
   assert(_splash_window != NULL);
   int num_signatures = _mf_reader.get_num_signatures();
   if (num_signatures > 0) {
@@ -943,6 +945,7 @@ auth_button_clicked() {
     // attempting to host his own application in a web page.
     _splash_window->show_auth_dialog(P3DMultifileReader::CertChain());
   }
+  */
 
   /*
   // After the authorization program has returned, check the signature
