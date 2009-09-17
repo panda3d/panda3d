@@ -1,4 +1,5 @@
 #include "p3d_plugin.cxx"
+#include "p3dAuthDialog.cxx"
 #include "p3dBoolObject.cxx"
 #include "p3dConcreteSequence.cxx"
 #include "p3dConcreteStruct.cxx"
@@ -24,6 +25,7 @@
 #include "p3dTemporaryFile.cxx"
 #include "p3dMainObject.cxx"
 #include "p3dUndefinedObject.cxx"
+#include "p3dWinAuthDialog.cxx"
 #include "p3dWinSplashWindow.cxx"
 #include "p3dX11SplashWindow.cxx"
 #include "p3dWindowParams.cxx"

@@ -22,6 +22,8 @@
 #include "p3dSplashWindow.h"
 #include "p3d_lock.h"
 
+class P3DWinAuthDialog;
+
 #include <windows.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -39,6 +41,8 @@ public:
                                   ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
+
+  virtual void show_auth_dialog(const P3DMultifileReader::CertChain &cert_chain);
 
   static void register_window_class();
   static void unregister_window_class();
@@ -87,6 +91,8 @@ private:
   bool _got_install;
   string _install_label;
   double _install_progress;
+  bool _needs_auth_dialog;
+  P3DMultifileReader::CertChain _auth_cert_chain;
   LOCK _install_lock;
 
   ButtonState _drawn_bstate;
@@ -99,6 +105,8 @@ private:
   DWORD _thread_id;
   HWND _hwnd;
   HBRUSH _blue_brush;
+
+  P3DWinAuthDialog *_auth_dialog;
 
   static bool _registered_window_class;
 };

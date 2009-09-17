@@ -25,6 +25,7 @@
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
+    p3dAuthDialog.h p3dAuthDialog.I \
     p3dBoolObject.h \
     p3dConcreteSequence.h \
     p3dConcreteStruct.h \
@@ -50,6 +51,7 @@
     p3dStringObject.h \
     p3dTemporaryFile.h p3dTemporaryFile.I \
     p3dUndefinedObject.h \
+    p3dWinAuthDialog.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
     p3dX11SplashWindow.h p3dX11SplashWindow.I \
     p3dWindowParams.h p3dWindowParams.I \
@@ -57,6 +59,7 @@
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
+    p3dAuthDialog.cxx \
     p3dBoolObject.cxx \
     p3dConcreteSequence.cxx \
     p3dConcreteStruct.cxx \
@@ -82,6 +85,7 @@
     p3dStringObject.cxx \
     p3dTemporaryFile.cxx \
     p3dUndefinedObject.cxx \
+    p3dWinAuthDialog.cxx \
     p3dWinSplashWindow.cxx \
     p3dX11SplashWindow.cxx \
     p3dWindowParams.cxx

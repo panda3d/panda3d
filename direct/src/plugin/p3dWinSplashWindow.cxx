@@ -16,6 +16,8 @@
 
 #ifdef _WIN32
 
+#include "p3dWinAuthDialog.h"
+
 bool P3DWinSplashWindow::_registered_window_class = false;
 
 ////////////////////////////////////////////////////////////////////
@@ -33,9 +35,12 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _blue_brush = NULL;
   _thread_running = false;
   _install_progress = 0.0;
+  _needs_auth_dialog = false;
 
   _drawn_bstate = BS_hidden;
   _drawn_progress = 0.0;
+
+  _auth_dialog = NULL;
 
   INIT_LOCK(_install_lock);
 }
@@ -152,6 +157,33 @@ void P3DWinSplashWindow::
 set_install_progress(double install_progress) {
   ACQUIRE_LOCK(_install_lock);
   _install_progress = install_progress;
+  RELEASE_LOCK(_install_lock);
+
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
+
+    if (!_thread_running && _thread_continue) {
+      // The user must have closed the window.  Let's shut down the
+      // instance, too.
+      _inst->request_stop();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::show_auth_dialog
+//       Access: Public, Virtual
+//  Description: Pops up a P3DAuthDialog of a type appropriate to the
+//               current platform, to allow the user to approve (or
+//               deny) the indicated certificate chain.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+show_auth_dialog(const P3DMultifileReader::CertChain &cert_chain) {
+  // We need to direct this request into the sub-thread.
+  ACQUIRE_LOCK(_install_lock);
+  _needs_auth_dialog = true;
+  _auth_cert_chain = cert_chain;
   RELEASE_LOCK(_install_lock);
 
   if (_thread_id != 0) {
@@ -289,6 +321,18 @@ thread_run() {
     DispatchMessage(&msg);
 
     ACQUIRE_LOCK(_install_lock);
+
+    if (_needs_auth_dialog) {
+      // A request from the main thread to pop up an auth dialog.
+      _needs_auth_dialog = false;
+
+      if (_auth_dialog != NULL) {
+        delete _auth_dialog;
+      }
+      _auth_dialog = new P3DWinAuthDialog;
+      _auth_dialog->read_cert(_auth_cert_chain);
+      _auth_dialog->open();
+    }
 
     update_image(_background_image);
     update_image(_button_ready_image);
@@ -578,6 +622,11 @@ close_window() {
   _button_ready_image.dump_image();
   _button_rollover_image.dump_image();
   _button_click_image.dump_image();
+
+  if (_auth_dialog != NULL) {
+    delete _auth_dialog;
+    _auth_dialog = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -783,27 +832,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       EndPaint(hwnd, &ps);
     }
     return true;
-
-    /*
-  case WM_DRAWITEM:
-    // Draw a text label placed within the window.
-    {
-      DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lparam;
-      FillRect(dis->hDC, &(dis->rcItem), WHITE_BRUSH);
-
-      static const int text_buffer_size = 512;
-      char text_buffer[text_buffer_size];
-      GetWindowText(dis->hwndItem, text_buffer, text_buffer_size);
-
-      HFONT font = (HFONT)GetStockObject(ANSI_VAR_FONT); 
-      SelectObject(dis->hDC, font);
-      SetBkColor(dis->hDC, 0x00ffffff);
-
-      DrawText(dis->hDC, text_buffer, -1, &(dis->rcItem), 
-               DT_VCENTER | DT_CENTER | DT_SINGLELINE);
-    }
-    return true;
-    */
 
   case WM_MOUSEMOVE: 
     set_mouse_data(LOWORD(lparam), HIWORD(lparam), _mouse_down);
