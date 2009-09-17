@@ -71,7 +71,6 @@ class p3dcert(package):
     cvar = ConfigVariableFilename('ca-bundle-filename')
     filename = Filename(cvar.getValue())
     if not filename.empty():
-        print filename
         file(filename, newName = 'ca-bundle.crt', extract = True)
         
 

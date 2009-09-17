@@ -1034,10 +1034,8 @@ check_p3d_signature() {
     return true;
   }
 
-  // Temporary hack: disabling further security checks until this code
-  // is complete.
-  return true;
-
+  // See if we've previously approved the certificate--any
+  // certificate--that's signing this p3d file.
   int num_signatures = _mf_reader.get_num_signatures();
   for (int i = 0; i < num_signatures; ++i) {
     const P3DMultifileReader::CertChain &chain = _mf_reader.get_signature(i);
