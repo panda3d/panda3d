@@ -56,12 +56,10 @@ class AuthDialog : public wxDialog {
 public:
   AuthDialog(const wxString &cert_filename, const wxString &ca_filename);
   virtual ~AuthDialog();
-  
-  /*
-  // event handlers (these functions should _not_ be virtual)
-  void OnQuit(wxCommandEvent &event);
-  void OnAbout(wxCommandEvent &event);
-  */
+
+  void run_clicked(wxCommandEvent &event);
+  void view_cert_clicked(wxCommandEvent &event);
+  void cancel_clicked(wxCommandEvent &event);
 
 private:
   void read_cert_file(const wxString &cert_filename);
@@ -73,7 +71,7 @@ private:
 
 private:
   // any class wishing to process wxWidgets events must use this macro
-  //  DECLARE_EVENT_TABLE()
+  DECLARE_EVENT_TABLE()
 
   X509 *_cert;
   STACK *_stack;

@@ -1,4 +1,4 @@
-from pandac.PandaModules import getModelPath, Filename
+from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -63,7 +63,17 @@ class images(package):
 class p3dcert(package):
     # This special application, used to pop up a dialog to prompt the
     # user to accept or deny unknown applications, is its own package.
+    config(display_name = "Authorization Dialog")
+
     file('p3dcert.exe')
+
+    # Also add the certificate authority file.
+    cvar = ConfigVariableFilename('ca-bundle-filename')
+    filename = Filename(cvar.getValue())
+    if not filename.empty():
+        print filename
+        file(filename, newName = 'ca-bundle.crt', extract = True)
+        
 
 class panda3d(package):
     # The core Panda3D package.  Contains Python and most of the graphics

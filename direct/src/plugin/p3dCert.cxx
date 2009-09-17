@@ -73,22 +73,8 @@ no_cert_text = _T
 
    "Click Cancel to avoid running this application.");
 
-// the event tables connect the wxWidgets events with the functions
-// (event handlers) which process them. It can be also done at
-// run-time, but for the simple menu events like this the static
-// method is much simpler.
-/*
-BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-    EVT_MENU(Minimal_Quit,  MyFrame::OnQuit)
-    EVT_MENU(Minimal_About, MyFrame::OnAbout)
-END_EVENT_TABLE()
-*/
-
-// Create a new application object: this macro will allow wxWidgets to
-// create the application object during program execution (it's better
-// than using a static object for many reasons) and also implements
-// the accessor function wxGetApp() which will return the reference of
-// the right type (i.e. P3DCertApp and not wxApp)
+// wxWidgets boilerplate macro to define main() and start up the
+// application.
 IMPLEMENT_APP(P3DCertApp)
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +104,7 @@ OnInit() {
 #endif
 
   AuthDialog *dialog = new AuthDialog(_cert_filename, _ca_filename);
+  SetTopWindow(dialog);
   dialog->Show(true);
 
   // Return true to enter the main loop and wait for user input.
@@ -148,6 +135,15 @@ OnCmdLineParsed(wxCmdLineParser &parser) {
   _ca_filename = parser.GetParam(1);
   return true;
 }
+
+
+// The event table for AuthDialog.
+#define VIEW_CERT_BUTTON  (wxID_HIGHEST + 1)
+BEGIN_EVENT_TABLE(AuthDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, AuthDialog::run_clicked)
+    EVT_BUTTON(VIEW_CERT_BUTTON, AuthDialog::view_cert_clicked)
+    EVT_BUTTON(wxID_CANCEL, AuthDialog::cancel_clicked)
+END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AuthDialog::Constructor
@@ -183,6 +179,38 @@ AuthDialog::
     sk_free(_stack);
     _stack = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuthDialog::run_clicked
+//       Access: Public
+//  Description: The user clicks the "Run" button.
+////////////////////////////////////////////////////////////////////
+void AuthDialog::
+run_clicked(wxCommandEvent &event) {
+  cerr << "run\n";
+  Destroy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuthDialog::run_clicked
+//       Access: Public
+//  Description: The user clicks the "View Certificate" button.
+////////////////////////////////////////////////////////////////////
+void AuthDialog::
+view_cert_clicked(wxCommandEvent &event) {
+  cerr << "view cert\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuthDialog::run_clicked
+//       Access: Public
+//  Description: The user clicks the "Cancel" button.
+////////////////////////////////////////////////////////////////////
+void AuthDialog::
+cancel_clicked(wxCommandEvent &event) {
+  cerr << "cancel\n";
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,6 +356,7 @@ layout() {
     wxStaticText *text0 = new wxStaticText
       (panel, wxID_ANY, header, wxDefaultPosition, wxDefaultSize,
        wxALIGN_CENTER);
+    text0->SetFont(*bold_font);
     vsizer->Add(text0, 0, wxCENTER | wxALL, 10);
   }
 
@@ -345,7 +374,7 @@ layout() {
   }
 
   if (_cert != NULL) {
-    wxButton *view_button = new wxButton(panel, wxID_ANY, _T("View Certificate"));
+    wxButton *view_button = new wxButton(panel, VIEW_CERT_BUTTON, _T("View Certificate"));
     bsizer->Add(view_button, 0, wxALIGN_CENTER | wxALL, 5);
   }
 
@@ -381,7 +410,7 @@ get_text(wxString &header, wxString &text) {
   case X509_V_ERR_CERT_HAS_EXPIRED:
   case X509_V_ERR_CRL_NOT_YET_VALID:
   case X509_V_ERR_CRL_HAS_EXPIRED:
-    header = _T("Expired signatured!");
+    header = _T("Expired signature!");
     text.Printf(expired_cert_text, _common_name.c_str());
     break;
 

@@ -220,8 +220,8 @@ set_p3d_url(const string &p3d_url) {
   // Maybe it's time to open a splash window now.
   make_splash_window();
 
-  // Mark the time we started downloading, so we'll know when to set
-  // the install label.
+  // Mark the time we started downloading, so we'll know when to reveal
+  // the progress bar.
 #ifdef _WIN32
   _start_dl_instance_tick = GetTickCount();
 #else

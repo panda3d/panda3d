@@ -1429,7 +1429,17 @@ class Packager:
             else:
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
             if file.extract:
-                xextract = self.getFileSpec('extract', file.filename, file.newName)
+                if file.text:
+                    # Better write it to a temporary file, so we can
+                    # get its hash.
+                    tfile = Filename.temporary('', 'p3d_')
+                    open(tfile.toOsSpecific(), 'wb').write(file.text)
+                    xextract = self.getFileSpec('extract', tfile, file.newName)
+                    tfile.unlink()
+
+                else:
+                    # The file data exists on disk already.
+                    xextract = self.getFileSpec('extract', file.filename, file.newName)
                 self.extracts.append((file.newName.lower(), xextract))
 
             xcomponent = TiXmlElement('component')
