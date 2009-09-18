@@ -86,7 +86,6 @@ IMPLEMENT_APP(P3DCertApp)
 ////////////////////////////////////////////////////////////////////
 bool P3DCertApp::
 OnInit() {
-  cerr << "OnInit\n";
   // call the base class initialization method, currently it only parses a
   // few common command-line options but it could be do more in the future
   if (!wxApp::OnInit()) {
@@ -107,7 +106,6 @@ OnInit() {
 
   AuthDialog *dialog = new AuthDialog(_cert_filename, _cert_dir);
   SetTopWindow(dialog);
-  cerr << "got dialog " << dialog << "\n";
   dialog->Show(true);
 
   // Return true to enter the main loop and wait for user input.
@@ -198,7 +196,6 @@ AuthDialog::
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
 run_clicked(wxCommandEvent &event) {
-  cerr << "run\n";
   approve_cert();
 }
 
@@ -209,7 +206,6 @@ run_clicked(wxCommandEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
 view_cert_clicked(wxCommandEvent &event) {
-  cerr << "view cert\n";
   if (_view_cert_dialog != NULL) {
     _view_cert_dialog->Destroy();
   }
@@ -224,7 +220,6 @@ view_cert_clicked(wxCommandEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
 cancel_clicked(wxCommandEvent &event) {
-  cerr << "cancel\n";
   Destroy();
 }
 
@@ -273,12 +268,12 @@ void AuthDialog::
 read_cert_file(const wxString &cert_filename) {
   FILE *fp = fopen(cert_filename.mb_str(), "r");
   if (fp == NULL) {
-    cerr << "Couldn't read " << cert_filename << "\n";
+    cerr << "Couldn't read " << cert_filename.mb_str() << "\n";
     return;
   }
   _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
   if (_cert == NULL) {
-    cerr << "Could not read certificate in " << cert_filename << ".\n";
+    cerr << "Could not read certificate in " << cert_filename.mb_str() << ".\n";
     fclose(fp);
     return;
   }
@@ -371,7 +366,6 @@ verify_cert() {
     ca_filename += wxT("/ca-bundle.crt");
     
     // Read the trusted certificates.
-    cerr << "Reading " << ca_filename.mb_str() << "\n";;
     FILE *fp = fopen(ca_filename.mb_str(), "r");
     if (fp == NULL) {
       cerr << "Couldn't read " << ca_filename.mb_str() << "\n";
@@ -401,7 +395,7 @@ verify_cert() {
 
   X509_STORE_free(store);
 
-  cerr << "Got certificate from " << _friendly_name
+  cerr << "Got certificate from " << _friendly_name.mb_str()
        << ", verify_result = " << _verify_result << "\n";
 }
 
@@ -543,7 +537,6 @@ ViewCertDialog::
 ////////////////////////////////////////////////////////////////////
 void ViewCertDialog::
 run_clicked(wxCommandEvent &event) {
-  cerr << "run\n";
   if (_auth_dialog != NULL){ 
     _auth_dialog->approve_cert();
   }
@@ -557,7 +550,6 @@ run_clicked(wxCommandEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void ViewCertDialog::
 cancel_clicked(wxCommandEvent &event) {
-  cerr << "cancel\n";
   Destroy();
 }
 
