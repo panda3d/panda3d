@@ -598,6 +598,13 @@ add_signature(const Filename &certificate, const Filename &chain,
               const Filename &pkey, const string &password) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
+  if (chain.empty() && pkey.empty()) {
+    // If the second two filenames are empty, assume we're going for
+    // the composite mode, where everything's stuffed into the first
+    // file.
+    return add_signature(certificate, password);
+  }
+
   CertChain cert_chain;
 
   // Read the certificate file from VFS.  First, read the complete
@@ -673,6 +680,98 @@ add_signature(const Filename &certificate, const Filename &chain,
   return result;
 }
 #endif  // HAVE_OPENSSL
+
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_signature
+//       Access: Published
+//  Description: Adds a new signature to the Multifile.  This
+//               signature associates the indicated certificate with
+//               the current contents of the Multifile.  When the
+//               Multifile is read later, the signature will still be
+//               present only if the Multifile is unchanged; any
+//               subsequent changes to the Multifile will
+//               automatically invalidate and remove the signature.
+//
+//               This flavor of add_signature() reads the certificate,
+//               private key, and certificate chain from the same
+//               PEM-formatted file.  It takes the first private key
+//               found as the intended key, and then uses the first
+//               certificate found that matches that key as the
+//               signing certificate.  Any other certificates in the
+//               file are taken to be part of the chain.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+add_signature(const Filename &composite, const string &password) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  // First, read the complete file into memory.
+  string composite_data;
+  if (!vfs->read_file(composite, composite_data, true)) {
+    express_cat.info()
+      << "Could not read " << composite << ".\n";
+    return false;
+  }
+
+  // Get the private key.
+  BIO *pkey_mbio = BIO_new_mem_buf((void *)composite_data.data(), composite_data.size());
+  EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, NULL, NULL,
+                                               (void *)password.c_str());
+  BIO_free(pkey_mbio);
+  if (evp_pkey == NULL) {
+    express_cat.info()
+      << "Could not read private key in " << composite << ".\n";
+    return false;
+  }
+
+  // Now read all of the certificates.
+  CertChain cert_chain;
+
+  BIO *chain_mbio = BIO_new_mem_buf((void *)composite_data.data(), composite_data.size());
+  X509 *c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+  while (c != NULL) {
+    cert_chain.push_back(c);
+    c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+  }
+  BIO_free(chain_mbio);
+
+  if (cert_chain.empty()) {
+    express_cat.info()
+      << "Could not read certificates in " << composite << ".\n";
+    return false;
+  }
+
+  // Now find the certificate that matches the signature, and move it
+  // to the front of the chain.
+  size_t i;
+  bool found_match = false;
+  for (i = 0; i < cert_chain.size(); ++i) {
+    X509 *c = cert_chain[i]._cert;
+    if (X509_check_private_key(c, evp_pkey)) {
+      found_match = true;
+      if (i != 0) {
+        // Move this entry to the beginning.
+        cert_chain.insert(cert_chain.begin(), cert_chain[i]);
+        cert_chain.erase(cert_chain.begin() + i + 1);
+      }
+      break;
+    }
+  }
+
+  if (!found_match) {
+    express_cat.info()
+      << "No certificates in " << composite << " match key.\n";
+    return false;
+  }
+
+  bool result = add_signature(cert_chain, evp_pkey);
+
+  EVP_PKEY_free(evp_pkey);
+
+  return result;
+}
+#endif  // HAVE_OPENSSL
+
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::add_signature
@@ -755,6 +854,24 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
     if (!flush()) {
       return false;
     }
+  }
+
+  if (cert_chain.empty()) {
+    express_cat.info()
+      << "No certificate given.\n";
+    return false;
+  }
+
+  if (pkey == NULL) {
+    express_cat.info()
+      << "No private key given.\n";
+    return false;
+  }
+
+  if (!X509_check_private_key(cert_chain[0]._cert, pkey)) {
+    express_cat.info()
+      << "Private key does not match certificate.\n"; 
+    return false;
   }
   
   // Now encode that list of certs to a stream in DER form.
@@ -871,42 +988,54 @@ get_signature_subject_name(int n) const {
 
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_signature_common_name
+//     Function: Multifile::get_signature_friendly_name
 //       Access: Published
-//  Description: Returns the "common name" for the nth signature found
-//               on the Multifile, encoded in utf-8.  This is a subset
-//               of the subject_name, but it is probably a friendlier
-//               string to present to a user.  See the comments in
-//               get_num_signatures().
+//  Description: Returns a "friendly name" for the nth signature found
+//               on the Multifile.  This attempts to extract out the
+//               most meaningful part of the subject name.  It returns
+//               the emailAddress, if it is defined; otherwise, it
+//               returns the commonName.
+
+//               See the comments in get_num_signatures().
 ////////////////////////////////////////////////////////////////////
 string Multifile::
-get_signature_common_name(int n) const {
+get_signature_friendly_name(int n) const {
   const CertChain &cert_chain = get_signature(n);
   nassertr(!cert_chain.empty(), string());
 
-  // A complex OpenSSL interface to extract out the common name in
-  // utf-8.
-  X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
-  if (xname != NULL) {
-    int pos = X509_NAME_get_index_by_NID(xname, NID_commonName, -1);
-    if (pos != -1) {
-      // We just get the first common name.  I guess it's possible to
-      // have more than one; not sure what that means in this context.
-      X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
-      if (xentry != NULL) {
-        ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
-        if (data != NULL) {
-          // We use "print" to dump the output to a memory BIO.  Is
-          // there an easier way to decode the ASN1_STRING?  Curse
-          // these incomplete docs.
-          BIO *mbio = BIO_new(BIO_s_mem());
-          ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
+  static const int nid_choices[] = {
+    NID_pkcs9_emailAddress,
+    NID_commonName,
+    -1,
+  };
 
-          char *pp;
-          long pp_size = BIO_get_mem_data(mbio, &pp);
-          string name(pp, pp_size);
-          BIO_free(mbio);
-          return name;
+  // Choose the first NID that exists on the cert.
+  for (int ni = 0; nid_choices[ni] != -1; ++ni) {
+    int nid = nid_choices[ni];
+
+    // A complex OpenSSL interface to extract out the name in utf-8.
+    X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
+    if (xname != NULL) {
+      int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
+      if (pos != -1) {
+        // We just get the first common name.  I guess it's possible to
+        // have more than one; not sure what that means in this context.
+        X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
+        if (xentry != NULL) {
+          ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
+          if (data != NULL) {
+            // We use "print" to dump the output to a memory BIO.  Is
+            // there an easier way to decode the ASN1_STRING?  Curse
+            // these incomplete docs.
+            BIO *mbio = BIO_new(BIO_s_mem());
+            ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
+            
+            char *pp;
+            long pp_size = BIO_get_mem_data(mbio, &pp);
+            string name(pp, pp_size);
+            BIO_free(mbio);
+            return name;
+          }
         }
       }
     }
@@ -2081,6 +2210,8 @@ clear_subfiles() {
     delete subfile;
   }
   _cert_special.clear();
+
+  _signatures.clear();
 #endif  // HAVE_OPENSSL
 
   Subfiles::iterator fi;

@@ -224,17 +224,19 @@ help() {
     "      generate slightly smaller files, but compression takes longer.  The\n"
     "      default is -" << default_compression_level << ".\n\n"
 
-    "  -S file.crt,[chain.crt],file.key[,\"password\"]\n"
+    "  -S file.crt[,chain.crt[,file.key[,\"password\"]]]\n"
     "      Sign the multifile.  The signing certificate should be in PEM form in\n"
     "      file.crt, with its private key in PEM form in file.key.  If the key\n"
     "      is encrypted on-disk, specify the decryption password as the third\n"
     "      option.  If a certificate chain is required, chain.crt should also\n"
-    "      be specified; note that the commas should be supplied even if this\n"
-    "      optional filename is omitted.\n"
+    "      be specified; note that the separating commas should be supplied\n"
+    "      even if this optional filename is omitted.\n"
+    "      You may also provide a single composite file that contains the\n"
+    "      certificate, chain, and key in the same file.\n"
     "      PEM form is the form accepted by the Apache web server.  The\n"
     "      signature is written to the multifile to prove it is unchanged; any\n"
     "      subsequent change to the multifile will invalidate the signature.\n"
-    "      This parameter may be repeated to sign the multifile with different\n"
+    "      This parameter may be repeated to sign the multifile with additional\n"
     "      certificates.\n\n";
 }
 
@@ -391,7 +393,13 @@ add_files(const vector_string &params) {
 
   bool okflag = do_add_files(multifile, filenames);
 
-  if (multifile->needs_repack()) {
+  bool needs_repack = multifile->needs_repack();
+  if (append) {
+    // If we specified -r mode, we always repack.
+    needs_repack = true;
+  }
+
+  if (needs_repack) {
     if (!multifile->repack()) {
       cerr << "Failed to write " << multifile_name << ".\n";
       okflag = false;
@@ -529,27 +537,27 @@ sign_multifile() {
   vector_string::iterator si;
   for (si = sign_params.begin(); si != sign_params.end(); ++si) {
     const string &param = (*si);
+    Filename certificate, chain, pkey;
+    string password;
+
     size_t comma1 = param.find(',');
     if (comma1 == string::npos) {
-      cerr << "Signing parameter requires two commas: " << param << "\n";
-      return false;
-    }
-    size_t comma2 = param.find(',', comma1 + 1);
-    if (comma2 == string::npos) {
-      cerr << "Signing parameter requires two commas: " << param << "\n";
-      return false;
-    }
-    size_t comma3 = param.find(',', comma2 + 1);
-
-    Filename certificate = Filename::from_os_specific(param.substr(0, comma1));
-    Filename chain = Filename::from_os_specific(param.substr(comma1 + 1, comma2 - comma1 - 1));
-    Filename pkey;
-    string password;
-    if (comma3 != string::npos) {
-      pkey = Filename::from_os_specific(param.substr(comma2 + 1, comma3 - comma2 - 1));
-      password = param.substr(comma3 + 1);
+      certificate = Filename::from_os_specific(param);
     } else {
-      pkey = Filename::from_os_specific(param.substr(comma2 + 1));
+      certificate = Filename::from_os_specific(param.substr(0, comma1));
+      size_t comma2 = param.find(',', comma1 + 1);
+      if (comma2 == string::npos) {
+        chain = Filename::from_os_specific(param.substr(comma1 + 1));
+      } else {
+        chain = Filename::from_os_specific(param.substr(comma1 + 1, comma2 - comma1 - 1));
+        size_t comma3 = param.find(',', comma2 + 1);
+        if (comma3 == string::npos) {
+          pkey = Filename::from_os_specific(param.substr(comma2 + 1));
+        } else {
+          pkey = Filename::from_os_specific(param.substr(comma2 + 1, comma3 - comma2 - 1));
+          password = param.substr(comma3 + 1);
+        }
+      }
     }
 
     if (!multifile->add_signature(certificate, chain, pkey, password)) {
@@ -675,7 +683,7 @@ list_files(const vector_string &params) {
   if (num_signatures != 0) {
     cout << "\n";
     for (i = 0; i < num_signatures; ++i) {
-      cout << "Signed by " << multifile->get_signature_common_name(i);
+      cout << "Signed by " << multifile->get_signature_friendly_name(i);
       int verify_result = multifile->validate_signature_certificate(i);
       if (verify_result == 0) {
         cout << " (certificate validated)\n";

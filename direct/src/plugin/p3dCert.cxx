@@ -165,7 +165,7 @@ AuthDialog(const wxString &cert_filename, const wxString &cert_dir) :
   _verify_result = -1;
 
   read_cert_file(cert_filename);
-  get_common_name();
+  get_friendly_name();
   verify_cert();
   layout();
 }
@@ -295,39 +295,52 @@ read_cert_file(const wxString &cert_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::get_common_name
+//     Function: AuthDialog::get_friendly_name
 //       Access: Private
-//  Description: Extracts the common_name from the certificate.
+//  Description: Extracts the "friendly name" from the certificate:
+//               the common name or email name.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-get_common_name() {
+get_friendly_name() {
   if (_cert == NULL) {
-    _common_name.clear();
+    _friendly_name.clear();
     return;
   }
 
-  // A complex OpenSSL interface to extract out the common name in
-  // utf-8.
-  X509_NAME *xname = X509_get_subject_name(_cert);
-  if (xname != NULL) {
-    int pos = X509_NAME_get_index_by_NID(xname, NID_commonName, -1);
-    if (pos != -1) {
-      // We just get the first common name.  I guess it's possible to
-      // have more than one; not sure what that means in this context.
-      X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
-      if (xentry != NULL) {
-        ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
-        if (data != NULL) {
-          // We use "print" to dump the output to a memory BIO.  Is
-          // there an easier way to decode the ASN1_STRING?  Curse
-          // these incomplete docs.
-          BIO *mbio = BIO_new(BIO_s_mem());
-          ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
 
-          char *pp;
-          long pp_size = BIO_get_mem_data(mbio, &pp);
-          _common_name = wxString(pp, wxConvUTF8, pp_size);
-          BIO_free(mbio);
+  static const int nid_choices[] = {
+    NID_pkcs9_emailAddress,
+    NID_commonName,
+    -1,
+  };
+
+  // Choose the first NID that exists on the cert.
+  for (int ni = 0; nid_choices[ni] != -1; ++ni) {
+    int nid = nid_choices[ni];
+
+    // A complex OpenSSL interface to extract out the name in utf-8.
+    X509_NAME *xname = X509_get_subject_name(_cert);
+    if (xname != NULL) {
+      int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
+      if (pos != -1) {
+        // We just get the first common name.  I guess it's possible to
+        // have more than one; not sure what that means in this context.
+        X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
+        if (xentry != NULL) {
+          ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
+          if (data != NULL) {
+            // We use "print" to dump the output to a memory BIO.  Is
+            // there an easier way to decode the ASN1_STRING?  Curse
+            // these incomplete docs.
+            BIO *mbio = BIO_new(BIO_s_mem());
+            ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
+            
+            char *pp;
+            long pp_size = BIO_get_mem_data(mbio, &pp);
+            _friendly_name = wxString(pp, wxConvUTF8, pp_size);
+            BIO_free(mbio);
+            return;
+          }
         }
       }
     }
@@ -388,7 +401,7 @@ verify_cert() {
 
   X509_STORE_free(store);
 
-  cerr << "Got certificate from " << _common_name
+  cerr << "Got certificate from " << _friendly_name
        << ", verify_result = " << _verify_result << "\n";
 }
 
@@ -461,7 +474,7 @@ get_text(wxString &header, wxString &text) {
     break;
 
   case 0:
-    text.Printf(verified_cert_text, _common_name.c_str(), _common_name.c_str(), _common_name.c_str());
+    text.Printf(verified_cert_text, _friendly_name.c_str(), _friendly_name.c_str(), _friendly_name.c_str());
     break;
 
   case X509_V_ERR_CERT_NOT_YET_VALID:
@@ -469,12 +482,12 @@ get_text(wxString &header, wxString &text) {
   case X509_V_ERR_CRL_NOT_YET_VALID:
   case X509_V_ERR_CRL_HAS_EXPIRED:
     header = _T("Expired signature!");
-    text.Printf(expired_cert_text, _common_name.c_str());
+    text.Printf(expired_cert_text, _friendly_name.c_str());
     break;
 
   case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
     header = _T("Unverified signature!");
-    text.Printf(unknown_auth_cert_text, _common_name.c_str());
+    text.Printf(unknown_auth_cert_text, _friendly_name.c_str());
     break;
       
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:

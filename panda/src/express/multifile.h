@@ -89,6 +89,7 @@ PUBLISHED:
     INLINE CertRecord(X509 *cert);
     INLINE CertRecord(const CertRecord &copy);
     INLINE ~CertRecord();
+    INLINE void operator = (const CertRecord &other);
     X509 *_cert;
   };
   typedef pvector<CertRecord> CertChain;
@@ -97,13 +98,15 @@ PUBLISHED:
                      const Filename &chain,
                      const Filename &pkey,
                      const string &password = "");
+  bool add_signature(const Filename &composite, 
+                     const string &password = "");
   bool add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey);
   bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
 
   int get_num_signatures() const;
   const CertChain &get_signature(int n) const;
   string get_signature_subject_name(int n) const;
-  string get_signature_common_name(int n) const;
+  string get_signature_friendly_name(int n) const;
   string get_signature_public_key(int n) const;
   void write_signature_certificate(int n, ostream &out) const;
 

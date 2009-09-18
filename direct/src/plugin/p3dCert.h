@@ -67,7 +67,7 @@ public:
 
 private:
   void read_cert_file(const wxString &cert_filename);
-  void get_common_name();
+  void get_friendly_name();
   void verify_cert();
 
   void layout();
@@ -84,7 +84,7 @@ private:
   X509 *_cert;
   STACK *_stack;
 
-  wxString _common_name;
+  wxString _friendly_name;
   int _verify_result;
 };
 

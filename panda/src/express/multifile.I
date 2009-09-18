@@ -568,3 +568,14 @@ INLINE Multifile::CertRecord::
 ~CertRecord() {
   X509_free(_cert);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Copy Assignment
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::CertRecord::
+operator = (const Multifile::CertRecord &other) {
+  X509_free(_cert);
+  _cert = X509_dup(other._cert);
+}
