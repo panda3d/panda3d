@@ -2995,16 +2995,18 @@ TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
 #
 
 if (PkgSkip("PYTHON")==0):
-  OPTS=['DIR:direct/src/directbase']
+  OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
+  DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
   TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
   TargetAdd('packpanda.exe', input='packpanda.obj')
-  TargetAdd('packpanda.exe', opts=['WINUSER'])
+  TargetAdd('packpanda.exe', opts=['PYTHON'])
 
-  TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx') 	 
-  TargetAdd('eggcacher.exe', input='eggcacher.obj') 	 
-  TargetAdd('eggcacher.exe', opts=['WINUSER'])
+  DefSymbol("BUILDING:EGGCACHER", "IMPORT_MODULE", "direct.directscripts.eggcacher")
+  TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx')
+  TargetAdd('eggcacher.exe', input='eggcacher.obj')
+  TargetAdd('eggcacher.exe', opts=['PYTHON'])
 
 #
 # DIRECTORY: direct/src/dcparser/
