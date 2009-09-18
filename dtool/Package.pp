@@ -355,7 +355,7 @@
 
 #if $[and $[HAVE_WX],$[WX_CONFIG]]
   #define cflags $[shell $[WX_CONFIG] --cflags]
-  #define libs $[shell $[WX_CONFIG] --libs adv,html,xml,core,base]
+  #define libs $[shell $[WX_CONFIG] --libs core,base]
 
   #define WX_CFLAGS $[filter-out -I%,$[cflags]]
   #define WX_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
