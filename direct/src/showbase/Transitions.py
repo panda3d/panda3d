@@ -92,6 +92,7 @@ class Transitions:
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
         transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, FADE_SORT_INDEX),
+                                  Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
                                                 # self.alphaOn,
@@ -112,6 +113,7 @@ class Transitions:
         self.loadFade()
 
         transitionIval = Sequence(Func(self.fade.reparentTo,aspect2d,FADE_SORT_INDEX),
+                                  Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
                                                 # self.alphaOff,
