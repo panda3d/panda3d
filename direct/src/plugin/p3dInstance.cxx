@@ -131,6 +131,17 @@ P3DInstance(P3D_request_ready_func *func,
   // We'll start off with the "download" image displayed in the splash
   // window (when it opens), until we get stuff downloaded.
   set_background_image(IT_download);
+
+  // We'd better ask for the image package up front, even if it turns
+  // out we don't need it for this particular app.  We'll probably use
+  // it eventually, and it's good to have it loaded early, so we can
+  // put up a splash image (for instance, the above IT_download image)
+  // while we download the real contents.
+  P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+  _image_package = host->get_package("images", "");
+  if (_image_package != NULL) {
+    _image_package->add_instance(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -942,8 +953,6 @@ splash_button_clicked_main_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 auth_button_clicked() {
-  cerr << "auth clicked\n";
-
   // Delete the previous session and create a new one.
   if (_auth_session != NULL) {
     _auth_session->shutdown(false);
@@ -1203,7 +1212,6 @@ scan_app_desc_file(TiXmlDocument *doc) {
   }
 
   nout << "_auto_start = " << _auto_start << "\n";
-
 
   if (_hidden && _got_wparams) {
     _wparams.set_window_type(P3D_WT_hidden);
@@ -1540,7 +1548,6 @@ make_splash_window() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   // Go get the required images.
-  bool any_standard_images = false;
   for (int i = 0; i < (int)IT_none; ++i) {
     string token_keyword = string(_image_type_names[i]) + "_img";
     if (!_fparams.has_token(token_keyword)) {
@@ -1548,7 +1555,6 @@ make_splash_window() {
       // image.  We do this via the P3DPackage interface, so we can
       // use the cached version on disk if it's good.
       _image_files[i]._use_standard_image = true;
-      any_standard_images = true;
       
     } else {
       // We have an explicit image specified for this slot, so just
@@ -1571,18 +1577,6 @@ make_splash_window() {
       download->set_filename(_image_files[i]._temp_filename->get_filename());
       
       start_download(download);
-    }
-  }
-
-  if (any_standard_images) {
-    // If any of the images requires an image from the standard image
-    // package, go get that package.
-    if (_image_package == NULL) {
-      P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
-      _image_package = host->get_package("images", "");
-      if (_image_package != NULL) {
-        _image_package->add_instance(this);
-      }
     }
   }
 
@@ -1919,7 +1913,7 @@ report_package_done(P3DPackage *package, bool success) {
       nout << "No <config> entry in image package\n";
       return;
     }
-    cerr << "downloaded image_package\n";
+
     for (int i = 0; i < (int)IT_none; ++i) {
       if (_image_files[i]._use_standard_image) {
         // This image indexes into the package.  Go get the standard
@@ -1936,7 +1930,6 @@ report_package_done(P3DPackage *package, bool success) {
           // still exists, put it up.
           if (_splash_window != NULL &&
               _image_files[i]._image_placement != P3DSplashWindow::IP_none) {
-            cerr << "putting up image " << i << "\n";
             P3DSplashWindow::ImagePlacement image_placement = _image_files[i]._image_placement;
             _splash_window->set_image_filename(image_filename, image_placement);
           }
