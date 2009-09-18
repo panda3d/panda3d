@@ -2995,8 +2995,8 @@ TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
 #
 
 if (PkgSkip("PYTHON")==0):
-  OPTS=['DIR:direct/src/directbase', 'BUILDING:DIRECT']
-  TargetAdd('directbase_directbase.obj', opts=OPTS, input='directbase.cxx')
+  OPTS=['DIR:direct/src/directbase']
+  TargetAdd('directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
   TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
   TargetAdd('packpanda.exe', input='packpanda.obj')
