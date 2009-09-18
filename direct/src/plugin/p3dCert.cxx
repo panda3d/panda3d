@@ -367,8 +367,8 @@ verify_cert() {
   // Find the ca-bundle.crt.
   char *p3dcert_root = getenv("P3DCERT_ROOT");
   if (p3dcert_root != NULL) {
-    wxString ca_filename = p3dcert_root;
-    ca_filename += "/ca-bundle.crt";
+    wxString ca_filename(p3dcert_root, wxConvUTF8);
+    ca_filename += wxT("/ca-bundle.crt");
     
     // Read the trusted certificates.
     cerr << "Reading " << ca_filename.mb_str() << "\n";;
