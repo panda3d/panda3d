@@ -390,7 +390,6 @@ verify_cert() {
     _verify_result = X509_STORE_CTX_get_error(ctx);
   }
 
-  X509_STORE_CTX_cleanup(ctx);
   X509_STORE_CTX_free(ctx);
 
   X509_STORE_free(store);
