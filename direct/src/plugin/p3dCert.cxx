@@ -414,7 +414,7 @@ layout() {
 
   wxFont font = panel->GetFont();
   wxFont *bold_font = wxTheFontList->FindOrCreateFont
-    (font.GetPointSize() * 1.5,
+    (font.GetPointSize() * 1.5f,
      font.GetFamily(), font.GetStyle(), wxFONTWEIGHT_BOLD);
 
   if (!header.IsEmpty()) {
