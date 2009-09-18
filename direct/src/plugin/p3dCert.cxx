@@ -516,7 +516,8 @@ END_EVENT_TABLE()
 ////////////////////////////////////////////////////////////////////
 ViewCertDialog::
 ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
-  wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition),
+wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition,
+         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
   _auth_dialog(auth_dialog),
   _cert(cert)
 {
@@ -581,9 +582,18 @@ layout() {
   wxPanel *panel = new wxPanel(this);
   wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
 
+  wxScrolledWindow *slwin = new wxScrolledWindow
+    (panel, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SUNKEN);
+  slwin->SetScrollRate(0, 20);
+
+  wxBoxSizer *slsizer = new wxBoxSizer(wxVERTICAL);
+
   wxStaticText *text1 = new wxStaticText
-    (panel, wxID_ANY, cert_body, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-  vsizer->Add(text1, 0, wxCENTER | wxALL, 10);
+    (slwin, wxID_ANY, cert_body, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+  slsizer->Add(text1, 0, wxEXPAND, 0);
+  slwin->SetSizer(slsizer);
+  
+  vsizer->Add(slwin, 1, wxEXPAND | wxALL, 10);
 
   // Create the run / cancel buttons.
   wxBoxSizer *bsizer = new wxBoxSizer(wxHORIZONTAL);
@@ -599,4 +609,10 @@ layout() {
   panel->SetSizer(vsizer);
   panel->SetAutoLayout(true);
   vsizer->Fit(this);
+
+  // Make sure the resulting window is not too wide, and at least a
+  // certain amount tall.
+  int width, height;
+  GetSize(&width, &height);
+  SetSize(min(width, 600), max(height, 400));
 }
