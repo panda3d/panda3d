@@ -38,6 +38,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef __APPLE__
+#include <crt_externs.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::Constructor
 //       Access: Public
@@ -792,8 +796,12 @@ start_p3dpython(P3DInstance *inst) {
     // "environ" is a keyword. (!)
     extern char **_environ;
     char **global_environ = _environ;
+#elif defined(__APPLE__)
+    // Apple doesn't guarantee that environ is available for shared
+    // libraries, but provides _NSGetEnviron().
+    char **global_environ = *_NSGetEnviron();
 #else
-    // Posix doesn't have an underscore.
+    // Posix is straightforward.
     extern char **environ;
     char **global_environ = environ;
 #endif  // _WIN32
