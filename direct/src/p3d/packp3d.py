@@ -30,6 +30,13 @@ Options:
      (this is preferable to having the module start itself immediately
      upon importing).
 
+  -S file.crt[,chain.crt[,file.key[,\"password\"]]]
+     Signs the resulting p3d with the indicated certificate.  You may
+     specify the signing certificate, the optional authorization
+     chain, and the private key in three different files, or they may
+     all be combined in the first file.  If the private key is
+     encrypted, the password will be required to decrypt it.
+
   -r package
      Names an additional package that this application requires at
      startup time.  The default package is 'panda3d'; you may repeat
@@ -65,12 +72,13 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'd:m:r:s:Dh')
+    opts, args = getopt.getopt(args, 'd:m:S:r:s:Dh')
 
     packager = Packager.Packager()
 
     root = Filename('.')
     main = None
+    signParams = []
     requires = []
     allowPythonDev = False
     
@@ -79,6 +87,8 @@ def makePackedApp(args):
             root = Filename.fromOsSpecific(value)
         elif option == '-m':
             main = value
+        elif option == '-S':
+            signParams.append(value)
         elif option == '-r':
             requires.append(value)
         elif option == '-s':
@@ -136,6 +146,13 @@ def makePackedApp(args):
 
         packager.do_dir(root)
         packager.do_mainModule(mainModule)
+
+        for param in signParams:
+            tokens = param.split(',')
+            while len(tokens) < 4:
+                tokens.append('')
+            certificate, chain, pkey, password = tokens[:4]
+            packager.do_sign(certificate, chain = chain, pkey = pkey, password = password)
 
         packager.endPackage()
         packager.close()

@@ -226,6 +226,7 @@ class Packager:
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
             self.mainModule = None
+            self.signParams = []
             self.requires = []
 
             # This is the set of config variables assigned to the
@@ -532,6 +533,11 @@ class Packager:
             if self.p3dApplication:
                 self.makeP3dInfo()
             self.multifile.repack()
+
+            # Also sign the multifile before we close it.
+            for certificate, chain, pkey, password in self.signParams:
+                self.multifile.addSignature(certificate, chain or '', pkey or '', password or '')
+            
             self.multifile.close()
 
             if not multifileFilename.renameTo(self.packageFullpath):
@@ -2206,6 +2212,21 @@ class Packager:
                 deleteTemp = True, explicit = True, extract = True)
 
         self.currentPackage.mainModule = (moduleName, newName)
+
+    def do_sign(self, certificate, chain = None, pkey = None, password = None):
+        """ Signs the resulting p3d file (or package multifile) with
+        the indicated certificate.  If needed, the chain file should
+        contain the list of additional certificate authorities needed
+        to validate the signing certificate.  The pkey file should
+        contain the private key.
+
+        It is also legal for the certificate file to contain the chain
+        and private key embedded within it.
+
+        If the private key is encrypted, the password should be
+        supplied. """
+
+        self.currentPackage.signParams.append((certificate, chain, pkey, password))
 
     def do_setupPanda3D(self):
         """ A special convenience command that adds the minimum
