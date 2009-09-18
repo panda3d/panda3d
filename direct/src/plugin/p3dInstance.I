@@ -85,6 +85,18 @@ get_request_ready_func() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::is_trusted
+//       Access: Public
+//  Description: Returns true if this instance's p3d file is trusted
+//               and ready to launch, false if it needs to be approved
+//               by the user.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstance::
+is_trusted() const {
+  return _p3d_trusted;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::is_started
 //       Access: Public
 //  Description: Returns true if this instance has already been

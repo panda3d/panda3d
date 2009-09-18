@@ -67,7 +67,7 @@ public:
   void set_instance(P3DInstance *inst);
 
 private:
-  P3D_object *call_start(P3D_object *params[], int num_params);
+  P3D_object *call_play(P3D_object *params[], int num_params);
   P3D_object *call_read_game_log(P3D_object *params[], int num_params);
   P3D_object *call_read_system_log(P3D_object *params[], int num_params);
   P3D_object *read_log(const string &log_pathname, 
@@ -76,6 +76,8 @@ private:
 private:
   P3D_object *_pyobj;
   P3DInstance *_inst;
+
+  bool _unauth_play;  
 
   // This map is used to store properties and retrieve until
   // set_pyobj() is called for the firs ttime.  At that point, the

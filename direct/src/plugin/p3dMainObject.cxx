@@ -27,6 +27,7 @@ P3DMainObject::
 P3DMainObject() :
   _pyobj(NULL)
 {
+  _unauth_play = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,7 +184,7 @@ set_property(const string &property, P3D_object *value) {
 bool P3DMainObject::
 has_method(const string &method_name) {
   // Some special-case methods implemented in-place.
-  if (method_name == "start") {
+  if (method_name == "play") {
     return true;
   } else if (method_name == "read_game_log") {
     return true;
@@ -215,8 +216,8 @@ has_method(const string &method_name) {
 P3D_object *P3DMainObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
-  if (method_name == "start") {
-    return call_start(params, num_params);
+  if (method_name == "play") {
+    return call_play(params, num_params);
   } else if (method_name == "read_game_log") {
     return call_read_game_log(params, num_params);
   } else if (method_name == "read_system_log") {
@@ -298,22 +299,39 @@ set_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DMainObject::call_start
+//     Function: P3DMainObject::call_play
 //       Access: Private
-//  Description: Starts the process remotely, as if the start button
-//               had been clicked.  Only applicable if the application
-//               was in the ready state.  Returns true if the
+//  Description: Starts the process remotely, as if the play button
+//               had been clicked.  If the application has not yet
+//               been validated, this pops up the validation dialog.
+//
+//               Only applicable if the application was in the ready
+//               state, or the unauth state.  Returns true if the
 //               application is now started, false otherwise.
+//
+//               This may be invoked from the unauth state only once.
+//               If the user chooses not to authorize the plugin at
+//               that time, it may not be invoked automatically again.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
-call_start(P3D_object *params[], int num_params) {
+call_play(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (_inst == NULL) {
     return inst_mgr->new_bool_object(false);
   }
 
-  if (!_inst->is_started()) {
-    _inst->play_button_clicked();
+  if (!_inst->is_trusted()) {
+    // Requires authorization.  We allow this only once; beyond that,
+    // and you're only annoying the user.
+    if (!_unauth_play) {
+      _unauth_play = true;
+      _inst->splash_button_clicked_main_thread();
+    }
+
+  } else if (!_inst->is_started()) {
+    // We allow calling play() from a ready state without limit, but
+    // probably only once will be necessary.
+    _inst->splash_button_clicked_main_thread();
   }
    
   return inst_mgr->new_bool_object(_inst->is_started());

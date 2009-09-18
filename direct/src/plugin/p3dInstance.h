@@ -95,6 +95,7 @@ public:
   bool get_packages_ready() const;
   bool get_packages_failed() const;
   
+  inline bool is_trusted() const;
   void start_download(P3DDownload *download);
   inline bool is_started() const;
   void request_stop();
@@ -164,6 +165,7 @@ private:
   void set_button_image(ImageType image_type);
   void report_package_info_ready(P3DPackage *package);
   void start_next_download();
+  void mark_download_complete();
   void ready_to_start();
   void report_instance_progress(double progress);
   void report_package_progress(P3DPackage *package, double progress);

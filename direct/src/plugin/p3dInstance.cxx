@@ -142,6 +142,17 @@ P3DInstance(P3D_request_ready_func *func,
   if (_image_package != NULL) {
     _image_package->add_instance(this);
   }
+
+  // Check if the window size has been explicitly set to 0.  This
+  // means we have an explicitly hidden plugin, and we should be
+  // prepared not to get a wparams from the browser.
+  if (_fparams.has_token("width") && _fparams.has_token("height") &&
+      (_fparams.lookup_token_int("width") == 0 ||
+       _fparams.lookup_token_int("height") == 0)) {
+    P3D_window_handle dummy_handle;
+    P3DWindowParams wparams(P3D_WT_hidden, 0, 0, 0, 0, dummy_handle);
+    set_wparams(wparams);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,6 +312,7 @@ set_p3d_filename(const string &p3d_filename) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
+  nout << "set_wparams\n";
   _got_wparams = true;
   _wparams = wparams;
 
@@ -447,6 +459,7 @@ get_request() {
       // Also eval the associated HTML token, if any.
       string message = request->_request._notify._message;
       string expression = _fparams.lookup_token(message);
+      nout << "notify: " << message << " " << expression << "\n";
       if (!expression.empty() && _browser_script_object != NULL) {
         P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
         P3D_OBJECT_XDECREF(result);
@@ -974,7 +987,7 @@ auth_button_clicked() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 play_button_clicked() {
-  if (_session == NULL) {
+  if (_session == NULL && _p3d_trusted) {
     set_button_image(IT_none);
     set_background_image(IT_launch);
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -1098,6 +1111,10 @@ mark_p3d_untrusted() {
 
   // OK, we've got the authorization program; we can put up the red
   // button now.
+
+  // Notify JS that we've got no trust of the p3d file.
+  _panda_script_object->set_bool_property("trusted", false);
+  send_notify("onunauth");
   set_background_image(IT_unauth);
   set_button_image(IT_auth_ready);
   make_splash_window();
@@ -1146,18 +1163,19 @@ mark_p3d_trusted() {
 
   // Until we've done all of the above processing, we haven't fully
   // committed to setting the trusted flag.  (Setting this flag down
-  // here instead of up there avoids starting the instance in
+  // here instead of a few lines above avoids starting the instance in
   // scan_app_desc_file(), before we've had a chance to finish
   // processing this method.)
   _p3d_trusted = true;
 
   // Notify JS that we've accepted the trust of the p3d file.
-  send_notify("ontrust");
+  _panda_script_object->set_bool_property("trusted", true);
+  send_notify("onauth");
 
-  // Now that we're all set up, start the instance if we're fully
-  // downloaded.
-  if (get_packages_ready() && _got_wparams) {
-    ready_to_start();
+  // Now that we're all set up, start the instance if we're already
+  // fully downloaded.
+  if (get_packages_ready()) {
+    mark_download_complete();
   }
 }
 
@@ -1780,23 +1798,36 @@ start_next_download() {
   _downloading_packages.clear();
 
   if (get_packages_ready()) {
-    if (!_panda_script_object->get_bool_property("downloadComplete")) {
-      _panda_script_object->set_bool_property("downloadComplete", true);
-      _panda_script_object->set_string_property("status", "starting");
-      send_notify("ondownloadcomplete");
-    }
-
-    // Take down the download progress bar.
-    if (_splash_window != NULL) {
-      _splash_window->set_install_progress(0.0);
-      _splash_window->set_install_label("");
-    }
-
-    if (_got_wparams && _p3d_trusted) {
-      ready_to_start();
-    }
+    mark_download_complete();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::mark_download_complete
+//       Access: Private
+//  Description: Called internally when all files needed to launch
+//               have been downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+mark_download_complete() {
+  if (!_panda_script_object->get_bool_property("downloadComplete")) {
+    _panda_script_object->set_bool_property("downloadComplete", true);
+    _panda_script_object->set_string_property("status", "starting");
+    send_notify("ondownloadcomplete");
+  }
+  
+  // Take down the download progress bar.
+  if (_splash_window != NULL) {
+    _splash_window->set_install_progress(0.0);
+    _splash_window->set_install_label("");
+  }
+
+  nout << "ready? " << _got_wparams << " " << _p3d_trusted << "\n";
+  if (_got_wparams && _p3d_trusted) {
+    ready_to_start();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::ready_to_start
