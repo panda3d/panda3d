@@ -31,7 +31,7 @@ BioPtr::
 BioPtr(const URLSpec &url) {
   if (url.get_scheme() == "file") {
     // We're just reading a disk file.
-    string filename = url.get_path();
+    string filename = URLSpec::unquote(url.get_path());
 #ifdef _WIN32 
     // On Windows, we have to munge the filename specially, because it's
     // been URL-munged.  It might begin with a leading slash as well as
