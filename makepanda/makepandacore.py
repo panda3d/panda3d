@@ -772,20 +772,26 @@ if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
 ##
 ########################################################################
 
-def PkgConfigHavePkg(pkgname):
+def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     """Returns a bool whether the pkg-config package is installed."""
     if (sys.platform == "win32" or not LocateBinary("pkg-config")):
         return False
-    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
+    if (tool == "pkg-config"):
+        handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
+    else:
+        return bool(LocateBinary(tool) != None)
     result = handle.read().strip()
     handle.close()
     return bool(len(result) > 0)
 
-def PkgConfigGetLibs(pkgname):
+def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     """Returns a list of libs for the package, prefixed by -l."""
     if (sys.platform == "win32" or not LocateBinary("pkg-config")):
         return []
-    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
+    if (tool == "pkg-config"):
+        handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
+    else:
+        handle = os.popen(LocateBinary(tool) + " --libs")
     result = handle.read().strip()
     handle.close()
     libs = []
@@ -793,40 +799,73 @@ def PkgConfigGetLibs(pkgname):
         libs.append(l)
     return libs
 
-def PkgConfigGetIncDirs(pkgname):
+def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     """Returns a list of includes for the package, NOT prefixed by -I."""
     if (sys.platform == "win32" or not LocateBinary("pkg-config")):
         return []
-    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags-only-I " + pkgname)
+    if (tool == "pkg-config"):
+        handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags-only-I " + pkgname)
+    else:
+        handle = os.popen(LocateBinary(tool) + " --cflags")
     result = handle.read().strip()
-    handle.close()
     if len(result) == 0: return []
+    handle.close()
     libs = []
     for l in result.split(" "):
-        libs.append(l.replace("-I", "").replace("\"", "").strip())
+        if (l.startswith("-I")):
+            libs.append(l.replace("-I", "").replace("\"", "").strip())
     return libs
 
-def PkgConfigGetLibDirs(pkgname):
+def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
     """Returns a list of library paths for the package, NOT prefixed by -L."""
     if (sys.platform == "win32" or not LocateBinary("pkg-config")):
         return []
-    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
+    if (tool == "pkg-config"):
+        handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
+    elif (tool == "wx-config"):
+        return []
+    else:
+        handle = os.popen(LocateBinary(tool) + " --ldflags")
     result = handle.read().strip()
     handle.close()
     if len(result) == 0: return []
     libs = []
     for l in result.split(" "):
-        libs.append(l.replace("-L", "").replace("\"", "").strip())
+        if (l.startswith("-L")):
+            libs.append(l.replace("-L", "").replace("\"", "").strip())
     return libs
 
-def PkgConfigEnable(opt, pkgname):
+def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
+    """Returns a dictionary of preprocessor definitions."""
+    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+        return []
+    if (tool == "pkg-config"):
+        handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags " + pkgname)
+    else:
+        handle = os.popen(LocateBinary(tool) + " --cflags")
+    result = handle.read().strip()
+    handle.close()
+    if len(result) == 0: return {}
+    defs = {}
+    for l in result.split(" "):
+        if (l.startswith("-D")):
+            d = l.replace("-D", "").replace("\"", "").strip().split("=")
+            if (len(d) == 1):
+                defs[d[0]] = ""
+            else:
+                defs[d[0]] = d[1]
+    return defs
+
+def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     """Adds the libraries and includes to IncDirectory, LibName and LibDirectory."""
-    for i in PkgConfigGetIncDirs(pkgname):
+    for i in PkgConfigGetIncDirs(pkgname, tool):
         IncDirectory(opt, i)
-    for i in PkgConfigGetLibDirs(pkgname):
+    for i in PkgConfigGetLibDirs(pkgname, tool):
         LibDirectory(opt, i)
-    for i in PkgConfigGetLibs(pkgname):
+    for i in PkgConfigGetLibs(pkgname, tool):
         LibName(opt, i)
+    for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
+        DefSymbol(opt, i, j)
 
 ########################################################################
 ##

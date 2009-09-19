@@ -406,6 +406,9 @@ if (COMPILER=="LINUX"):
     else:
         exit("Failed to locate pkg-config binary!")
     
+    if (LocateBinary("wx-config")):
+        PkgConfigEnable("WX", "", tool = "wx-config")
+    
     if (platform.uname()[1]=="pcbsd"):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
@@ -787,10 +790,10 @@ def CompileLink(dll, obj, opts):
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB"
-        if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB"
-        if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB"
-        if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB"
+        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+        if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+        if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+        if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
@@ -2980,7 +2983,7 @@ elif (sys.platform == "win32"):
   TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
 else:
   TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
-  TargetAdd('libtinydisplay.dll', opts=['X11'])
+  TargetAdd('libtinydisplay.dll', opts=['X11', 'XF86DGA'])
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
@@ -3195,6 +3198,12 @@ if (RUNTIME):
     TargetAdd('p3dpython.exe', input='plugin_run_p3dpython.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+
+  if (PkgSkip("OPENSSL")==0):
+    OPTS=['DIR:direct/src/plugin', 'OPENSSL', 'WX']
+    TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
+    TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
+    TargetAdd('p3dcert.exe', opts=['OPENSSL', 'WX', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
@@ -4237,7 +4246,7 @@ Priority: optional
 Architecture: ARCH
 Essential: no
 Depends: PYTHONV
-Recommends: panda3d-runtime, python-profiler (>= PV)
+Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
