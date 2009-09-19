@@ -135,7 +135,9 @@ extract_all(const string &to_dir,
     utb.actime = time(NULL);
     utb.modtime = s._timestamp;
     utime(output_pathname.c_str(), &utb);
-
+#ifndef _WIN32
+    chmod(output_pathname.c_str(), 0555);
+#endif
 
     ++num_processed;
     if (package != NULL) {
