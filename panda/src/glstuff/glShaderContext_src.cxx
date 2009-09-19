@@ -27,6 +27,18 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 #define GL_GEOMETRY_SHADER 0x8DD9
 #endif
 
+#ifdef HAVE_CG
+#ifndef NDEBUG
+#define cg_report_errors() { \
+  CGerror err = cgGetError(); \
+  if (err != CG_NO_ERROR) { \
+    GLCAT.error() << __FILE__ ", line " << __LINE__ << ": " << cgGetErrorString(err) << "\n"; \
+  } }
+#else
+#define cg_report_errors()
+#endif
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Constructor
 //       Access: Public
@@ -354,9 +366,10 @@ release_resources(GSG *gsg) {
   if (_cg_context) {
     cgDestroyContext(_cg_context);
     _cg_context  = 0;
-    if (_cg_vprogram != 0) cgDestroyProgram(_cg_vprogram);
-    if (_cg_fprogram != 0) cgDestroyProgram(_cg_fprogram);
-    if (_cg_gprogram != 0) cgDestroyProgram(_cg_gprogram);
+    // Do *NOT* destroy the programs here! It causes problems.
+//  if (_cg_vprogram != 0) cgDestroyProgram(_cg_vprogram);
+//  if (_cg_fprogram != 0) cgDestroyProgram(_cg_fprogram);
+//  if (_cg_gprogram != 0) cgDestroyProgram(_cg_gprogram);
     _cg_vprogram = 0;
     _cg_fprogram = 0;
     _cg_gprogram = 0;
@@ -837,21 +850,6 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 
   gsg->report_my_gl_errors();
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::cg_report_errors
-//       Access: Public
-//  Description: Report any Cg errors that were not previously caught.
-////////////////////////////////////////////////////////////////////
-#ifdef HAVE_CG
-void CLP(ShaderContext)::
-  cg_report_errors() {
-  CGerror err = cgGetError();
-  if (err != CG_NO_ERROR) {
-    GLCAT.error() << cgGetErrorString(err) << "\n";
-  }
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::glsl_report_shader_errors

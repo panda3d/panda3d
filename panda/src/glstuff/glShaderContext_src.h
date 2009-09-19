@@ -58,7 +58,6 @@ private:
   CGprogram _cg_gprogram;
 
   pvector <CGparameter> _cg_parameter_map;
-  void cg_report_errors();
 #endif
   
   GLuint _glsl_program;
