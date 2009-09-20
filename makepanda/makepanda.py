@@ -30,7 +30,6 @@ from installpanda import *
 ########################################################################
 
 COMPILER=0
-THIRDPARTYLIBS=0
 VC90CRTVERSION=""
 INSTALLER=0
 GENMAN=0
@@ -46,7 +45,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
+  "OPENCV","FFMPEG","FCOLLADA","GTK2","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -237,33 +236,9 @@ SdkAutoDisableMax()
 if (sys.platform == "win32"):
     SetupVisualStudioEnviron()
     COMPILER="MSVC"
-
-    if (platform.architecture()[0] == "64bit"):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
-    else:
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    if not os.path.isdir(THIRDPARTYLIBS):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
 else:
     CheckLinkerLibraryPath()
     COMPILER="LINUX"
-    
-    if (sys.platform == "darwin"):
-        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
-    elif (sys.platform.startswith("linux")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
-    elif (sys.platform.startswith("freebsd")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
-    else:
-        exit("Unknown platform")
-    VC90CRTVERSION = 0
 
 builtdir = os.path.join(os.path.abspath(GetOutputDir()))
 AddToPathEnv("PYTHONPATH", builtdir)
@@ -397,18 +372,7 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("GLUT", "/usr/X11R6/include")
-        if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
-        if (PkgSkip("FREETYPE")==0):   LibName("FREETYPE", "-lfreetype")
-    elif (LocateBinary("pkg-config")):
-        PkgConfigEnable("GTK2", "gtk+-2.0")
-        PkgConfigEnable("FREETYPE", "freetype2")
-        PkgConfigEnable("PNG", "libpng")
-    else:
-        exit("Failed to locate pkg-config binary!")
-    
-    if (LocateBinary("wx-config")):
-        PkgConfigEnable("WX", "", tool = "wx-config")
-    
+
     if (platform.uname()[1]=="pcbsd"):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
@@ -416,21 +380,38 @@ if (COMPILER=="LINUX"):
     if (os.path.exists("/usr/lib64")):
         IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-    
-    if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF", "TINYXML", "NPAPI"]
-    else:
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL", "TINYXML", "NPAPI"]
-    for pkg in pkgs:
-        if (PkgSkip(pkg)==0):
-            if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
-                IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
-                LibDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/lib")
-            else:
-                WARNINGS.append("I cannot locate SDK for " + pkg + " in thirdparty directory.")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+pkg.lower())
-                PkgDisable(pkg)
-    
+
+    ffmpeg_libs = ("libavutil", "libavcodec", "libavformat", "libswscale")
+
+    #         Name         pkg-config   libs, include(dir)s
+    PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
+    PkgEnable("FCOLLADA",  "",          ("FCollada"), "FCollada.h")
+    PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
+    PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
+    PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
+    PkgEnable("FREETYPE",  "freetype2", ("freetype"), "freetype2/freetype/freetype.h")
+    PkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+    PkgEnable("GTK2",      "gtk+-2.0")
+    PkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+    PkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
+    PkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
+    PkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+    PkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
+    PkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
+    PkgEnable("PNG",       "libpng",    ("png"), "png.h")
+    PkgEnable("SQUISH",    "",          ("squish"), "squish.h")
+    PkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
+    PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
+    PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("quat.h", "vrpn_Types.h"))
+    PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
+    PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+    if (RUNTIME):
+        PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h"))
+        PkgEnable("WX",    tool = "wx-config")
+    if (sys.platform != "darwin"):
+        PkgEnable("X11", "x11", "X11", "Xlib.h")
+        PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             # On OSX, the dir *can* be named 'MacOS' instead of 'lib'.
@@ -443,54 +424,14 @@ if (COMPILER=="LINUX"):
             DefSymbol(pkg, "MAYAVERSION", pkg)
     
     if (sys.platform == "darwin"):
-      if (PkgSkip("PYTHON")==0):   LibName("PYTHON", "-framework Python")
-      if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-framework Cg")
-      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-framework OpenAL")
-      if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lcrypto")
-      if (PkgSkip("TIFF")==0):     LibName("TIFF",  "-lpandatiff")
-    else:
-      if (PkgSkip("PYTHON")==0):   LibName("PYTHON", "-l" + SDK["PYTHONVERSION"])
-      if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
-      if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
-      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lopenal")
-      if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
-    if (PkgSkip("SQUISH")==0):     LibName("SQUISH", "-lsquish")
-    if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFCollada")
-    if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavcodec")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
-    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lswscale")
-    if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL", "-lssl")
-    if (PkgSkip("ZLIB")==0):       LibName("ZLIB", "-lz")
-    if (PkgSkip("JPEG")==0):       LibName("JPEG", "-ljpeg")
-    if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lvrpn")
-    if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lquat")
-    if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lrfftw")
-    if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lfftw")
-    if (PkgSkip("ARTOOLKIT")==0):  LibName("ARTOOLKIT", "-lAR")
-    if (PkgSkip("ODE")==0):        LibName("ODE", "-lode")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcv")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lhighgui")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcvaux")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
-    if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
-    LibName("X11", "-lX11")
-    LibName("XF86DGA", "-lXxf86dga")
-    if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
-        LibName("GLUT", "-framework OpenGL")
         # Fix for a bug in OSX:
         LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
     else:
-        LibName("GLUT", "-lGL")
         LibName("GLUT", "-lGLU")
     
     for pkg in MAYAVERSIONS:
@@ -557,8 +498,6 @@ def printStatus(header,warnings):
         print "-------------------------------------------------------------------"
         print ""
         sys.stdout.flush()
-
-printStatus("Makepanda Initial Status Report", WARNINGS)
 
 ########################################################################
 ##

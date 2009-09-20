@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob
 from distutils import sysconfig
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r",".plist"]
@@ -54,6 +54,37 @@ for (ver,key) in MAYAVERSIONINFO:
 
 for (ver,key1,key2,subdir) in MAXVERSIONINFO:
     MAXVERSIONS.append(ver)
+
+########################################################################
+##
+## Thirdparty libraries paths
+##
+########################################################################
+
+if (sys.platform == "win32"):
+    if (platform.architecture()[0] == "64bit"):
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
+    else:
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+    if not os.path.isdir(THIRDPARTYLIBS):
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
+else:
+    if (sys.platform == "darwin"):
+        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
+    elif (sys.platform.startswith("linux")):
+      if (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+    elif (sys.platform.startswith("freebsd")):
+      if (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
+    else:
+        exit("Unknown platform: %s" % sys.platform)
+    VC90CRTVERSION = 0
 
 ########################################################################
 ##
@@ -324,7 +355,7 @@ def NeedsBuild(files,others):
         else:
             oldothers = BUILTFROMCACHE[key][0]
             if (oldothers != others and VERBOSE):
-                print "%sCAUTION:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor())
+                print "%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor())
     return 1
 
 ########################################################################
@@ -728,15 +759,15 @@ def SetVerbose(verbose):
 ##
 ########################################################################
 
-PKG_LIST_ALL=0
-PKG_LIST_OMIT=0
+PKG_LIST_ALL=[]
+PKG_LIST_OMIT={}
 
 def PkgListSet(pkgs):
     global PKG_LIST_ALL
     global PKG_LIST_OMIT
     PKG_LIST_ALL=pkgs
     PKG_LIST_OMIT={}
-    PkgDisableAll()
+    PkgEnableAll()
 
 def PkgListGet():
     return PKG_LIST_ALL
@@ -762,10 +793,7 @@ def PkgSelected(pkglist, pkg):
     if (pkglist.count(pkg)==0): return 0
     if (PKG_LIST_OMIT[pkg]): return 0
     return 1
-if os.path.isfile("dtool/src/prc/prc_parameters.h.moved"):
-  os.rename("dtool/src/prc/prc_parameters.h.moved", "dtool/src/prc/prc_parameters.h")
-if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
-  os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
+
 ########################################################################
 ##
 ## These functions are for libraries which use pkg-config.
@@ -866,6 +894,141 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
         LibName(opt, i)
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
+
+LD_CACHE = None
+STATIC_CACHE = None
+
+def GetLdCache():
+    # Returns a list of cached libraries, not prefixed by lib and not suffixed by .so* or .a!
+    global LD_CACHE
+    if (LD_CACHE == None):
+        if (LocateBinary("ldconfig") != None):
+            LD_CACHE = []
+            handle = os.popen(LocateBinary("ldconfig") + " -NXp")
+            result = handle.read().strip().split("\n")
+            for line in result:
+                lib = line.strip().split(" ", 1)[0]
+                lib = lib.split(".so", 1)[0][3:]
+                LD_CACHE.append(lib)
+        else:
+            for l in glob.glob("/lib/*.so*") + glob.glob("/usr/lib/*.so*") + glob.glob("/usr/local/lib/*.so*") + glob.glob("/usr/PCBSD/local/lib/*.so*"):
+                lib = os.path.basename(l).split(".so", 1)[0][3:]
+                LD_CACHE.append(lib)
+        # Now check for static libraries - they aren't found by ldconfig.
+        for l in glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a") + glob.glob("/usr/PCBSD/local/lib/*.a"):
+            lib = os.path.basename(l).split(".a", 1)[0][3:]
+            LD_CACHE.append(lib)
+    return LD_CACHE
+
+def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
+    global PKG_LIST_ALL
+    if (LocateBinary("pkg-config")==None):
+        exit("Failed to locate pkg-config binary!")
+    if (pkgconfig == ""):
+        pkgconfig = None
+    if (framework == ""):
+        framework = None
+    if (libs == None or libs == ""):
+        libs = ()
+    elif (isinstance(libs, str)):
+        libs = (libs, )
+    if (incs == None or incs == ""):
+        incs = ()
+    elif (isinstance(incs, str)):
+        incs = (incs, )
+    if (defs == None or defs == "" or len(defs) == 0):
+        defs = {}
+    elif (isinstance(incs, str)):
+        defs = {defs : ""}
+    elif (isinstance(incs, list) or isinstance(incs, tuple) or isinstance(incs, set)):
+        olddefs = defs
+        defs = {}
+        for d in olddefs:
+            defs[d] = ""
+    
+    if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
+        IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
+        LibDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/lib")
+        for l in libs:
+            libname = l
+            if (l.startswith("lib")):
+                libname = l[3:]
+            # This is for backward compatibility - in the thirdparty dir, we kept some libs with "panda" prefix, like libpandatiff.
+            if (len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/libpanda%.*" % libname)) > 0 and
+                len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/lib%.*" % libname)) == 0):
+                libname = "panda" + libname
+            LibName(pkg, libname)
+        for d, v in defs.values():
+            DefSymbol(pkg, d, v)
+    elif (sys.platform == "darwin" and framework != None):
+        if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir("/Developer/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir("/Users/%s/System/Library/Frameworks/%s.framework" % (getpass.getuser(), framework))):
+            LibName(pkg, "-framework " + framework)
+            for d, v in defs.values():
+                DefSymbol(pkg, d, v)
+        elif (pkg in PkgListGet()):
+            print "%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework)
+            PkgDisable(pkg)
+        else:
+            print "%ERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
+            exit()
+    elif (pkgconfig != None):
+        if (isinstance(pkgconfig, str)):
+            if (PkgConfigHavePkg(pkgconfig, tool)):
+                return PkgConfigEnable(pkg, pkgconfig, tool)
+        else:
+            have_all_pkgs = True
+            for pc in pkgconfig:
+                if (PkgConfigHavePkg(pc, tool)):
+                    PkgConfigEnable(pkg, pc, tool)
+                else:
+                    have_all_pkgs = False
+            if (have_all_pkgs):
+                return
+    elif (pkgconfig != None and libs == None):
+        if (pkg in PkgListGet()):
+            print "%sWARNING:%s Could not locate package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
+            PkgDisable(pkg)
+        else:
+            print "%ERROR:%s Could not locate package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig)
+            exit()
+    else:
+        # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
+        have_pkg = True
+        for l in libs:
+            if (l in GetLdCache()):
+                LibName(pkg, "-l" + l)
+            else:
+                if (VERBOSE):
+                    print GetColor("cyan") + "Couldn't find library lib" + l + GetColor()
+                have_pkg = False
+        
+        for i in incs:
+            incdir = None
+            if (len(glob.glob("/usr/include/" + i)) > 0):
+                incdir = sorted(glob.glob("/usr/include/" + i))[-1]
+            elif (len(glob.glob("/usr/local/include/" + i)) > 0):
+                incdir = sorted(glob.glob("/usr/local/include/" + i))[-1]
+            elif (platform.uname()[1]=="pcbsd" and len(glob.glob("/usr/PCBSD/local/include/" + i)) > 0):
+                incdir = sorted(glob.glob("/usr/PCBSD/local/include/" + i))[-1]
+            else:
+                if (VERBOSE and i.endswith(".h")):
+                    print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
+                have_pkg = False
+            
+            # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
+            if (incdir != None and os.path.isdir(incdir)):
+                IncDirectory(pkg, incdir)
+        
+        if (not have_pkg):
+            if (pkg in PkgListGet()):
+                print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower())
+                PkgDisable(pkg)
+            else:
+                print "%ERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower())
+                exit()
 
 ########################################################################
 ##
