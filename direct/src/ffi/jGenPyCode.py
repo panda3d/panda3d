@@ -93,3 +93,5 @@ DoGenPyCode.native = 1
 
 DoGenPyCode.run()
 
+os._exit(0)
+
