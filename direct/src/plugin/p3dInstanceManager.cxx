@@ -928,7 +928,9 @@ remove_file_from_list(vector<string> &contents, const string &filename) {
 #ifdef _WIN32
   // Convert backslashes to slashes.
   string clean_filename;
-  for (string::iterator pi = filename.begin(); pi != filename.end(); ++pi) {
+  for (string::const_iterator pi = filename.begin(); 
+       pi != filename.end(); 
+       ++pi) {
     if ((*pi) == '\\') {
       clean_filename += '/';
     } else {
