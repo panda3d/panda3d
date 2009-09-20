@@ -148,7 +148,11 @@ def makePackedApp(args):
         packager.setup()
         packager.beginPackage(appBase, p3dApplication = True)
         for requireName in requires:
-            packager.do_require(requireName)
+            tokens = requireName.split(',')
+            while len(tokens) < 3:
+                tokens.append(None)
+            name, version, host = tokens
+            packager.do_require(name, version = version, host = host)
 
         if autoStart:
             packager.do_config(auto_start = True)

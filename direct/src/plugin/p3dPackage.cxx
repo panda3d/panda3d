@@ -246,8 +246,14 @@ download_contents_file() {
     return;
   }
 
-  string url = _host->get_host_url_prefix();
-  url += "contents.xml";
+  // Get the URL for contents.xml.
+  ostringstream strm;
+  strm << _host->get_host_url_prefix() << "contents.xml";
+  // Append a uniquifying query string to the URL to force the
+  // download to go all the way through any caches.  We use the time
+  // in seconds; that's unique enough.
+  strm << "?" << time(NULL);
+  string url = strm.str();
 
   // Download contents.xml to a temporary filename first, in case
   // multiple packages are downloading it simultaneously.
@@ -359,6 +365,11 @@ desc_file_download_finished(bool success) {
     return;
   }
 
+#ifndef _WIN32
+  // Now that we've downloaded the desc file, make it read-only.
+  chmod(_desc_file_pathname.c_str(), 0444);
+#endif
+
   if (_package_solo) {
     // No need to load it: the desc file *is* the package.
     report_done(true);
@@ -426,6 +437,31 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     extract = extract->NextSiblingElement("extract");
   }
 
+  // Get a list of all of the files in the directory, so we can remove
+  // files that don't belong.
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  vector<string> contents;
+  inst_mgr->scan_directory_recursively(_package_dir, contents);
+
+  inst_mgr->remove_file_from_list(contents, _desc_file_basename);
+  inst_mgr->remove_file_from_list(contents, _uncompressed_archive.get_filename());
+  Extracts::iterator ei;
+  for (ei = _extracts.begin(); ei != _extracts.end(); ++ei) {
+    inst_mgr->remove_file_from_list(contents, (*ei).get_filename());
+  }
+
+  // Now, any files that are still in the contents list don't belong.
+  // It's important to remove these files before we start verifying
+  // the files that we expect to find here, in case there is a problem
+  // with ambiguous filenames or something (e.g. case insensitivity).
+  vector<string>::iterator ci;
+  for (ci = contents.begin(); ci != contents.end(); ++ci) {
+    string filename = (*ci);
+    nout << "Removing " << filename << "\n";
+    string pathname = _package_dir + "/" + filename;
+    unlink(pathname.c_str());
+  }
+
   // Verify the uncompressed archive.
   bool all_extracts_ok = true;
   if (!_uncompressed_archive.quick_verify(_package_dir)) {
@@ -434,10 +470,9 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   }
 
   // Verify all of the extracts.
-  Extracts::iterator ci;
-  for (ci = _extracts.begin(); ci != _extracts.end() && all_extracts_ok; ++ci) {
-    if (!(*ci).quick_verify(_package_dir)) {
-      nout << "File is incorrect: " << (*ci).get_filename() << "\n";
+  for (ei = _extracts.begin(); ei != _extracts.end() && all_extracts_ok; ++ei) {
+    if (!(*ei).quick_verify(_package_dir)) {
+      nout << "File is incorrect: " << (*ei).get_filename() << "\n";
       all_extracts_ok = false;
     }
   }
@@ -446,6 +481,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     // Great, we're ready to begin.
     nout << "All " << _extracts.size() << " extracts of " << _package_name
          << " seem good.\n";
+
     report_done(true);
 
   } else {
@@ -687,6 +723,12 @@ uncompress_archive() {
     return;
   }
 
+#ifndef _WIN32
+  // Now that we've verified the archive, make it read-only.
+  chmod(target_pathname.c_str(), 0444);
+#endif
+
+  // Now we can safely remove the compressed archive.
   unlink(source_pathname.c_str());
 
   // All done uncompressing.
@@ -828,9 +870,9 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
 ////////////////////////////////////////////////////////////////////
 bool P3DPackage::
 is_extractable(const string &filename) const {
-  Extracts::const_iterator ci;
-  for (ci = _extracts.begin(); ci != _extracts.end(); ++ci) {
-    if ((*ci).get_filename() == filename) {
+  Extracts::const_iterator ei;
+  for (ei = _extracts.begin(); ei != _extracts.end(); ++ei) {
+    if ((*ei).get_filename() == filename) {
       return true;
     }
   }

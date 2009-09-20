@@ -868,6 +868,89 @@ scan_directory(const string &dirname, vector<string> &contents) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::scan_directory_recursively
+//       Access: Public, Static
+//  Description: Fills up the indicated vector with the list of all
+//               files (but not directories) rooted at the indicated
+//               dirname and below.  The filenames generated are
+//               relative to the root of the dirname, with slashes
+//               (not backslashes) as the directory separator
+//               character.
+//
+//               Returns true on success, false if the original
+//               dirname wasn't a directory or something like that.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+scan_directory_recursively(const string &dirname, vector<string> &contents,
+                           const string &prefix) {
+  vector<string> dir_contents;
+  if (!scan_directory(dirname, dir_contents)) {
+    // Apparently dirname wasn't a directory.
+    return false;
+  }
+
+  // Walk through the contents of dirname.
+  vector<string>::const_iterator si;
+  for (si = dir_contents.begin(); si != dir_contents.end(); ++si) {
+    // Here's a particular file within dirname.  Is it another
+    // directory, or is it a regular file?
+    string pathname = dirname + "/" + (*si);
+    string rel_filename = prefix + (*si);
+    if (scan_directory_recursively(pathname, contents, rel_filename + "/")) {
+      // It's a directory, and it's just added its results to the
+      // contents.
+
+    } else {
+      // It's not a directory, so assume it's an ordinary file, and
+      // add it to the contents.
+      contents.push_back(rel_filename);
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::remove_file_from_list
+//       Access: Public, Static
+//  Description: Removes the first instance of the indicated file
+//               from the given list.  Returns true if removed, false
+//               if it was not found.
+//
+//               On Windows, the directory separator characters are
+//               changed from backslash to forward slash before
+//               searching in the list; so it is assumed that the list
+//               contains filenames with a forward slash used as a
+//               separator.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+remove_file_from_list(vector<string> &contents, const string &filename) {
+#ifdef _WIN32
+  // Convert backslashes to slashes.
+  string clean_filename;
+  for (string::iterator pi = filename.begin(); pi != filename.end(); ++pi) {
+    if ((*pi) == '\\') {
+      clean_filename += '/';
+    } else {
+      clean_filename += (*pi);
+    }
+  }
+#else
+  const string &clean_filename = filename;
+#endif  // _WIN32
+
+  vector<string>::iterator ci;
+  for (ci = contents.begin(); ci != contents.end(); ++ci) {
+    if ((*ci) == clean_filename) {
+      contents.erase(ci);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_global_ptr
 //       Access: Public, Static
 //  Description: 

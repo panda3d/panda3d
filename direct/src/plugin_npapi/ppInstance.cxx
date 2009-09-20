@@ -112,7 +112,15 @@ begin() {
     if (!url.empty() && url[url.length() - 1] != '/') {
       url += '/';
     }
-    url += "contents.xml";
+    ostringstream strm;
+    strm << url << "contents.xml";
+
+    // Append a uniquifying query string to the URL to force the
+    // download to go all the way through any caches.  We use the time
+    // in seconds; that's unique enough.
+    strm << "?" << time(NULL);
+    url = strm.str();
+
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
     start_download(url, req);
   }

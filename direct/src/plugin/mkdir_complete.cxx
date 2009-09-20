@@ -124,6 +124,9 @@ mkdir_complete(const string &dirname, ostream &logfile) {
 ////////////////////////////////////////////////////////////////////
 bool
 mkfile_complete(const string &filename, ostream &logfile) {
+  // Make sure we delete any previously-existing file first.
+  unlink(filename.c_str());
+
 #ifdef _WIN32
   HANDLE file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,

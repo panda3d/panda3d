@@ -1,6 +1,7 @@
-from pandac.PandaModules import TiXmlDocument, HashVal, Filename, PandaSystem, URLSpec, Ramfile
+from pandac.PandaModules import TiXmlDocument, HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
+import time
 
 class HostInfo:
     """ This class represents a particular download host serving up
@@ -40,11 +41,22 @@ class HostInfo:
             # We've already got one.
             return True
 
-        url = URLSpec(self.hostUrlPrefix + 'contents.xml')
-        print "Downloading %s" % (url)
+        url = self.hostUrlPrefix + 'contents.xml'
+        # Append a uniquifying query string to the URL to force the
+        # download to go all the way through any caches.  We use the
+        # time in seconds; that's unique enough.
+        url += '?' + str(int(time.time()))
+
+        # We might as well explicitly request the cache to be disabled
+        # too, since we have an interface for that via HTTPChannel.
+        request = DocumentSpec(url)
+        request.setCacheControl(DocumentSpec.CCNoCache)
+
+        print "Downloading %s" % (request)
 
         rf = Ramfile()
-        channel = http.getDocument(url)
+        channel = http.makeChannel(False)
+        channel.getDocument(request)
         if not channel.downloadToRam(rf):
             print "Unable to download %s" % (url)
 
@@ -144,6 +156,24 @@ class HostInfo:
             package = platforms.get(None, None)
 
         return package
+
+    def getPackages(self, name, platform = None):
+        """ Returns a list of PackageInfo objects that match the
+        indicated name and/or platform, with no particular regards to
+        version. """
+
+        assert self.hasContentsFile
+
+        packages = []
+        for (pn, version), platforms in self.packages.items():
+            if pn != name:
+                continue
+
+            package = self.getPackage(name, version, platform = platform)
+            if package:
+                packages.append(package)
+
+        return packages
 
     def __determineHostDir(self, appRunner):
         """ Hashes the host URL into a (mostly) unique directory

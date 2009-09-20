@@ -382,11 +382,22 @@ get_plugin(const string &download_url, const string &this_platform,
   }
 
   // Couldn't read it, so go get it.
-  string url = download_url;
-  url += "contents.xml";
+  ostringstream strm;
+  strm << download_url << "contents.xml";
+  // Append a uniquifying query string to the URL to force the
+  // download to go all the way through any caches.  We use the time
+  // in seconds; that's unique enough.
+  strm << "?" << time(NULL);
+  string url = strm.str();
+
+  // We might as well explicitly request the cache to be disabled too,
+  // since we have an interface for that via HTTPChannel.
+  DocumentSpec request(url);
+  request.set_cache_control(DocumentSpec::CC_no_cache);
   
   HTTPClient *http = HTTPClient::get_global_ptr();
-  PT(HTTPChannel) channel = http->get_document(url);
+  PT(HTTPChannel) channel = http->make_channel(false);
+  channel->get_document(request);
 
   // First, download it to a temporary file.
   Filename tempfile = Filename::temporary("", "p3d_");

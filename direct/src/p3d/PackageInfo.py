@@ -141,9 +141,13 @@ class PackageInfo:
 
         filename = Filename(self.packageDir, self.descFileBasename)
         filename.makeDir()
+        filename.unlink()
         f = open(filename.toOsSpecific(), 'wb')
         f.write(rf.getData())
         f.close()
+
+        # Now that we've written the desc file, make it read-only.
+        os.chmod(filename.toOsSpecific(), 0444)
 
         try:
             self.readDescFile()
@@ -274,12 +278,52 @@ class PackageInfo:
             # There are no patches to download, oh well.  Stick with
             # plan B as the only plan.
             self.installPlans = [planB]
+
+    def __scanDirectoryRecursively(self, dirname):
+        """ Generates a list of Filename objects: all of the files
+        (not directories) within and below the indicated dirname. """
         
+        contents = []
+        for dirpath, dirnames, filenames in os.walk(dirname.toOsSpecific()):
+            dirpath = Filename.fromOsSpecific(dirpath)
+            if dirpath == dirname:
+                dirpath = Filename('')
+            else:
+                dirpath.makeRelativeTo(dirname)
+            for filename in filenames:
+                contents.append(Filename(dirpath, filename))
+        return contents
+
+    def __removeFileFromList(self, contents, filename):
+        """ Removes the indicated filename from the given list, if it is
+        present.  """
+        try:
+            contents.remove(Filename(filename))
+        except ValueError:
+            pass
 
     def __checkArchiveStatus(self):
         """ Returns true if the archive and all extractable files are
         already correct on disk, false otherwise. """
-        
+
+        # Get a list of all of the files in the directory, so we can
+        # remove files that don't belong.
+        contents = self.__scanDirectoryRecursively(self.packageDir)
+        self.__removeFileFromList(contents, self.uncompressedArchive.filename)
+        self.__removeFileFromList(contents, self.descFileBasename)
+        for file in self.extracts:
+            self.__removeFileFromList(contents, file.filename)
+
+        # Now, any files that are still in the contents list don't
+        # belong.  It's important to remove these files before we
+        # start verifying the files that we expect to find here, in
+        # case there is a problem with ambiguous filenames or
+        # something (e.g. case insensitivity).
+        for filename in contents:
+            print "Removing %s" % (filename)
+            pathname = Filename(self.packageDir, filename)
+            pathname.unlink()
+            
         allExtractsOk = True
         if not self.uncompressedArchive.quickVerify(self.packageDir):
             #print "File is incorrect: %s" % (self.uncompressedArchive.filename)
@@ -291,6 +335,10 @@ class PackageInfo:
                     #print "File is incorrect: %s" % (file.filename)
                     allExtractsOk = False
                     break
+
+        if allExtractsOk:
+            print "All %s extracts of %s seem good." % (
+                len(self.extracts), self.packageName)
 
         return allExtractsOk
 
@@ -451,6 +499,7 @@ class PackageInfo:
 
         sourcePathname = Filename(self.packageDir, self.compressedArchive.filename)
         targetPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        targetPathname.unlink()
         print "Uncompressing %s to %s" % (sourcePathname, targetPathname)
         decompressor = Decompressor()
         decompressor.initiate(sourcePathname, targetPathname)
@@ -472,6 +521,9 @@ class PackageInfo:
             print "after uncompressing, %s still incorrect" % (
                 self.uncompressedArchive.filename)
             return False
+
+        # Now that we've verified the archive, make it read-only.
+        os.chmod(targetPathname.toOsSpecific(), 0444)
 
         # Now we can safely remove the compressed archive.
         sourcePathname.unlink()
@@ -503,6 +555,7 @@ class PackageInfo:
                 continue
 
             targetPathname = Filename(self.packageDir, file.filename)
+            targetPathname.unlink()
             if not mf.extractSubfile(i, targetPathname):
                 print "Couldn't extract: %s" % (file.filename)
                 allExtractsOk = False
@@ -513,8 +566,8 @@ class PackageInfo:
                 allExtractsOk = False
                 continue
 
-            # Make sure it's executable.
-            os.chmod(targetPathname.toOsSpecific(), 0755)
+            # Make sure it's executable, and not writable.
+            os.chmod(targetPathname.toOsSpecific(), 0555)
 
             step.bytesDone += file.size
             self.__updateStepProgress(step)

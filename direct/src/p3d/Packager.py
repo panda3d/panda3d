@@ -1993,6 +1993,15 @@ class Packager:
 
         host = appRunner.getHost(hostUrl)
         package = host.getPackage(packageName, version, platform = platform)
+        if not package and version is None:
+            # With no version specified, find the best matching version.
+            packages = host.getPackages(packageName, platform = platform)
+            self.__sortPackageInfos(packages)
+            for p in packages:
+                if p and self.__packageIsValid(p, requires):
+                    package = p
+                    break
+            
         if not package or not package.importDescFile:
             return None
 
@@ -2017,6 +2026,19 @@ class Packager:
         tuples = []
         for package in packages:
             version = self.__makeVersionTuple(package.version)
+            tuples.append((version, file))
+        tuples.sort(reverse = True)
+
+        return map(lambda t: t[1], tuples)
+
+    def __sortPackageInfos(self, packages):
+        """ Given a list of PackageInfos retrieved from a Host, sorts
+        them in reverse order by version, so that the highest-numbered
+        versions appear first in the list. """
+
+        tuples = []
+        for package in packages:
+            version = self.__makeVersionTuple(package.packageVersion)
             tuples.append((version, file))
         tuples.sort(reverse = True)
 
