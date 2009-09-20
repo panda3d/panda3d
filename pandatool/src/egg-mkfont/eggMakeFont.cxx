@@ -332,7 +332,7 @@ run() {
   }
   if (_output_glyph_pattern.empty()) {
     // Create a default texture filename pattern.
-    _output_glyph_pattern = get_output_filename().get_fullpath_wo_extension() + "%03d.rgb";
+    _output_glyph_pattern = get_output_filename().get_fullpath_wo_extension() + "%03d.png";
   }
   if (_output_palette_pattern.empty()) {
     // Create a default texture filename pattern.
