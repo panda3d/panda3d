@@ -62,6 +62,7 @@ TypeHandle Filename::_type_handle;
 #include <direct.h>
 #include <windows.h>
 #include <shlobj.h>
+#include <io.h>
 #endif
 
 // The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
@@ -2385,6 +2386,10 @@ bool Filename::
 unlink() const {
   assert(!get_pattern());
   string os_specific = to_os_specific();
+#ifdef _WIN32
+  // Windows can't delete a file if it's read-only.  Weird.
+  chmod(os_specific.c_str(), 0644);
+#endif
   return (::unlink(os_specific.c_str()) == 0);
 }
 
