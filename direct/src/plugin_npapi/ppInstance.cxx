@@ -27,6 +27,7 @@
 
 #include <fstream>
 #include <string.h>  // strcmp()
+#include <time.h>
 
 #ifndef _WIN32
 #include <sys/select.h>
