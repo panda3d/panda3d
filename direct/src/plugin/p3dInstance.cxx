@@ -312,9 +312,12 @@ set_p3d_filename(const string &p3d_filename) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
-  nout << "set_wparams\n";
   _got_wparams = true;
   _wparams = wparams;
+
+  nout << "set_wparams: " << wparams.get_window_type()
+       << " " << wparams.get_win_width() << " " << wparams.get_win_height()
+       << "\n";
 
   if (_hidden || _wparams.get_win_width() == 0 || _wparams.get_win_height() == 0) {
     // If we're a hidden app, or if the window has no size, then it is
@@ -1209,6 +1212,11 @@ scan_app_desc_file(TiXmlDocument *doc) {
     int allow_python_dev = 0;
     if (xconfig->QueryIntAttribute("allow_python_dev", &allow_python_dev) == TIXML_SUCCESS) {
       _allow_python_dev = (allow_python_dev != 0);
+    }
+
+    int keep_user_env = 0;
+    if (xconfig->QueryIntAttribute("keep_user_env", &keep_user_env) == TIXML_SUCCESS) {
+      _keep_user_env = (keep_user_env != 0);
     }
 
     int auto_start = 0;

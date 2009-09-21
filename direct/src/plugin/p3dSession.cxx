@@ -662,11 +662,13 @@ start_p3dpython(P3DInstance *inst) {
 
   _python_root_dir = inst->_panda3d->get_package_dir();
 
-  // Change the current directory to the standard start directory, but
-  // only if the runtime environment told us the original current
-  // directory isn't meaningful.
-  _use_start_dir = !inst_mgr->get_trusted_environment();
-  if (_use_start_dir) {
+  // If we're not to be preserving the user's current directory, then
+  // we'll need to change to the standard start directory.
+  _keep_user_env = false;
+  if (inst_mgr->get_trusted_environment() && inst->_keep_user_env) {
+    _keep_user_env = true;
+  }
+  if (!_keep_user_env) {
     mkdir_complete(_start_dir, nout);
   }
 
@@ -759,13 +761,17 @@ start_p3dpython(P3DInstance *inst) {
   // Populate the new process' environment.
   _env = string();
 
-  if (!inst_mgr->get_trusted_environment()) {
+  if (!_keep_user_env) {
+    // Reconstruct an environment just for running the process.
+    // Completely replace most of the existing environment variables
+    // with our own.
+
     // These are the enviroment variables we forward from the current
     // environment, if they are set.
     const char *keep[] = {
       "TMP", "TEMP", "HOME", "USER", 
 #ifdef _WIN32
-      "SYSTEMROOT", "USERPROFILE", "COMSPEC", "PANDA_ROOT",
+      "SYSTEMROOT", "USERPROFILE", "COMSPEC",
 #endif
 #ifdef HAVE_X11
       "DISPLAY",
@@ -783,8 +789,9 @@ start_p3dpython(P3DInstance *inst) {
     }
 
   } else {
-    // In a trusted environment, we forward *all* environment
-    // variables, except those defined specifically below.
+    // In a trusted environment, when the application asks us to, we
+    // forward *all* environment variables, except those defined
+    // specifically below.
     const char *dont_keep[] = {
       "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
       "PYTHONPATH", "PYTHONHOME", "PRC_PATH", "PANDA_PRC_PATH",
@@ -1214,10 +1221,10 @@ win_create_process() {
   startup_info.wShowWindow = SW_HIDE;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
-  // If _use_start_dir is false, meaning not to change the current
-  // directory, then pass NULL in to CreateProcess().
+  // If _keep_user_env, meaning not to change the current directory,
+  // then pass NULL in to CreateProcess().
   const char *start_dir_cstr = NULL;
-  if (_use_start_dir) {
+  if (!_keep_user_env) {
     start_dir_cstr = _start_dir.c_str();
   }
 

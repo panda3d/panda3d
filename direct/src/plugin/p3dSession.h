@@ -90,7 +90,7 @@ private:
   string _log_pathname;
   string _python_root_dir;
   string _start_dir;
-  bool _use_start_dir;
+  bool _keep_user_env;
 
   // This information is passed to create_process(), or to
   // p3dpython_thread_run().

@@ -24,6 +24,10 @@
 #include <algorithm>
 #include <fstream>
 
+#ifdef _WIN32
+#include <io.h>    // chmod()
+#endif
+
 // The relative breakdown of the full install process.  Each phase is
 // worth this fraction of the total movement of the progress bar.
 static const double download_portion = 0.9;
@@ -365,10 +369,8 @@ desc_file_download_finished(bool success) {
     return;
   }
 
-#ifndef _WIN32
   // Now that we've downloaded the desc file, make it read-only.
   chmod(_desc_file_pathname.c_str(), 0444);
-#endif
 
   if (_package_solo) {
     // No need to load it: the desc file *is* the package.
@@ -459,6 +461,11 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     string filename = (*ci);
     nout << "Removing " << filename << "\n";
     string pathname = _package_dir + "/" + filename;
+
+#ifdef _WIN32
+    // Windows can't delete a file if it's read-only.
+    chmod(pathname.c_str(), 0644);
+#endif
     unlink(pathname.c_str());
   }
 
@@ -723,12 +730,13 @@ uncompress_archive() {
     return;
   }
 
-#ifndef _WIN32
   // Now that we've verified the archive, make it read-only.
   chmod(target_pathname.c_str(), 0444);
-#endif
 
   // Now we can safely remove the compressed archive.
+#ifdef _WIN32
+  chmod(source_pathname.c_str(), 0644);
+#endif
   unlink(source_pathname.c_str());
 
   // All done uncompressing.
@@ -844,9 +852,16 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
   assert(_active_download == NULL);
   
   if (!allow_partial) {
+#ifdef _WIN32
+    // Windows can't delete a file if it's read-only.
+    chmod(pathname.c_str(), 0644);
+#endif
     unlink(pathname.c_str());
+  } else {
+    // Make sure the file is writable.
+    chmod(pathname.c_str(), 0644);
   }
-
+    
   Download *download = new Download(this, dtype);
   download->set_url(url);
   download->set_filename(pathname);

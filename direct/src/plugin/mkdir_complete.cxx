@@ -17,6 +17,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <io.h>    // chmod()
 #else
 #include <fcntl.h>
 #include <sys/stat.h>  // for mkdir()
@@ -125,6 +126,10 @@ mkdir_complete(const string &dirname, ostream &logfile) {
 bool
 mkfile_complete(const string &filename, ostream &logfile) {
   // Make sure we delete any previously-existing file first.
+#ifdef _WIN32
+  // Windows can't delete a file if it's read-only.  Weird.
+  chmod(filename.c_str(), 0644);
+#endif
   unlink(filename.c_str());
 
 #ifdef _WIN32

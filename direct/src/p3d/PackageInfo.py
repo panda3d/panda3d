@@ -621,12 +621,12 @@ class PackageInfo:
 
         if not foundOnPath:
             # Not already here; add it.
-            sys.path.insert(0, root)
+            sys.path.append(root)
 
         # Put it on the model-path, too.  We do this indiscriminantly,
         # because the Panda3D runtime won't be adding things to the
         # model-path, so it shouldn't be already there.
-        getModelPath().prependDirectory(self.packageDir)
+        getModelPath().appendDirectory(self.packageDir)
 
         # Set the environment variable to reference the package root.
         envvar = '%s_ROOT' % (self.packageName.upper())

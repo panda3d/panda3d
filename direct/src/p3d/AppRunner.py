@@ -342,10 +342,11 @@ class AppRunner(DirectObject):
 
         # Now set up Python to import this stuff.
         VFSImporter.register()
-        sys.path = [ self.multifileRoot ] + sys.path
+        sys.path.append(self.multifileRoot)
+        print "sys.path is: %s" % (sys.path)
 
         # Put our root directory on the model-path, too.
-        getModelPath().prependDirectory(self.multifileRoot)
+        getModelPath().appendDirectory(self.multifileRoot)
 
         # Replace the builtin open and file symbols so user code will get
         # our versions by default, which can open and read files out of

@@ -1480,6 +1480,8 @@ class Packager:
         # hosted.
         self.host = PandaSystem.getPackageHostUrl()
         self.hostDescriptiveName = None
+        self.hostMirrors = []
+        self.altHosts = {}
 
         # A search list for previously-built local packages.
         self.installSearch = ConfigVariableSearchPath('pdef-path')
@@ -1640,6 +1642,21 @@ class Packager:
         # A list of PackageEntry objects read from the contents.xml
         # file.
         self.contents = {}
+
+    def setHost(self, host, descriptiveName = None, mirrors = []):
+        """ Specifies the URL that will ultimately host these
+        contents. """
+        
+        self.host = host
+        self.hostDescriptiveName = descriptiveName
+        self.hostMirrors = mirrors
+
+    def addAltHost(self, keyword, host, descriptiveName = None, mirrors = []):
+        """ Adds an alternate host from which an alternate version of
+        these contents may be downloaded, if specified on the HTML
+        page. """
+
+        self.altHosts[keyword] = (host, descriptiveName, mirrors)
 
     def addWindowsSearchPath(self, searchPath, varname):
         """ Expands $varname, interpreting as a Windows-style search
@@ -2587,8 +2604,12 @@ class Packager:
         doc.InsertEndChild(decl)
 
         xcontents = TiXmlElement('contents')
-        if self.hostDescriptiveName:
-            xcontents.SetAttribute('descriptive_name', self.hostDescriptiveName)
+
+        xhost = self.makeHostXml('host', self.host, self.hostDescriptiveName, self.hostMirrors)
+        xcontents.InsertEndChild(xhost)
+        for keyword, (host, descriptiveName, mirrors) in self.altHosts.items():
+            xhost = self.makeHostXml('alt_host', host, descriptiveName, mirrors)
+            xcontents.InsertEndChild(xhost)
 
         contents = self.contents.items()
         contents.sort()
@@ -2598,6 +2619,22 @@ class Packager:
 
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
+
+    def makeHostXml(self, element, host, descriptiveName, mirrors):
+        """ Constructs the <host> or <alt_host> entry for the
+        indicated host and its mirrors. """
+
+        xhost = TiXmlElement(element)
+        xhost.SetAttribute('url', host)
+        if descriptiveName:
+            xhost.SetAttribute('descriptive_name', descriptiveName)
+
+        for mirror in mirrors:
+            xmirror = TiXmlElement('mirror')
+            xmirror.SetAttribute('url', mirror)
+            xhost.InsertEndChild(xmirror)
+
+        return xhost
         
 
 # The following class and function definitions represent a few sneaky

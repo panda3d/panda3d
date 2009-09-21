@@ -143,6 +143,7 @@ def makePackedApp(args):
     
     packager.installDir = appDir
     getModelPath().appendDirectory(root)
+    packager.allowPythonDev = allowPythonDev
 
     try:
         packager.setup()
@@ -156,8 +157,6 @@ def makePackedApp(args):
 
         if autoStart:
             packager.do_config(auto_start = True)
-        if allowPythonDev:
-            packager.do_config(allow_python_dev = True)
 
         packager.do_dir(root)
         packager.do_mainModule(mainModule)

@@ -223,6 +223,7 @@ private:
   string _log_basename;
   bool _hidden;
   bool _allow_python_dev;
+  bool _keep_user_env;
   bool _auto_start;
   bool _auth_button_approved;
 
