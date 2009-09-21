@@ -901,8 +901,8 @@ STATIC_CACHE = None
 def GetLdCache():
     # Returns a list of cached libraries, not prefixed by lib and not suffixed by .so* or .a!
     global LD_CACHE
-    LD_CACHE = []
     if (LD_CACHE == None):
+        LD_CACHE = []
         if (LocateBinary("ldconfig") != None):
             handle = os.popen(LocateBinary("ldconfig") + " -NXp")
             result = handle.read().strip().split("\n")
