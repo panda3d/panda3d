@@ -1,6 +1,6 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[WINDOWS_PLATFORM]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[WINDOWS_PLATFORM]]
 
 #define USE_PACKAGES tinyxml
 

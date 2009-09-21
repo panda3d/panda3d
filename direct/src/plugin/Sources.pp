@@ -1,9 +1,9 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
+#define BUILD_DIRECTORY $[HAVE_P3D_PLUGIN]
 
 #begin lib_target
-  #define BUILD_TARGET $[and $[HAVE_JPEG],$[HAVE_PNG]]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
   #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
@@ -103,7 +103,7 @@
 // it's going to be a bad idea in the long term.  This lib remains
 // for now as an experiment, but it will likely be removed very soon.
 // ****
-  #define BUILD_TARGET $[HAVE_PYTHON]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES tinyxml python openssl
   #define TARGET libp3dpython
   #define LIB_PREFIX
@@ -131,7 +131,7 @@
 #end lib_target
 
 #begin bin_target
-  #define BUILD_TARGET $[HAVE_PYTHON]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES tinyxml python openssl
   #define TARGET p3dpython
 
@@ -164,6 +164,7 @@
 #end bin_target
 
 #begin static_lib_target
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_OPENSSL]]
   #define TARGET plugin_common
   #define USE_PACKAGES tinyxml openssl
 
@@ -178,7 +179,7 @@
 
 
 #begin bin_target
-  #define BUILD_TARGET $[HAVE_WX]
+  #define BUILD_TARGET $[and $[HAVE_WX],$[HAVE_OPENSSL]]
   #define USE_PACKAGES wx openssl
   #define TARGET p3dcert
 

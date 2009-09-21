@@ -21,6 +21,7 @@
 #ifdef _WIN32
 #include <sys/utime.h>
 #include <direct.h>
+#include <io.h>
 #define stat _stat
 #define utime _utime
 #define utimbuf _utimbuf
@@ -136,11 +137,9 @@ extract_all(const string &to_dir,
     utb.modtime = s._timestamp;
     utime(output_pathname.c_str(), &utb);
 
-#ifndef _WIN32
     // Be sure to execute permissions on the file, in case it's a
     // program or something.
     chmod(output_pathname.c_str(), 0555);
-#endif
 
     ++num_processed;
     if (package != NULL) {
