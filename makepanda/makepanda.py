@@ -370,6 +370,7 @@ if (COMPILER=="LINUX"):
     if (sys.platform == "darwin"):
         if (PkgSkip("FREETYPE")==0):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
+          IncDirectory("FREETYPE", "/usr/X11/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("GLUT", "/usr/X11R6/include")
 
@@ -389,7 +390,7 @@ if (COMPILER=="LINUX"):
     PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
     PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
     PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-    PkgEnable("FREETYPE",  "freetype2", ("freetype"), "freetype2/freetype/freetype.h")
+    PkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
     PkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
     PkgEnable("GTK2",      "gtk+-2.0")
     PkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
