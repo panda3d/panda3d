@@ -1018,7 +1018,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
                 # Try searching in the package's IncDirectories.
                 for ppkg, pdir in INCDIRECTORIES:
                     if (pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0):
-                        incdir = sorted(glob.glob(os.path.join(pdir, i)))
+                        incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
                 if (VERBOSE and i.endswith(".h")):
                     print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
                 have_pkg = False
