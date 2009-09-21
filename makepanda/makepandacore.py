@@ -922,8 +922,6 @@ def GetLdCache():
 
 def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
     global PKG_LIST_ALL
-    if (LocateBinary("pkg-config")==None):
-        exit("Failed to locate pkg-config binary!")
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
@@ -974,7 +972,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
         else:
             print "%ERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
             exit()
-    elif (pkgconfig != None):
+    elif (LocateBinary("pkg-config") != None and pkgconfig != None):
         if (isinstance(pkgconfig, str)):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(pkg, pkgconfig, tool)
