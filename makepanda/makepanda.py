@@ -386,6 +386,7 @@ if (COMPILER=="LINUX"):
 
     #         Name         pkg-config   libs, include(dir)s
     PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
+    PkgEnable("CGGL",      "",          ("CgGL"), "Cg/cgGL.h", framework = "CgGL")
     PkgEnable("FCOLLADA",  "",          ("FCollada"), "FCollada.h")
     PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
     PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
