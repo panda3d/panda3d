@@ -1318,7 +1318,7 @@ posix_create_process() {
       }
     }
 
-    if (_use_start_dir) {
+    if (!_keep_user_env) {
       if (chdir(_start_dir.c_str()) < 0) {
         nout << "Could not chdir to " << _start_dir << "\n";
         // This is a warning, not an error.  We don't actually care
