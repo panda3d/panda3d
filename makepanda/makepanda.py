@@ -1209,6 +1209,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
+        dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
     
