@@ -386,7 +386,6 @@ if (COMPILER=="LINUX"):
 
     #         Name         pkg-config   libs, include(dir)s
     PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
-    PkgEnable("CGGL",      "",          ("CgGL"), "Cg/cgGL.h", framework = "CgGL")
     PkgEnable("FCOLLADA",  "",          ("FCollada"), "FCollada.h")
     PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
     PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
@@ -411,7 +410,9 @@ if (COMPILER=="LINUX"):
         PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h"))
         PkgEnable("WX",    tool = "wx-config")
     if (sys.platform != "darwin"):
-        PkgEnable("X11", "x11", "X11", "Xlib.h")
+        # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
+        PkgEnable("CGGL",  "",          ("CgGL"), "Cg/cgGL.h", framework = "CgGL")
+        PkgEnable("X11",   "x11", "X11", "Xlib.h")
         PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
     for pkg in MAYAVERSIONS:
