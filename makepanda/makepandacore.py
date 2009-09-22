@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob,getpass
 from distutils import sysconfig
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r",".plist"]
