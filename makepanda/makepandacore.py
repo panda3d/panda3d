@@ -410,12 +410,17 @@ def CxxGetIncludes(path):
 ##
 ########################################################################
 
+DCACHE_BACKED_UP = False
+
 def SaveDependencyCache():
-    try:
-        if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
-            os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),
-                      os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
-    except: pass
+    global DCACHE_BACKED_UP
+    if not DCACHE_BACKED_UP:
+        try:
+            if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
+                os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),
+                          os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
+        except: pass
+        DCACHE_BACKED_UP = True
     try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
     except: icache = 0
     if (icache!=0):
@@ -914,6 +919,7 @@ def GetLdCache():
             libs = glob.glob("/lib/*.so*") + glob.glob("/usr/lib/*.so*") + glob.glob("/usr/local/lib/*.so*") + glob.glob("/usr/PCBSD/local/lib/*.so*")
             if (sys.platform == "darwin"):
                 libs += glob.glob("/lib/*.dylib*") + glob.glob("/usr/lib/*.dylib*") + glob.glob("/usr/local/lib/*.dylib*")
+                libs += glob.glob("/usr/X11/lib/*.dylib*") + glob.glob("/usr/X11R6/lib/*.dylib*")
             for l in libs:
                 lib = os.path.basename(l).split(".so", 1)[0].split(".dylib", 1)[0][3:]
                 LD_CACHE.append(lib)
@@ -975,8 +981,8 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
         else:
             print "%ERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
             exit()
-    elif (LocateBinary("pkg-config") != None and pkgconfig != None):
-        if (isinstance(pkgconfig, str)):
+    elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
+        if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(pkg, pkgconfig, tool)
         else:
@@ -1019,7 +1025,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
                 for ppkg, pdir in INCDIRECTORIES:
                     if (pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0):
                         incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
-                if (VERBOSE and i.endswith(".h")):
+                if (incdir == None and VERBOSE and i.endswith(".h")):
                     print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
                 have_pkg = False
             
