@@ -964,7 +964,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
             if (len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/libpanda%s.*" % libname)) > 0 and
                 len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
                 libname = "panda" + libname
-            LibName(pkg, libname)
+            LibName(pkg, "-l" + libname)
         for d, v in defs.values():
             DefSymbol(pkg, d, v)
     elif (sys.platform == "darwin" and framework != None):
