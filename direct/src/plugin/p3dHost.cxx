@@ -49,11 +49,50 @@ P3DHost::
     delete _xcontents;
   }
 
-  Packages::iterator pi;
-  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
-    delete (*pi).second;
+  Packages::iterator mi;
+  for (mi = _packages.begin(); mi != _packages.end(); ++mi) {
+    PackageMap &package_map = (*mi).second;
+    PackageMap::iterator pi;
+    for (pi = package_map.begin(); pi != package_map.end(); ++pi) {
+      delete (*pi).second;
+    }
   }
   _packages.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::get_alt_host
+//       Access: Public
+//  Description: Returns the pre-defined alternate host with the
+//               indicated token, if one is defined for this token, or
+//               the original host if there is no alternate host
+//               defined for this token.
+//
+//               This is intended to implement test versions and the
+//               like, for instance in which a particular p3d file may
+//               reference a package on one particular host, but there
+//               is an alternate version to be tested on a different
+//               host.  The HTML code that embeds the p3d file can
+//               choose to set the alt_host token to redirect the p3d
+//               file to the alternate host.
+//
+//               The actual URL for the alternate host is embedded
+//               within the host's contents.xml as a security measure,
+//               to prevent people from tricking a p3d file into
+//               running untrusted code by redirecting it to an
+//               arbitrary URL.
+////////////////////////////////////////////////////////////////////
+P3DHost *P3DHost::
+get_alt_host(const string &alt_host) {
+  assert(_xcontents != NULL);
+
+  AltHosts::iterator hi;
+  hi = _alt_hosts.find(alt_host);
+  if (hi != _alt_hosts.end() && (*hi).second != _host_url) {
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    return inst_mgr->get_host((*hi).second);
+  }
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,9 +136,38 @@ read_contents_file(const string &contents_filename) {
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
 
-  const char *descriptive_name = _xcontents->Attribute("descriptive_name");
-  if (descriptive_name != NULL) {
-    _descriptive_name = descriptive_name;
+  TiXmlElement *xhost = _xcontents->FirstChildElement("host");
+  if (xhost != NULL) {
+    const char *url = xhost->Attribute("url");
+    if (url != NULL && _host_url == string(url)) {
+      // We're the primary host.  This is the normal case.
+      read_xhost(xhost);
+
+      // Build up the list of alternate hosts.
+      TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
+      while (xalthost != NULL) {
+        const char *keyword = xalthost->Attribute("keyword");
+        const char *url = xalthost->Attribute("url");
+        if (keyword != NULL && url != NULL) {
+          cerr << "got alt host " << keyword << ": " << url << "\n";
+          _alt_hosts[keyword] = url;
+        }
+        xalthost = xalthost->NextSiblingElement("alt_host");
+      }
+
+    } else {
+      // We're not the primary host; perhaps we're an alternate host.
+      TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
+      while (xalthost != NULL) {
+        const char *url = xalthost->Attribute("url");
+        if (url != NULL && _host_url == string(url)) {
+          // Yep, we're this alternate host.
+          read_xhost(xhost);
+          break;
+        }
+        xalthost = xalthost->NextSiblingElement("alt_host");
+      }
+    }
   }
 
   string standard_filename = _host_dir + "/contents.xml";
@@ -118,16 +186,33 @@ read_contents_file(const string &contents_filename) {
 //               package.
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DHost::
-get_package(const string &package_name, const string &package_version) {
+get_package(const string &package_name, const string &package_version,
+            const string &alt_host) {
+  if (!alt_host.empty()) {
+    if (_xcontents != NULL) {
+      // If we're asking for an alt host and we've already read our
+      // contents.xml file, then we already know all of our hosts, and
+      // we can start the package off with the correct host immediately.
+      P3DHost *new_host = get_alt_host(alt_host);
+      return new_host->get_package(package_name, package_version);
+    }
+
+    // If we haven't read contents.xml yet, we need to create the
+    // package first, then let it be responsible for downloading our
+    // contents.xml, and it can migrate to its alt_host after that.
+  }
+
+  PackageMap &package_map = _packages[alt_host];
+
   string key = package_name + "_" + package_version;
-  Packages::iterator pi = _packages.find(key);
-  if (pi != _packages.end()) {
+  PackageMap::iterator pi = package_map.find(key);
+  if (pi != package_map.end()) {
     return (*pi).second;
   }
 
   P3DPackage *package = 
-    new P3DPackage(this, package_name, package_version);
-  bool inserted = _packages.insert(Packages::value_type(key, package)).second;
+    new P3DPackage(this, package_name, package_version, alt_host);
+  bool inserted = package_map.insert(PackageMap::value_type(key, package)).second;
   assert(inserted);
 
   return package;
@@ -218,6 +303,31 @@ get_package_desc_file(FileSpec &desc_file,              // out
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::migrate_package
+//       Access: Public
+//  Description: This is called by P3DPackage when it migrates from
+//               this host to its final alt_host, after downloading
+//               the contents.xml file for this file and learning the
+//               true URL for its target alt_host.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host) {
+  assert(new_host != this);
+  assert(new_host == get_alt_host(alt_host));
+
+  string key = package->get_package_name() + "_" + package->get_package_version();
+
+  PackageMap &package_map = _packages[alt_host];
+  PackageMap::iterator pi = package_map.find(key);
+  assert(pi != package_map.end());
+  package_map.erase(pi);
+
+  PackageMap &new_package_map = new_host->_packages[""];
+  bool inserted = new_package_map.insert(PackageMap::value_type(key, package)).second;
+  assert(inserted);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::determine_host_dir
 //       Access: Private
 //  Description: Hashes the host_url into a (mostly) unique directory
@@ -270,7 +380,6 @@ determine_host_dir() {
   // be safe since they have the same hostname), there will be minimal
   // redownloading.
 
-
   static const size_t hash_size = 16;
   unsigned char md[hash_size];
 
@@ -295,6 +404,29 @@ determine_host_dir() {
     int low = md[i] & 0xf;
     _host_dir += P3DInstanceManager::encode_hexdigit(high);
     _host_dir += P3DInstanceManager::encode_hexdigit(low);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::read_xhost
+//       Access: Private
+//  Description: Reads the host data from the <host> (or <alt_host>)
+//               entry in the contents.xml file.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+read_xhost(TiXmlElement *xhost) {
+  const char *descriptive_name = xhost->Attribute("descriptive_name");
+  if (descriptive_name != NULL) {
+    _descriptive_name = descriptive_name;
+  }
+        
+  TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
+  while (xmirror != NULL) {
+    const char *url = xmirror->Attribute("url");
+    if (url != NULL) {
+      _mirrors.push_back(url);
+    }
+    xmirror = xmirror->NextSiblingElement("mirror");
   }
 }
 

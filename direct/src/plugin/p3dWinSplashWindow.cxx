@@ -380,10 +380,15 @@ make_window() {
       WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX |
       WS_SIZEBOX | WS_MAXIMIZEBOX;
-    
+
+    RECT win_rect = { 0, 0, width, height };
+    // Adjust window size based on desired client area size
+    AdjustWindowRect(&win_rect, window_style, FALSE);
     _hwnd = 
       CreateWindow("panda3d_splash", "Panda3D", window_style,
-                   x, y, width, height,
+                   x, y,
+                   win_rect.right - win_rect.left,
+                   win_rect.bottom - win_rect.top,
                    NULL, NULL, application, 0);
     if (!_hwnd) {
       nout << "Could not create toplevel window!\n";

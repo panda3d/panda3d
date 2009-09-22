@@ -39,20 +39,26 @@ public:
   inline const string &get_host_url_prefix() const;
   inline const string &get_descriptive_name() const;
 
+  P3DHost *get_alt_host(const string &alt_host);
+
   inline bool has_contents_file() const;
   bool read_contents_file();
   bool read_contents_file(const string &contents_filename);
 
   P3DPackage *get_package(const string &package_name, 
-                          const string &package_version);
+                          const string &package_version,
+                          const string &alt_host = "");
   bool get_package_desc_file(FileSpec &desc_file, 
                              string &package_platform,
                              bool &package_solo,
                              const string &package_name,
                              const string &package_version);
 
+  void migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host);
+
 private:
   void determine_host_dir();
+  void read_xhost(TiXmlElement *xhost);
 
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);
@@ -64,7 +70,14 @@ private:
   string _descriptive_name;
   TiXmlElement *_xcontents;
 
-  typedef map<string, P3DPackage *> Packages;
+  typedef vector<string> Mirrors;
+  Mirrors _mirrors;
+
+  typedef map<string, string> AltHosts;
+  AltHosts _alt_hosts;
+
+  typedef map<string, P3DPackage *> PackageMap;
+  typedef map<string, PackageMap> Packages;
   Packages _packages;
 
   friend class P3DInstanceManager;

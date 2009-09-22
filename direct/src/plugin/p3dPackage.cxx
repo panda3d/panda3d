@@ -41,17 +41,15 @@ static const double extract_portion = 0.05;
 ////////////////////////////////////////////////////////////////////
 P3DPackage::
 P3DPackage(P3DHost *host, const string &package_name,
-           const string &package_version) :
+           const string &package_version, const string &alt_host) :
   _host(host),
   _package_name(package_name),
-  _package_version(package_version)
+  _package_version(package_version),
+  _alt_host(alt_host)
 {
   _package_fullname = _package_name;
-  _package_dir = _host->get_host_dir() + string("/") + _package_name;
-
   if (!_package_version.empty()) {
     _package_fullname += string(".") + _package_version;
-    _package_dir += string("/") + _package_version;
   }
 
   // This is set true if the package is a "solo", i.e. a single
@@ -68,9 +66,6 @@ P3DPackage(P3DHost *host, const string &package_name,
   _failed = false;
   _active_download = NULL;
   _partial_download = false;
-
-  // Ensure the package directory exists; create it if it does not.
-  mkdir_complete(_package_dir, nout);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +227,7 @@ begin_info_download() {
 //       Access: Private
 //  Description: Starts downloading the root-level contents.xml file.
 //               This is only done for the first package, and only if
-//               the instance manager doesn't have the file already.
+//               the host doesn't have the file already.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_contents_file() {
@@ -246,7 +241,7 @@ download_contents_file() {
   if (_host->has_contents_file()) {
     // We've already got a contents.xml file; go straight to the
     // package desc file.
-    download_desc_file();
+    host_got_contents_file();
     return;
   }
 
@@ -261,7 +256,10 @@ download_contents_file() {
 
   // Download contents.xml to a temporary filename first, in case
   // multiple packages are downloading it simultaneously.
-  assert(_temp_contents_file == NULL);
+  if (_temp_contents_file != NULL) {
+    delete _temp_contents_file;
+    _temp_contents_file = NULL;
+  }
   _temp_contents_file = new P3DTemporaryFile(".xml");
 
   start_download(DT_contents_file, url, _temp_contents_file->get_filename(), false);
@@ -270,7 +268,8 @@ download_contents_file() {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::contents_file_download_finished
 //       Access: Private
-//  Description: Called when the desc file has been fully downloaded.
+//  Description: Called when the contents.xml file has been fully
+//               downloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 contents_file_download_finished(bool success) {
@@ -294,6 +293,48 @@ contents_file_download_finished(bool success) {
   // temporary file.
   delete _temp_contents_file;
   _temp_contents_file = NULL;
+
+  host_got_contents_file();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::host_got_contents_file
+//       Access: Private
+//  Description: We come here when we've successfully downloaded and
+//               read the host's contents.xml file.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+host_got_contents_file() {
+  if (!_alt_host.empty()) {
+    // If we have an alt host specification, maybe we need to change
+    // the host now.
+    P3DHost *new_host = _host->get_alt_host(_alt_host);
+    nout << "Migrating " << get_package_name() << " to alt_host " 
+         << _alt_host << ": " << new_host->get_host_url() << "\n";
+    if (new_host != _host) {
+      _host->migrate_package(this, _alt_host, new_host);
+      _host = new_host;
+    }
+
+    // Clear the alt_host string now that we're migrated to our final
+    // host.
+    _alt_host.clear();
+
+    if (!_host->has_contents_file()) {
+      // Now go back and get the contents.xml file for the new host.
+      download_contents_file();
+      return;
+    }
+  }
+
+  // Now that we have a valid host, we can define the _package_dir.
+  _package_dir = _host->get_host_dir() + string("/") + _package_name;
+  if (!_package_version.empty()) {
+    _package_dir += string("/") + _package_version;
+  }
+
+  // Ensure the package directory exists; create it if it does not.
+  mkdir_complete(_package_dir, nout);
 
   download_desc_file();
 }

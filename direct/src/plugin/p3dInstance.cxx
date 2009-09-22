@@ -1243,6 +1243,8 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _wparams.set_window_type(P3D_WT_hidden);
   }
 
+  string alt_host = _fparams.lookup_token("alt_host");
+
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
     const char *name = xrequires->Attribute("name");
@@ -1253,7 +1255,7 @@ scan_app_desc_file(TiXmlDocument *doc) {
         version = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
-      P3DPackage *package = host->get_package(name, version);
+      P3DPackage *package = host->get_package(name, version, alt_host);
       add_package(package);
     }
 

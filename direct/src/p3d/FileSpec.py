@@ -119,9 +119,12 @@ class FileSpec:
         # The hash is OK after all.  Change the file's timestamp back
         # to what we expect it to be, so we can quick-verify it
         # successfully next time.
-        os.chmod(pathname.toOsSpecific(), 0644)
+
+        # On Windows, we have to change the file to read-write before
+        # we can successfully update its timestamp.
+        os.chmod(pathname.toOsSpecific(), 0755)
         os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
-        os.chmod(pathname.toOsSpecific(), 0444)
+        os.chmod(pathname.toOsSpecific(), 0555)
 
         return True
         

@@ -41,7 +41,8 @@ class P3DPackage {
 private:
   P3DPackage(P3DHost *host,
              const string &package_name, 
-             const string &package_version);
+             const string &package_version,
+             const string &alt_host);
   ~P3DPackage();
 
 public:
@@ -89,6 +90,7 @@ private:
   void begin_info_download();
   void download_contents_file();
   void contents_file_download_finished(bool success);
+  void host_got_contents_file();
 
   void download_desc_file();
   void desc_file_download_finished(bool success);
@@ -116,6 +118,7 @@ private:
   string _package_name;
   string _package_version;
   string _package_platform;
+  string _alt_host;
   bool _package_solo;
   string _package_display_name;
   string _package_fullname;

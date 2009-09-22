@@ -921,13 +921,20 @@ class Packager:
 
             self.__addConfigs(xpackage)
 
+            requireThisHost = False
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
                 xrequires.SetAttribute('host', package.host)
+                if package.host == self.packager.host:
+                    requireThisHost = True
                 xpackage.InsertEndChild(xrequires)
+
+            if requireThisHost:
+                xhost = self.packager.makeHostXml()
+                xpackage.InsertEndChild(xhost)
 
             doc.InsertEndChild(xpackage)
 
@@ -2605,11 +2612,8 @@ class Packager:
 
         xcontents = TiXmlElement('contents')
 
-        xhost = self.makeHostXml('host', self.host, self.hostDescriptiveName, self.hostMirrors)
+        xhost = self.makeHostXml()
         xcontents.InsertEndChild(xhost)
-        for keyword, (host, descriptiveName, mirrors) in self.altHosts.items():
-            xhost = self.makeHostXml('alt_host', host, descriptiveName, mirrors)
-            xcontents.InsertEndChild(xhost)
 
         contents = self.contents.items()
         contents.sort()
@@ -2620,7 +2624,17 @@ class Packager:
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
 
-    def makeHostXml(self, element, host, descriptiveName, mirrors):
+    def makeHostXml(self):
+        """ Constructs the <host> entry for this host. """
+        xhost = self.makeHostXmlLine('host', self.host, self.hostDescriptiveName, self.hostMirrors)
+
+        for keyword, (host, descriptiveName, mirrors) in self.altHosts.items():
+            xalthost = self.makeHostXmlLine('alt_host', host, descriptiveName, mirrors)
+            xalthost.SetAttribute('keyword', keyword)
+            xhost.InsertEndChild(xalthost)
+        return xhost
+
+    def makeHostXmlLine(self, element, host, descriptiveName, mirrors):
         """ Constructs the <host> or <alt_host> entry for the
         indicated host and its mirrors. """
 
