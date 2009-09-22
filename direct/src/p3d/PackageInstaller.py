@@ -223,7 +223,7 @@ class PackageInstaller(DirectObject):
         if self.state != self.S_initial:
             raise ValueError, 'addPackage called after donePackages'
 
-        host = self.appRunner.getHost(hostUrl)
+        host = self.appRunner.getHostWithAlt(hostUrl)
         pp = self.PendingPackage(packageName, version, host)
 
         self.packageLock.acquire()
@@ -374,7 +374,7 @@ class PackageInstaller(DirectObject):
     def __packageStarted(self, pp):
         """ This method is called when a single package is beginning
         to download. """
-        print "Downloading %s" % (pp.packageName)
+        print "Downloading package %s" % (pp.packageName)
         self.__callDownloadStarted()
         self.__callPackageStarted(pp)
 

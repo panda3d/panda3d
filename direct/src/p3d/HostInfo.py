@@ -23,7 +23,16 @@ class HostInfo:
 
         # descriptiveName will be filled in later, when the
         # contents file is read.
-        self.descriptiveName = ''
+        self.descriptiveName = None
+
+        # A list of known mirrors for this host.
+        self.mirrors = []
+
+        # A map of keyword -> altHost URL's.  An altHost is different
+        # than a mirror; an altHost is an alternate URL to download a
+        # different (e.g. testing) version of this host's contents.
+        # It is rarely used.
+        self.altHosts = {}
 
         # This is a dictionary of packages by (name, version).  It
         # will be filled in when the contents file is read.
@@ -52,7 +61,7 @@ class HostInfo:
         request = DocumentSpec(url)
         request.setCacheControl(DocumentSpec.CCNoCache)
 
-        print "Downloading %s" % (request)
+        print "Downloading contents file %s" % (request)
 
         rf = Ramfile()
         channel = http.makeChannel(False)
@@ -76,7 +85,8 @@ class HostInfo:
 
     def readContentsFile(self):
         """ Reads the contents.xml file for this particular host.
-        Presumably this has already been downloaded and installed. """
+        Raises ValueError if the contents file is not already on disk
+        or is unreadable. """
 
         if self.hasContentsFile:
             # No need to read it again.
@@ -92,7 +102,8 @@ class HostInfo:
         if not xcontents:
             raise ValueError
 
-        self.descriptiveName = xcontents.Attribute('descriptive_name')
+        # Look for our own entry in the hosts table.
+        self.__findHostXml(xcontents)
 
         # Get the list of packages available for download and/or import.
         xpackage = xcontents.FirstChildElement('package')
@@ -114,6 +125,51 @@ class HostInfo:
             xpackage = xpackage.NextSiblingElement('package')
 
         self.hasContentsFile = True
+
+    def __findHostXml(self, xcontents):
+        """ Looks for the <host> or <alt_host> entry in the
+        contents.xml that corresponds to the URL that we actually
+        downloaded from. """
+        
+        xhost = xcontents.FirstChildElement('host')
+        while xhost:
+            url = xhost.Attribute('url')
+            if url == self.hostUrl:
+                self.readHostXml(xhost)
+                return
+
+            xalthost = xhost.FirstChildElement('alt_host')
+            while xalthost:
+                url = xalthost.Attribute('url')
+                if url == self.hostUrl:
+                    self.readHostXml(xalthost)
+                    return
+                xalthost = xalthost.NextSiblingElement('alt_host')
+            
+            xhost = xhost.NextSiblingElement('host')
+
+    def readHostXml(self, xhost):
+        """ Reads a <host> or <alt_host> entry and applies the data to
+        this object. """
+
+        descriptiveName = xhost.Attribute('descriptive_name')
+        if descriptiveName and not self.descriptiveName:
+            self.descriptiveName = descriptiveName
+            
+        xmirror = xhost.FirstChildElement('mirror')
+        while xmirror:
+            url = xmirror.Attribute('url')
+            if url and url not in self.mirrors:
+                self.mirrors.append(url)
+            xmirror = xmirror.NextSiblingElement('mirror')
+
+        xalthost = xhost.FirstChildElement('alt_host')
+        while xalthost:
+            keyword = xalthost.Attribute('keyword')
+            url = xalthost.Attribute('url')
+            if url and keyword:
+                self.altHosts[keyword] = url
+            xalthost = xalthost.NextSiblingElement('alt_host')
 
     def __makePackage(self, name, platform, version):
         """ Creates a new PackageInfo entry for the given name,

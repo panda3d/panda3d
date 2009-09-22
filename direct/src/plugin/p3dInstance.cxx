@@ -1255,12 +1255,58 @@ scan_app_desc_file(TiXmlDocument *doc) {
         version = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
-      P3DPackage *package = host->get_package(name, version, alt_host);
+      string this_alt_host = alt_host;
+
+      // Look up in the p3d_info.xml file to see if this p3d file has
+      // a specific alt_host indication for this host_url.
+      string alt_host_url = find_alt_host_url(xpackage, host_url, alt_host);
+      if (!alt_host_url.empty()) {
+        // If it does, we go ahead and switch to that host now,
+        // instead of bothering to contact the original host.
+        host = inst_mgr->get_host(alt_host_url);
+        this_alt_host.clear();
+      }
+        
+      P3DPackage *package = host->get_package(name, version, this_alt_host);
       add_package(package);
     }
 
     xrequires = xrequires->NextSiblingElement("requires");
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::find_alt_host_url
+//       Access: Private
+//  Description: Looks in the p3d_info.xml file for the alt_host
+//               associated with the indicated host_url, if any.
+//               Returns empty string if there is no match.
+////////////////////////////////////////////////////////////////////
+string P3DInstance::
+find_alt_host_url(TiXmlElement *xpackage, 
+                  const string &host_url, const string &alt_host) {
+  TiXmlElement *xhost = xpackage->FirstChildElement("host");
+  while (xhost != NULL) {
+    const char *url = xhost->Attribute("url");
+    if (url != NULL && host_url == url) {
+      // This matches the host.  Now do we have a matching alt_host
+      // keyword for this host?
+      TiXmlElement *xalt_host = xhost->FirstChildElement("alt_host");
+      while (xalt_host != NULL) {
+        const char *keyword = xalt_host->Attribute("keyword");
+        if (keyword != NULL && alt_host == keyword) {
+          const char *alt_host_url = xalt_host->Attribute("url");
+          if (alt_host_url != NULL) {
+            return alt_host_url;
+          }
+        }
+        xalt_host = xalt_host->NextSiblingElement("alt_host");
+      }
+    }
+    xhost = xhost->NextSiblingElement("host");
+  }
+
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////

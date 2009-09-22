@@ -119,12 +119,7 @@ class FileSpec:
         # The hash is OK after all.  Change the file's timestamp back
         # to what we expect it to be, so we can quick-verify it
         # successfully next time.
-
-        # On Windows, we have to change the file to read-write before
-        # we can successfully update its timestamp.
-        os.chmod(pathname.toOsSpecific(), 0755)
-        os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
-        os.chmod(pathname.toOsSpecific(), 0555)
+        self.__updateTimestamp(pathname, st)
 
         return True
         
@@ -162,9 +157,16 @@ class FileSpec:
         # to what we expect it to be, so we can quick-verify it
         # successfully next time.
         if st.st_mtime != self.timestamp:
-            os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
+            self.__updateTimestamp(pathname, st)
 
         return True
+
+    def __updateTimestamp(self, pathname, st):
+        # On Windows, we have to change the file to read-write before
+        # we can successfully update its timestamp.
+        os.chmod(pathname.toOsSpecific(), 0755)
+        os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
+        os.chmod(pathname.toOsSpecific(), 0555)
 
     def checkHash(self, packageDir, pathname, st):
         """ Returns true if the file has the expected md5 hash, false

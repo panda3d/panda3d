@@ -113,6 +113,12 @@ class AppRunner(DirectObject):
         # hosts we have imported packages from.
         self.hosts = {}
 
+        # The altHost string that is in effect from the HTML tokens,
+        # if any, and the dictionary of URL remapping: orig host url
+        # -> alt host url.
+        self.altHost = None
+        self.altHostMap = {}
+
         # Application code can assign a callable object here; if so,
         # it will be invoked when an uncaught exception propagates to
         # the top of the TaskMgr.run() loop.
@@ -213,7 +219,7 @@ class AppRunner(DirectObject):
         finished; see the PackageInstaller class if you want this to
         happen asynchronously instead. """
 
-        host = self.getHost(hostUrl)
+        host = self.getHostWithAlt(hostUrl)
         if not host.downloadContentsFile(self.http):
             return False
 
@@ -235,10 +241,47 @@ class AppRunner(DirectObject):
 
         print "Package %s %s installed." % (packageName, version)
 
+    def getHostWithAlt(self, hostUrl):
+        """ Returns a suitable HostInfo object for downloading
+        contents from the indicated URL.  This is almost always the
+        same thing as getHost(), except in the rare case when we have
+        an alt_host specified in the HTML tokens; in this case, we may
+        actually want to download the contents from a different URL
+        than the one given, for instance to download a version in
+        testing. """
+
+        altUrl = self.altHostMap.get(hostUrl, None)
+        if altUrl:
+            # We got an alternate host.  Use it.
+            return self.getHost(altUrl)
+
+        # We didn't get an aternate host, use the original.
+        host = self.getHost(hostUrl)
+
+        # But we might need to consult the host itself to see if *it*
+        # recommends an altHost.
+        if self.altHost:
+            # This means forcing the host to download its contents
+            # file on the spot, a blocking operation.  This is a
+            # little unfortunate, but since alt_host is so rarely
+            # used, probably not really a problem.
+            host.downloadContentsFile(self.http)
+            altUrl = host.altHosts.get(self.altHost, None)
+            if altUrl:
+                return self.getHost(altUrl)
+
+        # No shenanigans, just return the requested host.
+        return host
+        
     def getHost(self, hostUrl):
         """ Returns a new HostInfo object corresponding to the
         indicated host URL.  If we have already seen this URL
-        previously, returns the same object. """
+        previously, returns the same object.
+
+        This returns the literal referenced host.  To return the
+        mapped host, which is the one we should actually download
+        from, see getHostWithAlt().  """
+
 
         if hostUrl is None:
             hostUrl = PandaSystem.getPackageHostUrl()
@@ -261,7 +304,7 @@ class AppRunner(DirectObject):
 
         # It's stale, get a new one.
         url = URLSpec(host.hostUrlPrefix + fileSpec.filename)
-        print "Downloading %s" % (url)
+        print "Freshening %s" % (url)
         doc = self.http.getDocument(url)
         if not doc.isValid():
             return False
@@ -343,7 +386,6 @@ class AppRunner(DirectObject):
         # Now set up Python to import this stuff.
         VFSImporter.register()
         sys.path.append(self.multifileRoot)
-        print "sys.path is: %s" % (sys.path)
 
         # Put our root directory on the model-path, too.
         getModelPath().appendDirectory(self.multifileRoot)
@@ -490,6 +532,9 @@ class AppRunner(DirectObject):
         # aren't instance-ready.
         sys.argv = argv
 
+        # That means we now know the altHost in effect.
+        self.altHost = self.tokenDict.get('alt_host', None)
+
         # Tell the browser that Python is up and running, and ready to
         # respond to queries.
         self.notifyRequest('onpythonload')
@@ -527,6 +572,11 @@ class AppRunner(DirectObject):
             if allowPythonDev:
                 self.allowPythonDev = int(allowPythonDev)
 
+            xhost = self.p3dConfig.FirstChildElement('host')
+            while xhost:
+                self.__readHostXml(xhost)
+                xhost = xhost.NextSiblingElement('host')
+
         # The interactiveConsole flag can only be set true if the
         # application has allow_python_dev set.
         if not self.allowPythonDev and interactiveConsole:
@@ -550,6 +600,27 @@ class AppRunner(DirectObject):
         # Send this call to the main thread; don't call it directly.
         messenger.send('AppRunner_startIfReady', taskChain = 'default')
 
+    def __readHostXml(self, xhost):
+        """ Reads the data in the indicated <host> entry. """
+
+        url = xhost.Attribute('url')
+        host = self.getHost(url)
+        host.readHostXml(xhost)
+
+        # Scan for a matching <alt_host>.  If found, it means we
+        # should use the alternate URL instead of the original URL.
+        if self.altHost:
+            xalthost = xhost.FirstChildElement('alt_host')
+            while xalthost:
+                keyword = xalthost.Attribute('keyword')
+                if keyword == self.altHost:
+                    origUrl = xhost.Attribute('url')
+                    newUrl = xalthost.Attribute('url')
+                    self.altHostMap[origUrl] = newUrl
+                    break
+                
+                xalthost = xalthost.NextSiblingElement('alt_host')
+    
     def loadMultifilePrcFiles(self, mf, root):
         """ Loads any prc files in the root of the indicated
         Multifile, which is presumbed to have been mounted already
@@ -765,6 +836,7 @@ def dummyAppRunner(tokens = [], argv = None):
     if argv is None:
         argv = sys.argv
     appRunner.argv = argv
+    appRunner.altHost = appRunner.tokenDict.get('alt_host', None)
 
     appRunner.p3dInfo = None
     appRunner.p3dPackage = None

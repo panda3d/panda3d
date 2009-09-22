@@ -207,6 +207,56 @@ class Packager:
             
             return xpackage
 
+    class HostEntry:
+        def __init__(self, url = None, descriptiveName = None, mirrors = None):
+            self.url = url
+            self.descriptiveName = descriptiveName
+            self.mirrors = mirrors or []
+            self.altHosts = {}
+
+        def loadXml(self, xhost, packager):
+            self.url = xhost.Attribute('url')
+            self.descriptiveName = xhost.Attribute('descriptive_name')
+            self.mirrors = []
+            xmirror = xhost.FirstChildElement('mirror')
+            while xmirror:
+                url = xmirror.Attribute('url')
+                self.mirrors.append(url)
+                xmirror = xmirror.NextSiblingElement('mirror')
+
+            xalthost = xhost.FirstChildElement('alt_host')
+            while xalthost:
+                url = xalthost.Attribute('url')
+                he = packager.addHost(url)
+                he.loadXml(xalthost, packager)
+                xalthost = xalthost.NextSiblingElement('alt_host')
+
+        def makeXml(self, packager = None):
+            """ Returns a new TiXmlElement. """
+            xhost = TiXmlElement('host')
+            xhost.SetAttribute('url', self.url)
+            if self.descriptiveName:
+                xhost.SetAttribute('descriptive_name', self.descriptiveName)
+
+            for mirror in self.mirrors:
+                xmirror = TiXmlElement('mirror')
+                xmirror.SetAttribute('url', mirror)
+                xhost.InsertEndChild(xmirror)
+
+            if packager:
+                altHosts = self.altHosts.items()
+                altHosts.sort()
+                for keyword, alt in altHosts:
+                    he = packager.hosts.get(alt, None)
+                    if he:
+                        xalthost = he.makeXml()
+                        xalthost.SetValue('alt_host')
+                        xalthost.SetAttribute('keyword', keyword)
+                        xhost.InsertEndChild(xalthost)
+
+            return xhost
+
+
     class Package:
         """ This is the full information on a particular package we
         are constructing.  Don't confuse it with PackageEntry, above,
@@ -921,20 +971,21 @@ class Packager:
 
             self.__addConfigs(xpackage)
 
-            requireThisHost = False
+            requireHosts = {}
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
                 xrequires.SetAttribute('host', package.host)
-                if package.host == self.packager.host:
-                    requireThisHost = True
+                requireHosts[package.host] = True
                 xpackage.InsertEndChild(xrequires)
 
-            if requireThisHost:
-                xhost = self.packager.makeHostXml()
-                xpackage.InsertEndChild(xhost)
+            for host in requireHosts.keys():
+                he = self.packager.hosts.get(host, None)
+                if he:
+                    xhost = he.makeXml(packager = self.packager)
+                    xpackage.InsertEndChild(xhost)
 
             doc.InsertEndChild(xpackage)
 
@@ -1485,10 +1536,9 @@ class Packager:
 
         # The download URL at which these packages will eventually be
         # hosted.
+        self.hosts = {}
         self.host = PandaSystem.getPackageHostUrl()
-        self.hostDescriptiveName = None
-        self.hostMirrors = []
-        self.altHosts = {}
+        self.addHost(self.host)
 
         # A search list for previously-built local packages.
         self.installSearch = ConfigVariableSearchPath('pdef-path')
@@ -1650,20 +1700,49 @@ class Packager:
         # file.
         self.contents = {}
 
-    def setHost(self, host, descriptiveName = None, mirrors = []):
+    def setHost(self, host, descriptiveName = None, mirrors = None):
         """ Specifies the URL that will ultimately host these
         contents. """
-        
+
         self.host = host
-        self.hostDescriptiveName = descriptiveName
-        self.hostMirrors = mirrors
+        self.addHost(host, descriptiveName, mirrors)
 
-    def addAltHost(self, keyword, host, descriptiveName = None, mirrors = []):
-        """ Adds an alternate host from which an alternate version of
-        these contents may be downloaded, if specified on the HTML
-        page. """
+    def addHost(self, host, descriptiveName = None, mirrors = None):
+        """ Adds a host to the list of known download hosts.  This
+        information will be written into any p3d files that reference
+        this host; this can be used to pre-define the possible mirrors
+        for a given host, for instance.  Returns the newly-created
+        HostEntry object."""
 
-        self.altHosts[keyword] = (host, descriptiveName, mirrors)
+        he = self.hosts.get(host, None)
+        if he is None:
+            # Define a new host entry
+            he = self.HostEntry(host, descriptiveName, mirrors)
+            self.hosts[host] = he
+        else:
+            # Update an existing host entry
+            if descriptiveName:
+                he.descriptiveName = descriptiveName
+            if mirrors:
+                he.mirrors = mirrors
+
+        return he
+        
+    def addAltHost(self, keyword, altHost, origHost = None,
+                   descriptiveName = None, mirrors = None):
+        """ Adds an alternate host to any already-known host.  This
+        defines an alternate server that may be contacted, if
+        specified on the HTML page, which hosts a different version of
+        the server's contents.  (This is different from a mirror,
+        which hosts an identical version of the server's contents.)
+        """
+
+        if not origHost:
+            origHost = self.host
+
+        self.addHost(altHost, descriptiveName, mirrors)
+        he = self.addHost(origHost)
+        he.altHosts[keyword] = altHost
 
     def addWindowsSearchPath(self, searchPath, varname):
         """ Expands $varname, interpreting as a Windows-style search
@@ -2576,6 +2655,7 @@ class Packager:
         """ Reads the contents.xml file at the beginning of
         processing. """
 
+        self.hosts = {}
         self.contents = {}
         self.contentsChanged = False
 
@@ -2587,8 +2667,16 @@ class Packager:
 
         xcontents = doc.FirstChildElement('contents')
         if xcontents:
-            if self.hostDescriptiveName is None:
-                self.hostDescriptiveName = xcontents.Attribute('descriptive_name')
+            xhost = xcontents.FirstChildElement('host')
+            while xhost:
+                he = self.HostEntry()
+                he.loadXml(xhost, self)
+                self.hosts[he.url] = he
+                xhost = xhost.NextSiblingElement('host')
+
+            host = xcontents.Attribute('host')
+            if host:
+                self.host = host
             
             xpackage = xcontents.FirstChildElement('package')
             while xpackage:
@@ -2596,6 +2684,10 @@ class Packager:
                 pe.loadXml(xpackage)
                 self.contents[pe.getKey()] = pe
                 xpackage = xpackage.NextSiblingElement('package')
+
+        # Since we've blown away the self.hosts map, we have to make
+        # sure that our own host at least is added to the map.
+        self.addHost(self.host)
 
     def writeContentsFile(self):
         """ Rewrites the contents.xml file at the end of
@@ -2611,9 +2703,12 @@ class Packager:
         doc.InsertEndChild(decl)
 
         xcontents = TiXmlElement('contents')
-
-        xhost = self.makeHostXml()
-        xcontents.InsertEndChild(xhost)
+        if self.host:
+            xcontents.SetAttribute('host', self.host)
+            he = self.hosts.get(self.host, None)
+            if he:
+                xhost = he.makeXml(packager = self)
+                xcontents.InsertEndChild(xhost)
 
         contents = self.contents.items()
         contents.sort()
@@ -2623,32 +2718,6 @@ class Packager:
 
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
-
-    def makeHostXml(self):
-        """ Constructs the <host> entry for this host. """
-        xhost = self.makeHostXmlLine('host', self.host, self.hostDescriptiveName, self.hostMirrors)
-
-        for keyword, (host, descriptiveName, mirrors) in self.altHosts.items():
-            xalthost = self.makeHostXmlLine('alt_host', host, descriptiveName, mirrors)
-            xalthost.SetAttribute('keyword', keyword)
-            xhost.InsertEndChild(xalthost)
-        return xhost
-
-    def makeHostXmlLine(self, element, host, descriptiveName, mirrors):
-        """ Constructs the <host> or <alt_host> entry for the
-        indicated host and its mirrors. """
-
-        xhost = TiXmlElement(element)
-        xhost.SetAttribute('url', host)
-        if descriptiveName:
-            xhost.SetAttribute('descriptive_name', descriptiveName)
-
-        for mirror in mirrors:
-            xmirror = TiXmlElement('mirror')
-            xmirror.SetAttribute('url', mirror)
-            xhost.InsertEndChild(xmirror)
-
-        return xhost
         
 
 # The following class and function definitions represent a few sneaky

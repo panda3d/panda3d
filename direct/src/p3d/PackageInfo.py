@@ -111,6 +111,12 @@ class PackageInfo:
             filename = Filename(self.packageDir, self.descFileBasename)
             if self.descFile.quickVerify(self.packageDir, pathname = filename):
                 self.readDescFile()
+                if self.hasDescFile:
+                    # Successfully read.  We don't need to call
+                    # checkArchiveStatus again, since readDescFile()
+                    # has just done it.
+                    self.hasPackage = True
+                    return True
 
         if self.hasDescFile:
             if self.__checkArchiveStatus():
@@ -131,7 +137,7 @@ class PackageInfo:
             return True
 
         url = URLSpec(self.descFileUrl)
-        print "Downloading %s" % (url)
+        print "Downloading desc file %s" % (url)
 
         rf = Ramfile()
         channel = http.getDocument(url)
@@ -336,9 +342,9 @@ class PackageInfo:
                     allExtractsOk = False
                     break
 
-        if allExtractsOk:
-            print "All %s extracts of %s seem good." % (
-                len(self.extracts), self.packageName)
+##         if allExtractsOk:
+##             print "All %s extracts of %s seem good." % (
+##                 len(self.extracts), self.packageName)
 
         return allExtractsOk
 
@@ -432,7 +438,7 @@ class PackageInfo:
         url = self.descFileUrl.rsplit('/', 1)[0]
         url += '/' + fileSpec.filename
         url = DocumentSpec(url)
-        print "Downloading %s" % (url)
+        print "Downloading package file %s" % (url)
 
         targetPathname = Filename(self.packageDir, fileSpec.filename)
         targetPathname.setBinary()

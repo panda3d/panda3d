@@ -149,7 +149,6 @@ read_contents_file(const string &contents_filename) {
         const char *keyword = xalthost->Attribute("keyword");
         const char *url = xalthost->Attribute("url");
         if (keyword != NULL && url != NULL) {
-          cerr << "got alt host " << keyword << ": " << url << "\n";
           _alt_hosts[keyword] = url;
         }
         xalthost = xalthost->NextSiblingElement("alt_host");
