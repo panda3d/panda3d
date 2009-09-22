@@ -95,7 +95,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tinyxml.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../../wintools/built/lib"
