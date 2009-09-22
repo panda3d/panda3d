@@ -979,7 +979,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
             print "%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework)
             PkgDisable(pkg)
         else:
-            print "%ERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
+            print "%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
             exit()
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
@@ -999,7 +999,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
             print "%sWARNING:%s Could not locate package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
             PkgDisable(pkg)
         else:
-            print "%ERROR:%s Could not locate package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig)
+            print "%sERROR:%s Could not locate package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig)
             exit()
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
@@ -1021,13 +1021,14 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
             elif (platform.uname()[1]=="pcbsd" and len(glob.glob("/usr/PCBSD/local/include/" + i)) > 0):
                 incdir = sorted(glob.glob("/usr/PCBSD/local/include/" + i))[-1]
             else:
+                have_pkg = False
                 # Try searching in the package's IncDirectories.
                 for ppkg, pdir in INCDIRECTORIES:
                     if (pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0):
                         incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
+                        have_pkg = True
                 if (incdir == None and VERBOSE and i.endswith(".h")):
                     print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
-                have_pkg = False
             
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
             if (incdir != None and os.path.isdir(incdir)):
@@ -1038,7 +1039,7 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
                 print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower())
                 PkgDisable(pkg)
             else:
-                print "%ERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower())
+                print "%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower())
                 exit()
 
 ########################################################################
