@@ -266,6 +266,7 @@ private:
   int _download_package_index;
   size_t _total_download_size;
   size_t _total_downloaded;
+  bool _download_complete;
 
   // We keep the _panda3d pointer separately because it's so
   // important, but it's in the above vector also.

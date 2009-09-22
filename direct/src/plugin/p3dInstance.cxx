@@ -92,7 +92,7 @@ P3DInstance(P3D_request_ready_func *func,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
-  _hidden = false;
+  _hidden = (_fparams.lookup_token_int("hidden") != 0);
   _allow_python_dev = false;
   _keep_user_env = false;
   _auto_start = false;
@@ -106,6 +106,7 @@ P3DInstance(P3D_request_ready_func *func,
   _download_package_index = 0;
   _total_download_size = 0;
   _total_downloaded = 0;
+  _download_complete = false;
   
   INIT_LOCK(_request_lock);
   _requested_stop = false;
@@ -1207,7 +1208,9 @@ scan_app_desc_file(TiXmlDocument *doc) {
   if (xconfig != NULL) {
     int hidden = 0;
     if (xconfig->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
-      _hidden = (hidden != 0);
+      if (hidden != 0) {
+        _hidden = true;
+      }
     }
 
     int allow_python_dev = 0;
@@ -1449,7 +1452,7 @@ handle_notify_request(const string &message) {
       P3D_OBJECT_DECREF(result);
     }
 
-    _panda_script_object->set_string_property("status", "running");
+    _panda_script_object->set_string_property("status", "starting");
 
   } else if (message == "onwindowopen") {
     // The process told us that it just succesfully opened its
@@ -1781,29 +1784,35 @@ report_package_info_ready(P3DPackage *package) {
         _total_download_size += package->get_download_size();
       }
     }
-    _download_package_index = 0;
-    _total_downloaded = 0;
+    if (_downloading_packages.empty() && _download_complete) {
+      // We have already been here.  Ignore it.
 
-    nout << "Beginning download of " << _downloading_packages.size()
-         << " packages, total " << _total_download_size
-         << " bytes required.\n";
-
-    if (_downloading_packages.size() > 0) {
-      _stuff_to_download = true;
-
-      // Maybe it's time to open a splash window now.
-      make_splash_window();
+    } else {
+      _download_complete = false;
+      _download_package_index = 0;
+      _total_downloaded = 0;
+      
+      nout << "Beginning download of " << _downloading_packages.size()
+           << " packages, total " << _total_download_size
+           << " bytes required.\n";
+      
+      if (_downloading_packages.size() > 0) {
+        _stuff_to_download = true;
+        
+        // Maybe it's time to open a splash window now.
+        make_splash_window();
+      }
+      
+      if (_splash_window != NULL) {
+        _splash_window->set_install_progress(0.0);
+      }
+      _panda_script_object->set_string_property("status", "downloading");
+      _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
+      _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
+      send_notify("ondownloadbegin");
+      
+      start_next_download();
     }
-
-    if (_splash_window != NULL) {
-      _splash_window->set_install_progress(0.0);
-    }
-    _panda_script_object->set_string_property("status", "downloading");
-    _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
-    _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
-    send_notify("ondownloadbegin");
-
-    start_next_download();
   }
 }
 
@@ -1864,9 +1873,10 @@ start_next_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 mark_download_complete() {
-  if (!_panda_script_object->get_bool_property("downloadComplete")) {
+  if (!_download_complete) {
+    _download_complete = true;
     _panda_script_object->set_bool_property("downloadComplete", true);
-    _panda_script_object->set_string_property("status", "starting");
+    _panda_script_object->set_string_property("status", "downloadcomplete");
     send_notify("ondownloadcomplete");
   }
   
@@ -1876,7 +1886,6 @@ mark_download_complete() {
     _splash_window->set_install_label("");
   }
 
-  nout << "ready? " << _got_wparams << " " << _p3d_trusted << "\n";
   if (_got_wparams && _p3d_trusted) {
     ready_to_start();
   }
@@ -1891,6 +1900,7 @@ mark_download_complete() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
+  _panda_script_object->set_string_property("status", "ready");
   send_notify("onready");
   if (_auto_start) {
     set_background_image(IT_launch);
