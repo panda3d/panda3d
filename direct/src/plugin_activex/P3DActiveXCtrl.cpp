@@ -187,6 +187,11 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 	if (!pdc)
 		return;
 
+    if ( !m_instance.IsInit( ) )
+    {
+        Init( );
+    }
+
     CBrush brBackGnd(TranslateColor(AmbientBackColor()));
     pdc->FillRect(rcBounds, &brBackGnd);
 
@@ -348,17 +353,6 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
             }
         }
     }
-    std::string p3dDllFilename;
-    error = m_instance.DownloadP3DComponents( p3dDllFilename );
-    if ( !error && !( p3dDllFilename.empty() ) )
-    {
-        error = m_instance.LoadPlugin( p3dDllFilename );
-        if ( !error )
-        {
-            m_pPandaObject = new PPandaObject( this, NULL );
-            m_instance.Start( m_instance.GetP3DFilename( ) );
-        }
-    }
     return 0;
 }
 
@@ -369,7 +363,26 @@ LRESULT CP3DActiveXCtrl::OnPandaNotification(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-HRESULT CP3DActiveXCtrl::ExchangeProperties(CPropExchange*  pPX)
+int CP3DActiveXCtrl::Init( )
+{
+    int error( 0 );
+    std::string p3dDllFilename;
+
+    error = m_instance.DownloadP3DComponents( p3dDllFilename );
+    if ( !error && !( p3dDllFilename.empty() ) )
+    {
+        error = m_instance.LoadPlugin( p3dDllFilename );
+        if ( !error )
+        {
+            m_pPandaObject = new PPandaObject( this, NULL );
+            m_instance.Start( m_instance.GetP3DFilename( ) );
+        }
+    }
+    return error;
+}
+
+
+HRESULT CP3DActiveXCtrl::ExchangeProperties( CPropExchange*  pPX )
 {
 	USES_CONVERSION;
     HRESULT hr = E_FAIL;

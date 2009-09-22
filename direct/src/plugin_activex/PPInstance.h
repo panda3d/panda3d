@@ -55,8 +55,11 @@ public:
 
     static void HandleRequestLoop();
 
+    inline bool IsInit() { return m_isInit; }
+
     HWND m_parentWnd;
   	CEvent m_eventStop;
+
     P3D_object* m_p3dObject;
 
 protected:
@@ -74,4 +77,5 @@ protected:
     PPLogger m_logger;
 
     bool m_handleRequestOnUIThread;
+    bool m_isInit;
 };

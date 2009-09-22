@@ -74,6 +74,7 @@ public:
     };
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 
+    int Init( );
     virtual P3D_object* GetP3DObject( );
     virtual IOleClientSite* GetClientSte();
 

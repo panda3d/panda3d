@@ -90,7 +90,7 @@ void P3D_NofificationSync(P3D_instance *instance)
 }
 
 PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
-    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true )
+    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true ), m_isInit( false )
 {
     TCHAR tempFolderName[ MAX_PATH ];
     DWORD pathLength = ::GetTempPath( MAX_PATH, tempFolderName );
@@ -306,6 +306,7 @@ int PPInstance::UnloadPlugin()
     {
         nout << "Finalizing P3D\n";
         P3D_finalize();
+        m_isInit = false;
 
         nout << "Unloading P3D dll " << s_hP3DPluginDll << "\n";  
         if ( !::FreeLibrary( s_hP3DPluginDll ) )
@@ -355,7 +356,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
     if ( !m_p3dInstance )
     {
         nout << "Error creating P3D instance: " << GetLastError() << "\n"; 
-        return 0;
+        return 1;
     }
     CComPtr<IDispatch> pDispatch;
     PPBrowserObject *pobj = new PPBrowserObject( &m_parentCtrl, pDispatch );
@@ -374,10 +375,13 @@ int PPInstance::Start( const std::string& p3dFilename  )
 
     if ( !P3D_instance_start( m_p3dInstance, false, p3dRemoteFilename.c_str() ) )
     {
-        nout << "Error starting P3D instance: " << GetLastError() << "\n"; 
+        nout << "Error starting P3D instance: " << GetLastError() << "\n";
+        return 1;
     }
 
-    return 1;
+    m_isInit = true;
+
+    return 0;
 }
 
 std::string PPInstance::GetHostUrl( )
