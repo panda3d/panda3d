@@ -94,6 +94,7 @@ P3DInstance(P3D_request_ready_func *func,
   _instance_id = inst_mgr->get_unique_id();
   _hidden = false;
   _allow_python_dev = false;
+  _keep_user_env = false;
   _auto_start = false;
   _auth_button_approved = false;
   _session = NULL;
