@@ -247,10 +247,11 @@ class PatchMaker:
         """ This is a particular package.  This contains all of the
         information needed to reconstruct the package's desc file. """
         
-        def __init__(self, packageDesc, patchMaker):
+        def __init__(self, packageDesc, patchMaker, xpackage):
             self.packageDir = Filename(patchMaker.installDir, packageDesc.getDirname())
             self.packageDesc = packageDesc
             self.patchMaker = patchMaker
+            self.contentsDocPackage = xpackage
             self.patchVersion = 1
             self.currentPv = None
             self.basePv = None
@@ -384,9 +385,9 @@ class PatchMaker:
             """ Rewrites the desc file with the new patch
             information. """
 
-            if not self.anyChanges:
-                # No need to rewrite.
-                return
+##             if not self.anyChanges:
+##                 # No need to rewrite.
+##                 return
 
             xpackage = self.doc.FirstChildElement('package')
             if not xpackage:
@@ -418,6 +419,13 @@ class PatchMaker:
                 xpackage.InsertEndChild(xpatch)
 
             self.doc.SaveFile()
+
+            # Now that we've rewritten the xml file, we have to change
+            # the contents.xml file that references it to indicate the
+            # new file hash.
+            fileSpec = FileSpec()
+            fileSpec.fromFile(self.patchMaker.installDir, self.packageDesc)
+            fileSpec.storeXml(self.contentsDocPackage)
             
 
     def __init__(self, installDir):
@@ -440,6 +448,7 @@ class PatchMaker:
         else:
             self.processSomePackages(packageNames)
 
+        self.writeContentsFile()
         self.cleanup()
         return True
 
@@ -481,13 +490,24 @@ class PatchMaker:
                 filename = xpackage.Attribute('filename')
                 if filename and not solo:
                     filename = Filename(filename)
-                    package = self.Package(filename, self)
+                    package = self.Package(filename, self, xpackage)
                     package.readDescFile()
                     self.packages.append(package)
                     
                 xpackage = xpackage.NextSiblingElement('package')
 
+        self.contentsDoc = doc
+
         return True
+
+    def writeContentsFile(self):
+        """ Writes the contents.xml file at the end of processing. """
+
+        # We trust each of the packages to have already updated their
+        # element within the contents.xml document, so all we have to
+        # do is write out the document.
+
+        self.contentsDoc.SaveFile()
 
     def getPackageVersion(self, key):
         """ Returns a shared PackageVersion object for the indicated

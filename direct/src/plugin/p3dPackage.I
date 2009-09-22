@@ -113,10 +113,8 @@ get_package_version() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_package_display_name
 //       Access: Public
-//  Description: Returns the name of this package, for output to the
-//               user.  This will be the "public" name of the package,
-//               as formatted for user consumption; it will include
-//               capital letters and spaces where appropriate.
+//  Description: Returns the display_name name of this package, as set
+//               in the desc file.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DPackage::
 get_package_display_name() const {

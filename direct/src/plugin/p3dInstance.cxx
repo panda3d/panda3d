@@ -1825,10 +1825,7 @@ start_next_download() {
 
     if (!package->get_ready()) {
       // This package is ready to download.  Begin.
-      string name = package->get_package_display_name();
-      if (name.empty()) {
-        name = package->get_package_name();
-      }
+      string name = package->get_formatted_name();
       _panda_script_object->set_string_property("downloadPackageName", package->get_package_name());
       _panda_script_object->set_string_property("downloadPackageDisplayName", name);
       _panda_script_object->set_int_property("downloadPackageNumber", _download_package_index + 1);

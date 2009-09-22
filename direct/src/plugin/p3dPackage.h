@@ -57,6 +57,7 @@ public:
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
   inline const string &get_package_display_name() const;
+  string get_formatted_name() const;
   inline const TiXmlElement *get_xconfig() const;
 
   inline const string &get_desc_file_pathname() const;
@@ -118,6 +119,7 @@ private:
   string _package_name;
   string _package_version;
   string _package_platform;
+  int _patch_version;
   string _alt_host;
   bool _package_solo;
   string _package_display_name;

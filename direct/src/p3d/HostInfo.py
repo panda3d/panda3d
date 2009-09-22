@@ -25,7 +25,8 @@ class HostInfo:
         # contents file is read.
         self.descriptiveName = None
 
-        # A list of known mirrors for this host.
+        # A list of known mirrors for this host, all URL's guaranteed
+        # to end with a slash.
         self.mirrors = []
 
         # A map of keyword -> altHost URL's.  An altHost is different
@@ -159,8 +160,11 @@ class HostInfo:
         xmirror = xhost.FirstChildElement('mirror')
         while xmirror:
             url = xmirror.Attribute('url')
-            if url and url not in self.mirrors:
-                self.mirrors.append(url)
+            if url:
+                if url[-1] != '/':
+                    url += '/'
+                if url not in self.mirrors:
+                    self.mirrors.append(url)
             xmirror = xmirror.NextSiblingElement('mirror')
 
         xalthost = xhost.FirstChildElement('alt_host')

@@ -51,6 +51,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   if (!_package_version.empty()) {
     _package_fullname += string(".") + _package_version;
   }
+  _patch_version = 0;
 
   // This is set true if the package is a "solo", i.e. a single
   // file, instead of an xml file and a multifile to unpack.
@@ -128,6 +129,34 @@ activate_download() {
       begin_data_download();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_formatted_name
+//       Access: Public
+//  Description: Returns the name of this package, for output to the
+//               user.  This will be the "public" name of the package,
+//               as formatted for user consumption; it will include
+//               capital letters and spaces where appropriate.
+////////////////////////////////////////////////////////////////////
+string P3DPackage::
+get_formatted_name() const {
+  ostringstream strm;
+
+  if (!_package_display_name.empty()) {
+    strm << _package_display_name;
+  } else {
+    strm << _package_name;
+    if (!_package_version.empty()) {
+      strm << " " << _package_version;
+    }
+  }
+
+  if (_patch_version != 0) {
+    strm << " rev " << _patch_version;
+  }
+
+  return strm.str();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -442,6 +471,8 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xcompressed_archive = NULL;
   
   if (xpackage != NULL) {
+    xpackage->Attribute("patch_version", &_patch_version);
+
     xuncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
     xcompressed_archive = xpackage->FirstChildElement("compressed_archive");
 

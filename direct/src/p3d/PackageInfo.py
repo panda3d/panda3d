@@ -3,6 +3,7 @@ from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
 import os
 import sys
+import random
 
 class PackageInfo:
 
@@ -52,12 +53,12 @@ class PackageInfo:
 
         # These will be filled in by HostInfo when the package is read
         # from contents.xml.
-        self.descFileUrl = None
         self.descFile = None
         self.importDescFile = None
 
         # These are filled in when the desc file is successfully read.
         self.hasDescFile = False
+        self.patchVersion = None
         self.displayName = None
         self.uncompressedArchive = None
         self.compressedArchive = None
@@ -90,14 +91,32 @@ class PackageInfo:
         
         return size
 
+    def getFormattedName(self):
+        """ Returns the name of this package, for output to the user.
+        This will be the "public" name of the package, as formatted
+        for user consumption; it will include capital letters and
+        spaces where appropriate. """
+
+        if self.displayName:
+            name = self.displayName
+        else:
+            name = self.packageName
+            if self.packageVersion:
+                name += ' %s' % (self.packageVersion)
+
+        if self.patchVersion:
+            name += ' rev %s' % (self.patchVersion)
+
+        return name
+        
+
     def setupFilenames(self):
         """ This is called by the HostInfo when the package is read
         from contents.xml, to set up the internal filenames and such
         that rely on some of the information from contents.xml. """
         
-        self.descFileUrl = self.host.hostUrlPrefix + self.descFile.filename
-
-        basename = self.descFile.filename.rsplit('/', 1)[-1]
+        dirname, basename = self.descFile.filename.rsplit('/', 1)
+        self.descFileDirname = dirname
         self.descFileBasename = basename
 
     def checkStatus(self):
@@ -136,28 +155,21 @@ class PackageInfo:
             # We've already got one.
             return True
 
-        url = URLSpec(self.descFileUrl)
-        print "Downloading desc file %s" % (url)
-
-        rf = Ramfile()
-        channel = http.getDocument(url)
-        if not channel.downloadToRam(rf):
-            print "Unable to download %s" % (url)
+        self.http = http
+        if not self.__downloadFile(
+            None, self.descFile,
+            urlbase = self.descFile.filename,
+            filename = self.descFileBasename):
+            # Couldn't download the desc file.
             return False
 
         filename = Filename(self.packageDir, self.descFileBasename)
-        filename.makeDir()
-        filename.unlink()
-        f = open(filename.toOsSpecific(), 'wb')
-        f.write(rf.getData())
-        f.close()
-
         # Now that we've written the desc file, make it read-only.
         os.chmod(filename.toOsSpecific(), 0444)
 
-        try:
-            self.readDescFile()
-        except ValueError:
+        if not self.readDescFile():
+            # Weird, it passed the hash check, but we still can't read
+            # it.
             print "Failure reading %s" % (filename)
             return False
 
@@ -165,24 +177,28 @@ class PackageInfo:
 
     def readDescFile(self):
         """ Reads the desc xml file for this particular package.
-        Presumably this has already been downloaded and installed. """
+        Returns true on success, false on failure. """
 
         if self.hasDescFile:
             # No need to read it again.
-            return
+            return True
 
         filename = Filename(self.packageDir, self.descFileBasename)
 
         doc = TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
-            raise ValueError
+            return False
 
         xpackage = doc.FirstChildElement('package')
         if not xpackage:
-            raise ValueError
+            return False
+
+        try:
+            self.patchVersion = int(xpackage.Attribute('patch_version') or '')
+        except ValueError:
+            self.patchVersion = None
 
         self.displayName = None
-        
         xconfig = xpackage.FirstChildElement('config')
         if xconfig:
             # The name for display to an English-speaking user.
@@ -216,9 +232,9 @@ class PackageInfo:
         if self.__checkArchiveStatus():
             # It's all good.
             self.hasPackage = True
-            return
+            return True
 
-        # We need to download an update.
+        # Now set up to download the update.
         self.hasPackage = False
 
         # Now determine what we will need to download, and build a
@@ -238,7 +254,7 @@ class PackageInfo:
         self.uncompressedArchive.actualFile = None
         if self.uncompressedArchive.quickVerify(self.packageDir):
             self.installPlans = [planA]
-            return
+            return True
 
         # Maybe the compressed archive file is good.
         if self.compressedArchive.quickVerify(self.packageDir):
@@ -246,11 +262,11 @@ class PackageInfo:
             step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
             planA = [step] + planA
             self.installPlans = [planA]
-            return
+            return True
 
         # Maybe we can download one or more patches.  We'll come back
-        # to that in a minute as plan A.  For now, construct on plan
-        # B, which will be to download the whole archive.
+        # to that in a minute as plan A.  For now, construct plan B,
+        # which will be to download the whole archive.
         planB = planA[:]
 
         uncompressSize = self.uncompressedArchive.size
@@ -284,6 +300,8 @@ class PackageInfo:
             # There are no patches to download, oh well.  Stick with
             # plan B as the only plan.
             self.installPlans = [planB]
+
+        return True
 
     def __scanDirectoryRecursively(self, dirname):
         """ Generates a list of Filename objects: all of the files
@@ -431,39 +449,66 @@ class PackageInfo:
         patchMaker.cleanup()
         return plan
 
-    def __downloadFile(self, step, fileSpec):
+    def __downloadFile(self, step, fileSpec, urlbase = None, filename = None):
         """ Downloads the indicated file from the host into
         packageDir.  Returns true on success, false on failure. """
-        
-        url = self.descFileUrl.rsplit('/', 1)[0]
-        url += '/' + fileSpec.filename
-        url = DocumentSpec(url)
-        print "Downloading package file %s" % (url)
 
-        targetPathname = Filename(self.packageDir, fileSpec.filename)
-        targetPathname.setBinary()
-        
-        channel = self.http.makeChannel(False)
-        # TODO: check for a previous partial download, and resume it.
-        targetPathname.unlink()
-        channel.beginGetDocument(url)
-        channel.downloadToFile(targetPathname)
-        while channel.run():
-            step.bytesDone = channel.getBytesDownloaded()
-            self.__updateStepProgress(step)
-            Thread.considerYield()
-        step.bytesDone = channel.getBytesDownloaded()
-        self.__updateStepProgress(step)
-        if not channel.isValid():
-            print "Failed to download %s" % (url)
-            return False
+        if not urlbase:
+            urlbase = self.descFileDirname + '/' + fileSpec.filename
 
-        if not fileSpec.fullVerify(self.packageDir):
-            print "after downloading, %s incorrect" % (
-                fileSpec.filename)
-            return False
-        
-        return True
+        # Build up a list of URL's to try downloading from.
+        tryUrls = []
+        if self.host.mirrors:
+            # Choose a mirror at random first, then a different
+            # mirror.
+            mirrors = self.host.mirrors[:]
+            for i in range(2):
+                mirror = random.choice(mirrors)
+                mirrors.remove(mirror)
+                tryUrls.append(mirror + urlbase)
+                if not mirrors:
+                    break
+
+        # After trying two mirrors and failing (or if there are no
+        # mirrors), go get it from the original host.
+        url = self.host.hostUrlPrefix + urlbase
+        tryUrls.append(url)
+
+        for url in tryUrls:
+            url = DocumentSpec(url)
+            print "Downloading package file %s" % (url)
+
+            if not filename:
+                filename = fileSpec.filename
+            targetPathname = Filename(self.packageDir, filename)
+            targetPathname.setBinary()
+
+            channel = self.http.makeChannel(False)
+            # TODO: check for a previous partial download, and resume it.
+            targetPathname.makeDir()
+            targetPathname.unlink()
+            channel.beginGetDocument(url)
+            channel.downloadToFile(targetPathname)
+            while channel.run():
+                if step:
+                    step.bytesDone = channel.getBytesDownloaded()
+                    self.__updateStepProgress(step)
+                Thread.considerYield()
+            if step:
+                step.bytesDone = channel.getBytesDownloaded()
+                self.__updateStepProgress(step)
+            if not channel.isValid():
+                print "Failed to download %s" % (url)
+                continue
+
+            if not fileSpec.fullVerify(self.packageDir, pathname = targetPathname):
+                print "After downloading, %s incorrect" % (url)
+                continue
+
+            return True
+
+        # All mirrors failed.
+        return False
 
     def __applyPatch(self, step, patchfile):
         """ Applies the indicated patching in-place to the current

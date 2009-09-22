@@ -52,7 +52,7 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
         downloadStarted() and downloadFinished() to indicate the start
         of a new package. """
         if self['updateText']:
-            self['text'] = 'Installing %s' % (package.displayName)
+            self['text'] = 'Installing %s' % (package.getFormattedName())
         self.show()
 
     def packageProgress(self, package, progress):
