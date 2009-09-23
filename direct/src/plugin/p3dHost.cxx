@@ -17,6 +17,8 @@
 #include "p3dPackage.h"
 #include "openssl/md5.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::Constructor
 //       Access: Private
@@ -327,6 +329,52 @@ migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host) 
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::choose_random_mirrors
+//       Access: Public
+//  Description: Selects num_mirrors elements, chosen at random, from
+//               the _mirrors list.  Adds the selected mirrors to
+//               result.  If there are fewer than num_mirrors elements
+//               in the list, adds only as many mirrors as we can get.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+choose_random_mirrors(vector<string> &result, int num_mirrors) {
+  vector<size_t> selected;
+
+  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  while (num_to_select > 0) {
+    size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    while (find(selected.begin(), selected.end(), i) != selected.end()) {
+      // Already found this i, find a new one.
+      i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    }
+    selected.push_back(i);
+    result.push_back(_mirrors[i]);
+    --num_to_select;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::add_mirror
+//       Access: Public
+//  Description: Adds a new URL to serve as a mirror for this host.
+//               The mirrors will be consulted first, before
+//               consulting the host directly.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+add_mirror(string mirror_url) {
+  // Ensure the URL ends in a slash.
+  if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
+    mirror_url += '/';
+  }
+  
+  // Add it to the _mirrors list, but only if it's not already
+  // there.
+  if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
+    _mirrors.push_back(mirror_url);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::determine_host_dir
 //       Access: Private
 //  Description: Hashes the host_url into a (mostly) unique directory
@@ -423,7 +471,7 @@ read_xhost(TiXmlElement *xhost) {
   while (xmirror != NULL) {
     const char *url = xmirror->Attribute("url");
     if (url != NULL) {
-      _mirrors.push_back(url);
+      add_mirror(url);
     }
     xmirror = xmirror->NextSiblingElement("mirror");
   }

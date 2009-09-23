@@ -66,7 +66,6 @@ P3DPackage(P3DHost *host, const string &package_name,
   _ready = false;
   _failed = false;
   _active_download = NULL;
-  _partial_download = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,12 +275,12 @@ download_contents_file() {
 
   // Get the URL for contents.xml.
   ostringstream strm;
-  strm << _host->get_host_url_prefix() << "contents.xml";
+  strm << "contents.xml";
   // Append a uniquifying query string to the URL to force the
   // download to go all the way through any caches.  We use the time
   // in seconds; that's unique enough.
   strm << "?" << time(NULL);
-  string url = strm.str();
+  string urlbase = strm.str();
 
   // Download contents.xml to a temporary filename first, in case
   // multiple packages are downloading it simultaneously.
@@ -291,7 +290,8 @@ download_contents_file() {
   }
   _temp_contents_file = new P3DTemporaryFile(".xml");
 
-  start_download(DT_contents_file, url, _temp_contents_file->get_filename(), false);
+  start_download(DT_contents_file, urlbase, _temp_contents_file->get_filename(), 
+                 FileSpec());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,8 +380,7 @@ download_desc_file() {
   // Attempt to check the desc file for freshness.  If it already
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
-  FileSpec desc_file;
-  if (!_host->get_package_desc_file(desc_file, _package_platform, 
+  if (!_host->get_package_desc_file(_desc_file, _package_platform, 
                                     _package_solo,
                                     _package_name, _package_version)) {
     nout << "Couldn't find package " << _package_fullname
@@ -389,23 +388,24 @@ download_desc_file() {
     return;
   }
 
-  // The desc file might have a different path on the host server than
-  // it has locally, because we strip out the platform directory
-  // locally.  Adjust desc_file to point to the local file.
-  string url_filename = desc_file.get_filename();
+  string url_filename = _desc_file.get_filename();
 
-  _desc_file_url = _host->get_host_url_prefix();
-  _desc_file_url += url_filename;
-
+  _desc_file_dirname = "";
   _desc_file_basename = url_filename;
   size_t slash = _desc_file_basename.rfind('/');
   if (slash != string::npos) {
+    _desc_file_dirname = _desc_file_basename.substr(0, slash);
     _desc_file_basename = _desc_file_basename.substr(slash + 1);
   }
-  desc_file.set_filename(_desc_file_basename);
-  _desc_file_pathname = desc_file.get_pathname(_package_dir);
 
-  if (!desc_file.full_verify(_package_dir)) {
+  // The desc file might have a different path on the host server than
+  // it has locally, because we strip out the platform directory
+  // locally.
+  FileSpec local_desc_file = _desc_file;
+  local_desc_file.set_filename(_desc_file_basename);
+  _desc_file_pathname = local_desc_file.get_pathname(_package_dir);
+
+  if (!local_desc_file.full_verify(_package_dir)) {
     nout << _desc_file_pathname << " is stale.\n";
 
   } else {
@@ -424,7 +424,8 @@ download_desc_file() {
   }
 
   // The desc file is not current.  Go download it.
-  start_download(DT_desc_file, _desc_file_url, _desc_file_pathname, false);
+  start_download(DT_desc_file, _desc_file.get_filename(), 
+                 _desc_file_pathname, local_desc_file);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -615,7 +616,7 @@ begin_data_download() {
 
   } else {
     // Shoot, we need to download the archive.
-    download_compressed_archive(true);
+    download_compressed_archive();
   }
 }
 
@@ -625,17 +626,15 @@ begin_data_download() {
 //  Description: Starts downloading the archive file for the package.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-download_compressed_archive(bool allow_partial) {
-  string url = _desc_file_url;
-  size_t slash = url.rfind('/');
-  if (slash != string::npos) {
-    url = url.substr(0, slash + 1);
-  }
-  url += _compressed_archive.get_filename();
+download_compressed_archive() {
+  string urlbase = _desc_file_dirname;
+  urlbase += "/";
+  urlbase += _compressed_archive.get_filename();
 
   string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
 
-  start_download(DT_compressed_archive, url, target_pathname, allow_partial);
+  start_download(DT_compressed_archive, urlbase, target_pathname, 
+                 _compressed_archive);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -660,21 +659,8 @@ compressed_archive_download_finished(bool success) {
     return;
   }
 
-  if (_compressed_archive.full_verify(_package_dir)) {
-    // Go on to uncompress the archive.
-    uncompress_archive();
-    return;
-  }
-
-  // Oof, didn't download it correctly.
-  if (_partial_download) {
-    // Go back and get the whole file this time.
-    download_compressed_archive(false);
-  }
-
-  nout << _compressed_archive.get_filename()
-       << " failed hash check after download\n";
-  report_done(false);
+  // Go on to uncompress the archive.
+  uncompress_archive();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -918,11 +904,13 @@ report_done(bool success) {
 //  Description: Initiates a download of the indicated file.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-start_download(P3DPackage::DownloadType dtype, const string &url, 
-               const string &pathname, bool allow_partial) {
+start_download(P3DPackage::DownloadType dtype, const string &urlbase, 
+               const string &pathname, const FileSpec &file_spec) {
   // Only one download should be active at a time
   assert(_active_download == NULL);
-  
+
+  // TODO: support partial downloads.
+  static const bool allow_partial = false;
   if (!allow_partial) {
 #ifdef _WIN32
     // Windows can't delete a file if it's read-only.
@@ -934,16 +922,37 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
     chmod(pathname.c_str(), 0644);
   }
     
-  Download *download = new Download(this, dtype);
+  Download *download = new Download(this, dtype, file_spec);
+
+  // Fill up the _try_urls vector for URL's to try getting this file
+  // from, in reverse order.
+
+  // The last thing we try is the actual authoritative host.
+  string url = _host->get_host_url_prefix() + urlbase;
+  download->_try_urls.push_back(url);
+
+  // The first thing we try is a couple of mirrors, chosen at random
+  // (except for the contents.xml file, which always goes straight to
+  // the host).
+  if (dtype != DT_contents_file) {
+    vector<string> mirrors;
+    _host->choose_random_mirrors(mirrors, 2);
+    for (vector<string>::iterator si = mirrors.begin();
+         si != mirrors.end(); 
+         ++si) {
+      url = (*si) + urlbase;
+      download->_try_urls.push_back(url);
+    }
+  }
+
+  // OK, start the download.
+  assert(!download->_try_urls.empty());
+  url = download->_try_urls.back();
+  download->_try_urls.pop_back();
   download->set_url(url);
   download->set_filename(pathname);
 
-  // TODO: implement partial file re-download.
-  allow_partial = false;
-
   _active_download = download;
-  _partial_download = false;
-
   assert(!_instances.empty());
 
   _instances[0]->start_download(download);
@@ -973,9 +982,25 @@ is_extractable(const string &filename) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::Download::
-Download(P3DPackage *package, DownloadType dtype) :
+Download(P3DPackage *package, DownloadType dtype, const FileSpec &file_spec) :
   _package(package),
-  _dtype(dtype)
+  _dtype(dtype),
+  _file_spec(file_spec)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Download::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::Download::
+Download(const P3DPackage::Download &copy) :
+  P3DFileDownload(copy),
+  _try_urls(copy._try_urls),
+  _package(copy._package),
+  _dtype(copy._dtype),
+  _file_spec(copy._file_spec)
 {
 }
 
@@ -1009,6 +1034,33 @@ download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   assert(_package->_active_download == this);
   _package->_active_download = NULL;
+
+  if (success && !_file_spec.get_filename().empty()) {
+    // We think we downloaded it correctly.  Check the hash to be
+    // sure.
+    if (!_file_spec.full_verify(_package->_package_dir)) {
+      nout << "After downloading " << get_url()
+           << ", failed hash check\n";
+      success = false;
+    }
+  }
+
+  if (!success && !_try_urls.empty()) {
+    // Well, that URL failed, but we can try another mirror.
+    close_file();
+    string url = _try_urls.back();
+    _try_urls.pop_back();
+
+    Download *new_download = new Download(*this);
+    new_download->set_filename(get_filename());
+    new_download->set_url(url);
+
+    _package->_active_download = new_download;
+
+    assert(!_package->_instances.empty());
+    _package->_instances[0]->start_download(new_download);
+    return;
+  }
 
   switch (_dtype) {
   case DT_contents_file:

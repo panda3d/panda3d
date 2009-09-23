@@ -75,17 +75,28 @@ private:
     DT_compressed_archive
   };
 
+  typedef vector<string> TryUrls;
+
   class Download : public P3DFileDownload {
   public:
-    Download(P3DPackage *package, DownloadType dtype);
+    Download(P3DPackage *package, DownloadType dtype,
+             const FileSpec &file_spec);
+    Download(const Download &copy);
 
   protected:
     virtual void download_progress();
     virtual void download_finished(bool success);
 
+  public:
+    // URL's to try downloading from, in reverse order.
+    TryUrls _try_urls;
+
   private:
     P3DPackage *_package;
     DownloadType _dtype;
+
+    // FileSpec to validate the download against.
+    FileSpec _file_spec;
   };
 
   void begin_info_download();
@@ -98,7 +109,7 @@ private:
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
 
   void begin_data_download();
-  void download_compressed_archive(bool allow_partial);
+  void download_compressed_archive();
   void compressed_archive_download_progress(double progress);
   void compressed_archive_download_finished(bool success);
 
@@ -108,8 +119,8 @@ private:
   void report_progress(double progress);
   void report_info_ready();
   void report_done(bool success);
-  void start_download(DownloadType dtype, const string &url, 
-                      const string &pathname, bool allow_partial);
+  void start_download(DownloadType dtype, const string &urlbase, 
+                      const string &pathname, const FileSpec &file_spec);
 
   bool is_extractable(const string &filename) const;
 
@@ -129,7 +140,8 @@ private:
 
   P3DTemporaryFile *_temp_contents_file;
 
-  string _desc_file_url;
+  FileSpec _desc_file;
+  string _desc_file_dirname;
   string _desc_file_basename;
   string _desc_file_pathname;
 
@@ -139,7 +151,6 @@ private:
   bool _ready;
   bool _failed;
   Download *_active_download;
-  bool _partial_download;
 
   typedef vector<P3DInstance *> Instances;
   Instances _instances;

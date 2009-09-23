@@ -26,6 +26,18 @@ P3DFileDownload() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DFileDownload::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DFileDownload::
+P3DFileDownload(const P3DFileDownload &copy) : 
+  P3DDownload(copy)
+{
+  // We don't copy the filename.  You have to copy it yourself.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DFileDownload::set_filename
 //       Access: Public
 //  Description: Supplies the target local filename for the download.
@@ -56,6 +68,16 @@ open_file() {
   }
   
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileDownload::close_file
+//       Access: Protected
+//  Description: Closes the local file.
+////////////////////////////////////////////////////////////////////
+void P3DFileDownload::
+close_file() {
+  _file.close();
 }
 
 ////////////////////////////////////////////////////////////////////

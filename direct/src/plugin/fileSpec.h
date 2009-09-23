@@ -29,6 +29,8 @@ using namespace std;
 class FileSpec {
 public:
   FileSpec();
+  FileSpec(const FileSpec &copy);
+  void operator = (const FileSpec &copy);
   void load_xml(TiXmlElement *xelement);
 
   inline const string &get_filename() const;

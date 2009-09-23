@@ -28,12 +28,14 @@
 class P3DFileDownload : public P3DDownload {
 public:
   P3DFileDownload();
+  P3DFileDownload(const P3DFileDownload &copy);
 
   bool set_filename(const string &filename);
   inline const string &get_filename() const;
 
 protected:
   virtual bool open_file();
+  void close_file();
   virtual bool receive_data(const unsigned char *this_data,
                             size_t this_data_size);
   virtual void download_finished(bool success);

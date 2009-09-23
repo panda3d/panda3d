@@ -32,6 +32,25 @@ P3DDownload() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DDownload::
+P3DDownload(const P3DDownload &copy) :
+  _url(copy._url),
+  _total_expected_data(copy._total_expected_data)
+{
+  _status = P3D_RC_in_progress;
+  _http_status_code = 0;
+  _total_data = 0;
+  _last_reported_time = 0;
+  
+  _canceled = false;
+  _download_id = 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -69,7 +88,8 @@ cancel() {
 //     Function: P3DDownload::feed_url_stream
 //       Access: Public
 //  Description: Called by P3DInstance as more data arrives from the
-//               host.
+//               host.  Returns true on success, false if the download
+//               should be aborted.
 ////////////////////////////////////////////////////////////////////
 bool P3DDownload::
 feed_url_stream(P3D_result_code result_code,

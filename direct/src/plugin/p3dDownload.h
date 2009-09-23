@@ -16,6 +16,7 @@
 #define P3DDOWNLOAD_H
 
 #include "p3d_plugin_common.h"
+#include "p3dReferenceCount.h"
 
 #include <time.h>
 
@@ -27,9 +28,10 @@
 //               it, subclass it and redefine the appropriate callback
 //               methods.
 ////////////////////////////////////////////////////////////////////
-class P3DDownload {
+class P3DDownload : public P3DReferenceCount {
 public:
   P3DDownload();
+  P3DDownload(const P3DDownload &copy);
   virtual ~P3DDownload();
 
   void set_url(const string &url);

@@ -56,6 +56,9 @@ public:
 
   void migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host);
 
+  void choose_random_mirrors(vector<string> &result, int num_mirrors);
+  void add_mirror(string mirror_url);
+
 private:
   void determine_host_dir();
   void read_xhost(TiXmlElement *xhost);

@@ -635,7 +635,7 @@ feed_url_stream(int unique_id,
   if (!download_ok || download->get_download_finished()) {
     // All done.
     _downloads.erase(di);
-    delete download;
+    unref_delete(download);
   }
 
   return download_ok;
@@ -835,9 +835,11 @@ get_packages_failed() const {
 //  Description: Adds a newly-allocated P3DDownload object to the
 //               download queue, and issues the request to start it
 //               downloading.  As the download data comes in, it will
-//               be fed to the download object.  After
-//               download_finished() has been called, the P3DDownload
-//               object will be deleted.
+//               be fed to the download object.
+//
+//               This increments the P3DDownload object's reference
+//               count, and will decrement it (and possibly delete the
+//               object) after download_finished() has been called.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 start_download(P3DDownload *download) {
@@ -852,6 +854,7 @@ start_download(P3DDownload *download) {
   int download_id = inst_mgr->get_unique_id();
   download->set_download_id(download_id);
 
+  download->ref();
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
   assert(inserted);
 

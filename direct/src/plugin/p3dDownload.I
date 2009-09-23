@@ -27,13 +27,13 @@ get_url() const {
 //     Function: P3DDownload::get_download_progress
 //       Access: Public
 //  Description: Returns an indication of the progress through the
-//               download file, 0.0 to 1.0.  Returns -1 if the size of
-//               the file is not known.
+//               download file, 0.0 to 1.0.  Returns 0.0 if the size
+//               of the file is not known.
 ////////////////////////////////////////////////////////////////////
 inline double P3DDownload::
 get_download_progress() const {
   if (_total_expected_data == 0) {
-    return -1.0;
+    return 0.0;
   }
 
   return (double)_total_data / (double)_total_expected_data;

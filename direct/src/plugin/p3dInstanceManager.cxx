@@ -70,6 +70,10 @@ P3DInstanceManager() {
 
   _auth_session = NULL;
 
+  // Seed the lame random number generator in rand(); we use it to
+  // select a mirror for downloading.
+  srand((unsigned int)time(NULL));
+
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to
   // this application.
