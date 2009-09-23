@@ -250,14 +250,12 @@ initialize(const string &contents_filename, const string &download_url,
     _log_pathname = _log_directory;
     _log_pathname += _log_basename;
     _log_pathname += ".log";
-    cerr << "_log_pathname = " << _log_pathname << "\n";
 
     logfile.clear();
     logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
     if (logfile) {
       logfile.setf(ios::unitbuf);
       nout_stream = &logfile;
-      cerr << "log correct\n";
     }
   }
 
