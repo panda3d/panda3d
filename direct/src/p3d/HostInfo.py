@@ -8,8 +8,25 @@ class HostInfo:
     Panda3D packages.  It is the Python equivalent of the P3DHost
     class in the core API. """
 
-    def __init__(self, hostUrl, appRunner):
+    def __init__(self, hostUrl, appRunner = None, hostDir = None,
+                 asMirror = False):
+
+        """ You must specify either an appRunner or a hostDir to the
+        HostInfo constructor.
+
+        If you pass asMirror = True, it means that this HostInfo
+        object is to be used to populate a "mirror" folder, a
+        duplicate (or subset) of the contents hosted by a server.
+        This means when you use this HostInfo to download packages, it
+        will only download the compressed archive file and leave it
+        there.  At the moment, mirror folders do not download old
+        patch files from the server. """
+        
+        assert appRunner or hostDir
+        
         self.hostUrl = hostUrl
+        self.hostDir = hostDir
+        self.asMirror = asMirror
 
         # hostUrlPrefix is the host URL, but it is guaranteed to end
         # with a slash.
@@ -39,7 +56,10 @@ class HostInfo:
         # will be filled in when the contents file is read.
         self.packages = {}
 
-        self.__determineHostDir(appRunner)
+        if appRunner:
+            self.__determineHostDir(appRunner)
+
+        assert self.hostDir
         self.importsDir = Filename(self.hostDir, 'imports')
 
     def downloadContentsFile(self, http):
@@ -76,32 +96,60 @@ class HostInfo:
         f.write(rf.getData())
         f.close()
 
-        try:
-            self.readContentsFile()
-        except ValueError:
+        if not self.readContentsFile():
             print "Failure reading %s" % (filename)
             return False
 
         return True
 
+    def redownloadContentsFile(self, http):
+        """ Downloads a new contents.xml file in case it has changed.
+        Returns true if the file has indeed changed, false if it has
+        not. """
+        assert self.hasContentsFile
+
+        url = self.hostUrlPrefix + 'contents.xml'
+        print "Redownloading %s" % (url)
+
+        # Get the hash of the original file.
+        filename = Filename(self.hostDir, 'contents.xml')
+        hv1 = HashVal()
+        hv1.hashFile(filename)
+
+        # Now download it again.
+        self.hasContentsFile = False
+        if not self.downloadContentsFile(http):
+            return False
+
+        hv2 = HashVal()
+        hv2.hashFile(filename)
+
+        if hv1 != hv2:
+            print "%s has changed." % (url)
+            return True
+        else:
+            print "%s has not changed." % (url)
+            return False
+
+
     def readContentsFile(self):
-        """ Reads the contents.xml file for this particular host.
-        Raises ValueError if the contents file is not already on disk
-        or is unreadable. """
+        """ Reads the contents.xml file for this particular host, once
+        it has been downloaded.  Returns true on success, false if the
+        contents file is not already on disk or is unreadable. """
 
         if self.hasContentsFile:
             # No need to read it again.
-            return
+            return True
 
         filename = Filename(self.hostDir, 'contents.xml')
 
         doc = TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
-            raise ValueError
-
+            return False
+        
         xcontents = doc.FirstChildElement('contents')
         if not xcontents:
-            raise ValueError
+            return False
 
         # Look for our own entry in the hosts table.
         self.__findHostXml(xcontents)
@@ -112,7 +160,12 @@ class HostInfo:
             name = xpackage.Attribute('name')
             platform = xpackage.Attribute('platform')
             version = xpackage.Attribute('version')
-            package = self.__makePackage(name, platform, version)
+            try:
+                solo = int(xpackage.Attribute('solo') or '')
+            except ValueError:
+                solo = False
+                
+            package = self.__makePackage(name, platform, version, solo)
             package.descFile = FileSpec()
             package.descFile.loadXml(xpackage)
             package.setupFilenames()
@@ -126,6 +179,8 @@ class HostInfo:
             xpackage = xpackage.NextSiblingElement('package')
 
         self.hasContentsFile = True
+
+        return True
 
     def __findHostXml(self, xcontents):
         """ Looks for the <host> or <alt_host> entry in the
@@ -175,7 +230,7 @@ class HostInfo:
                 self.altHosts[keyword] = url
             xalthost = xalthost.NextSiblingElement('alt_host')
 
-    def __makePackage(self, name, platform, version):
+    def __makePackage(self, name, platform, version, solo):
         """ Creates a new PackageInfo entry for the given name,
         version, and platform.  If there is already a matching
         PackageInfo, returns it. """
@@ -188,7 +243,8 @@ class HostInfo:
         platforms = self.packages.setdefault((name, version), {})
         package = platforms.get(platform, None)
         if not package:
-            package = PackageInfo(self, name, version, platform = platform)
+            package = PackageInfo(self, name, version, platform = platform,
+                                  solo = solo, asMirror = self.asMirror)
             platforms[platform] = package
 
         return package
@@ -217,19 +273,19 @@ class HostInfo:
 
         return package
 
-    def getPackages(self, name, platform = None):
+    def getPackages(self, name = None, platform = None):
         """ Returns a list of PackageInfo objects that match the
         indicated name and/or platform, with no particular regards to
-        version. """
+        version.  If name is None, all packages are returned. """
 
         assert self.hasContentsFile
 
         packages = []
         for (pn, version), platforms in self.packages.items():
-            if pn != name:
+            if name and pn != name:
                 continue
 
-            package = self.getPackage(name, version, platform = platform)
+            package = self.getPackage(pn, version, platform = platform)
             if package:
                 packages.append(package)
 

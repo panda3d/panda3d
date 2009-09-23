@@ -19,6 +19,13 @@ class PackageInfo:
     unpackFactor = 0.01
     patchFactor = 0.01
 
+    class RestartDownload(Exception):
+        """ This exception is raised by __downloadFile() when the
+        toplevel contents.xml file has changed during the download,
+        and we have to restart from the beginning. """
+        pass
+        
+
     class InstallStep:
         """ This class is one step of the installPlan list; it
         represents a single atomic piece of the installation step, and
@@ -41,16 +48,25 @@ class PackageInfo:
                 return 1
             return min(float(self.bytesDone) / float(self.bytesNeeded), 1)
     
-    def __init__(self, host, packageName, packageVersion, platform = None):
+    def __init__(self, host, packageName, packageVersion, platform = None,
+                 solo = False, asMirror = False):
         self.host = host
         self.packageName = packageName
         self.packageVersion = packageVersion
         self.platform = platform
+        self.solo = solo
+        self.asMirror = asMirror
 
         self.packageDir = Filename(host.hostDir, self.packageName)
         if self.packageVersion:
             self.packageDir = Filename(self.packageDir, self.packageVersion)
 
+        if self.asMirror:
+            # The server directory contains the platform name, though
+            # the client directory doesn't.
+            if self.platform:
+                self.packageDir = Filename(self.packageDir, self.platform)
+            
         # These will be filled in by HostInfo when the package is read
         # from contents.xml.
         self.descFile = None
@@ -126,16 +142,17 @@ class PackageInfo:
         if self.hasPackage:
             return True
 
-        if not self.hasDescFile:
-            filename = Filename(self.packageDir, self.descFileBasename)
-            if self.descFile.quickVerify(self.packageDir, pathname = filename):
-                self.readDescFile()
-                if self.hasDescFile:
-                    # Successfully read.  We don't need to call
-                    # checkArchiveStatus again, since readDescFile()
-                    # has just done it.
-                    self.hasPackage = True
-                    return True
+        try:
+            if not self.hasDescFile:
+                filename = Filename(self.packageDir, self.descFileBasename)
+                if self.descFile.quickVerify(self.packageDir, pathname = filename):
+                    if self.__readDescFile():
+                        # Successfully read.  We don't need to call
+                        # checkArchiveStatus again, since readDescFile()
+                        # has just done it.
+                        return self.hasPackage
+        except self.RestartDownload:
+            return self.checkStatus()
 
         if self.hasDescFile:
             if self.__checkArchiveStatus():
@@ -156,31 +173,45 @@ class PackageInfo:
             return True
 
         self.http = http
-        if not self.__downloadFile(
-            None, self.descFile,
-            urlbase = self.descFile.filename,
-            filename = self.descFileBasename):
-            # Couldn't download the desc file.
-            return False
 
-        filename = Filename(self.packageDir, self.descFileBasename)
-        # Now that we've written the desc file, make it read-only.
-        os.chmod(filename.toOsSpecific(), 0444)
+        try:
+            if not self.__downloadFile(
+                None, self.descFile,
+                urlbase = self.descFile.filename,
+                filename = self.descFileBasename):
+                # Couldn't download the desc file.
+                return False
 
-        if not self.readDescFile():
-            # Weird, it passed the hash check, but we still can't read
-            # it.
-            print "Failure reading %s" % (filename)
-            return False
+            filename = Filename(self.packageDir, self.descFileBasename)
+            # Now that we've written the desc file, make it read-only.
+            os.chmod(filename.toOsSpecific(), 0444)
+
+            if not self.__readDescFile():
+                # Weird, it passed the hash check, but we still can't read
+                # it.
+                print "Failure reading %s" % (filename)
+                return False
+
+        except self.RestartDownload:
+            return self.downloadDescFile(http)
 
         return True
 
-    def readDescFile(self):
-        """ Reads the desc xml file for this particular package.
-        Returns true on success, false on failure. """
+    def __readDescFile(self):
+        """ Reads the desc xml file for this particular package,
+        assuming it's been already downloaded and verified.  Returns
+        true on success, false on failure. """
 
         if self.hasDescFile:
             # No need to read it again.
+            return True
+
+        if self.solo:
+            # If this is a "solo" package, we don't actually "read"
+            # the desc file; that's the entire contents of the
+            # package.
+            self.hasDescFile = True
+            self.hasPackage = True
             return True
 
         filename = Filename(self.packageDir, self.descFileBasename)
@@ -230,15 +261,36 @@ class PackageInfo:
         # Now that we've read the desc file, go ahead and use it to
         # verify the download status.
         if self.__checkArchiveStatus():
-            # It's all good.
+            # It's all fully downloaded, unpacked, and ready.
             self.hasPackage = True
             return True
 
-        # Now set up to download the update.
+        # Still have to download it.
+        self.__buildInstallPlan()
+        return True
+
+    def __buildInstallPlan(self):
+        """ Sets up self.installPlans, a list of one or more "plans"
+        to download and install the package. """
+
         self.hasPackage = False
 
-        # Now determine what we will need to download, and build a
-        # plan (or two) to download it all.
+        if self.asMirror:
+            # If we're just downloading a mirror archive, we only need
+            # to get the compressed archive file.
+
+            # Build a one-item install plan to download the compressed
+            # archive.
+            downloadSize = self.compressedArchive.size
+            func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec)
+            
+            step = self.InstallStep(func, downloadSize, self.downloadFactor)
+            installPlan = [step]
+            self.installPlans = [installPlan]
+            return 
+
+        # The normal download process.  Determine what we will need to
+        # download, and build a plan (or two) to download it all.
         self.installPlans = None
 
         # We know we will at least need to unpackage the archive at
@@ -254,7 +306,7 @@ class PackageInfo:
         self.uncompressedArchive.actualFile = None
         if self.uncompressedArchive.quickVerify(self.packageDir):
             self.installPlans = [planA]
-            return True
+            return
 
         # Maybe the compressed archive file is good.
         if self.compressedArchive.quickVerify(self.packageDir):
@@ -262,7 +314,7 @@ class PackageInfo:
             step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
             planA = [step] + planA
             self.installPlans = [planA]
-            return True
+            return
 
         # Maybe we can download one or more patches.  We'll come back
         # to that in a minute as plan A.  For now, construct plan B,
@@ -301,8 +353,6 @@ class PackageInfo:
             # plan B as the only plan.
             self.installPlans = [planB]
 
-        return True
-
     def __scanDirectoryRecursively(self, dirname):
         """ Generates a list of Filename objects: all of the files
         (not directories) within and below the indicated dirname. """
@@ -332,11 +382,13 @@ class PackageInfo:
 
         # Get a list of all of the files in the directory, so we can
         # remove files that don't belong.
-        contents = self.__scanDirectoryRecursively(self.packageDir)
-        self.__removeFileFromList(contents, self.uncompressedArchive.filename)
+        contents = self.__scanDirectoryRecursively(self.packageDir) 
         self.__removeFileFromList(contents, self.descFileBasename)
-        for file in self.extracts:
-            self.__removeFileFromList(contents, file.filename)
+        self.__removeFileFromList(contents, self.compressedArchive.filename)
+        if not self.asMirror:
+            self.__removeFileFromList(contents, self.uncompressedArchive.filename)
+            for file in self.extracts:
+                self.__removeFileFromList(contents, file.filename)
 
         # Now, any files that are still in the contents list don't
         # belong.  It's important to remove these files before we
@@ -347,6 +399,9 @@ class PackageInfo:
             print "Removing %s" % (filename)
             pathname = Filename(self.packageDir, filename)
             pathname.unlink()
+
+        if self.asMirror:
+            return self.compressedArchive.quickVerify(self.packageDir)
             
         allExtractsOk = True
         if not self.uncompressedArchive.quickVerify(self.packageDir):
@@ -354,6 +409,11 @@ class PackageInfo:
             allExtractsOk = False
 
         if allExtractsOk:
+            # OK, the uncompressed archive is good; that means there
+            # shouldn't be a compressed archive file here.
+            pathname = Filename(self.packageDir, self.compressedArchive.filename)
+            pathname.unlink()
+            
             for file in self.extracts:
                 if not file.quickVerify(self.packageDir):
                     #print "File is incorrect: %s" % (file.filename)
@@ -378,7 +438,11 @@ class PackageInfo:
     def downloadPackage(self, http):
         """ Downloads the package file, synchronously, then
         uncompresses and unpacks it.  Returns true on success, false
-        on failure. """
+        on failure.
+
+        This assumes that self.installPlans has already been filled
+        in, which will have been done by self.__readDescFile().
+        """
 
         assert self.hasDescFile
 
@@ -388,9 +452,21 @@ class PackageInfo:
 
         # We should have an install plan by the time we get here.
         assert self.installPlans
+        installPlans = self.installPlans
+        self.installPlans = None
 
+        try:
+            return self.__followInstallPlans(installPlans, http)
+
+        except self.RestartDownload:
+            if not self.downloadDescFile(http):
+                return False
+            return self.downloadPackage(http)
+            
+
+    def __followInstallPlans(self, installPlans, http):
         self.http = http
-        for plan in self.installPlans:
+        for plan in installPlans:
             self.totalPlanSize = sum(map(lambda step: step.getEffort(), plan))
             self.totalPlanCompleted = 0
             self.downloadProgress = 0
@@ -502,12 +578,18 @@ class PackageInfo:
                 continue
 
             if not fileSpec.fullVerify(self.packageDir, pathname = targetPathname):
-                print "After downloading, %s incorrect" % (url)
+                print "After downloading, %s incorrect" % (Filename(fileSpec.filename).getBasename())
                 continue
 
             return True
 
-        # All mirrors failed.
+        # All mirrors failed.  Maybe the original contents.xml file is
+        # stale.  Try re-downloading it, in desperation.
+        if self.host.redownloadContentsFile(self.http):
+            raise self.RestartDownload
+
+        # Nope, nothing's changed; the server (or the internet
+        # connection) must be just fubar.
         return False
 
     def __applyPatch(self, step, patchfile):

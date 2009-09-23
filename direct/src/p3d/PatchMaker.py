@@ -247,7 +247,7 @@ class PatchMaker:
         """ This is a particular package.  This contains all of the
         information needed to reconstruct the package's desc file. """
         
-        def __init__(self, packageDesc, patchMaker, xpackage):
+        def __init__(self, packageDesc, patchMaker, xpackage = None):
             self.packageDir = Filename(patchMaker.installDir, packageDesc.getDirname())
             self.packageDesc = packageDesc
             self.patchMaker = patchMaker
@@ -255,6 +255,13 @@ class PatchMaker:
             self.patchVersion = 1
             self.currentPv = None
             self.basePv = None
+
+            self.packageName = None
+            self.platform = None
+            self.version = None
+            self.host = None
+            self.currentFile = None
+            self.baseFile = None
 
             self.doc = None
             self.anyChanges = False
@@ -279,6 +286,7 @@ class PatchMaker:
             packageDescFullpath = Filename(self.patchMaker.installDir, self.packageDesc)
             self.doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not self.doc.LoadFile():
+                print "Couldn't read %s" % (packageDescFullpath)
                 return
             
             xpackage = self.doc.FirstChildElement('package')
@@ -420,12 +428,13 @@ class PatchMaker:
 
             self.doc.SaveFile()
 
-            # Now that we've rewritten the xml file, we have to change
-            # the contents.xml file that references it to indicate the
-            # new file hash.
-            fileSpec = FileSpec()
-            fileSpec.fromFile(self.patchMaker.installDir, self.packageDesc)
-            fileSpec.storeXml(self.contentsDocPackage)
+            if self.contentsDocPackage:
+                # Now that we've rewritten the xml file, we have to
+                # change the contents.xml file that references it to
+                # indicate the new file hash.
+                fileSpec = FileSpec()
+                fileSpec.fromFile(self.patchMaker.installDir, self.packageDesc)
+                fileSpec.storeXml(self.contentsDocPackage)
             
 
     def __init__(self, installDir):

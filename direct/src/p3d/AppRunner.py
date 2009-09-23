@@ -486,9 +486,7 @@ class AppRunner(DirectObject):
 
         host = self.getHost(hostUrl)
 
-        try:
-            host.readContentsFile()
-        except ValueError:
+        if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 print "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
                 return
