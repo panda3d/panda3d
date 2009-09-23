@@ -14,12 +14,6 @@ from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
 # and then a number of smaller, optional packages, which may or may
 # not be needed by any one particular application.
 
-packager.setHost('file:///home/drose/p3dstage',
-                 mirrors = ['file:///home/drose/p3dstage_mirror1',
-                            'file:///home/drose/p3dstage_mirror2',
-                            'file:///home/drose/p3dstage_mirror3',
-                            'file:///home/drose/p3dstage_mirror4'])
-
 class coreapi(solo):
     # The special "coreapi" package.  As a "solo", this is just a
     # single .dll (or dylib, or whatever).
@@ -107,8 +101,8 @@ class panda3d(package):
            'direct.fsm.*',
            'direct.gui.*',
            'direct.interval.*',
-           'direct.particles.*',
            'direct.p3d.*',
+           'direct.particles.*',
            'direct.showbase.*',
            'direct.showutil.*',
            'direct.stdpy.*')
