@@ -61,7 +61,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
     _tokens.push_back(token);
   }
 
-  _root_dir = find_root_dir();
+  _root_dir = find_root_dir(nout);
 
   _got_instance_url = false;
   _got_window = false;

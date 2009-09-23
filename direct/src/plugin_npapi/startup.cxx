@@ -61,6 +61,7 @@ open_logfile() {
       log_pathname += log_basename;
       log_pathname += ".log";
 
+      logfile.clear();
       logfile.open(log_pathname.c_str());
       logfile.setf(ios::unitbuf);
     }

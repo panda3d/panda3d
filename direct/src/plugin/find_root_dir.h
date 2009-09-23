@@ -16,8 +16,9 @@
 #define FIND_ROOT_DIR_H
 
 #include <string>
+#include <iostream>
 using namespace std;
 
-string find_root_dir();
+string find_root_dir(ostream &logfile);
 
 #endif

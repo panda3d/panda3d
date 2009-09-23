@@ -48,7 +48,7 @@ static const double wait_cycle = 0.2;
 ////////////////////////////////////////////////////////////////////
 Panda3D::
 Panda3D() {
-  _root_dir = find_root_dir();
+  _root_dir = find_root_dir(nout);
   _reporting_download = false;
 }
 

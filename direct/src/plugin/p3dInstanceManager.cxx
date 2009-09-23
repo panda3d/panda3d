@@ -170,7 +170,6 @@ initialize(const string &contents_filename, const string &download_url,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment) {
   _trusted_environment = trusted_environment;
-  _root_dir = find_root_dir();
   _verify_contents = verify_contents;
   _platform = platform;
   if (_platform.empty()) {
@@ -247,13 +246,18 @@ initialize(const string &contents_filename, const string &download_url,
     _log_pathname = _log_directory;
     _log_pathname += _log_basename;
     _log_pathname += ".log";
+    cerr << "_log_pathname = " << _log_pathname << "\n";
 
+    logfile.clear();
     logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
     if (logfile) {
       logfile.setf(ios::unitbuf);
       nout_stream = &logfile;
+      cerr << "log correct\n";
     }
   }
+
+  _root_dir = find_root_dir(nout);
 
   nout << "_root_dir = " << _root_dir
        << ", platform = " << _platform
