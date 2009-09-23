@@ -118,6 +118,10 @@ egg-object-type-ghost           <Scalar> collide-mask { 0 }
 # renders the object in add mode instead of the normal opaque mode.
 egg-object-type-glow            <Scalar> blend { add }
 
+# This isn't used in the egg loader, it controls a setting only within
+# maya2egg itself.  So if it appears in an egg file, it means nothing.
+egg-object-type-keep-all-uvsets
+
 
 # This names the ca-bundle.crt file in its standard installation dir.
 # This is useful for validating https servers correctly.  It is also
