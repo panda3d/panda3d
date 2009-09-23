@@ -123,6 +123,16 @@ get_trusted_environment() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_super_mirror
+//       Access: Public
+//  Description: Returns the "super mirror" URL.  See p3d_plugin.h.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_super_mirror() const {
+  return _super_mirror_url;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running

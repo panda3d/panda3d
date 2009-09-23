@@ -458,7 +458,7 @@ class Packager:
                     continue
 
                 if mdef.exclude and mdef.implicit:
-                    # Don't bother mentioning implicity-excluded
+                    # Don't bother mentioning implicitly-excluded
                     # (i.e. missing) modules.
                     continue
 
@@ -1529,10 +1529,8 @@ class Packager:
         # The following are config settings that the caller may adjust
         # before calling any of the command methods.
 
-        # These should each be a Filename, or None if they are not
-        # filled in.
+        # This should be set to a Filename.
         self.installDir = None
-        self.persistDir = None
 
         # The download URL at which these packages will eventually be
         # hosted.

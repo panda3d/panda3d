@@ -850,8 +850,9 @@ start_p3dpython(P3DInstance *inst) {
   _env += python_path;
   _env += '\0';
 
+  // Let's leave PYTHONHOME empty.  Setting it adds junk to our
+  // carefully-constructed PYTHONPATH.
   _env += "PYTHONHOME=";
-  _env += _python_root_dir;
   _env += '\0';
 
   _env += "PRC_PATH=";

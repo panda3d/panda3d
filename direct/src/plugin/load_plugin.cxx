@@ -36,6 +36,7 @@ static const string default_plugin_filename = "p3d_plugin";
 
 P3D_initialize_func *P3D_initialize;
 P3D_finalize_func *P3D_finalize;
+P3D_set_super_mirror_func *P3D_set_super_mirror;
 P3D_new_instance_func *P3D_new_instance;
 P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
@@ -187,6 +188,7 @@ load_plugin(const string &p3d_plugin_filename,
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)get_func(module, "P3D_initialize");  
   P3D_finalize = (P3D_finalize_func *)get_func(module, "P3D_finalize");  
+  P3D_set_super_mirror = (P3D_set_super_mirror_func *)get_func(module, "P3D_set_super_mirror");  
   P3D_new_instance = (P3D_new_instance_func *)get_func(module, "P3D_new_instance");  
   P3D_instance_start = (P3D_instance_start_func *)get_func(module, "P3D_instance_start");  
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
@@ -226,6 +228,7 @@ load_plugin(const string &p3d_plugin_filename,
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize == NULL ||
       P3D_finalize == NULL ||
+      P3D_set_super_mirror == NULL ||
       P3D_new_instance == NULL ||
       P3D_instance_start == NULL ||
       P3D_instance_finish == NULL ||
@@ -265,6 +268,7 @@ load_plugin(const string &p3d_plugin_filename,
       << "Some function pointers not found:"
       << "\nP3D_initialize = " << P3D_initialize
       << "\nP3D_finalize = " << P3D_finalize
+      << "\nP3D_set_super_mirror = " << P3D_set_super_mirror
       << "\nP3D_new_instance = " << P3D_new_instance
       << "\nP3D_instance_start = " << P3D_instance_start
       << "\nP3D_instance_finish = " << P3D_instance_finish
@@ -358,6 +362,7 @@ unload_dso() {
   
   P3D_initialize = NULL;
   P3D_finalize = NULL;
+  P3D_set_super_mirror = NULL;
   P3D_new_instance = NULL;
   P3D_instance_start = NULL;
   P3D_instance_finish = NULL;

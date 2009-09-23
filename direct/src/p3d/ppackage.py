@@ -61,15 +61,6 @@ Options:
      This option may be repeated as necessary.  These directories may
      also be specified with the pdef-path Config.prc variable.
 
-  -d persist_dir
-     The full path to a local directory that retains persistant state
-     between publishes.  This directory structure keeps files that are
-     used to build patches for future releases.  You should keep this
-     directory structure around for as long as you plan to support
-     this package.  If this directory structure does not exist or is
-     empty, patches will not be created for this publish; but the
-     directory structure will be populated for the next publish.
-
   -u host_url
      Specifies the URL to the download server that will eventually
      host these packages (that is, the public URL of the install
@@ -119,7 +110,7 @@ packager = Packager.Packager()
 buildPatches = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:d:DP:u:n:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:DP:u:n:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -130,8 +121,6 @@ for opt, arg in opts:
         buildPatches = True
     elif opt == '-s':
         packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
-    elif opt == '-d':
-        packager.persistDir = Filename.fromOsSpecific(arg)
     elif opt == '-D':
         packager.allowPythonDev = True
     elif opt == '-P':

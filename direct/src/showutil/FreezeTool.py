@@ -786,6 +786,8 @@ class Freezer:
                 continue
             if origName in self.previousModules:
                 continue
+            if origName in self.modules:
+                continue
 
             # This module is missing.  Let it be missing in the
             # runtime also.

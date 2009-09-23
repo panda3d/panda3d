@@ -84,11 +84,23 @@ P3D_finalize() {
   P3DInstanceManager::delete_global_ptr();
 }
 
+void
+P3D_set_super_mirror(const char *super_mirror_url) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  if (super_mirror_url == NULL) {
+    super_mirror_url = "";
+  }
+
+  ACQUIRE_LOCK(_api_lock);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  inst_mgr->set_super_mirror(super_mirror_url);
+  RELEASE_LOCK(_api_lock);
+}
+
 P3D_instance *
 P3D_new_instance(P3D_request_ready_func *func, 
                  const P3D_token tokens[], size_t num_tokens,
                  int argc, const char *argv[], void *user_data) {
-  nout << "new_instance\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -101,7 +113,6 @@ P3D_new_instance(P3D_request_ready_func *func,
 bool
 P3D_instance_start(P3D_instance *instance, bool is_local, 
                    const char *p3d_filename) {
-  nout << "instance_start\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
     p3d_filename = "";
@@ -138,7 +149,6 @@ P3D_instance_setup_window(P3D_instance *instance,
                           int win_x, int win_y,
                           int win_width, int win_height,
                           P3D_window_handle parent_window) {
-  nout << "setup_window\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   P3DWindowParams wparams(window_type, win_x, win_y,
                           win_width, win_height, parent_window);

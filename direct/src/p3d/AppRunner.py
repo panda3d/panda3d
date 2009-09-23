@@ -102,6 +102,13 @@ class AppRunner(DirectObject):
         # the instance starts up.
         self.rootDir = None
 
+        # self.superMirrorUrl, if nonempty, is the "super mirror" URL
+        # that should be contacted first before trying the actual
+        # host.  This is primarily used for "downloading" from a
+        # locally-stored Panda3D installation.  This is also filled in
+        # when the instance starts up.
+        self.superMirrorUrl = None
+
         # A list of the Panda3D packages that have been loaded.
         self.installedPackages = []
 
@@ -430,11 +437,7 @@ class AppRunner(DirectObject):
             interactiveConsole = self.interactiveConsole
             self.interactiveConsole = False
 
-            try:
-                __import__(moduleName)
-            except ImportError:
-                message = "No %s found in application." % (moduleName)
-                raise StandardError, message
+            __import__(moduleName)
             main = sys.modules[moduleName]
             if hasattr(main, 'main') and callable(main.main):
                 main.main(self)
@@ -469,14 +472,16 @@ class AppRunner(DirectObject):
                                needsResponse = False)
         self.deferredEvals = []
 
-    def setInstanceInfo(self, rootDir):
+    def setInstanceInfo(self, rootDir, superMirrorUrl):
         """ Called by the browser to set some global information about
         the instance. """
 
-        # At the present, this only includes rootDir, which is the
-        # root Panda3D install directory on the local machine.
-        
+        # rootDir is the root Panda3D install directory on the local
+        # machine.
         self.rootDir = Filename.fromOsSpecific(rootDir)
+
+        # The "super mirror" URL, generally used only by panda3d.exe.
+        self.superMirrorUrl = superMirrorUrl
 
     def addPackageInfo(self, name, platform, version, hostUrl):
         """ Called by the browser to list all of the "required"
@@ -809,7 +814,7 @@ def dummyAppRunner(tokens = [], argv = None):
 
     if AppRunnerGlobal.appRunner:
         print "Already have AppRunner, not creating a new one."
-        return
+        return AppRunnerGlobal.appRunner
 
     appRunner = AppRunner()
     appRunner.dummy = True

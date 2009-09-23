@@ -67,6 +67,9 @@ public:
   inline const string &get_log_pathname() const;
   inline bool get_trusted_environment() const;
 
+  void set_super_mirror(const string &super_mirror_url);
+  inline const string &get_super_mirror() const;
+
   P3DInstance *
   create_instance(P3D_request_ready_func *func, 
                   const P3D_token tokens[], size_t num_tokens, 
@@ -129,6 +132,7 @@ private:
   string _log_pathname;
   string _temp_directory;
   bool _trusted_environment;
+  string _super_mirror_url;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;

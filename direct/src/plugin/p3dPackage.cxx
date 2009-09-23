@@ -945,6 +945,22 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
     }
   }
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  if (dtype == DT_contents_file && inst_mgr->get_verify_contents()) {
+    // When we're dowloading the contents file with verify_contents
+    // true, we always go straight to the authoritative host, not even
+    // to the super-mirror.
+
+  } else {
+    // In other cases, if the "super mirror" is enabled, we try that
+    // first.
+    if (!inst_mgr->get_super_mirror().empty()) {
+      string url = inst_mgr->get_super_mirror() + urlbase;
+      download->_try_urls.push_back(url);
+    }
+  }
+
   // OK, start the download.
   assert(!download->_try_urls.empty());
   url = download->_try_urls.back();

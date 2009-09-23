@@ -25,6 +25,7 @@ class HostInfo:
         assert appRunner or hostDir
         
         self.hostUrl = hostUrl
+        self.appRunner = appRunner
         self.hostDir = hostDir
         self.asMirror = asMirror
 

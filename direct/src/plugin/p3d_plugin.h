@@ -145,6 +145,22 @@ P3D_initialize_func(int api_version, const char *contents_filename,
 typedef void
 P3D_finalize_func();
 
+/* This function defines a "super mirror" URL: a special URL that is
+   consulted first whenever downloading any package referenced by a
+   p3d file.  This setting is global, and affects all package
+   downloads across all instances.  The main purpose of this is to
+   facilitate local distribution of the Panda3D runtime build, to
+   allow applications to ship themselves totally self-contained.  If
+   you install the appropriate Panda3D package files into a directory
+   on disk, and set the "super mirror" to a file:// URL that
+   references that directory, then users will be able to run your p3d
+   file without necessarily having an internet connection.
+
+   This normally should be set only by the panda3d standalone runtime
+   executable, not by a web plugin. */
+typedef void
+P3D_set_super_mirror_func(const char *super_mirror_url);
+
 /********************** INSTANCE MANAGEMENT **************************/
 
 /* The following interfaces define the API to manage individual
@@ -852,6 +868,7 @@ P3D_instance_handle_event_func(P3D_instance *instance, P3D_event_data event);
 /* Define all of the actual prototypes for the above functions. */
 EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
 EXPCL_P3D_PLUGIN P3D_finalize_func P3D_finalize;
+EXPCL_P3D_PLUGIN P3D_set_super_mirror_func P3D_set_super_mirror;
 
 EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;
 EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;

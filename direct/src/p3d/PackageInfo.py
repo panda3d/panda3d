@@ -532,16 +532,24 @@ class PackageInfo:
         if not urlbase:
             urlbase = self.descFileDirname + '/' + fileSpec.filename
 
-        # Build up a list of URL's to try downloading from.
+        # Build up a list of URL's to try downloading from.  Unlike
+        # the C++ implementation in P3DPackage.cxx, here we build the
+        # URL's in forward order.
         tryUrls = []
+
+        if self.host.appRunner and self.host.appRunner.superMirrorUrl:
+            # We start with the "super mirror", if it's defined.
+            url = self.host.appRunner.superMirrorUrl + urlbase
+            tryUrls.append(url)
+
         if self.host.mirrors:
-            # Choose a mirror at random first, then a different
-            # mirror.
+            # Choose two mirrors at random.
             mirrors = self.host.mirrors[:]
             for i in range(2):
                 mirror = random.choice(mirrors)
                 mirrors.remove(mirror)
-                tryUrls.append(mirror + urlbase)
+                url = mirror + urlbase
+                tryUrls.append(url)
                 if not mirrors:
                     break
 

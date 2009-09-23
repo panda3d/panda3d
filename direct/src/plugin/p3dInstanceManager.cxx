@@ -297,6 +297,21 @@ initialize(const string &contents_filename, const string &download_url,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::set_super_mirror
+//       Access: Public
+//  Description: Specifies the "super mirror" URL.  See p3d_plugin.h.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+set_super_mirror(const string &super_mirror_url) {
+  _super_mirror_url = super_mirror_url;
+
+  // Make sure it ends with a slash.
+  if (!_super_mirror_url.empty() && _super_mirror_url[_super_mirror_url.size() - 1] != '/') {
+    _super_mirror_url += '/';
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::create_instance
 //       Access: Public
 //  Description: Returns a newly-allocated P3DInstance with the

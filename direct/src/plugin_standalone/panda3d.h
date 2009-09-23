@@ -65,6 +65,7 @@ private:
   void usage();
   bool parse_token(char *arg);
   bool parse_int_pair(char *arg, int &x, int &y);
+  static bool is_url(const string &param);
 
   void report_downloading_package(P3D_instance *instance);
   void report_download_complete(P3D_instance *instance);

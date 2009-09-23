@@ -22,6 +22,7 @@ using namespace std;
 
 extern P3D_initialize_func *P3D_initialize;
 extern P3D_finalize_func *P3D_finalize;
+extern P3D_set_super_mirror_func *P3D_set_super_mirror;
 extern P3D_new_instance_func *P3D_new_instance;
 extern P3D_instance_start_func *P3D_instance_start;
 extern P3D_instance_finish_func *P3D_instance_finish;

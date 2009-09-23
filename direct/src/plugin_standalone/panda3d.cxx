@@ -22,6 +22,7 @@
 // definition, even though we don't link with dtool.
 #include "dtool_platform.h"
 
+#include <ctype.h>
 #include <sstream>
 #ifdef _WIN32
 #include <windows.h>
@@ -66,10 +67,11 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:p:fw:t:s:o:l:ih";
+  const char *optstr = "+mu:M:p:fw:t:s:o:l:ih";
 
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
+  string super_mirror_url;
   string this_platform = DTOOL_PLATFORM;
   bool verify_contents = false;
 
@@ -87,6 +89,10 @@ run(int argc, char *argv[]) {
 
     case 'u':
       download_url = optarg;
+      break;
+
+    case 'M':
+      super_mirror_url = optarg;
       break;
 
     case 'p':
@@ -181,14 +187,34 @@ run(int argc, char *argv[]) {
     return 1;
   }
 
-  // Make sure it ends with a slash.
+  // Make sure the download URL ends with a slash.
   if (!download_url.empty() && download_url[download_url.length() - 1] != '/') {
     download_url += '/';
+  }
+
+  // If the "super mirror" URL is a filename, convert it to a file:// url.
+  if (!super_mirror_url.empty()) {
+    if (!is_url(super_mirror_url)) {
+      Filename filename = Filename::from_os_specific(super_mirror_url);
+      filename.make_absolute();
+      string path = filename.to_os_generic();
+      if (!path.empty() && path[0] != '/') {
+        // On Windows, a leading drive letter must be preceded by an
+        // additional slash.
+        path = "/" + path;
+      }
+      super_mirror_url = "file://" + path;
+    }
   }
 
   if (!get_plugin(download_url, this_platform, verify_contents)) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
+  }
+
+  // Set up the "super mirror" URL, if specified.
+  if (!super_mirror_url.empty()) {
+    P3D_set_super_mirror(super_mirror_url.c_str());
   }
 
   int num_instance_filenames, num_instance_args;
@@ -682,16 +708,14 @@ P3D_instance *Panda3D::
 create_instance(const string &p3d, P3D_window_type window_type,
                 int win_x, int win_y, int win_width, int win_height,
                 P3D_window_handle parent_window, char **args, int num_args) {
-  // If the supplied parameter name is a real file, pass it in on the
-  // parameter list.  Otherwise, assume it's a URL and let the plugin
-  // download it.
+  // Check to see if the p3d filename we were given is a URL, or a
+  // local file.
   Filename p3d_filename = Filename::from_os_specific(p3d);
   string os_p3d_filename = p3d;
-  bool is_local = false;
-  if (p3d_filename.exists()) {
+  bool is_local = !is_url(p3d);
+  if (is_local) {
     p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
-    is_local = true;
   } 
 
   // Build up the token list.
@@ -832,8 +856,17 @@ usage() {
     << "    code.\n\n"
 
     << "  -u url\n"
-    << "    Specify the URL of the Panda3D download server.  The default is\n"
-    << "    \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
+
+    << "    Specify the URL of the Panda3D download server.  This is the host\n"
+    << "    from which the plugin itself will be downloaded if necessary.  The\n"
+    << "    default is\n \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
+
+    << "  -M super_mirror_url\n"
+    << "    Specifies the \"super mirror\" URL, the special URL that is consulted\n"
+    << "    first before downloading any package file referenced by a p3d file.\n"
+    << "    This is primarily intended to support pre-installing a downloadable\n"
+    << "    Panda3D tree on the local machine, to allow p3d applications to\n"
+    << "    execute without requiring an internet connection.\n\n"
 
     << "  -p platform\n"
     << "    Specify the platform to masquerade as.  The default is \""
@@ -886,6 +919,39 @@ parse_int_pair(char *arg, int &x, int &y) {
 
   // Some parse error on the string.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::is_url
+//       Access: Private, Static
+//  Description: Returns true if the indicated string appears to be a
+//               URL, with a leading http:// or file:// or whatever,
+//               or false if it must be a local filename instead.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+is_url(const string &param) {
+  // We define a URL prefix as a sequence of at least two letters,
+  // followed by a colon, followed by at least one slash.
+  size_t p = 0;
+  while (p < param.size() && isalpha(param[p])) {
+    ++p;
+  }
+  if (p < 2) {
+    // Not enough letters.
+    return false;
+  }
+  if (p >= param.size() || param[p] != ':') {
+    // No colon.
+    return false;
+  }
+  ++p;
+  if (p >= param.size() || param[p] != '/') {
+    // No slash.
+    return false;
+  }
+
+  // It matches the rules.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
