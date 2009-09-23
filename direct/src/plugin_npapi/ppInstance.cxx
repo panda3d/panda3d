@@ -775,6 +775,12 @@ string PPInstance::
 get_filename_from_url(const string &url) {
   string filename = url.substr(7);
 
+  // Strip off a trailing query string.
+  size_t query = filename.find('?');
+  if (query != string::npos) {
+    filename = filename.substr(0, query);
+  }
+
 #ifdef _WIN32 
   // On Windows, we have to munge the filename specially, because it's
   // been URL-munged.  It might begin with a leading slash as well as
