@@ -25,6 +25,34 @@
 #include <sys/stat.h>
 #endif
 
+// From KnownFolders.h (part of Vista SDK):
+#define DEFINE_KNOWN_FOLDER(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+   const GUID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+DEFINE_KNOWN_FOLDER(FOLDERID_LocalAppData, 0xF1B32785, 0x6FBA, 0x4FCF, 0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91);
+DEFINE_KNOWN_FOLDER(FOLDERID_LocalAppDataLow, 0xA520A1A4, 0x1780, 0x4FF6, 0xBD, 0x18, 0x16, 0x73, 0x43, 0xC5, 0xAF, 0x16);
+DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x85, 0x60, 0x07, 0xCA, 0xED, 0xCF, 0x9D); 
+
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: check_root_dir
+//  Description: Tests the proposed root dir string for validity.
+//               Returns true if Panda3D can be successfully created
+//               within the dir, false otherwise.
+////////////////////////////////////////////////////////////////////
+static bool
+check_root_dir(const string &root) {
+  // Attempt to make it first, if possible.
+  CreateDirectory(root.c_str(), NULL);
+  
+  bool isdir = false;
+  DWORD results = GetFileAttributes(root.c_str());
+  if (results != -1) {
+    isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+  }
+  return isdir;
+}
+#endif // _WIN32
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
@@ -38,30 +66,11 @@ get_csidl_dir(int csidl) {
   static const int buffer_size = MAX_PATH;
   char buffer[buffer_size];
   if (SHGetSpecialFolderPath(NULL, buffer, csidl, true)) {
-    bool isdir = false;
-    DWORD results = GetFileAttributes(buffer);
-    if (results != -1) {
-      isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
-    }
-
-    if (isdir) {
-      // The user prefix exists; do we have a Panda3D child?
-      string root = buffer;
-      root += string("/Panda3D");
-
-      // Attempt to make it first, if possible.
-      CreateDirectory(root.c_str(), NULL);
-
-      isdir = false;
-      results = GetFileAttributes(root.c_str());
-      if (results != -1) {
-        isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
-      }
-
-      if (isdir) {
-        // The directory exists!
-        return root;
-      }
+    string root = buffer;
+    root += string("/Panda3D");
+    
+    if (check_root_dir(root)) {
+      return root;
     }
   }
 
@@ -96,6 +105,7 @@ wstr_to_string(string &result, const LPWSTR wstr) {
 }
 #endif  // _WIN32
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: find_root_dir
 //  Description: Returns the path to the installable Panda3D directory
@@ -105,13 +115,14 @@ string
 find_root_dir(ostream &logfile) {
 #ifdef _WIN32
   // First, use IEIsProtectedModeProcess() to determine if we are
-  // running in IE's "protected mode".
+  // running in IE's "protected mode" under Vista.
 
+  string root;
   bool is_protected = false;
-  HMODULE module = LoadLibrary("ieframe.dll");
-  if (module != NULL) {
+  HMODULE ieframe = LoadLibrary("ieframe.dll");
+  if (ieframe != NULL) {
     typedef HRESULT STDAPICALLTYPE IEIsProtectedModeProcess(BOOL *pbResult);
-    IEIsProtectedModeProcess *func = (IEIsProtectedModeProcess *)GetProcAddress(module, "IEIsProtectedModeProcess");
+    IEIsProtectedModeProcess *func = (IEIsProtectedModeProcess *)GetProcAddress(ieframe, "IEIsProtectedModeProcess");
     if (func != NULL) {
       BOOL result = false;
       HRESULT hr = (*func)(&result);
@@ -123,99 +134,108 @@ find_root_dir(ostream &logfile) {
       // E_NOTIMPL, which means we're not running under Vista.  In
       // this case we can assume we're not running in protected mode.
     }
-  }    
 
-  int csidl = CSIDL_APPDATA;
-  // e.g., c:/Documents and Settings/<username>/Application Data/Panda3D
-
-  if (is_protected) {
-    // In IE's "protected mode", we have to use the common directory,
-    // which has already been created for us with low-level
-    // permissions.
-
-    csidl = CSIDL_COMMON_APPDATA;
-    // e.g., c:/Documents and Settings/All Users/Application Data/Panda3D
-  }
-  string root = get_csidl_dir(csidl);
-  if (!root.empty()) {
-    if (module != NULL) {
-      FreeLibrary(module);
-    }
-    return root;
-  }
-
-  // All right, couldn't get a writable pointer to our APPDATA folder.
-  // We're in fallback mode now.  Start by asking for a "writeable
-  // path" to a temporary folder.
-  if (module != NULL) {
-    typedef HRESULT STDAPICALLTYPE IEGetWriteableFolderPath(REFGUID clsidFolderID, LPWSTR* lppwstrPath);
-    IEGetWriteableFolderPath *func = (IEGetWriteableFolderPath *)GetProcAddress(module, "IEGetWriteableFolderPath");
-    if (func != NULL) {
-      // From KnownFolders.h (part of Vista SDK):
-#define DEFINE_KNOWN_FOLDER(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-   const GUID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
-      DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x85, 0x60, 0x07, 0xCA, 0xED, 0xCF, 0x9D); 
+    if (is_protected) {
+      // If we *are* running in protected mode, we need to use
+      // FOLDERID_LocalAppDataLow.
       
-      LPWSTR cache_path = NULL;
-      HRESULT hr = (*func)(FOLDERID_InternetCache, &cache_path);
-      if (SUCCEEDED(hr)) {
-        if (!wstr_to_string(root, cache_path)) {
-          // Couldn't decode the LPWSTR.
-          CoTaskMemFree(cache_path);
-        } else {
-          CoTaskMemFree(cache_path);
-          root += string("/Panda3D");
+      // We should be able to use IEGetWriteableFolderPath() to query
+      // this folder, but for some reason, that function returns
+      // E_ACCESSDENIED on FOLDERID_LocalAppDataLow, even though this is
+      // certainly a folder we have write access to.
+      
+      // Well, SHGetKnownFolderPath() does work.  This function only
+      // exists on Vista and above, though, so we still have to pull it
+      // out of the DLL instead of hard-linking it.
+      
+      HMODULE shell32 = LoadLibrary("shell32.dll");
+      if (shell32 != NULL) {
+        typedef HRESULT STDAPICALLTYPE SHGetKnownFolderPath(REFGUID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
+        SHGetKnownFolderPath *func = (SHGetKnownFolderPath *)GetProcAddress(shell32, "SHGetKnownFolderPath");
+        if (func != NULL) {
+          LPWSTR cache_path = NULL;
+          HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, 0, NULL, &cache_path);
           
-          // Attempt to make it first, if possible.
-          CreateDirectory(root.c_str(), NULL);
-          
-          bool isdir = false;
-          DWORD results = GetFileAttributes(root.c_str());
-          if (results != -1) {
-            isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+          if (SUCCEEDED(hr)) {
+            if (!wstr_to_string(root, cache_path)) {
+              // Couldn't decode the LPWSTR.
+              CoTaskMemFree(cache_path);
+            } else {
+              CoTaskMemFree(cache_path);
+              
+              root += string("/Panda3D");
+              if (check_root_dir(root)) {
+                FreeLibrary(shell32);
+                FreeLibrary(ieframe);
+                return root;
+              }
+            }
           }
-        
-          if (isdir) {
-            // The directory exists!
-            FreeLibrary(module);
-            return root;
-          }
+        }
+        FreeLibrary(shell32);
+      }
+      
+      // Couldn't get FOLDERID_LocalAppDataLow for some reason.  We're
+      // in fallback mode now.  Use IEGetWriteableFolderPath to get
+      // the standard cache folder.
+      typedef HRESULT STDAPICALLTYPE IEGetWriteableFolderPath(REFGUID clsidFolderID, LPWSTR* lppwstrPath);
+      IEGetWriteableFolderPath *func = (IEGetWriteableFolderPath *)GetProcAddress(ieframe, "IEGetWriteableFolderPath");
+      if (func != NULL) {
+        LPWSTR cache_path = NULL;
+
+        // Since we're here, we'll start by asking for
+        // LocalAppDataLow, even though I know it doesn't work.
+        HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, &cache_path);
+        if (FAILED(hr)) {
+          // This one should work.
+          hr = (*func)(FOLDERID_InternetCache, &cache_path);
+        }
+
+        if (SUCCEEDED(hr)) {
+          if (!wstr_to_string(root, cache_path)) {
+            // Couldn't decode the LPWSTR.
+            CoTaskMemFree(cache_path);
+          } else {
+            CoTaskMemFree(cache_path);
+            root += string("/Panda3D");
+            if (check_root_dir(root)) {
+              FreeLibrary(ieframe);
+              return root;
+            }
+          }            
         }
       }
     }
-  }    
 
-  // We're done with the HMODULE now.
-  if (module != NULL) {
-    FreeLibrary(module);
+    FreeLibrary(ieframe);
   }
 
-  // All right, GetWriteableFolderPath failed; fall back to the XP-era
-  // way of asking for the "Temporary Internet Files".
+  // All right, here we are in the normal, unprotected mode.  This is
+  // also the normal XP codepath.
+
+  // e.g., c:/Documents and Settings/<username>/Local Settings/Application Data/Panda3D
+  root = get_csidl_dir(CSIDL_LOCAL_APPDATA);
+  if (!root.empty()) {
+    return root;
+  }
+
+  // For some crazy reason, we can't get CSIDL_LOCAL_APPDATA.  Fall
+  // back to the cache folder.
+
+  // e.g. c:/Documents and Settings/<username>/Local Settings/Temporary Internet Files/Panda3D
   root = get_csidl_dir(CSIDL_INTERNET_CACHE);
   if (!root.empty()) {
     return root;
   }
   
   // If we couldn't get any of those folders, huh.  Punt and try for
-  // Temp, for lack of a better place.
+  // the old standby GetTempPath, for lack of anything better.
   static const int buffer_size = MAX_PATH;
   char buffer[buffer_size];
   if (GetTempPath(buffer_size, buffer) != 0) {
-    string root = buffer;
+    root = buffer;
     root += string("Panda3D");
-    
-    // Attempt to make it first, if possible.
-    CreateDirectory(root.c_str(), NULL);
-    
-    bool isdir = false;
-    DWORD results = GetFileAttributes(root.c_str());
-    if (results != -1) {
-      isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
-    }
-    
-    if (isdir) {
-      // The directory exists!
+    if (check_root_dir(root)) {
       return root;
     }
   }

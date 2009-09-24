@@ -1250,6 +1250,10 @@ win_create_process() {
      &startup_info, &process_info);
   bool started_program = (result != 0);
 
+  if (!started_program) {
+    nout << "CreateProcess failed, error: " << GetLastError() << "\n";
+  }
+
   delete[] command_line;
 
   // Close the pipe handles that are now owned by the child.

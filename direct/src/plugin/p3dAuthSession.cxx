@@ -342,6 +342,7 @@ win_create_process() {
   delete[] command_line;
 
   if (!started_program) {
+    nout << "CreateProcess failed, error: " << GetLastError() << "\n";
     return INVALID_HANDLE_VALUE;
   }
 
