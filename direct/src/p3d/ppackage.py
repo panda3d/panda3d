@@ -41,7 +41,8 @@ Options:
      contain multiple different packages from multiple different
      invocations of this script.  It is the user's responsibility to
      copy this directory structure to a server, which will have the
-     URL specified by -u, below.
+     URL specified by the packager.setHost() call appearing within the
+     pdef file.
 
   -p
      Automatically build patches against previous versions after
@@ -60,21 +61,6 @@ Options:
      Additional directories to search for previously-built packages.
      This option may be repeated as necessary.  These directories may
      also be specified with the pdef-path Config.prc variable.
-
-  -u host_url
-     Specifies the URL to the download server that will eventually
-     host these packages (that is, the public URL of the install
-     directory).  This may also be overridden with a "host" command
-     appearing within the pdef file.  This is used for packages only;
-     it is ignored for p3d applications, which are not specific to a
-     particular host.
-
-  -n "host descriptive name"
-     Specifies a descriptive name of the download server named by -u.
-     This name may be presented to the user when managing installed
-     packages.  This may also be overridden with a "host" command
-     appearing within the pdef file.  This information is written to
-     the contents.xml file at the top of the install directory.
 
   -D
      Sets the allow_python_dev flag in any applications built with
@@ -110,7 +96,7 @@ packager = Packager.Packager()
 buildPatches = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:DP:u:n:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:DP:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -125,10 +111,6 @@ for opt, arg in opts:
         packager.allowPythonDev = True
     elif opt == '-P':
         packager.platform = arg
-    elif opt == '-u':
-        packager.host = arg
-    elif opt == '-n':
-        packager.hostDescriptiveName = arg
         
     elif opt == '-h':
         usage(0)
