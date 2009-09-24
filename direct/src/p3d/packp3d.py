@@ -37,11 +37,9 @@ Options:
      all be combined in the first file.  If the private key is
      encrypted, the password will be required to decrypt it.
 
-  -A
-     Sets the auto-start flag in the application, so that the user
-     will not need to click the green play button before it starts,
-     when embedded in a web page.  This can also be set on the HTML
-     page.
+  -c config=value
+     Sets the indicated config flag in the application.  This option
+     may be repeated as necessary.
 
   -r package
      Names an additional package that this application requires at
@@ -78,14 +76,14 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'd:m:S:Ar:s:Dh')
+    opts, args = getopt.getopt(args, 'd:m:S:c:r:s:Dh')
 
     packager = Packager.Packager()
 
     root = Filename('.')
     main = None
     signParams = []
-    autoStart = False
+    configFlags = []
     requires = []
     allowPythonDev = False
     
@@ -96,8 +94,8 @@ def makePackedApp(args):
             main = value
         elif option == '-S':
             signParams.append(value)
-        elif option == '-A':
-            autoStart = True
+        elif option == '-c':
+            configFlags.append(value.split('=', 1))
         elif option == '-r':
             requires.append(value)
         elif option == '-s':
@@ -155,8 +153,8 @@ def makePackedApp(args):
             name, version, host = tokens
             packager.do_require(name, version = version, host = host)
 
-        if autoStart:
-            packager.do_config(auto_start = True)
+        if configFlags:
+            packager.do_config(**dict(configFlags))
 
         packager.do_dir(root)
         packager.do_mainModule(mainModule)

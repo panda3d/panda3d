@@ -163,6 +163,7 @@
 
   // If you have to link with a static Python library, define it here.
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
+  #define OSX_SYS_FRAMEWORKS Carbon
 
   #define WIN_SYS_LIBS user32.lib
 #end bin_target

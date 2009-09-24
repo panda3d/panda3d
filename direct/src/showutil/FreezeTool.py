@@ -975,6 +975,7 @@ class Freezer:
             # It's actually a package.  In this case, we really write
             # the file moduleName/__init__.py.
             filename += '/__init__'
+            moduleDirs[moduleName] = True
 
             # Ensure we don't have an implicit filename from above.
             multifile.removeSubfile(filename + '.py')
