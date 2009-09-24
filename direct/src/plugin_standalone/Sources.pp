@@ -20,5 +20,9 @@
     panda3d.cxx panda3d.h panda3d.I
 
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
+  #if $[OSX_PLATFORM]
+    // Squelch objections about ___dso_handle.
+    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
+  #endif
 
 #end bin_target

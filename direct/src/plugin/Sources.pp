@@ -143,6 +143,8 @@
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
+    pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
+    mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c event:c nativenet:c net:c display:c panda:m
 
@@ -164,6 +166,13 @@
   // If you have to link with a static Python library, define it here.
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
   #define OSX_SYS_FRAMEWORKS Carbon
+
+  #if $[OSX_PLATFORM]
+    // Not entirely sure why this option is required for OSX, but we
+    // get objections about ___dso_handle otherwise--but only when
+    // building universal binaries.
+    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
+  #endif
 
   #define WIN_SYS_LIBS user32.lib
 #end bin_target
@@ -190,6 +199,11 @@
 
   #define SOURCES p3dCert.cxx
   #define OSX_SYS_FRAMEWORKS Carbon
+
+  #if $[OSX_PLATFORM]
+    // Squelch objections about ___dso_handle.
+    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
+  #endif
 #end bin_target
 
 
