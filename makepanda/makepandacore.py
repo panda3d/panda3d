@@ -216,6 +216,12 @@ def oscmd(cmd, ignoreError = False):
         res = os.spawnl(os.P_WAIT, exe, cmd)
     else:
         res = os.system(cmd)
+        if (res == 11):
+            if (LocateBinary("gdb") and GetVerbose()):
+                print GetColor("red") + "Received SIGSEGV, getting traceback..." + GetColor()
+                os.system("gdb -batch -ex 'handle SIG33 pass nostop noprint' -ex 'set pagination 0' -ex 'run' -ex 'bt full' -ex 'info registers' -ex 'thread apply all backtrace' -ex 'quit' --args %s < /dev/null" % cmd)
+            else:
+                print GetColor("red") + "Received SIGSEGV" + GetColor()
     if res != 0 and not ignoreError:
         exit("")
 
