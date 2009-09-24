@@ -1,81 +1,23 @@
-from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
+from pandac.PandaModules import Filename
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
 # file to the ppackage utility, either as a packaged application, or
 # as the module direct.p3d.ppackage.
 
-# These packages are then downloaded by the Panda3D plugin and
-# standalone runtime executable, and they contain the actual Panda3D
-# runtime libraries.
+# The packages in this file define Panda3D itself.  This is the third
+# installed piece of the three-part plugin system (the plugin, the
+# core API, Panda3D).
 
-# We divide the runtime into several smaller packages.  There is the
-# core Panda3D package, which is needed by all Panda3D applications,
-# and then a number of smaller, optional packages, which may or may
-# not be needed by any one particular application.
+# When needed, these packages are downloaded by the core API, from the
+# host URL specified in a given p3d file, and not from any hardcoded
+# URL.  Thus, any custom version of Panda3D may be hosted on any
+# server in the world, and any version of the plugin can download it.
 
-class coreapi(solo):
-    # The special "coreapi" package.  As a "solo", this is just a
-    # single .dll (or dylib, or whatever).
-    file('p3d_plugin.dll')
-
-class images(package):
-    # The default startup images are stored as their own package.
-    names = ['download', 'play_click', 'play_ready', 'play_rollover',
-             'auth_click', 'auth_ready', 'auth_rollover']
-    configDict = {}
-    for name in names:
-        # Look for a png image first.
-        basename = '%s.png' % (name)
-        filename = Filename('plugin_images/%s' % (basename))
-        found = filename.resolveFilename(getModelPath().getValue())
-        if not found:
-            found = filename.resolveFilename("models")
-        if not found:
-            # Then try a jpeg image.
-            basename = '%s.jpg' % (name)
-            filename = Filename('plugin_images/%s' % (basename))
-            found = filename.resolveFilename(getModelPath().getValue())
-            if not found:
-                found = filename.resolveFilename("models")
-            
-        if found:
-            # Add the image file to the package
-            file(filename, newName = basename, extract = True)
-
-            # And set the config variable to reference it.
-            token = '%s_img' % (name)
-            configDict[token] = basename
-        else:
-            print "Could not locate %s" % (filename)
-
-    # Also make a few special cases.  We use the same default image
-    # for download, ready, unauth, launch, and failed.
-    download = configDict.get('download_img', None)
-    if download:
-        configDict['ready_img'] = download
-        configDict['unauth_img'] = download
-        configDict['launch_img'] = download
-        configDict['failed_img'] = download
-
-    config(**configDict)
-
-class p3dcert(package):
-    # This special application, used to pop up a dialog to prompt the
-    # user to accept or deny unknown applications, is its own package.
-    config(display_name = "Authorization Dialog")
-
-    file('p3dcert.exe')
-
-    # Also add the certificate authority file.
-    cvar = ConfigVariableFilename('ca-bundle-filename')
-    filename = Filename(cvar.getValue())
-    if not filename.empty():
-        file(filename, newName = 'ca-bundle.crt', extract = True)
-        
+# Also see coreapi.pdef.
 
 class panda3d(package):
-    # The core Panda3D package.  Contains Python and most of the graphics
+    # The main Panda3D package.  Contains Python and most of the graphics
     # code in Panda3D.
 
     config(display_name = "Panda3D")
@@ -91,6 +33,11 @@ class panda3d(package):
     # automatically be included as well, and we end up with a pretty
     # complete list that way.
     module('direct.directbase.DirectStart',
+           # Don't want to include all files in direct.p3d, because
+           # that picks up the runtime scripts too, which are their
+           # own p3d files below.
+           'direct.p3d.AppRunner',
+           'direct.p3d.DWBPackageInstaller',
            'direct.actor.*',
            'direct.controls.*',
            'direct.directdevices.*',
@@ -101,7 +48,6 @@ class panda3d(package):
            'direct.fsm.*',
            'direct.gui.*',
            'direct.interval.*',
-           'direct.p3d.*',
            'direct.particles.*',
            'direct.showbase.*',
            'direct.showutil.*',
@@ -221,3 +167,16 @@ class ppackage(p3d):
     require('panda3d', 'egg')
 
     mainModule('direct.p3d.ppackage')
+
+
+class ppatcher(p3d):
+    # A handy utility to go along with ppackage.  This builds
+    # patchfiles as needed in the directory structure created by
+    # ppackage.
+
+    config(display_name = "Panda3D Patch Maker",
+           hidden = True, platform_specific = False,
+           keep_user_env = True)
+    require('panda3d')
+
+    mainModule('direct.p3d.ppatcher')

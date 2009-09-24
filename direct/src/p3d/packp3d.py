@@ -177,20 +177,12 @@ def makePackedApp(args):
         print inst.args[0]
         sys.exit(1)
 
-def main(appRunner):
-    """ This function is called when this module is invoked as
-    packp3d.p3d. """
+try:
+    makePackedApp(sys.argv[1:])
+except ArgumentError, e:
+    print e.args[0]
+    sys.exit(1)
 
-    try:
-        makePackedApp(appRunner.argv[1:])
-    except ArgumentError, e:
-        print e.args[0]
-        sys.exit(1)
-    sys.exit(0)
-
-if __name__ == '__main__':
-    try:
-        makePackedApp(sys.argv[1:])
-    except ArgumentError, e:
-        print e.args[0]
-        sys.exit(1)
+# An explicit call to exit() is required to exit the program, when
+# this module is packaged in a p3d file.
+sys.exit(0)

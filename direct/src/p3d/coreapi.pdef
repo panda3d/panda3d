@@ -1,0 +1,80 @@
+from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
+
+# This file defines a number of standard "packages" that correspond to
+# a Panda3D distribution.  These packages are built by passing this
+# file to the ppackage utility, either as a packaged application, or
+# as the module direct.p3d.ppackage.
+
+# The packages in this file define the "Core API".  This is the second
+# installed piece of the three-part plugin system (the plugin, the
+# core API, Panda3D).
+
+# These packages are downloaded directly by the plugin, from the host
+# specified by the value of PANDA_PACKAGE_HOST_URL compiled into the
+# plugin.  Thus, these packages are inextricably tied to the
+# particular plugin they have been built with.  They do not have to be
+# present on a server that hosts a version of Panda3D for download,
+# just on the server that hosts the plugin itself.  These packages do
+# not need to be updated with each new version of Panda3D.
+
+# Also see panda3d.pdef.
+
+class coreapi(solo):
+    # The special "coreapi" package.  As a "solo", this is just a
+    # single .dll (or dylib, or whatever).
+    file('p3d_plugin.dll')
+
+class images(package):
+    # The default startup images are stored as their own package.
+    names = ['download', 'play_click', 'play_ready', 'play_rollover',
+             'auth_click', 'auth_ready', 'auth_rollover']
+    configDict = {}
+    for name in names:
+        # Look for a png image first.
+        basename = '%s.png' % (name)
+        filename = Filename('plugin_images/%s' % (basename))
+        found = filename.resolveFilename(getModelPath().getValue())
+        if not found:
+            found = filename.resolveFilename("models")
+        if not found:
+            # Then try a jpeg image.
+            basename = '%s.jpg' % (name)
+            filename = Filename('plugin_images/%s' % (basename))
+            found = filename.resolveFilename(getModelPath().getValue())
+            if not found:
+                found = filename.resolveFilename("models")
+            
+        if found:
+            # Add the image file to the package
+            file(filename, newName = basename, extract = True)
+
+            # And set the config variable to reference it.
+            token = '%s_img' % (name)
+            configDict[token] = basename
+        else:
+            print "Could not locate %s" % (filename)
+
+    # Also make a few special cases.  We use the same default image
+    # for download, ready, unauth, launch, and failed.
+    download = configDict.get('download_img', None)
+    if download:
+        configDict['ready_img'] = download
+        configDict['unauth_img'] = download
+        configDict['launch_img'] = download
+        configDict['failed_img'] = download
+
+    config(**configDict)
+
+class p3dcert(package):
+    # This special application, used to pop up a dialog to prompt the
+    # user to accept or deny unknown applications, is its own package.
+    config(display_name = "Authorization Dialog")
+
+    file('p3dcert.exe')
+
+    # Also add the certificate authority file.
+    cvar = ConfigVariableFilename('ca-bundle-filename')
+    filename = Filename(cvar.getValue())
+    if not filename.empty():
+        file(filename, newName = 'ca-bundle.crt', extract = True)
+        

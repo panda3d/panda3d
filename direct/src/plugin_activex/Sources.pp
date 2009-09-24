@@ -1,5 +1,9 @@
-// This directory is still experimental.  Define HAVE_P3D_PLUGIN in
-// your Config.pp to build it.
+// This directory builds the code for the ActiveX (Internet Explorer)
+// plugin, part of the Panda3D browser plugin system.  Most Panda3D
+// developers will have no need to build this, unless you are
+// developing the plugin system itself.  Define HAVE_P3D_PLUGIN in
+// your Config.pp to build this directory.
+
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[WINDOWS_PLATFORM]]
 
 #define USE_PACKAGES tinyxml

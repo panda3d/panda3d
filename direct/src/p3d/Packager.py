@@ -1721,7 +1721,7 @@ class Packager:
             # Update an existing host entry
             if descriptiveName:
                 he.descriptiveName = descriptiveName
-            if mirrors:
+            if mirrors is not None:
                 he.mirrors = mirrors
 
         return he

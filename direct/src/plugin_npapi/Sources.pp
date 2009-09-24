@@ -1,12 +1,18 @@
-// This directory is still experimental.  Define HAVE_P3D_PLUGIN in
-// your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_NPAPI]]
+// This directory builds the code for the NPAPI (Mozilla) plugin, part
+// of the Panda3D browser plugin system.  Most Panda3D developers will
+// have no need to build this, unless you are developing the plugin
+// system itself.  Define HAVE_P3D_PLUGIN in your Config.pp to build
+// this directory.
 
-#define USE_PACKAGES npapi
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_NPAPI]]
+
+#define USE_PACKAGES tinyxml npapi
 
 #begin lib_target
   // By Mozilla convention, on Windows at least, the generated DLL
-  // filename must begin with "np", not "libnp".
+  // filename must begin with "np", not "libnp".  (Actually, this is
+  // probably no longer true on recent versions of Mozilla.  But why
+  // take chances?)
   #define TARGET nppanda3d
   #define LIB_PREFIX
 
