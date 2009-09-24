@@ -97,6 +97,7 @@ PUBLISHED:
   INLINE int get_display_height() const;
 
   DisplayInformation *get_display_information();
+  virtual void lookup_cpu_data();
   
   virtual string get_interface_name() const=0;
 

@@ -37,6 +37,8 @@ public:
   WinGraphicsPipe();
   virtual ~WinGraphicsPipe();
 
+  virtual void lookup_cpu_data();
+
 private:
   HINSTANCE _hUser32;
   typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
