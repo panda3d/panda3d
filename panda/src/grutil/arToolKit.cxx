@@ -23,7 +23,7 @@
 #include "compose_matrix.h"
 #include "config_grutil.h"
 extern "C" {
-  #include "artools.h"
+  #include "AR/ar.h"
 };
 
 ARToolKit::PatternTable ARToolKit::_pattern_table;
