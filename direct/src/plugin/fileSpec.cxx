@@ -72,7 +72,7 @@ operator = (const FileSpec &copy) {
   _size = copy._size;
   _timestamp = copy._size;
   memcpy(_hash, copy._hash, sizeof(_hash));
-  _got_hash = copy._hash;
+  _got_hash = copy._got_hash;
 }
 
 ////////////////////////////////////////////////////////////////////
