@@ -1681,17 +1681,6 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.add(self.__audioLoop, 'audioLoop', priority = 60)
         self.eventMgr.restart()
 
-        if not hasattr(taskMgr, 'mgr'):
-            # If we're using the old task manager, we need to have an
-            # explicit task to manage the async load requests.  (On
-            # the new task manager, this is built-in.)
-            def asyncLoad(task):
-                task.mgr.poll()
-                return task.cont
-            task = Task.Task(asyncLoad)
-            task.mgr = AsyncTaskManager.getGlobalPtr()
-            taskMgr.add(task, 'asyncLoad')
-
     def shutdown(self):
         self.taskMgr.remove('audioLoop')
         self.taskMgr.remove('igLoop')
@@ -1701,12 +1690,6 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.remove('resetPrevTransform')
         self.taskMgr.remove('ivalLoop')
         self.eventMgr.shutdown()
-
-        if not hasattr(taskMgr, 'mgr'):
-            # If we're using the old task manager, we need to have an
-            # explicit task to manage the async load requests.  (On
-            # the new task manager, this is built-in.)
-            taskMgr.remove('asyncLoad')
 
     def getBackgroundColor(self, win = None):
         """
