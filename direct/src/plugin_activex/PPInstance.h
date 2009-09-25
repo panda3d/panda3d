@@ -21,6 +21,7 @@
 #include "p3d_plugin.h"
 #include "PPDownloadCallback.h"
 #include "PPLogger.h"
+#include "fileSpec.h"
 
 #define WM_PY_LAUNCHED        (WM_USER + 1)
 #define WM_PROGRESS           (WM_USER + 2)
@@ -67,7 +68,8 @@ protected:
     PPInstance( const PPInstance& );
 
     int DownloadFile( const std::string& from, const std::string& to );
-    int ReadContents( const std::string& contentsFilename, std::string& p3dDllFilename );
+    int CopyFile( const std::string& from, const std::string& to );
+    int ReadContents( const std::string& contentsFilename, FileSpec& p3dDllFile );
 
     void HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
@@ -78,4 +80,7 @@ protected:
 
     bool m_handleRequestOnUIThread;
     bool m_isInit;
+    bool m_pluginLoaded;
+
+    std::string m_rootDir;
 };

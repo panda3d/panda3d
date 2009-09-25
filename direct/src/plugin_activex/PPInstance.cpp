@@ -35,35 +35,14 @@
 
 #include "p3d_plugin_config.h"
 #include "get_tinyxml.h"
+#include "load_plugin.h"
+#include "find_root_dir.h"
+#include "mkdir_complete.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
-static HMODULE s_hP3DPluginDll = NULL;
 static int s_instanceCount = 0;
-
-P3D_initialize_func *P3D_initialize;
-P3D_finalize_func *P3D_finalize;
-P3D_new_instance_func *P3D_new_instance;
-P3D_instance_start_func *P3D_instance_start;
-P3D_instance_finish_func *P3D_instance_finish;
-P3D_instance_setup_window_func *P3D_instance_setup_window;
-P3D_instance_get_request_func *P3D_instance_get_request;
-P3D_check_request_func *P3D_check_request;
-P3D_request_finish_func *P3D_request_finish;
-P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
-
-P3D_instance_set_browser_script_object_func *P3D_instance_set_browser_script_object;
-P3D_instance_get_panda_script_object_func *P3D_instance_get_panda_script_object;
-P3D_make_class_definition_func *P3D_make_class_definition;
-
-P3D_new_undefined_object_func *P3D_new_undefined_object;
-P3D_new_none_object_func *P3D_new_none_object;
-P3D_new_bool_object_func *P3D_new_bool_object;
-P3D_new_int_object_func *P3D_new_int_object;
-P3D_new_float_object_func *P3D_new_float_object;
-P3D_new_string_object_func *P3D_new_string_object;
-
 
 void P3D_NofificationSync(P3D_instance *instance)
 {
@@ -92,17 +71,17 @@ void P3D_NofificationSync(P3D_instance *instance)
 PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
     m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true ), m_isInit( false )
 {
-    TCHAR tempFolderName[ MAX_PATH ];
-    DWORD pathLength = ::GetTempPath( MAX_PATH, tempFolderName );
+  // Open the logfile first.
+  m_logger.Open( );
 
-    m_logger.Open( std::string( tempFolderName ), std::string( P3D_DEFAULT_PLUGIN_LOG_FILENAME ) );
+  m_rootDir = find_root_dir( nout );
+  m_pluginLoaded = false;
 }
 
 PPInstance::~PPInstance(  )
 {
     if ( m_p3dInstance )
     {
-        nout << this << ": Finishing P3D instance \n";  
         P3D_instance_finish( m_p3dInstance );
         m_p3dInstance = NULL;
     }
@@ -111,7 +90,10 @@ PPInstance::~PPInstance(  )
         P3D_OBJECT_DECREF( m_p3dObject );
         m_p3dObject = NULL;
     }
-    UnloadPlugin();
+    if ( m_pluginLoaded )
+    {
+        UnloadPlugin();
+    }
 }
 
 int PPInstance::DownloadFile( const std::string& from, const std::string& to )
@@ -130,7 +112,33 @@ int PPInstance::DownloadFile( const std::string& from, const std::string& to )
     return error;
 }
 
-int PPInstance::ReadContents( const std::string& contentsFilename, std::string& p3dDllFilename )
+int PPInstance::CopyFile( const std::string& from, const std::string& to )
+{
+  ifstream in(from.c_str(), ios::in | ios::binary);
+  ofstream out(to.c_str(), ios::out | ios::binary);
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      return 1;
+    }
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+
+  if (!in.eof()) {
+    return 1;
+  }
+
+  return 0;
+}
+
+int PPInstance::ReadContents( const std::string& contentsFilename, FileSpec& p3dDllFile )
 {
     int error(1);
 
@@ -149,7 +157,7 @@ int PPInstance::ReadContents( const std::string& contentsFilename, std::string& 
                     const char *platform = xpackage->Attribute( "platform" );
                     if ( platform != NULL && !strcmp(platform, "win32") ) 
                     {
-                        p3dDllFilename += xpackage->Attribute( "filename" );
+                        p3dDllFile.load_xml(xpackage);
                         error = 0;
                         break;
                     }
@@ -165,132 +173,117 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 {
     int error(0);
 
+    // Start off by downloading contents.xml into a local temporary
+    // file.  We get a unique temporary filename each time; this is a
+    // small file and it's very important that we get the most current
+    // version, not an old cached version.
     TCHAR tempFolderName[ MAX_PATH ];
-    DWORD pathLength = ::GetTempPath( MAX_PATH, tempFolderName );
+    ::GetTempPath( MAX_PATH, tempFolderName );
+    TCHAR tempFileName[ MAX_PATH ];
+    ::GetTempFileName( tempFolderName, "p3d", 0, tempFileName );
+    std::string localContentsFileName( tempFileName );
 
-    std::string localContentsFileName( tempFolderName, pathLength );
-    localContentsFileName += P3D_CONTENTS_FILENAME;
+    // We'll also get the final installation path of the contents.xml
+    // file.
+    std::string finalContentsFileName( m_rootDir );
+    finalContentsFileName += "/";
+    finalContentsFileName += P3D_CONTENTS_FILENAME;
 
     std::string hostUrl( PANDA_PACKAGE_HOST_URL );
     if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
       hostUrl += '/';
     }
 
-    std::string remoteContentsFilename( hostUrl );
-    remoteContentsFilename += P3D_CONTENTS_FILENAME;
+    // Append a query string to the contents.xml URL to uniquify it
+    // and ensure we don't get a cached version.
+    std::ostringstream strm;
+    strm << hostUrl << P3D_CONTENTS_FILENAME << "?" << time(NULL);
+    std::string remoteContentsUrl( strm.str() );
 
-    error = DownloadFile( remoteContentsFilename, localContentsFileName );
+    FileSpec p3dDllFile;
+    error = DownloadFile( remoteContentsUrl, localContentsFileName );
     if ( !error )
     {
-        std::string p3dRemoteModuleFileName( hostUrl );
-        error = ReadContents( localContentsFileName, p3dRemoteModuleFileName );
-        if ( !error )
-        {
-            std::string p3dLocalModuleFileName( tempFolderName, pathLength );
-            p3dLocalModuleFileName += P3D_DEFAULT_PLUGIN_FILENAME;
+        error = ReadContents( localContentsFileName, p3dDllFile );
+    }
 
-            // Check for existance
-            if ( ::GetFileAttributes( p3dLocalModuleFileName.c_str( ) ) == INVALID_FILE_ATTRIBUTES )
-            {
-                error = DownloadFile( p3dRemoteModuleFileName, p3dLocalModuleFileName );
-            }
+    if ( error ) {
+      // If we couldn't download or read the contents.xml file, check
+      // to see if there's a good one on disk already, as a fallback.
+      error = ReadContents( finalContentsFileName, p3dDllFile );
+
+    } else {
+      // If we have successfully read the downloaded version,
+      // then move the downloaded version into the final location.
+      mkfile_complete( finalContentsFileName, nout );
+      CopyFile( localContentsFileName, finalContentsFileName );
+    }
+
+    // We don't need the temporary file any more.
+    ::DeleteFile( localContentsFileName.c_str() );
+
+    if ( !error )
+    {
+        // OK, at this point we have successfully read contents.xml,
+        // and we have a good file spec in p3dDllFile.
+        if ( p3dDllFile.quick_verify( m_rootDir ) )
+        {
+            // The DLL is already on-disk, and is good.
+            p3dDllFilename = p3dDllFile.get_pathname( m_rootDir );
+        }
+        else
+        {
+            // The DLL is not already on-disk, or it's stale.
+            std::string p3dLocalModuleFileName( p3dDllFile.get_pathname( m_rootDir ) );
+            mkfile_complete( p3dLocalModuleFileName, nout );
+            std::string p3dRemoteModuleUrl( hostUrl );
+            p3dRemoteModuleUrl += p3dDllFile.get_filename();
+            error = DownloadFile( p3dRemoteModuleUrl, p3dLocalModuleFileName );
             if ( !error )
             {
-                p3dDllFilename = p3dLocalModuleFileName;
+                error = 1;
+                if ( p3dDllFile.full_verify( m_rootDir ) )
+                {
+                    // Downloaded successfully.
+                    p3dDllFilename = p3dDllFile.get_pathname( m_rootDir );
+                    error = 0;
+                }
             }
         }
     }
+    
     return error;
 }
 
 int PPInstance::LoadPlugin( const std::string& dllFilename ) 
 {
-    s_instanceCount += 1;
-    int error(0);
-    if ( !s_hP3DPluginDll )
-    {
-        std::string filename( dllFilename );
+    if ( !m_pluginLoaded )
+    { 
+        s_instanceCount += 1;
+        m_pluginLoaded = true;
+    }
 
-        if ( filename.empty() ) 
-        {
-            // Look for the plugin along the path.
-            filename = P3D_DEFAULT_PLUGIN_FILENAME;
-            filename += ".dll";
-        }
+    int error = 0;
+    if (!is_plugin_loaded()) {
 
-        nout << "Loading " << filename << "\n";
-        s_hP3DPluginDll = LoadLibrary( filename.c_str() );
-        nout << "got " << s_hP3DPluginDll << "\n";  
-        if ( s_hP3DPluginDll == NULL ) 
-        {
-            // Couldn't load the DLL.
-            nout << "Error loading " << filename << " :" << GetLastError() << "\n";
-            return false;
-        }
-
-        char buffer[MAX_PATH];
-        if ( GetModuleFileName( s_hP3DPluginDll, buffer, MAX_PATH ) != 0 ) 
-        {
-            if ( GetLastError() != 0 ) 
-            {
-                filename = buffer;
-            }
-        }
-
-        // Now get all of the function pointers.
-        P3D_initialize = (P3D_initialize_func *)GetProcAddress(s_hP3DPluginDll, "P3D_initialize");  
-        P3D_finalize = (P3D_finalize_func *)GetProcAddress(s_hP3DPluginDll, "P3D_finalize");  
-        P3D_new_instance = (P3D_new_instance_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_instance");  
-        P3D_instance_start = (P3D_instance_start_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_start");
-        P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_finish");  
-        P3D_instance_setup_window = (P3D_instance_setup_window_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_setup_window");
-        P3D_instance_get_request = (P3D_instance_get_request_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_get_request");  
-        P3D_check_request = (P3D_check_request_func *)GetProcAddress(s_hP3DPluginDll, "P3D_check_request");  
-        P3D_request_finish = (P3D_request_finish_func *)GetProcAddress(s_hP3DPluginDll, "P3D_request_finish");  
-        P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_feed_url_stream");  
-
-        P3D_instance_set_browser_script_object = (P3D_instance_set_browser_script_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_set_browser_script_object");
-        P3D_instance_get_panda_script_object = (P3D_instance_get_panda_script_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_instance_get_panda_script_object");
-        P3D_make_class_definition = (P3D_make_class_definition_func *)GetProcAddress(s_hP3DPluginDll, "P3D_make_class_definition");
-
-        P3D_new_undefined_object = (P3D_new_undefined_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_undefined_object");
-        P3D_new_none_object = (P3D_new_none_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_none_object");
-        P3D_new_bool_object = (P3D_new_bool_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_bool_object");
-        P3D_new_int_object = (P3D_new_int_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_int_object");
-        P3D_new_float_object = (P3D_new_float_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_float_object");
-        P3D_new_string_object = (P3D_new_string_object_func *)GetProcAddress(s_hP3DPluginDll, "P3D_new_string_object");
-
-        // Ensure that all of the function pointers have been found.
-        if (P3D_initialize == NULL ||
-            P3D_finalize == NULL ||
-            P3D_new_instance == NULL ||
-            P3D_instance_finish == NULL ||
-            P3D_instance_get_request == NULL ||
-            P3D_check_request == NULL ||
-            P3D_request_finish == NULL ||
-            P3D_instance_get_panda_script_object == NULL ||
-            P3D_instance_set_browser_script_object == NULL ||
-            P3D_instance_feed_url_stream == NULL ||
-            P3D_make_class_definition == NULL ||
-            P3D_new_none_object == NULL ||
-            P3D_new_bool_object == NULL ||
-            P3D_new_int_object == NULL ||
-            P3D_new_float_object == NULL ||
-            P3D_new_string_object == NULL ) 
-        {
-                return ( error = 1 );
-        }
-
-        // Successfully loaded.
-        nout << "Initializing P3D P3D_API_VERSION=" << P3D_API_VERSION << "\n";
-        if ( !P3D_initialize( P3D_API_VERSION, "", "", true, "", "", "", false ) ) 
-        {
-            // Oops, failure to initialize.
-            nout << "Error initializing P3D: " << GetLastError() << "\n"; 
-            ::FreeLibrary( s_hP3DPluginDll );
-            s_hP3DPluginDll = NULL;
-            return ( error = 1 );
-        }
+      std::string pathname = dllFilename;
+#ifdef P3D_PLUGIN_P3D_PLUGIN
+      // This is a convenience macro for development.  If defined and
+      // nonempty, it indicates the name of the plugin DLL that we will
+      // actually run, even after downloading a possibly different
+      // (presumably older) version.  Its purpose is to simplify iteration
+      // on the plugin DLL.
+      string override_filename = P3D_PLUGIN_P3D_PLUGIN;
+      if (!override_filename.empty()) {
+        pathname = override_filename;
+      }
+#endif  // P3D_PLUGIN_P3D_PLUGIN
+      
+      nout << "Attempting to load core API from " << pathname << "\n";
+      if (!load_plugin(pathname, "", "", true, "", "", "", false, nout)) {
+        nout << "Unable to launch core API in " << pathname << "\n";
+        error = 1;
+      }
     }
 
     return error ;
@@ -299,29 +292,22 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 int PPInstance::UnloadPlugin()
 {
     int error( 0 );
-    assert( s_instanceCount > 0 );
-    s_instanceCount -= 1;
 
-    if ( s_instanceCount == 0 && s_hP3DPluginDll != NULL )
-    {
-        nout << "Finalizing P3D\n";
-        P3D_finalize();
-        m_isInit = false;
+    if ( m_pluginLoaded )
+    { 
+        m_pluginLoaded = false;
+        assert( s_instanceCount > 0 );
+        s_instanceCount -= 1;
 
-        nout << "Unloading P3D dll " << s_hP3DPluginDll << "\n";  
-        if ( !::FreeLibrary( s_hP3DPluginDll ) )
+        if ( s_instanceCount == 0 && is_plugin_loaded() ) 
         {
-            nout << "Error unloading P3D dll :" << GetLastError << "\n";
-            error = 1;
+            unload_plugin();
+            m_isInit = false;
+            
+            // This pointer is no longer valid and must be reset for next
+            // time.
+            PPBrowserObject::clear_class_definition();
         }
-        else
-        {  
-            s_hP3DPluginDll = NULL;
-        }
-
-        // This pointer is no longer valid and must be reset for next
-        // time.
-        PPBrowserObject::clear_class_definition();
     }
     return error;
 }

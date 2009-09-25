@@ -15,16 +15,16 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\sdk\tinyxml"
+				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -34,9 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../../wintools/built/lib"
+				AdditionalLibraryDirectories="&quot;../../../wintools/sdk/openssl/openssl-0.9.6d/out32.dbg&quot;;../../../wintools/built/lib"
 				IgnoreDefaultLibraryNames="LIBCI.LIB MSVCRTD.LIB MSVCRT.LIB"
 				ModuleDefinitionFile=".\P3DActiveX.def"
 				GenerateDebugInformation="TRUE"
@@ -79,13 +80,13 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="2"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\sdk\tinyxml"
+				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -95,9 +96,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../../wintools/built/lib"
+				AdditionalLibraryDirectories="&quot;../../../wintools/sdk/openssl/openssl-0.9.6d/out32&quot;;../../../wintools/built/lib"
 				IgnoreDefaultLibraryNames="LIBCI.LIB MSVCRTD.LIB MSVCRT.LIB"
 				ModuleDefinitionFile=".\P3DActiveX.def"
 				GenerateDebugInformation="TRUE"
@@ -145,6 +147,18 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<File
+				RelativePath="..\plugin\fileSpec.cxx">
+			</File>
+			<File
+				RelativePath="..\plugin\find_root_dir.cxx">
+			</File>
+			<File
+				RelativePath="..\plugin\load_plugin.cxx">
+			</File>
+			<File
+				RelativePath="..\plugin\mkdir_complete.cxx">
+			</File>
 			<File
 				RelativePath=".\P3DActiveX.cpp">
 			</File>

@@ -89,45 +89,50 @@ int PPLogger::CreateNewFile(const std::string& dirname, const std::string& filen
     return error;
 }
 
-void PPLogger::Open( const std::string& logdir, const std::string& filename ) 
+void PPLogger::Open( ) 
 {
-    if ( !m_isOpen ) 
-    {
-        int error = CreateNewFile( logdir, filename );
-        // Note that this logfile name may not be specified at runtime.  It
-        // must be compiled in if it is specified at all.
+  if (!m_isOpen) {
+    // Note that this logfile name may not be specified at runtime.  It
+    // must be compiled in if it is specified at all.
 
-        std::string logBasename = filename;
-
-#ifdef P3D_DEFAULT_PLUGIN_LOG_FILENAME
-        if ( logBasename.empty( ) )
-        {
-            logBasename = P3D_DEFAULT_PLUGIN_LOG_FILENAME;
-        }
+    std::string log_basename;
+#ifdef P3D_PLUGIN_LOG_BASENAME1
+    log_basename = P3D_PLUGIN_LOG_BASENAME1;
 #endif
-        if ( !logBasename.empty( ) ) 
-        {
-            // Get the log directory.
-            std::string logDirectory = logdir;
-            if ( logDirectory.empty( ) ) 
-            {
-                char buffer[MAX_PATH];
-                if ( GetTempPath( MAX_PATH, buffer ) != 0 ) 
-                {
-                    logDirectory = buffer;
-                }
-            }
-            // Construct the full logfile pathname.
-            std::string logPathname = logDirectory;
-            logPathname += logBasename;
 
-            m_logfile.open( logPathname.c_str( ) );
-            m_logfile.setf( std::ios::unitbuf );
+    if (!log_basename.empty()) {
+      // Get the log directory.
+      std::string log_directory;
+#ifdef P3D_PLUGIN_LOG_DIRECTORY
+      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
+#endif
+      if (log_directory.empty()) {
+        static const size_t buffer_size = MAX_PATH;
+        char buffer[buffer_size];
+        if (GetTempPath(buffer_size, buffer) != 0) {
+          log_directory = buffer;
         }
+      }
 
-        // If we didn't have a logfile name compiled in, we throw away log
-        // output by the simple expedient of never actually opening the
-        // ofstream.
-        m_isOpen = true;
+      // Ensure that the log directory ends with a slash.
+      if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
+        if (log_directory[log_directory.size() - 1] != '\\')
+          log_directory += "/";
+      }
+
+      // Construct the full logfile pathname.
+      std::string log_pathname = log_directory;
+      log_pathname += log_basename;
+      log_pathname += ".log";
+
+      m_logfile.clear();
+      m_logfile.open(log_pathname.c_str());
+	  m_logfile.setf(std::ios::unitbuf);
     }
+
+    // If we didn't have a logfile name compiled in, we throw away log
+    // output by the simple expedient of never actually opening the
+    // ofstream.
+    m_isOpen = true;
+  }
 }
