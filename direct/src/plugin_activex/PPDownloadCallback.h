@@ -16,8 +16,8 @@
 
 enum
 {
-	UF_BINDSTATUS_FIRST = BINDSTATUS_FINDINGRESOURCE,
-	UF_BINDSTATUS_LAST = BINDSTATUS_ACCEPTRANGES
+    UF_BINDSTATUS_FIRST = BINDSTATUS_FINDINGRESOURCE,
+    UF_BINDSTATUS_LAST = BINDSTATUS_ACCEPTRANGES
 };
 
 class PPDownloadCallbackSync
@@ -32,29 +32,29 @@ public:
 class PPDownloadCallback : public IBindStatusCallback
 {
 public:
-	PPDownloadCallback( PPDownloadCallbackSync& downloadSync );
+    PPDownloadCallback( PPDownloadCallbackSync& downloadSync );
 
-	// IUnknown methods
-	STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject);
-	STDMETHOD_(ULONG, AddRef)();
-	STDMETHOD_(ULONG, Release)();
+    // IUnknown methods
+    STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject);
+    STDMETHOD_(ULONG, AddRef)();
+    STDMETHOD_(ULONG, Release)();
 
-	// IBindStatusCallback methods
-	STDMETHOD(OnStartBinding)(DWORD, IBinding *);
-	STDMETHOD(GetPriority)(LONG *);
-	STDMETHOD(OnLowResource)(DWORD);
-	STDMETHOD(OnProgress)(ULONG ulProgress,
-						  ULONG ulProgressMax,
-						  ULONG ulStatusCode,
-						  LPCWSTR szStatusText);
-	STDMETHOD(OnStopBinding)(HRESULT, LPCWSTR);
-	STDMETHOD(GetBindInfo)(DWORD *, BINDINFO *);
-	STDMETHOD(OnDataAvailable)(DWORD, DWORD, FORMATETC *, STGMEDIUM *);
-	STDMETHOD(OnObjectAvailable)(REFIID, IUnknown *);
+    // IBindStatusCallback methods
+    STDMETHOD(OnStartBinding)(DWORD, IBinding *);
+    STDMETHOD(GetPriority)(LONG *);
+    STDMETHOD(OnLowResource)(DWORD);
+    STDMETHOD(OnProgress)(ULONG ulProgress,
+                          ULONG ulProgressMax,
+                          ULONG ulStatusCode,
+                          LPCWSTR szStatusText);
+    STDMETHOD(OnStopBinding)(HRESULT, LPCWSTR);
+    STDMETHOD(GetBindInfo)(DWORD *, BINDINFO *);
+    STDMETHOD(OnDataAvailable)(DWORD, DWORD, FORMATETC *, STGMEDIUM *);
+    STDMETHOD(OnObjectAvailable)(REFIID, IUnknown *);
 
 protected:
-	ULONG m_ulObjRefCount;
-	CComPtr<IStream> m_spStream;
+    ULONG m_ulObjRefCount;
+    CComPtr<IStream> m_spStream;
 
 private:
     PPDownloadCallbackSync& m_downloadSync;

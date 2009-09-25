@@ -24,9 +24,9 @@ class PPandaObject  : public IDispatch
 {
 public:
 
-	// Methods
-	PPandaObject( PPInterface* interfac, P3D_object* p3dObject );
-	virtual ~PPandaObject();
+    // Methods
+    PPandaObject( PPInterface* interfac, P3D_object* p3dObject );
+    virtual ~PPandaObject();
 
     // IUnknown methods 
     STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
@@ -61,9 +61,9 @@ public:
 private:
      PPandaObject();
     
-	// Props - Dispatch related
-	unsigned long m_refs;
-	ITypeInfo FAR* m_ptinfo;
+    // Props - Dispatch related
+    unsigned long m_refs;
+    ITypeInfo FAR* m_ptinfo;
     std::vector<CString> m_idsOfNames;
     PPInterface* m_interface;
     P3D_object *m_p3dObject;

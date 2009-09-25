@@ -25,13 +25,13 @@ bool PPDownloadRequest::Begin( )
 bool PPDownloadRequest::DataNotify( size_t expectedDataSize, const void* data, size_t dataSize )
 {
     bool ret = false;
-	if ( m_instance.m_eventStop.m_hObject != NULL )
-	{
-		if ( ::WaitForSingleObject( m_instance.m_eventStop.m_hObject, 0 ) == WAIT_OBJECT_0 )
-		{
-			return ret;  // canceled by the user
-		}
-	}
+    if ( m_instance.m_eventStop.m_hObject != NULL )
+    {
+        if ( ::WaitForSingleObject( m_instance.m_eventStop.m_hObject, 0 ) == WAIT_OBJECT_0 )
+        {
+            return ret;  // canceled by the user
+        }
+    }
     switch ( this->m_requestType )
     {
     case ( RequestType::P3DObject ):

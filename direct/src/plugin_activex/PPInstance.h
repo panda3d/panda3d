@@ -58,7 +58,7 @@ public:
     inline bool IsInit() { return m_isInit; }
 
     HWND m_parentWnd;
-  	CEvent m_eventStop;
+    CEvent m_eventStop;
 
     P3D_object* m_p3dObject;
 

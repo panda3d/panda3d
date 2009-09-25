@@ -30,7 +30,7 @@
 CP3DActiveXApp NEAR theApp;
 
 const GUID CDECL BASED_CODE _tlid =
-		{ 0x22A8FC5F, 0xBC33, 0x479A, { 0x83, 0x17, 0x2B, 0xC8, 0x16, 0xB8, 0xAB, 0x8A } };
+        { 0x22A8FC5F, 0xBC33, 0x479A, { 0x83, 0x17, 0x2B, 0xC8, 0x16, 0xB8, 0xAB, 0x8A } };
 const WORD _wVerMajor = 1;
 const WORD _wVerMinor = 0;
 
@@ -162,14 +162,14 @@ HRESULT UnRegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
 
 BOOL CP3DActiveXApp::InitInstance()
 {
-	BOOL bInit = COleControlModule::InitInstance();
+    BOOL bInit = COleControlModule::InitInstance();
 
-	if (bInit)
-	{
-		// TODO: Add your own module initialization code here.
-	}
+    if (bInit)
+    {
+        // TODO: Add your own module initialization code here.
+    }
 
-	return bInit;
+    return bInit;
 }
 
 
@@ -178,9 +178,9 @@ BOOL CP3DActiveXApp::InitInstance()
 
 int CP3DActiveXApp::ExitInstance()
 {
-	// TODO: Add your own module termination code here.
+    // TODO: Add your own module termination code here.
 
-	return COleControlModule::ExitInstance();
+    return COleControlModule::ExitInstance();
 }
 
 

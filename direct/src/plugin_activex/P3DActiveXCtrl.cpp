@@ -30,24 +30,24 @@
 class CPropbagPropExchange : public CPropExchange
 {
 public:
-	CPropbagPropExchange(LPPROPERTYBAG pPropBag, LPERRORLOG pErrorLog,
-		BOOL bLoading, BOOL bSaveAllProperties=FALSE);
-	~CPropbagPropExchange();
+    CPropbagPropExchange(LPPROPERTYBAG pPropBag, LPERRORLOG pErrorLog,
+        BOOL bLoading, BOOL bSaveAllProperties=FALSE);
+    ~CPropbagPropExchange();
 
 // Operations
-	virtual BOOL ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault = NULL);
-	virtual BOOL ExchangeBlobProp(LPCTSTR pszPropName, HGLOBAL* phBlob,
-				HGLOBAL hBlobDefault = NULL);
-	virtual BOOL ExchangeFontProp(LPCTSTR pszPropName, CFontHolder& font,
-				const FONTDESC* pFontDesc, LPFONTDISP pFontDispAmbient);
-	virtual BOOL ExchangePersistentProp(LPCTSTR pszPropName,
-				LPUNKNOWN* ppUnk, REFIID iid, LPUNKNOWN pUnkDefault);
+    virtual BOOL ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
+                void* pvProp, const void* pvDefault = NULL);
+    virtual BOOL ExchangeBlobProp(LPCTSTR pszPropName, HGLOBAL* phBlob,
+                HGLOBAL hBlobDefault = NULL);
+    virtual BOOL ExchangeFontProp(LPCTSTR pszPropName, CFontHolder& font,
+                const FONTDESC* pFontDesc, LPFONTDISP pFontDispAmbient);
+    virtual BOOL ExchangePersistentProp(LPCTSTR pszPropName,
+                LPUNKNOWN* ppUnk, REFIID iid, LPUNKNOWN pUnkDefault);
 
 // Implementation
-	LPPROPERTYBAG m_pPropBag;
-	LPERRORLOG m_pErrorLog;
-	BOOL m_bSaveAllProperties;
+    LPPROPERTYBAG m_pPropBag;
+    LPERRORLOG m_pErrorLog;
+    BOOL m_bSaveAllProperties;
 };
 
 #ifdef _DEBUG
@@ -62,8 +62,8 @@ IMPLEMENT_DYNCREATE(CP3DActiveXCtrl, COleControl)
 // Message map
 
 BEGIN_MESSAGE_MAP(CP3DActiveXCtrl, COleControl)
-	ON_MESSAGE(OCM_COMMAND, OnOcmCommand)
-	ON_OLEVERB(AFX_IDS_VERB_PROPERTIES, OnProperties)
+    ON_MESSAGE(OCM_COMMAND, OnOcmCommand)
+    ON_OLEVERB(AFX_IDS_VERB_PROPERTIES, OnProperties)
     ON_WM_CREATE()
     ON_MESSAGE(WM_PANDA_NOTIFICATION, OnPandaNotification)
 END_MESSAGE_MAP()
@@ -89,7 +89,7 @@ END_EVENT_MAP()
 
 // TODO: Add more property pages as needed.  Remember to increase the count!
 BEGIN_PROPPAGEIDS(CP3DActiveXCtrl, 1)
-	PROPPAGEID(CP3DActiveXPropPage::guid)
+    PROPPAGEID(CP3DActiveXPropPage::guid)
 END_PROPPAGEIDS(CP3DActiveXCtrl)
 
 
@@ -97,7 +97,7 @@ END_PROPPAGEIDS(CP3DActiveXCtrl)
 // Initialize class factory and guid
 
 IMPLEMENT_OLECREATE_EX(CP3DActiveXCtrl, "P3DACTIVEX.P3DActiveXCtrl.1",
-	0x924b4927, 0xd3ba, 0x41ea, 0x9f, 0x7e, 0x8a, 0x89, 0x19, 0x4a, 0xb3, 0xac)
+    0x924b4927, 0xd3ba, 0x41ea, 0x9f, 0x7e, 0x8a, 0x89, 0x19, 0x4a, 0xb3, 0xac)
 
 
 
@@ -110,20 +110,20 @@ IMPLEMENT_OLETYPELIB(CP3DActiveXCtrl, _tlid, _wVerMajor, _wVerMinor)
 // Interface IDs
 
 const IID BASED_CODE IID_DP3DActiveX =
-		{ 0x76904D54, 0xCC5, 0x4DBB, { 0xB0, 0x22, 0xF4, 0x8B, 0x1E, 0x95, 0x18, 0x3B } };
+        { 0x76904D54, 0xCC5, 0x4DBB, { 0xB0, 0x22, 0xF4, 0x8B, 0x1E, 0x95, 0x18, 0x3B } };
 const IID BASED_CODE IID_DP3DActiveXEvents =
-		{ 0x1B2413ED, 0x51C8, 0x495E, { 0xB9, 0x17, 0x98, 0x3C, 0x45, 0x9B, 0x8F, 0xC7 } };
+        { 0x1B2413ED, 0x51C8, 0x495E, { 0xB9, 0x17, 0x98, 0x3C, 0x45, 0x9B, 0x8F, 0xC7 } };
 
 
 
 // Control type information
 
 static const DWORD BASED_CODE _dwP3DActiveXOleMisc =
-	OLEMISC_ACTIVATEWHENVISIBLE |
-	OLEMISC_SETCLIENTSITEFIRST |
-	OLEMISC_INSIDEOUT |
-	OLEMISC_CANTLINKINSIDE |
-	OLEMISC_RECOMPOSEONRESIZE;
+    OLEMISC_ACTIVATEWHENVISIBLE |
+    OLEMISC_SETCLIENTSITEFIRST |
+    OLEMISC_INSIDEOUT |
+    OLEMISC_CANTLINKINSIDE |
+    OLEMISC_RECOMPOSEONRESIZE;
 
 IMPLEMENT_OLECTLTYPE(CP3DActiveXCtrl, IDS_P3DACTIVEX, _dwP3DActiveXOleMisc)
 
@@ -134,26 +134,26 @@ IMPLEMENT_OLECTLTYPE(CP3DActiveXCtrl, IDS_P3DACTIVEX, _dwP3DActiveXOleMisc)
 
 BOOL CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry(BOOL bRegister)
 {
-	// TODO: Verify that your control follows apartment-model threading rules.
-	// Refer to MFC TechNote 64 for more information.
-	// If your control does not conform to the apartment-model rules, then
-	// you must modify the code below, changing the 6th parameter from
-	// afxRegApartmentThreading to 0.
+    // TODO: Verify that your control follows apartment-model threading rules.
+    // Refer to MFC TechNote 64 for more information.
+    // If your control does not conform to the apartment-model rules, then
+    // you must modify the code below, changing the 6th parameter from
+    // afxRegApartmentThreading to 0.
 
-	if (bRegister)
-		return AfxOleRegisterControlClass(
-			AfxGetInstanceHandle(),
-			m_clsid,
-			m_lpszProgID,
-			IDS_P3DACTIVEX,
+    if (bRegister)
+        return AfxOleRegisterControlClass(
+            AfxGetInstanceHandle(),
+            m_clsid,
+            m_lpszProgID,
+            IDS_P3DACTIVEX,
             IDB_P3DACTIVEX,
-			afxRegApartmentThreading,
-			_dwP3DActiveXOleMisc,
-			_tlid,
-			_wVerMajor,
-			_wVerMinor);
-	else
-		return AfxOleUnregisterClass(m_clsid, m_lpszProgID);
+            afxRegApartmentThreading,
+            _dwP3DActiveXOleMisc,
+            _tlid,
+            _wVerMajor,
+            _wVerMinor);
+    else
+        return AfxOleUnregisterClass(m_clsid, m_lpszProgID);
 }
 
 
@@ -162,8 +162,8 @@ BOOL CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry(BOOL bRegister)
 
 CP3DActiveXCtrl::CP3DActiveXCtrl() : m_pPandaObject( NULL ), m_instance( *this )
 {
-	InitializeIIDs(&IID_DP3DActiveX, &IID_DP3DActiveXEvents);
-	// TODO: Initialize your control's instance data here.
+    InitializeIIDs(&IID_DP3DActiveX, &IID_DP3DActiveXEvents);
+    // TODO: Initialize your control's instance data here.
 
 }
 
@@ -171,7 +171,7 @@ CP3DActiveXCtrl::CP3DActiveXCtrl() : m_pPandaObject( NULL ), m_instance( *this )
 
 CP3DActiveXCtrl::~CP3DActiveXCtrl()
 {
-	// TODO: Cleanup your control's instance data here.
+    // TODO: Cleanup your control's instance data here.
     if ( m_pPandaObject )
     {
         delete m_pPandaObject;
@@ -184,8 +184,8 @@ CP3DActiveXCtrl::~CP3DActiveXCtrl()
 
 void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInvalid)
 {
-	if (!pdc)
-		return;
+    if (!pdc)
+        return;
 
     if ( !m_instance.IsInit( ) )
     {
@@ -195,7 +195,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     CBrush brBackGnd(TranslateColor(AmbientBackColor()));
     pdc->FillRect(rcBounds, &brBackGnd);
 
-	DoSuperclassPaint(pdc, rcBounds);
+    DoSuperclassPaint(pdc, rcBounds);
 }
 
 
@@ -204,10 +204,10 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
 void CP3DActiveXCtrl::DoPropExchange(CPropExchange* pPX)
 {
-	ExchangeVersion(pPX, MAKELONG(_wVerMinor, _wVerMajor));
-	COleControl::DoPropExchange(pPX);
+    ExchangeVersion(pPX, MAKELONG(_wVerMinor, _wVerMajor));
+    COleControl::DoPropExchange(pPX);
 
-	// TODO: Call PX_ functions for each persistent custom property.
+    // TODO: Call PX_ functions for each persistent custom property.
     
     ExchangeProperties( pPX );
 }
@@ -219,13 +219,13 @@ void CP3DActiveXCtrl::DoPropExchange(CPropExchange* pPX)
 //
 DWORD CP3DActiveXCtrl::GetControlFlags()
 {
-	DWORD dwFlags = COleControl::GetControlFlags();
+    DWORD dwFlags = COleControl::GetControlFlags();
 
 
-	// The control will not be redrawn when making the transition
-	// between the active and inactivate state.
-	dwFlags |= noFlickerActivate;
-	return dwFlags;
+    // The control will not be redrawn when making the transition
+    // between the active and inactivate state.
+    dwFlags |= noFlickerActivate;
+    return dwFlags;
 }
 
 
@@ -234,9 +234,9 @@ DWORD CP3DActiveXCtrl::GetControlFlags()
 
 void CP3DActiveXCtrl::OnResetState()
 {
-	COleControl::OnResetState();  // Resets defaults found in DoPropExchange
+    COleControl::OnResetState();  // Resets defaults found in DoPropExchange
 
-	// TODO: Reset any other control state here.
+    // TODO: Reset any other control state here.
 }
 
 
@@ -245,8 +245,8 @@ void CP3DActiveXCtrl::OnResetState()
 
 BOOL CP3DActiveXCtrl::PreCreateWindow(CREATESTRUCT& cs)
 {
-	cs.lpszClass = _T("STATIC");
-	return COleControl::PreCreateWindow(cs);
+    cs.lpszClass = _T("STATIC");
+    return COleControl::PreCreateWindow(cs);
 }
 
 
@@ -255,7 +255,7 @@ BOOL CP3DActiveXCtrl::PreCreateWindow(CREATESTRUCT& cs)
 
 BOOL CP3DActiveXCtrl::IsSubclassedControl()
 {
-	return TRUE;
+    return TRUE;
 }
 
 
@@ -265,14 +265,14 @@ BOOL CP3DActiveXCtrl::IsSubclassedControl()
 LRESULT CP3DActiveXCtrl::OnOcmCommand(WPARAM wParam, LPARAM lParam)
 {
 #ifdef _WIN32
-	WORD wNotifyCode = HIWORD(wParam);
+    WORD wNotifyCode = HIWORD(wParam);
 #else
-	WORD wNotifyCode = HIWORD(lParam);
+    WORD wNotifyCode = HIWORD(lParam);
 #endif
 
-	// TODO: Switch on wNotifyCode here.
+    // TODO: Switch on wNotifyCode here.
 
-	return 0;
+    return 0;
 }
 
 // CP3DActiveXCtrl message handlers
@@ -384,7 +384,7 @@ int CP3DActiveXCtrl::Init( )
 
 HRESULT CP3DActiveXCtrl::ExchangeProperties( CPropExchange*  pPX )
 {
-	USES_CONVERSION;
+    USES_CONVERSION;
     HRESULT hr = E_FAIL;
 
     if ( !pPX )

@@ -27,7 +27,7 @@
 class CP3DActiveXCtrl : public COleControl,
                         public PPInterface
 {
-	DECLARE_DYNCREATE(CP3DActiveXCtrl)
+    DECLARE_DYNCREATE(CP3DActiveXCtrl)
 
 // Constructor
 public:
@@ -35,11 +35,11 @@ public:
 
 // Overrides
 public:
-	virtual void OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInvalid);
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual void DoPropExchange(CPropExchange* pPX);
-	virtual void OnResetState();
-	virtual DWORD GetControlFlags();
+    virtual void OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInvalid);
+    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+    virtual void DoPropExchange(CPropExchange* pPX);
+    virtual void OnResetState();
+    virtual DWORD GetControlFlags();
 
     int BeginDownload(CString& url);
 
@@ -47,29 +47,29 @@ public:
 
 // Implementation
 protected:
-	~CP3DActiveXCtrl();
+    ~CP3DActiveXCtrl();
 
-	DECLARE_OLECREATE_EX(CP3DActiveXCtrl)    // Class factory and guid
-	DECLARE_OLETYPELIB(CP3DActiveXCtrl)      // GetTypeInfo
-	DECLARE_PROPPAGEIDS(CP3DActiveXCtrl)     // Property page IDs
-	DECLARE_OLECTLTYPE(CP3DActiveXCtrl)		// Type name and misc status
+    DECLARE_OLECREATE_EX(CP3DActiveXCtrl)    // Class factory and guid
+    DECLARE_OLETYPELIB(CP3DActiveXCtrl)      // GetTypeInfo
+    DECLARE_PROPPAGEIDS(CP3DActiveXCtrl)     // Property page IDs
+    DECLARE_OLECTLTYPE(CP3DActiveXCtrl)     // Type name and misc status
 
-	// Subclassed control support
-	BOOL IsSubclassedControl();
-	LRESULT OnOcmCommand(WPARAM wParam, LPARAM lParam);
+    // Subclassed control support
+    BOOL IsSubclassedControl();
+    LRESULT OnOcmCommand(WPARAM wParam, LPARAM lParam);
 
 // Message maps
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
 // Dispatch maps
-	DECLARE_DISPATCH_MAP()
+    DECLARE_DISPATCH_MAP()
 
 // Event maps
-	DECLARE_EVENT_MAP()
+    DECLARE_EVENT_MAP()
 
 // Dispatch and event IDs
 public:
-	enum {
+    enum {
         dispidmain = 1
     };
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

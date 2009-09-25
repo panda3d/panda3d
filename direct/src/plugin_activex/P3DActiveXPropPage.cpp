@@ -37,7 +37,7 @@ END_MESSAGE_MAP()
 // Initialize class factory and guid
 
 IMPLEMENT_OLECREATE_EX(CP3DActiveXPropPage, "P3DACTIVEX.P3DActiveXPropPage.1",
-	0xd0111370, 0xe705, 0x485e, 0x96, 0xfd, 0xa2, 0xef, 0xb1, 0x71, 0x26, 0x9a)
+    0xd0111370, 0xe705, 0x485e, 0x96, 0xfd, 0xa2, 0xef, 0xb1, 0x71, 0x26, 0x9a)
 
 
 
@@ -46,11 +46,11 @@ IMPLEMENT_OLECREATE_EX(CP3DActiveXPropPage, "P3DACTIVEX.P3DActiveXPropPage.1",
 
 BOOL CP3DActiveXPropPage::CP3DActiveXPropPageFactory::UpdateRegistry(BOOL bRegister)
 {
-	if (bRegister)
-		return AfxOleRegisterPropertyPageClass(AfxGetInstanceHandle(),
-			m_clsid, IDS_P3DACTIVEX_PPG);
-	else
-		return AfxOleUnregisterClass(m_clsid, NULL);
+    if (bRegister)
+        return AfxOleRegisterPropertyPageClass(AfxGetInstanceHandle(),
+            m_clsid, IDS_P3DACTIVEX_PPG);
+    else
+        return AfxOleUnregisterClass(m_clsid, NULL);
 }
 
 
@@ -58,7 +58,7 @@ BOOL CP3DActiveXPropPage::CP3DActiveXPropPageFactory::UpdateRegistry(BOOL bRegis
 // CP3DActiveXPropPage::CP3DActiveXPropPage - Constructor
 
 CP3DActiveXPropPage::CP3DActiveXPropPage() :
-	COlePropertyPage(IDD, IDS_P3DACTIVEX_PPG_CAPTION)
+    COlePropertyPage(IDD, IDS_P3DACTIVEX_PPG_CAPTION)
 {
 }
 
@@ -68,7 +68,7 @@ CP3DActiveXPropPage::CP3DActiveXPropPage() :
 
 void CP3DActiveXPropPage::DoDataExchange(CDataExchange* pDX)
 {
-	DDP_PostProcessing(pDX);
+    DDP_PostProcessing(pDX);
 }
 
 

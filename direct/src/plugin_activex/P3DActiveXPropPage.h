@@ -21,22 +21,22 @@
 
 class CP3DActiveXPropPage : public COlePropertyPage
 {
-	DECLARE_DYNCREATE(CP3DActiveXPropPage)
-	DECLARE_OLECREATE_EX(CP3DActiveXPropPage)
+    DECLARE_DYNCREATE(CP3DActiveXPropPage)
+    DECLARE_OLECREATE_EX(CP3DActiveXPropPage)
 
 // Constructor
 public:
-	CP3DActiveXPropPage();
+    CP3DActiveXPropPage();
 
 // Dialog Data
-	enum { IDD = IDD_PROPPAGE_P3DACTIVEX };
+    enum { IDD = IDD_PROPPAGE_P3DACTIVEX };
 
 // Implementation
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Message maps
 protected:
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 };
 
