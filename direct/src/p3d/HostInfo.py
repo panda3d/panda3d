@@ -35,6 +35,12 @@ class HostInfo:
         if self.hostUrlPrefix[-1] != '/':
             self.hostUrlPrefix += '/'
 
+        # downloadUrlPrefix is the URL prefix that should be used for
+        # everything other than the contents.xml file.  It might be
+        # the same as hostUrlPrefix, but in the case of an
+        # https-protected hostUrl, it will be the cleartext channel.
+        self.downloadUrlPrefix = self.hostUrlPrefix
+
         # Initially false, this is set true when the contents file is
         # successfully read.
         self.hasContentsFile = False
@@ -212,6 +218,16 @@ class HostInfo:
         descriptiveName = xhost.Attribute('descriptive_name')
         if descriptiveName and not self.descriptiveName:
             self.descriptiveName = descriptiveName
+
+        # Get the "download" URL, which is the source from which we
+        # download everything other than the contents.xml file.
+        downloadUrl = xhost.Attribute('download_url')
+        if downloadUrl:
+            self.downloadUrlPrefix = downloadUrl
+            if self.downloadUrlPrefix[-1] != '/':
+                self.downloadUrlPrefix += '/'
+        else:
+            self.downloadUrlPrefix = self.hostUrlPrefix
             
         xmirror = xhost.FirstChildElement('mirror')
         while xmirror:

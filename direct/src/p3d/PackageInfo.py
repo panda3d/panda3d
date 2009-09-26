@@ -4,6 +4,7 @@ from direct.showbase import VFSImporter
 import os
 import sys
 import random
+import time
 
 class PackageInfo:
 
@@ -19,12 +20,11 @@ class PackageInfo:
     unpackFactor = 0.01
     patchFactor = 0.01
 
-    class RestartDownload(Exception):
-        """ This exception is raised by __downloadFile() when the
-        toplevel contents.xml file has changed during the download,
-        and we have to restart from the beginning. """
-        pass
-        
+    # These tokens are returned by __downloadFile() and other
+    # InstallStep functions.
+    stepComplete = 1
+    stepFailed = 2
+    restartDownload = 3
 
     class InstallStep:
         """ This class is one step of the installPlan list; it
@@ -142,17 +142,14 @@ class PackageInfo:
         if self.hasPackage:
             return True
 
-        try:
-            if not self.hasDescFile:
-                filename = Filename(self.packageDir, self.descFileBasename)
-                if self.descFile.quickVerify(self.packageDir, pathname = filename):
-                    if self.__readDescFile():
-                        # Successfully read.  We don't need to call
-                        # checkArchiveStatus again, since readDescFile()
-                        # has just done it.
-                        return self.hasPackage
-        except self.RestartDownload:
-            return self.checkStatus()
+        if not self.hasDescFile:
+            filename = Filename(self.packageDir, self.descFileBasename)
+            if self.descFile.quickVerify(self.packageDir, pathname = filename):
+                if self.__readDescFile():
+                    # Successfully read.  We don't need to call
+                    # checkArchiveStatus again, since readDescFile()
+                    # has just done it.
+                    return self.hasPackage
 
         if self.hasDescFile:
             if self.__checkArchiveStatus():
@@ -174,26 +171,33 @@ class PackageInfo:
 
         self.http = http
 
-        try:
-            if not self.__downloadFile(
+        token = self.__downloadFile(
+            None, self.descFile,
+            urlbase = self.descFile.filename,
+            filename = self.descFileBasename)
+
+        while token == self.restartDownload:
+            # Try again.
+            token = self.__downloadFile(
                 None, self.descFile,
                 urlbase = self.descFile.filename,
-                filename = self.descFileBasename):
-                # Couldn't download the desc file.
-                return False
+                filename = self.descFileBasename)
 
-            filename = Filename(self.packageDir, self.descFileBasename)
-            # Now that we've written the desc file, make it read-only.
-            os.chmod(filename.toOsSpecific(), 0444)
+        if token == self.stepFailed:
+            # Couldn't download the desc file.
+            return False
 
-            if not self.__readDescFile():
-                # Weird, it passed the hash check, but we still can't read
-                # it.
-                print "Failure reading %s" % (filename)
-                return False
+        assert token == self.stepComplete
 
-        except self.RestartDownload:
-            return self.downloadDescFile(http)
+        filename = Filename(self.packageDir, self.descFileBasename)
+        # Now that we've written the desc file, make it read-only.
+        os.chmod(filename.toOsSpecific(), 0444)
+
+        if not self.__readDescFile():
+            # Weird, it passed the hash check, but we still can't read
+            # it.
+            print "Failure reading %s" % (filename)
+            return False
 
         return True
 
@@ -282,7 +286,7 @@ class PackageInfo:
             # Build a one-item install plan to download the compressed
             # archive.
             downloadSize = self.compressedArchive.size
-            func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec)
+            func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec, allowPartial = True)
             
             step = self.InstallStep(func, downloadSize, self.downloadFactor)
             installPlan = [step]
@@ -326,7 +330,7 @@ class PackageInfo:
         planB = [step] + planB
 
         downloadSize = self.compressedArchive.size
-        func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec)
+        func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec, allowPartial = True)
 
         step = self.InstallStep(func, downloadSize, self.downloadFactor)
         planB = [step] + planB
@@ -452,20 +456,29 @@ class PackageInfo:
 
         # We should have an install plan by the time we get here.
         assert self.installPlans
-        installPlans = self.installPlans
-        self.installPlans = None
 
-        try:
-            return self.__followInstallPlans(installPlans, http)
-
-        except self.RestartDownload:
+        self.http = http
+        token = self.__followInstallPlans()
+        while token == self.restartDownload:
+            # Try again.
             if not self.downloadDescFile(http):
                 return False
-            return self.downloadPackage(http)
+            assert self.installPlans
+            token = self.__followInstallPlans()
+
+        if token == self.stepFailed:
+            return False
+
+        assert token == self.stepComplete
+        return True
             
 
-    def __followInstallPlans(self, installPlans, http):
-        self.http = http
+    def __followInstallPlans(self):
+        """ Performs all of the steps in self.installPlans.  Returns
+        one of stepComplete, stepFailed, or restartDownload. """
+
+        installPlans = self.installPlans
+        self.installPlans = None
         for plan in installPlans:
             self.totalPlanSize = sum(map(lambda step: step.getEffort(), plan))
             self.totalPlanCompleted = 0
@@ -475,17 +488,22 @@ class PackageInfo:
             for step in plan:
                 self.currentStepEffort = step.getEffort()
 
-                if not step.func(step):
+                token = step.func(step)
+                if token == self.restartDownload:
+                    return token
+                if token == self.stepFailed:
                     planFailed = True
                     break
+                assert token == self.stepComplete
+                
                 self.totalPlanCompleted += self.currentStepEffort
                 
             if not planFailed:
                 # Successfully downloaded!
-                return True
+                return self.stepComplete
 
         # All plans failed.
-        return False
+        return self.stepFailed
 
     def __findPatchChain(self, fileSpec):
         """ Finds the chain of patches that leads from the indicated
@@ -513,7 +531,7 @@ class PackageInfo:
         plan = []
         for patchfile in patchChain:
             downloadSize = patchfile.file.size
-            func = lambda step, fileSpec = patchfile.file: self.__downloadFile(step, fileSpec)
+            func = lambda step, fileSpec = patchfile.file: self.__downloadFile(step, fileSpec, allowPartial = True)
             step = self.InstallStep(func, downloadSize, self.downloadFactor)
             plan.append(step)
 
@@ -525,9 +543,11 @@ class PackageInfo:
         patchMaker.cleanup()
         return plan
 
-    def __downloadFile(self, step, fileSpec, urlbase = None, filename = None):
+    def __downloadFile(self, step, fileSpec, urlbase = None, filename = None,
+                       allowPartial = False):
         """ Downloads the indicated file from the host into
-        packageDir.  Returns true on success, false on failure. """
+        packageDir.  Returns one of stepComplete, stepFailed, or
+        restartDownload. """
 
         if not urlbase:
             urlbase = self.descFileDirname + '/' + fileSpec.filename
@@ -540,7 +560,7 @@ class PackageInfo:
         if self.host.appRunner and self.host.appRunner.superMirrorUrl:
             # We start with the "super mirror", if it's defined.
             url = self.host.appRunner.superMirrorUrl + urlbase
-            tryUrls.append(url)
+            tryUrls.append((url, False))
 
         if self.host.mirrors:
             # Choose two mirrors at random.
@@ -549,18 +569,31 @@ class PackageInfo:
                 mirror = random.choice(mirrors)
                 mirrors.remove(mirror)
                 url = mirror + urlbase
-                tryUrls.append(url)
+                tryUrls.append((url, False))
                 if not mirrors:
                     break
 
         # After trying two mirrors and failing (or if there are no
         # mirrors), go get it from the original host.
-        url = self.host.hostUrlPrefix + urlbase
-        tryUrls.append(url)
+        url = self.host.downloadUrlPrefix + urlbase
+        tryUrls.append((url, False))
 
-        for url in tryUrls:
-            url = DocumentSpec(url)
-            print "Downloading package file %s" % (url)
+        # And finally, if the original host also fails, try again with
+        # a cache-buster.
+        tryUrls.append((url, True))
+
+        for url, cacheBust in tryUrls:
+            request = DocumentSpec(url)
+
+            if cacheBust:
+                # On the last attempt to download a particular file,
+                # we bust through the cache: append a query string to
+                # do this.
+                url += '?' + str(int(time.time()))
+                request = DocumentSpec(url)
+                request.setCacheControl(DocumentSpec.CCNoCache)
+             
+            print "%s downloading %s" % (self.packageName, url)
 
             if not filename:
                 filename = fileSpec.filename
@@ -568,42 +601,75 @@ class PackageInfo:
             targetPathname.setBinary()
 
             channel = self.http.makeChannel(False)
-            # TODO: check for a previous partial download, and resume it.
-            targetPathname.makeDir()
-            targetPathname.unlink()
-            channel.beginGetDocument(url)
+
+            # If there's a previous partial download, attempt to resume it.
+            bytesStarted = 0
+            if allowPartial and not cacheBust and targetPathname.exists():
+                bytesStarted = targetPathname.getFileSize()
+
+            if bytesStarted < 1024*1024:
+                # Not enough bytes downloaded to be worth the risk of
+                # a partial download.
+                bytesStarted = 0
+            elif bytesStarted >= fileSpec.size:
+                # Couldn't possibly be our file.
+                bytesStarted = 0
+
+            if bytesStarted:
+                print "Resuming %s after %s bytes already downloaded" % (url, bytesStarted)
+                # Make sure the file is writable.
+                os.chmod(targetPathname.toOsSpecific(), 0644)
+                channel.beginGetSubdocument(request, bytesStarted, 0)
+            else:
+                # No partial download possible; get the whole file.
+                targetPathname.makeDir()
+                targetPathname.unlink()
+                channel.beginGetDocument(request)
+                
             channel.downloadToFile(targetPathname)
             while channel.run():
                 if step:
-                    step.bytesDone = channel.getBytesDownloaded()
+                    step.bytesDone = channel.getBytesDownloaded() + channel.getFirstByteDelivered()
+                    if step.bytesDone > step.bytesNeeded:
+                        # Oops, too much data.  Might as well abort;
+                        # it's the wrong file.
+                        break
+                    
                     self.__updateStepProgress(step)
                 Thread.considerYield()
+                
             if step:
-                step.bytesDone = channel.getBytesDownloaded()
+                step.bytesDone = channel.getBytesDownloaded() + channel.getFirstByteDelivered()
                 self.__updateStepProgress(step)
+
             if not channel.isValid():
                 print "Failed to download %s" % (url)
-                continue
 
-            if not fileSpec.fullVerify(self.packageDir, pathname = targetPathname):
+            elif not fileSpec.fullVerify(self.packageDir, pathname = targetPathname):
                 print "After downloading, %s incorrect" % (Filename(fileSpec.filename).getBasename())
-                continue
+            else:
+                # Success!
+                return self.stepComplete
 
-            return True
+            # This attempt failed.  Maybe the original contents.xml
+            # file is stale.  Try re-downloading it now, just to be
+            # sure.
+            if self.host.redownloadContentsFile(self.http):
+                # Yes!  Go back and start over from the beginning.
+                return self.restartDownload
 
-        # All mirrors failed.  Maybe the original contents.xml file is
-        # stale.  Try re-downloading it, in desperation.
-        if self.host.redownloadContentsFile(self.http):
-            raise self.RestartDownload
+            # Well, that wasn't the problem.  Maybe the mirror is bad.
+            # Go back and try the next mirror.
 
-        # Nope, nothing's changed; the server (or the internet
-        # connection) must be just fubar.
-        return False
+        # All mirrors failed; the server (or the internet connection)
+        # must be just fubar.
+        return self.stepFailed
 
     def __applyPatch(self, step, patchfile):
         """ Applies the indicated patching in-place to the current
         uncompressed archive.  The patchfile is removed after the
-        operation.  Returns true on success, false on failure. """
+        operation.  Returns one of stepComplete, stepFailed, or
+        restartDownload. """
 
         origPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
         patchPathname = Filename(self.packageDir, patchfile.file.filename)
@@ -626,17 +692,18 @@ class PackageInfo:
         if ret < 0:
             print "Patching failed."
             result.unlink()
-            return False
+            return self.stepFailed
 
         if not result.renameTo(origPathname):
             print "Couldn't rename %s to %s" % (result, origPathname)
-            return False
+            return self.stepFailed
             
-        return True
+        return self.stepComplete
 
     def __uncompressArchive(self, step):
         """ Turns the compressed archive into the uncompressed
-        archive.  Returns true on success, false on failure. """
+        archive.  Returns one of stepComplete, stepFailed, or
+        restartDownload. """
 
         sourcePathname = Filename(self.packageDir, self.compressedArchive.filename)
         targetPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
@@ -653,7 +720,7 @@ class PackageInfo:
             Thread.considerYield()
 
         if result != EUSuccess:
-            return False
+            return self.stepFailed
             
         step.bytesDone = totalBytes
         self.__updateStepProgress(step)
@@ -661,30 +728,31 @@ class PackageInfo:
         if not self.uncompressedArchive.quickVerify(self.packageDir):
             print "after uncompressing, %s still incorrect" % (
                 self.uncompressedArchive.filename)
-            return False
+            return self.stepFailed
 
         # Now that we've verified the archive, make it read-only.
         os.chmod(targetPathname.toOsSpecific(), 0444)
 
         # Now we can safely remove the compressed archive.
         sourcePathname.unlink()
-        return True
+        return self.stepComplete
     
     def __unpackArchive(self, step):
         """ Unpacks any files in the archive that want to be unpacked
-        to disk. """
+        to disk.  Returns one of stepComplete, stepFailed, or
+        restartDownload. """
 
         if not self.extracts:
             # Nothing to extract.
             self.hasPackage = True
-            return True
+            return self.stepComplete
 
         mfPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
         print "Unpacking %s" % (mfPathname)
         mf = Multifile()
         if not mf.openRead(mfPathname):
             print "Couldn't open %s" % (mfPathname)
-            return False
+            return self.stepFailed
         
         allExtractsOk = True
         step.bytesDone = 0
@@ -715,10 +783,10 @@ class PackageInfo:
             Thread.considerYield()
 
         if not allExtractsOk:
-            return False
+            return self.stepFailed
 
         self.hasPackage = True
-        return True
+        return self.stepComplete
 
     def installPackage(self, appRunner):
         """ Mounts the package and sets up system paths so it becomes
