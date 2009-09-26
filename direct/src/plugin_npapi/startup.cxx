@@ -24,6 +24,8 @@
 static ofstream logfile;
 ostream *nout_stream = &logfile;
 
+string global_root_dir;
+
 NPNetscapeFuncs *browser;
 
 static bool logfile_is_open = false;
@@ -46,7 +48,7 @@ open_logfile() {
 #endif
       if (log_directory.empty()) {
 #ifdef _WIN32
-        static const size_t buffer_size = 4096;
+        static const size_t buffer_size = MAX_PATH;
         char buffer[buffer_size];
         if (GetTempPath(buffer_size, buffer) != 0) {
           log_directory = buffer;
@@ -54,6 +56,14 @@ open_logfile() {
 #else
         log_directory = "/tmp/";
 #endif  // _WIN32
+      }
+
+      // Ensure that the log directory ends with a slash.
+      if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
+#ifdef _WIN32
+        if (log_directory[log_directory.size() - 1] != '\\')
+#endif
+          log_directory += "/";
       }
 
       // Construct the full logfile pathname.
@@ -138,6 +148,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   open_logfile();
   nout << "initializing\n";
+  global_root_dir = find_root_dir(nout);
 
   nout << "browserFuncs = " << browserFuncs << "\n";
 

@@ -37,6 +37,8 @@ using namespace std;
 extern ostream *nout_stream;
 #define nout (*nout_stream)
 
+extern string global_root_dir;
+
 #ifdef _WIN32
 
 // Gecko requires all these symbols to be defined for Windows.
