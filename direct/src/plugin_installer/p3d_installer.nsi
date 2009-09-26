@@ -2,33 +2,24 @@
 !include LogicLib.nsh
 !include FileFunc.nsh
 
-; Bunch of text...update this to reflect the product.
-!define PRODUCT_NAME "Disney Pirates of the Caribbean Online"
-!define PRODUCT_NAME_SHORT "Pirates of the Caribbean Online"
-!define PRODUCT_PUBLISHER "Walt Disney Internet Group"
-!define PRODUCT_WEB_SITE "http://apps.pirates.go.com/pirates"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "installer_sidepanel.bmp"  
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "installer_sidepanel.bmp"  
-!define LICENSE_FILE "EULA.rtf"
+; Several variables are assumed to be pre-defined by the caller.  See
+; make_installer.py in this directory.
+
 !define UNINSTALL_SUCCESS "$(^Name) was successfully removed from your computer."
 !define UNINSTALL_CONFIRM "Are you sure you want to completely remove $(^Name) and all of its components?"
 !define UNINSTALL_LINK_NAME "Uninstall"
 !define WEBSITE_LINK_NAME "Website"
 
-
 !insertmacro GetOptions
 
 ; HM NIS Edit Wizard helper defines
-!define OCX "p3dactivex.ocx"
-!define NPAPI "nppanda3d.dll"
-!define PANDA3D "Panda3D"
+!define APP_INTERNAL_NAME "Panda3D"
 
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${OCX}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PROG_GROUPNAME "${PRODUCT_NAME}"
 
-!define VC7_MFC_DIR "C:\Program Files\Microsoft Visual Studio .NET 2003\Visual Studio .NET Enterprise Developer 2003 - English"
 !define FIREFOX_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe"
 
 SetCompressor lzma
@@ -64,10 +55,11 @@ SetCompressor lzma
 
 Name "${PRODUCT_NAME}"
 OutFile p3d-setup.exe
-InstallDir "$PROGRAMFILES\Disney\Disney Online\P3D"
-; InstallDir "$PROGRAMFILES\P3D"
-Icon "InstallerIcon.ico"
-UninstallIcon "InstallerIcon.ico"
+InstallDir "${INSTALL_DIR}"
+!ifdef INSTALL_ICON
+  Icon "${INSTALL_ICON}"
+  UninstallIcon "${INSTALL_ICON}"
+!endif
 WindowIcon on
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
@@ -78,14 +70,28 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifdiff
 
-  File "..\plugin_activex\Opt3-Cygwin\${OCX}"
-  File "..\plugin_npapi\Opt3-Cygwin\${NPAPI}"
+  File "${OCX_PATH}"
+  File "${NPAPI_PATH}"
+  File "${PANDA3D_PATH}"
 
-  File "${VC7_MFC_DIR}\msvcr71.dll"
-  File "${VC7_MFC_DIR}\msvcp71.dll"
+!ifdef DEP0P
+  File "${DEP0P}"
+!endif
+!ifdef DEP1P
+  File "${DEP1P}"
+!endif
+!ifdef DEP2P
+  File "${DEP2P}"
+!endif
+!ifdef DEP3P
+  File "${DEP3P}"
+!endif
+!ifdef DEP4P
+  File "${DEP4P}"
+!endif
 
-; Start->Programs links...commented out for now
-;  CreateDirectory "$SMPROGRAMS\${PROG_GROUPNAME}"
+; Start->Programs links
+  CreateDirectory "$SMPROGRAMS\${PROG_GROUPNAME}"
 ;  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${PRODUCT_NAME_SHORT}.lnk" "$INSTDIR\${LAUNCHER}"
 
 ; Desktop Icon...commented out for now
@@ -97,11 +103,11 @@ Section "MainSection" SEC01
 ;  File "..\..\..\path\to\file\Example.file"
 SectionEnd
 
-;Section -AdditionalIcons
-;  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
-;  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
-;  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk" "$INSTDIR\uninst.exe"
-;SectionEnd
+Section -AdditionalIcons
+  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
+  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk" "$INSTDIR\uninst.exe"
+SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
@@ -133,6 +139,21 @@ Function .onInstSuccess
  ReadRegStr $0 HKLM "${FIREFOX_DIR_REGKEY}" Path
  ${If} $0 != ""
      CopyFiles $INSTDIR\${NPAPI} $0\plugins
+!ifdef NPAPI_DEP0
+     CopyFiles $INSTDIR\${NPAPI_DEP0} $0\plugins
+!endif
+!ifdef NPAPI_DEP1
+     CopyFiles $INSTDIR\${NPAPI_DEP1} $0\plugins
+!endif
+!ifdef NPAPI_DEP2
+     CopyFiles $INSTDIR\${NPAPI_DEP2} $0\plugins
+!endif
+!ifdef NPAPI_DEP3
+     CopyFiles $INSTDIR\${NPAPI_DEP3} $0\plugins
+!endif
+!ifdef NPAPI_DEP4
+     CopyFiles $INSTDIR\${NPAPI_DEP4} $0\plugins
+!endif
  ${EndIf}
 FunctionEnd
 
@@ -141,11 +162,25 @@ Section Uninstall
 
   ExecWait 'regsvr32 /u /s "$INSTDIR/${OCX}"'
 
-  Delete "$INSTDIR\msvcr71.dll"
-  Delete "$INSTDIR\msvcp71.dll"
-
   Delete "$INSTDIR\${OCX}"
   Delete "$INSTDIR\${NPAPI}"
+  Delete "$INSTDIR\${PANDA3D}"
+!ifdef DEP0
+  Delete "$INSTDIR\${DEP0}"
+!endif
+!ifdef DEP1
+  Delete "$INSTDIR\${DEP1}"
+!endif
+!ifdef DEP2
+  Delete "$INSTDIR\${DEP2}"
+!endif
+!ifdef DEP3
+  Delete "$INSTDIR\${DEP3}"
+!endif
+!ifdef DEP4
+  Delete "$INSTDIR\${DEP4}"
+!endif
+
   ReadRegStr $0 HKLM "${FIREFOX_DIR_REGKEY}" Path
   ${If} $0 != ""
       Delete "$0\plugins\${NPAPI}"
@@ -153,18 +188,19 @@ Section Uninstall
 
   ReadRegDWORD $0 HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System EnableLUA
   ${If} $0 != ""
-      RmDir /r "$LOCALAPPDATALow\${PANDA3D}"
+      RmDir /r "$LOCALAPPDATALow\${APP_INTERNAL_NAME}"
   ${Else}
-      RmDir /r "$LOCALAPPDATA\${PANDA3D}"
+      RmDir /r "$LOCALAPPDATA\${APP_INTERNAL_NAME}"
   ${Endif}
 
   Delete "$INSTDIR\uninst.exe"
+  Delete "$INSTDIR\${PRODUCT_NAME}.url"
 
-;  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk"
-;  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk"
+  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk"
+  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk"
 ;  Delete "$DESKTOP\${PRODUCT_NAME_SHORT}${PRODUCT_RELEASE}.lnk"
 ;  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${PRODUCT_NAME_SHORT}.lnk"
-;  RMDir "$SMPROGRAMS\${PROG_GROUPNAME}"
+  RMDir "$SMPROGRAMS\${PROG_GROUPNAME}"
 
   RMDir "$INSTDIR"
 
