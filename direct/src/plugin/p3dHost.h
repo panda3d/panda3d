@@ -16,7 +16,7 @@
 #define P3DHOST_H
 
 #include "p3d_plugin_common.h"
-
+#include "fileSpec.h"
 #include <map>
 
 class FileSpec;
@@ -37,11 +37,15 @@ public:
   inline const string &get_host_dir() const;
   inline const string &get_host_url() const;
   inline const string &get_host_url_prefix() const;
+  inline const string &get_download_url_prefix() const;
   inline const string &get_descriptive_name() const;
 
   P3DHost *get_alt_host(const string &alt_host);
 
   inline bool has_contents_file() const;
+  inline int get_contents_seq() const;
+  inline bool check_contents_hash(const string &pathname) const;
+
   bool read_contents_file();
   bool read_contents_file(const string &contents_filename);
 
@@ -70,8 +74,11 @@ private:
   string _host_dir;
   string _host_url;
   string _host_url_prefix;
+  string _download_url_prefix;
   string _descriptive_name;
   TiXmlElement *_xcontents;
+  int _contents_seq;
+  FileSpec _contents_spec;
 
   typedef vector<string> Mirrors;
   Mirrors _mirrors;

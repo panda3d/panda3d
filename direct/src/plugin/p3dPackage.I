@@ -145,6 +145,18 @@ get_desc_file_pathname() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_desc_file_dirname
+//       Access: Public
+//  Description: Returns the relative path, on the host, of the
+//               directory that contains the desc file (and to which
+//               all of the paths in the desc file are relative).
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_desc_file_dirname() const {
+  return _desc_file_dirname;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_archive_file_pathname
 //       Access: Public
 //  Description: Returns the full path to the package's uncompressed
@@ -156,3 +168,37 @@ get_archive_file_pathname() const {
   return _uncompressed_archive.get_pathname(_package_dir);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStep::get_effort
+//       Access: Public
+//  Description: Returns the relative amount of effort of this step.
+////////////////////////////////////////////////////////////////////
+inline double P3DPackage::InstallStep::
+get_effort() const {
+  return _bytes_needed * _bytes_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStep::get_progress
+//       Access: Public
+//  Description: Returns the progress of this step, in the range 0..1.
+////////////////////////////////////////////////////////////////////
+inline double P3DPackage::InstallStep::
+get_progress() const {
+  if (_bytes_needed == 0) {
+    return 1.0;
+  }
+  return min((double)_bytes_done / (double)_bytes_needed, 1.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStep::report_step_progress
+//       Access: Public
+//  Description: Notifies the Package that progress has been made on
+//               this particular step.
+////////////////////////////////////////////////////////////////////
+inline void P3DPackage::InstallStep::
+report_step_progress() {
+  _package->report_progress(this);
+}

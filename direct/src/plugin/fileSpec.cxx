@@ -229,7 +229,7 @@ check_hash(const string &pathname) const {
   MD5_CTX ctx;
   MD5_Init(&ctx);
 
-  static const int buffer_size = 1024;
+  static const int buffer_size = 4096;
   char buffer[buffer_size];
 
   stream.read(buffer, buffer_size);
@@ -243,6 +243,41 @@ check_hash(const string &pathname) const {
   MD5_Final(md, &ctx);
 
   return (memcmp(md, _hash, hash_size) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::read_hash
+//       Access: Public
+//  Description: Computes the hash from the indicated pathname and
+//               stores it within the FileSpec.
+////////////////////////////////////////////////////////////////////
+bool FileSpec::
+read_hash(const string &pathname) {
+  memset(_hash, 0, sizeof(_hash));
+
+  ifstream stream(pathname.c_str(), ios::in | ios::binary);
+  if (!stream) {
+    //cerr << "unable to read " << pathname << "\n";
+    return false;
+  }
+
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+
+  static const int buffer_size = 4096;
+  char buffer[buffer_size];
+
+  stream.read(buffer, buffer_size);
+  size_t count = stream.gcount();
+  while (count != 0) {
+    MD5_Update(&ctx, buffer, count);
+    stream.read(buffer, buffer_size);
+    count = stream.gcount();
+  }
+
+  MD5_Final(_hash, &ctx);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

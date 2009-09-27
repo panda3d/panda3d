@@ -34,8 +34,10 @@ P3DHost(const string &host_url) :
   if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.size() - 1] != '/') {
     _host_url_prefix += "/";
   }
+  _download_url_prefix = _host_url_prefix;
 
   _xcontents = NULL;
+  _contents_seq = 0;
 
   determine_host_dir();
 }
@@ -137,6 +139,8 @@ read_contents_file(const string &contents_filename) {
     delete _xcontents;
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
+  ++_contents_seq;
+  _contents_spec.read_hash(contents_filename);
 
   TiXmlElement *xhost = _xcontents->FirstChildElement("host");
   if (xhost != NULL) {
@@ -463,8 +467,22 @@ determine_host_dir() {
 void P3DHost::
 read_xhost(TiXmlElement *xhost) {
   const char *descriptive_name = xhost->Attribute("descriptive_name");
-  if (descriptive_name != NULL) {
+  if (descriptive_name != NULL && _descriptive_name.empty()) {
     _descriptive_name = descriptive_name;
+  }
+
+  // Get the "download" URL, which is the source from which we
+  // download everything other than the contents.xml file.
+  const char *download_url = xhost->Attribute("download_url");
+  if (download_url != NULL) {
+    _download_url_prefix = download_url;
+  }
+  if (!_download_url_prefix.empty()) {
+    if (_download_url_prefix[_download_url_prefix.size() - 1] != '/') {
+      _download_url_prefix += "/";
+    }
+  } else {
+    _download_url_prefix = _host_url_prefix;
   }
         
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");

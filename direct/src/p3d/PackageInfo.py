@@ -86,7 +86,7 @@ class PackageInfo:
         self.downloadProgress = 0
         
         # This is set true when the package file has been fully
-        # downloaded and unpackaged.
+        # downloaded and unpacked.
         self.hasPackage = False
 
         # This is set true when the package has been "installed",
@@ -270,10 +270,10 @@ class PackageInfo:
             return True
 
         # Still have to download it.
-        self.__buildInstallPlan()
+        self.__buildInstallPlans()
         return True
 
-    def __buildInstallPlan(self):
+    def __buildInstallPlans(self):
         """ Sets up self.installPlans, a list of one or more "plans"
         to download and install the package. """
 
@@ -297,8 +297,8 @@ class PackageInfo:
         # download, and build a plan (or two) to download it all.
         self.installPlans = None
 
-        # We know we will at least need to unpackage the archive at
-        # the end.
+        # We know we will at least need to unpack the archive contents
+        # at the end.
         unpackSize = 0
         for file in self.extracts:
             unpackSize += file.size

@@ -40,13 +40,29 @@ get_host_url() const {
 //     Function: P3DHost::get_host_url_prefix
 //       Access: Public
 //  Description: Returns the root URL of this host, for constructing
-//               full URL sequences.  This is the same as
-//               get_host_url(), except it is guaranteed to end in a
-//               slash character.
+//               the URL to download contents.xml only.  This is the
+//               same as get_host_url(), except it is guaranteed to
+//               end in a slash character.
+//
+//               Also see get_download_url_prefix().
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DHost::
 get_host_url_prefix() const {
   return _host_url_prefix;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::get_download_url_prefix
+//       Access: Public
+//  Description: Returns the root URL of this host, for downloading
+//               everything other than the contents.xml file.  This is
+//               often the same as get_host_url_prefix(), but it may
+//               be different in the case of an https server for
+//               contents.xml.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DHost::
+get_download_url_prefix() const {
+  return _download_url_prefix;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,4 +86,28 @@ get_descriptive_name() const {
 inline bool P3DHost::
 has_contents_file() const {
   return (_xcontents != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::get_contents_seq
+//       Access: Public
+//  Description: Returns a number that increments whenever a new
+//               version of the contents.xml file has been read.  This
+//               can be used by packages to determine whether they
+//               need to redownload from scratch.
+////////////////////////////////////////////////////////////////////
+inline int P3DHost::
+get_contents_seq() const {
+  return _contents_seq;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::check_contents_hash
+//       Access: Public
+//  Description: Returns true if the indicated pathname has the same
+//               md5 hash as the contents.xml file, false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DHost::
+check_contents_hash(const string &pathname) const {
+  return _contents_spec.check_hash(pathname);
 }

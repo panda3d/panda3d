@@ -844,6 +844,7 @@ get_packages_failed() const {
 void P3DInstance::
 start_download(P3DDownload *download) {
   assert(download->get_download_id() == 0);
+  assert(!download->get_url().empty());
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 

@@ -40,6 +40,16 @@ get_download_progress() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::get_total_data
+//       Access: Public
+//  Description: Returns the total number of bytes downloaded so far.
+////////////////////////////////////////////////////////////////////
+inline size_t P3DDownload::
+get_total_data() const {
+  return _total_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::get_download_finished
 //       Access: Public
 //  Description: Returns true if the download has finished, either

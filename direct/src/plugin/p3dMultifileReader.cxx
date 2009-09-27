@@ -87,14 +87,12 @@ close() {
 //               directory.  Returns true on success, false on
 //               failure.
 //
-//               The parameters package, start_progress, and
-//               progress_size are provided to make the appropriate
-//               status updates on the package's progress callbacks
-//               during this operation.
+//               Upates the "step" object with the progress through
+//               this operation.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-extract_all(const string &to_dir,
-            P3DPackage *package, double start_progress, double progress_size) {
+extract_all(const string &to_dir, P3DPackage *package, 
+            P3DPackage::InstallStep *step) {
   assert(_is_open);
   if (_in.fail()) {
     return false;
@@ -102,12 +100,6 @@ extract_all(const string &to_dir,
 
   // Now walk through all of the files, and extract only the ones we
   // expect to encounter.
-  size_t num_processed = 0;
-  size_t num_expected = _subfiles.size();
-  if (package != NULL) {
-    num_expected = package->_extracts.size();
-  }
-
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
@@ -141,10 +133,9 @@ extract_all(const string &to_dir,
     // program or something.
     chmod(output_pathname.c_str(), 0555);
 
-    ++num_processed;
-    if (package != NULL) {
-      double progress = (double)num_processed / (double)num_expected;
-      package->report_progress(start_progress + progress * progress_size);
+    if (step != NULL && package != NULL) {
+      step->_bytes_done += s._data_length;
+      step->report_step_progress();
     }
   }
 

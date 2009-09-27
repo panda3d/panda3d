@@ -17,8 +17,7 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dInstanceManager.h"  // for openssl
-
-class P3DPackage;
+#include "p3dPackage.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DMultifileReader
@@ -35,9 +34,8 @@ public:
   inline bool is_open() const;
   void close();
 
-  bool extract_all(const string &to_dir,
-                   P3DPackage *package, double start_progress, 
-                   double progress_size);
+  bool extract_all(const string &to_dir, P3DPackage *package, 
+                   P3DPackage::InstallStep *step);
 
   bool extract_one(ostream &out, const string &filename);
 

@@ -28,11 +28,12 @@
 #include <io.h>    // chmod()
 #endif
 
-// The relative breakdown of the full install process.  Each phase is
-// worth this fraction of the total movement of the progress bar.
-static const double download_portion = 0.9;
-static const double uncompress_portion = 0.05;
-static const double extract_portion = 0.05;
+// Weight factors for computing download progress.  This attempts to
+// reflect the relative time-per-byte of each of these operations.
+const double P3DPackage::_download_factor = 1.0;
+const double P3DPackage::_uncompress_factor = 0.01;
+const double P3DPackage::_unpack_factor = 0.01;
+const double P3DPackage::_patch_factor = 0.01;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::Constructor
@@ -57,6 +58,8 @@ P3DPackage(P3DHost *host, const string &package_name,
   // file, instead of an xml file and a multifile to unpack.
   _package_solo = false;
 
+  _host_contents_seq = 0;
+
   _xconfig = NULL;
   _temp_contents_file = NULL;
 
@@ -66,6 +69,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   _ready = false;
   _failed = false;
   _active_download = NULL;
+  _saved_download = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,6 +92,11 @@ P3DPackage::
     _active_download->cancel();
     delete _active_download;
     _active_download = NULL;
+  }
+  if (_saved_download != NULL) {
+    _saved_download->cancel();
+    delete _saved_download;
+    _saved_download = NULL;
   }
 
   if (_temp_contents_file != NULL) {
@@ -125,7 +134,7 @@ activate_download() {
     // Otherwise, if we've already got the desc file, then start the
     // download.
     if (_info_ready) {
-      begin_data_download();
+      follow_install_plans(true);
     }
   }
 }
@@ -254,8 +263,9 @@ begin_info_download() {
 //     Function: P3DPackage::download_contents_file
 //       Access: Private
 //  Description: Starts downloading the root-level contents.xml file.
-//               This is only done for the first package, and only if
-//               the host doesn't have the file already.
+//               This is only done for the first package downloaded
+//               from a particular host, and only if the host doesn't
+//               have the file already.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_contents_file() {
@@ -273,15 +283,6 @@ download_contents_file() {
     return;
   }
 
-  // Get the URL for contents.xml.
-  ostringstream strm;
-  strm << "contents.xml";
-  // Append a uniquifying query string to the URL to force the
-  // download to go all the way through any caches.  We use the time
-  // in seconds; that's unique enough.
-  strm << "?" << time(NULL);
-  string urlbase = strm.str();
-
   // Download contents.xml to a temporary filename first, in case
   // multiple packages are downloading it simultaneously.
   if (_temp_contents_file != NULL) {
@@ -290,8 +291,8 @@ download_contents_file() {
   }
   _temp_contents_file = new P3DTemporaryFile(".xml");
 
-  start_download(DT_contents_file, urlbase, _temp_contents_file->get_filename(), 
-                 FileSpec());
+  start_download(DT_contents_file, "contents.xml", 
+                 _temp_contents_file->get_filename(), FileSpec());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -327,10 +328,107 @@ contents_file_download_finished(bool success) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::redownload_contents_file
+//       Access: Private
+//  Description: Starts a new download attempt of contents.xml, to
+//               check to see whether our local copy is stale.  This
+//               is called only from Download::download_finished().
+//
+//               If it turns out a new version can be downloaded, the
+//               indicated Download object (and the current install
+//               plan) is discarded, and the package download is
+//               restarted from the beginning.
+//
+//               If there is no new version available, calls
+//               resume_download_finished() on the indicated Download
+//               object, to carry on as if nothing had happened.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+redownload_contents_file(P3DPackage::Download *download) {
+  assert(_active_download == NULL);
+  assert(_saved_download == NULL);
+  
+  if (_host->get_contents_seq() != _host_contents_seq) {
+    // If the contents_seq number has changed, we don't even need to
+    // download anything--just go restart the download.
+    host_got_contents_file();
+    return;
+  }
+
+  _saved_download = download;
+  _saved_download->ref();
+
+  // Download contents.xml to a temporary filename first.
+  if (_temp_contents_file != NULL) {
+    delete _temp_contents_file;
+    _temp_contents_file = NULL;
+  }
+  _temp_contents_file = new P3DTemporaryFile(".xml");
+
+  start_download(DT_redownload_contents_file, "contents.xml", 
+                 _temp_contents_file->get_filename(), FileSpec());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::contents_file_redownload_finished
+//       Access: Private
+//  Description: Called when the redownload attempt on contents.xml
+//               has finished.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+contents_file_redownload_finished(bool success) {
+  bool contents_changed = false;
+  
+  if (_host->get_contents_seq() != _host_contents_seq) {
+    // If the contents_seq number has changed, we don't even need to
+    // bother reading what we just downloaded.
+    contents_changed = true;
+  }
+
+  if (!contents_changed && success) {
+    // If we successfully downloaded something, see if it's different
+    // from what we had before.
+    if (!_host->check_contents_hash(_temp_contents_file->get_filename())) {
+      // It changed!  Now see if we can read the new contents.
+      if (!_host->read_contents_file(_temp_contents_file->get_filename())) {
+        // Huh, appears to have changed to something bad.  Never mind.
+        nout << "Couldn't read " << *_temp_contents_file << "\n";
+
+      } else {
+        // The new contents file is read and in place.
+        contents_changed = true;
+      }
+    }
+  }
+    
+  // We no longer need the temporary file.
+  delete _temp_contents_file;
+  _temp_contents_file = NULL;
+
+  assert(_saved_download != NULL); 
+  if (contents_changed) {
+    // OK, the contents.xml has changed; this means we have to restart
+    // the whole download process from the beginning.
+    unref_delete(_saved_download);
+    _saved_download = NULL;
+    host_got_contents_file();
+
+  } else {
+    // Nothing's changed.  This was just a useless diversion.  We now
+    // return you to our regularly scheduled download.
+    Download *download = _saved_download;
+    _saved_download = NULL;
+    download->resume_download_finished(false);
+    unref_delete(download);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::host_got_contents_file
 //       Access: Private
 //  Description: We come here when we've successfully downloaded and
-//               read the host's contents.xml file.
+//               read the host's contents.xml file.  This begins the
+//               rest of the download process.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 host_got_contents_file() {
@@ -355,6 +453,11 @@ host_got_contents_file() {
       return;
     }
   }
+
+  // Record this now, so we'll know later whether the host has been
+  // reloaded (e.g. due to some other package, from some other
+  // instance, reloading it).
+  _host_contents_seq = _host->get_contents_seq();
 
   // Now that we have a valid host, we can define the _package_dir.
   _package_dir = _host->get_host_dir() + string("/") + _package_name;
@@ -503,12 +606,14 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   _compressed_archive.load_xml(xcompressed_archive);
 
   // Now get all the extractable components.
+  _unpack_size = 0;
   _extracts.clear();
   TiXmlElement *extract = xpackage->FirstChildElement("extract");
   while (extract != NULL) {
     FileSpec file;
     file.load_xml(extract);
     _extracts.push_back(file);
+    _unpack_size += file.get_size();
     extract = extract->NextSiblingElement("extract");
   }
 
@@ -567,25 +672,49 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   } else {
     // We need to get the file data still, but at least we know all
     // about it by this point.
+    build_install_plans();
+
     if (!_allow_data_download) {
       // Not authorized to start downloading yet; just report that
       // we're ready.
       report_info_ready();
     } else {
       // We've already been authorized to start downloading, so do it.
-      begin_data_download();
+      follow_install_plans(true);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::begin_data_download
+//     Function: P3DPackage::clear_install_plans
 //       Access: Private
-//  Description: Begins downloading and installing the package data
-//               itself, if needed.
+//  Description:a Empties _install_plans cleanly.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-begin_data_download() {
+clear_install_plans() {
+  InstallPlans::iterator pi;
+  for (pi = _install_plans.begin(); pi != _install_plans.end(); ++pi) {
+    InstallPlan &plan = (*pi);
+    InstallPlan::iterator si;
+    for (si = plan.begin(); si != plan.end(); ++si) {
+      InstallStep *step = (*si);
+      delete step;
+    }
+  }
+
+  _install_plans.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::build_install_plans
+//       Access: Private
+//  Description: Sets up _install_plans, a list of one or more "plans"
+//               to download and install the package.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+build_install_plans() {
+  clear_install_plans();
+
   if (_instances.empty()) {
     // Can't download without any instances.
     return;
@@ -596,249 +725,115 @@ begin_data_download() {
     return;
   }
 
-  if (_active_download != NULL) {
-    // In the middle of downloading.
-    return;
+  _install_plans.push_back(InstallPlan());
+  InstallPlan &plan = _install_plans.back();
+
+  InstallStep *step;
+  if (!_uncompressed_archive.quick_verify(_package_dir)) {
+    // The uncompressed archive is no good.
+
+    if (!_compressed_archive.quick_verify(_package_dir)) {
+      // The compressed archive is no good either.  Download a new
+      // compressed archive.
+      step = new InstallStepDownloadFile(this, _compressed_archive);
+      plan.push_back(step);
+    }
+
+    // Uncompress the compressed archive to generate the uncompressed
+    // archive.
+    step = new InstallStepUncompressFile(this, _compressed_archive, _uncompressed_archive);
+    plan.push_back(step);
   }
 
+  // Unpack the uncompressed archive.
+  step = new InstallStepUnpackArchive(this, _unpack_size);
+  plan.push_back(step);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::follow_install_plans
+//       Access: Private
+//  Description: Performs the next step in the current install plan.
+//               If download_finished is false, there is a pending
+//               download that has not fully completed yet; otherwise,
+//               download_finished should be set true.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+follow_install_plans(bool download_finished) {
   if (!_allow_data_download) {
     // Not authorized yet.
     return;
   }
 
-  if (_uncompressed_archive.quick_verify(_package_dir)) {
-    // We need to re-extract the archive.
-    extract_archive();
+  while (!_install_plans.empty()) {
+    // Pull the next step off the current plan.
 
-  } else if (_compressed_archive.quick_verify(_package_dir)) {
-    // We need to uncompress the archive.
-    uncompress_archive();
+    InstallPlan &plan = _install_plans.front();
+    bool plan_failed = false;
 
-  } else {
-    // Shoot, we need to download the archive.
-    download_compressed_archive();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::download_compressed_archive
-//       Access: Private
-//  Description: Starts downloading the archive file for the package.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-download_compressed_archive() {
-  string urlbase = _desc_file_dirname;
-  urlbase += "/";
-  urlbase += _compressed_archive.get_filename();
-
-  string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
-
-  start_download(DT_compressed_archive, urlbase, target_pathname, 
-                 _compressed_archive);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::compressed_archive_download_progress
-//       Access: Private
-//  Description: Called as the file is downloaded.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-compressed_archive_download_progress(double progress) {
-  report_progress(download_portion * progress);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::compressed_archive_download_finished
-//       Access: Private
-//  Description: Called when the desc file has been fully downloaded.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-compressed_archive_download_finished(bool success) {
-  if (!success) {
-    report_done(false);
-    return;
-  }
-
-  // Go on to uncompress the archive.
-  uncompress_archive();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::uncompress_archive
-//       Access: Private
-//  Description: Uncompresses the archive file.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-uncompress_archive() {
-  string source_pathname = _package_dir + "/" + _compressed_archive.get_filename();
-  string target_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
-
-  ifstream source(source_pathname.c_str(), ios::in | ios::binary);
-  if (!source) {
-    nout << "Couldn't open " << source_pathname << "\n";
-    report_done(false);
-    return;
-  }
-
-  if (!mkfile_complete(target_pathname, nout)) {
-    report_done(false);
-    return;
-  }
-
-  ofstream target(target_pathname.c_str(), ios::out | ios::binary);
-  if (!target) {
-    nout << "Couldn't write to " << target_pathname << "\n";
-    report_done(false);
-    return;
-  }
-  
-  static const int decompress_buffer_size = 81920;
-  char decompress_buffer[decompress_buffer_size];
-  static const int write_buffer_size = 81920;
-  char write_buffer[write_buffer_size];
-
-  z_stream z;
-  z.next_in = Z_NULL;
-  z.avail_in = 0;
-  z.next_out = Z_NULL;
-  z.avail_out = 0;
-  z.zalloc = Z_NULL;
-  z.zfree = Z_NULL;
-  z.opaque = Z_NULL;
-  z.msg = (char *)"no error message";
-
-  bool eof = false;
-  int flush = 0;
-
-  source.read(decompress_buffer, decompress_buffer_size);
-  size_t read_count = source.gcount();
-  eof = (read_count == 0 || source.eof() || source.fail());
-  
-  z.next_in = (Bytef *)decompress_buffer;
-  z.avail_in = read_count;
-
-  int result = inflateInit(&z);
-  if (result < 0) {
-    nout << z.msg << "\n";
-    report_done(false);
-    return;
-  }
-
-  size_t total_out = 0;
-  while (true) {
-    if (z.avail_in == 0 && !eof) {
-      source.read(decompress_buffer, decompress_buffer_size);
-      size_t read_count = source.gcount();
-      eof = (read_count == 0 || source.eof() || source.fail());
-        
-      z.next_in = (Bytef *)decompress_buffer;
-      z.avail_in = read_count;
+    _total_plan_size = 0.0;
+    InstallPlan::iterator si;
+    for (si = plan.begin(); si != plan.end(); ++si) {
+      _total_plan_size += (*si)->get_effort();
     }
 
-    z.next_out = (Bytef *)write_buffer;
-    z.avail_out = write_buffer_size;
-    int result = inflate(&z, flush);
-    if (z.avail_out < write_buffer_size) {
-      target.write(write_buffer, write_buffer_size - z.avail_out);
-      if (!target) {
-        nout << "Couldn't write entire file to " << target_pathname << "\n";
-        report_done(false);
+    _total_plan_completed = 0.0;
+    _download_progress = 0.0;
+
+    while (!plan.empty() && !plan_failed) {
+      InstallStep *step = plan.front();
+      _current_step_effort = step->get_effort();
+
+      InstallToken token = step->do_step(download_finished);
+      switch (token) {
+      case IT_step_failed:
+        // This plan has failed.
+        plan_failed = true;
+        break;
+
+      case IT_continue:
+        // A callback hook has been attached; we'll come back later.
         return;
-      }
-      total_out += (write_buffer_size - z.avail_out);
-      if (_uncompressed_archive.get_size() != 0) {
-        double progress = (double)total_out / (double)_uncompressed_archive.get_size();
-        progress = min(progress, 1.0);
-        report_progress(download_portion + uncompress_portion * progress);
+
+      case IT_step_complete:
+        // So far, so good.  Go on to the next step.
+        _total_plan_completed += _current_step_effort;
+        delete step;
+        plan.pop_front();
+        break;
       }
     }
 
-    if (result == Z_STREAM_END) {
-      // Here's the end of the file.
-      break;
-
-    } else if (result == Z_BUF_ERROR && flush == 0) {
-      // We might get this if no progress is possible, for instance if
-      // the input stream is truncated.  In this case, tell zlib to
-      // dump everything it's got.
-      flush = Z_FINISH;
-
-    } else if (result < 0) {
-      nout << z.msg << "\n";
-      inflateEnd(&z);
-      report_done(false);
+    if (!plan_failed) {
+      // We've finished the plan successfully.
+      clear_install_plans();
+      report_done(true);
       return;
     }
+
+    // That plan failed.  Go on to the next plan.
+    _install_plans.pop_front();
   }
 
-  result = inflateEnd(&z);
-  if (result < 0) {
-    nout << z.msg << "\n";
-    report_done(false);
-    return;
-  }
-
-  source.close();
-  target.close();
-
-  if (!_uncompressed_archive.full_verify(_package_dir)) {
-    nout << "after uncompressing " << target_pathname
-         << ", failed hash check\n";
-    report_done(false);
-    return;
-  }
-
-  // Now that we've verified the archive, make it read-only.
-  chmod(target_pathname.c_str(), 0444);
-
-  // Now we can safely remove the compressed archive.
-#ifdef _WIN32
-  chmod(source_pathname.c_str(), 0644);
-#endif
-  unlink(source_pathname.c_str());
-
-  // All done uncompressing.
-  extract_archive();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::extract_archive
-//       Access: Private
-//  Description: Extracts the components from the archive file.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-extract_archive() {
-  string source_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
-  P3DMultifileReader reader;
-  if (!reader.open_read(source_pathname)) {
-    nout << "Couldn't read " << _uncompressed_archive.get_filename() << "\n";
-    report_done(false);
-    return;
-  }
-
-  if (!reader.extract_all(_package_dir, this, 
-                          download_portion + uncompress_portion, 
-                          extract_portion)) {
-    nout << "Failure extracting " << _uncompressed_archive.get_filename()
-         << "\n";
-    report_done(false);
-    return;
-  }
-
-  report_done(true);
+  // All plans failed.  Too bad for us.
+  report_done(false);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::report_progress
 //       Access: Private
-//  Description: Reports the indicated install progress to all
+//  Description: Reports the current install progress to all
 //               interested instances.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-report_progress(double progress) {
+report_progress(P3DPackage::InstallStep *step) {
+  double size = _total_plan_completed + _current_step_effort * step->get_progress();
+  _download_progress = min(size / _total_plan_size, 1.0);
+  //  nout << get_package_name() << " progress " << _download_progress << "\n";
+
   Instances::iterator ii;
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
-    (*ii)->report_package_progress(this, progress);
+    (*ii)->report_package_progress(this, _download_progress);
   }
 }
 
@@ -901,40 +896,52 @@ report_done(bool success) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::start_download
 //       Access: Private
-//  Description: Initiates a download of the indicated file.
+//  Description: Initiates a download of the indicated file.  Returns
+//               the new Download object.
 ////////////////////////////////////////////////////////////////////
-void P3DPackage::
+P3DPackage::Download *P3DPackage::
 start_download(P3DPackage::DownloadType dtype, const string &urlbase, 
                const string &pathname, const FileSpec &file_spec) {
   // Only one download should be active at a time
   assert(_active_download == NULL);
 
-  // TODO: support partial downloads.
-  static const bool allow_partial = false;
-  if (!allow_partial) {
+  // We can't explicitly support partial downloads here, because
+  // Mozilla provides no interface to ask for one.  We have to trust
+  // that Mozilla's use of the browser cache handles partial downloads
+  // for us automatically.
+
+  // Delete the target file before we begin.
 #ifdef _WIN32
-    // Windows can't delete a file if it's read-only.
-    chmod(pathname.c_str(), 0644);
+  // Windows can't delete a file if it's read-only.
+  chmod(pathname.c_str(), 0644);
 #endif
-    unlink(pathname.c_str());
-  } else {
-    // Make sure the file is writable.
-    chmod(pathname.c_str(), 0644);
-  }
+  unlink(pathname.c_str());
     
   Download *download = new Download(this, dtype, file_spec);
 
   // Fill up the _try_urls vector for URL's to try getting this file
   // from, in reverse order.
+  bool is_contents_file = (dtype == DT_contents_file || dtype == DT_redownload_contents_file);
 
-  // The last thing we try is the actual authoritative host.
-  string url = _host->get_host_url_prefix() + urlbase;
+  // The last thing we try is the actual authoritative host, with a
+  // cache-busting query string.
+  ostringstream strm;
+  if (is_contents_file) {
+    strm << _host->get_host_url_prefix();
+  } else {
+    strm << _host->get_download_url_prefix();
+  }
+  strm << urlbase << "?" << time(NULL);
+  string url = strm.str();
   download->_try_urls.push_back(url);
 
-  // The first thing we try is a couple of mirrors, chosen at random
-  // (except for the contents.xml file, which always goes straight to
-  // the host).
-  if (dtype != DT_contents_file) {
+  if (!is_contents_file) {
+    // Before we try the cache-buster out of desperation, we try the
+    // authoritative host, allowing caches.
+    url = _host->get_download_url_prefix() + urlbase;
+    download->_try_urls.push_back(url);
+
+    // Before *that*, we try a couple of mirrors, chosen at random.
     vector<string> mirrors;
     _host->choose_random_mirrors(mirrors, 2);
     for (vector<string>::iterator si = mirrors.begin();
@@ -947,8 +954,8 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  if (dtype == DT_contents_file && inst_mgr->get_verify_contents()) {
-    // When we're dowloading the contents file with verify_contents
+  if (is_contents_file && inst_mgr->get_verify_contents()) {
+    // When we're downloading the contents file with verify_contents
     // true, we always go straight to the authoritative host, not even
     // to the super-mirror.
 
@@ -972,6 +979,7 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
   assert(!_instances.empty());
 
   _instances[0]->start_download(download);
+  return download;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1034,8 +1042,8 @@ download_progress() {
   case DT_desc_file:
     break;
 
-  case DT_compressed_archive:
-    _package->compressed_archive_download_progress(get_download_progress());
+  case DT_install_step:
+    _package->follow_install_plans(false);
     break;
   }
 }
@@ -1061,9 +1069,34 @@ download_finished(bool success) {
     }
   }
 
+  close_file();
+
+  if (!success) {
+    // Maybe it failed because our contents.xml file is out-of-date.
+    // Go try to freshen it.
+    bool is_contents_file = (_dtype == DT_contents_file || _dtype == DT_redownload_contents_file);
+    if (!is_contents_file) {
+      _package->redownload_contents_file(this);
+      return;
+    }
+  }
+
+  // Carry on.
+  resume_download_finished(success);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Download::resume_download_finished
+//       Access: Public
+//  Description: Continuing the work begun in download_finished().
+//               This is a separate entry point so that it can be
+//               called again after determining that the host's
+//               contents.xml file is *not* stale.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::Download::
+resume_download_finished(bool success) {
   if (!success && !_try_urls.empty()) {
-    // Well, that URL failed, but we can try another mirror.
-    close_file();
+    // Try the next mirror.
     string url = _try_urls.back();
     _try_urls.pop_back();
 
@@ -1083,12 +1116,280 @@ download_finished(bool success) {
     _package->contents_file_download_finished(success);
     break;
 
+  case DT_redownload_contents_file:
+    _package->contents_file_redownload_finished(success);
+    break;
+
   case DT_desc_file:
     _package->desc_file_download_finished(success);
     break;
 
-  case DT_compressed_archive:
-    _package->compressed_archive_download_finished(success);
+  case DT_install_step:
+    _package->follow_install_plans(true);
     break;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStep::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStep::
+InstallStep(P3DPackage *package, size_t bytes, double factor) :
+  _package(package),
+  _bytes_needed(bytes),
+  _bytes_done(0),
+  _bytes_factor(factor)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStep::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStep::
+~InstallStep() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepDownloadFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepDownloadFile::
+InstallStepDownloadFile(P3DPackage *package, const FileSpec &file) :
+  InstallStep(package, file.get_size(), _download_factor),
+  _file(file)
+{
+  _urlbase = _package->get_desc_file_dirname();
+  _urlbase += "/";
+  _urlbase += _file.get_filename();
+  
+  _pathname = _package->get_package_dir() + "/" + _file.get_filename();
+    
+  _download = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepDownloadFile::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepDownloadFile::
+~InstallStepDownloadFile() {
+  if (_download != NULL) {
+    unref_delete(_download);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepDownloadFile::do_step
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallToken P3DPackage::InstallStepDownloadFile::
+do_step(bool download_finished) {
+  if (_download == NULL) {
+    // First, we have to start the download going.
+    assert(_package->_active_download == NULL);
+
+    _download = _package->start_download(DT_install_step, _urlbase, 
+                                         _pathname, _file);
+    assert(_download != NULL);
+    _download->ref();
+  }
+
+  _bytes_done = _download->get_total_data();
+  report_step_progress();
+
+  if (!_download->get_download_finished() || !download_finished) {
+    // Wait for it.
+    return IT_continue;
+  }
+
+  if (_download->get_download_success()) {
+    // The Download object has already validated the hash.
+    return IT_step_complete;
+  } else {
+    // The Download object has already tried all of the mirrors, and
+    // they all failed.
+    return IT_step_failed;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUncompressFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepUncompressFile::
+InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
+                          const FileSpec &target) :
+  InstallStep(package, target.get_size(), _uncompress_factor),
+  _source(source),
+  _target(target)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUncompressFile::do_step
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallToken P3DPackage::InstallStepUncompressFile::
+do_step(bool download_finished) {
+  string source_pathname = _package->get_package_dir() + "/" + _source.get_filename();
+  string target_pathname = _package->get_package_dir() + "/" + _target.get_filename();
+
+  ifstream source(source_pathname.c_str(), ios::in | ios::binary);
+  if (!source) {
+    nout << "Couldn't open " << source_pathname << "\n";
+    return IT_step_failed;
+  }
+
+  if (!mkfile_complete(target_pathname, nout)) {
+    return IT_step_failed;
+  }
+
+  ofstream target(target_pathname.c_str(), ios::out | ios::binary);
+  if (!target) {
+    nout << "Couldn't write to " << target_pathname << "\n";
+    return IT_step_failed;
+  }
+  
+  static const int decompress_buffer_size = 81920;
+  char decompress_buffer[decompress_buffer_size];
+  static const int write_buffer_size = 81920;
+  char write_buffer[write_buffer_size];
+
+  z_stream z;
+  z.next_in = Z_NULL;
+  z.avail_in = 0;
+  z.next_out = Z_NULL;
+  z.avail_out = 0;
+  z.zalloc = Z_NULL;
+  z.zfree = Z_NULL;
+  z.opaque = Z_NULL;
+  z.msg = (char *)"no error message";
+
+  bool eof = false;
+  int flush = 0;
+
+  source.read(decompress_buffer, decompress_buffer_size);
+  size_t read_count = source.gcount();
+  eof = (read_count == 0 || source.eof() || source.fail());
+  
+  z.next_in = (Bytef *)decompress_buffer;
+  z.avail_in = read_count;
+
+  int result = inflateInit(&z);
+  if (result < 0) {
+    nout << z.msg << "\n";
+    return IT_step_failed;
+  }
+
+  while (true) {
+    if (z.avail_in == 0 && !eof) {
+      source.read(decompress_buffer, decompress_buffer_size);
+      size_t read_count = source.gcount();
+      eof = (read_count == 0 || source.eof() || source.fail());
+        
+      z.next_in = (Bytef *)decompress_buffer;
+      z.avail_in = read_count;
+    }
+
+    z.next_out = (Bytef *)write_buffer;
+    z.avail_out = write_buffer_size;
+    int result = inflate(&z, flush);
+    if (z.avail_out < write_buffer_size) {
+      target.write(write_buffer, write_buffer_size - z.avail_out);
+      if (!target) {
+        nout << "Couldn't write entire file to " << target_pathname << "\n";
+        return IT_step_failed;
+      }
+      _bytes_done += (write_buffer_size - z.avail_out);
+      report_step_progress();
+    }
+
+    if (result == Z_STREAM_END) {
+      // Here's the end of the file.
+      break;
+
+    } else if (result == Z_BUF_ERROR && flush == 0) {
+      // We might get this if no progress is possible, for instance if
+      // the input stream is truncated.  In this case, tell zlib to
+      // dump everything it's got.
+      flush = Z_FINISH;
+
+    } else if (result < 0) {
+      nout << z.msg << "\n";
+      inflateEnd(&z);
+      return IT_step_failed;
+    }
+  }
+
+  result = inflateEnd(&z);
+  if (result < 0) {
+    nout << z.msg << "\n";
+    return IT_step_failed;
+  }
+
+  source.close();
+  target.close();
+
+  if (!_target.full_verify(_package->get_package_dir())) {
+    nout << "after uncompressing " << target_pathname
+         << ", failed hash check\n";
+    return IT_step_failed;
+  }
+
+  // Now that we've verified the target, make it read-only.
+  chmod(target_pathname.c_str(), 0444);
+
+  // Now we can safely remove the source.
+#ifdef _WIN32
+  chmod(source_pathname.c_str(), 0644);
+#endif
+  unlink(source_pathname.c_str());
+
+  // All done uncompressing.
+  return IT_step_complete;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUnpackArchive::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepUnpackArchive::
+InstallStepUnpackArchive(P3DPackage *package, size_t unpack_size) :
+  InstallStep(package, unpack_size, _unpack_factor)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUnpackArchive::do_step
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallToken P3DPackage::InstallStepUnpackArchive::
+do_step(bool download_finished) {
+  string source_pathname = _package->get_archive_file_pathname();
+  P3DMultifileReader reader;
+  if (!reader.open_read(source_pathname)) {
+    nout << "Couldn't read " << source_pathname << "\n";
+    return IT_step_failed;
+  }
+
+  if (!reader.extract_all(_package->get_package_dir(), _package, this)) {
+    nout << "Failure extracting " << source_pathname << "\n";
+    return IT_step_failed;
+  }
+
+  return IT_step_complete;
+}
+

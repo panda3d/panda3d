@@ -42,6 +42,7 @@ public:
   bool full_verify(const string &package_dir) const;
   
   bool check_hash(const string &pathname) const;
+  bool read_hash(const string &pathname);
 
 private:
   static inline int decode_hexdigit(char c);

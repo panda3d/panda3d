@@ -19,6 +19,7 @@
 #include "p3dFileDownload.h"
 #include "fileSpec.h"
 #include "get_tinyxml.h"
+#include <deque>
 
 class P3DHost;
 class P3DInstance;
@@ -61,6 +62,7 @@ public:
   inline const TiXmlElement *get_xconfig() const;
 
   inline const string &get_desc_file_pathname() const;
+  inline const string &get_desc_file_dirname() const;
   inline string get_archive_file_pathname() const;
 
   void add_instance(P3DInstance *inst);
@@ -69,10 +71,13 @@ public:
   TiXmlElement *make_xml();
 
 private:
+  typedef vector<FileSpec> Extracts;
+
   enum DownloadType {
     DT_contents_file,
+    DT_redownload_contents_file,
     DT_desc_file,
-    DT_compressed_archive
+    DT_install_step,
   };
 
   typedef vector<string> TryUrls;
@@ -88,6 +93,9 @@ private:
     virtual void download_finished(bool success);
 
   public:
+    void resume_download_finished(bool success);
+
+  public:
     // URL's to try downloading from, in reverse order.
     TryUrls _try_urls;
 
@@ -99,33 +107,94 @@ private:
     FileSpec _file_spec;
   };
 
+  enum InstallToken {
+    IT_step_complete,
+    IT_step_failed,
+    IT_continue,
+  };
+
+  class InstallStep {
+  public:
+    InstallStep(P3DPackage *package, size_t bytes, double factor);
+    virtual ~InstallStep();
+
+    virtual InstallToken do_step(bool download_finished) = 0;
+
+    inline double get_effort() const;
+    inline double get_progress() const;
+    inline void report_step_progress();
+
+    P3DPackage *_package;
+    size_t _bytes_needed;
+    size_t _bytes_done;
+    double _bytes_factor;
+  };
+
+  class InstallStepDownloadFile : public InstallStep {
+  public:
+    InstallStepDownloadFile(P3DPackage *package, const FileSpec &file);
+    virtual ~InstallStepDownloadFile();
+
+    virtual InstallToken do_step(bool download_finished);
+
+    string _urlbase;
+    string _pathname;
+    FileSpec _file;
+    Download *_download;
+  };
+
+  class InstallStepUncompressFile : public InstallStep {
+  public:
+    InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
+                              const FileSpec &target);
+    virtual InstallToken do_step(bool download_finished);
+
+    FileSpec _source;
+    FileSpec _target;
+  };
+
+  class InstallStepUnpackArchive : public InstallStep {
+  public:
+    InstallStepUnpackArchive(P3DPackage *package, size_t unpack_size);
+    virtual InstallToken do_step(bool download_finished);
+  };
+
+  typedef deque<InstallStep *> InstallPlan;
+  typedef deque<InstallPlan> InstallPlans;
+  InstallPlans _install_plans;
+
+  double _total_plan_size;
+  double _total_plan_completed;
+  double _download_progress;
+  double _current_step_effort;
+
   void begin_info_download();
   void download_contents_file();
   void contents_file_download_finished(bool success);
+  void redownload_contents_file(Download *download);
+  void contents_file_redownload_finished(bool success);
   void host_got_contents_file();
 
   void download_desc_file();
   void desc_file_download_finished(bool success);
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
 
-  void begin_data_download();
-  void download_compressed_archive();
-  void compressed_archive_download_progress(double progress);
-  void compressed_archive_download_finished(bool success);
+  void clear_install_plans();
+  void build_install_plans();
+  void follow_install_plans(bool download_finished);
 
-  void uncompress_archive();
-  void extract_archive();
-
-  void report_progress(double progress);
+  class InstallStep;
+  void report_progress(InstallStep *step);
   void report_info_ready();
   void report_done(bool success);
-  void start_download(DownloadType dtype, const string &urlbase, 
-                      const string &pathname, const FileSpec &file_spec);
+  Download *start_download(DownloadType dtype, const string &urlbase, 
+                           const string &pathname, const FileSpec &file_spec);
 
   bool is_extractable(const string &filename) const;
 
 private:
   P3DHost *_host;
+  int _host_contents_seq;
 
   string _package_name;
   string _package_version;
@@ -151,6 +220,7 @@ private:
   bool _ready;
   bool _failed;
   Download *_active_download;
+  Download *_saved_download;
 
   typedef vector<P3DInstance *> Instances;
   Instances _instances;
@@ -158,12 +228,17 @@ private:
   FileSpec _compressed_archive;
   FileSpec _uncompressed_archive;
 
-  typedef vector<FileSpec> Extracts;
+  size_t _unpack_size;
   Extracts _extracts;
 
-  friend class Download;
-  friend class P3DMultifileReader;
+  static const double _download_factor;
+  static const double _uncompress_factor;
+  static const double _unpack_factor;
+  static const double _patch_factor;
 
+  friend class Download;
+  friend class InstallStep;
+  friend class P3DMultifileReader;
   friend class P3DHost;
 };
 
