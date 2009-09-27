@@ -1795,7 +1795,7 @@ report_package_info_ready(P3DPackage *package) {
       _download_package_index = 0;
       _total_downloaded = 0;
       
-      nout << "Beginning download of " << _downloading_packages.size()
+      nout << "Beginning install of " << _downloading_packages.size()
            << " packages, total " << _total_download_size
            << " bytes required.\n";
       
@@ -1844,7 +1844,7 @@ start_next_download() {
       _panda_script_object->set_int_property("downloadPackageSize", package->get_download_size());
       set_install_label("Installing " + name);
 
-      nout << "Downloading " << package->get_package_name()
+      nout << "Installing " << package->get_package_name()
            << ", package " << _download_package_index + 1
            << " of " << _downloading_packages.size()
            << ", " << package->get_download_size()
@@ -1999,7 +1999,7 @@ report_package_progress(P3DPackage *package, double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_done(P3DPackage *package, bool success) {
-  nout << "Done downloading " << package->get_package_name()
+  nout << "Done installing " << package->get_package_name()
        << ": success = " << success << "\n";
 
   if (package == _image_package) {

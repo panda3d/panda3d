@@ -17,9 +17,11 @@
 
 #include <fstream>
 #include <fcntl.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -44,6 +46,7 @@ FileSpec() {
   _timestamp = 0;
   memset(_hash, 0, sizeof(_hash));
   _got_hash = false;
+  _actual_file = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,6 +62,7 @@ FileSpec(const FileSpec &copy) :
   _got_hash(copy._got_hash)
 {
   memcpy(_hash, copy._hash, sizeof(_hash));
+  _actual_file = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,6 +77,18 @@ operator = (const FileSpec &copy) {
   _timestamp = copy._size;
   memcpy(_hash, copy._hash, sizeof(_hash));
   _got_hash = copy._got_hash;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FileSpec::
+~FileSpec() {
+  if (_actual_file != NULL) {
+    delete _actual_file;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +135,12 @@ load_xml(TiXmlElement *xelement) {
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
-quick_verify(const string &package_dir) const {
+quick_verify(const string &package_dir) {
+  if (_actual_file != NULL) {
+    delete _actual_file;
+    _actual_file = NULL;
+  }
+
   string pathname = get_pathname(package_dir);
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
@@ -143,7 +164,7 @@ quick_verify(const string &package_dir) const {
 
   // If the size is right but the timestamp is wrong, the file
   // soft-fails.  We follow this up with a hash check.
-  if (!check_hash(pathname)) {
+  if (!priv_check_hash(pathname, st)) {
     // Hard fail, the hash is wrong.
     //cerr << "hash check wrong: " << _filename << "\n";
     return false;
@@ -174,7 +195,12 @@ quick_verify(const string &package_dir) const {
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
-full_verify(const string &package_dir) const {
+full_verify(const string &package_dir) {
+  if (_actual_file != NULL) {
+    delete _actual_file;
+    _actual_file = NULL;
+  }
+
   string pathname = get_pathname(package_dir);
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
@@ -188,7 +214,7 @@ full_verify(const string &package_dir) const {
     return false;
   }
 
-  if (!check_hash(pathname)) {
+  if (!priv_check_hash(pathname, st)) {
     // Hard fail, the hash is wrong.
     //cerr << "hash check wrong: " << _filename << "\n";
     return false;
@@ -218,31 +244,12 @@ full_verify(const string &package_dir) const {
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
 check_hash(const string &pathname) const {
-  ifstream stream(pathname.c_str(), ios::in | ios::binary);
-  if (!stream) {
-    //cerr << "unable to read " << pathname << "\n";
+  FileSpec other;
+  if (!other.read_hash(pathname)) {
     return false;
   }
 
-  unsigned char md[hash_size];
-
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
-
-  static const int buffer_size = 4096;
-  char buffer[buffer_size];
-
-  stream.read(buffer, buffer_size);
-  size_t count = stream.gcount();
-  while (count != 0) {
-    MD5_Update(&ctx, buffer, count);
-    stream.read(buffer, buffer_size);
-    count = stream.gcount();
-  }
-
-  MD5_Final(md, &ctx);
-
-  return (memcmp(md, _hash, hash_size) == 0);
+  return (memcmp(_hash, other._hash, hash_size) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,6 +285,65 @@ read_hash(const string &pathname) {
   MD5_Final(_hash, &ctx);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::compare_hash
+//       Access: Public
+//  Description: Returns true if this hash sorts before the other
+//               hash, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool FileSpec::
+compare_hash(const FileSpec &other) const {
+  return memcmp(_hash, other._hash, hash_size) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::write
+//       Access: Public
+//  Description: Describes the data in the FileSpec.
+////////////////////////////////////////////////////////////////////
+void FileSpec::
+write(ostream &out) const {
+  out << "filename: " << _filename << ", " << _size << " bytes, "
+      << asctime(localtime(&_timestamp));
+  // asctime includes a newline.
+  out << "hash: ";
+  stream_hex(out, _hash, hash_size);
+  out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::output_hash
+//       Access: Public
+//  Description: Writes just the hash code.
+////////////////////////////////////////////////////////////////////
+void FileSpec::
+output_hash(ostream &out) const {
+  stream_hex(out, _hash, hash_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::priv_check_hash
+//       Access: Private
+//  Description: Returns true if the file has the expected md5 hash,
+//               false otherwise.  Updates _actual_file with the data
+//               read from disk, including the hash, for future
+//               reference.
+////////////////////////////////////////////////////////////////////
+bool FileSpec::
+priv_check_hash(const string &pathname, const struct stat &st) {
+  assert(_actual_file == NULL);
+  _actual_file = new FileSpec;
+  _actual_file->_filename = pathname;
+  _actual_file->_size = st.st_size;
+  _actual_file->_timestamp = st.st_mtime;
+
+  if (!_actual_file->read_hash(pathname)) {
+    return false;
+  }
+
+  return (memcmp(_hash, _actual_file->_hash, hash_size) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

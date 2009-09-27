@@ -180,7 +180,7 @@ private:
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
 
   void clear_install_plans();
-  void build_install_plans();
+  void build_install_plans(TiXmlDocument *doc);
   void follow_install_plans(bool download_finished);
 
   class InstallStep;

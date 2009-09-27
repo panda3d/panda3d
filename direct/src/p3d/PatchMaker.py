@@ -10,15 +10,15 @@ class PatchMaker:
 
     class PackageVersion:
         """ A specific patch version of a package.  This is not just
-        the package's "version" number; it also corresponds to the
+        the package's "version" string; it also corresponds to the
         particular patch version, which increments independently of
         the "version". """
         
-        def __init__(self, packageName, platform, version, host, file):
+        def __init__(self, packageName, platform, version, hostUrl, file):
             self.packageName = packageName
             self.platform = platform
             self.version = version
-            self.host = host
+            self.hostUrl = hostUrl
             self.file = file
             self.printName = None
 
@@ -43,8 +43,8 @@ class PatchMaker:
 
         def getPatchChain(self, startPv):
             """ Returns a list of patches that, when applied in
-            sequence to the indicated patchVersion object, will
-            produce this patchVersion object.  Returns None if no
+            sequence to the indicated PackageVersion object, will
+            produce this PackageVersion object.  Returns None if no
             chain can be found. """
 
             if self is startPv:
@@ -173,7 +173,7 @@ class PatchMaker:
                 if patch.packageName == package.packageName and \
                    patch.platform == package.platform and \
                    patch.version == package.version and \
-                   patch.host == package.host:
+                   patch.hostUrl == package.hostUrl:
                     return patch.toPv
 
             return None
@@ -186,25 +186,49 @@ class PatchMaker:
             self.packageName = package.packageName
             self.platform = package.platform
             self.version = package.version
-            self.host = None
+            self.hostUrl = None
+
+            # FileSpec for the patchfile itself
+            self.file = None
+
+            # FileSpec for the package file that the patch is applied to
+            self.sourceFile = None
+
+            # FileSpec for the package file that the patch generates
+            self.targetFile = None
+
+            # The PackageVersion corresponding to our sourceFile
+            self.fromPv = None
+
+            # The PackageVersion corresponding to our targetFile
+            self.toPv = None
 
         def getSourceKey(self):
-            return (self.packageName, self.platform, self.version, self.host, self.sourceFile)
+            """ Returns the key for locating the package that this
+            patchfile can be applied to. """
+            return (self.packageName, self.platform, self.version, self.hostUrl, self.sourceFile)
 
         def getTargetKey(self):
-            return (self.packageName, self.platform, self.version, self.host, self.targetFile)
+            """ Returns the key for locating the package that this
+            patchfile will generate. """
+            return (self.packageName, self.platform, self.version, self.hostUrl, self.targetFile)
 
         def fromFile(self, packageDir, patchFilename, sourceFile, targetFile):
+            """ Creates the data structures from an existing patchfile
+            on disk. """
+            
             self.file = FileSpec()
             self.file.fromFile(packageDir, patchFilename)
             self.sourceFile = sourceFile
             self.targetFile = targetFile
 
         def loadXml(self, xpatch):
+            """ Reads the data structures from an xml file. """
+            
             self.packageName = xpatch.Attribute('name') or self.packageName
             self.platform = xpatch.Attribute('platform') or self.platform
             self.version = xpatch.Attribute('version') or self.version
-            self.host = xpatch.Attribute('host') or self.host
+            self.hostUrl = xpatch.Attribute('host') or self.hostUrl
 
             self.file = FileSpec()
             self.file.loadXml(xpatch)
@@ -228,8 +252,8 @@ class PatchMaker:
                 xpatch.SetAttribute('platform', self.platform)
             if self.version != package.version:
                 xpatch.SetAttribute('version', self.version)
-            if self.host != package.host:
-                xpatch.SetAttribute('host', self.host)
+            if self.hostUrl != package.hostUrl:
+                xpatch.SetAttribute('host', self.hostUrl)
 
             self.file.storeXml(xpatch)
 
@@ -259,7 +283,7 @@ class PatchMaker:
             self.packageName = None
             self.platform = None
             self.version = None
-            self.host = None
+            self.hostUrl = None
             self.currentFile = None
             self.baseFile = None
 
@@ -268,18 +292,25 @@ class PatchMaker:
             self.patches = []
 
         def getCurrentKey(self):
-            return (self.packageName, self.platform, self.version, self.host, self.currentFile)
+            """ Returns the key to locate the current version of this
+            package. """
+            
+            return (self.packageName, self.platform, self.version, self.hostUrl, self.currentFile)
 
         def getBaseKey(self):
-            return (self.packageName, self.platform, self.version, self.host, self.baseFile)
+            """ Returns the key to locate the "base" or oldest version
+            of this package. """
+            
+            return (self.packageName, self.platform, self.version, self.hostUrl, self.baseFile)
 
         def getGenericKey(self, fileSpec):
-            """ Returns the key that has the indicated FileSpec. """
-            return (self.packageName, self.platform, self.version, self.host, fileSpec)
+            """ Returns the key that has the indicated hash. """
+            return (self.packageName, self.platform, self.version, self.hostUrl, fileSpec)
 
         def readDescFile(self):
-            """ Reads the existing package.xml file and stores
-            it in this class for later rewriting. """
+            """ Reads the existing package.xml file and stores it in
+            this class for later rewriting.  Returns true on success,
+            false on failure. """
 
             self.anyChanges = False
 
@@ -287,11 +318,11 @@ class PatchMaker:
             self.doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not self.doc.LoadFile():
                 print "Couldn't read %s" % (packageDescFullpath)
-                return
+                return False
             
             xpackage = self.doc.FirstChildElement('package')
             if not xpackage:
-                return
+                return False
             self.packageName = xpackage.Attribute('name')
             self.platform = xpackage.Attribute('platform')
             self.version = xpackage.Attribute('version')
@@ -300,7 +331,7 @@ class PatchMaker:
             # "none" host.  TODO: support patching from packages on
             # other hosts, which means we'll need to fill in a value
             # here for those hosts.
-            self.host = None
+            self.hostUrl = None
 
             # Get the current patch version.  If we have a
             # patch_version attribute, it refers to this particular
@@ -389,6 +420,8 @@ class PatchMaker:
                 self.patches.append(patchfile)
                 xpatch = xpatch.NextSiblingElement('patch')
 
+            return True
+
         def writeDescFile(self):
             """ Rewrites the desc file with the new patch
             information. """
@@ -436,7 +469,7 @@ class PatchMaker:
                 fileSpec.fromFile(self.patchMaker.installDir, self.packageDesc)
                 fileSpec.storeXml(self.contentsDocPackage)
             
-
+    # PatchMaker constructor.
     def __init__(self, installDir):
         self.installDir = installDir
         self.packageVersions = {}
@@ -468,15 +501,36 @@ class PatchMaker:
         for pv in self.packageVersions.values():
             pv.cleanup()
 
+    def getPatchChainToCurrent(self, descFilename, fileSpec):
+        """ Reads the package defined in the indicated desc file, and
+        constructs a patch chain from the version represented by
+        fileSpec to the current version of this package, if possible.
+        Returns the patch chain if successful, or None otherwise. """
+        
+        package = self.readPackageDescFile(descFilename)
+        if not package:
+            return None
+        
+        self.buildPatchChains()
+        fromPv = self.getPackageVersion(package.getGenericKey(fileSpec))
+        toPv = package.currentPv
+
+        patchChain = None
+        if toPv and fromPv:
+            patchChain = toPv.getPatchChain(fromPv)
+
+        return patchChain
+
     def readPackageDescFile(self, descFilename):
         """ Reads a desc file associated with a particular package,
-        and adds the package to self.packageVersions.  Returns the
-        Package object. """
+        and adds the package to self.packages.  Returns the Package
+        object, or None on failure. """
 
         package = self.Package(Filename(descFilename), self)
-        package.readDescFile()
+        if not package.readDescFile():
+            return None
+        
         self.packages.append(package)
-
         return package
 
     def readContentsFile(self):
@@ -522,10 +576,10 @@ class PatchMaker:
         """ Returns a shared PackageVersion object for the indicated
         key. """
 
-        packageName, platform, version, host, file = key
+        packageName, platform, version, hostUrl, file = key
 
         # We actually key on the hash, not the FileSpec itself.
-        k = (packageName, platform, version, host, file.hash)
+        k = (packageName, platform, version, hostUrl, file.hash)
         pv = self.packageVersions.get(k, None)
         if not pv:
             pv = self.PackageVersion(*key)

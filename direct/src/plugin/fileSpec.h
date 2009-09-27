@@ -31,6 +31,8 @@ public:
   FileSpec();
   FileSpec(const FileSpec &copy);
   void operator = (const FileSpec &copy);
+  ~FileSpec();
+
   void load_xml(TiXmlElement *xelement);
 
   inline const string &get_filename() const;
@@ -38,13 +40,19 @@ public:
   inline string get_pathname(const string &package_dir) const;
   inline size_t get_size() const;
   
-  bool quick_verify(const string &package_dir) const;
-  bool full_verify(const string &package_dir) const;
+  bool quick_verify(const string &package_dir);
+  bool full_verify(const string &package_dir);
+  inline const FileSpec *get_actual_file() const;
   
   bool check_hash(const string &pathname) const;
   bool read_hash(const string &pathname);
+  bool compare_hash(const FileSpec &other) const;
+
+  void write(ostream &out) const;
+  void output_hash(ostream &out) const;
 
 private:
+  bool priv_check_hash(const string &pathname, const struct stat &st);
   static inline int decode_hexdigit(char c);
   static inline char encode_hexdigit(int c);
 
@@ -59,6 +67,8 @@ private:
   time_t _timestamp;
   unsigned char _hash[hash_size];
   bool _got_hash;
+
+  FileSpec *_actual_file;
 };
 
 #include "fileSpec.I"

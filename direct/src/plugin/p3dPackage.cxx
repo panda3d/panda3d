@@ -17,6 +17,7 @@
 #include "p3dInstance.h"
 #include "p3dMultifileReader.h"
 #include "p3dTemporaryFile.h"
+#include "p3dPatchFinder.h"
 #include "mkdir_complete.h"
 
 #include "zlib.h"
@@ -672,7 +673,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   } else {
     // We need to get the file data still, but at least we know all
     // about it by this point.
-    build_install_plans();
+    build_install_plans(doc);
 
     if (!_allow_data_download) {
       // Not authorized to start downloading yet; just report that
@@ -712,7 +713,7 @@ clear_install_plans() {
 //               to download and install the package.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-build_install_plans() {
+build_install_plans(TiXmlDocument *doc) {
   clear_install_plans();
 
   if (_instances.empty()) {
@@ -728,6 +729,8 @@ build_install_plans() {
   _install_plans.push_back(InstallPlan());
   InstallPlan &plan = _install_plans.back();
 
+  bool needs_redownload = false;
+  
   InstallStep *step;
   if (!_uncompressed_archive.quick_verify(_package_dir)) {
     // The uncompressed archive is no good.
@@ -735,6 +738,7 @@ build_install_plans() {
     if (!_compressed_archive.quick_verify(_package_dir)) {
       // The compressed archive is no good either.  Download a new
       // compressed archive.
+      needs_redownload = true;
       step = new InstallStepDownloadFile(this, _compressed_archive);
       plan.push_back(step);
     }
@@ -748,6 +752,35 @@ build_install_plans() {
   // Unpack the uncompressed archive.
   step = new InstallStepUnpackArchive(this, _unpack_size);
   plan.push_back(step);
+
+  if (needs_redownload) {
+    // Since we need to do some downloading, try to build a plan that
+    // involves downloading patches instead of downloading the whole
+    // file.  This will be our first choice, plan A, if we can do it.
+
+    // We'll need the md5 hash of the uncompressed archive currently
+    // on disk.
+
+    // Maybe we've already read the md5 hash and we have it stored here.
+    const FileSpec *on_disk_ptr = _uncompressed_archive.get_actual_file();
+    FileSpec on_disk;
+    if (on_disk_ptr == NULL) {
+      // If not, we have to go read it now.
+      if (on_disk.read_hash(_uncompressed_archive.get_pathname(_package_dir))) {
+        on_disk_ptr = &on_disk;
+      }
+    }
+
+    if (on_disk_ptr != NULL) {
+      P3DPatchFinder patch_finder;
+      P3DPatchFinder::Patchfiles chain;
+      if (patch_finder.get_patch_chain_to_current(chain, doc, *on_disk_ptr)) {
+        cerr << "got patch chain of length " << chain.size() << "\n";
+      } else {
+        cerr << "No patch chain possible.\n";
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

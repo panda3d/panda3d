@@ -514,15 +514,7 @@ class PackageInfo:
         from direct.p3d.PatchMaker import PatchMaker
 
         patchMaker = PatchMaker(self.packageDir)
-        package = patchMaker.readPackageDescFile(self.descFileBasename)
-        patchMaker.buildPatchChains()
-        fromPv = patchMaker.getPackageVersion(package.getGenericKey(fileSpec))
-        toPv = package.currentPv
-
-        patchChain = None
-        if toPv and fromPv:
-            patchChain = toPv.getPatchChain(fromPv)
-
+        patchChain = patchMaker.getPatchChainToCurrent(self.descFileBasename, fileSpec)
         if patchChain is None:
             # No path.
             patchMaker.cleanup()

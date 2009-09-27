@@ -17,6 +17,7 @@
 #include "p3dObject.cxx"
 #include "p3dOsxSplashWindow.cxx"
 #include "p3dPackage.cxx"
+#include "p3dPatchFinder.cxx"
 #include "p3dPythonObject.cxx"
 #include "p3dReferenceCount.cxx"
 #include "p3dSession.cxx"

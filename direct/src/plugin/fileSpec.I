@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_filename
-//       Access: Private
+//       Access: Public
 //  Description: Returns the relative path to this file on disk,
 //               within the package root directory.
 ////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ get_filename() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::set_filename
-//       Access: Private
+//       Access: Public
 //  Description: Changes the relative path to this file on disk,
 //               within the package root directory.
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ set_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_pathname
-//       Access: Private
+//       Access: Public
 //  Description: Returns the full path to this file on disk.
 ////////////////////////////////////////////////////////////////////
 inline string FileSpec::
@@ -47,13 +47,29 @@ get_pathname(const string &package_dir) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_size
-//       Access: Private
+//       Access: Public
 //  Description: Returns the expected size of this file on disk, in
 //               bytes.
 ////////////////////////////////////////////////////////////////////
 inline size_t FileSpec::
 get_size() const {
   return _size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::get_actual_file
+//       Access: Public
+//  Description: After a call to quick_verify() or full_verify(), this
+//               method *may* return a pointer to a FileSpec that
+//               represents the actual data read on disk, or it may
+//               return NULL.  If this returns a non-NULL value, you
+//               may use it to extract the md5 hash of the existing
+//               file, thus saving the effort of performing the hash
+//               twice.
+////////////////////////////////////////////////////////////////////
+inline const FileSpec *FileSpec::
+get_actual_file() const {
+  return _actual_file;
 }
 
 ////////////////////////////////////////////////////////////////////
