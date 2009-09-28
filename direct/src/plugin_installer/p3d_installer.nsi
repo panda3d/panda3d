@@ -74,6 +74,8 @@ Section "MainSection" SEC01
   File "${NPAPI_PATH}"
   File "${PANDA3D_PATH}"
 
+; Auto-detected dependencies on the above executables.  Python
+; computes these values for us.
 !ifdef DEP0P
   File "${DEP0P}"
 !endif
@@ -90,9 +92,11 @@ Section "MainSection" SEC01
   File "${DEP4P}"
 !endif
 
+!ifdef ADD_START_MENU
 ; Start->Programs links
   CreateDirectory "$SMPROGRAMS\${PROG_GROUPNAME}"
 ;  CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${PRODUCT_NAME_SHORT}.lnk" "$INSTDIR\${LAUNCHER}"
+!endif
 
 ; Desktop Icon...commented out for now
 ;  CreateShortCut "$DESKTOP\${PRODUCT_NAME_SHORT}.lnk" "$INSTDIR\${OCX}"
@@ -105,8 +109,10 @@ SectionEnd
 
 Section -AdditionalIcons
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
+!ifdef ADD_START_MENU
   CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk" "$INSTDIR\uninst.exe"
+!endif
 SectionEnd
 
 Section -Post
@@ -135,26 +141,38 @@ Function .onInstSuccess
  # Register ActiveX
  ExecWait 'regsvr32 /s "$INSTDIR/${OCX}"'
 
- # Install Firefox Plugin
- ReadRegStr $0 HKLM "${FIREFOX_DIR_REGKEY}" Path
- ${If} $0 != ""
-     CopyFiles $INSTDIR\${NPAPI} $0\plugins
+ # Install Mozilla Plugin
+
+StrCpy $1 "0"
+Mozilla-Install-Loop:
+  EnumRegKey $0 HKLM "SOFTWARE\Mozilla" "$1"
+  StrCmp $0 "" Mozilla-Install-End
+  IntOp $1 $1 + 1
+  ReadRegStr $2 HKLM "SOFTWARE\Mozilla\$0\Extensions" "Plugins"
+ ${If} $2 != ""
+     CreateDirectory "$2"
+     CopyFiles $INSTDIR\${NPAPI} "$2"
 !ifdef NPAPI_DEP0
-     CopyFiles $INSTDIR\${NPAPI_DEP0} $0\plugins
+     CopyFiles $INSTDIR\${NPAPI_DEP0} "$2"
 !endif
 !ifdef NPAPI_DEP1
-     CopyFiles $INSTDIR\${NPAPI_DEP1} $0\plugins
+     CopyFiles $INSTDIR\${NPAPI_DEP1} "$2"
 !endif
 !ifdef NPAPI_DEP2
-     CopyFiles $INSTDIR\${NPAPI_DEP2} $0\plugins
+     CopyFiles $INSTDIR\${NPAPI_DEP2} "$2"
 !endif
 !ifdef NPAPI_DEP3
-     CopyFiles $INSTDIR\${NPAPI_DEP3} $0\plugins
+     CopyFiles $INSTDIR\${NPAPI_DEP3} "$2"
 !endif
 !ifdef NPAPI_DEP4
-     CopyFiles $INSTDIR\${NPAPI_DEP4} $0\plugins
+     CopyFiles $INSTDIR\${NPAPI_DEP4} "$2"
 !endif
  ${EndIf}
+
+  goto Mozilla-Install-Loop
+
+Mozilla-Install-End:
+
 FunctionEnd
 
 Section Uninstall
@@ -181,26 +199,39 @@ Section Uninstall
   Delete "$INSTDIR\${DEP4}"
 !endif
 
-  ReadRegStr $0 HKLM "${FIREFOX_DIR_REGKEY}" Path
-  ${If} $0 != ""
-      Delete "$0\plugins\${NPAPI}"
-  ${EndIf}
+StrCpy $1 "0"
+Mozilla-Uninstall-Loop:
+  EnumRegKey $0 HKLM "SOFTWARE\Mozilla" "$1"
+  StrCmp $0 "" Mozilla-Uninstall-End
+  IntOp $1 $1 + 1
+  ReadRegStr $2 HKLM "SOFTWARE\Mozilla\$0\Extensions" "Plugins"
+ ${If} $2 != ""
+     Delete "$2\${NPAPI}"
+     # We can't delete the dependency files, because who knows--maybe
+     # some other plugins are also using the same files.
+ ${EndIf}
+  goto Mozilla-Uninstall-Loop
+Mozilla-Uninstall-End:
 
   ReadRegDWORD $0 HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System EnableLUA
-  ${If} $0 != ""
-      RmDir /r "$LOCALAPPDATALow\${APP_INTERNAL_NAME}"
-  ${Else}
-      RmDir /r "$LOCALAPPDATA\${APP_INTERNAL_NAME}"
-  ${Endif}
+
+  # Remove the user's "Panda3D" directory, where all of the downloaded
+  # contents are installed.  Too bad we can't do this for every system
+  # user, not just the current user.
+
+  RmDir /r "$LOCALAPPDATA\Low\${APP_INTERNAL_NAME}"
+  RmDir /r "$LOCALAPPDATA\${APP_INTERNAL_NAME}"
 
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
 
+!ifdef ADD_START_MENU
   Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${UNINSTALL_LINK_NAME}.lnk"
   Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${WEBSITE_LINK_NAME}.lnk"
 ;  Delete "$DESKTOP\${PRODUCT_NAME_SHORT}${PRODUCT_RELEASE}.lnk"
 ;  Delete "$SMPROGRAMS\${PROG_GROUPNAME}\${PRODUCT_NAME_SHORT}.lnk"
   RMDir "$SMPROGRAMS\${PROG_GROUPNAME}"
+!endif
 
   RMDir "$INSTDIR"
 

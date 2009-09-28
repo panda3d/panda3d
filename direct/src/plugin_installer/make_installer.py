@@ -32,10 +32,13 @@ parser.add_option('-l', '--license', dest = 'license',
 parser.add_option('-w', '--website', dest = 'website',
                   help = 'The product website',
                   default = 'http://www.panda3d.org')
+parser.add_option('', '--start', dest = 'start',
+                  help = 'Specify this option to add a start menu',
+                  action = 'store_false', default = False)
 parser.add_option('', '--nsis', dest = 'nsis',
                   help = 'The directory containing NSIS',
                   default = None)
-parser.add_option('', '--welcome_bitmap', dest = 'welcome_bitmap',
+parser.add_option('', '--welcome_image', dest = 'welcome_image',
                   help = 'The image to display on the installer',
                   default = None)
 parser.add_option('', '--install_icon', dest = 'install_icon',
@@ -75,14 +78,14 @@ if not options.nsis or not options.license:
     if not options.license:
         options.license = os.path.join(PANDA, 'LICENSE')
 
-## if not options.welcome_bitmap:
-##     filename = Filename('plugin_images/download.jpg')
-##     found = filename.resolveFilename(getModelPath().getValue())
-##     if not found:
-##         found = filename.resolveFilename("models")
-##     if not found:
-##         sys.exit("Couldn't find download.jpg for welcome_bitmap.")
-##     options.welcome_bitmap = filename.toOsSpecific()
+if not options.welcome_image:
+    filename = Filename('plugin_images/download.jpg')
+    found = filename.resolveFilename(getModelPath().getValue())
+    if not found:
+        found = filename.resolveFilename("models")
+    if not found:
+        sys.exit("Couldn't find download.jpg for welcome_image.")
+    options.welcome_image = filename
 
 def parseDependenciesWindows(tempFile):
     """ Reads the indicated temporary file, the output from
@@ -172,6 +175,33 @@ def makeInstaller():
                 pluginDependencies[file].append(dfile)
                 dependentFiles[dfile] = pathname.toOsSpecific()
 
+    welcomeBitmap = None
+    if options.welcome_image:
+        # Convert the image from its current format to a bmp file, for NSIS.
+        p = PNMImage()
+        if not p.read(options.welcome_image):
+            sys.exit("Couldn't read %s" % (options.welcome_image))
+
+        # We also must scale it to fit within 170x312, the space
+        # allotted within the installer window.
+        size = (170, 312)
+        xscale = float(size[0]) / p.getXSize()
+        yscale = float(size[1]) / p.getYSize()
+        scale = min(xscale, yscale, 1)
+        resized = PNMImage((int)(scale * p.getXSize() + 0.5),
+                           (int)(scale * p.getYSize() + 0.5))
+        resized.quickFilterFrom(p)
+
+        # Now center it within the full window.
+        result = PNMImage(size[0], size[1])
+        result.fill(1, 1, 1)
+        xc = (size[0] - resized.getXSize()) / 2
+        yc = (size[1] - resized.getYSize()) / 2
+        result.copySubImage(resized, xc, yc)
+
+        welcomeBitmap = Filename.temporary('', 'p3d_', '.bmp')
+        result.write(welcomeBitmap)
+
     # Now build the NSIS command.
     CMD = "\"" + options.nsis + "\\makensis.exe\" /V3 "
     CMD += '/DPRODUCT_NAME="' + options.long_name + '" '
@@ -194,10 +224,13 @@ def makeInstaller():
     dependencies = pluginDependencies[npapi]
     for i in range(len(dependencies)):
         CMD += '/DNPAPI_DEP%s="%s" ' % (i, dependencies[i])
+
+    if options.start:
+        CMD += '/DADD_START_MENU '
     
-    if options.welcome_bitmap:
-        CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + options.welcome_bitmap + '" '
-        CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + options.welcome_bitmap + '" '
+    if welcomeBitmap:
+        CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
+        CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
     if options.install_icon:
         CMD += '/DINSTALL_ICON="' + options.install_icon + '" '
 
@@ -207,5 +240,8 @@ def makeInstaller():
     print CMD
     print "packing..."
     subprocess.call(CMD)
+
+    if welcomeBitmap:
+        welcomeBitmap.unlink()
 
 makeInstaller()
