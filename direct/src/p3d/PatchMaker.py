@@ -385,6 +385,7 @@ class PatchMaker:
                     compressedFile.storeXml(xcompressed)
 
                 self.compressedFilename = newCompressedFilename
+                self.anyChanges = True
 
             # Get the base_version--the bottom (oldest) of the patch
             # chain.
@@ -426,9 +427,9 @@ class PatchMaker:
             """ Rewrites the desc file with the new patch
             information. """
 
-##             if not self.anyChanges:
-##                 # No need to rewrite.
-##                 return
+            if not self.anyChanges:
+                # No need to rewrite.
+                return
 
             xpackage = self.doc.FirstChildElement('package')
             if not xpackage:
@@ -566,10 +567,15 @@ class PatchMaker:
     def writeContentsFile(self):
         """ Writes the contents.xml file at the end of processing. """
 
-        # We trust each of the packages to have already updated their
-        # element within the contents.xml document, so all we have to
-        # do is write out the document.
+        # We also have to write the desc file for all packages that
+        # might need it, because we might have changed some of them on
+        # read.
+        for package in self.packages:
+            package.writeDescFile()
 
+        # The above writeDescFile() call should also update each
+        # package's element within the contents.xml document, so all
+        # we have to do now is write out the document.
         self.contentsDoc.SaveFile()
 
     def getPackageVersion(self, key):
@@ -666,8 +672,6 @@ class PatchMaker:
             assert filename not in self.patchFilenames
             if not self.buildPatch(pv, currentPv, package, filename):
                 raise StandardError, "Couldn't build patch."
-
-        package.writeDescFile()
 
     def buildPatch(self, v1, v2, package, patchFilename):
         """ Builds a patch from PackageVersion v1 to PackageVersion
