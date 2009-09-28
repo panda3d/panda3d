@@ -54,6 +54,10 @@ istream *Patchfile::_tar_istream = NULL;
 //   4 bytes  length of resulting patched file
 //  16 bytes  MD5 of resultant patched file
 
+// Note that MD5 hashes are written in the order observed by
+// HashVal::read_stream() and HashVal::write_stream(), which is not
+// the normal linear order.  (Each group of four bytes is reversed.)
+
 const int _v0_header_length = 4 + 4 + 16;
 const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
 //
