@@ -391,13 +391,19 @@ class Packager:
             
             self.multifile = Multifile()
 
-            if self.p3dApplication:
-                self.multifile.setHeaderPrefix('#! /usr/bin/env panda3d\n')
-
             # Write the multifile to a temporary filename until we
             # know enough to determine the output filename.
             multifileFilename = Filename.temporary('', self.packageName + '.', '.mf')
             self.multifile.openReadWrite(multifileFilename)
+
+            if self.p3dApplication:
+                # p3d files should be tagged to make them executable.
+                self.multifile.setHeaderPrefix('#! /usr/bin/env panda3d\n')
+            else:
+                # Package multifiles might be patched, and therefore
+                # don't want to record an internal timestamp, which
+                # would make patching less efficient.
+                self.multifile.setRecordTimestamp(False)
 
             self.extracts = []
             self.components = []
