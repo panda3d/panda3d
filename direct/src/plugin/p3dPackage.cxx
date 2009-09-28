@@ -726,8 +726,8 @@ build_install_plans(TiXmlDocument *doc) {
     return;
   }
 
-  _install_plans.push_back(InstallPlan());
-  InstallPlan &plan = _install_plans.back();
+  _install_plans.push_front(InstallPlan());
+  InstallPlan &plan = _install_plans.front();
 
   bool needs_redownload = false;
   
@@ -745,7 +745,8 @@ build_install_plans(TiXmlDocument *doc) {
 
     // Uncompress the compressed archive to generate the uncompressed
     // archive.
-    step = new InstallStepUncompressFile(this, _compressed_archive, _uncompressed_archive);
+    step = new InstallStepUncompressFile
+      (this, _compressed_archive, _uncompressed_archive, true);
     plan.push_back(step);
   }
 
@@ -775,9 +776,40 @@ build_install_plans(TiXmlDocument *doc) {
       P3DPatchFinder patch_finder;
       P3DPatchFinder::Patchfiles chain;
       if (patch_finder.get_patch_chain_to_current(chain, doc, *on_disk_ptr)) {
-        cerr << "got patch chain of length " << chain.size() << "\n";
-      } else {
-        cerr << "No patch chain possible.\n";
+        nout << "Got patch chain of length " << chain.size() << "\n";
+
+        // OK, we can create a plan to download and apply the patches.
+        _install_plans.push_front(InstallPlan());
+        InstallPlan &plan = _install_plans.front();
+
+        P3DPatchFinder::Patchfiles::iterator pi;
+        for (pi = chain.begin(); pi != chain.end(); ++pi) {
+          P3DPatchFinder::Patchfile *patchfile = (*pi);
+
+          // Download the patchfile
+          step = new InstallStepDownloadFile(this, patchfile->_file);
+          plan.push_back(step);
+
+          // Uncompress it
+          FileSpec new_file = patchfile->_file;
+          string new_filename = new_file.get_filename();
+          size_t dot = new_filename.rfind('.');
+          assert(new_filename.substr(dot) == ".pz");
+          new_filename = new_filename.substr(0, dot);
+          new_file.set_filename(new_filename);
+          step = new InstallStepUncompressFile
+            (this, patchfile->_file, new_file, false);
+          plan.push_back(step);
+
+          // And apply it
+          FileSpec source_file = patchfile->_source_file;
+          FileSpec target_file = patchfile->_target_file;
+          source_file.set_filename(_uncompressed_archive.get_filename());
+          target_file.set_filename(_uncompressed_archive.get_filename());
+          step = new InstallStepApplyPatch
+            (this, new_file, source_file, target_file);
+          plan.push_back(step);
+        }
       }
     }
   }
@@ -818,6 +850,9 @@ follow_install_plans(bool download_finished) {
       _current_step_effort = step->get_effort();
 
       InstallToken token = step->do_step(download_finished);
+      nout << step << ":";
+      step->output(nout);
+      nout << " returned " << token << "\n";
       switch (token) {
       case IT_step_failed:
         // This plan has failed.
@@ -845,6 +880,7 @@ follow_install_plans(bool download_finished) {
     }
 
     // That plan failed.  Go on to the next plan.
+    nout << "Plan failed.\n";
     _install_plans.pop_front();
   }
 
@@ -1252,6 +1288,17 @@ do_step(bool download_finished) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepDownloadFile::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepDownloadFile::
+output(ostream &out) {
+  out << "InstallStepDownloadFile("  << _package->get_package_name()
+      << ", " << _file.get_filename() << ")";
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::InstallStepUncompressFile::Constructor
@@ -1260,10 +1307,11 @@ do_step(bool download_finished) {
 ////////////////////////////////////////////////////////////////////
 P3DPackage::InstallStepUncompressFile::
 InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
-                          const FileSpec &target) :
+                          const FileSpec &target, bool verify_target) :
   InstallStep(package, target.get_size(), _uncompress_factor),
   _source(source),
-  _target(target)
+  _target(target),
+  _verify_target(verify_target)
 {
 }
 
@@ -1373,7 +1421,7 @@ do_step(bool download_finished) {
   source.close();
   target.close();
 
-  if (!_target.full_verify(_package->get_package_dir())) {
+  if (_verify_target && !_target.full_verify(_package->get_package_dir())) {
     nout << "after uncompressing " << target_pathname
          << ", failed hash check\n";
     return IT_step_failed;
@@ -1392,6 +1440,17 @@ do_step(bool download_finished) {
   return IT_step_complete;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUncompressFile::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepUncompressFile::
+output(ostream &out) {
+  out << "InstallStepUncompressFile(" << _package->get_package_name()
+      << ", " << _source.get_filename() << ", " << _target.get_filename()
+      << ", " << _verify_target << ")";
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::InstallStepUnpackArchive::Constructor
@@ -1426,3 +1485,65 @@ do_step(bool download_finished) {
   return IT_step_complete;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepUnpackArchive::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepUnpackArchive::
+output(ostream &out) {
+  out << "InstallStepUnpackArchive(" << _package->get_package_name() << ")";
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepApplyPatch::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepApplyPatch::
+InstallStepApplyPatch(P3DPackage *package, const FileSpec &patchfile,
+                      const FileSpec &source, const FileSpec &target) :
+  InstallStep(package, target.get_size(), _patch_factor),
+  _reader(package->get_package_dir(), patchfile, source, target)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepApplyPatch::do_step
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallToken P3DPackage::InstallStepApplyPatch::
+do_step(bool download_finished) {
+  // Open the patchfile
+  if (!_reader.open_read()) {
+    _reader.close();
+    return IT_step_failed;
+  }
+
+  // Apply the patch.
+  while (_reader.step()) {
+    _bytes_done = _reader.get_bytes_written();
+    report_step_progress();
+  }
+
+  // Close and verify.
+  _reader.close();
+  if (!_reader.get_success()) {
+    nout << "Patching failed\n";
+    return IT_step_failed;
+  }
+
+  return IT_step_complete;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepApplyPatch::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepApplyPatch::
+output(ostream &out) {
+  out << "InstallStepApplyPatch(" << _package->get_package_name() << ")";
+}

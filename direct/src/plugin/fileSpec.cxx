@@ -288,14 +288,37 @@ read_hash(const string &pathname) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::compare_hash
+//     Function: FileSpec::read_hash_stream
 //       Access: Public
-//  Description: Returns true if this hash sorts before the other
-//               hash, false otherwise.
+//  Description: Reads the hash from the next 16 bytes on the
+//               indicated istream, in the same unusual order observed
+//               by Panda's HashVal::read_stream() method.
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
+read_hash_stream(istream &in) {
+  for (int i = 0; i < hash_size; i += 4) {
+    unsigned int a = in.get();
+    unsigned int b = in.get();
+    unsigned int c = in.get();
+    unsigned int d = in.get();
+    _hash[i + 0] = d;
+    _hash[i + 1] = c;
+    _hash[i + 2] = b;
+    _hash[i + 3] = a;
+  }
+
+  return !in.fail();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::compare_hash
+//       Access: Public
+//  Description: Returns < 0 if this hash sorts before the other
+//               hash, > 0 if it sorts after, 0 if they are the same.
+////////////////////////////////////////////////////////////////////
+int FileSpec::
 compare_hash(const FileSpec &other) const {
-  return memcmp(_hash, other._hash, hash_size) < 0;
+  return memcmp(_hash, other._hash, hash_size);
 }
 
 ////////////////////////////////////////////////////////////////////

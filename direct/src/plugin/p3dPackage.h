@@ -17,6 +17,7 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
+#include "p3dPatchfileReader.h"
 #include "fileSpec.h"
 #include "get_tinyxml.h"
 #include <deque>
@@ -119,6 +120,7 @@ private:
     virtual ~InstallStep();
 
     virtual InstallToken do_step(bool download_finished) = 0;
+    virtual void output(ostream &out) = 0;
 
     inline double get_effort() const;
     inline double get_progress() const;
@@ -136,6 +138,7 @@ private:
     virtual ~InstallStepDownloadFile();
 
     virtual InstallToken do_step(bool download_finished);
+    virtual void output(ostream &out);
 
     string _urlbase;
     string _pathname;
@@ -146,17 +149,32 @@ private:
   class InstallStepUncompressFile : public InstallStep {
   public:
     InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
-                              const FileSpec &target);
+                              const FileSpec &target, bool verify_target);
     virtual InstallToken do_step(bool download_finished);
+    virtual void output(ostream &out);
 
     FileSpec _source;
     FileSpec _target;
+    bool _verify_target;
   };
 
   class InstallStepUnpackArchive : public InstallStep {
   public:
     InstallStepUnpackArchive(P3DPackage *package, size_t unpack_size);
     virtual InstallToken do_step(bool download_finished);
+    virtual void output(ostream &out);
+  };
+
+  class InstallStepApplyPatch : public InstallStep {
+  public:
+    InstallStepApplyPatch(P3DPackage *package,
+                          const FileSpec &patchfile,
+                          const FileSpec &source,
+                          const FileSpec &target);
+    virtual InstallToken do_step(bool download_finished);
+    virtual void output(ostream &out);
+
+    P3DPatchfileReader _reader;
   };
 
   typedef deque<InstallStep *> InstallPlan;

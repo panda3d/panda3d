@@ -48,6 +48,7 @@
     p3dObject.h p3dObject.I \
     p3dOsxSplashWindow.h p3dOsxSplashWindow.I \
     p3dPackage.h p3dPackage.I \
+    p3dPatchfileReader.h p3dPatchfileReader.I \
     p3dPatchFinder.h p3dPatchFinder.I \
     p3dPythonObject.h \
     p3dReferenceCount.h p3dReferenceCount.I \
@@ -82,6 +83,7 @@
     p3dObject.cxx \
     p3dOsxSplashWindow.cxx \
     p3dPackage.cxx \
+    p3dPatchfileReader.cxx \
     p3dPatchFinder.cxx \
     p3dPythonObject.cxx \
     p3dReferenceCount.cxx \

@@ -108,7 +108,7 @@ operator < (const PackageVersionKey &other) const {
   if (_host_url != other._host_url) {
     return _host_url < other._host_url;
   }
-  return _file.compare_hash(other._file);
+  return _file.compare_hash(other._file) < 0;
 }
 
 ////////////////////////////////////////////////////////////////////

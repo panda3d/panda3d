@@ -46,7 +46,8 @@ public:
   
   bool check_hash(const string &pathname) const;
   bool read_hash(const string &pathname);
-  bool compare_hash(const FileSpec &other) const;
+  bool read_hash_stream(istream &in);
+  int compare_hash(const FileSpec &other) const;
 
   void write(ostream &out) const;
   void output_hash(ostream &out) const;
