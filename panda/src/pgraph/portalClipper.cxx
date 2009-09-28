@@ -39,10 +39,15 @@ TypeHandle PortalClipper::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PortalClipper::
-PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup) {
+PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup):
+_reduced_viewport_min(-1,-1),
+_reduced_viewport_max(1,1),
+_clip_state(0)
+{
   _previous = new GeomNode("my_frustum");
 
   _view_frustum = _reduced_frustum = DCAST(BoundingHexahedron, frustum);
+
 
   _scene_setup = scene_setup;
 }
@@ -142,13 +147,13 @@ draw_current_portal()
   draw_to(_portal_node->get_vertex(2));
   draw_to(_portal_node->get_vertex(3));
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::draw the lines
 //       Access: Public
 //  Description: Draw all the lines in the buffer
-//               Yellow portal is the original geometry of the portal
-//               Cyan portal is the minmax adjusted portal
-//               Red portal is the clipped against frustum portal
+//               Cyan portal is the original geometry of the portal
+//               Yellow portal is the AA minmax & clipped portal
 //               Blue frustum is the frustum through portal
 //               White frustum is the camera frustum
 ////////////////////////////////////////////////////////////////////
@@ -213,33 +218,19 @@ draw_lines() {
 //  Description: Given the portal draw the frustum with line segs
 //               for now. More functionalities coming up
 ////////////////////////////////////////////////////////////////////
-void PortalClipper::
+bool PortalClipper::
 prepare_portal(const NodePath &node_path)
 {
-  SegmentList segs;
-
   // Get the Portal Node from this node_path
   PandaNode *node = node_path.node();
   _portal_node = NULL;
   if (node->is_of_type(PortalNode::get_class_type())) {  
     _portal_node = DCAST(PortalNode, node);
-    // lets draw the portal anyway
-    //draw_current_portal();
   }
-
-  // walk the portal
-  _num_vert = 0;
 
   // Get the geometry from the portal    
   portal_cat.spam() << *_portal_node << endl;
 
-  /*
-  // Get the World transformation matrix
-  CPT(TransformState) wtransform = portal_nodepath.get_transform(_scene_setup->get_scene_root());
-  LMatrix4f wmat = wtransform->get_mat();
-  portal_cat.spam() << wmat << endl;
-  */
-  
   // Get the camera transformation matrix
   CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
   //CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_camera_path());
@@ -265,8 +256,8 @@ prepare_portal(const NodePath &node_path)
 
   Planef portal_plane(temp[0], temp[1], temp[2]);
   if (!is_facing_view(portal_plane)) {
-    portal_cat.debug() << "portal failed 1st level test \n";
-    return;
+    portal_cat.debug() << "portal failed 1st level test (isn't facing the camera)\n";
+    return false;
   }
 
   portal_cat.spam() << "after transformation to camera space" << endl;
@@ -274,309 +265,92 @@ prepare_portal(const NodePath &node_path)
   portal_cat.spam() << temp[1] << endl;
   portal_cat.spam() << temp[2] << endl;
   portal_cat.spam() << temp[3] << endl;
+
+  // check if the portal intersects with the cameras 0 point (center of projection). In that case the portal will invert itself.
+  // portals intersecting the near plane or the 0 point are a weird case anyhow, therefore we don't reduce the frustum any further
+  // and just return true. In effect the portal doesn't reduce visibility but will draw everything in its out cell
+  if ((temp[0][1] <= 0) || (temp[1][1] <= 0) || (temp[2][1] <= 0) || (temp[3][1] <= 0)) {
+      portal_cat.debug() << "portal intersects with center of projection.." << endl;
+      return true;
+  }
   
-  float min_x, max_x, min_z, max_z;
+  // project portal points, so they are in the -1..1 range
+  LPoint3f projected_coords[4];
+  const Lens *lens = _scene_setup->get_lens();
+  lens->project(temp[0], projected_coords[0]);
+  lens->project(temp[1], projected_coords[1]);
+  lens->project(temp[2], projected_coords[2]);
+  lens->project(temp[3], projected_coords[3]);
 
-  min_x = min(min(min(temp[0][0], temp[1][0]), temp[2][0]), temp[3][0]);
-  max_x = max(max(max(temp[0][0], temp[1][0]), temp[2][0]), temp[3][0]);
-  min_z = min(min(min(temp[0][2], temp[1][2]), temp[2][2]), temp[3][2]);
-  max_z = max(max(max(temp[0][2], temp[1][2]), temp[2][2]), temp[3][2]);
+  portal_cat.spam() << "after projection to 2d" << endl;
+  portal_cat.spam() << projected_coords[0] << endl;
+  portal_cat.spam() << projected_coords[1] << endl;
+  portal_cat.spam() << projected_coords[2] << endl;
+  portal_cat.spam() << projected_coords[3] << endl;
 
-  portal_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_z " << min_z << ";max_z " << max_z << endl;
+  // calculate axis aligned bounding box of the portal
+  float min_x, max_x, min_y, max_y;
+  min_x = min(min(min(projected_coords[0][0], projected_coords[1][0]), projected_coords[2][0]), projected_coords[3][0]);
+  max_x = max(max(max(projected_coords[0][0], projected_coords[1][0]), projected_coords[2][0]), projected_coords[3][0]);
+  min_y = min(min(min(projected_coords[0][1], projected_coords[1][1]), projected_coords[2][1]), projected_coords[3][1]);
+  max_y = max(max(max(projected_coords[0][1], projected_coords[1][1]), projected_coords[2][1]), projected_coords[3][1]);
 
-  float y;
+  portal_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
 
-  y = get_plane_depth(min_x, min_z, &portal_plane);
-  portal_cat.spam() << "plane's depth is " << y << endl;
-  _coords[0].set(min_x, y, min_z);
+  // clip the minima and maxima against the viewport
+  min_x = max(min_x, _reduced_viewport_min[0]);
+  min_y = max(min_y, _reduced_viewport_min[1]);
+  max_x = min(max_x, _reduced_viewport_max[0]);
+  max_y = min(max_y, _reduced_viewport_max[1]);
 
-  y = get_plane_depth(max_x, min_z, &portal_plane);
-  portal_cat.spam() << "plane's depth is " << y << endl;
-  _coords[1].set(max_x, y, min_z);
+  portal_cat.spam() << "after clipping: min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
 
-  y = get_plane_depth(max_x, max_z, &portal_plane);
-  portal_cat.spam() << "plane's depth is " << y << endl;
-  _coords[2].set(max_x, y, max_z);
+  if ((min_x >= max_x) || (min_y >= max_y)) {
+      portal_cat.debug() << "portal got clipped away \n";
+      return false;
+  }
 
-  y = get_plane_depth(min_x, max_z, &portal_plane);
-  portal_cat.spam() << "plane's depth is " << y << endl;
-  _coords[3].set(min_x, y, max_z);
-    
-  portal_cat.spam() << "after min max calculation" << endl;
-  portal_cat.spam() << _coords[0] << endl;
-  portal_cat.spam() << _coords[1] << endl;
-  portal_cat.spam() << _coords[2] << endl;
-  portal_cat.spam() << _coords[3] << endl;
+  // here we know the portal is in view and we have its clipped extents
+  _reduced_viewport_min.set(min_x, min_y);
+  _reduced_viewport_max.set(max_x, max_y);
 
-  // check if portal is in view
-  if (is_whole_portal_in_view(cmat)) {
-    // ok, now lets add the original portal
+  // calculate the near and far points so we can construct a frustum
+  LPoint3f near_point[4];
+  LPoint3f far_point[4];
+  lens->extrude(LPoint2f(min_x, min_y), near_point[0], far_point[0]);
+  lens->extrude(LPoint2f(max_x, min_y), near_point[1], far_point[1]);
+  lens->extrude(LPoint2f(max_x, max_y), near_point[2], far_point[2]);
+  lens->extrude(LPoint2f(min_x, max_y), near_point[3], far_point[3]);
+
+  // With these points, construct the new reduced frustum
+  _reduced_frustum = new BoundingHexahedron(far_point[0], far_point[1], far_point[2], far_point[3],  
+                                            near_point[0], near_point[1], near_point[2], near_point[3]);
+
+  portal_cat.debug() << *_reduced_frustum << endl;
+
+  // do debug rendering, if requested
+  if (debug_portal_cull) {
+    // draw the reduced frustum
+    _color = Colorf(0,0,1,1);
+    draw_hexahedron(DCAST(BoundingHexahedron, _reduced_frustum));
+
+    // lets first add the clipped portal (in yellow)
+    _color = Colorf(1,1,0,1);
+    move_to((near_point[0]+far_point[0])/2.0); // I choose a point in the middle between near and far.. could also be some other z value.. 
+    draw_to((near_point[1]+far_point[1])/2.0);
+    draw_to((near_point[2]+far_point[2])/2.0);
+    draw_to((near_point[3]+far_point[3])/2.0);
+    draw_to((near_point[0]+far_point[0])/2.0);
+
+    // ok, now lets add the original portal (in cyan) 
     _color = Colorf(0,1,1,1);
     move_to(temp[0]);
     draw_to(temp[1]);
     draw_to(temp[2]);
     draw_to(temp[3]);
     draw_to(temp[0]);
-
-    // ok, now lets add the min_max portal
-    _color = Colorf(1,1,0,1);
-    move_to(_coords[0]);
-    draw_to(_coords[1]);
-    draw_to(_coords[2]);
-    draw_to(_coords[3]);
-    draw_to(_coords[0]);
-    
-    portal_cat.spam() << "assembled " << _portal_node->get_name() << ": frustum points" << endl;
-    _num_vert = _portal_node->get_num_vertices();
   }
-  else
-    portal_cat.debug() << "portal failed 2nd level test \n";
+
+  return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::clip the portal
-//       Access: Public
-//  Description: From the frustum clip the portal against the frustum
-//               and form the new planes of the reduced view frustum
-////////////////////////////////////////////////////////////////////
-void PortalClipper::
-clip_portal(const NodePath &node_path)
-{
-  if (!_num_vert)
-    return;
-
-  // ViewFrustum -> Logical Planes -> Portal Edge
-  // Plane0      -> far plane      -> None
-  // plane5      -> near plane     -> None
-  // Plane1      -> bottom plane   -> 0-1
-  // Plane3      -> top plane      -> 1-2
-  // Plane2      -> right plane    -> 2-3
-  // Plane4      -> left plane     -> 3-0
-
-  int j;
-  float t;
-  Planef plane;
-  bool is_intersect;
-  unsigned int xect=0;
-  LPoint3f from_origin;
-  LPoint3f cut_point;
-  LVector3f from_direction;
-
-  // Look for intersection with the view frustum's bottom_plane and portal edges
-  plane = _reduced_frustum->get_plane(1);
-  for (j=0; j<_num_vert; ++j) {
-    from_origin = _coords[j];
-    from_direction = _coords[(j+1)%_num_vert] - _coords[j];
-    is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
-      xect |= 1 << 0;
-      portal_cat.debug() << "bottom plane intersected segment " << j << "->" 
-                         << (j+1)%_num_vert << " at t=" << t << endl;
-      cut_point = from_origin + t*from_direction;
-      portal_cat.spam() << "cut_point: " << cut_point << endl;
-      if (j == 1) {
-        // means bottom should cut 1->2 by moving 1 to the intersection point
-        _coords[1] = cut_point;
-      }
-      else if (j == 3) {
-        // means bottom should cut 3->0 by moving 0 to the intersection point
-        _coords[0] = cut_point;
-      }
-      else
-        portal_cat.debug() << "ignored for now for simplicity \n";
-    }
-    else
-      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
-  }
-
-  // Look for intersection with the view frustum's top_plane and portal edges
-  plane = _reduced_frustum->get_plane(3);
-  for (j=0; j<_num_vert; ++j) {
-    from_origin = _coords[j];
-    from_direction = _coords[(j+1)%_num_vert] - _coords[j];
-    is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
-      xect |= 1 << 1;
-      portal_cat.debug() << "top plane intersected segment " << j << "->" 
-                         << (j+1)%_num_vert << " at t=" << t << endl;
-      cut_point = from_origin + t*from_direction;
-      portal_cat.spam() << "cut_point: " << cut_point << endl;
-      if (j == 1) {
-        // means top should cut 1->2 by moving 2 to the intersection point
-        _coords[2] = cut_point;
-      }
-      else if (j == 3) {
-        // means top should cut 3->0 by moving 3 to the intersection point
-        _coords[3] = cut_point;
-      }
-      else
-        portal_cat.debug() << "ignored for now for simplicity \n";
-    }
-    else
-      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
-  }
-
-  // Look for intersection with the view frustum's right_plane and portal edges
-  plane = _reduced_frustum->get_plane(2);
-  for (j=0; j<_num_vert; ++j) {
-    from_origin = _coords[j];
-    from_direction = _coords[(j+1)%_num_vert] - _coords[j];
-    is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
-      xect |= 1 << 2;
-      portal_cat.debug() << "right plane intersected segment " << j << "->" 
-                         << (j+1)%_num_vert << " at t=" << t << endl;
-      cut_point = from_origin + t*from_direction;
-      portal_cat.spam() << "cut_point: " << cut_point << endl;
-      if (j == 0) {
-        // means right should cut 0->1 by moving 1 to the intersection point
-        _coords[1] = cut_point;
-      }
-      else if (j == 2) {
-        // means right should cut 2->3 by moving 2 to the intersection point
-        _coords[2] = cut_point;
-      }
-      else
-        portal_cat.debug() << "ignored for now for simplicity \n";
-    }
-    else
-      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
-  }
-
-  // Look for intersection with the view frustum's left_plane and portal edges
-  plane = _reduced_frustum->get_plane(4);
-  for (j=0; j<_num_vert; ++j) {
-    from_origin = _coords[j];
-    from_direction = _coords[(j+1)%_num_vert] - _coords[j];
-    is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
-      xect |= 1 << 3;
-      portal_cat.debug() << "left plane intersected segment " << j << "->" 
-                         << (j+1)%_num_vert << " at t=" << t << endl;
-      cut_point = from_origin + t*from_direction;
-      portal_cat.spam() << "cut_point: " << cut_point << endl;
-      if (j == 0) {
-        // means left should cut 0->1 by moving 0 to the intersection point
-        _coords[0] = cut_point;
-      }
-      else if (j == 2) {
-        // means left should cut 2->3 by moving 3 to the intersection point
-        _coords[3] = cut_point;
-      }
-      else
-        portal_cat.debug() << "ignored for now for simplicity \n";
-    }
-    else
-      portal_cat.spam() << "is_intersect: " << is_intersect << " at t = " << t << endl;
-  }
-  // ok, now lets add the clipped portal
-  _color = Colorf(1,0,0,1);
-  move_to(_coords[0]);
-  draw_to(_coords[1]);
-  draw_to(_coords[2]);
-  draw_to(_coords[3]);
-  draw_to(_coords[0]);
-
-  // 3rd level test, more accurate to determine if the portal is worth visiting
-  portal_cat.debug() << "portal clipper flag: " << xect << endl;
-  if (xect == 0xf) {  //if all four planes intersected the portal, it is visible
-    return;
-  }
-  if (!is_partial_portal_in_view()) {
-    portal_cat.debug() << "portal failed 3rd level test \n";
-    _num_vert = 0;
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::get_reduced_frustum
-//       Access: Public
-//  Description: After clipping the portal, form the new sides and 
-//               fill in the new frustum. Return the new frustum
-////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) PortalClipper::
-get_reduced_frustum(const NodePath &node_path)
-{
-  //  int num_planes = 6;
-  LPoint3f intersect_points[4];
-  
-  // another approach to actually finding the points, so that 
-  // I can reuse the current BoundingHexahedron object. Apparently,
-  // it is better to construct this BH with bounding points, rather
-  // than bounding planes (which I might have to implement soon)
-  
-  if (!_num_vert)
-    return NULL;
-  
-  float t;
-  bool visible = true;
-
-  // find intersection of 7->3 with far
-  LPoint3f from_origin = _reduced_frustum->get_point(7);
-  LVector3f from_direction = _coords[3] - from_origin;
-  bool is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    portal_cat.spam() << "far plane intersected 7->3 at t=" << t << endl;
-    intersect_points[0] = from_origin + t*from_direction;
-    portal_cat.spam() << intersect_points[0] << endl;
-  }
-  else
-    visible = false;
-
-  // find intersection of 4->0 with far
-  from_origin = _reduced_frustum->get_point(4);
-  from_direction = _coords[0] - from_origin;
-  is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    portal_cat.spam() << "far plane intersected 4->0 at t=" << t << endl;
-    intersect_points[1] = from_origin + t*from_direction;
-    portal_cat.spam() << intersect_points[1] << endl;
-  }
-  else
-    visible = false;
-
-  // find intersection of 5->1 with far
-  from_origin = _reduced_frustum->get_point(5);
-  from_direction = _coords[1] - from_origin;
-  is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    portal_cat.spam() << "far plane intersected 5->1 at t=" << t << endl;
-    intersect_points[2] = from_origin + t*from_direction;
-    portal_cat.spam() << intersect_points[2] << endl;
-  }
-  else
-    visible = false;
-
-  // find intersection of 6->2 with far
-  from_origin = _reduced_frustum->get_point(6);
-  from_direction = _coords[2] - from_origin;
-  is_intersect = _reduced_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
-    portal_cat.spam() << "far plane intersected 6->2 at t=" << t << endl;
-    intersect_points[3] = from_origin + t*from_direction;
-    portal_cat.spam() << intersect_points[3] << endl;
-  }
-  else
-    visible = false;
-
-  if (!visible) {
-    portal_cat.spam() << "portal is not visible from current camera look at" << endl;
-    return NULL;
-  }
-  
-  // With these intersect_points, construct the new reduced frustum
-  PT(BoundingVolume) reduced_frustum = new
-    BoundingHexahedron(intersect_points[1], intersect_points[2],
-                       intersect_points[3], intersect_points[0],
-                       _reduced_frustum->get_point(4), _reduced_frustum->get_point(5),
-                       _reduced_frustum->get_point(6), _reduced_frustum->get_point(7));
-
-  portal_cat.debug() << *reduced_frustum << endl;
-
-  // draw this hexahedron
-  _color = Colorf(0,0,1,1);
-  draw_hexahedron(DCAST(BoundingHexahedron, reduced_frustum));
-
-  return reduced_frustum;
-}

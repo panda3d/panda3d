@@ -41,8 +41,6 @@ class CullTraverserData;
 class CullableObject;
 class NodePath;
 
-//#define _FACING_THRESHOLD -0.7  //about 45 degrees with the camera
-//#define _FACING_THRESHOLD -0.5  //about 60 degrees with the camera
 #define _FACING_THRESHOLD 0.0  //about 90 degrees with the camera
 
 ////////////////////////////////////////////////////////////////////
@@ -62,10 +60,8 @@ public:
   INLINE bool is_facing_view(Planef portal_plane);
   INLINE bool is_whole_portal_in_view(LMatrix4f cmat);
 
-  void prepare_portal(const NodePath &node_path);
-  void clip_portal(const NodePath &node_path);
-  PT(BoundingVolume) get_reduced_frustum(const NodePath &node_path);
-
+  bool prepare_portal(const NodePath &node_path);
+  
   void draw_lines();
   INLINE void draw_camera_frustum();
   void draw_hexahedron(BoundingHexahedron *frustum);
@@ -78,10 +74,12 @@ public:
 
   void draw_current_portal();
 
-  INLINE float get_plane_depth(float x, float z, Planef *portal_plane);
-
   INLINE BoundingHexahedron *get_reduced_frustum() const;
   INLINE void set_reduced_frustum(BoundingHexahedron *bh);
+  INLINE void get_reduced_viewport(LPoint2f& min, LPoint2f& max) const; 
+  INLINE void set_reduced_viewport(const LPoint2f& min, const LPoint2f& max);
+  INLINE const RenderState* get_clip_state() const; 
+  INLINE void set_clip_state(const RenderState* clip_state);
 
 public:
   static TypeHandle get_class_type() {
@@ -122,11 +120,14 @@ private:
 
   BoundingHexahedron *_view_frustum;
   BoundingHexahedron *_reduced_frustum;
+  LPoint2f _reduced_viewport_min;
+  LPoint2f _reduced_viewport_max;
+  CPT(RenderState) _clip_state; // each portal node needs to know the clip state of its "parent" portal Node
 
   PortalNode *_portal_node;  // current working portal for dereference ease
 
-  int _num_vert;
-  Vertexf _coords[4];
+  //int _num_vert;
+  //Vertexf _coords[4];
 
 public:
   PT(GeomNode) _previous;

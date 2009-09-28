@@ -117,6 +117,56 @@ INLINE BoundingHexahedron *PortalClipper::
 get_reduced_frustum() const {
   return _reduced_frustum;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::set_clip_state
+//       Access: Public
+//  Description: Set the clip state of the current portal node
+//               This is done to remember the state for the child portal nodes
+//           
+////////////////////////////////////////////////////////////////////
+INLINE void PortalClipper::
+set_clip_state(const RenderState* clip_state) {
+  _clip_state = clip_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::get_clip_state
+//       Access: Published
+//  Description: Returns the stored clip state
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *PortalClipper::
+get_clip_state() const {
+  return _clip_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::set_reduced_viewport
+//       Access: Public
+//  Description: Set the current viewport that is being used
+//               by the portal clipper
+//           
+////////////////////////////////////////////////////////////////////
+INLINE void PortalClipper::
+set_reduced_viewport(const LPoint2f& min, const LPoint2f& max) {
+  _reduced_viewport_min = min;
+  _reduced_viewport_max = max;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::get_reduced_viewport
+//       Access: Published
+//  Description: Return the reduced viewport
+////////////////////////////////////////////////////////////////////
+INLINE void PortalClipper::
+get_reduced_viewport(LPoint2f& min, LPoint2f& max) const  {
+  min = _reduced_viewport_min;
+  max = _reduced_viewport_max;
+}
+
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::is_facing_view
 //       Access: Public
@@ -159,6 +209,7 @@ is_whole_portal_in_view(LMatrix4f cmat) {
   return (result != 0);
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::is_partial_portal_in_view
 //       Access: Public
@@ -178,7 +229,9 @@ is_partial_portal_in_view() {
 
   return (result != 0);
 }
+*/
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::get_plane_depth
 //       Access: Public
@@ -199,3 +252,4 @@ get_plane_depth(float x, float z, Planef *portal_plane) {
   }
   return y;    
 }
+*/

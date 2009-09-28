@@ -29,12 +29,6 @@
 
 #include "plane.h"
 
-/*
-#ifndef CPPPARSER
-#include "../collide/collisionPlane.h"
-#endif
-*/
-
 TypeHandle PortalNode::_type_handle;
 
 
@@ -146,32 +140,21 @@ preserve_name() const {
 ////////////////////////////////////////////////////////////////////
 void PortalNode::
 enable_clipping_planes() {
+  _top_plane_node = new PlaneNode("top");
+  NodePath top_plane_np = NodePath(this).attach_new_node(_top_plane_node);
+
+  _bottom_plane_node = new PlaneNode("bottom");
+  NodePath bottom_plane_np = NodePath(this).attach_new_node(_bottom_plane_node);
+
   _left_plane_node = new PlaneNode("left");
   NodePath left_plane_np = NodePath(this).attach_new_node(_left_plane_node);
 
   _right_plane_node = new PlaneNode("right");
   NodePath right_plane_np = NodePath(this).attach_new_node(_right_plane_node);
 
-  /*
-  // for debugging visialization, attach a collsion plane to left and right each
-  _left_coll_node = new CollisionNode("left_coll");
-  _left_coll_node->set_into_collide_mask(CollideMask::all_off());
-  // prepare a collision plane to be set later 
-  PT(CollisionPlane) left_coll_plane = new CollisionPlane(Planef());
-  _left_coll_node->add_solid(left_coll_plane);
-  // attach it onto the _left_plane_np
-  left_plane_np.attach_new_node(_left_coll_node);
-
-  _right_coll_node = new CollisionNode("right_coll");
-  _right_coll_node->set_into_collide_mask(CollideMask::all_off());
-  // prepare a collision plane to be set later 
-  PT(CollisionPlane) right_coll_plane = new CollisionPlane(Planef());
-  _right_coll_node->add_solid(right_coll_plane);
-  // attach it onto the _left_plane_np
-  right_plane_np.attach_new_node(_right_coll_node);
-  */
-
   CPT(RenderAttrib) plane_attrib = ClipPlaneAttrib::make();
+  plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(top_plane_np));
+  plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(bottom_plane_np));
   plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(left_plane_np));
   plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(right_plane_np));
 
@@ -244,81 +227,97 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PortalClipper *portal_viewer = trav->get_portal_clipper();
   set_visible(false);
   if (is_open() && !_cell_out.is_empty() && portal_viewer) {
-    //CullTraverserData next_data(data, _cell_out);
     portal_cat.debug() << "checking portal node  " << *this << endl;
     PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
     PT(BoundingVolume) reduced_frustum;
-     
-    // following three functions do nothing, if the portal is not visible
-    portal_viewer->prepare_portal(data._node_path.get_node_path());
-    portal_viewer->clip_portal(data._node_path.get_node_path());
-    if ((reduced_frustum = portal_viewer->get_reduced_frustum(data._node_path.get_node_path()))) {
-      set_visible(true);
-      // This reduced frustum is in camera space
-      portal_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
-      vf = DCAST(GeometricBoundingVolume, reduced_frustum);
-      
-      // keep a copy of this reduced frustum
-      PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
-      
-      if (_clip_plane) {
-        // make a temp copy of this reduced frustum
-        PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
-        CPT(TransformState) ftransform = 
-          _cell_in.get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+    
+    // remember old viewport and frustum, so we can restore them for the siblings. (it gets changed by the prepare_portal call)
+    LPoint2f old_reduced_viewport_min, old_reduced_viewport_max;
+    portal_viewer->get_reduced_viewport(old_reduced_viewport_min, old_reduced_viewport_max);
+    PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
 
-        temp_bh->xform(ftransform->get_mat());
+    if (portal_viewer->prepare_portal(data._node_path.get_node_path())) {
+      if ((reduced_frustum = portal_viewer->get_reduced_frustum())) {
+        // remember current clip state, we might change it
+        CPT(RenderState) old_clip_state = portal_viewer->get_clip_state();
+
+        set_visible(true);
+        // The frustum is in camera space
+        vf = DCAST(GeometricBoundingVolume, reduced_frustum);
         
-        // set left/right clipping plane
-        _left_plane_node->set_plane(-temp_bh->get_plane(4)); // left plane of bh
-        _right_plane_node->set_plane(-temp_bh->get_plane(2));// right plane of bh
+        // create a copy of this reduced frustum, we'll transform it from camera space to the cell_out space
+        PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
+        
+        // Get the net trasform of the _cell_out as seen from the camera.
+        CPT(TransformState) cell_transform = _cell_out.get_net_transform();
+        CPT(TransformState) frustum_transform = cell_transform ->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
-        /*
-        // set this plane at the collision plane too for debugging
-        ((CollisionPlane*)_left_coll_node->get_solid(0))->set_plane(-temp_bh->get_plane(4));
-        ((CollisionPlane*)_right_coll_node->get_solid(0))->set_plane(-temp_bh->get_plane(2));
-        */
+        // transform to _cell_out space
+        new_bh->xform(frustum_transform->get_mat());
+        
+        CPT(RenderState) next_state = data._state;
+
+        // set clipping planes, if desired..
+        if (_clip_plane) {
+          // create a copy of this reduced frustum, we'll transform it from camera space to this portal node's space (because the clip planes are attached to this node)
+          PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
+          CPT(TransformState) temp_frustum_transform = data._node_path.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+          
+          portal_cat.spam() << "clipping plane frustum transform " << *temp_frustum_transform << endl;
+          portal_cat.spam() << "frustum before transform " << *temp_bh << endl;	
+          // transform to portalNode space
+          temp_bh->xform(temp_frustum_transform->get_mat());
+
+          portal_cat.spam() << "frustum after transform " << *temp_bh << endl;
+          
+          _left_plane_node->set_plane(-temp_bh->get_plane(4)); // left plane of bh
+          _right_plane_node->set_plane(-temp_bh->get_plane(2));// right plane of bh
+          _top_plane_node->set_plane(-temp_bh->get_plane(3)); // top plane of bh
+          _bottom_plane_node->set_plane(-temp_bh->get_plane(1));// bottom plane of bh
+
+          portal_cat.spam() << "left plane " << *_left_plane_node << endl;
+          portal_cat.spam() << "right plane " << *_right_plane_node << endl;
+          portal_cat.spam() << "top plane " << *_top_plane_node << endl;
+          portal_cat.spam() << "bottom plane " << *_bottom_plane_node << endl;
+
+          // remember the clip state we just generated
+          portal_viewer->set_clip_state(_clip_state);
+
+          if (old_clip_state) {
+            portal_cat.spam() << "parent clip state " << *old_clip_state << endl;
+          } else {
+            portal_cat.spam() << "parent clip state None" << endl;
+          }
+          portal_cat.spam() << "own clip state " << *_clip_state << endl;
+          portal_cat.spam() << "next state " << *next_state << endl;
+
+          // undo parent clip state and compose our new clip state ito the new state
+          if (old_clip_state != NULL) {
+              next_state = old_clip_state->invert_compose(next_state);
+              portal_cat.spam() << "next state after removing parent state " << *next_state << endl;
+          }
+          next_state = next_state->compose(_clip_state);
+          portal_cat.spam() << "next state after composition " << *next_state << endl;
+        }
+
+        CullTraverserData next_data(_cell_out, 
+                                    cell_transform,
+                                    next_state, new_bh,
+                                    current_thread);
+
+        portal_viewer->set_reduced_frustum(new_bh);
+        portal_cat.spam() << "cull_callback: before traversing " << _cell_out.get_name() << endl;
+        trav->traverse_below(next_data);
+        portal_cat.spam() << "cull_callback: after traversing " << _cell_out.get_name() << endl;
+
+        // restore clip state
+        portal_viewer->set_clip_state(old_clip_state);
       }
-
-      // Get the net trasform of the _cell_out as seen from the camera.
-      CPT(TransformState) cell_transform = 
-        //        trav->get_camera_transform()->invert_compose(_cell_out.get_net_transform());
-        _cell_out.get_net_transform();
-
-      CPT(TransformState) frustum_transform = 
-        _cell_out.get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
-
-      new_bh->xform(frustum_transform->get_mat());
-      
-      portal_cat.spam() << "new_bh is " << *new_bh << "\n";
-  
-      CPT(RenderState) next_state = data._state;
-
-      // attach clipping state if there is any
-      if (_clip_plane) {
-        next_state = next_state->compose(_clip_state);
-      }
-
-      CullTraverserData next_data(_cell_out, 
-                                  cell_transform,
-                                  next_state, new_bh,
-                                  current_thread);
-      //                                  data._state, new_bh, NULL);
-
-      // Make this cell show with the reduced frustum
-      //      _cell_out.show();
-      // all nodes visible through this portal, should have this node's frustum
-      PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
-      portal_viewer->set_reduced_frustum(new_bh);
-      portal_cat.spam() << "cull_callback: before traversing " << _cell_out.get_name() << endl;
-      trav->traverse_below(next_data);
-      portal_cat.spam() << "cull_callback: after traversing " << _cell_out.get_name() << endl;
-      // make sure traverser is not drawing this node again
-      //    _cell_out.hide();
-
-      // reset portal viewer frustum for the siblings;
-      portal_viewer->set_reduced_frustum(old_bh);
     }
+    // reset portal viewer frustum for the siblings;
+    portal_viewer->set_reduced_frustum(old_bh);
+    // reset portal viewer viewport for the siblings;
+    portal_viewer->set_reduced_viewport(old_reduced_viewport_min, old_reduced_viewport_max);
   }
   // Now carry on to render our child nodes.
   return true;

@@ -23,12 +23,6 @@
 #include "nodePath.h"
 #include "pvector.h"
 
-/*
-//#ifndef CPPPARSER
-//#include "../collide/collisionSolid.h"
-//#include "../collide/collisionNode.h"
-//#endif
-*/
 ////////////////////////////////////////////////////////////////////
 //       Class : PortalNode 
 //       Description : A node in the scene graph that can hold a 
@@ -121,15 +115,11 @@ private:
   NodePath _cell_out;  // This is the cell it leads out to
 
   // enable plane clipping on this portal
-  /*
-#ifndef CPPPARSER
-  PT(CollisionNode) _left_coll_node; // for debugging visualization
-  PT(CollisionNode) _right_coll_node;// for debugging visualization
-#endif  
-  */
   bool _clip_plane;
   PT(PlaneNode) _left_plane_node;
   PT(PlaneNode) _right_plane_node;
+  PT(PlaneNode) _top_plane_node;
+  PT(PlaneNode) _bottom_plane_node;
   CPT(RenderState) _clip_state;
 
   bool _visible;

@@ -121,7 +121,8 @@ traverse(const NodePath &root) {
 
   if (allow_portal_cull) {
     // This _view_frustum is in cull_center space
-    PT(GeometricBoundingVolume) vf = _view_frustum;
+    //Erik: obsolete?
+    //PT(GeometricBoundingVolume) vf = _view_frustum;
 
     GeometricBoundingVolume *local_frustum = NULL;
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
@@ -133,7 +134,7 @@ traverse(const NodePath &root) {
       
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
-    if (show_portal_debug) {
+    if (debug_portal_cull) {
       portal_viewer.draw_camera_frustum();
     }
     
@@ -147,7 +148,7 @@ traverse(const NodePath &root) {
     traverse(data);
     
     // Finally add the lines to be drawn
-    if (show_portal_debug) {
+    if (debug_portal_cull) {
       portal_viewer.draw_lines();
     }
     
