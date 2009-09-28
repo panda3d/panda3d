@@ -32,11 +32,12 @@ get_url() const {
 ////////////////////////////////////////////////////////////////////
 inline double P3DDownload::
 get_download_progress() const {
-  if (_total_expected_data == 0) {
+  int total_expected_data = max(_total_server_expected_data, _total_client_expected_data);
+  if (total_expected_data == 0) {
     return 0.0;
   }
 
-  return (double)_total_data / (double)_total_expected_data;
+  return (double)_total_data / (double)total_expected_data;
 }
 
 ////////////////////////////////////////////////////////////////////

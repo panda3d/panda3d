@@ -1080,6 +1080,7 @@ Download(P3DPackage *package, DownloadType dtype, const FileSpec &file_spec) :
   _dtype(dtype),
   _file_spec(file_spec)
 {
+  _total_client_expected_data = _file_spec.get_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1095,6 +1096,7 @@ Download(const P3DPackage::Download &copy) :
   _dtype(copy._dtype),
   _file_spec(copy._file_spec)
 {
+  _total_client_expected_data = _file_spec.get_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1104,6 +1106,9 @@ Download(const P3DPackage::Download &copy) :
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::Download::
 download_progress() {
+  nout << "download_progress " << get_url() << ": " << _total_data 
+       << " of " << _total_server_expected_data << " and "
+       << _total_client_expected_data << "\n";
   P3DFileDownload::download_progress();
   assert(_package->_active_download == this);
 

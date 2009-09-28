@@ -53,7 +53,7 @@ public:
   void output_hash(ostream &out) const;
 
 private:
-  bool priv_check_hash(const string &pathname, const struct stat &st);
+  bool priv_check_hash(const string &pathname, void *stp);
   static inline int decode_hexdigit(char c);
   static inline char encode_hexdigit(int c);
 

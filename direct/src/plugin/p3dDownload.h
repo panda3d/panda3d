@@ -66,7 +66,8 @@ protected:
   int _http_status_code;
 
   size_t _total_data;
-  size_t _total_expected_data;
+  size_t _total_client_expected_data;
+  size_t _total_server_expected_data;
   time_t _last_reported_time;
 
 private:

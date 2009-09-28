@@ -201,7 +201,6 @@ private:
   void build_install_plans(TiXmlDocument *doc);
   void follow_install_plans(bool download_finished);
 
-  class InstallStep;
   void report_progress(InstallStep *step);
   void report_info_ready();
   void report_done(bool success);

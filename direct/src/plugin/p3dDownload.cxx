@@ -24,7 +24,8 @@ P3DDownload() {
   _status = P3D_RC_in_progress;
   _http_status_code = 0;
   _total_data = 0;
-  _total_expected_data = 0;
+  _total_client_expected_data = 0;
+  _total_server_expected_data = 0;
   _last_reported_time = 0;
   
   _canceled = false;
@@ -39,11 +40,12 @@ P3DDownload() {
 P3DDownload::
 P3DDownload(const P3DDownload &copy) :
   _url(copy._url),
-  _total_expected_data(copy._total_expected_data)
+  _total_client_expected_data(copy._total_client_expected_data)
 {
   _status = P3D_RC_in_progress;
   _http_status_code = 0;
   _total_data = 0;
+  _total_server_expected_data = 0;
   _last_reported_time = 0;
   
   _canceled = false;
@@ -115,7 +117,7 @@ feed_url_stream(P3D_result_code result_code,
     _total_data += this_data_size;
   }
 
-  _total_expected_data = max(total_expected_data, _total_data);
+  _total_server_expected_data = max(total_expected_data, _total_data);
 
   download_progress();
 

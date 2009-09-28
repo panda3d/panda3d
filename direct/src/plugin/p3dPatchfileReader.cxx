@@ -152,7 +152,7 @@ step() {
   size_t copy_length = read_uint16();
   if (copy_length != 0) {
     // Copy a number of bytes from the original source.
-    ssize_t offset = read_int32();
+    int offset = read_int32();
     _source_in.seekg(offset, ios::cur);
     if (!copy_bytes(_source_in, copy_length)) {
       nout << "Garbage in patchfile.\n";

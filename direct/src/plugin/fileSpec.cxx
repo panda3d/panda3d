@@ -164,7 +164,7 @@ quick_verify(const string &package_dir) {
 
   // If the size is right but the timestamp is wrong, the file
   // soft-fails.  We follow this up with a hash check.
-  if (!priv_check_hash(pathname, st)) {
+  if (!priv_check_hash(pathname, &st)) {
     // Hard fail, the hash is wrong.
     //cerr << "hash check wrong: " << _filename << "\n";
     return false;
@@ -214,7 +214,7 @@ full_verify(const string &package_dir) {
     return false;
   }
 
-  if (!priv_check_hash(pathname, st)) {
+  if (!priv_check_hash(pathname, &st)) {
     // Hard fail, the hash is wrong.
     //cerr << "hash check wrong: " << _filename << "\n";
     return false;
@@ -353,9 +353,15 @@ output_hash(ostream &out) const {
 //               false otherwise.  Updates _actual_file with the data
 //               read from disk, including the hash, for future
 //               reference.
+//
+//               The parameter stp is a pointer to a stat structure.
+//               It's declared as a void * to get around issues with
+//               the nonstandard declaration of this structure in
+//               Windows.
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
-priv_check_hash(const string &pathname, const struct stat &st) {
+priv_check_hash(const string &pathname, void *stp) {
+  const struct stat &st = *(const struct stat *)stp;
   assert(_actual_file == NULL);
   _actual_file = new FileSpec;
   _actual_file->_filename = pathname;
