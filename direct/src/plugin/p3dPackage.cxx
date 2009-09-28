@@ -850,9 +850,6 @@ follow_install_plans(bool download_finished) {
       _current_step_effort = step->get_effort();
 
       InstallToken token = step->do_step(download_finished);
-      nout << step << ":";
-      step->output(nout);
-      nout << " returned " << token << "\n";
       switch (token) {
       case IT_step_failed:
         // This plan has failed.
@@ -1530,6 +1527,7 @@ do_step(bool download_finished) {
 
   // Close and verify.
   _reader.close();
+
   if (!_reader.get_success()) {
     nout << "Patching failed\n";
     return IT_step_failed;

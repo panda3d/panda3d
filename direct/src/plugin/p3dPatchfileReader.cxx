@@ -194,7 +194,9 @@ step() {
 //     Function: P3DPatchfileReader::close
 //       Access: Public
 //  Description: Closes the previously-opened files, and moves the
-//               output file into place.
+//               output file into place.  This also deletes the
+//               patchfile, assuming it will not be needed after it
+//               has been used.
 ////////////////////////////////////////////////////////////////////
 void P3DPatchfileReader::
 close() {
@@ -202,15 +204,24 @@ close() {
     return;
   }
 
+  _is_open = false;
+
   _patch_in.close();
   _source_in.close();
   _target_out.close();
+  
+  // Delete the patchfile.
+  string patch_pathname = _patchfile.get_pathname(_package_dir);
+#ifdef _WIN32
+  // Windows can't delete a file if it's read-only.
+  chmod(patch_pathname.c_str(), 0644);
+#endif
+  unlink(patch_pathname.c_str());
 
   if (_success) {
     // Move the output file onto the target file.
     string target_pathname = _target.get_pathname(_package_dir);
 #ifdef _WIN32
-    // Windows can't delete a file if it's read-only.
     chmod(target_pathname.c_str(), 0644);
 #endif
     unlink(target_pathname.c_str());
