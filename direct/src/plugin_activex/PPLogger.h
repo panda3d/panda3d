@@ -26,7 +26,7 @@ public:
     PPLogger( );
     virtual ~PPLogger( );
 
-    void Open( );
+    void Open( const std::string &rootDir );
     static std::ofstream& Log( ) { return m_logfile; }
 
 protected:

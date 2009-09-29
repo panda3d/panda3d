@@ -769,7 +769,7 @@ start_p3dpython(P3DInstance *inst) {
     // These are the enviroment variables we forward from the current
     // environment, if they are set.
     const char *keep[] = {
-      "TMP", "TEMP", "HOME", "USER", 
+      "HOME", "USER", 
 #ifdef _WIN32
       "SYSTEMROOT", "USERPROFILE", "COMSPEC",
 #endif
@@ -795,6 +795,7 @@ start_p3dpython(P3DInstance *inst) {
     const char *dont_keep[] = {
       "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
       "PYTHONPATH", "PYTHONHOME", "PRC_PATH", "PANDA_PRC_PATH",
+      "TEMP",
       NULL
     };
 
@@ -861,6 +862,10 @@ start_p3dpython(P3DInstance *inst) {
 
   _env += "PANDA_PRC_PATH=";
   _env += prc_path;
+  _env += '\0';
+
+  _env += "TEMP=";
+  _env += inst_mgr->get_temp_directory();
   _env += '\0';
     
   // Define each package's root directory in an environment variable

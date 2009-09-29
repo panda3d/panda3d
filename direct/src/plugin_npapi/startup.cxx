@@ -18,6 +18,7 @@
 #include "ppBrowserObject.h"
 
 #ifdef _WIN32
+#include <shlobj.h>
 #include <malloc.h>
 #endif
 
@@ -28,51 +29,54 @@ string global_root_dir;
 
 NPNetscapeFuncs *browser;
 
+// open_logfile() also assigns global_root_dir.
 static bool logfile_is_open = false;
 static void
 open_logfile() {
   if (!logfile_is_open) {
+    global_root_dir = find_root_dir();
+
     // Note that this logfile name may not be specified at runtime.  It
     // must be compiled in if it is specified at all.
 
+    string log_directory;
+  // Allow the developer to compile in the log directory.
+#ifdef P3D_PLUGIN_LOG_DIRECTORY
+    if (log_directory.empty()) {
+      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
+    }
+#endif
+    
+    // Failing that, we write logfiles to Panda3D/log.
+    if (log_directory.empty()) {
+      log_directory = global_root_dir + "/log";
+    }
+    mkdir_complete(log_directory, cerr);
+
+    // Ensure that the log directory ends with a slash.
+    if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
+#ifdef _WIN32
+      if (log_directory[log_directory.size() - 1] != '\\')
+#endif
+        log_directory += "/";
+    }
+    
+    // Construct the logfile pathname.
+    
     string log_basename;
 #ifdef P3D_PLUGIN_LOG_BASENAME1
-    log_basename = P3D_PLUGIN_LOG_BASENAME1;
+    if (log_basename.empty()) {
+      log_basename = P3D_PLUGIN_LOG_BASENAME1;
+    }
 #endif
 
     if (!log_basename.empty()) {
-      // Get the log directory.
-      string log_directory;
-#ifdef P3D_PLUGIN_LOG_DIRECTORY
-      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
-#endif
-      if (log_directory.empty()) {
-#ifdef _WIN32
-        static const size_t buffer_size = MAX_PATH;
-        char buffer[buffer_size];
-        if (GetTempPath(buffer_size, buffer) != 0) {
-          log_directory = buffer;
-        }
-#else
-        log_directory = "/tmp/";
-#endif  // _WIN32
-      }
-
-      // Ensure that the log directory ends with a slash.
-      if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
-#ifdef _WIN32
-        if (log_directory[log_directory.size() - 1] != '\\')
-#endif
-          log_directory += "/";
-      }
-
-      // Construct the full logfile pathname.
       string log_pathname = log_directory;
       log_pathname += log_basename;
       log_pathname += ".log";
-
+      
       logfile.clear();
-      logfile.open(log_pathname.c_str());
+      logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
       logfile.setf(ios::unitbuf);
     }
 
@@ -146,9 +150,9 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   // save away browser functions
   browser = browserFuncs;
 
+  // open_logfile() also assigns global_root_dir.
   open_logfile();
   nout << "initializing\n";
-  global_root_dir = find_root_dir(nout);
 
   nout << "browserFuncs = " << browserFuncs << "\n";
 
@@ -173,6 +177,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 ////////////////////////////////////////////////////////////////////
 NPError OSCALL
 NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
+  // open_logfile() also assigns global_root_dir.
   open_logfile();
   nout << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n";
   pluginFuncs->version = 11;

@@ -219,7 +219,7 @@ Mozilla-Uninstall-End:
   # contents are installed.  Too bad we can't do this for every system
   # user, not just the current user.
 
-  RmDir /r "$LOCALAPPDATA\Low\${APP_INTERNAL_NAME}"
+  RmDir /r "$LOCALAPPDATALow\${APP_INTERNAL_NAME}"
   RmDir /r "$LOCALAPPDATA\${APP_INTERNAL_NAME}"
 
   Delete "$INSTDIR\uninst.exe"

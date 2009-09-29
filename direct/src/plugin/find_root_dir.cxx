@@ -114,7 +114,7 @@ wstr_to_string(string &result, const LPWSTR wstr) {
 //               on the user's machine.
 ////////////////////////////////////////////////////////////////////
 string
-find_root_dir(ostream &logfile) {
+find_root_dir() {
 #ifdef _WIN32
   // First, use IEIsProtectedModeProcess() to determine if we are
   // running in IE's "protected mode" under Vista.
@@ -130,7 +130,6 @@ find_root_dir(ostream &logfile) {
       HRESULT hr = (*func)(&result);
       if (hr == S_OK) {
         is_protected = (result != 0);
-        logfile << "IEIsProtectedModeProcess indicates: " << is_protected << "\n";
       }
       // Any other return value means some error, especially
       // E_NOTIMPL, which means we're not running under Vista.  In

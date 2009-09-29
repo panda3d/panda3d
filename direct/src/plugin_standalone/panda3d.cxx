@@ -49,8 +49,9 @@ static const double wait_cycle = 0.2;
 ////////////////////////////////////////////////////////////////////
 Panda3D::
 Panda3D() {
-  _root_dir = find_root_dir(nout);
+  _root_dir = find_root_dir();
   _reporting_download = false;
+  _enable_security = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +68,7 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:M:p:fw:t:s:o:l:ih";
+  const char *optstr = "+mu:M:Sp:fw:t:s:o:l:ih";
 
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
@@ -93,6 +94,10 @@ run(int argc, char *argv[]) {
 
     case 'M':
       super_mirror_url = optarg;
+      break;
+
+    case 'S':
+      _enable_security = true;
       break;
 
     case 'p':
@@ -542,9 +547,11 @@ get_core_api(const Filename &contents_filename, const string &download_url,
   }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
+  bool trusted_environment = !_enable_security;
+
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    download_url, verify_contents, this_platform, _log_dirname,
-                   _log_basename, true, cerr)) {
+                   _log_basename, trusted_environment, cerr)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }
@@ -854,6 +861,10 @@ usage() {
     << "    environment, allowing Python files on disk to shadow the same-named\n"
     << "    Python files within the p3d file, for rapid iteration on the Python\n"
     << "    code.\n\n"
+
+    << "  -S\n"
+    << "    Runs the application with security enabled, as if it were embedded in\n"
+    << "    a web page.\n\n"
 
     << "  -u url\n"
 

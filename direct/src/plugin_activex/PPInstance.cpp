@@ -71,10 +71,12 @@ void P3D_NofificationSync(P3D_instance *instance)
 PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
     m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true ), m_isInit( false )
 {
-  // Open the logfile first.
-  m_logger.Open( );
+  // We need the root dir first.
+  m_rootDir = find_root_dir( );
 
-  m_rootDir = find_root_dir( nout );
+  // Then open the logfile.
+  m_logger.Open( m_rootDir );
+
   m_pluginLoaded = false;
 }
 
@@ -177,10 +179,12 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
     // file.  We get a unique temporary filename each time; this is a
     // small file and it's very important that we get the most current
     // version, not an old cached version.
-    TCHAR tempFolderName[ MAX_PATH ];
-    ::GetTempPath( MAX_PATH, tempFolderName );
     TCHAR tempFileName[ MAX_PATH ];
-    ::GetTempFileName( tempFolderName, "p3d", 0, tempFileName );
+    if (!::GetTempFileName( m_rootDir.c_str(), "p3d", 0, tempFileName )) {
+      nout << "GetTempFileName failed (folder is " << m_rootDir << ")\n";
+      return 1;
+    }
+      
     std::string localContentsFileName( tempFileName );
 
     // We'll also get the final installation path of the contents.xml

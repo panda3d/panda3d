@@ -81,6 +81,7 @@ private:
   string _log_basename;
   FileSpec _core_api_dll;
   bool _reporting_download;
+  bool _enable_security;
 
   typedef pset<P3D_instance *> Instances;
   Instances _instances;

@@ -89,45 +89,51 @@ int PPLogger::CreateNewFile(const std::string& dirname, const std::string& filen
     return error;
 }
 
-void PPLogger::Open( ) 
+void PPLogger::Open( const std::string &rootDir ) 
 {
   if (!m_isOpen) {
     // Note that this logfile name may not be specified at runtime.  It
     // must be compiled in if it is specified at all.
 
+    std::string log_directory;
+  // Allow the developer to compile in the log directory.
+#ifdef P3D_PLUGIN_LOG_DIRECTORY
+    if (log_directory.empty()) {
+      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
+    }
+#endif
+    
+    // Failing that, we write logfiles to Panda3D/log.
+    if (log_directory.empty()) {
+      log_directory = rootDir + "/log";
+    }
+    mkdir_complete(log_directory, cerr);
+
+    // Ensure that the log directory ends with a slash.
+    if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
+#ifdef _WIN32
+      if (log_directory[log_directory.size() - 1] != '\\')
+#endif
+        log_directory += "/";
+    }
+    
+    // Construct the logfile pathname.
+    
     std::string log_basename;
 #ifdef P3D_PLUGIN_LOG_BASENAME1
-    log_basename = P3D_PLUGIN_LOG_BASENAME1;
+    if (log_basename.empty()) {
+      log_basename = P3D_PLUGIN_LOG_BASENAME1;
+    }
 #endif
 
     if (!log_basename.empty()) {
-      // Get the log directory.
-      std::string log_directory;
-#ifdef P3D_PLUGIN_LOG_DIRECTORY
-      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
-#endif
-      if (log_directory.empty()) {
-        static const size_t buffer_size = MAX_PATH;
-        char buffer[buffer_size];
-        if (GetTempPath(buffer_size, buffer) != 0) {
-          log_directory = buffer;
-        }
-      }
-
-      // Ensure that the log directory ends with a slash.
-      if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
-        if (log_directory[log_directory.size() - 1] != '\\')
-          log_directory += "/";
-      }
-
-      // Construct the full logfile pathname.
       std::string log_pathname = log_directory;
       log_pathname += log_basename;
       log_pathname += ".log";
-
+      
       m_logfile.clear();
-      m_logfile.open(log_pathname.c_str());
-	  m_logfile.setf(std::ios::unitbuf);
+      m_logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
+      m_logfile.setf(ios::unitbuf);
     }
 
     // If we didn't have a logfile name compiled in, we throw away log

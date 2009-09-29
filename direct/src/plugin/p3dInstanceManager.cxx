@@ -180,28 +180,109 @@ initialize(const string &contents_filename, const string &download_url,
     _platform = DTOOL_PLATFORM;
   }
 
+  _root_dir = find_root_dir();
+
+  // Allow the caller (e.g. panda3d.exe) to specify a log directory.
   _log_directory = log_directory;
+
+  // Or, allow the developer to compile one in.
 #ifdef P3D_PLUGIN_LOG_DIRECTORY
   if (_log_directory.empty()) {
     _log_directory = P3D_PLUGIN_LOG_DIRECTORY;
   }
 #endif
+  
+  // Failing that, we write logfiles to Panda3D/log.
+  if (_log_directory.empty()) {
+    _log_directory = _root_dir + "/log";
+  }
+  mkdir_complete(_log_directory, cerr);
+
+  // Ensure that the log directory ends with a slash.
+  if (!_log_directory.empty() && _log_directory[_log_directory.size() - 1] != '/') {
+#ifdef _WIN32
+    if (_log_directory[_log_directory.size() - 1] != '\\')
+#endif
+      _log_directory += "/";
+  }
+
+  // Construct the logfile pathname.
+  _log_basename = log_basename;
+#ifdef P3D_PLUGIN_LOG_BASENAME2
+  if (_log_basename.empty()) {
+    _log_basename = P3D_PLUGIN_LOG_BASENAME2;
+  }
+#endif
+  if (!_log_basename.empty()) {
+    _log_pathname = _log_directory;
+    _log_pathname += _log_basename;
+    _log_pathname += ".log";
+
+    logfile.clear();
+    logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+    if (logfile) {
+      logfile.setf(ios::unitbuf);
+      nout_stream = &logfile;
+    }
+  }
 
   // Determine the temporary directory.
 #ifdef _WIN32
-  size_t needs_size_1 = GetTempPath(0, NULL);
-  char *buffer_1 = new char[needs_size_1];
-  if (GetTempPath(needs_size_1, buffer_1) != 0) {
-    _temp_directory = buffer_1;
-  }
-  delete[] buffer_1;
+  char buffer_1[MAX_PATH];
 
-  static const size_t buffer_size = 4096;
-  char buffer[buffer_size];
-  if (GetTempPath(buffer_size, buffer) != 0) {
-    _temp_directory = buffer;
+  // Figuring out the correct path for temporary files is a real mess
+  // on Windows.  We should be able to use GetTempPath(), but that
+  // relies on $TMP or $TEMP being defined, and it appears that
+  // Mozilla clears these environment variables for the plugin, which
+  // forces GetTempPath() into $USERPROFILE instead.  This is really
+  // an inappropriate place for temporary files, so, GetTempPath()
+  // isn't a great choice.
+
+  // We could use SHGetSpecialFolderPath() instead to get us the path
+  // to "Temporary Internet Files", which is acceptable.  The trouble
+  // is, if we happen to be running in "Protected Mode" on Vista, this
+  // folder isn't actually writable by us!  On Vista, we're supposed
+  // to use IEGetWriteableFolderPath() instead, but *this* function
+  // doesn't exist on XP and below.  Good Lord.
+
+  // We could go through a bunch of LoadLibrary() calls to try to find
+  // the right path, like we do in find_root_dir(), but I'm just tired
+  // of doing all that nonsense.  We'll use a two-stage trick instead.
+  // We'll check for $TEMP or $TMP being defined specifically, and if
+  // they are, we'll use GetTempPath(); otherwise, we'll fall back to
+  // SHGetSpecialFolderPath().
+
+  if (getenv("TEMP") != NULL || getenv("TMP") != NULL) {
+    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
+      _temp_directory = buffer_1;
+    }
   }
-  
+  if (_temp_directory.empty()) {
+    if (SHGetSpecialFolderPath(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
+      _temp_directory = buffer_1;
+
+      // That just *might* return a non-writable folder, if we're in
+      // Protected Mode.  We'll test this with GetTempFileName().
+      char temp_buffer[MAX_PATH];
+      if (!GetTempFileName(_temp_directory.c_str(), "p3d", 0, temp_buffer)) {
+        nout << "GetTempFileName failed on " << _temp_directory
+             << ", switching to GetTempPath\n";
+        _temp_directory.clear();
+      } else {
+        DeleteFile(temp_buffer);
+      }
+    }
+  }
+
+  // If both of the above failed, we'll fall back to GetTempPath()
+  // once again as a last resort, which is supposed to return
+  // *something* that works, even if $TEMP and $TMP are undefined.
+  if (_temp_directory.empty()) {
+    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
+      _temp_directory = buffer_1;
+    }
+  }
+
   // Also insist that the temp directory is fully specified.
   size_t needs_size_2 = GetFullPathName(_temp_directory.c_str(), 0, NULL, NULL);
   char *buffer_2 = new char[needs_size_2];
@@ -217,18 +298,6 @@ initialize(const string &contents_filename, const string &download_url,
   _temp_directory = "/tmp/";
 #endif  // _WIN32
 
-  // If the log directory is still empty, use the temp directory.
-  if (_log_directory.empty()) {
-    _log_directory = _temp_directory;
-  }
-
-  _log_basename = log_basename;
-#ifdef P3D_PLUGIN_LOG_BASENAME2
-  if (_log_basename.empty()) {
-    _log_basename = P3D_PLUGIN_LOG_BASENAME2;
-  }
-#endif
-
   // Ensure that the temp directory ends with a slash.
   if (!_temp_directory.empty() && _temp_directory[_temp_directory.size() - 1] != '/') {
 #ifdef _WIN32
@@ -237,31 +306,8 @@ initialize(const string &contents_filename, const string &download_url,
       _temp_directory += "/";
   }
 
-  // Ensure that the log directory ends with a slash.
-  if (!_log_directory.empty() && _log_directory[_log_directory.size() - 1] != '/') {
-#ifdef _WIN32
-    if (_log_directory[_log_directory.size() - 1] != '\\')
-#endif
-      _log_directory += "/";
-  }
-
-  // Construct the logfile pathname.
-  if (!_log_basename.empty()) {
-    _log_pathname = _log_directory;
-    _log_pathname += _log_basename;
-    _log_pathname += ".log";
-
-    logfile.clear();
-    logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
-    if (logfile) {
-      logfile.setf(ios::unitbuf);
-      nout_stream = &logfile;
-    }
-  }
-
-  _root_dir = find_root_dir(nout);
-
   nout << "_root_dir = " << _root_dir
+       << ", _temp_directory = " << _temp_directory
        << ", platform = " << _platform
        << ", contents_filename = " << contents_filename
        << ", download_url = " << download_url

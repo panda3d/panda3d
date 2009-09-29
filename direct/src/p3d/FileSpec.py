@@ -164,9 +164,12 @@ class FileSpec:
     def __updateTimestamp(self, pathname, st):
         # On Windows, we have to change the file to read-write before
         # we can successfully update its timestamp.
-        os.chmod(pathname.toOsSpecific(), 0755)
-        os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
-        os.chmod(pathname.toOsSpecific(), 0555)
+        try:
+            os.chmod(pathname.toOsSpecific(), 0755)
+            os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
+            os.chmod(pathname.toOsSpecific(), 0555)
+        except OSError:
+            pass
 
     def checkHash(self, packageDir, pathname, st):
         """ Returns true if the file has the expected md5 hash, false

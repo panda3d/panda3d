@@ -19,6 +19,6 @@
 #include <iostream>
 using namespace std;
 
-string find_root_dir(ostream &logfile);
+string find_root_dir();
 
 #endif
