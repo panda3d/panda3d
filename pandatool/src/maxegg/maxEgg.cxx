@@ -1,8 +1,8 @@
 /*
   MaxEgg.cpp 
   Created by Steven "Sauce" Osman, 01/??/03
-  odified and maintained by Ken Strickland, (02/25/03)-(Present)
-  Carnegie Mellon University, Entetainment Technology Center
+  Modified by Ken Strickland, 02/25/03
+  Carnegie Mellon University, Entertainment Technology Center
 
   This file implements the classes that are used in the Panda 3D file 
   exporter for 3D Studio Max.
@@ -500,7 +500,7 @@ void MaxEggPlugin::UpdateUI() {
         switch(eggList[i]->_anim_type) {
         case MaxEggOptions::AT_chan:  Item.pszText = "Animation"; break;
         case MaxEggOptions::AT_both:  Item.pszText = "Both"; break;
-        case MaxEggOptions::AT_pose:  Item.pszText = "Pose"; break;
+        case MaxEggOptions::AT_pose:  Item.pszText = "Static"; break;
         case MaxEggOptions::AT_model: Item.pszText = "Model"; break;
         default:                      Item.pszText = "Model"; break;
         }
