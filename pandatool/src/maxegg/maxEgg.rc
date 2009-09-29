@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "maxResource.h"
+#include "resource."
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -131,8 +131,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOGEX 0, 0, 109, 192
-STYLE DS_SETFONT | WS_POPUP | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_SYSMENU
+IDD_PANEL DIALOGEX 0, 0, 108, 192
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CTEXT           "Panda 3D EGG Exporter",IDC_PANEL_TITLE,6,6,96,11,WS_BORDER | NOT WS_GROUP
@@ -141,9 +141,9 @@ BEGIN
     CONTROL         "Add...",IDC_ADD_EGG,"CustButton",WS_TABSTOP,6,102,24,12
     CONTROL         "Edit...",IDC_EDIT_EGG,"CustButton",WS_TABSTOP,36,102,30,12
     CONTROL         "Remove",IDC_REMOVE_EGG,"CustButton",WS_TABSTOP,72,102,30,12
-    CONTROL         "Overwrite Existing Files",IDC_OVERWRITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,126,103,8,WS_EX_TRANSPARENT
+    CONTROL         "Overwrite Existing Files",IDC_OVERWRITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,126,103,8,WS_EX_TRANSPARENT
     CONTROL         "Export Now",IDC_EXPORT,"CustButton",WS_TABSTOP,5,164,96,18
-    CONTROL         "Pview Output",IDC_PVIEW_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,138,103,8,WS_EX_TRANSPARENT
+    CONTROL         "Pview Output",IDC_PVIEW_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,138,103,8,WS_EX_TRANSPARENT
     CONTROL         "Log Output",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,148,90,11
 END
 
@@ -159,12 +159,27 @@ BEGIN
     "resource.\0"
 END
 
-
 3 TEXTINCLUDE 
 BEGIN
     "\r\0"
 END
 
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_PANEL, DIALOG
+    BEGIN
+        RIGHTMARGIN, 107
+    END
+END
 #endif    // APSTUDIO_INVOKED
 
 
@@ -192,7 +207,6 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
