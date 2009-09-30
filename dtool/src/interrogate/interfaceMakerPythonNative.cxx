@@ -612,7 +612,7 @@ void   InterfaceMakerPythonNative::GetValideChildClasses( std::map< std::string 
         CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
         if(base_type != NULL)
         {
-            std::string scoped_name = base_type->get_fully_scoped_name();
+            std::string scoped_name = base_type->get_local_name(&parser);
 
             if(answer.find(scoped_name) == answer.end())
             {    
