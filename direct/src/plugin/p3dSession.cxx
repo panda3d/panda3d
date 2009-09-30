@@ -1223,8 +1223,9 @@ win_create_process() {
   startup_info.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
   startup_info.dwFlags |= STARTF_USESTDHANDLES;
 
-  // Make sure the "python" console window is hidden.
-  startup_info.wShowWindow = SW_HIDE;
+  // Since p3dpython is now a Windows graphical app, we want its
+  // window to be shown.
+  startup_info.wShowWindow = SW_SHOW;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
   // If _keep_user_env, meaning not to change the current directory,

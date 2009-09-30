@@ -16,6 +16,10 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
+#include <assert.h>
+#include <ctype.h>
 #include <string.h>  // strrchr
 using namespace std;
          
@@ -23,6 +27,72 @@ using namespace std;
 #include <Carbon/Carbon.h>
 extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #endif
+
+#ifdef _WIN32
+// Windows requires WinMain() for proper access to the console window.
+// We'll wrap the main() function with our own startup WinMain().
+#define main local_main
+int main(int argc, char *argv[]);
+
+// Returns a newly-allocated string representing the quoted argument
+// beginning at p.  Advances p to the first character following the
+// close quote.
+char *
+parse_quoted_arg(char *&p) {
+  char quote = *p;
+  ++p;
+  string result;
+
+  while (*p != '\0' && *p != quote) {
+    // TODO: handle escape characters?  Not sure if we need to.
+    result += *p;
+    ++p;
+  }
+  if (*p == quote) {
+    ++p;
+  }
+  return strdup(result.c_str());
+}
+
+// Returns a newly-allocated string representing the unquoted argument
+// beginning at p.  Advances p to the first whitespace following the
+// argument.
+char *
+parse_unquoted_arg(char *&p) {
+  string result;
+  while (*p != '\0' && !isspace(*p)) {
+    result += *p;
+    ++p;
+  }
+  return strdup(result.c_str());
+}
+
+WINAPI 
+WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+  char *command_line = GetCommandLine();
+
+  vector<char *> argv;
+  
+  char *p = command_line;
+  while (*p != '\0') {
+    if (*p == '"') {
+      char *arg = parse_quoted_arg(p);
+      argv.push_back(arg);
+    } else {
+      char *arg = parse_unquoted_arg(p);
+      argv.push_back(arg);
+    }
+
+    // Skip whitespace.
+    while (*p != '\0' && isspace(*p)) {
+      ++p;
+    }
+  }
+
+  assert(!argv.empty());
+  return main(argv.size(), &argv[0]);
+}
+#endif  // _WIN32
 
 ////////////////////////////////////////////////////////////////////
 //     Function: main
