@@ -868,8 +868,24 @@ open_regular_window() {
   HINSTANCE hinstance = GetModuleHandle(NULL);
 
   _hparent = NULL;
-  if (_properties.has_parent_window()) {
-    _hparent = (HWND) _properties.get_parent_window();
+  
+  WindowHandle *window_handle = _properties.get_parent_window();
+  if (window_handle != NULL) {
+    windisplay_cat.info()
+      << "Got parent_window " << *window_handle << "\n";
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      windisplay_cat.info()
+        << "os_handle type " << os_handle->get_type() << "\n";
+      
+      /*if (os_handle->is_of_type(WinGraphicsPipe::WinHandle::get_class_type())) {
+        WinGraphicsPipe::WinHandle *win_handle = DCAST(WinGraphicsPipe::WinHandle, os_handle);
+        _hparent = win_handle->get_handle();
+        } else*/ if (os_handle->is_of_type(WindowHandle::IntHandle::get_class_type())) {
+        WindowHandle::IntHandle *int_handle = DCAST(WindowHandle::IntHandle, os_handle);
+        _hparent = (HWND)int_handle->get_handle();
+      }
+    }
   }
 
   if (!_hparent) {
