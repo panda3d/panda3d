@@ -27,6 +27,7 @@
 
 
 TypeHandle WinGraphicsPipe::_type_handle;
+TypeHandle WinGraphicsPipe::WinHandle::_type_handle;
 
 #define MAXIMUM_PROCESSORS 32
 
@@ -1020,4 +1021,61 @@ bool MyLoadLib(HINSTANCE &hDLL, const char *DLLname) {
     return false;
   }
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsPipe::make_window_handle
+//       Access: Public
+//  Description: Constructs a new WindowHandle object that
+//               encapsulates a window with the indicated Window
+//               handle.
+////////////////////////////////////////////////////////////////////
+WindowHandle *WinGraphicsPipe::
+make_window_handle(HWND window) {
+  return new WindowHandle(new WinHandle(window));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsPipe::make_int_window_handle
+//       Access: Public, Virtual
+//  Description: Creates a WindowHandle by interpreting the indicated
+//               integer value as an OS-specific pointer, e.g. to a
+//               HWND or a Window object, if this makes sense for the
+//               current OS.  Returns the WindowHandle if successful,
+//               or NULL if not.
+//
+//               This method exists primarily for the benefit of
+//               Python, which likes to pass around pointers as
+//               integers.  For other languages, see the OS-specific
+//               make_window_handle() method, which is defined for
+//               each particular OS-specific GraphicsPipe type.  It is
+//               preferable to use make_window_handle() instead of
+//               make_int_window_handle().
+////////////////////////////////////////////////////////////////////
+WindowHandle *WinGraphicsPipe::
+make_int_window_handle(size_t window) {
+  return make_window_handle((HWND)window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsPipe::WinHandle::format_string_handle
+//       Access: Published, Virtual
+//  Description: Writes the OS-specific value to the indicated stream
+//               in whatever representation makes sense, but it should
+//               format it as a decimal integer if possible, for
+//               consistency between platforms.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsPipe::WinHandle::
+format_string_handle(ostream &out) const {
+  out << (size_t)_handle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsPipe::WinHandle::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void WinGraphicsPipe::WinHandle::
+output(ostream &out) const {
+  out << (void *)_handle;
 }

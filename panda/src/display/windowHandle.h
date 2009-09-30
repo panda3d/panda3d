@@ -58,7 +58,7 @@ PUBLISHED:
   // This internal pointer within WindowHandle stores the actual
   // OS-specific window handle type, whatever type that is.  It is
   // subclassed for each OS.
-  class OSHandle : public TypedReferenceCount {
+  class EXPCL_PANDA_DISPLAY OSHandle : public TypedReferenceCount {
   protected:
     INLINE OSHandle();
 
@@ -89,7 +89,7 @@ PUBLISHED:
   // OS handle as a size_t object, as the WindowProperties object did
   // historically.  New code should use
   // GraphicsPipe::make_window_handle() instead of this.
-  class IntHandle : public OSHandle {
+  class EXPCL_PANDA_DISPLAY IntHandle : public OSHandle {
   PUBLISHED:
     INLINE IntHandle(size_t handle);
     virtual void format_string_handle(ostream &out) const;

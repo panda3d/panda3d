@@ -878,10 +878,10 @@ open_regular_window() {
       windisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
       
-      /*if (os_handle->is_of_type(WinGraphicsPipe::WinHandle::get_class_type())) {
+      if (os_handle->is_of_type(WinGraphicsPipe::WinHandle::get_class_type())) {
         WinGraphicsPipe::WinHandle *win_handle = DCAST(WinGraphicsPipe::WinHandle, os_handle);
         _hparent = win_handle->get_handle();
-        } else*/ if (os_handle->is_of_type(WindowHandle::IntHandle::get_class_type())) {
+        } else if (os_handle->is_of_type(WindowHandle::IntHandle::get_class_type())) {
         WindowHandle::IntHandle *int_handle = DCAST(WindowHandle::IntHandle, os_handle);
         _hparent = (HWND)int_handle->get_handle();
       }
