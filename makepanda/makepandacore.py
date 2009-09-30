@@ -57,58 +57,6 @@ for (ver,key1,key2,subdir) in MAXVERSIONINFO:
 
 ########################################################################
 ##
-## Visual Studio Manifest Manipulation.
-##
-########################################################################
-
-VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
-
-def GetVC90CRTVersion(fn):
-    manifest = ReadFile(fn)
-    version = VC90CRTVERSIONRE.search(manifest)
-    if (version == None):
-        exit("Cannot locate version number in "+fn)
-    return version.group(1)
-
-def SetVC90CRTVersion(fn, ver):
-    manifest = ReadFile(fn)
-    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
-    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
-    WriteFile(fn, manifest)
-
-########################################################################
-##
-## Thirdparty libraries paths
-##
-########################################################################
-
-if (sys.platform == "win32"):
-    if (platform.architecture()[0] == "64bit"):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
-    else:
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    if not os.path.isdir(THIRDPARTYLIBS):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
-else:
-    if (sys.platform == "darwin"):
-        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
-    elif (sys.platform.startswith("linux")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
-    elif (sys.platform.startswith("freebsd")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
-    else:
-        exit("Unknown platform: %s" % sys.platform)
-    VC90CRTVERSION = 0
-
-########################################################################
-##
 ## The exit routine will normally
 ##
 ## - print a message
@@ -387,6 +335,58 @@ def NeedsBuild(files,others):
             if (oldothers != others and VERBOSE):
                 print "%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor())
     return 1
+
+########################################################################
+##
+## Visual Studio Manifest Manipulation.
+##
+########################################################################
+
+VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
+
+def GetVC90CRTVersion(fn):
+    manifest = ReadFile(fn)
+    version = VC90CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot locate version number in "+fn)
+    return version.group(1)
+
+def SetVC90CRTVersion(fn, ver):
+    manifest = ReadFile(fn)
+    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
+    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
+    WriteFile(fn, manifest)
+
+########################################################################
+##
+## Thirdparty libraries paths
+##
+########################################################################
+
+if (sys.platform == "win32"):
+    if (platform.architecture()[0] == "64bit"):
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
+    else:
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+    if not os.path.isdir(THIRDPARTYLIBS):
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
+else:
+    if (sys.platform == "darwin"):
+        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
+    elif (sys.platform.startswith("linux")):
+      if (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+    elif (sys.platform.startswith("freebsd")):
+      if (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
+    else:
+        exit("Unknown platform: %s" % sys.platform)
+    VC90CRTVERSION = 0
 
 ########################################################################
 ##
