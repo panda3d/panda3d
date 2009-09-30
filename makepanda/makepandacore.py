@@ -57,6 +57,27 @@ for (ver,key1,key2,subdir) in MAXVERSIONINFO:
 
 ########################################################################
 ##
+## Visual Studio Manifest Manipulation.
+##
+########################################################################
+
+VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
+
+def GetVC90CRTVersion(fn):
+    manifest = ReadFile(fn)
+    version = VC90CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot locate version number in "+fn)
+    return version.group(1)
+
+def SetVC90CRTVersion(fn, ver):
+    manifest = ReadFile(fn)
+    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
+    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
+    WriteFile(fn, manifest)
+
+########################################################################
+##
 ## Thirdparty libraries paths
 ##
 ########################################################################
@@ -218,11 +239,14 @@ def oscmd(cmd, ignoreError = False):
         res = os.system(cmd)
         if (res == 11):
             if (LocateBinary("gdb") and GetVerbose()):
-                print GetColor("red") + "Received SIGSEGV, getting traceback..." + GetColor()
+                print GetColor("red") + "Received SIGSEGV, retrieving traceback..." + GetColor()
                 os.system("gdb -batch -ex 'handle SIG33 pass nostop noprint' -ex 'set pagination 0' -ex 'run' -ex 'bt full' -ex 'info registers' -ex 'thread apply all backtrace' -ex 'quit' --args %s < /dev/null" % cmd)
             else:
                 print GetColor("red") + "Received SIGSEGV" + GetColor()
     if res != 0 and not ignoreError:
+        if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
+            print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
+            os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
         exit("")
 
 ########################################################################
@@ -712,27 +736,6 @@ def CheckPandaSourceTree():
 
 ########################################################################
 ##
-## Visual Studio Manifest Manipulation.
-##
-########################################################################
-
-VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
-
-def GetVC90CRTVersion(fn):
-    manifest = ReadFile(fn)
-    version = VC90CRTVERSIONRE.search(manifest)
-    if (version == None):
-        exit("Cannot locate version number in "+fn)
-    return version.group(1)
-
-def SetVC90CRTVersion(fn, ver):
-    manifest = ReadFile(fn)
-    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
-    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
-    WriteFile(fn, manifest)
-
-########################################################################
-##
 ## Gets or sets the output directory, by default "built".
 ## Gets or sets the optimize level.
 ## Gets or sets the verbose flag.
@@ -909,7 +912,7 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
 LD_CACHE = None
 STATIC_CACHE = None
 
-def GetLdCache():
+def GetLibCache():
     # Returns a list of cached libraries, not prefixed by lib and not suffixed by .so* or .a!
     global LD_CACHE
     if (LD_CACHE == None):
@@ -935,8 +938,23 @@ def GetLdCache():
             LD_CACHE.append(lib)
     return LD_CACHE
 
+def ChooseLib(*libs):
+    # Chooses a library from the parameters, in order of preference. Returns the first if none of them were found.
+    for l in libs:
+        libname = l
+        if (l.startswith("lib")):
+            libname = l[3:]
+        if (libname in GetLibCache()):
+            return libname
+        else:
+            print GetColor("cyan") + "Couldn't find library lib" + libname + GetColor()
+    if (len(libs) > 0):
+        return libs[0]
+
 def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
     global PKG_LIST_ALL
+    if (pkg in PkgListGet() and PkgSkip(pkg)):
+        return
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
@@ -1011,11 +1029,14 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
         have_pkg = True
         for l in libs:
-            if (l in GetLdCache()):
-                LibName(pkg, "-l" + l)
+            libname = l
+            if (l.startswith("lib")):
+                libname = l[3:]
+            if (libname in GetLibCache()):
+                LibName(pkg, "-l" + libname)
             else:
                 if (VERBOSE):
-                    print GetColor("cyan") + "Couldn't find library lib" + l + GetColor()
+                    print GetColor("cyan") + "Couldn't find library lib" + libname + GetColor()
                 have_pkg = False
         
         for i in incs:
