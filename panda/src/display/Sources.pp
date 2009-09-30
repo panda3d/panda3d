@@ -32,6 +32,7 @@
     graphicsDevice.h graphicsDevice.I \
     lru.h \
     parasiteBuffer.I parasiteBuffer.h \
+    windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
     stencilRenderStates.h \
@@ -59,6 +60,7 @@
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsDevice.cxx \
     parasiteBuffer.cxx \
+    windowHandle.cxx \
     windowProperties.cxx \
     lru.cxx \
     stencilRenderStates.cxx \
@@ -88,6 +90,7 @@
     graphicsDevice.I graphicsDevice.h \
     lru.h \
     parasiteBuffer.I parasiteBuffer.h \
+    windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
     stencilRenderStates.h \

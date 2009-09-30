@@ -855,7 +855,7 @@ kill_non_joinable(ThreadSimpleManager::FifoThreads &threads) {
         thread_cat.debug()
           << "Killing " << *thread->_parent_obj << "\n";
       }
-      thread->_status = ThreadSimpleImpl::S_killed;
+      thread->_status = ThreadSimpleImpl::TS_killed;
       enqueue_finished(thread);
     }
   }
@@ -882,7 +882,7 @@ kill_non_joinable(ThreadSimpleManager::Sleeping &threads) {
         thread_cat.debug()
           << "Killing " << *thread->_parent_obj << "\n";
       }
-      thread->_status = ThreadSimpleImpl::S_killed;
+      thread->_status = ThreadSimpleImpl::TS_killed;
       enqueue_finished(thread);
     }
   }

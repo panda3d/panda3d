@@ -27,6 +27,7 @@
 #include "pandaSystem.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
+#include "windowHandle.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -421,6 +422,9 @@ init_libdisplay() {
 #ifdef SUPPORT_SUBPROCESS_WINDOW
   SubprocessWindow::init_type();
 #endif
+  WindowHandle::init_type();
+  WindowHandle::OSHandle::init_type();
+  WindowHandle::IntHandle::init_type();
 
 #if defined(HAVE_THREADS) && defined(DO_PIPELINING)
   PandaSystem *ps = PandaSystem::get_global_ptr();

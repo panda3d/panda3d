@@ -41,6 +41,22 @@ is_fullscreen() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_window_handle
+//       Access: Published
+//  Description: Returns the WindowHandle corresponding to this window
+//               on the desktop.  This is mainly useful for
+//               communicating with external libraries.  Use
+//               window_handle->get_os_handle()->get_handle(), or
+//               window_handle->get_string_handle(), to get the actual
+//               OS-specific window handle object, whatever type that
+//               might be.
+////////////////////////////////////////////////////////////////////
+INLINE WindowHandle *GraphicsWindow::
+get_window_handle() const {
+  return _window_handle;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::add_input_device
 //       Access: Protected
 //  Description: Adds a GraphicsWindowInputDevice to the vector.

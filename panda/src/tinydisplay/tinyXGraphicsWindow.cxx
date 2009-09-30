@@ -510,13 +510,27 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-
-  Window root_window;
-  if (!_properties.has_parent_window()) {
-    root_window = tinyx_pipe->get_root();
-  } else {
-    root_window = (Window)_properties.get_parent_window();
+  
+  Window parent_window = tinyx_pipe->get_root();
+  WindowHandle *window_handle = _properties.get_parent_window();
+  if (window_handle != NULL) {
+    tinydisplay_cat.info()
+      << "Got parent_window " << *window_handle << "\n";
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      tinydisplay_cat.info()
+        << "os_handle type " << os_handle->get_type() << "\n";
+      
+      if (os_handle->is_of_type(x11GraphicsPipe::x11Handle::get_class_type())) {
+        x11GraphicsPipe::x11Handle *x11_handle = DCAST(x11GraphicsPipe::x11Handle, os_handle);
+        parent_window = x11_handle->get_handle();
+      } else if (os_handle->is_of_type(WindowHandle::IntHandle::get_class_type())) {
+        WindowHandle::IntHandle *int_handle = DCAST(WindowHandle::IntHandle, os_handle);
+        parent_window = (Window)int_handle->get_handle();
+      }
+    }
   }
+
   setup_colormap(visual_info);
 
   _event_mask =
@@ -538,7 +552,7 @@ open_window() {
     CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
   _xwindow = XCreateWindow
-    (_display, root_window,
+    (_display, parent_window,
      _properties.get_x_origin(), _properties.get_y_origin(),
      _properties.get_x_size(), _properties.get_y_size(),
      0, _depth, InputOutput, _visual, attrib_mask, &wa);

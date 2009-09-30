@@ -18,6 +18,7 @@
 #include "frameBufferProperties.h"
 
 TypeHandle x11GraphicsPipe::_type_handle;
+TypeHandle x11GraphicsPipe::x11Handle::_type_handle;
 
 bool x11GraphicsPipe::_error_handlers_installed = false;
 x11GraphicsPipe::ErrorHandlerFunc *x11GraphicsPipe::_prev_error_handler;
@@ -129,6 +130,40 @@ x11GraphicsPipe::
   if (_display) {
     XCloseDisplay(_display);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::make_window_handle
+//       Access: Public
+//  Description: Constructs a new WindowHandle object that
+//               encapsulates a window with the indicated Window
+//               handle.
+////////////////////////////////////////////////////////////////////
+WindowHandle *x11GraphicsPipe::
+make_window_handle(Window window) {
+  return new WindowHandle(new x11Handle(window));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::make_int_window_handle
+//       Access: Public, Virtual
+//  Description: Creates a WindowHandle by interpreting the indicated
+//               integer value as an OS-specific pointer, e.g. to a
+//               HWND or a Window object, if this makes sense for the
+//               current OS.  Returns the WindowHandle if successful,
+//               or NULL if not.
+//
+//               This method exists primarily for the benefit of
+//               Python, which likes to pass around pointers as
+//               integers.  For other languages, see the OS-specific
+//               make_window_handle() method, which is defined for
+//               each particular OS-specific GraphicsPipe type.  It is
+//               preferable to use make_window_handle() instead of
+//               make_int_window_handle().
+////////////////////////////////////////////////////////////////////
+WindowHandle *x11GraphicsPipe::
+make_int_window_handle(size_t window) {
+  return make_window_handle((Window)window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,4 +288,27 @@ io_error_handler(Display *display) {
   // without returning, and if we do return, the caller will exit
   // anyway.  Sigh.  Very poor design on X's part.
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::x11Handle::format_string_handle
+//       Access: Published, Virtual
+//  Description: Writes the OS-specific value to the indicated stream
+//               in whatever representation makes sense, but it should
+//               format it as a decimal integer if possible, for
+//               consistency between platforms.
+////////////////////////////////////////////////////////////////////
+void x11GraphicsPipe::x11Handle::
+format_string_handle(ostream &out) const {
+  out << (size_t)_handle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::x11Handle::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void x11GraphicsPipe::x11Handle::
+output(ostream &out) const {
+  out << (void *)_handle;
 }

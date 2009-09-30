@@ -28,6 +28,7 @@
 #include "lightMutex.h"
 #include "lightReMutex.h"
 #include "pvector.h"
+#include "windowHandle.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
@@ -64,6 +65,8 @@ PUBLISHED:
   void set_close_request_event(const string &close_request_event);
   string get_close_request_event() const;
 
+  INLINE WindowHandle *get_window_handle() const;
+  
   // Mouse and keyboard routines
   int get_num_input_devices() const;
   string get_input_device_name(int device) const;
@@ -128,6 +131,7 @@ protected:
 
 protected:
   WindowProperties _properties;
+  PT(WindowHandle) _window_handle;
 
 private:
   LightReMutex _properties_lock; 

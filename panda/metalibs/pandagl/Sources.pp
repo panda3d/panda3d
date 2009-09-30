@@ -9,7 +9,7 @@
 #define BUILD_DIRECTORY $[HAVE_GL]
 
 #define COMPONENT_LIBS \
-    glgsg glxdisplay  \
+    glgsg x11display glxdisplay  \
     wgldisplay osxdisplay
 
 #define LOCAL_LIBS gsgbase display express

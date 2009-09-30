@@ -48,6 +48,8 @@
 #include "texGenAttrib.h"
 #include "shaderGenerator.h"
 #include "lightLensNode.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 
 #include <algorithm>
 #include <limits.h>

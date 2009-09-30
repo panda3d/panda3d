@@ -803,34 +803,59 @@ clear_mouse_mode() {
 //     Function: WindowProperties::set_parent_window
 //       Access: Published
 //  Description: Specifies the window that this window should be
-//               attached to.  If this is zero or unspecified, the
-//               window will be created as a toplevel window on the
-//               desktop; if this is nonzero, the window will be bound
-//               as a child window to the indicated parent window.
+//               attached to.
 //
-//               The actual value for "parent" is platform-specific.
-//               On Windows, it is the HWND of the parent window, cast
-//               to an unsigned integer.  On X11, it is the Window
-//               pointer of the parent window, similarly cast (yes,
-//               it's a portability issue).
+//               This is a deprecated variant on this method, and
+//               exists only for backward compatibility.  Future code
+//               should use the version of set_parent_window() below
+//               that receives a WindowHandle object; that interface
+//               is much more robust.
 //
-//               On OSX, this is the NSWindow pointer, though there
-//               appear to be some compatibility issues (OSX doesn't
-//               easily support the parent-window model).  On OSX,
-//               consider using subprocess_window instead.
+//               In this deprecated variant, the actual value for
+//               "parent" is platform-specific.  On Windows, it is the
+//               HWND of the parent window, cast to an unsigned
+//               integer.  On X11, it is the Window pointer of the
+//               parent window, similarly cast.  On OSX, this is the
+//               NSWindow pointer, which doesn't appear to work at
+//               all.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_parent_window(size_t parent) {
-  _parent_window=parent;
+  PT(WindowHandle) handle = new WindowHandle(new WindowHandle::IntHandle(parent));
+  set_parent_window(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_parent_window
+//       Access: Published
+//  Description: Specifies the window that this window should be
+//               attached to.  If this is NULL or unspecified, the
+//               window will be created as a toplevel window on the
+//               desktop; if this is non-NULL, the window will be
+//               bound as a child window to the indicated parent
+//               window.
+//
+//               You should use GraphicsPipe::make_window_handle() to
+//               create an instance of a WindowHandle object given an
+//               appropriate OS-specific window handle representation.
+//               Each OS-specific GraphicsPipe class defines a
+//               make_window_handle() method that returns an
+//               appropriate WindowHandle object to wrap the
+//               particular OS-specific representation.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_parent_window(WindowHandle *parent_window) {
+  _parent_window = parent_window;
   _specified |= S_parent_window;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::get_parent_window
 //       Access: Published
-//  Description: Returns the parent window specification.
+//  Description: Returns the parent window specification, or NULL if
+//               there is no parent window specified.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t WindowProperties::
+INLINE WindowHandle *WindowProperties::
 get_parent_window() const {
  return _parent_window;
 }
@@ -853,7 +878,7 @@ has_parent_window() const {
 INLINE void WindowProperties::
 clear_parent_window() {
   _specified &= ~S_parent_window;
-  _parent_window = (size_t)NULL;
+  _parent_window = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

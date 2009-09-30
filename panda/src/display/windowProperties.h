@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "filename.h"
 #include "pnotify.h"
+#include "windowHandle.h"
    
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowProperties
@@ -131,7 +132,8 @@ PUBLISHED:
   INLINE void clear_z_order();
 
   INLINE void set_parent_window(size_t parent);
-  INLINE size_t get_parent_window() const;
+  INLINE void set_parent_window(WindowHandle *parent_window);
+  INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
 
@@ -193,7 +195,7 @@ private:
   Filename _icon_filename;
   ZOrder _z_order;
   unsigned int _flags;
-  size_t _parent_window;  // a HWND or WindowRef or ..
+  PT(WindowHandle) _parent_window;
   Filename _subprocess_window;
 };
 

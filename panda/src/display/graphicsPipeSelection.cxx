@@ -20,6 +20,7 @@
 #include "config_display.h"
 #include "typeRegistry.h"
 #include "pset.h"
+#include "config_util.h"
 
 #include <algorithm>
 
