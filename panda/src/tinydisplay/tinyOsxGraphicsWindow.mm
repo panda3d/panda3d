@@ -945,7 +945,8 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 		  r.right = r.left + 512;
 		  r.bottom = r.top + 512;
 		}
-    
+                
+                /*
 		if (req_properties.has_parent_window())
 		{
 			tinydisplay_cat.info() << "Creating child window\n";
@@ -956,7 +957,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			_properties.set_fixed_size(true);
 			tinydisplay_cat.info() << "Child window created\n";
 		}
-		else
+		else */
 		{
 			if (req_properties.has_undecorated() && req_properties.get_undecorated())
 			{ // create a unmovable .. no edge window..
@@ -1008,10 +1009,11 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			gWinEvtHandler = NewEventHandlerUPP(windowEvtHndlr); 
 			InstallWindowEventHandler(_osx_window, gWinEvtHandler, GetEventTypeCount(list), list, (void*)this, NULL); // add event handler
 			
-            if(!req_properties.has_parent_window())
+                        /*if(!req_properties.has_parent_window()) */
 			{
 			    ShowWindow (_osx_window);
 			}
+                        /*
 			else
 			{
 			    
@@ -1036,7 +1038,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 				_properties.set_parent_window(req_properties.get_parent_window());
 				req_properties.clear_parent_window();
 				
-			}	
+                                }	*/
 
 			if (req_properties.has_fullscreen())
 			{
@@ -1090,7 +1092,7 @@ void TinyOsxGraphicsWindow::process_events()
       EventRef 		 theEvent;
       EventTargetRef theTarget	=	GetEventDispatcherTarget();
       
-      if (!_properties.has_parent_window())
+      /*if (!_properties.has_parent_window())*/
 	  {
           while  (ReceiveNextEvent(0, NULL, kEventDurationNoWait, true, &theEvent)== noErr)
           {
@@ -1582,6 +1584,7 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
     return false;
   }
 
+  /*
   if (_properties.has_parent_window())
   {
     if (has_origin)
@@ -1592,7 +1595,7 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
 		MoveWindow(_osx_window, x_origin+parentFrame.origin.x, y_origin+parentFrame.origin.y, false);
 	 }
   }
-  else
+  else*/
   {
 	  // We sometimes get a bogus origin of (0, 0).  As a special hack,
 	  // treat this as a special case, and ignore it.
