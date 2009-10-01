@@ -642,16 +642,17 @@ class AppRunner(DirectObject):
                 loadPrcFileData(pathname, data)
         
     
-    def __clearWindowPrc(self):
+    def __clearWindowProperties(self):
         """ Clears the windowPrc file that was created in a previous
         call to setupWindow(), if any. """
         
         if self.windowPrc:
             unloadPrcFile(self.windowPrc)
             self.windowPrc = None
+        WindowProperties.clearDefault()
 
     def setupWindow(self, windowType, x, y, width, height,
-                    parent, subprocessWindow):
+                    parent):
         """ Applies the indicated window parameters to the prc
         settings, for future windows; or applies them directly to the
         main window if the window has already been opened.  This is
@@ -665,37 +666,43 @@ class AppRunner(DirectObject):
                 wp.setOrigin(x, y)
             if width or height:
                 wp.setSize(width, height)
-            if subprocessWindow:
-                wp.setSubprocessWindow(subprocessWindow)
+            if windowType == 'embedded':
+                wp.setParentWindow(parent)
             base.win.requestProperties(wp)
             return
 
         # If we haven't got a window already, start 'er up.  Apply the
-        # requested setting to the prc file.
+        # requested setting to the prc file, and to the default
+        # WindowProperties structure.
+
+        self.__clearWindowProperties()
 
         if windowType == 'hidden':
             data = 'window-type none\n'
         else:
             data = 'window-type onscreen\n'
 
+        wp = WindowProperties.getDefault()
+
+        wp.clearFullscreen()
+        wp.clearParentWindow()
+        wp.clearOrigin()
+        wp.clearSize()
+
         if windowType == 'fullscreen':
-            data += 'fullscreen 1\n'
-        else:
-            data += 'fullscreen 0\n'
+            wp.setFullscreen(True)
 
         if windowType == 'embedded':
-            data += 'parent-window-handle %s\nsubprocess-window %s\n' % (
-                parent, subprocessWindow)
-        else:
-            data += 'parent-window-handle 0\nsubprocess-window \n'
+            wp.setParentWindow(parent)
 
         if x or y or windowType == 'embedded':
-            data += 'win-origin %s %s\n' % (x, y)
-        if width or height:
-            data += 'win-size %s %s\n' % (width, height)
+            wp.setOrigin(x, y)
 
-        self.__clearWindowPrc()
+        if width or height:
+            wp.setSize(width, height)
+
         self.windowPrc = loadPrcFileData("setupWindow", data)
+        WindowProperties.setDefault(wp)
 
         self.gotWindow = True
 
@@ -726,7 +733,7 @@ class AppRunner(DirectObject):
 
             # Now that the window is open, we don't need to keep those
             # prc settings around any more.
-            self.__clearWindowPrc()
+            self.__clearWindowProperties()
 
             # Inform the plugin and browser.
             self.notifyRequest('onwindowopen')

@@ -120,6 +120,8 @@
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
+    pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
+    mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c event:c nativenet:c net:c display:c panda:m
 

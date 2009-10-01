@@ -17,6 +17,12 @@
 #include "binaryXml.h"
 #include "multifile.h"
 #include "virtualFileSystem.h"
+#include "nativeWindowHandle.h"
+
+#ifndef CPPPARSER
+#include "py_panda.h"  
+IMPORT_THIS struct Dtool_PyTypedObject Dtool_WindowHandle;
+#endif
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
@@ -1262,39 +1268,50 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   xwparams->Attribute("win_width", &win_width);
   xwparams->Attribute("win_height", &win_height);
 
-  long parent_window_handle = 0;
-  const char *subprocess_window = "";
+  PT(WindowHandle) parent_window_handle;
 
 #ifdef _WIN32
   int hwnd;
   if (xwparams->Attribute("parent_hwnd", &hwnd)) {
-    parent_window_handle = (long)hwnd;
+    parent_window_handle = NativeWindowHandle::make_win((HWND)hwnd);
   }
 
 #elif __APPLE__
   // On Mac, we don't parent windows directly to the browser; instead,
   // we have to go through this subprocess-window nonsense.
 
-  subprocess_window = xwparams->Attribute("subprocess_window");
-  if (subprocess_window == NULL) {
-    subprocess_window = "";
+  const char *subprocess_window = xwparams->Attribute("subprocess_window");
+  if (subprocess_window != NULL) {
+    Filename filename = Filename::from_os_specific(subprocess_window);
+    parent_window_handle = NativeWindowHandle::make_subprocess(filename);
   }
 
 #elif defined(HAVE_X11)
   // Use stringstream to decode the "long" attribute.
   const char *parent_cstr = xwparams->Attribute("parent_xwindow");
   if (parent_cstr != NULL) {
+    long window;
     istringstream strm(parent_cstr);
-    strm >> parent_window_handle;
+    strm >> window;
+    parent_window_handle = NativeWindowHandle::make_x11((Window)window);
   }
 #endif
+
+  PyObject *py_handle = Py_None;
+  if (parent_window_handle != NULL) {
+    parent_window_handle->ref();
+    py_handle = DTool_CreatePyInstanceTyped(parent_window_handle, Dtool_WindowHandle, true, false, parent_window_handle->get_type_index());
+  }
+  Py_INCREF(py_handle);
 
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setupWindow", (char *)"siiiiis", window_type.c_str(),
-     win_x, win_y, win_width, win_height,
-     parent_window_handle, subprocess_window);
+    (_runner, (char *)"setupWindow", (char *)"siiiiO", window_type.c_str(),
+     win_x, win_y, win_width, win_height, py_handle);
+
+  Py_DECREF(py_handle);
+
   if (result == NULL) {
     PyErr_Print();
   }
