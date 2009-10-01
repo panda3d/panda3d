@@ -1444,7 +1444,27 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
   for (int y = 0; y < h; ++y) {
     ip -= w;
+#ifndef WORDS_BIGENDIAN
+    // On a little-endian machine, we can copy the whole row at a time.
     memcpy(ip, fo, w * PSZB);
+#else
+    // On a big-endian machine, we have to reverse the color-component order.
+    const char *source = (const char *)fo;
+    const char *stop = (const char *)fo + w * PSZB;
+    char *dest = (char *)ip;
+    while (source < stop) {
+      char b = source[0];
+      char g = source[1];
+      char r = source[2];
+      char a = source[3];
+      dest[0] = a;
+      dest[1] = r;
+      dest[2] = g;
+      dest[3] = b;
+      dest += 4;
+      source += 4;
+    }
+#endif
     fo += _c->zb->linesize / PSZB;
   }
 

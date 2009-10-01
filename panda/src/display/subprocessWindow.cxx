@@ -18,6 +18,7 @@
 
 #include "graphicsEngine.h"
 #include "config_display.h"
+#include "nativeWindowHandle.h"
 
 TypeHandle SubprocessWindow::_type_handle;
 
@@ -244,10 +245,22 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void SubprocessWindow::
 set_properties_now(WindowProperties &properties) {
-  if (properties.has_subprocess_window() && 
-      properties.get_subprocess_window() != _filename) {
+  Filename filename;
+  WindowHandle *window_handle = properties.get_parent_window();
+  if (window_handle != NULL) {
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      if (os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
+        NativeWindowHandle::SubprocessHandle *subprocess_handle = DCAST(NativeWindowHandle::SubprocessHandle, os_handle);
+        filename = subprocess_handle->get_filename();
+      }
+    }
+  }
+
+  if (!filename.empty() && filename != _filename) {
     // We're changing the subprocess buffer filename; that means we
     // might as well completely close and re-open the window.
+    display_cat.info() << "Re-opening SubprocessWindow\n";
     internal_close_window();
 
     _properties.add_properties(properties);
@@ -265,9 +278,9 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
-  if (properties.has_subprocess_window()) {
-    // Redundant subprocess specification.
-    properties.clear_subprocess_window();
+  if (properties.has_parent_window()) {
+    // Redundant parent-window specification.
+    properties.clear_parent_window();
   }
 }
 
@@ -371,7 +384,24 @@ internal_open_window() {
   }
 
   _gsg = _buffer->get_gsg();
-  _filename = _properties.get_subprocess_window();
+
+  WindowHandle *window_handle = _properties.get_parent_window();
+  if (window_handle != NULL) {
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      if (os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
+        NativeWindowHandle::SubprocessHandle *subprocess_handle = DCAST(NativeWindowHandle::SubprocessHandle, os_handle);
+        _filename = subprocess_handle->get_filename();
+      }
+    }
+  }
+
+  if (_filename.empty()) {
+    _is_valid = false;
+    display_cat.error()
+      << "No filename given to SubprocessWindow.\n";
+    return false;
+  }
 
   _swbuffer = SubprocessWindowBuffer::open_buffer
     (_fd, _mmap_size, _filename.to_os_specific());
@@ -386,6 +416,9 @@ internal_open_window() {
       << _filename << "\n";
     return false;
   }
+
+  display_cat.error()
+    << "SubprocessWindow reading " << _filename << "\n";
 
   return true;
 }

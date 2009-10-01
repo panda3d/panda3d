@@ -141,11 +141,6 @@ PUBLISHED:
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
 
-  INLINE void set_subprocess_window(const Filename &filename);
-  INLINE const Filename &get_subprocess_window() const;
-  INLINE bool has_subprocess_window() const;
-  INLINE void clear_subprocess_window();
-
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
@@ -171,7 +166,6 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
-    S_subprocess_window    = 0x10000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -200,7 +194,6 @@ private:
   ZOrder _z_order;
   unsigned int _flags;
   PT(WindowHandle) _parent_window;
-  Filename _subprocess_window;
 
   static WindowProperties *_default_properties;
 };

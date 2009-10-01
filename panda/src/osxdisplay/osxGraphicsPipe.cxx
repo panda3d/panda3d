@@ -16,8 +16,7 @@
 #include "osxGraphicsStateGuardian.h"
 #include "pnmImage.h"
 #include "subprocessWindow.h"
-
-
+#include "nativeWindowHandle.h"
 
 TypeHandle osxGraphicsPipe::_type_handle;
   
@@ -234,12 +233,19 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
+    WindowHandle *window_handle = win_prop.get_parent_window();
+    if (window_handle != NULL) {
+      osxdisplay_cat.info()
+        << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
-    if (win_prop.has_subprocess_window()) {
-      return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
-                                  flags, gsg, host);
-    }
+      WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+      if (os_handle != NULL && 
+          os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
+        return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
+                                    flags, gsg, host);
+      }
 #endif  // SUPPORT_SUBPROCESS_WINDOW
+    }
     return new osxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }

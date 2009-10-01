@@ -47,7 +47,6 @@ operator = (const WindowProperties &copy) {
   _flags = copy._flags;
   _mouse_mode = copy._mouse_mode;
   _parent_window = copy._parent_window;
-  _subprocess_window = copy._subprocess_window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,10 +86,9 @@ get_config_properties() {
   }
   props.set_title(window_title);
   if (parent_window_handle.get_value() != 0) {
-    props.set_parent_window(parent_window_handle);
-  }
-  if (!subprocess_window.empty()) {
-    props.set_subprocess_window(subprocess_window);
+    props.set_parent_window(NativeWindowHandle::make_int(parent_window_handle));
+  } else if (!subprocess_window.empty()) {
+    props.set_parent_window(NativeWindowHandle::make_subprocess(subprocess_window));
   }
   props.set_mouse_mode(M_absolute);
 
@@ -179,8 +177,7 @@ operator == (const WindowProperties &other) const {
           _icon_filename == other._icon_filename &&
           _cursor_filename == other._cursor_filename &&
           _mouse_mode == other._mouse_mode &&
-          _parent_window == other._parent_window &&
-          _subprocess_window == other._subprocess_window);
+          _parent_window == other._parent_window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,8 +200,7 @@ clear() {
   _z_order = Z_normal;
   _flags = 0;
   _mouse_mode = M_absolute;
-  _parent_window = 0;
-  _subprocess_window = Filename();
+  _parent_window = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,9 +286,6 @@ add_properties(const WindowProperties &other) {
   if (other.has_parent_window()) {
     set_parent_window(other.get_parent_window());
   }
-  if (other.has_subprocess_window()) {
-    set_subprocess_window(other.get_subprocess_window());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,12 +343,12 @@ output(ostream &out) const {
     out << get_mouse_mode() << " ";
   }
   if (has_parent_window()) {
-    out << "parent:" << get_parent_window() << " ";
+    if (get_parent_window() == NULL) {
+      out << "parent:none ";
+    } else {
+      out << "parent:" << *get_parent_window() << " ";
+    }
   }
-  if (has_subprocess_window()) {
-    out << "subprocess_window:" << get_subprocess_window() << " ";
-  }
-
 }
 
 ostream &

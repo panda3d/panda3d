@@ -32,13 +32,10 @@
 //               particularly important when running embedded in a
 //               browser.
 //
-//               To create a WindowHandle, you would typically call
-//               GraphicsPipe::make_window_handle, for the particular
-//               GraphicsPipe that you have constructed.  (Each
-//               OS-specific GraphicsPipe has a make_window_handle()
-//               method that receives an OS-specific window handle,
-//               whatever that means for a particular OS, and creates
-//               a WindowHandle object wrapping it.)
+//               To create a WindowHandle, you would usually call one
+//               of the NativeWindowHandle::make_*() methods,
+//               depending on the kind of native window handle object
+//               you already have.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY WindowHandle : public TypedReferenceCount {
 PUBLISHED:

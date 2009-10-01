@@ -22,6 +22,7 @@
 #include "tinyGraphicsBuffer.h"
 #include "pnmImage.h"
 #include "subprocessWindow.h"
+#include "nativeWindowHandle.h"
 
 TypeHandle TinyOsxGraphicsPipe::_type_handle;
   
@@ -235,12 +236,19 @@ make_output(const string &name,
         return NULL;
       }
     }
+    WindowHandle *window_handle = win_prop.get_parent_window();
+    if (window_handle != NULL) {
+      tinydisplay_cat.info()
+        << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
-    if (win_prop.has_subprocess_window()) {
-      return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
-                                  flags, gsg, host);
-    }
+      WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+      if (os_handle != NULL && 
+          os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
+        return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
+                                    flags, gsg, host);
+      }
 #endif  // SUPPORT_SUBPROCESS_WINDOW
+    }
     return new TinyOsxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
