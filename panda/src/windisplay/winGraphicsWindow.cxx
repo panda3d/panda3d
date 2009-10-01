@@ -880,10 +880,10 @@ open_regular_window() {
         << "os_handle type " << os_handle->get_type() << "\n";
       
       if (os_handle->is_of_type(NativeWindowHandle::WinHandle::get_class_type())) {
-        WinGraphicsPipe::WinHandle *win_handle = DCAST(NativeWindowHandle::WinHandle, os_handle);
+        NativeWindowHandle::WinHandle *win_handle = DCAST(NativeWindowHandle::WinHandle, os_handle);
         _hparent = win_handle->get_handle();
         } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
-        WindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
+        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
         _hparent = (HWND)int_handle->get_handle();
       }
     }

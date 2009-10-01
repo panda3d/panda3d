@@ -60,7 +60,7 @@ public:
 #endif  // WIN32
   
 public:
-  class IntHandle : public OSHandle {
+  class EXPCL_PANDA_DISPLAY IntHandle : public OSHandle {
   public:
     INLINE IntHandle(size_t handle);
     virtual size_t get_int_handle() const;
@@ -89,7 +89,7 @@ public:
     static TypeHandle _type_handle;
   };
 
-  class SubprocessHandle : public OSHandle {
+  class EXPCL_PANDA_DISPLAY SubprocessHandle : public OSHandle {
   public:
     INLINE SubprocessHandle(const Filename &filename);
     virtual void output(ostream &out) const;
@@ -118,7 +118,7 @@ public:
   };
 
 #if defined(HAVE_X11) && !defined(CPPPARSER)
-  class X11Handle : public OSHandle {
+  class EXPCL_PANDA_DISPLAY X11Handle : public OSHandle {
   public:
     INLINE X11Handle(Window handle);
     virtual size_t get_int_handle() const;

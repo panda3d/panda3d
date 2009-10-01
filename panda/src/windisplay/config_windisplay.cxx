@@ -77,6 +77,5 @@ init_libwindisplay() {
   initialized = true;
 
   WinGraphicsPipe::init_type();
-  WinGraphicsPipe::WinHandle::init_type();
   WinGraphicsWindow::init_type();
 }

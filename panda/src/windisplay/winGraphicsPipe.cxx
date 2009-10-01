@@ -27,7 +27,6 @@
 
 
 TypeHandle WinGraphicsPipe::_type_handle;
-TypeHandle WinGraphicsPipe::WinHandle::_type_handle;
 
 #define MAXIMUM_PROCESSORS 32
 
