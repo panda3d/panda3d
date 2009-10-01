@@ -535,6 +535,7 @@ get_last_byte_pos() const {
              _data_start + (streampos)_data_length) - (streampos)1;
 }
 
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::CertRecord::Constructor
 //       Access: Public
@@ -579,3 +580,5 @@ operator = (const Multifile::CertRecord &other) {
   X509_free(_cert);
   _cert = X509_dup(other._cert);
 }
+#endif
+
