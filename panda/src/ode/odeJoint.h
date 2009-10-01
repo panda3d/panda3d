@@ -23,6 +23,15 @@
 #include "odeWorld.h"      // Needed for derived classes
 #include "odeJointGroup.h"
 
+BEGIN_PUBLISH
+class EXPCL_PANDAODE OdeJointFeedback : public dJointFeedback {
+  INLINE const LVector3f get_force1() const { return LVector3f(f1[0], f1[1], f1[2]); };
+  INLINE const LVector3f get_force2() const { return LVector3f(f2[0], f2[1], f2[2]); };
+  INLINE const LVector3f get_torque1() const { return LVector3f(t1[0], t1[1], t1[2]); };
+  INLINE const LVector3f get_torque2() const { return LVector3f(t2[0], t2[1], t2[2]); };
+};
+END_PUBLISH
+
 // Strange, we should be forced to include this by get_body()
 class OdeBody; 
 
@@ -75,8 +84,8 @@ PUBLISHED:
   /* INLINE void *get_data(); */
   INLINE int get_joint_type() const;
   OdeBody get_body(int index) const;
-  /* INLINE void set_feedback(dJointFeedback *); */
-  /* INLINE dJointFeedback *get_feedback(); */
+  INLINE void set_feedback(OdeJointFeedback *);
+  INLINE OdeJointFeedback *get_feedback();
    
   void attach_bodies(const OdeBody &body1, const OdeBody &body2);
   void attach_body(const OdeBody &body, int index);

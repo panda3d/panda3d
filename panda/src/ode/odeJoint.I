@@ -52,17 +52,15 @@ get_joint_type() const {
   return dJointGetType(_id);
 }
 
-/*
 INLINE void OdeJoint::
-set_feedback(dJointFeedback *feedback) {
+set_feedback(OdeJointFeedback *feedback) {
   dJointSetFeedback(_id, feedback);
 }
 
-INLINE dJointFeedback *OdeJoint::
+INLINE OdeJointFeedback *OdeJoint::
 get_feedback() {
-  return dJointGetFeedback(_id);
+  return (OdeJointFeedback*) dJointGetFeedback(_id);
 }
-*/
 
 INLINE int OdeJoint::
 compare_to(const OdeJoint &other) const {
