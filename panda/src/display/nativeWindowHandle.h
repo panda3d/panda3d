@@ -56,7 +56,7 @@ public:
 #endif  // HAVE_X11
 
 #ifdef WIN32
-  static PT(WindowHandle) make_win32(HWND window);
+  static PT(WindowHandle) make_win(HWND window);
 #endif  // WIN32
   
 public:
