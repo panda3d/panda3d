@@ -417,8 +417,10 @@ internal_open_window() {
     return false;
   }
 
-  display_cat.error()
-    << "SubprocessWindow reading " << _filename << "\n";
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "SubprocessWindow reading " << _filename << "\n";
+  }
 
   return true;
 }
