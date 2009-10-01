@@ -45,7 +45,11 @@ PUBLISHED:
   void operator = (const WindowProperties &copy);
   INLINE ~WindowProperties();
 
+  static WindowProperties get_config_properties();
   static WindowProperties get_default();
+  static void set_default(const WindowProperties &default_properties);
+  static void clear_default();
+
   static WindowProperties size(int x_size, int y_size);
 
   bool operator == (const WindowProperties &other) const;
@@ -131,7 +135,7 @@ PUBLISHED:
   INLINE bool has_z_order() const;
   INLINE void clear_z_order();
 
-  INLINE void set_parent_window(size_t parent);
+  void set_parent_window(size_t parent);
   INLINE void set_parent_window(WindowHandle *parent_window);
   INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
@@ -197,6 +201,8 @@ private:
   unsigned int _flags;
   PT(WindowHandle) _parent_window;
   Filename _subprocess_window;
+
+  static WindowProperties *_default_properties;
 };
 
 EXPCL_PANDA_DISPLAY ostream &

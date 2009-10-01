@@ -29,6 +29,7 @@
 #include "textEncoder.h"
 #include "throw_event.h"
 #include "lightReMutexHolder.h"
+#include "nativeWindowHandle.h"
 
 TypeHandle TinyXGraphicsWindow::_type_handle;
 
@@ -521,11 +522,11 @@ open_window() {
       tinydisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
       
-      if (os_handle->is_of_type(x11GraphicsPipe::x11Handle::get_class_type())) {
-        x11GraphicsPipe::x11Handle *x11_handle = DCAST(x11GraphicsPipe::x11Handle, os_handle);
+      if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
+        NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
         parent_window = x11_handle->get_handle();
-      } else if (os_handle->is_of_type(WindowHandle::IntHandle::get_class_type())) {
-        WindowHandle::IntHandle *int_handle = DCAST(WindowHandle::IntHandle, os_handle);
+      } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
+        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
         parent_window = (Window)int_handle->get_handle();
       }
     }

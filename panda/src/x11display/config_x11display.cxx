@@ -78,6 +78,5 @@ init_libx11display() {
   initialized = true;
 
   x11GraphicsPipe::init_type();
-  x11GraphicsPipe::x11Handle::init_type();
   x11GraphicsWindow::init_type();
 }

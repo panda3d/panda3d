@@ -16,7 +16,6 @@
 
 TypeHandle WindowHandle::_type_handle;
 TypeHandle WindowHandle::OSHandle::_type_handle;
-TypeHandle WindowHandle::IntHandle::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowHandle::Destructor
@@ -28,20 +27,18 @@ WindowHandle::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::get_string_handle
+//     Function: WindowHandle::get_int_handle
 //       Access: Published
-//  Description: Returns the OS-specific handle in a string
-//               representation, whatever that means for a particular
-//               OS.  Typically this is a pointer value, represented
-//               as a decimal integer.
+//  Description: Returns the OS-specific handle converted to an
+//               integer, if this is possible for the particular
+//               representation.  Returns 0 if it is not.
 ////////////////////////////////////////////////////////////////////
-string WindowHandle::
-get_string_handle() const {
-  ostringstream strm;
+size_t WindowHandle::
+get_int_handle() const {
   if (_os_handle != NULL) {
-    _os_handle->format_string_handle(strm);
+    return _os_handle->get_int_handle();
   }
-  return strm.str();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,15 +97,15 @@ WindowHandle::OSHandle::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::OSHandle::format_string_handle
+//     Function: WindowHandle::OSHandle::get_int_handle
 //       Access: Published, Virtual
-//  Description: Writes the OS-specific value to the indicated stream
-//               in whatever representation makes sense, but it should
-//               format it as a decimal integer if possible, for
-//               consistency between platforms.
+//  Description: Returns the OS-specific handle converted to an
+//               integer, if this is possible for the particular
+//               representation.  Returns 0 if it is not.
 ////////////////////////////////////////////////////////////////////
-void WindowHandle::OSHandle::
-format_string_handle(ostream &out) const {
+size_t WindowHandle::OSHandle::
+get_int_handle() const {
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,27 +116,4 @@ format_string_handle(ostream &out) const {
 void WindowHandle::OSHandle::
 output(ostream &out) const {
   out << "(no type)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::IntHandle::format_string_handle
-//       Access: Published, Virtual
-//  Description: Writes the OS-specific value to the indicated stream
-//               in whatever representation makes sense, but it should
-//               format it as a decimal integer if possible, for
-//               consistency between platforms.
-////////////////////////////////////////////////////////////////////
-void WindowHandle::IntHandle::
-format_string_handle(ostream &out) const {
-  out << _handle;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::IntHandle::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void WindowHandle::IntHandle::
-output(ostream &out) const {
-  out << _handle;
 }

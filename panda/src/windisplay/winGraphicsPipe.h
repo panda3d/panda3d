@@ -39,40 +39,6 @@ public:
 
   virtual void lookup_cpu_data();
 
-  WindowHandle *make_window_handle(HWND window);
-  virtual WindowHandle *make_int_window_handle(size_t window);
-
-public:
-  // Wraps a WindowHandle type for Windows.
-  class EXPCL_PANDAWIN WinHandle : public WindowHandle::OSHandle {
-  PUBLISHED:
-    INLINE WinHandle(HWND handle);
-    virtual void format_string_handle(ostream &out) const;
-    virtual void output(ostream &out) const;
-
-    INLINE HWND get_handle() const;
-
-  private:
-    HWND _handle;
-
-  public:
-    static TypeHandle get_class_type() {
-      return _type_handle;
-    }
-    static void init_type() {
-      OSHandle::init_type();
-      register_type(_type_handle, "WinGraphicsPipe::WinHandle",
-                    OSHandle::get_class_type());
-    }
-    virtual TypeHandle get_type() const {
-      return get_class_type();
-    }
-    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
-  private:
-    static TypeHandle _type_handle;
-  };
-
 private:
   HINSTANCE _hUser32;
   typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);

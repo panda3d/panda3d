@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE OSHandle *get_os_handle() const;
   INLINE void set_os_handle(OSHandle *os_handle);
 
-  string get_string_handle() const;
+  size_t get_int_handle() const;
 
   void output(ostream &out) const;
 
@@ -64,7 +64,7 @@ PUBLISHED:
 
   PUBLISHED:
     virtual ~OSHandle();
-    virtual void format_string_handle(ostream &out) const;
+    virtual size_t get_int_handle() const;
     virtual void output(ostream &out) const;
 
   public:
@@ -84,41 +84,6 @@ PUBLISHED:
   private:
     static TypeHandle _type_handle;
   };
-
-  // This class only exists for backward compatibility; it stores the
-  // OS handle as a size_t object, as the WindowProperties object did
-  // historically.  New code should use
-  // GraphicsPipe::make_window_handle() instead of this.
-  class EXPCL_PANDA_DISPLAY IntHandle : public OSHandle {
-  PUBLISHED:
-    INLINE IntHandle(size_t handle);
-    virtual void format_string_handle(ostream &out) const;
-    virtual void output(ostream &out) const;
-
-    INLINE size_t get_handle() const;
-
-  private:
-    size_t _handle;
-
-  public:
-    static TypeHandle get_class_type() {
-      return _type_handle;
-    }
-    static void init_type() {
-      OSHandle::init_type();
-      register_type(_type_handle, "WindowHandle::IntHandle",
-                    OSHandle::get_class_type());
-    }
-    virtual TypeHandle get_type() const {
-      return get_class_type();
-    }
-    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
-  private:
-    static TypeHandle _type_handle;
-  };
-  
-    
 
 protected:
   // Callbacks for communication with the parent window.

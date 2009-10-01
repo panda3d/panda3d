@@ -44,40 +44,6 @@ public:
 
   INLINE Cursor get_hidden_cursor();
 
-  WindowHandle *make_window_handle(Window window);
-  virtual WindowHandle *make_int_window_handle(size_t window);
-
-public:
-  // Wraps a WindowHandle type for X11.
-  class x11Handle : public WindowHandle::OSHandle {
-  PUBLISHED:
-    INLINE x11Handle(Window handle);
-    virtual void format_string_handle(ostream &out) const;
-    virtual void output(ostream &out) const;
-
-    INLINE Window get_handle() const;
-
-  private:
-    Window _handle;
-
-  public:
-    static TypeHandle get_class_type() {
-      return _type_handle;
-    }
-    static void init_type() {
-      OSHandle::init_type();
-      register_type(_type_handle, "x11GraphicsPipe::x11Handle",
-                    OSHandle::get_class_type());
-    }
-    virtual TypeHandle get_type() const {
-      return get_class_type();
-    }
-    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
-  private:
-    static TypeHandle _type_handle;
-  };
-
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 

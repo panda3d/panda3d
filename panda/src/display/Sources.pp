@@ -31,6 +31,7 @@
     graphicsWindowInputDevice.h \
     graphicsDevice.h graphicsDevice.I \
     lru.h \
+    nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
@@ -59,6 +60,7 @@
     graphicsThreadingModel.cxx \
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsDevice.cxx \
+    nativeWindowHandle.cxx \
     parasiteBuffer.cxx \
     windowHandle.cxx \
     windowProperties.cxx \
@@ -89,6 +91,7 @@
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
     lru.h \
+    nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \

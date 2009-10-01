@@ -14,7 +14,9 @@
 
 #include "windowProperties.h"
 #include "config_display.h"
+#include "nativeWindowHandle.h"
 
+WindowProperties *WindowProperties::_default_properties = NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::Constructor
@@ -49,14 +51,14 @@ operator = (const WindowProperties &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowProperties::get_default
+//     Function: WindowProperties::get_config_properties
 //       Access: Published, Static
 //  Description: Returns a WindowProperties structure with all of the
 //               default values filled in according to the user's
 //               config file.
 ////////////////////////////////////////////////////////////////////
 WindowProperties WindowProperties::
-get_default() {
+get_config_properties() {
   WindowProperties props;
 
   props.set_open(true);
@@ -93,6 +95,56 @@ get_default() {
   props.set_mouse_mode(M_absolute);
 
   return props;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_default
+//       Access: Published, Static
+//  Description: Returns the "default" WindowProperties.  If
+//               set_default() has been called, this returns that
+//               WindowProperties structure; otherwise, this returns
+//               get_config_properties().
+////////////////////////////////////////////////////////////////////
+WindowProperties WindowProperties::
+get_default() {
+  if (_default_properties != NULL) {
+    return *_default_properties;
+  } else {
+    return get_config_properties();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_default
+//       Access: Published, Static
+//  Description: Replaces the "default" WindowProperties with the
+//               specified structure.  The specified WindowProperties
+//               will be returned by future calls to get_default(),
+//               until clear_default() is called.
+//
+//               Note that this completely replaces the default
+//               properties; it is not additive.
+////////////////////////////////////////////////////////////////////
+void WindowProperties::
+set_default(const WindowProperties &default_properties) {
+  if (_default_properties == NULL) {
+    _default_properties = new WindowProperties;
+  }
+  (*_default_properties) = default_properties;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_default
+//       Access: Published, Static
+//  Description: Returns the "default" WindowProperties to whatever
+//               is specified in the user's config file.
+////////////////////////////////////////////////////////////////////
+void WindowProperties::
+clear_default() {
+  if (_default_properties != NULL) {
+    delete _default_properties;
+    _default_properties = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,6 +205,32 @@ clear() {
   _mouse_mode = M_absolute;
   _parent_window = 0;
   _subprocess_window = Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_parent_window
+//       Access: Published
+//  Description: Specifies the window that this window should be
+//               attached to.
+//
+//               This is a deprecated variant on this method, and
+//               exists only for backward compatibility.  Future code
+//               should use the version of set_parent_window() below
+//               that receives a WindowHandle object; that interface
+//               is much more robust.
+//
+//               In this deprecated variant, the actual value for
+//               "parent" is platform-specific.  On Windows, it is the
+//               HWND of the parent window, cast to an unsigned
+//               integer.  On X11, it is the Window pointer of the
+//               parent window, similarly cast.  On OSX, this is the
+//               NSWindow pointer, which doesn't appear to work at
+//               all.
+////////////////////////////////////////////////////////////////////
+void WindowProperties::
+set_parent_window(size_t parent) {
+  PT(WindowHandle) handle = NativeWindowHandle::make_int(parent);
+  set_parent_window(handle);
 }
 
 ////////////////////////////////////////////////////////////////////

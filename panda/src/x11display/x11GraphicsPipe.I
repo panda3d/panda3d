@@ -70,22 +70,3 @@ get_hidden_cursor() {
   }
   return _hidden_cursor;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::x11Handle::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE x11GraphicsPipe::x11Handle::
-x11Handle(Window handle) : _handle(handle) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::x11Handle::get_handle
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE Window x11GraphicsPipe::x11Handle::
-get_handle() const {
-  return _handle;
-}

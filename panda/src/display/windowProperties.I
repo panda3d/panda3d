@@ -803,32 +803,6 @@ clear_mouse_mode() {
 //     Function: WindowProperties::set_parent_window
 //       Access: Published
 //  Description: Specifies the window that this window should be
-//               attached to.
-//
-//               This is a deprecated variant on this method, and
-//               exists only for backward compatibility.  Future code
-//               should use the version of set_parent_window() below
-//               that receives a WindowHandle object; that interface
-//               is much more robust.
-//
-//               In this deprecated variant, the actual value for
-//               "parent" is platform-specific.  On Windows, it is the
-//               HWND of the parent window, cast to an unsigned
-//               integer.  On X11, it is the Window pointer of the
-//               parent window, similarly cast.  On OSX, this is the
-//               NSWindow pointer, which doesn't appear to work at
-//               all.
-////////////////////////////////////////////////////////////////////
-INLINE void WindowProperties::
-set_parent_window(size_t parent) {
-  PT(WindowHandle) handle = new WindowHandle(new WindowHandle::IntHandle(parent));
-  set_parent_window(handle);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WindowProperties::set_parent_window
-//       Access: Published
-//  Description: Specifies the window that this window should be
 //               attached to.  If this is NULL or unspecified, the
 //               window will be created as a toplevel window on the
 //               desktop; if this is non-NULL, the window will be

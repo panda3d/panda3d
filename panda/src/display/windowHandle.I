@@ -65,23 +65,3 @@ set_os_handle(OSHandle *os_handle) {
 INLINE WindowHandle::OSHandle::
 OSHandle() {
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::IntHandle::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE WindowHandle::IntHandle::
-IntHandle(size_t handle) : _handle(handle) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::IntHandle::get_handle
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE size_t WindowHandle::IntHandle::
-get_handle() const {
-  return _handle;
-}

@@ -149,28 +149,6 @@ get_display_information() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::make_int_window_handle
-//       Access: Published
-//  Description: Creates a WindowHandle by interpreting the indicated
-//               integer value as an OS-specific pointer, e.g. to a
-//               HWND or a Window object, if this makes sense for the
-//               current OS.  Returns the WindowHandle if successful,
-//               or NULL if not.
-//
-//               This method exists primarily for the benefit of
-//               Python, which likes to pass around pointers as
-//               integers.  For other languages, see the OS-specific
-//               make_window_handle() method, which is defined for
-//               each particular OS-specific GraphicsPipe type.  It is
-//               preferable to use make_window_handle() instead of
-//               make_int_window_handle().
-////////////////////////////////////////////////////////////////////
-WindowHandle *GraphicsPipe::
-make_int_window_handle(size_t window) {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::lookup_cpu_data
 //       Access: Public, Virtual
 //  Description: Looks up the detailed CPU information and stores it

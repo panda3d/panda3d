@@ -101,7 +101,6 @@ PUBLISHED:
   virtual void lookup_cpu_data();
   
   virtual string get_interface_name() const=0;
-  virtual WindowHandle *make_int_window_handle(size_t window);
 
 public:
   enum PreferredWindowThread {
