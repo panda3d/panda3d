@@ -55,7 +55,7 @@ public:
   static PT(WindowHandle) make_x11(Window window);
 #endif  // HAVE_X11
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
   static PT(WindowHandle) make_win(HWND window);
 #endif  // WIN32
   
@@ -149,7 +149,7 @@ public:
 #endif  // HAVE_X11
 
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
   class EXPCL_PANDA_DISPLAY WinHandle : public OSHandle {
   public:
     INLINE WinHandle(HWND handle);
@@ -187,7 +187,7 @@ public:
 #if defined(HAVE_X11) && !defined(CPPPARSER)
     X11Handle::init_type();
 #endif
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
     WinHandle::init_type();
 #endif
   }

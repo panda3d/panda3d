@@ -74,7 +74,7 @@ get_handle() const {
 }
 #endif  // HAVE_X11
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeWindowHandle::WinHandle::Constructor
 //       Access: Public
@@ -85,7 +85,7 @@ WinHandle(HWND handle) : _handle(handle) {
 }
 #endif  // WIN32
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeWindowHandle::WinHandle::get_handle
 //       Access: Public

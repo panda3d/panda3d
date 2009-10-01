@@ -20,7 +20,7 @@ TypeHandle NativeWindowHandle::SubprocessHandle::_type_handle;
 #if defined(HAVE_X11) && !defined(CPPPARSER)
 TypeHandle NativeWindowHandle::X11Handle::_type_handle;
 #endif
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 TypeHandle NativeWindowHandle::WinHandle::_type_handle;
 #endif
 
@@ -69,7 +69,7 @@ make_x11(Window window) {
 }
 #endif  // HAVE_X11
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeWindowHandle::make_win
 //       Access: Published, Static
@@ -140,7 +140,7 @@ output(ostream &out) const {
 }
 #endif  // HAVE_X11
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeWindowHandle::WinHandle::get_int_handle
 //       Access: Public, Virtual
@@ -154,7 +154,7 @@ get_int_handle() const {
 }
 #endif  // WIN32
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeWindowHandle::WinHandle::output
 //       Access: Public
