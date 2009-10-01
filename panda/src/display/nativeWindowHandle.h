@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 
-#include "typedReferenceCount.h"
-#include "pointerTo.h"
+#include "windowHandle.h"
 
 #ifdef HAVE_X11
 #include <X11/Xlib.h>
