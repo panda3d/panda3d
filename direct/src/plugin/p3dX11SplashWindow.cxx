@@ -94,7 +94,7 @@ set_visible(bool visible) {
   TiXmlDocument doc;
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_visible");
-  xcommand->SetAttribute("visible", (int)visible);
+  xcommand->SetAttribute("visible", (int)_visible);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 }

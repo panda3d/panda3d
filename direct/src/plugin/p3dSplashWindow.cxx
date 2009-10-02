@@ -88,7 +88,6 @@ set_wparams(const P3DWindowParams &wparams) {
   _wparams = wparams;
   _win_width = _wparams.get_win_width();
   _win_height = _wparams.get_win_height();
-  _visible = true;
 }
 
 ////////////////////////////////////////////////////////////////////
