@@ -104,10 +104,29 @@ set_wparams(const P3DWindowParams &wparams) {
       TransformProcessType(&psn, kProcessTransformToForegroundApplication);
       SetFrontProcess(&psn);
 
-      ShowWindow(_toplevel_window);
+      if (_visible) {
+        ShowWindow(_toplevel_window);
+      }
     }
   }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::set_visible
+//       Access: Public, Virtual
+//  Description: Makes the splash window visible or invisible, so as
+//               not to compete with the embedded Panda window in the
+//               same space.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+set_visible(bool visible) {
+  P3DSplashWindow::set_visible(visible);
+
+  if (_visible) {
+    ShowWindow(_toplevel_window);
+  } else {
+    HideWindow(_toplevel_window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
