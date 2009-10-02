@@ -45,6 +45,8 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   _read_thread_continue = false;
   _program_continue = true;
   _session_terminated = false;
+  _taskMgr = NULL;
+
   INIT_LOCK(_commands_lock);
   INIT_THREAD(_read_thread);
 
@@ -116,7 +118,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 ~P3DPythonRun() {
-  nassertv(_instances.empty());
+  terminate_session();
 
   // Close the write pipe, so the parent process will terminate us.
   _pipe_write.close();
@@ -1406,14 +1408,18 @@ terminate_session() {
   }
   _instances.clear();
 
-  PyObject *result = PyObject_CallMethod(_taskMgr, (char *)"stop", (char *)"");
-  if (result == NULL) {
-    PyErr_Print();
-    return;
+  if (!_session_terminated) {
+    if (_taskMgr != NULL) {
+      PyObject *result = PyObject_CallMethod(_taskMgr, (char *)"stop", (char *)"");
+      if (result == NULL) {
+        PyErr_Print();
+      } else {
+        Py_DECREF(result);
+      }
+    }
+    
+    _session_terminated = true;
   }
-  Py_DECREF(result);
-
-  _session_terminated = true;
 }
 
 ////////////////////////////////////////////////////////////////////
