@@ -74,6 +74,8 @@ public:
 
   bool run_python();
 
+  void request_keyboard_focus(P3DCInstance *inst);
+
 private:
   void run_interactive_console();
   void handle_command(TiXmlDocument *doc);
@@ -104,6 +106,42 @@ private:
 private:
   TiXmlElement *pyobj_to_xml(PyObject *value);
   PyObject *xml_to_pyobj(TiXmlElement *xvalue);
+
+private:
+  // This subclass of P3DWindowHandle is associated with the parent
+  // window we are given by the parent process.  We use it to add
+  // hooks for communicating with the parent window, for instance to
+  // ask for the parent window to manage keyboard focus when
+  // necessary.
+  class P3DWindowHandle : public WindowHandle {
+  public:
+    P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
+                    const WindowHandle &copy);
+
+  private:
+    P3DPythonRun *_p3dpython;
+    P3DCInstance *_inst;
+
+  protected:
+    virtual void request_keyboard_focus(WindowHandle *child);
+
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      WindowHandle::init_type();
+      register_type(_type_handle, "P3DWindowHandle",
+                    WindowHandle::get_class_type());
+    }
+    virtual TypeHandle get_type() const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+    
+  private:
+    static TypeHandle _type_handle;
+  };
 
 private:
   // This method runs only within the read thread.

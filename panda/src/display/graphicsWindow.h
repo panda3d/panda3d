@@ -132,6 +132,7 @@ protected:
 protected:
   WindowProperties _properties;
   PT(WindowHandle) _window_handle;
+  PT(WindowHandle) _parent_window_handle;
 
 private:
   LightReMutex _properties_lock; 

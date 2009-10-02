@@ -1495,6 +1495,9 @@ handle_notify_request(const string &message) {
   } else if (message == "authfinished") {
     // Similarly for the "auth finished" message.
     auth_finished_main_thread();
+
+  } else if (message == "keyboardfocus") {
+    request_keyboard_focus();
   }
 }
 
@@ -1592,6 +1595,19 @@ handle_script_request(const string &operation, P3D_object *object,
   } else {
     delete doc;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::request_keyboard_focus
+//       Access: Private
+//  Description: The Panda window is asking us to manage keyboard
+//               focus in proxy for it.  This is used on Vista, where
+//               the Panda window may be disallowed from directly
+//               assigning itself keyboard focus.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+request_keyboard_focus() {
+  nout << "request_keyboard_focus\n";
 }
 
 ////////////////////////////////////////////////////////////////////

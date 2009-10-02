@@ -27,6 +27,22 @@ WindowHandle::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowHandle::send_keyboard_event
+//       Access: Published
+//  Description: Call this method on a parent WindowHandle to deliver
+//               a button event to the current child window, if any.
+//               This is used in the web plugin system to deliver
+//               button events detected directly by the browser system
+//               into Panda.
+////////////////////////////////////////////////////////////////////
+void WindowHandle::
+send_keyboard_event(const ButtonEvent &event) {
+  if (_keyboard_window != NULL) {
+    _keyboard_window->receive_keyboard_event(event);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowHandle::get_int_handle
 //       Access: Published
 //  Description: Returns the OS-specific handle converted to an
@@ -57,7 +73,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowHandle::attach_child
-//       Access: Protected, Virtual
+//       Access: Public, Virtual
 //  Description: Called on a parent handle to indicate a child
 //               window's intention to attach itself.
 ////////////////////////////////////////////////////////////////////
@@ -67,25 +83,37 @@ attach_child(WindowHandle *child) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowHandle::detach_child
-//       Access: Protected, Virtual
+//       Access: Public, Virtual
 //  Description: Called on a parent handle to indicate a child
 //               window's intention to detach itself.
 ////////////////////////////////////////////////////////////////////
 void WindowHandle::
 detach_child(WindowHandle *child) {
+  if (_keyboard_window == child) {
+    _keyboard_window = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::set_keyboard_focus
-//       Access: Protected, Virtual
+//     Function: WindowHandle::request_keyboard_focus
+//       Access: Public, Virtual
 //  Description: Called on a parent handle to indicate a child
-//               window's intention to set itself as the recipient of
-//               keyboard events.
+//               window's wish to receive keyboard button events.
 ////////////////////////////////////////////////////////////////////
 void WindowHandle::
-set_keyboard_focus(WindowHandle *child) {
+request_keyboard_focus(WindowHandle *child) {
+  _keyboard_window = child;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: WindowHandle::receive_keyboard_event
+//       Access: Public, Virtual
+//  Description: Called on a child handle to deliver a keyboard button
+//               event generated in the parent window.
+////////////////////////////////////////////////////////////////////
+void WindowHandle::
+receive_keyboard_event(const ButtonEvent &event) {
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowHandle::OSHandle::Destructor

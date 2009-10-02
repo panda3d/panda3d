@@ -216,6 +216,7 @@ open_window() {
       }
     }
   }
+  _parent_window_handle = window_handle;
   
 #ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig != None) {
@@ -302,7 +303,15 @@ open_window() {
         << "Raw mice not requested.\n";
     }
   }
-  
+
+  // Create a WindowHandle for ourselves
+  _window_handle = NativeWindowHandle::make_x11(_xwindow);
+
+  // And tell our parent window that we're now its child.
+  if (_parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->attach_child(_window_handle);
+  }
+
   return true;
 }
 

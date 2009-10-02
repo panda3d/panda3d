@@ -749,6 +749,15 @@ void GraphicsWindow::
 close_window() {
   display_cat.info()
     << "Closing " << get_type() << "\n";
+
+  // Tell our parent window (if any) that we're no longer its child.
+  if (_window_handle != (WindowHandle *)NULL &&
+      _parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->detach_child(_window_handle);
+  }
+
+  _window_handle = NULL;
+  _parent_window_handle = NULL;
   _is_valid = false;
 }
 

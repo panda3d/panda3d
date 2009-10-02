@@ -20,6 +20,7 @@
 #include "p3d_plugin.h"
 #include "pvector.h"
 #include "get_tinyxml.h"
+#include "windowHandle.h"
 
 #include <Python.h>
 
@@ -28,7 +29,7 @@ class P3DSession;
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DCInstance
 // Description : This is an instance of a Panda3D window, as seen in
-//               the parent-level process.
+//               the child-level process.
 ////////////////////////////////////////////////////////////////////
 class P3DCInstance : public P3D_instance {
 public:
@@ -36,6 +37,9 @@ public:
   ~P3DCInstance();
 
   inline int get_instance_id() const;
+
+public:
+  PT(WindowHandle) _parent_window_handle;
 
 private:
   P3D_request_ready_func *_func;

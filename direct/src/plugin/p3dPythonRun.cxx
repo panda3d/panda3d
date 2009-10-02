@@ -29,6 +29,8 @@ IMPORT_THIS struct Dtool_PyTypedObject Dtool_WindowHandle;
 // instances of this thing.
 P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 
+TypeHandle P3DPythonRun::P3DWindowHandle::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::Constructor
 //       Access: Public
@@ -38,6 +40,8 @@ P3DPythonRun::
 P3DPythonRun(const char *program_name, const char *archive_file,
              FHandle input_handle, FHandle output_handle, 
              const char *log_pathname, bool interactive_console) {
+  P3DWindowHandle::init_type();
+
   _read_thread_continue = false;
   _program_continue = true;
   _session_terminated = false;
@@ -112,6 +116,8 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 ~P3DPythonRun() {
+  nassertv(_instances.empty());
+
   // Close the write pipe, so the parent process will terminate us.
   _pipe_write.close();
 
@@ -378,6 +384,35 @@ run_python() {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::request_keyboard_focus
+//       Access: Public
+//  Description: Called from low-level Panda (via the P3DWindowHandle
+//               object) when its main window requires keyboard focus,
+//               but is unable to assign it directly.  This is
+//               particularly necessary under Windows Vista, where a
+//               child window of the browser is specifically
+//               disallowed from being given keyboard focus.
+//
+//               This sends a notify request up to the parent process,
+//               to ask the parent to manage keyboard events by proxy,
+//               and send them back down to Panda, again via the
+//               P3DWindowHandle.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+request_keyboard_focus(P3DCInstance *inst) {
+  cerr << "requesting keyboard focus\n";
+
+  TiXmlDocument doc;
+  TiXmlElement *xrequest = new TiXmlElement("request");
+  xrequest->SetAttribute("instance_id", inst->get_instance_id());
+  xrequest->SetAttribute("rtype", "notify");
+  xrequest->SetAttribute("message", "keyboardfocus");
+  doc.LinkEndChild(xrequest);
+
+  write_xml(_pipe_write, &doc, nout);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1299,6 +1334,15 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
 
   PyObject *py_handle = Py_None;
   if (parent_window_handle != NULL) {
+
+    // We have a valid parent WindowHandle, but replace it with a
+    // P3DWindowHandle so we can get the callbacks.
+    parent_window_handle = new P3DWindowHandle(this, inst, *parent_window_handle);
+    inst->_parent_window_handle = parent_window_handle;
+
+    // Also pass this P3DWindowHandle object down into Panda, via the
+    // setupWindow() call.  For this, we need to create a Python
+    // wrapper objcet.
     parent_window_handle->ref();
     py_handle = DTool_CreatePyInstanceTyped(parent_window_handle, Dtool_WindowHandle, true, false, parent_window_handle->get_type_index());
   }
@@ -1665,4 +1709,30 @@ rt_thread_run() {
     _commands.push_back(doc);
     RELEASE_LOCK(_commands_lock);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::P3DWindowHandle::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPythonRun::P3DWindowHandle::
+P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
+                const WindowHandle &copy) :
+  WindowHandle(copy.get_os_handle()),
+  _p3dpython(p3dpython),
+  _inst(inst)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::P3DWindowHandle::request_keyboard_focus
+//       Access: Public, Virtual
+//  Description: Called on a parent handle to indicate a child
+//               window's wish to receive keyboard button events.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::P3DWindowHandle::
+request_keyboard_focus(WindowHandle *child) {
+  WindowHandle::request_keyboard_focus(child);
+  _p3dpython->request_keyboard_focus(_inst);
 }
