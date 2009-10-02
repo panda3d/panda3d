@@ -33,8 +33,8 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DX11SplashWindow::
-P3DX11SplashWindow(P3DInstance *inst) : 
-  P3DSplashWindow(inst)
+P3DX11SplashWindow(P3DInstance *inst, bool make_visible) : 
+  P3DSplashWindow(inst, make_visible)
 {
   // Init for parent process
   _subprocess_pid = -1;
@@ -78,6 +78,25 @@ set_wparams(const P3DWindowParams &wparams) {
   if (_subprocess_pid == -1) {
     start_subprocess();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::set_visible
+//       Access: Public, Virtual
+//  Description: Makes the splash window visible or invisible, so as
+//               not to compete with the embedded Panda window in the
+//               same space.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+set_visible(bool visible) {
+  P3DSplashWindow::set_visible(visible);
+
+  TiXmlDocument doc;
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "set_visible");
+  xcommand->SetAttribute("visible", (int)visible);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -643,6 +662,17 @@ receive_command() {
       if (strcmp(cmd, "exit") == 0) {
         _subprocess_continue = false;
 
+      } else if (strcmp(cmd, "set_visible") == 0) {
+        int visible = 0;
+        if (xcommand->Attribute("visible", &visible) != NULL) {
+          _visible = visible;
+          if (_visible) {
+            XMapWindow(_display, _window);
+          } else {
+            XUnmapWindow(_display, _window);
+          }
+        }
+
       } else if (strcmp(cmd, "set_image_filename") == 0) {
         const string *image_filename = xcommand->Attribute(string("image_filename"));
         int image_placement;
@@ -798,7 +828,9 @@ make_window() {
     (_display, parent, x, y, _win_width, _win_height,
      0, depth, InputOutput, dvisual, attrib_mask, &wa);
 
-  XMapWindow(_display, _window);
+  if (_visible) {
+    XMapWindow(_display, _window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

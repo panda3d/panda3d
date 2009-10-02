@@ -38,6 +38,7 @@ public:
   virtual ~P3DX11SplashWindow();
 
   virtual void set_wparams(const P3DWindowParams &wparams);
+  virtual void set_visible(bool visible);
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
