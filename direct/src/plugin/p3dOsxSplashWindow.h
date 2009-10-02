@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class P3DOsxSplashWindow : public P3DSplashWindow {
 public:
-  P3DOsxSplashWindow(P3DInstance *inst);
+  P3DOsxSplashWindow(P3DInstance *inst, bool make_visible);
   virtual ~P3DOsxSplashWindow();
 
   virtual void set_wparams(const P3DWindowParams &wparams);

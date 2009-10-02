@@ -33,13 +33,15 @@ class P3DInstance;
 ////////////////////////////////////////////////////////////////////
 class P3DSplashWindow {
 public:
-  P3DSplashWindow(P3DInstance *inst);
+  P3DSplashWindow(P3DInstance *inst, bool make_visible);
   virtual ~P3DSplashWindow();
 
   inline const P3DFileParams &get_fparams() const;
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
+
+  virtual void set_visible(bool visible);
 
   enum ImagePlacement {
     IP_background,
@@ -57,6 +59,7 @@ public:
   virtual bool handle_event(P3D_event_data event);
 
   virtual void set_button_active(bool flag);
+  virtual void request_keyboard_focus();
 
 protected:
   // This ImageData base class provides minimal functionality for
@@ -96,6 +99,7 @@ protected:
   P3DFileParams _fparams;
   P3DWindowParams _wparams;
   int _win_width, _win_height;
+  bool _visible;
 
   // The region of the window for accepting button clicks.
   int _button_width, _button_height;

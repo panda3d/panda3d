@@ -100,6 +100,8 @@ private:
   void set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams);
   void setup_window(int id, TiXmlElement *xwparams);
   void setup_window(P3DCInstance *inst, TiXmlElement *xwparams);
+
+  void send_windows_message(int id, unsigned int msg, int wparam, int lparam);
   
   void terminate_session();
 
@@ -108,7 +110,7 @@ private:
   PyObject *xml_to_pyobj(TiXmlElement *xvalue);
 
 private:
-  // This subclass of P3DWindowHandle is associated with the parent
+  // This subclass of WindowHandle is associated with the parent
   // window we are given by the parent process.  We use it to add
   // hooks for communicating with the parent window, for instance to
   // ask for the parent window to manage keyboard focus when
@@ -118,12 +120,12 @@ private:
     P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
                     const WindowHandle &copy);
 
+  protected:
+    virtual void request_keyboard_focus(WindowHandle *child);
+
   private:
     P3DPythonRun *_p3dpython;
     P3DCInstance *_inst;
-
-  protected:
-    virtual void request_keyboard_focus(WindowHandle *child);
 
   public:
     static TypeHandle get_class_type() {

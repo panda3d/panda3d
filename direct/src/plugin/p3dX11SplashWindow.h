@@ -34,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 class P3DX11SplashWindow : public P3DSplashWindow {
 public:
-  P3DX11SplashWindow(P3DInstance *inst);
+  P3DX11SplashWindow(P3DInstance *inst, bool make_visible);
   virtual ~P3DX11SplashWindow();
 
   virtual void set_wparams(const P3DWindowParams &wparams);

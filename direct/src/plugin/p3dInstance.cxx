@@ -1426,7 +1426,6 @@ void P3DInstance::
 handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
   // to this instance.
-  nout << "Got notify: " << message << "\n";
   if (message == "onpythonload") {
     // Once Python is up and running, we can get the actual main
     // object from the Python side, and merge it with our own.
@@ -1459,13 +1458,13 @@ handle_notify_request(const string &message) {
 
   } else if (message == "onwindowopen") {
     // The process told us that it just succesfully opened its
-    // window.  Tear down the splash window.
+    // window.  Hide the splash window.
     _instance_window_opened = true;
     if (_splash_window != NULL) {
-      delete _splash_window;
-      _splash_window = NULL;
+      _splash_window->set_visible(false);
     }
 
+    // Guess we won't be using these images any more.
     for (int i = 0; i < (int)IT_num_image_types; ++i) {
       _image_files[i].cleanup();
     }
@@ -1497,7 +1496,9 @@ handle_notify_request(const string &message) {
     auth_finished_main_thread();
 
   } else if (message == "keyboardfocus") {
-    request_keyboard_focus();
+    if (_splash_window != NULL) {
+      _splash_window->request_keyboard_focus();
+    }
   }
 }
 
@@ -1598,19 +1599,6 @@ handle_script_request(const string &operation, P3D_object *object,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_keyboard_focus
-//       Access: Private
-//  Description: The Panda window is asking us to manage keyboard
-//               focus in proxy for it.  This is used on Vista, where
-//               the Panda window may be disallowed from directly
-//               assigning itself keyboard focus.
-////////////////////////////////////////////////////////////////////
-void P3DInstance::
-request_keyboard_focus() {
-  nout << "request_keyboard_focus\n";
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::make_splash_window
 //       Access: Private
 //  Description: Creates the splash window to be displayed at startup,
@@ -1618,8 +1606,24 @@ request_keyboard_focus() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 make_splash_window() {
-  if (_splash_window != NULL || _instance_window_opened) {
-    // Already got one, or we're already showing the real instance.
+  // Should we make the splash window visible?
+  bool make_visible = true;
+  if (_instance_window_opened) {
+    // Not once we've opened the main window.
+    make_visible = false;
+  }
+
+  if (_wparams.get_window_type() != P3D_WT_embedded && 
+      !_stuff_to_download && _auto_start && _p3d_trusted) {
+    // If it's a toplevel or fullscreen window, then we don't want a
+    // splash window unless we have stuff to download, or a button to
+    // display.
+    make_visible = false;
+  }
+
+  if (_splash_window != NULL) {
+    // Already got one.
+    _splash_window->set_visible(make_visible);
     return;
   }
   if (!_got_wparams) {
@@ -1630,18 +1634,11 @@ make_splash_window() {
     // We're hidden, and so is the splash window.
     return;
   }
-  if (_wparams.get_window_type() != P3D_WT_embedded && 
-      !_stuff_to_download && _auto_start && _p3d_trusted) {
-    // If it's a toplevel or fullscreen window, then we don't want a
-    // splash window unless we have stuff to download, or a button to
-    // display.
-    return;
-  }
 
-  _splash_window = new SplashWindowType(this);
+  _splash_window = new SplashWindowType(this, make_visible);
   _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
-
+    
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   // Go get the required images.

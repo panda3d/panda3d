@@ -54,6 +54,8 @@ public:
   TiXmlDocument *command_and_response(TiXmlDocument *command);
   P3D_object *xml_to_p3dobj(const TiXmlElement *xvalue);
   TiXmlElement *p3dobj_to_xml(P3D_object *obj);
+  void send_windows_message(P3DInstance *inst, unsigned int msg, 
+                            int wparam, int lparam);
 
   void signal_request_ready(P3DInstance *inst);
 

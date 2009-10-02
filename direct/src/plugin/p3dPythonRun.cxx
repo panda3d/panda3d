@@ -403,8 +403,6 @@ run_python() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 request_keyboard_focus(P3DCInstance *inst) {
-  cerr << "requesting keyboard focus\n";
-
   TiXmlDocument doc;
   TiXmlElement *xrequest = new TiXmlElement("request");
   xrequest->SetAttribute("instance_id", inst->get_instance_id());
@@ -508,6 +506,18 @@ handle_command(TiXmlDocument *doc) {
             xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
           setup_window(instance_id, xwparams);
         }
+
+      } else if (strcmp(cmd, "windows_message") == 0) {
+        assert(!needs_response);
+        // This is a special message that we use to proxy keyboard
+        // events from the parent process down into Panda, a necessary
+        // hack on Vista.
+        int instance_id = 0, msg = 0, wparam = 0, lparam = 0;
+        xcommand->Attribute("instance_id", &instance_id);
+        xcommand->Attribute("msg", &msg);
+        xcommand->Attribute("wparam", &wparam);
+        xcommand->Attribute("lparam", &lparam);
+        send_windows_message(instance_id, msg, wparam, lparam);
 
       } else if (strcmp(cmd, "exit") == 0) {
         assert(!needs_response);
@@ -1362,6 +1372,25 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   Py_XDECREF(result);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::send_windows_message
+//       Access: Public
+//  Description: This is used to deliver a windows keyboard message to
+//               the Panda process from the parent process, a
+//               necessary hack on Vista.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+send_windows_message(int id, unsigned int msg, int wparam, int lparam) {
+  Instances::iterator ii = _instances.find(id);
+  if (ii == _instances.end()) {
+    return;
+  }
+
+  P3DCInstance *inst = (*ii).second;
+  if (inst->_parent_window_handle != (WindowHandle *)NULL) {
+    inst->_parent_window_handle->send_windows_message(msg, wparam, lparam);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::terminate_session
@@ -1719,7 +1748,7 @@ rt_thread_run() {
 P3DPythonRun::P3DWindowHandle::
 P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
                 const WindowHandle &copy) :
-  WindowHandle(copy.get_os_handle()),
+  WindowHandle(copy),
   _p3dpython(p3dpython),
   _inst(inst)
 {

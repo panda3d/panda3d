@@ -29,8 +29,8 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DOsxSplashWindow::
-P3DOsxSplashWindow(P3DInstance *inst) : 
-  P3DSplashWindow(inst)
+P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) : 
+  P3DSplashWindow(inst, make_visible)
 {
   _install_progress = 0;
   _got_wparams = false;
@@ -226,10 +226,13 @@ handle_event(P3D_event_data event) {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 refresh() {
+  if (!_visible) {
+    return;
+  }
   if (_toplevel_window != NULL) {
     Rect r = { 0, 0, _win_height, _win_width }; 
     InvalWindowRect(_toplevel_window, &r);
-
+    
   } else {
     _inst->request_refresh();
   }
@@ -242,7 +245,7 @@ refresh() {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 paint_window() {
-  if (!_got_wparams) {
+  if (!_visible) {
     return;
   }
 

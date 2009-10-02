@@ -162,7 +162,6 @@ private:
   void handle_script_request(const string &operation, P3D_object *object, 
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
-  void request_keyboard_focus();
 
   void make_splash_window();
   void set_background_image(ImageType image_type);

@@ -13,10 +13,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "binaryXml.h"
+#include "p3d_lock.h"
 #include <sstream>
 
-
 static const bool debug_xml_output = false;
+
+static LOCK xml_lock;
+static bool xml_lock_initialized = false;
 
 #define DO_BINARY_XML 1
 
@@ -251,6 +254,11 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
 ////////////////////////////////////////////////////////////////////
 void
 write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
+  if (!xml_lock_initialized) {
+    INIT_LOCK(xml_lock);
+  }
+  ACQUIRE_LOCK(xml_lock);
+
 #ifdef DO_BINARY_XML
   // Binary write.
   write_xml_node(out, doc);
@@ -274,6 +282,8 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
     logout << "sent: " << *doc << "\n";
     logfile << logout.str() << flush;
   }
+
+  RELEASE_LOCK(xml_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -291,6 +301,11 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *
 read_xml(istream &in, ostream &logfile) {
+  if (!xml_lock_initialized) {
+    INIT_LOCK(xml_lock);
+  }
+  ACQUIRE_LOCK(xml_lock);
+
 #if DO_BINARY_XML
   // binary read.
   size_t buffer_length = 128;
@@ -298,6 +313,7 @@ read_xml(istream &in, ostream &logfile) {
   TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length, logfile);
   delete[] buffer;
   if (xnode == NULL) {
+    RELEASE_LOCK(xml_lock);
     return NULL;
   }
 
@@ -310,6 +326,7 @@ read_xml(istream &in, ostream &logfile) {
   in >> *doc;
   if (in.fail() || in.eof()) {
     delete doc;
+    RELEASE_LOCK(xml_lock);
     return NULL;
   }
 #endif
@@ -321,6 +338,7 @@ read_xml(istream &in, ostream &logfile) {
     logout << "received: " << *doc << "\n";
     logfile << logout.str() << flush;
   }
-    
+
+  RELEASE_LOCK(xml_lock);
   return doc;
 }

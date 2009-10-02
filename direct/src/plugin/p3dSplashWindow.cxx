@@ -49,11 +49,12 @@ METHODDEF(void) my_error_exit (j_common_ptr cinfo) {
 //               them both into this class for reference.
 ////////////////////////////////////////////////////////////////////
 P3DSplashWindow::
-P3DSplashWindow(P3DInstance *inst) : 
+P3DSplashWindow(P3DInstance *inst, bool make_visible) : 
   _inst(inst),
   _fparams(inst->get_fparams()),
   _wparams(inst->get_wparams())
 {
+  _visible = make_visible;
   _button_width = 0;
   _button_height = 0;
   _button_x = 0;
@@ -87,6 +88,20 @@ set_wparams(const P3DWindowParams &wparams) {
   _wparams = wparams;
   _win_width = _wparams.get_win_width();
   _win_height = _wparams.get_win_height();
+  _visible = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_visible
+//       Access: Public, Virtual
+//  Description: Makes the splash window visible or invisible, so as
+//               not to compete with the embedded Panda window in the
+//               same space.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_visible(bool visible) {
+  nout << "P3DSplashWindow::set_visible(" << visible << ")\n";
+  _visible = visible;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,6 +165,18 @@ set_button_active(bool flag) {
 
   // Now light up the button according to the current mouse position.
   set_mouse_data(_mouse_x, _mouse_y, _mouse_down);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::request_keyboard_focus
+//       Access: Private
+//  Description: The Panda window is asking us to manage keyboard
+//               focus in proxy for it.  This is used on Vista, where
+//               the Panda window may be disallowed from directly
+//               assigning itself keyboard focus.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+request_keyboard_focus() {
 }
 
 ////////////////////////////////////////////////////////////////////

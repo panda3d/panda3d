@@ -31,14 +31,17 @@
 ////////////////////////////////////////////////////////////////////
 class P3DWinSplashWindow : public P3DSplashWindow {
 public:
-  P3DWinSplashWindow(P3DInstance *inst);
+  P3DWinSplashWindow(P3DInstance *inst, bool make_visible);
   virtual ~P3DWinSplashWindow();
 
   virtual void set_wparams(const P3DWindowParams &wparams);
+  virtual void set_visible(bool visible);
+
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
+  virtual void request_keyboard_focus();
 
   static void register_window_class();
   static void unregister_window_class();
@@ -92,6 +95,9 @@ private:
   ButtonState _drawn_bstate;
   string _drawn_label;
   double _drawn_progress;
+  int _focus_seq;
+
+  int _request_focus_tick;
 
   bool _thread_continue;
   bool _thread_running;

@@ -584,6 +584,29 @@ p3dobj_to_xml(P3D_object *obj) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::send_windows_message
+//       Access: Public
+//  Description: This is called by the splash window to deliver a
+//               windows keyboard message to the Panda process.  It
+//               will be called in a sub-thread, but that's OK, since
+//               write_xml() supports locking.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+send_windows_message(P3DInstance *inst, unsigned int msg, int wparam, int lparam) {
+  if (_p3dpython_started) {
+    TiXmlDocument doc;
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "windows_message");
+    xcommand->SetAttribute("instance_id", inst->get_instance_id());
+    xcommand->SetAttribute("msg", msg);
+    xcommand->SetAttribute("wparam", wparam);
+    xcommand->SetAttribute("lparam", lparam);
+    doc.LinkEndChild(xcommand);
+    write_xml(_pipe_write, &doc, nout);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::signal_request_ready
 //       Access: Public
 //  Description: May be called in any thread to indicate that a new

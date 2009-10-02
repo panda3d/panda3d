@@ -16,6 +16,10 @@
 
 #ifdef _WIN32
 
+#ifndef WM_MOUSEWHEEL
+#define WM_MOUSEWHEEL 0x20a
+#endif
+
 bool P3DWinSplashWindow::_registered_window_class = false;
 
 ////////////////////////////////////////////////////////////////////
@@ -24,8 +28,8 @@ bool P3DWinSplashWindow::_registered_window_class = false;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DWinSplashWindow::
-P3DWinSplashWindow(P3DInstance *inst) : 
-  P3DSplashWindow(inst)
+P3DWinSplashWindow(P3DInstance *inst, bool make_visible) : 
+  P3DSplashWindow(inst, make_visible)
 {
   _thread = NULL;
   _thread_id = 0;
@@ -36,6 +40,9 @@ P3DWinSplashWindow(P3DInstance *inst) :
 
   _drawn_bstate = BS_hidden;
   _drawn_progress = 0.0;
+  _focus_seq = 0;
+
+  _request_focus_tick = 0;
 
   INIT_LOCK(_install_lock);
 }
@@ -65,6 +72,24 @@ set_wparams(const P3DWindowParams &wparams) {
 
   if (_thread_id == 0) {
     start_thread();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::set_visible
+//       Access: Public, Virtual
+//  Description: Makes the splash window visible or invisible, so as
+//               not to compete with the embedded Panda window in the
+//               same space.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+set_visible(bool visible) {
+  P3DSplashWindow::set_visible(visible);
+
+  if (_visible) {
+    ShowWindow(_hwnd, SW_SHOWNORMAL);
+  } else {
+    ShowWindow(_hwnd, SW_HIDE);
   }
 }
 
@@ -163,6 +188,30 @@ set_install_progress(double install_progress) {
       // instance, too.
       _inst->request_stop();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::request_keyboard_focus
+//       Access: Private
+//  Description: The Panda window is asking us to manage keyboard
+//               focus in proxy for it.  This is used on Vista, where
+//               the Panda window may be disallowed from directly
+//               assigning itself keyboard focus.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+request_keyboard_focus() {
+  // Store the time at which we last requested focus.
+  _request_focus_tick = GetTickCount();
+
+  // Increment the _focus_seq to tell the thread to call SetFocus().
+  ACQUIRE_LOCK(_install_lock);
+  ++_focus_seq;
+  RELEASE_LOCK(_install_lock);
+  
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
   }
 }
 
@@ -277,6 +326,7 @@ void P3DWinSplashWindow::
 thread_run() {
   make_window();
 
+  int last_focus_seq = 0;
   MSG msg;
   int retval;
   retval = GetMessage(&msg, NULL, 0, 0);
@@ -312,6 +362,14 @@ thread_run() {
       _drawn_bstate = _bstate;
       InvalidateRect(_hwnd, NULL, TRUE);
     }
+
+    if (_focus_seq != last_focus_seq) {
+      last_focus_seq = _focus_seq;
+      if (SetFocus(_hwnd) == NULL && GetLastError() != 0) {
+        nout << "SetFocus(" << _hwnd << ") failed: " << GetLastError() << "\n";
+      }
+    }
+
     RELEASE_LOCK(_install_lock);
 
     retval = GetMessage(&msg, NULL, 0, 0);
@@ -396,7 +454,13 @@ make_window() {
     }
   }
   SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)this);
-  ShowWindow(_hwnd, SW_SHOWNORMAL);
+  nout << "Created splash window " << _hwnd << "\n";
+
+  if (_visible) {
+    ShowWindow(_hwnd, SW_SHOWNORMAL);
+  } else {
+    ShowWindow(_hwnd, SW_HIDE);
+  }
 
   _blue_brush = CreateSolidBrush(RGB(108, 165, 224));
 }
@@ -801,6 +865,41 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_LBUTTONUP:
     set_mouse_data(_mouse_x, _mouse_y, false);
     ReleaseCapture();
+    break;
+
+  case WM_KILLFOCUS:
+    // Someone on the desktop is playing games with us.  It keeps
+    // wanting to grab the keyboard focus back immediately after we
+    // successfully call SetFocus().  Well, we really mean it, darn it
+    // all.  If we got a WM_KILLFOCUS within a few milliseconds of
+    // calling SetFocus(), well, call SetFocus() again, until it
+    // sticks.
+    {
+      int elapsed = GetTickCount() - _request_focus_tick;
+      if (elapsed < 200) {
+        if (SetFocus(_hwnd) == NULL && GetLastError() != 0) {
+          nout << "Secondary SetFocus failed: " << GetLastError() << "\n";
+        }
+      }
+    }
+    break;
+
+    // Keyboard events that are to be proxied to the Panda window.
+  case WM_MOUSEWHEEL:
+  case WM_IME_SETCONTEXT:
+  case WM_IME_NOTIFY:
+  case WM_IME_STARTCOMPOSITION:
+  case WM_IME_ENDCOMPOSITION:
+  case WM_IME_COMPOSITION:
+  case WM_CHAR:
+  case WM_SYSKEYDOWN:
+  case WM_SYSCOMMAND:
+  case WM_KEYDOWN: 
+  case WM_SYSKEYUP:
+  case WM_KEYUP:
+    if (_inst->get_session() != NULL) {
+      _inst->get_session()->send_windows_message(_inst, msg, wparam, lparam);
+    }
     break;
   };
 
