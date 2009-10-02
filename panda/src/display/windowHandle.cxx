@@ -27,18 +27,18 @@ WindowHandle::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::send_keyboard_event
+//     Function: WindowHandle::send_windows_message
 //       Access: Published
 //  Description: Call this method on a parent WindowHandle to deliver
-//               a button event to the current child window, if any.
+//               a Windows message to the current child window, if any.
 //               This is used in the web plugin system to deliver
 //               button events detected directly by the browser system
-//               into Panda.
+//               into Panda, which is particularly necessary on Vista.
 ////////////////////////////////////////////////////////////////////
 void WindowHandle::
-send_keyboard_event(const ButtonEvent &event) {
+send_windows_message(unsigned int msg, int wparam, int lparam) {
   if (_keyboard_window != NULL) {
-    _keyboard_window->receive_keyboard_event(event);
+    _keyboard_window->receive_windows_message(msg, wparam, lparam);
   }
 }
 
@@ -106,13 +106,14 @@ request_keyboard_focus(WindowHandle *child) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowHandle::receive_keyboard_event
+//     Function: WindowHandle::receive_windows_message
 //       Access: Public, Virtual
 //  Description: Called on a child handle to deliver a keyboard button
 //               event generated in the parent window.
 ////////////////////////////////////////////////////////////////////
 void WindowHandle::
-receive_keyboard_event(const ButtonEvent &event) {
+receive_windows_message(unsigned int msg, int wparam, int lparam) {
+  nout << "receive_windows_message(" << msg << ", " << wparam << ", " << lparam << ")\n";
 }
 
 ////////////////////////////////////////////////////////////////////

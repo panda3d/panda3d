@@ -33,6 +33,7 @@
 
 
 TypeHandle WinGraphicsWindow::_type_handle;
+TypeHandle WinGraphicsWindow::WinWindowHandle::_type_handle;
 
 WinGraphicsWindow::WindowHandles WinGraphicsWindow::_window_handles;
 WinGraphicsWindow *WinGraphicsWindow::_creating_window = NULL;
@@ -117,6 +118,9 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 WinGraphicsWindow::
 ~WinGraphicsWindow() {
+  if (_window_handle != (WindowHandle *)NULL) {
+    DCAST(WinWindowHandle, _window_handle)->clear_window();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,6 +441,20 @@ open_window() {
     Rid.hwndTarget = _hWnd;
     pRegisterRawInputDevices(&Rid, 1, sizeof (Rid));
   }
+
+  // Create a WindowHandle for ourselves
+  _window_handle = NativeWindowHandle::make_win(_hWnd);
+
+  // Actually, we want a WinWindowHandle.
+  _window_handle = new WinWindowHandle(this, *_window_handle);
+
+  // And tell our parent window that we're now its child.
+  if (_parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->attach_child(_window_handle);
+  }
+
+  // set us as the focus window for keyboard input
+  set_focus();
   
   return true;
 }
@@ -741,6 +759,9 @@ open_fullscreen_window()
     _properties.set_size(640, 480);
   }
 
+  // No parent window for a fullscreen window.
+  _parent_window_handle = NULL;
+
   HWND hDesktopWindow = GetDesktopWindow();
   HDC scrnDC = GetDC(hDesktopWindow);
   DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
@@ -888,6 +909,7 @@ open_regular_window() {
       }
     }
   }
+  _parent_window_handle = window_handle;
 
   if (!_hparent) {
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
@@ -905,13 +927,11 @@ open_regular_window() {
       y_origin = _properties.get_y_origin();
     }
 
-    nout << "Creating embedded window\n";
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
                          x_origin,y_origin,
                          x_size, y_size,
                          _hparent, NULL, hinstance, 0);
-    nout << "Done creating embedded window, _hwnd = " << _hWnd << "\n";
     
     if (_hWnd) {
       // join our keyboard state with the parents
@@ -920,9 +940,6 @@ open_regular_window() {
       // It causes problems with the browser plugin--it deadlocks when
       // the parent process is waiting on the child process.
       //AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
-
-      // set us as the focus window for keyboard input
-      SetFocus(_hWnd);
       
       WindowProperties properties;
       properties.set_foreground(true);
@@ -1038,8 +1055,52 @@ track_mouse_leaving(HWND hwnd) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::window_proc
+//     Function: WinGraphicsWindow::set_focus
 //       Access: Private
+//  Description: Attempts to set this window as the "focus" window, so
+//               that keyboard events come here.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+set_focus() {
+  if (SetFocus(_hWnd) == NULL && GetLastError() != 0) {
+    // If the SetFocus() request failed, maybe we're running in the
+    // plugin environment on Vista, with UAC enabled.  In this case,
+    // we're not allowed to assign focus to the Panda window for some
+    // stupid reason.  So instead, we have to ask the parent window
+    // (in the browser process) to proxy our keyboard events for us.
+    if (_parent_window_handle != NULL && _window_handle != NULL) {
+      _parent_window_handle->request_keyboard_focus(_window_handle);
+    } else {
+      // Otherwise, something is wrong.
+      windisplay_cat.error()
+        << "SetFocus failed: " << GetLastError() << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::receive_windows_message
+//       Access: Public
+//  Description: This is called to receive a keyboard event generated
+//               by proxy by another window in a parent process.  This
+//               hacky system is used in the web plugin system to
+//               allow the Panda window to receive keyboard events on
+//               Vista, which doesn't allow the Panda window to set
+//               keyboard focus to itself.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+receive_windows_message(unsigned int msg, int wparam, int lparam) {
+  // Well, we'll just deliver this directly to window_proc(),
+  // supplying our own window handle.  For the most part, we don't
+  // care about the window handle anyway, but this might become an
+  // issue for the IME.  TODO: investigate IME issues.
+
+  window_proc(_hWnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::window_proc
+//       Access: Public, Virtual
 //  Description: This is the nonstatic window_proc function.  It is
 //               called to handle window events for this particular
 //               window.
@@ -1226,7 +1287,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     SetCapture(hwnd);
     _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
     _input_devices[0].button_down(MouseButton::button(0), get_message_time());
-    SetFocus(hwnd); // [gjeon] to get the keyboard event
+
+    // A button-click in the window means to grab the keyboard focus.
+    set_focus();
     break;
         
   case WM_MBUTTONDOWN:
@@ -1236,7 +1299,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     SetCapture(hwnd);
     _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
     _input_devices[0].button_down(MouseButton::button(1), get_message_time());
-    SetFocus(hwnd); // [gjeon] to get the keyboard event
+    // A button-click in the window means to grab the keyboard focus.
+    set_focus();
     break;
 
   case WM_RBUTTONDOWN:
@@ -1246,7 +1310,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     SetCapture(hwnd);
     _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
     _input_devices[0].button_down(MouseButton::button(2), get_message_time());
-    SetFocus(hwnd); // [gjeon] to get the keyboard event
+    // A button-click in the window means to grab the keyboard focus.
+    set_focus();
     break;
 
   case WM_XBUTTONDOWN:
@@ -2469,6 +2534,45 @@ register_window_class(const WindowProperties &props) {
   return wclass;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::WinWindowHandle::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+WinGraphicsWindow::WinWindowHandle::
+WinWindowHandle(WinGraphicsWindow *window, const WindowHandle &copy) :
+  WindowHandle(copy),
+  _window(window)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::WinWindowHandle::clear_window
+//       Access: Public
+//  Description: Should be called by the WinGraphicsWindow's
+//               destructor, so that we don't end up with a floating
+//               pointer should this object persist beyond the
+//               lifespan of its window.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::WinWindowHandle::
+clear_window() {
+  _window = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::WinWindowHandle::receive_windows_message
+//       Access: Public, Virtual
+//  Description: Called on a child handle to deliver a keyboard button
+//               event generated in the parent window.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::WinWindowHandle::
+receive_windows_message(unsigned int msg, int wparam, int lparam) {
+  if (_window != NULL) {
+    _window->receive_windows_message(msg, wparam, lparam);
+  }
+}
+
+
 // pops up MsgBox w/system error msg
 void PrintErrorMessage(DWORD msgID) {
   LPTSTR pMessageBuffer;
@@ -2535,5 +2639,3 @@ void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
   view_rect->right = lr.x;
   view_rect->bottom = lr.y;
 }
-
-

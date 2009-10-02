@@ -20,8 +20,6 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 
-class ButtonEvent;
-
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowHandle
 // Description : This object represents a window on the desktop, not
@@ -50,7 +48,7 @@ PUBLISHED:
   INLINE OSHandle *get_os_handle() const;
   INLINE void set_os_handle(OSHandle *os_handle);
 
-  void send_keyboard_event(const ButtonEvent &event);
+  void send_windows_message(unsigned int msg, int wparam, int lparam);
 
   size_t get_int_handle() const;
 
@@ -62,7 +60,7 @@ public:
   virtual void detach_child(WindowHandle *child);
 
   virtual void request_keyboard_focus(WindowHandle *child);
-  virtual void receive_keyboard_event(const ButtonEvent &event);
+  virtual void receive_windows_message(unsigned int msg, int wparam, int lparam);
 
 PUBLISHED:
   // This internal pointer within WindowHandle stores the actual
