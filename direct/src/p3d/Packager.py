@@ -1691,6 +1691,7 @@ class Packager:
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
             GlobPattern('libGLcore.so*'),
+            GlobPattern('libnvidia*.so*'),
             GlobPattern('libX*.so*'),
             ]
 
