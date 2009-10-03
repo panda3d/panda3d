@@ -77,4 +77,3 @@ class p3dcert(package):
     filename = Filename(cvar.getValue())
     if not filename.empty():
         file(filename, newName = 'ca-bundle.crt', extract = True)
-        

@@ -43,6 +43,7 @@ public:
   inline size_t get_total_data() const;
 
   void cancel();
+  void clear();
 
 public:
   // These are intended to be called only by P3DInstance.

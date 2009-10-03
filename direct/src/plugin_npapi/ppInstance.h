@@ -64,6 +64,10 @@ public:
   static void output_np_variant(ostream &out, const NPVariant &result);
 
 private:
+  void read_xhost(TiXmlElement *xhost);
+  void add_mirror(string mirror_url);
+  void choose_random_mirrors(vector<string> &result, int num_mirrors);
+
   static void request_ready(P3D_instance *instance);
 
   void start_download(const string &url, PPDownloadRequest *req);
@@ -96,6 +100,15 @@ private:
   Tokens _tokens;
 
   string _root_dir;
+  string _download_url_prefix;
+  typedef vector<string> Mirrors;
+  Mirrors _mirrors;
+
+  // A list of URL's that we will attempt to download the core API
+  // from.
+  typedef vector<string> CoreUrls;
+  CoreUrls _core_urls;
+
   FileSpec _core_api_dll;
 
   bool _got_instance_url;

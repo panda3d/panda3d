@@ -41,6 +41,7 @@ public:
   inline size_t get_size() const;
   
   bool quick_verify(const string &package_dir);
+  bool quick_verify_pathname(const string &pathname);
   bool full_verify(const string &package_dir);
   inline const FileSpec *get_actual_file() const;
   

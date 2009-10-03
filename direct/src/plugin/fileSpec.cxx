@@ -136,12 +136,23 @@ load_xml(TiXmlElement *xelement) {
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
 quick_verify(const string &package_dir) {
+  return quick_verify_pathname(get_pathname(package_dir));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::quick_verify_pathname
+//       Access: Public
+//  Description: Works like quick_verify(), above, with an explicit
+//               pathname.  Useful for verifying the copy of a file in
+//               a temporary location.
+////////////////////////////////////////////////////////////////////
+bool FileSpec::
+quick_verify_pathname(const string &pathname) {
   if (_actual_file != NULL) {
     delete _actual_file;
     _actual_file = NULL;
   }
 
-  string pathname = get_pathname(package_dir);
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
     //cerr << "file not found: " << _filename << "\n";

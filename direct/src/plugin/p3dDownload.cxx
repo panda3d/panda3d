@@ -85,6 +85,23 @@ cancel() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::clear
+//       Access: Public
+//  Description: Resets the download to its initial state, for
+//               re-trying the same download.
+////////////////////////////////////////////////////////////////////
+void P3DDownload::
+clear() {
+  _status = P3D_RC_in_progress;
+  _http_status_code = 0;
+  _total_data = 0;
+  _last_reported_time = 0;
+  
+  _canceled = false;
+  _download_id = 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::feed_url_stream
 //       Access: Public
 //  Description: Called by P3DInstance as more data arrives from the

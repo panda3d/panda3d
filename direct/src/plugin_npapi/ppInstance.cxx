@@ -26,6 +26,7 @@
 #include "dtool_platform.h"
 
 #include <fstream>
+#include <algorithm>
 #include <string.h>  // strcmp()
 #include <time.h>
 
@@ -113,6 +114,7 @@ begin() {
     if (!url.empty() && url[url.length() - 1] != '/') {
       url += '/';
     }
+    _download_url_prefix = url;
     ostringstream strm;
     strm << url << "contents.xml";
 
@@ -362,6 +364,20 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     }
     break;
     
+  case PPDownloadRequest::RT_core_dll:
+    if (reason != NPRES_DONE) {
+      nout << "Failure downloading " << url << "\n";
+      // Couldn't download from this mirror.  Try the next one.
+      if (!_core_urls.empty()) {
+        string url = _core_urls.back();
+        _core_urls.pop_back();
+        
+        PPDownloadRequest *req2 = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+        start_download(url, req2);
+      }
+    }
+    break;
+
   default:
     nout << "Unexpected url_notify on stream type " << req->_rtype << "\n";
     break;
@@ -671,6 +687,84 @@ variant_to_p3dobj(const NPVariant *variant) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::read_xhost
+//       Access: Private
+//  Description: Reads the host data from the <host> (or <alt_host>)
+//               entry in the contents.xml file.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+read_xhost(TiXmlElement *xhost) {
+  // Get the "download" URL, which is the source from which we
+  // download everything other than the contents.xml file.
+  const char *download_url = xhost->Attribute("download_url");
+  if (download_url != NULL) {
+    _download_url_prefix = download_url;
+  } else {
+    _download_url_prefix = PANDA_PACKAGE_HOST_URL;
+  }
+  if (!_download_url_prefix.empty()) {
+    if (_download_url_prefix[_download_url_prefix.size() - 1] != '/') {
+      _download_url_prefix += "/";
+    }
+  }
+        
+  TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
+  while (xmirror != NULL) {
+    const char *url = xmirror->Attribute("url");
+    if (url != NULL) {
+      add_mirror(url);
+    }
+    xmirror = xmirror->NextSiblingElement("mirror");
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::add_mirror
+//       Access: Private
+//  Description: Adds a new URL to serve as a mirror for this host.
+//               The mirrors will be consulted first, before
+//               consulting the host directly.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+add_mirror(string mirror_url) {
+  // Ensure the URL ends in a slash.
+  if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
+    mirror_url += '/';
+  }
+  
+  // Add it to the _mirrors list, but only if it's not already
+  // there.
+  if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
+    _mirrors.push_back(mirror_url);
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::choose_random_mirrors
+//       Access: Public
+//  Description: Selects num_mirrors elements, chosen at random, from
+//               the _mirrors list.  Adds the selected mirrors to
+//               result.  If there are fewer than num_mirrors elements
+//               in the list, adds only as many mirrors as we can get.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+choose_random_mirrors(vector<string> &result, int num_mirrors) {
+  vector<size_t> selected;
+
+  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  while (num_to_select > 0) {
+    size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    while (find(selected.begin(), selected.end(), i) != selected.end()) {
+      // Already found this i, find a new one.
+      i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    }
+    selected.push_back(i);
+    result.push_back(_mirrors[i]);
+    --num_to_select;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::request_ready
 //       Access: Private, Static
 //  Description: This function is attached as an asynchronous callback
@@ -719,6 +813,7 @@ request_ready(P3D_instance *instance) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 start_download(const string &url, PPDownloadRequest *req) {
+  nout << "start_download: " << url << "\n";
   if (url.substr(0, 7) == "file://") {
     // If we're "downloading" a file URL, just go read the file directly.
     downloaded_file(req, get_filename_from_url(url));
@@ -744,6 +839,32 @@ read_contents_file(const string &contents_filename) {
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
+    // Look for the <host> entry; it might point us at a different
+    // download URL, and it might mention some mirrors.
+    string host_url = PANDA_PACKAGE_HOST_URL;
+    TiXmlElement *xhost = xcontents->FirstChildElement("host");
+    if (xhost != NULL) {
+      const char *url = xhost->Attribute("url");
+      if (url != NULL && host_url == string(url)) {
+        // We're the primary host.  This is the normal case.
+        read_xhost(xhost);
+
+      } else {
+        // We're not the primary host; perhaps we're an alternate host.
+        TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
+        while (xalthost != NULL) {
+          const char *url = xalthost->Attribute("url");
+          if (url != NULL && host_url == string(url)) {
+            // Yep, we're this alternate host.
+            read_xhost(xhost);
+            break;
+          }
+          xalthost = xalthost->NextSiblingElement("alt_host");
+        }
+      }
+    }
+
+    // Now look for the core API package.
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
     while (xpackage != NULL) {
       const char *name = xpackage->Attribute("name");
@@ -874,13 +995,39 @@ get_core_api(TiXmlElement *xpackage) {
     do_load_plugin();
 
   } else {
-    // The DLL file needs to be downloaded.  Go get it.
-    string url = PANDA_PACKAGE_HOST_URL;
-    if (!url.empty() && url[url.length() - 1] != '/') {
-      url += '/';
-    }
+    // The DLL file needs to be downloaded.  Build up our list of
+    // URL's to attempt to download it from, in reverse order.
+    string url;
+
+    // Our last act of desperation: hit the original host, with a
+    // query uniquifier, to break through any caches.
+    ostringstream strm;
+    strm << _download_url_prefix << _core_api_dll.get_filename()
+         << "?" << time(NULL);
+    url = strm.str();
+    _core_urls.push_back(url);
+
+    // Before we try that, we'll hit the original host, without a
+    // uniquifier.
+    url = _download_url_prefix;
     url += _core_api_dll.get_filename();
-    
+    _core_urls.push_back(url);
+
+    // And before we try that, we'll try two mirrors, at random.
+    vector<string> mirrors;
+    choose_random_mirrors(mirrors, 2);
+    for (vector<string>::iterator si = mirrors.begin();
+         si != mirrors.end(); 
+         ++si) {
+      url = (*si) + _core_api_dll.get_filename();
+      _core_urls.push_back(url);
+    }
+
+    // Now pick the first URL off the list, and try it.
+    assert(!_core_urls.empty());
+    url = _core_urls.back();
+    _core_urls.pop_back();
+
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
     start_download(url, req);
   }
@@ -906,40 +1053,40 @@ downloaded_plugin(const string &filename) {
     return;
   }
 
-  // Copy the file onto the target.
-  string pathname = _core_api_dll.get_pathname(_root_dir);
-  mkfile_complete(pathname, nout);
+  // Make sure the DLL was correctly downloaded before continuing.
+  if (!_core_api_dll.quick_verify_pathname(filename)) {
+    nout << "After download, " << _core_api_dll.get_filename() << " is no good.\n";
 
-  ifstream in(filename.c_str(), ios::in | ios::binary);
-  ofstream out(pathname.c_str(), ios::out | ios::binary);
+    // That DLL came out wrong.  Try the next URL.
+    if (!_core_urls.empty()) {
+      string url = _core_urls.back();
+      _core_urls.pop_back();
+      
+      PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+      start_download(url, req);
+      return;
+    }
 
-  static const size_t buffer_size = 4096;
-  static char buffer[buffer_size];
-
-  in.read(buffer, buffer_size);
-  size_t count = in.gcount();
-  while (count != 0) {
-    out.write(buffer, count);
-    in.read(buffer, buffer_size);
-    count = in.gcount();
-  }
-
-  if (!out) {
-    nout << "Could not write " << pathname << "\n";
     // TODO: fail
     return;
   }
-  in.close();
-  out.close();
 
-  if (_core_api_dll.quick_verify(_root_dir)) {
-    // We downloaded and installed it successfully.  Now load it.
-    do_load_plugin();
+  // Copy the file onto the target.
+  string pathname = _core_api_dll.get_pathname(_root_dir);
+  if (!copy_file(filename, pathname)) {
+    nout << "Couldn't copy " << pathname << "\n";
     return;
   }
 
-  nout << "After download, " << pathname << " is no good.\n";
-  // TODO: fail
+  if (!_core_api_dll.quick_verify(_root_dir)) {
+    nout << "After copying, " << pathname << " is no good.\n";
+    // TODO: fail
+    return;
+  }
+
+  // We downloaded and installed it successfully.  Now load it.
+  do_load_plugin();
+  return;
 }
 
 
@@ -1141,6 +1288,7 @@ cleanup_window() {
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
 copy_file(const string &from_filename, const string &to_filename) {
+  mkfile_complete(to_filename, nout);
   ifstream in(from_filename.c_str(), ios::in | ios::binary);
   ofstream out(to_filename.c_str(), ios::out | ios::binary);
         

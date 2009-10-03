@@ -1172,14 +1172,13 @@ resume_download_finished(bool success) {
     string url = _try_urls.back();
     _try_urls.pop_back();
 
-    Download *new_download = new Download(*this);
-    new_download->set_filename(get_filename());
-    new_download->set_url(url);
-
-    _package->_active_download = new_download;
+    clear();
+    set_url(url);
+    set_filename(get_filename());
+    _package->_active_download = this;
 
     assert(!_package->_instances.empty());
-    _package->_instances[0]->start_download(new_download);
+    _package->_instances[0]->start_download(this);
     return;
   }
 
