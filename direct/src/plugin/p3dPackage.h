@@ -207,7 +207,7 @@ private:
   Download *start_download(DownloadType dtype, const string &urlbase, 
                            const string &pathname, const FileSpec &file_spec);
 
-  bool is_extractable(const string &filename) const;
+  bool is_extractable(FileSpec &file, const string &filename) const;
 
 private:
   P3DHost *_host;

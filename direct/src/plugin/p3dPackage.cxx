@@ -810,6 +810,10 @@ build_install_plans(TiXmlDocument *doc) {
             (this, new_file, source_file, target_file);
           plan.push_back(step);
         }
+
+        // Unpack the uncompressed archive.
+        step = new InstallStepUnpackArchive(this, _unpack_size);
+        plan.push_back(step);
       }
     }
   }
@@ -1052,13 +1056,15 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
 //     Function: P3DPackage::is_extractable
 //       Access: Private
 //  Description: Returns true if the name file is on the extract list,
-//               false otherwise.
+//               false otherwise.  If true, fills in the FileSpec with
+//               the file's information.
 ////////////////////////////////////////////////////////////////////
 bool P3DPackage::
-is_extractable(const string &filename) const {
+is_extractable(FileSpec &file, const string &filename) const {
   Extracts::const_iterator ei;
   for (ei = _extracts.begin(); ei != _extracts.end(); ++ei) {
     if ((*ei).get_filename() == filename) {
+      file = (*ei);
       return true;
     }
   }

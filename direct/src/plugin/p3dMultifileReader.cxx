@@ -19,16 +19,8 @@
 #include <time.h>
 
 #ifdef _WIN32
-#include <sys/utime.h>
 #include <direct.h>
 #include <io.h>
-#define stat _stat
-#define utime _utime
-#define utimbuf _utimbuf
-
-#else
-#include <utime.h>
-
 #endif
 
 // This sequence of bytes begins each Multifile to identify it as a
@@ -103,7 +95,8 @@ extract_all(const string &to_dir, P3DPackage *package,
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
-    if (package != NULL && !package->is_extractable(s._filename)) {
+    FileSpec file;
+    if (package != NULL && !package->is_extractable(file, s._filename)) {
       continue;
     }
 
@@ -121,15 +114,16 @@ extract_all(const string &to_dir, P3DPackage *package,
     if (!extract_subfile(out, s)) {
       return false;
     }
-
-    // Set the timestamp according to the multifile.
     out.close();
-    utimbuf utb;
-    utb.actime = time(NULL);
-    utb.modtime = s._timestamp;
-    utime(output_pathname.c_str(), &utb);
 
-    // Be sure to execute permissions on the file, in case it's a
+    // Check that the file was extracted correctly (and also set the
+    // correct timestamp).
+    if (!file.full_verify(to_dir)) {
+      nout << "After extracting, " << s._filename << " is still incorrect.\n";
+      return false;
+    }
+
+    // Be sure to set execute permissions on the file, in case it's a
     // program or something.
     chmod(output_pathname.c_str(), 0555);
 

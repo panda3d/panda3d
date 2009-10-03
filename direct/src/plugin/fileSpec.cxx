@@ -44,7 +44,7 @@ FileSpec::
 FileSpec() {
   _size = 0;
   _timestamp = 0;
-  memset(_hash, 0, sizeof(_hash));
+  memset(_hash, 0, hash_size);
   _got_hash = false;
   _actual_file = NULL;
 }
@@ -61,7 +61,7 @@ FileSpec(const FileSpec &copy) :
   _timestamp(copy._timestamp),
   _got_hash(copy._got_hash)
 {
-  memcpy(_hash, copy._hash, sizeof(_hash));
+  memcpy(_hash, copy._hash, hash_size);
   _actual_file = NULL;
 }
 
@@ -74,8 +74,8 @@ void FileSpec::
 operator = (const FileSpec &copy) {
   _filename = copy._filename;
   _size = copy._size;
-  _timestamp = copy._size;
-  memcpy(_hash, copy._hash, sizeof(_hash));
+  _timestamp = copy._timestamp;
+  memcpy(_hash, copy._hash, hash_size);
   _got_hash = copy._got_hash;
 }
 
@@ -260,7 +260,7 @@ check_hash(const string &pathname) const {
 ////////////////////////////////////////////////////////////////////
 bool FileSpec::
 read_hash(const string &pathname) {
-  memset(_hash, 0, sizeof(_hash));
+  memset(_hash, 0, hash_size);
 
   ifstream stream(pathname.c_str(), ios::in | ios::binary);
   if (!stream) {
