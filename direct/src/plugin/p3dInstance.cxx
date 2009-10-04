@@ -1916,6 +1916,11 @@ mark_download_complete() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
+  if (is_started()) {
+    // Already started.
+    return;
+  }
+
   _panda_script_object->set_string_property("status", "ready");
   send_notify("onready");
   if (_auto_start) {
