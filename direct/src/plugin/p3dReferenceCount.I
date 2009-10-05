@@ -45,7 +45,7 @@ ref() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DReferenceCount::unref
-//       Access: Published, Virtual
+//       Access: Public
 //  Description: Explicitly decrements the reference count.  Usually,
 //               you should call unref_delete() instead.
 //
@@ -55,6 +55,16 @@ ref() const {
 inline bool P3DReferenceCount::
 unref() const {
   return --(((P3DReferenceCount *)this)->_ref_count) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DReferenceCount::get_ref_count
+//       Access: Public
+//  Description: Returns the current reference count.
+////////////////////////////////////////////////////////////////////
+inline int P3DReferenceCount::
+get_ref_count() const {
+  return _ref_count;
 }
 
 ////////////////////////////////////////////////////////////////////

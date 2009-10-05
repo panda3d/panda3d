@@ -59,11 +59,14 @@ set_filename(const string &filename) {
 bool P3DFileDownload::
 open_file() {
   if (!mkfile_complete(_filename, nout)) {
+    nout << "Failed to create " << _filename << "\n";
     return false;
   }
-  
-  _file.open(_filename.c_str(), ios::out | ios::ate | ios::binary);
+
+  _file.clear();
+  _file.open(_filename.c_str(), ios::out | ios::trunc | ios::binary);
   if (!_file) {
+    nout << "Failed to open " << _filename << " in write mode\n";
     return false;
   }
   

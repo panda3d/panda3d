@@ -91,13 +91,11 @@ P3DPackage::
   // Cancel any pending download.
   if (_active_download != NULL) {
     _active_download->cancel();
-    delete _active_download;
-    _active_download = NULL;
+    set_active_download(NULL);
   }
   if (_saved_download != NULL) {
     _saved_download->cancel();
-    delete _saved_download;
-    _saved_download = NULL;
+    set_saved_download(NULL);
   }
 
   if (_temp_contents_file != NULL) {
@@ -196,8 +194,7 @@ remove_instance(P3DInstance *inst) {
     // move to the next instance.
     if (_active_download != NULL) {
       _active_download->cancel();
-      delete _active_download;
-      _active_download = NULL;
+      set_active_download(NULL);
     }
   }
 
@@ -355,9 +352,8 @@ redownload_contents_file(P3DPackage::Download *download) {
     host_got_contents_file();
     return;
   }
-
-  _saved_download = download;
-  _saved_download->ref();
+  
+  set_saved_download(download);
 
   // Download contents.xml to a temporary filename first.
   if (_temp_contents_file != NULL) {
@@ -410,8 +406,7 @@ contents_file_redownload_finished(bool success) {
   if (contents_changed) {
     // OK, the contents.xml has changed; this means we have to restart
     // the whole download process from the beginning.
-    unref_delete(_saved_download);
-    _saved_download = NULL;
+    set_saved_download(NULL);
     host_got_contents_file();
 
   } else {
@@ -1045,11 +1040,49 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
   download->set_url(url);
   download->set_filename(pathname);
 
-  _active_download = download;
+  set_active_download(download);
   assert(!_instances.empty());
 
   _instances[0]->start_download(download);
   return download;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::set_active_download
+//       Access: Private
+//  Description: Changes _active_download to point to the indicated
+//               object, respecting reference counts.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+set_active_download(Download *download) {
+  if (_active_download != download) {
+    if (_active_download != NULL) {
+      unref_delete(_active_download);
+    }
+    _active_download = download;
+    if (_active_download != NULL) {
+      _active_download->ref();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::set_saved_download
+//       Access: Private
+//  Description: Changes _saved_download to point to the indicated
+//               object, respecting reference counts.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+set_saved_download(Download *download) {
+  if (_saved_download != download) {
+    if (_saved_download != NULL) {
+      unref_delete(_saved_download);
+    }
+    _saved_download = download;
+    if (_saved_download != NULL) {
+      _saved_download->ref();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1129,7 +1162,15 @@ void P3DPackage::Download::
 download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   assert(_package->_active_download == this);
-  _package->_active_download = NULL;
+  if (get_ref_count() == 1) {
+    // No one cares anymore.
+    nout << "No one cares about " << get_url() << "\n";
+    _package->set_active_download(NULL);
+    return;
+  }
+
+  _package->set_active_download(NULL);
+  assert(get_ref_count() > 0);
 
   if (success && !_file_spec.get_filename().empty()) {
     // We think we downloaded it correctly.  Check the hash to be
@@ -1175,7 +1216,7 @@ resume_download_finished(bool success) {
     clear();
     set_url(url);
     set_filename(get_filename());
-    _package->_active_download = this;
+    _package->set_active_download(this);
 
     assert(!_package->_instances.empty());
     _package->_instances[0]->start_download(this);

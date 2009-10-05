@@ -206,6 +206,8 @@ private:
   void report_done(bool success);
   Download *start_download(DownloadType dtype, const string &urlbase, 
                            const string &pathname, const FileSpec &file_spec);
+  void set_active_download(Download *download);
+  void set_saved_download(Download *download);
 
   bool is_extractable(FileSpec &file, const string &filename) const;
 

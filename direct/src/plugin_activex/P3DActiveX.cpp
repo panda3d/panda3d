@@ -167,6 +167,10 @@ BOOL CP3DActiveXApp::InitInstance()
     if (bInit)
     {
         // TODO: Add your own module initialization code here.
+
+      // Seed the lame random number generator in rand(); we use it to
+      // select a mirror for downloading.
+      srand((unsigned int)time(NULL));
     }
 
     return bInit;

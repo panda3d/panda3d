@@ -31,6 +31,7 @@ public:
 
   inline void ref() const;
   inline bool unref() const;
+  inline int get_ref_count() const;
 
 private:
   int _ref_count;

@@ -15,6 +15,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <math.h>
 #include "afxmt.h"
 
@@ -69,7 +70,11 @@ protected:
 
     int DownloadFile( const std::string& from, const std::string& to );
     int CopyFile( const std::string& from, const std::string& to );
-    int ReadContents( const std::string& contentsFilename, FileSpec& p3dDllFile );
+
+    bool read_contents_file(const std::string &contents_filename);
+    void read_xhost(TiXmlElement *xhost);
+    void add_mirror(std::string mirror_url);
+    void choose_random_mirrors(std::vector<std::string> &result, int num_mirrors);
 
     void HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
@@ -81,6 +86,11 @@ protected:
     bool m_handleRequestOnUIThread;
     bool m_isInit;
     bool m_pluginLoaded;
+
+    std::string _download_url_prefix;
+    typedef std::vector<std::string> Mirrors;
+    Mirrors _mirrors;
+    FileSpec _core_api_dll;
 
     std::string m_rootDir;
 };
