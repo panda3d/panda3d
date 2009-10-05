@@ -1,6 +1,7 @@
 !include "MUI.nsh"
 !include LogicLib.nsh
 !include FileFunc.nsh
+!include FileAssociation.nsh
 
 ; Several variables are assumed to be pre-defined by the caller.  See
 ; make_installer.py in this directory.
@@ -73,6 +74,7 @@ Section "MainSection" SEC01
   File "${OCX_PATH}"
   File "${NPAPI_PATH}"
   File "${PANDA3D_PATH}"
+  File "${PANDA3DW_PATH}"
 
 ; Auto-detected dependencies on the above executables.  Python
 ; computes these values for us.
@@ -91,7 +93,15 @@ Section "MainSection" SEC01
 !ifdef DEP4P
   File "${DEP4P}"
 !endif
+!ifdef DEP5P
+  File "${DEP5P}"
+!endif
+!ifdef DEP6P
+  File "${DEP6P}"
+!endif
 
+  ${registerExtension} "$INSTDIR\${PANDA3DW}" ".p3d" "Panda3D applet"
+ 
 !ifdef ADD_START_MENU
 ; Start->Programs links
   CreateDirectory "$SMPROGRAMS\${PROG_GROUPNAME}"
@@ -167,6 +177,12 @@ Mozilla-Install-Loop:
 !ifdef NPAPI_DEP4
      CopyFiles $INSTDIR\${NPAPI_DEP4} "$2"
 !endif
+!ifdef NPAPI_DEP5
+     CopyFiles $INSTDIR\${NPAPI_DEP5} "$2"
+!endif
+!ifdef NPAPI_DEP6
+     CopyFiles $INSTDIR\${NPAPI_DEP6} "$2"
+!endif
  ${EndIf}
 
   goto Mozilla-Install-Loop
@@ -183,6 +199,7 @@ Section Uninstall
   Delete "$INSTDIR\${OCX}"
   Delete "$INSTDIR\${NPAPI}"
   Delete "$INSTDIR\${PANDA3D}"
+  Delete "$INSTDIR\${PANDA3DW}"
 !ifdef DEP0
   Delete "$INSTDIR\${DEP0}"
 !endif
@@ -197,6 +214,12 @@ Section Uninstall
 !endif
 !ifdef DEP4
   Delete "$INSTDIR\${DEP4}"
+!endif
+!ifdef DEP5
+  Delete "$INSTDIR\${DEP5}"
+!endif
+!ifdef DEP6
+  Delete "$INSTDIR\${DEP6}"
 !endif
 
 StrCpy $1 "0"
@@ -213,7 +236,7 @@ Mozilla-Uninstall-Loop:
   goto Mozilla-Uninstall-Loop
 Mozilla-Uninstall-End:
 
-  ReadRegDWORD $0 HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System EnableLUA
+  ${unregisterExtension} ".p3d" "Panda3D applet"
 
   # Remove the user's "Panda3D" directory, where all of the downloaded
   # contents are installed.  Too bad we can't do this for every system

@@ -125,21 +125,66 @@ def parseDependenciesWindows(tempFile):
     # At least we got some data.
     return filenames
 
+def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
+    """ Checks the named file for DLL dependencies, and adds any
+    appropriate dependencies found into pluginDependencies and
+    dependentFiles. """
+    
+    tempFile = Filename.temporary('', 'p3d_', '.txt')
+    command = 'dumpbin /dependents "%s" >"%s"' % (
+        pathname.toOsSpecific(),
+        tempFile.toOsSpecific())
+    try:
+        os.system(command)
+    except:
+        pass
+    filenames = None
+
+    if tempFile.exists():
+        filenames = parseDependenciesWindows(tempFile)
+        tempFile.unlink()
+    if filenames is None:
+        sys.exit("Unable to determine dependencies from %s" % (pathname))
+
+    # Look for MSVC[RP]*.dll, and MFC*.dll.  These dependent files
+    # have to be included too.  Also, any Panda-based libraries, or
+    # the Python DLL, should be included, in case panda3d.exe wasn't
+    # built static.  The Panda-based libraries begin with "lib" and
+    # are all lowercase.
+    for dfile in filenames:
+        dfilelower = dfile.lower()
+        if dfilelower not in dependentFiles:
+            if dfilelower.startswith('msvc') or \
+               dfilelower.startswith('mfc') or \
+               (dfile.startswith('lib') and dfile == dfilelower) or \
+               dfilelower.startswith('python'):
+                pathname = path.findFile(dfile)
+                if not pathname:
+                    sys.exit("Couldn't find %s." % (dfile))
+                dependentFiles[dfilelower] = pathname.toOsSpecific()
+
+                # Also recurse.
+                addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
+
+        if dfilelower in dependentFiles:
+            pluginDependencies[file].append(dfilelower)
+
 def makeInstaller():
     # Locate the plugin(s).
     pluginFiles = {}
     pluginDependencies = {}
     dependentFiles = {}
 
-    # These are the three primary files that make up the
+    # These are the four primary files that make up the
     # plugin/runtime.
     ocx = 'p3dactivex.ocx'
     npapi = 'nppanda3d.dll'
     panda3d = 'panda3d.exe'
+    panda3dw = 'panda3dw.exe'
 
     path = DSearchPath()
     path.appendPath(os.environ['PATH'])
-    for file in [ocx, npapi, panda3d]:
+    for file in [ocx, npapi, panda3d, panda3dw]:
         pathname = path.findFile(file)
         if not pathname:
             sys.exit("Couldn't find %s." % (file))
@@ -148,32 +193,7 @@ def makeInstaller():
         pluginDependencies[file] = []
 
         # Also look for the dll's that these plugins reference.
-        tempFile = Filename.temporary('', 'p3d_', '.txt')
-        command = 'dumpbin /dependents "%s" >"%s"' % (
-            pathname.toOsSpecific(),
-            tempFile.toOsSpecific())
-        try:
-            os.system(command)
-        except:
-            pass
-        filenames = None
-
-        if tempFile.exists():
-            filenames = parseDependenciesWindows(tempFile)
-            tempFile.unlink()
-        if filenames is None:
-            sys.exit("Unable to determine dependencies from %s" % (pathname))
-
-        # Look for MSVC[RP]*.dll, and MFC*.dll.  These dependent files
-        # have to be included too.
-        for dfile in filenames:
-            dfile = dfile.lower()
-            if dfile.startswith('msvc') or dfile.startswith('mfc'):
-                pathname = path.findFile(dfile)
-                if not pathname:
-                    sys.exit("Couldn't find %s." % (dfile))
-                pluginDependencies[file].append(dfile)
-                dependentFiles[dfile] = pathname.toOsSpecific()
+        addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
 
     welcomeBitmap = None
     if options.welcome_image:
@@ -216,6 +236,8 @@ def makeInstaller():
     CMD += '/DNPAPI_PATH="' + pluginFiles[npapi] + '" '
     CMD += '/DPANDA3D="' + panda3d + '" '
     CMD += '/DPANDA3D_PATH="' + pluginFiles[panda3d] + '" '
+    CMD += '/DPANDA3DW="' + panda3dw + '" '
+    CMD += '/DPANDA3DW_PATH="' + pluginFiles[panda3dw] + '" '
 
     dependencies = dependentFiles.items()
     for i in range(len(dependencies)):
