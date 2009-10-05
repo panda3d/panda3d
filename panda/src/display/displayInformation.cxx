@@ -562,13 +562,13 @@ get_cpu_id_data(int index) {
 //       Access: Published
 //  Description:  
 ////////////////////////////////////////////////////////////////////
-char *DisplayInformation::
+const char *DisplayInformation::
 get_cpu_vendor_string() {  
-  char *string;
+  const char *string;
   
   string = _cpu_vendor_string;
   if (string == 0) {
-    string = (char*) string;
+    string = "";
   }
   
   return string;
@@ -579,13 +579,13 @@ get_cpu_vendor_string() {
 //       Access: Published
 //  Description:  
 ////////////////////////////////////////////////////////////////////
-char *DisplayInformation::
+const char *DisplayInformation::
 get_cpu_brand_string() {  
-  char *string;
+  const char *string;
   
   string = _cpu_brand_string;
   if (string == 0) {
-    string = (char*) "";
+    string = "";
   }
   
   return string;

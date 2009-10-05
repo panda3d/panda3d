@@ -94,8 +94,8 @@ PUBLISHED:
   int get_cpu_id_size();
   unsigned int get_cpu_id_data(int index);
 
-  char *get_cpu_vendor_string();
-  char *get_cpu_brand_string();
+  const char *get_cpu_vendor_string();
+  const char *get_cpu_brand_string();
   unsigned int get_cpu_version_information();
   unsigned int get_cpu_brand_index();
   
