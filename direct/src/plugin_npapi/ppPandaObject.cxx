@@ -274,7 +274,8 @@ set_property(NPIdentifier name, const NPVariant *value) {
   }
 
   P3D_object *object = _instance->variant_to_p3dobj(value);
-  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), object);
+  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), 
+                                        true, object);
   P3D_OBJECT_DECREF(object);
   return result;
 }
@@ -294,7 +295,8 @@ remove_property(NPIdentifier name) {
     return false;
   }
 
-  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), NULL);
+  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), 
+                                        true, NULL);
   return result;
 }
 

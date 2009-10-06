@@ -153,8 +153,8 @@ get_property(const string &property) {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonObject::
-set_property(const string &property, P3D_object *value) {
-  bool bresult = false;
+set_property(const string &property, bool needs_response, P3D_object *value) {
+  bool bresult = !needs_response;
 
   P3D_object *params[2];
   params[0] = new P3DStringObject(property);
@@ -163,12 +163,12 @@ set_property(const string &property, P3D_object *value) {
 
   if (value == NULL) {
     // Delete an attribute.
-    result = call("__del_property__", true, params, 1);
+    result = call("__del_property__", needs_response, params, 1);
 
   } else {
     // Set a new attribute.
     params[1] = value;
-    result = call("__set_property__", true, params, 2);
+    result = call("__set_property__", needs_response, params, 2);
   }
 
   P3D_OBJECT_DECREF(params[0]);

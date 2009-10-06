@@ -38,8 +38,8 @@ object_get_property(P3D_object *object, const char *property) {
 
 static bool
 object_set_property(P3D_object *object, const char *property,
-                    P3D_object *value) {
-  return ((PPBrowserObject *)object)->set_property(property, value);
+                    bool needs_response, P3D_object *value) {
+  return ((PPBrowserObject *)object)->set_property(property, needs_response, value);
 }
 
 static P3D_object *
@@ -158,7 +158,7 @@ get_property(const string &property) const {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool PPBrowserObject::
-set_property(const string &property, P3D_object *value) {
+set_property(const string &property, bool needs_response, P3D_object *value) {
   NPIdentifier property_name = browser->getstringidentifier(property.c_str());
   bool result;
   if (value != NULL) {

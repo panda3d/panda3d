@@ -52,12 +52,6 @@ Panda3D() {
   _root_dir = find_root_dir();
   _reporting_download = false;
   _enable_security = false;
-
-#ifdef NON_CONSOLE
-  // For the desktop version of this program, let's always assume -S
-  // is in effect.
-  _enable_security = true;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -555,9 +549,16 @@ get_core_api(const Filename &contents_filename, const string &download_url,
 
   bool trusted_environment = !_enable_security;
 
+#ifdef NON_CONSOLE
+  static const bool console_environment = false;
+#else
+  static const bool console_environment = true;
+#endif
+
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    download_url, verify_contents, this_platform, _log_dirname,
-                   _log_basename, trusted_environment, cerr)) {
+                   _log_basename, trusted_environment, console_environment,
+                   cerr)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }
@@ -599,7 +600,6 @@ run_getters() {
 void Panda3D::
 handle_request(P3D_request *request) {
   bool handled = false;
-
   switch (request->_request_type) {
   case P3D_RT_stop:
     delete_instance(request->_instance);
@@ -1169,7 +1169,7 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-WINAPI 
+int WINAPI 
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 

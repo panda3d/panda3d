@@ -143,7 +143,7 @@ get_property(const string &property) {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DMainObject::
-set_property(const string &property, P3D_object *value) {
+set_property(const string &property, bool needs_response, P3D_object *value) {
   // First, we set the property locally.
   if (value != NULL) {
     Properties::iterator pi;
@@ -172,7 +172,7 @@ set_property(const string &property, P3D_object *value) {
   }
 
   // With a pyobj, we also pass this request down.
-  return P3D_OBJECT_SET_PROPERTY(_pyobj, property.c_str(), value);
+  return P3D_OBJECT_SET_PROPERTY(_pyobj, property.c_str(), needs_response, value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,7 +269,7 @@ set_pyobj(P3D_object *pyobj) {
       for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
         const string &property_name = (*pi).first;
         P3D_object *value = (*pi).second;
-        P3D_OBJECT_SET_PROPERTY(_pyobj, property_name.c_str(), value);
+        P3D_OBJECT_SET_PROPERTY(_pyobj, property_name.c_str(), false, value);
       }
     }
   }

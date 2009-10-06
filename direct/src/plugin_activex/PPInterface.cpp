@@ -309,8 +309,12 @@ HRESULT PPInterface::P3DSetProperty( P3D_object* p3dObject, CString& name, DISPP
     }
     COleVariant vaArg( pdispparams->rgvarg );
     P3D_object* param = variant_to_p3dobj( &vaArg );
-    result = P3D_OBJECT_SET_PROPERTY( p3dObject, name, param );
+    result = P3D_OBJECT_SET_PROPERTY( p3dObject, name, true, param );
     P3D_OBJECT_DECREF( param );
+
+    if (!result) {
+      return E_FAIL;
+    }
 
     return S_OK;
 }

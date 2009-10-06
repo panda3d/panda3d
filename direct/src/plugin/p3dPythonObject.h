@@ -42,7 +42,7 @@ public:
   virtual void make_string(string &value);
 
   virtual P3D_object *get_property(const string &property);
-  virtual bool set_property(const string &property, P3D_object *value);
+  virtual bool set_property(const string &property, bool needs_response, P3D_object *value);
 
   virtual bool has_method(const string &method_name);
   virtual P3D_object *call(const string &method_name, bool needs_response,

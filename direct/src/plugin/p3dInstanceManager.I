@@ -127,11 +127,29 @@ get_log_pathname() const {
 //               file will be run without checking its signature.
 //
 //               This should generally be true only when run by
-//               panda3d.exe, and not when run by the web plugin.
+//               panda3d.exe or panda3dw.exe, and not when run by the
+//               web plugin.
 ////////////////////////////////////////////////////////////////////
 inline bool P3DInstanceManager::
 get_trusted_environment() const {
   return _trusted_environment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_console_environment
+//       Access: Public
+//  Description: Returns the value of the console_environment flag
+//               passed to the constructor.  If this is true, it means
+//               we are running from a text-based console window, and
+//               not from a desktop environment.
+//
+//               This should generally be true only when run by
+//               panda3d.exe, and not when run by the web plugin or by
+//               panda3dw.exe.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+get_console_environment() const {
+  return _console_environment;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,9 +40,9 @@ static P3D_object* object_get_property(P3D_object *object, const char *property)
 }
 
 static bool object_set_property(P3D_object* object, const char* property,
-                                P3D_object *value) 
+                                bool needs_response, P3D_object *value) 
 {
-    return ((PPBrowserObject *)object)->set_property(property, value);
+    return ((PPBrowserObject *)object)->set_property(property, needs_response, value);
 }
 
 static P3D_object* object_call(P3D_object* object, const char* method_name, 
@@ -111,7 +111,8 @@ P3D_object* PPBrowserObject::get_property( const std::string &property ) const
     return m_interface->variant_to_p3dobj( &varResult );
 }
 
-bool PPBrowserObject::set_property( const std::string& property, P3D_object* value )
+bool PPBrowserObject::set_property( const std::string& property, bool needs_response,
+                                    P3D_object* value )
 {   
     assert( m_interface );
 

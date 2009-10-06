@@ -43,7 +43,8 @@ public:
   virtual void make_string(string &value)=0;
 
   virtual P3D_object *get_property(const string &property);
-  virtual bool set_property(const string &property, P3D_object *value);
+  virtual bool set_property(const string &property, bool needs_response,
+                            P3D_object *value);
 
   virtual bool has_method(const string &method_name);
   virtual P3D_object *call(const string &method_name, bool needs_response,
@@ -57,16 +58,16 @@ public:
 
   // Convenience functions.
   bool get_bool_property(const string &property);
-  bool set_bool_property(const string &property, bool value);
+  void set_bool_property(const string &property, bool value);
 
   int get_int_property(const string &property);
-  bool set_int_property(const string &property, int value);
+  void set_int_property(const string &property, int value);
 
   double get_float_property(const string &property);
-  bool set_float_property(const string &property, double value);
+  void set_float_property(const string &property, double value);
 
   string get_string_property(const string &property);
-  bool set_string_property(const string &property, const string &value);
+  void set_string_property(const string &property, const string &value);
 
 public:
   static P3D_class_definition _object_class;

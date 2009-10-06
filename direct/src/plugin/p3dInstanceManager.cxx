@@ -172,8 +172,10 @@ bool P3DInstanceManager::
 initialize(const string &contents_filename, const string &download_url,
            bool verify_contents,
            const string &platform, const string &log_directory,
-           const string &log_basename, bool trusted_environment) {
+           const string &log_basename, bool trusted_environment,
+           bool console_environment) {
   _trusted_environment = trusted_environment;
+  _console_environment = console_environment;
   _verify_contents = verify_contents;
   _platform = platform;
   if (_platform.empty()) {

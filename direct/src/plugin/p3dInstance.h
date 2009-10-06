@@ -98,7 +98,8 @@ public:
   inline bool is_trusted() const;
   void start_download(P3DDownload *download);
   inline bool is_started() const;
-  void request_stop();
+  void request_stop_sub_thread();
+  void request_stop_main_thread();
   void request_refresh();
 
   TiXmlElement *make_xml();

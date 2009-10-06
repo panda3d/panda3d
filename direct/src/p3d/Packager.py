@@ -2411,6 +2411,8 @@ class Packager:
         # extensions are automatically replaced with the appropriate
         # platform-specific extensions.
         self.do_file('p3dpython.exe')
+        if PandaSystem.getPlatform().startswith('win'):
+            self.do_file('p3dpythonw.exe')
         self.do_file('libp3dpython.dll')
 
     def do_freeze(self, filename, compileToExe = False):

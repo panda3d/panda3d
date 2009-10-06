@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 7
+#define P3D_API_VERSION 8
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -122,11 +122,18 @@ extern "C" {
    core API.  Note that the individual instances also have their own
    log_basename values.
 
-   Finally, trusted_environment should be set true to indicate that
-   the environment and p3d file are already trusted.  If this is set,
-   the current working directory will remain unchanged, and the p3d
-   file will be run without checking its signature.  Normally, a
-   browser plugin should set this false.
+   Next, trusted_environment should be set true to indicate that the
+   environment and p3d file are already trusted.  If this is set, the
+   current working directory will remain unchanged, and the p3d file
+   will be run without checking its signature.  Normally, a browser
+   plugin should set this false.
+
+   Finally, console_environment should be set true to indicate that we
+   are running within a text-based console, and expect to preserve the
+   current working directory, and also see standard output, or false
+   to indicate that we are running within a GUI environment, and
+   expect none of these.  Normally, a browser plugin should set this
+   false.
 
    This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
@@ -137,7 +144,7 @@ P3D_initialize_func(int api_version, const char *contents_filename,
                     const char *download_url, bool verify_contents,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
-                    bool trusted_environment);
+                    bool trusted_environment, bool console_environment);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to
@@ -439,11 +446,13 @@ P3D_object_get_property_method(P3D_object *object, const char *property);
    correspondingly incremented.  Any existing object previously
    assigned to the corresponding property is replaced, and its
    reference count decremented.  If the value pointer is NULL, the
-   property is removed altogether.  Returns true on success, false on
-   failure.  */
+   property is removed altogether.  If needs_response is true, this
+   method returns true on success, false on failure.  If
+   needs_response is false, the return value is always true regardless
+   of success or failure.*/
 typedef bool
 P3D_object_set_property_method(P3D_object *object, const char *property,
-                               P3D_object *value);
+                               bool needs_response, P3D_object *value);
 
 /* Returns true if the indicated method name exists on the object,
    false otherwise.  In the Python case, this actually returns true if
@@ -521,7 +530,7 @@ struct _P3D_object {
 #define P3D_OBJECT_GET_REPR(object, buffer, buffer_size) ((object)->_class->_get_repr((object), (buffer), (buffer_size)))
 
 #define P3D_OBJECT_GET_PROPERTY(object, property) ((object)->_class->_get_property((object), (property)))
-#define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
+#define P3D_OBJECT_SET_PROPERTY(object, property, needs_response, value) ((object)->_class->_set_property((object), (property), (needs_response), (value)))
 
 #define P3D_OBJECT_HAS_METHOD(object, method_name) ((object)->_class->_has_method((object), (method_name)))
 #define P3D_OBJECT_CALL(object, method_name, needs_response, params, num_params) ((object)->_class->_call((object), (method_name), (needs_response), (params), (num_params)))
@@ -561,7 +570,7 @@ typedef P3D_object *
 P3D_object_get_property_func(P3D_object *object, const char *property);
 typedef bool
 P3D_object_set_property_func(P3D_object *object, const char *property, 
-                             P3D_object *value);
+                             bool needs_response, P3D_object *value);
 typedef bool
 P3D_object_has_method_func(P3D_object *object, const char *method_name);
 typedef P3D_object *

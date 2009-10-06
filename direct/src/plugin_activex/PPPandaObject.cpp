@@ -50,6 +50,7 @@ STDMETHODIMP_(unsigned long) PPandaObject::Release()
     if( m_refs <= 0 )
     {
         delete this;
+        return 0;
     }
     return m_refs;
 }

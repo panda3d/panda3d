@@ -38,7 +38,7 @@ P3D_initialize(int api_version, const char *contents_filename,
                const char *download_url, bool verify_contents,
                const char *platform,
                const char *log_directory, const char *log_basename,
-               bool trusted_environment) {
+               bool trusted_environment, bool console_environment) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -74,7 +74,7 @@ P3D_initialize(int api_version, const char *contents_filename,
   bool result = inst_mgr->initialize(contents_filename, download_url,
                                      verify_contents, platform,
                                      log_directory, log_basename,
-                                     trusted_environment);
+                                     trusted_environment, console_environment);
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -227,10 +227,10 @@ P3D_object_get_property(P3D_object *object, const char *property) {
 
 bool
 P3D_object_set_property(P3D_object *object, const char *property, 
-                        P3D_object *value) {
+                        bool needs_response, P3D_object *value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  bool result = P3D_OBJECT_SET_PROPERTY(object, property, value);
+  bool result = P3D_OBJECT_SET_PROPERTY(object, property, needs_response, value);
   RELEASE_LOCK(_api_lock);
   return result;
 }

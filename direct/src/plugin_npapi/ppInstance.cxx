@@ -1113,7 +1113,7 @@ do_load_plugin() {
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   nout << "Attempting to load core API from " << pathname << "\n";
-  if (!load_plugin(pathname, "", "", true, "", "", "", false, nout)) {
+  if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
     nout << "Unable to launch core API in " << pathname << "\n";
     return;
   }

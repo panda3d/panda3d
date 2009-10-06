@@ -28,7 +28,8 @@ public:
 
     int get_repr( char* buffer, int buffer_length ) const;
     P3D_object* get_property( const std::string &property ) const;
-    bool set_property( const std::string& property, P3D_object* value );
+    bool set_property( const std::string& property, bool needs_response,
+                       P3D_object* value );
 
     P3D_object* call( const std::string &method_name, 
         P3D_object* params[], int num_params ) const;

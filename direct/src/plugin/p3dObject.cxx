@@ -65,8 +65,8 @@ object_get_property(P3D_object *object, const char *property) {
 
 static bool
 object_set_property(P3D_object *object, const char *property,
-                    P3D_object *value) {
-  return ((P3DObject *)object)->set_property(property, value);
+                    bool needs_response, P3D_object *value) {
+  return ((P3DObject *)object)->set_property(property, needs_response, value);
 }
 
 static bool
@@ -155,7 +155,7 @@ generic_get_property(P3D_object *object, const char *property) {
 
 static bool
 generic_set_property(P3D_object *object, const char *property,
-                     P3D_object *value) {
+                     bool needs_response, P3D_object *value) {
   return false;
 }
 
@@ -275,7 +275,7 @@ get_property(const string &property) {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DObject::
-set_property(const string &property, P3D_object *value) {
+set_property(const string &property, bool needs_response, P3D_object *value) {
   return false;
 }
 
@@ -398,12 +398,11 @@ get_bool_property(const string &property) {
 //  Description: Changes the value of the named property to the
 //               indicated boolean value.
 ////////////////////////////////////////////////////////////////////
-bool P3DObject::
+void P3DObject::
 set_bool_property(const string &property, bool value) {
   P3D_object *bvalue = new P3DBoolObject(value);
-  bool result = set_property(property, bvalue);
+  set_property(property, false, bvalue);
   P3D_OBJECT_DECREF(bvalue);
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,12 +428,11 @@ get_int_property(const string &property) {
 //  Description: Changes the value of the named property to the
 //               indicated integer value.
 ////////////////////////////////////////////////////////////////////
-bool P3DObject::
+void P3DObject::
 set_int_property(const string &property, int value) {
   P3D_object *ivalue = new P3DIntObject(value);
-  bool result = set_property(property, ivalue);
+  set_property(property, false, ivalue);
   P3D_OBJECT_DECREF(ivalue);
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,12 +459,11 @@ get_float_property(const string &property) {
 //  Description: Changes the value of the named property to the
 //               indicated floating-point value.
 ////////////////////////////////////////////////////////////////////
-bool P3DObject::
+void P3DObject::
 set_float_property(const string &property, double value) {
   P3D_object *fvalue = new P3DFloatObject(value);
-  bool result = set_property(property, fvalue);
+  set_property(property, false, fvalue);
   P3D_OBJECT_DECREF(fvalue);
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -499,10 +496,9 @@ get_string_property(const string &property) {
 //  Description: Changes the value of the named property to the
 //               indicated string value.
 ////////////////////////////////////////////////////////////////////
-bool P3DObject::
+void P3DObject::
 set_string_property(const string &property, const string &value) {
   P3D_object *svalue = new P3DStringObject(value);
-  bool result = set_property(property, svalue);
+  set_property(property, false, svalue);
   P3D_OBJECT_DECREF(svalue);
-  return result;
 }

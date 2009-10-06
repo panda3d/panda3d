@@ -137,7 +137,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
     if (!_thread_running && _thread_continue) {
       // The user must have closed the window.  Let's shut down the
       // instance, too.
-      _inst->request_stop();
+      _inst->request_stop_main_thread();
     }
   }
 }
@@ -163,7 +163,7 @@ set_install_label(const string &install_label) {
     if (!_thread_running && _thread_continue) {
       // The user must have closed the window.  Let's shut down the
       // instance, too.
-      _inst->request_stop();
+      _inst->request_stop_main_thread();
     }
   }
 }
@@ -186,7 +186,7 @@ set_install_progress(double install_progress) {
     if (!_thread_running && _thread_continue) {
       // The user must have closed the window.  Let's shut down the
       // instance, too.
-      _inst->request_stop();
+      _inst->request_stop_main_thread();
     }
   }
 }
@@ -377,6 +377,9 @@ thread_run() {
 
   // Tell our parent thread that we're done.
   _thread_running = false;
+
+  // Close the instance.
+  _inst->request_stop_sub_thread();
 }
 
 ////////////////////////////////////////////////////////////////////

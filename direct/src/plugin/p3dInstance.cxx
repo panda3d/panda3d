@@ -864,15 +864,54 @@ start_download(P3DDownload *download) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_stop
+//     Function: P3DInstance::request_stop_sub_thread
 //       Access: Public
 //  Description: Asks the host to shut down this particular instance,
 //               presumably because the user has indicated it should
-//               exit.
+//               exit.  This call may be made in any thread.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-request_stop() {
+request_stop_sub_thread() {
+  // Atomically check _requested_stop.
+  bool add_request = false;
+  ACQUIRE_LOCK(_request_lock);
   if (!_requested_stop) {
+    _requested_stop = true;
+    add_request = true;
+  }
+  RELEASE_LOCK(_request_lock);
+
+  // If we haven't requested a stop already, do it now.
+  if (add_request) {
+    TiXmlDocument *doc = new TiXmlDocument;
+    TiXmlElement *xrequest = new TiXmlElement("request");
+    xrequest->SetAttribute("rtype", "stop");
+    doc->LinkEndChild(xrequest);
+    
+    add_raw_request(doc);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::request_stop_main_thread
+//       Access: Public
+//  Description: Asks the host to shut down this particular instance,
+//               presumably because the user has indicated it should
+//               exit.  This call may only be made in the main thread.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+request_stop_main_thread() {
+  // Atomically check _requested_stop.
+  bool add_request = false;
+  ACQUIRE_LOCK(_request_lock);
+  if (!_requested_stop) {
+    _requested_stop = true;
+    add_request = true;
+  }
+  RELEASE_LOCK(_request_lock);
+
+  // If we haven't requested a stop already, do it now.
+  if (add_request) {
     _requested_stop = true;
     P3D_request *request = new P3D_request;
     request->_request_type = P3D_RT_stop;
@@ -1533,7 +1572,7 @@ handle_script_request(const string &operation, P3D_object *object,
 
   } else if (operation == "set_property") {
     bool result = 
-      P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), value);
+      P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, value);
     
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
@@ -1541,7 +1580,7 @@ handle_script_request(const string &operation, P3D_object *object,
     xcommand->LinkEndChild(xvalue);
 
   } else if (operation == "del_property") {
-    bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), NULL);
+    bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, NULL);
     
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");

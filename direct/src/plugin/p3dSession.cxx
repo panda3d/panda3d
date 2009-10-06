@@ -688,7 +688,9 @@ start_p3dpython(P3DInstance *inst) {
   // If we're not to be preserving the user's current directory, then
   // we'll need to change to the standard start directory.
   _keep_user_env = false;
-  if (inst_mgr->get_trusted_environment() && inst->_keep_user_env) {
+  if (inst_mgr->get_trusted_environment() && 
+      inst_mgr->get_console_environment() && 
+      inst->_keep_user_env) {
     _keep_user_env = true;
   }
   if (!_keep_user_env) {
@@ -776,10 +778,13 @@ start_p3dpython(P3DInstance *inst) {
   _p3dpython_exe = P3D_PLUGIN_P3DPYTHON;
   if (_p3dpython_exe.empty()) {
     _p3dpython_exe = _python_root_dir + "/p3dpython";
-#ifdef _WIN32
-    _p3dpython_exe += ".exe";
-#endif
   }
+#ifdef _WIN32
+  if (!inst_mgr->get_console_environment()) {
+    _p3dpython_exe += "w";
+  }
+  _p3dpython_exe += ".exe";
+#endif
 
   // Populate the new process' environment.
   _env = string();
@@ -1191,7 +1196,7 @@ rt_terminate() {
 
   for (Instances::iterator ii = icopy.begin(); ii != icopy.end(); ++ii) {
     P3DInstance *inst = (*ii).second;
-    inst->request_stop();
+    inst->request_stop_main_thread();
   }
 }
 
@@ -1246,8 +1251,8 @@ win_create_process() {
   startup_info.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
   startup_info.dwFlags |= STARTF_USESTDHANDLES;
 
-  // Make sure the "python" console window is hidden.
-  startup_info.wShowWindow = SW_HIDE;
+  // We want to show the output window these days.
+  startup_info.wShowWindow = SW_SHOW;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
   // If _keep_user_env, meaning not to change the current directory,

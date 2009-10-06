@@ -183,6 +183,52 @@
   #define WIN_SYS_LIBS user32.lib
 #end bin_target
 
+#begin bin_target
+  // Windows requires a special executable, p3dpythonw.exe, to launch
+  // a desktop-friendly application.
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
+  #define USE_PACKAGES tinyxml python openssl
+  #define TARGET p3dpythonw
+  #define EXTRA_CDEFS NON_CONSOLE
+
+  #define OTHER_LIBS \
+    dtoolutil:c dtoolbase:c dtool:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    express:c pandaexpress:m \
+    pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
+    mathutil:c lerp:c downloader:c pnmimage:c \
+    prc:c pstatclient:c pandabase:c linmath:c putil:c \
+    pipeline:c event:c nativenet:c net:c display:c panda:m
+
+  #define SOURCES \
+    binaryXml.cxx binaryXml.h \
+    fhandle.h \
+    handleStream.cxx handleStream.h handleStream.I \
+    handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
+    p3d_lock.h p3d_plugin.h \
+    p3d_plugin_config.h \
+    p3dCInstance.cxx \
+    p3dCInstance.h p3dCInstance.I \
+    p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I \
+    run_p3dpython.h run_p3dpython.cxx
+
+  #define SOURCES $[SOURCES] \
+    p3dPythonMain.cxx
+
+  // If you have to link with a static Python library, define it here.
+  #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
+  #define OSX_SYS_FRAMEWORKS Carbon
+
+  #if $[OSX_PLATFORM]
+    // Not entirely sure why this option is required for OSX, but we
+    // get objections about ___dso_handle otherwise--but only when
+    // building universal binaries.
+    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
+  #endif
+
+  #define WIN_SYS_LIBS user32.lib
+#end bin_target
+
 #begin static_lib_target
   #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_OPENSSL]]
   #define TARGET plugin_common

@@ -55,7 +55,8 @@ public:
                   const string &platform,
                   const string &log_directory,
                   const string &log_basename,
-                  bool trusted_environment);
+                  bool trusted_environment,
+                  bool console_environment);
 
   inline bool is_initialized() const;
   inline bool get_verify_contents() const;
@@ -67,6 +68,7 @@ public:
   inline const string &get_log_directory() const;
   inline const string &get_log_pathname() const;
   inline bool get_trusted_environment() const;
+  inline bool get_console_environment() const;
 
   void set_super_mirror(const string &super_mirror_url);
   inline const string &get_super_mirror() const;
@@ -133,6 +135,7 @@ private:
   string _log_pathname;
   string _temp_directory;
   bool _trusted_environment;
+  bool _console_environment;
   string _super_mirror_url;
 
   P3D_object *_undefined_object;
