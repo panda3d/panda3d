@@ -1060,11 +1060,15 @@ class Packager:
             if patchVersion:
                 self.patchVersion = patchVersion
 
-            # Extract the base_version and patch entries, if any, and
-            # preserve these entries verbatim for the next version.
+            # Extract the base_version, top_version, and patch
+            # entries, if any, and preserve these entries verbatim for
+            # the next version.
             xbase = xpackage.FirstChildElement('base_version')
             if xbase:
                 self.patches.append(xbase.Clone())
+            xtop = xpackage.FirstChildElement('top_version')
+            if xtop:
+                self.patches.append(xtop.Clone())
                 
             xpatch = xpackage.FirstChildElement('patch')
             while xpatch:

@@ -332,6 +332,43 @@ class PatchMaker:
             # other hosts, which means we'll need to fill in a value
             # here for those hosts.
             self.hostUrl = None
+        
+            self.currentFile = None
+            self.baseFile = None
+            self.topFile = None
+            self.compressedFilename = None
+            compressedFile = None
+
+            # Assume there are changes for this version, until we
+            # discover that there aren't.
+            isNewVersion = True
+
+            # Get the actual current version.
+            xarchive = xpackage.FirstChildElement('uncompressed_archive')
+            if xarchive:
+                self.currentFile = FileSpec()
+                self.currentFile.loadXml(xarchive)
+
+            # Get the top_version--the top (newest) of the patch
+            # chain.
+            xarchive = xpackage.FirstChildElement('top_version')
+            if xarchive:
+                self.topFile = FileSpec()
+                self.topFile.loadXml(xarchive)
+
+                if self.topFile.hash == self.currentFile.hash:
+                    # No new version this pass.
+                    isNewVersion = False
+                else:
+                    # There's a new version this pass.  Update it.
+                    self.topFile = copy.copy(self.currentFile)
+                    self.anyChanges = True
+                
+            else:
+                # If there isn't a top_version yet, we have to make
+                # one, by duplicating the currentFile.
+                self.topFile = copy.copy(self.currentFile)
+                self.anyChanges = True
 
             # Get the current patch version.  If we have a
             # patch_version attribute, it refers to this particular
@@ -347,24 +384,9 @@ class PatchMaker:
                 patchVersion = xpackage.Attribute('last_patch_version')
                 if patchVersion:
                     self.patchVersion = int(patchVersion)
-                    self.patchVersion += 1
+                    if isNewVersion:
+                        self.patchVersion += 1
                 self.anyChanges = True
-
-            self.currentFile = None
-            self.baseFile = None
-            self.compressedFilename = None
-        
-            xarchive = xpackage.FirstChildElement('uncompressed_archive')
-            if xarchive:
-                self.currentFile = FileSpec()
-                self.currentFile.loadXml(xarchive)
-
-            # We need to know the filename of the compressed archive
-            # (the uncompressed_archive may not actually exist
-            # anymore, but the compressed_archive still should).
-            xarchive = xpackage.FirstChildElement('compressed_archive')
-            if xarchive:
-                self.compressedFilename = xarchive.Attribute('filename')
 
             # Put the patchVersion in the compressed filename, for
             # cache-busting.  This means when the version changes, its
@@ -454,6 +476,10 @@ class PatchMaker:
 
             xarchive = TiXmlElement('base_version')
             self.baseFile.storeXml(xarchive)
+            xpackage.InsertEndChild(xarchive)
+
+            xarchive = TiXmlElement('top_version')
+            self.topFile.storeXml(xarchive)
             xpackage.InsertEndChild(xarchive)
             
             for patchfile in self.patches:
