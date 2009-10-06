@@ -396,7 +396,7 @@ check_stopped() {
   _subprocess_pid = -1;
   join_read_thread();
 
-  _inst->request_stop();
+  _inst->request_stop_main_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
