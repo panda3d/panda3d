@@ -65,6 +65,8 @@
 #include <maya/MGlobal.h>
 #include <maya/MAnimUtil.h>
 #include <maya/MFnSkinCluster.h>
+#include <maya/MFnWeightGeometryFilter.h>
+#include <maya/MFnIkJoint.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnDoubleIndexedComponent.h>
 #include <maya/MFnBlendShapeDeformer.h>
@@ -2324,6 +2326,56 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
           }
         }
       }
+    } else if (c_node.hasFn(MFn::kWeightGeometryFilt)) {
+      // We've found the joint cluster handle. (rigid Binding)
+      // 
+      MFnWeightGeometryFilter cluster(c_node, &status); 
+      if (!status) {
+        status.perror("MFnWeightGeometryFilter constructor");
+        return false;
+      }
+
+      MPlug matrix_plug = cluster.findPlug("matrix");
+      if (!matrix_plug.isNull()) {
+        MPlugArray matrix_pa;
+        matrix_plug.connectedTo(matrix_pa, true, false, &status);
+        if (!status) {
+          status.perror("Can't find connected Joint");
+        } else {
+          MObject jointObj = matrix_pa[0].node();
+          MFnIkJoint jointFn = MFnIkJoint(jointObj, &status);
+          if (!status) {
+            status.perror("Can't find connected JointDag");
+          } else {
+            joints.clear();
+            MDagPath joint_dag_path = MDagPath();
+            status = jointFn.getPath(joint_dag_path);
+            if (!status) {
+              status.perror("MFnIkJoint::dagPath");
+            } else {
+              MayaNodeDesc *joint_node_desc = _tree.build_node(joint_dag_path);
+              EggGroup *joint = _tree.get_egg_group(joint_node_desc);
+              joints.push_back(joint);
+          
+              // Now use a component object to retrieve all of the weight
+              // data in one API call.
+              MFnSingleIndexedComponent sic; 
+              MObject sic_object = sic.create(MFn::kMeshVertComponent); 
+              sic.setCompleteData(mesh.numVertices()); 
+          
+              status = cluster.getWeights(dag_path, sic_object, 
+                                          weights); 
+              if (!status) {
+                status.perror("MFnWeightGeometryFilter::getWeights");
+              } else {
+                // We've got the weights and the set of objects.  That's all
+                // we need.
+                return true;
+              }
+            }
+          }
+        }
+      }      
     }
 
     it.next();
