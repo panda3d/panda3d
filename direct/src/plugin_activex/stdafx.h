@@ -41,3 +41,5 @@
 #include <afxdao.h>         // MFC DAO database classes
 #include <afxwin.h>
 
+#include <dispex.h>
+

@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
+				AdditionalIncludeDirectories="..\plugin;..\..\..\dtool\src\dtoolbase;..\..\..\dtool;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib"
+				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib mfcs71d.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;../../../wintools/sdk/openssl/openssl-0.9.6d/out32.dbg&quot;;../../../wintools/built/lib"
@@ -84,7 +84,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\plugin;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
+				AdditionalIncludeDirectories="..\plugin;..\..\..\dtool\src\dtoolbase;..\..\..\dtool;..\..\..\wintools\include;&quot;..\..\..\wintools\sdk\openssl\openssl-0.9.6d\inc32&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
@@ -96,7 +96,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib"
+				AdditionalDependencies="tinyxml.lib ssleay32.lib libeay32.lib mfcs71.lib"
 				OutputFile="$(OutDir)/P3DActiveX.ocx"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;../../../wintools/sdk/openssl/openssl-0.9.6d/out32&quot;;../../../wintools/built/lib"
@@ -212,6 +212,9 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath="..\plugin\mkdir_complete.h">
+			</File>
 			<File
 				RelativePath=".\P3DActiveX.h">
 			</File>

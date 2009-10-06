@@ -56,8 +56,19 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     DISPPARAMS dp = { NULL, NULL, 0, 0 };
     DISPID dispidNamed = DISPID_PROPERTYPUT;
     DISPID dispID;
+    CComPtr<IDispatchEx> pDispEx;
 
     HRESULT hr = GetIdOfName( pDisp, ptName, &dispID );
+    if ( DISP_E_UNKNOWNNAME == hr )
+    {
+        hr = pDisp->QueryInterface( IID_IDispatchEx, ( void** )&pDispEx );
+        if ( SUCCEEDED( hr ) && pDispEx )
+        {
+            OLECHAR* pElementName = ptName.AllocSysString();
+            hr = pDispEx->GetDispID( pElementName, fdexNameEnsure, &dispID );
+            SysFreeString( pElementName );
+        }
+    }
     if ( FAILED( hr ) )
     {
         return hr;
@@ -90,9 +101,16 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     }
 
     // Make the call!
-    hr = pDisp->Invoke( dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, 
-                       nType, &dp, pvResult, NULL, NULL );
-
+    if ( pDispEx )
+    {
+        hr = pDispEx->InvokeEx(dispID, LOCALE_USER_DEFAULT, 
+                        nType, &dp, pvResult, NULL, NULL);
+    }
+    else
+    {
+        hr = pDisp->Invoke( dispID, IID_NULL, LOCALE_USER_DEFAULT, 
+                        nType, &dp, pvResult, NULL, NULL );
+    }
     delete [] pArgs;
 
     return hr;
@@ -117,6 +135,12 @@ HRESULT PPInterface::GetHtmlDocDispatch( CComPtr<IDispatch>& pDispScript )
     // element(s) that the get_scripts method does). 
     hr = pHtmlDoc->get_Script( &pDispScript );
     ASSERT( SUCCEEDED( hr ) && pDispScript );
+
+    CComPtr<IDispatchEx> pDispExScript;
+    hr = pDispScript->QueryInterface( IID_IDispatchEx, ( void** )&pDispExScript );
+    ASSERT( SUCCEEDED( hr ) && pDispExScript );
+
+    pDispScript = pDispExScript;
 
     CComPtr<ITypeInfo> pTypeInfo;
     hr = pDispScript->GetTypeInfo( 0, 0, &pTypeInfo );

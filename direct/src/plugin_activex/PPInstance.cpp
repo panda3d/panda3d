@@ -492,7 +492,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
         nout << "Error creating P3D instance: " << GetLastError() << "\n"; 
         return 1;
     }
-    CComPtr<IDispatch> pDispatch;
+    CComPtr<IDispatchEx> pDispatch;
     PPBrowserObject *pobj = new PPBrowserObject( &m_parentCtrl, pDispatch );
     P3D_instance_set_browser_script_object( m_p3dInstance, pobj );
     P3D_OBJECT_DECREF( pobj );

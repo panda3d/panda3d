@@ -16,6 +16,7 @@
 
 #include "windows.h"
 #include "PPLogger.h"
+#include "mkdir_complete.h"
 
 std::ofstream PPLogger::m_logfile;
 bool PPLogger::m_isOpen = false;
@@ -107,7 +108,7 @@ void PPLogger::Open( const std::string &rootDir )
     if (log_directory.empty()) {
       log_directory = rootDir + "/log";
     }
-    mkdir_complete(log_directory, cerr);
+    mkdir_complete(log_directory, std::cerr);
 
     // Ensure that the log directory ends with a slash.
     if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
@@ -132,8 +133,8 @@ void PPLogger::Open( const std::string &rootDir )
       log_pathname += ".log";
       
       m_logfile.clear();
-      m_logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
-      m_logfile.setf(ios::unitbuf);
+      m_logfile.open(log_pathname.c_str(), std::ios::out | std::ios::trunc);
+      m_logfile.setf(std::ios::unitbuf);
     }
 
     // If we didn't have a logfile name compiled in, we throw away log
