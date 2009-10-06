@@ -32,7 +32,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
 'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
-'typeName', 'safeTypeName', 'histogramDict', ]
+'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString', ]
 
 import types
 import string
@@ -4008,6 +4008,21 @@ def histogramDict(l):
         d.setdefault(e, 0)
         d[e] += 1
     return d
+
+def unescapeHtmlString(s):
+    # converts %## to corresponding character
+    # replaces '+' with ' '
+    while 1:
+        try:
+            i = s.index('%')
+        except:
+            break
+        lastCharIndex = len(s)-1
+        if i <= lastCharIndex-2:
+            num = eval('0x' + s[i+1:i+3])
+            s = s[:i] + chr(num) + s[i+3:]
+    s = s.replace('+', ' ')
+    return s
 
 import __builtin__
 __builtin__.Functor = Functor
