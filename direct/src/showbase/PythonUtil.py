@@ -2644,6 +2644,15 @@ class ScratchPad:
         for key in self._keys:
             delattr(self, key)
 
+    # allow dict [] syntax
+    def __getitem__(self, itemName):
+        return getattr(self, itemName)
+    def get(self, itemName, default=None):
+        return getattr(self, itemName, default)
+    # allow 'in'
+    def __contains__(self, itemName):
+        return itemName in self._keys
+
 class DestructiveScratchPad(ScratchPad):
     # automatically calls destroy() on elements passed to __init__
     def add(self, **kArgs):
