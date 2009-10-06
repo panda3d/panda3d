@@ -2405,6 +2405,12 @@ unlink() const {
 bool Filename::
 rename_to(const Filename &other) const {
   assert(!get_pattern());
+
+  if (*this == other) {
+    // Trivial success.
+    return true;
+  }
+
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
 
