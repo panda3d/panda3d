@@ -1750,6 +1750,7 @@ class Packager:
         return he
         
     def addAltHost(self, keyword, altHost, origHost = None,
+                   downloadUrl = None,
                    descriptiveName = None, mirrors = None):
         """ Adds an alternate host to any already-known host.  This
         defines an alternate server that may be contacted, if
@@ -1761,7 +1762,8 @@ class Packager:
         if not origHost:
             origHost = self.host
 
-        self.addHost(altHost, descriptiveName, mirrors)
+        self.addHost(altHost, downloadUrl = downloadUrl,
+                     descriptiveName = descriptiveName, mirrors = mirrors)
         he = self.addHost(origHost)
         he.altHosts[keyword] = altHost
 
