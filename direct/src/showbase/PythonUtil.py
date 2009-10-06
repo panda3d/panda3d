@@ -2360,6 +2360,15 @@ class Enum:
     def __iter__(self):
         return EnumIter(self)
 
+    def hasString(self, string):
+        return string in set(self._stringTable.values())
+
+    def fromString(self, string):
+        if self.hasString(string):
+            return self.__dict__[string]
+        # throw an error
+        {}[string]
+
     def getString(self, value):
         return self._stringTable[value]
 
