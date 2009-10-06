@@ -634,8 +634,9 @@ class PatchMaker:
 
         remainingNames = packageNames[:]
         for package in self.packages:
-            if package.packageName in remainingNames:
+            if package.packageName in packageNames:
                 self.processPackage(package)
+            if package.packageName in remainingNames:
                 remainingNames.remove(package.packageName)
 
         if remainingNames:
