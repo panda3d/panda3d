@@ -101,6 +101,4 @@ private:
   friend class DXTextureContext9;
 };
 
-// #include "wdxGraphicsBuffer9.I"
-
 #endif

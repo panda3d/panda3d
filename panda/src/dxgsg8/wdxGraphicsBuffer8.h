@@ -92,6 +92,4 @@ private:
   friend class DXTextureContext8;
 };
 
-// #include "wdxGraphicsBuffer8.I"
-
 #endif
