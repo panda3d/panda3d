@@ -53,6 +53,9 @@ class DirectManipulationControl(DirectObject):
         # [gjeon] for new LE's multi-view support
         self.fMultiView = 0
 
+        # [gjeon] to support grid snapping
+        self.fGridSnap = 0
+
     def scaleWidget(self, factor):
         if hasattr(base.direct, 'widget'):
             base.direct.widget.multiplyScalingFactorBy(factor)
@@ -270,8 +273,6 @@ class DirectManipulationControl(DirectObject):
                     boundingSphereTest = marqueeFrustum.contains(bbc)
                     if boundingSphereTest > 1:
                         if boundingSphereTest == 7:
-                            print "boundingSphere is all in, selecting ", geom
-
                             if nodePath not in selectionList:
                                 selectionList.append(nodePath)
                         else:
@@ -551,6 +552,39 @@ class DirectManipulationControl(DirectObject):
     def removeTag(self, tag):
         self.unmovableTagList.remove(tag)
 
+    def gridSnapping(self, offset):
+        offsetX = offset.getX()
+        offsetY = offset.getY()
+        offsetZ = offset.getZ()
+        if math.fabs(offsetX) < base.direct.grid.gridSpacing / 2.0:
+            offsetX = 0
+        else:
+            if offsetX < 0:
+                offsetX = -1 * base.direct.grid.gridSpacing
+            else:
+                offsetX = base.direct.grid.gridSpacing
+
+        if math.fabs(offsetY) < base.direct.grid.gridSpacing / 2.0:
+            offsetY = 0
+        else:
+            if offsetY < 0:
+                offsetY = -1 * base.direct.grid.gridSpacing
+            else:
+                offsetY = base.direct.grid.gridSpacing                
+
+        if math.fabs(offsetZ) < base.direct.grid.gridSpacing / 2.0:
+            offsetZ = 0
+        else:
+            if offsetZ < 0:
+                offsetZ = -1 * base.direct.grid.gridSpacing
+            else:
+                offsetZ = base.direct.grid.gridSpacing
+
+        offset.setX(offsetX)
+        offset.setY(offsetY)
+        offset.setZ(offsetZ)
+
+        return offset
 
     ### WIDGET MANIPULATION METHODS ###
     def xlate1D(self, state):
@@ -568,6 +602,10 @@ class DirectManipulationControl(DirectObject):
         else:
             # Move widget to keep hit point as close to mouse as possible
             offset = self.hitPt - self.prevHit
+
+            if self.fGridSnap:
+                offset = self.gridSnapping(offset)
+                
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
                 for widget in base.direct.manipulationControl.widgetList:
                     widget.setPos(widget, offset)
@@ -588,6 +626,10 @@ class DirectManipulationControl(DirectObject):
             self.prevHit.assign(self.hitPt)
         else:
             offset = self.hitPt - self.prevHit
+
+            if self.fGridSnap:
+                offset = self.gridSnapping(offset)
+
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
                 for widget in base.direct.manipulationControl.widgetList:
                     widget.setPos(widget, offset)
