@@ -72,6 +72,7 @@ protected:
     int CopyFile( const std::string& from, const std::string& to );
 
     bool read_contents_file(const std::string &contents_filename);
+    void find_host(TiXmlElement *xcontents);
     void read_xhost(TiXmlElement *xhost);
     void add_mirror(std::string mirror_url);
     void choose_random_mirrors(std::vector<std::string> &result, int num_mirrors);

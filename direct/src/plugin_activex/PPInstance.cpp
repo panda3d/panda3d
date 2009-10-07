@@ -162,28 +162,7 @@ read_contents_file(const string &contents_filename) {
   if (xcontents != NULL) {
     // Look for the <host> entry; it might point us at a different
     // download URL, and it might mention some mirrors.
-    string host_url = PANDA_PACKAGE_HOST_URL;
-    TiXmlElement *xhost = xcontents->FirstChildElement("host");
-    if (xhost != NULL) {
-      const char *url = xhost->Attribute("url");
-      if (url != NULL && host_url == string(url)) {
-        // We're the primary host.  This is the normal case.
-        read_xhost(xhost);
-
-      } else {
-        // We're not the primary host; perhaps we're an alternate host.
-        TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
-        while (xalthost != NULL) {
-          const char *url = xalthost->Attribute("url");
-          if (url != NULL && host_url == string(url)) {
-            // Yep, we're this alternate host.
-            read_xhost(xhost);
-            break;
-          }
-          xalthost = xalthost->NextSiblingElement("alt_host");
-        }
-      }
-    }
+    find_host(xcontents);
 
     // Now look for the core API package.
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
@@ -205,6 +184,43 @@ read_contents_file(const string &contents_filename) {
   nout << "No coreapi package defined in contents file for "
        << DTOOL_PLATFORM << "\n";
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::find_host
+//       Access: Private
+//  Description: Scans the <contents> element for the matching <host>
+//               element.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+find_host(TiXmlElement *xcontents) {
+  string host_url = PANDA_PACKAGE_HOST_URL;
+  TiXmlElement *xhost = xcontents->FirstChildElement("host");
+  if (xhost != NULL) {
+    const char *url = xhost->Attribute("url");
+    if (url != NULL && host_url == string(url)) {
+      // We're the primary host.  This is the normal case.
+      read_xhost(xhost);
+      return;
+
+    } else {
+      // We're not the primary host; perhaps we're an alternate host.
+      TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
+      while (xalthost != NULL) {
+        const char *url = xalthost->Attribute("url");
+        if (url != NULL && host_url == string(url)) {
+          // Yep, we're this alternate host.
+          read_xhost(xhost);
+          return;
+        }
+        xalthost = xalthost->NextSiblingElement("alt_host");
+      }
+    }
+
+    // Hmm, didn't find the URL we used mentioned.  Assume we're the
+    // primary host.
+    read_xhost(xhost);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
