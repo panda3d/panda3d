@@ -14,6 +14,7 @@
 
 #include "stdafx.h"
 #include "PPPandaObject.h"
+#include "load_plugin.h"
 
 PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) : 
     m_interface( interfac ), m_p3dObject( p3dObject ), m_refs( 0 ), m_ptinfo( NULL )
@@ -31,7 +32,10 @@ PPandaObject::~PPandaObject()
     {
         m_ptinfo->Release();
     }
-    if ( m_p3dObject )
+
+    // Clean up the p3d_object, but only if we haven't already
+    // unloaded the plugin.
+    if ( m_p3dObject && is_plugin_loaded() )
     {
         P3D_OBJECT_DECREF( m_p3dObject );
     }
