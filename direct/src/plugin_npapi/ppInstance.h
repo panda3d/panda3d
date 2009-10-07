@@ -64,6 +64,7 @@ public:
   static void output_np_variant(ostream &out, const NPVariant &result);
 
 private:
+  void find_host(TiXmlElement *xcontents);
   void read_xhost(TiXmlElement *xhost);
   void add_mirror(string mirror_url);
   void choose_random_mirrors(vector<string> &result, int num_mirrors);

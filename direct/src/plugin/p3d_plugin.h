@@ -95,7 +95,7 @@ extern "C" {
    file that has already been downloaded and verified from the server.
    If this is NULL, a new file will be downloaded as needed.
 
-   If download_url is not NULL or empty, it specifies the root URL of
+   If host_url is not NULL or empty, it specifies the root URL of
    the download server that provided the contents_filename.
 
    If verify_contents is true, it means that the download server will
@@ -141,7 +141,7 @@ extern "C" {
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *contents_filename,
-                    const char *download_url, bool verify_contents,
+                    const char *host_url, bool verify_contents,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
                     bool trusted_environment, bool console_environment);

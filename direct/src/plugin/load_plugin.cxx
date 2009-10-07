@@ -125,7 +125,7 @@ static void unload_dso();
 ////////////////////////////////////////////////////////////////////
 bool
 load_plugin(const string &p3d_plugin_filename, 
-            const string &contents_filename, const string &download_url, 
+            const string &contents_filename, const string &host_url, 
             bool verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
@@ -311,7 +311,7 @@ load_plugin(const string &p3d_plugin_filename,
   plugin_loaded = true;
 
   if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str(),
-                      download_url.c_str(), verify_contents, platform.c_str(),
+                      host_url.c_str(), verify_contents, platform.c_str(),
                       log_directory.c_str(), log_basename.c_str(),
                       trusted_environment, console_environment)) {
     // Oops, failure to initialize.

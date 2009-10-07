@@ -29,6 +29,7 @@
 #include "ramfile.h"
 #include "fileSpec.h"
 #include "pset.h"
+#include "vector_string.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Panda3D
@@ -42,14 +43,13 @@ public:
   int run(int argc, char *argv[]);
 
 private:
-  bool get_plugin(const string &download_url, const string &this_platform,
-                  bool verify_contents);
-  bool read_contents_file(Filename contents_filename,
-                          const string &download_url,
-                          const string &this_platform, bool verify_contents);
-  bool get_core_api(const Filename &contents_filename, 
-                    const string &download_url, const string &this_platform,
-                    bool verify_contents, TiXmlElement *xplugin);
+  bool get_plugin();
+  bool read_contents_file(const Filename &contents_filename);
+  void find_host(TiXmlElement *xcontents);
+  void read_xhost(TiXmlElement *xhost);
+  void add_mirror(string mirror_url);
+  void choose_random_mirrors(vector_string &result, int num_mirrors);
+  bool get_core_api(const Filename &contents_filename, TiXmlElement *xplugin);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 
@@ -79,6 +79,16 @@ private:
   string _root_dir;
   string _log_dirname;
   string _log_basename;
+  string _this_platform;
+  bool _verify_contents;
+
+  string _host_url;
+  string _super_mirror_url_prefix;
+  string _host_url_prefix;
+  string _download_url_prefix;
+  typedef pvector<string> Mirrors;
+  Mirrors _mirrors;
+  
   FileSpec _core_api_dll;
   bool _reporting_download;
   bool _enable_security;

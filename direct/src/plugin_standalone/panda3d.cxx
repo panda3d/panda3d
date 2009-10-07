@@ -24,6 +24,7 @@
 
 #include <ctype.h>
 #include <sstream>
+#include <algorithm>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -52,6 +53,10 @@ Panda3D() {
   _root_dir = find_root_dir();
   _reporting_download = false;
   _enable_security = false;
+
+  // Seed the lame random number generator in rand(); we use it to
+  // select a mirror for downloading.
+  srand((unsigned int)time(NULL));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,10 +76,10 @@ run(int argc, char *argv[]) {
   const char *optstr = "+mu:M:Sp:fw:t:s:o:l:ih";
 
   bool allow_multiple = false;
-  string download_url = PANDA_PACKAGE_HOST_URL;
+  _host_url = PANDA_PACKAGE_HOST_URL;
   string super_mirror_url;
-  string this_platform = DTOOL_PLATFORM;
-  bool verify_contents = false;
+  _this_platform = DTOOL_PLATFORM;
+  _verify_contents = false;
 
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
@@ -89,7 +94,7 @@ run(int argc, char *argv[]) {
       break;
 
     case 'u':
-      download_url = optarg;
+      _host_url = optarg;
       break;
 
     case 'M':
@@ -101,11 +106,11 @@ run(int argc, char *argv[]) {
       break;
 
     case 'p':
-      this_platform = optarg;
+      _this_platform = optarg;
       break;
 
     case 'f':
-      verify_contents = true;
+      _verify_contents = true;
       break;
 
     case 'w':
@@ -192,10 +197,12 @@ run(int argc, char *argv[]) {
     return 1;
   }
 
-  // Make sure the download URL ends with a slash.
-  if (!download_url.empty() && download_url[download_url.length() - 1] != '/') {
-    download_url += '/';
+  // Set host_url_prefix to end with a slash.
+  _host_url_prefix = _host_url;
+  if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.length() - 1] != '/') {
+    _host_url_prefix += '/';
   }
+  _download_url_prefix = _host_url_prefix;
 
   // If the "super mirror" URL is a filename, convert it to a file:// url.
   if (!super_mirror_url.empty()) {
@@ -210,9 +217,15 @@ run(int argc, char *argv[]) {
       }
       super_mirror_url = "file://" + path;
     }
+
+    // And make sure the super_mirror_url_prefix ends with a slash.
+    _super_mirror_url_prefix = super_mirror_url;
+    if (!_super_mirror_url_prefix.empty() && _super_mirror_url_prefix[_super_mirror_url_prefix.length() - 1] != '/') {
+      _super_mirror_url_prefix += '/';
+    }
   }
 
-  if (!get_plugin(download_url, this_platform, verify_contents)) {
+  if (!get_plugin()) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }
@@ -403,18 +416,48 @@ run(int argc, char *argv[]) {
 //               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_plugin(const string &download_url, const string &this_platform, 
-           bool verify_contents) {
+get_plugin() {
   // First, look for the existing contents.xml file.
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (!verify_contents && read_contents_file(contents_filename, download_url, this_platform, verify_contents)) {
+  if (!_verify_contents && read_contents_file(contents_filename)) {
     // Got the file, and it's good.
     return true;
   }
 
   // Couldn't read it, so go get it.
+  HTTPClient *http = HTTPClient::get_global_ptr();
+
+  // Try the super_mirror first.
+  if (!_super_mirror_url_prefix.empty()) {
+    // We don't bother putting a uniquifying query string when we're
+    // downloading this file from the super_mirror.  The super_mirror
+    // is by definition a cache, so it doesn't make sense to bust
+    // caches here.
+    string url = _super_mirror_url_prefix + "contents.xml";
+    PT(HTTPChannel) channel = http->make_channel(false);
+    channel->get_document(url);
+
+    Filename tempfile = Filename::temporary("", "p3d_");
+    if (!channel->download_to_file(tempfile)) {
+      cerr << "Unable to download " << url << "\n";
+      tempfile.unlink();
+    } else {
+      // Successfully downloaded from the super_mirror; move it into
+      // place and try to read it.
+      contents_filename.make_dir();
+      contents_filename.unlink();
+      tempfile.rename_to(contents_filename);
+      if (read_contents_file(contents_filename)) {
+        return true;
+      }
+    }
+
+    // Failed to download from the super_mirror.
+  }
+
+  // Go download contents.xml from the actual host.
   ostringstream strm;
-  strm << download_url << "contents.xml";
+  strm << _host_url_prefix << "contents.xml";
   // Append a uniquifying query string to the URL to force the
   // download to go all the way through any caches.  We use the time
   // in seconds; that's unique enough.
@@ -425,8 +468,7 @@ get_plugin(const string &download_url, const string &this_platform,
   // since we have an interface for that via HTTPChannel.
   DocumentSpec request(url);
   request.set_cache_control(DocumentSpec::CC_no_cache);
-  
-  HTTPClient *http = HTTPClient::get_global_ptr();
+
   PT(HTTPChannel) channel = http->make_channel(false);
   channel->get_document(request);
 
@@ -447,9 +489,9 @@ get_plugin(const string &download_url, const string &this_platform,
 
   // Since we had to download some of it, might as well ask the core
   // API to check all of it.
-  verify_contents = true;
+  _verify_contents = true;
 
-  return read_contents_file(contents_filename, download_url, this_platform, verify_contents);
+  return read_contents_file(contents_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,38 +502,156 @@ get_plugin(const string &download_url, const string &this_platform,
 //               possible.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-read_contents_file(Filename contents_filename, const string &download_url, 
-                   const string &this_platform, bool verify_contents) {
-  ifstream in;
-  contents_filename.set_text();
-  if (!contents_filename.open_read(in)) {
+read_contents_file(const Filename &contents_filename) {
+  string os_contents_filename = contents_filename.to_os_specific();
+  TiXmlDocument doc(os_contents_filename.c_str());
+  if (!doc.LoadFile()) {
     return false;
   }
 
-  TiXmlDocument doc;
-  in >> doc;
-
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
+    // Look for the <host> entry; it might point us at a different
+    // download URL, and it might mention some mirrors.
+    find_host(xcontents);
+
+    // Now look for the core API package.
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
     while (xpackage != NULL) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
-        const char *xplatform = xpackage->Attribute("platform");
-        if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
-          return get_core_api(contents_filename, download_url, 
-                              this_platform, verify_contents, xpackage);
+        const char *platform = xpackage->Attribute("platform");
+        if (platform != NULL && _this_platform == string(platform)) {
+          return get_core_api(contents_filename, xpackage);
         }
       }
-      
+    
       xpackage = xpackage->NextSiblingElement("package");
     }
   }
 
-  // Couldn't find the coreapi plugin description.
-  cerr << "No coreapi plugin defined in contents file for "
-       << this_platform << "\n";
+  // Couldn't find the coreapi package description.
+  nout << "No coreapi package defined in contents file for "
+       << _this_platform << "\n";
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::find_host
+//       Access: Private
+//  Description: Scans the <contents> element for the matching <host>
+//               element.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+find_host(TiXmlElement *xcontents) {
+  TiXmlElement *xhost = xcontents->FirstChildElement("host");
+  if (xhost != NULL) {
+    const char *url = xhost->Attribute("url");
+    if (url != NULL && _host_url == string(url)) {
+      // We're the primary host.  This is the normal case.
+      read_xhost(xhost);
+      return;
+      
+    } else {
+      // We're not the primary host; perhaps we're an alternate host.
+      TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
+      while (xalthost != NULL) {
+        const char *url = xalthost->Attribute("url");
+        if (url != NULL && _host_url == string(url)) {
+          // Yep, we're this alternate host.
+          read_xhost(xhost);
+          return;
+        }
+        xalthost = xalthost->NextSiblingElement("alt_host");
+      }
+    }
+
+    // Hmm, didn't find the URL we used mentioned.  Assume we're the
+    // primary host.
+    read_xhost(xhost);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::read_xhost
+//       Access: Private
+//  Description: Reads the host data from the <host> (or <alt_host>)
+//               entry in the contents.xml file.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+read_xhost(TiXmlElement *xhost) {
+  // Get the "download" URL, which is the source from which we
+  // download everything other than the contents.xml file.
+  const char *download_url = xhost->Attribute("download_url");
+  if (download_url == NULL) {
+    download_url = xhost->Attribute("url");
+  }
+
+  if (download_url != NULL) {
+    _download_url_prefix = download_url;
+  } else {
+    _download_url_prefix = _host_url_prefix;
+  }
+  if (!_download_url_prefix.empty()) {
+    if (_download_url_prefix[_download_url_prefix.size() - 1] != '/') {
+      _download_url_prefix += "/";
+    }
+  }
+        
+  TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
+  while (xmirror != NULL) {
+    const char *url = xmirror->Attribute("url");
+    if (url != NULL) {
+      add_mirror(url);
+    }
+    xmirror = xmirror->NextSiblingElement("mirror");
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::add_mirror
+//       Access: Private
+//  Description: Adds a new URL to serve as a mirror for this host.
+//               The mirrors will be consulted first, before
+//               consulting the host directly.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+add_mirror(string mirror_url) {
+  // Ensure the URL ends in a slash.
+  if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
+    mirror_url += '/';
+  }
+  
+  // Add it to the _mirrors list, but only if it's not already
+  // there.
+  if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
+    _mirrors.push_back(mirror_url);
+  }
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::choose_random_mirrors
+//       Access: Public
+//  Description: Selects num_mirrors elements, chosen at random, from
+//               the _mirrors list.  Adds the selected mirrors to
+//               result.  If there are fewer than num_mirrors elements
+//               in the list, adds only as many mirrors as we can get.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+choose_random_mirrors(vector_string &result, int num_mirrors) {
+  pvector<size_t> selected;
+
+  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  while (num_to_select > 0) {
+    size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    while (find(selected.begin(), selected.end(), i) != selected.end()) {
+      // Already found this i, find a new one.
+      i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
+    }
+    selected.push_back(i);
+    result.push_back(_mirrors[i]);
+    --num_to_select;
+  }
 }
 
 
@@ -503,33 +663,79 @@ read_contents_file(Filename contents_filename, const string &download_url,
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_core_api(const Filename &contents_filename, const string &download_url,
-             const string &this_platform, bool verify_contents,
-             TiXmlElement *xpackage) {
+get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
   _core_api_dll.load_xml(xpackage);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
-    // The DLL file needs to be downloaded.  Go get it.
-    string url = download_url;
+    // The DLL file needs to be downloaded.  Build up our list of
+    // URL's to attempt to download it from, in reverse order.
+    string url;
+    vector_string core_urls;
+
+    // Our last act of desperation: hit the original host, with a
+    // query uniquifier, to break through any caches.
+    ostringstream strm;
+    strm << _download_url_prefix << _core_api_dll.get_filename()
+         << "?" << time(NULL);
+    url = strm.str();
+    core_urls.push_back(url);
+
+    // Before we try that, we'll hit the original host, without a
+    // uniquifier.
+    url = _download_url_prefix;
     url += _core_api_dll.get_filename();
-    
-    Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
-    HTTPClient *http = HTTPClient::get_global_ptr();
-    PT(HTTPChannel) channel = http->get_document(url);
-    pathname.make_dir();
-    if (!channel->download_to_file(pathname)) {
-      cerr << "Unable to download " << url << "\n";
-      return false;
+    core_urls.push_back(url);
+
+    // And before we try that, we'll try two mirrors, at random.
+    vector_string mirrors;
+    choose_random_mirrors(mirrors, 2);
+    for (vector_string::iterator si = mirrors.begin();
+         si != mirrors.end(); 
+         ++si) {
+      url = (*si) + _core_api_dll.get_filename();
+      core_urls.push_back(url);
     }
 
-    if (!_core_api_dll.full_verify(_root_dir)) {
-      cerr << "Mismatched download for " << url << "\n";
+    // The very first thing we'll try is the super_mirror, if we have
+    // one.
+    if (!_super_mirror_url_prefix.empty()) {
+      url = _super_mirror_url_prefix + _core_api_dll.get_filename();
+      core_urls.push_back(url);
+    }
+
+    // Now pick URL's off the list, and try them, until we have
+    // success.
+    Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
+    pathname.make_dir();
+    HTTPClient *http = HTTPClient::get_global_ptr();
+
+    bool success = false;
+    while (!core_urls.empty()) {
+      url = core_urls.back();
+      core_urls.pop_back();
+    
+      PT(HTTPChannel) channel = http->get_document(url);
+      if (!channel->download_to_file(pathname)) {
+        cerr << "Unable to download " << url << "\n";
+
+      } else if (!_core_api_dll.full_verify(_root_dir)) {
+        cerr << "Mismatched download for " << url << "\n";
+
+      } else {
+        // successfully downloaded!
+        success = true;
+        break;
+      }
+    }
+
+    if (!success) {
+      cerr << "Couldn't download core API.\n";
       return false;
     }
 
     // Since we had to download some of it, might as well ask the core
     // API to check all of it.
-    verify_contents = true;
+    _verify_contents = true;
   }
 
   // Now we've got the DLL.  Load it.
@@ -556,7 +762,7 @@ get_core_api(const Filename &contents_filename, const string &download_url,
 #endif
 
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
-                   download_url, verify_contents, this_platform, _log_dirname,
+                   _host_url, _verify_contents, _this_platform, _log_dirname,
                    _log_basename, trusted_environment, console_environment,
                    cerr)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;

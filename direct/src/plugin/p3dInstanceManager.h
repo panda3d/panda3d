@@ -50,7 +50,7 @@ private:
 
 public:
   bool initialize(const string &contents_filename,
-                  const string &download_url,
+                  const string &host_url,
                   bool verify_contents,
                   const string &platform,
                   const string &log_directory,

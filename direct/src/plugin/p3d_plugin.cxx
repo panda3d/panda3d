@@ -35,7 +35,7 @@ LOCK _api_lock;
 
 bool 
 P3D_initialize(int api_version, const char *contents_filename,
-               const char *download_url, bool verify_contents,
+               const char *host_url, bool verify_contents,
                const char *platform,
                const char *log_directory, const char *log_basename,
                bool trusted_environment, bool console_environment) {
@@ -54,8 +54,8 @@ P3D_initialize(int api_version, const char *contents_filename,
     contents_filename = "";
   }
 
-  if (download_url == NULL){ 
-    download_url = "";
+  if (host_url == NULL){ 
+    host_url = "";
   }
 
   if (platform == NULL) {
@@ -71,7 +71,7 @@ P3D_initialize(int api_version, const char *contents_filename,
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize(contents_filename, download_url,
+  bool result = inst_mgr->initialize(contents_filename, host_url,
                                      verify_contents, platform,
                                      log_directory, log_basename,
                                      trusted_environment, console_environment);

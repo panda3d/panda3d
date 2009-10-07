@@ -2700,15 +2700,11 @@ class Packager:
         xcontents = doc.FirstChildElement('contents')
         if xcontents:
             xhost = xcontents.FirstChildElement('host')
-            while xhost:
+            if xhost:
                 he = self.HostEntry()
                 he.loadXml(xhost, self)
                 self.hosts[he.url] = he
-                xhost = xhost.NextSiblingElement('host')
-
-            host = xcontents.Attribute('host')
-            if host:
-                self.host = host
+                self.host = he.url
             
             xpackage = xcontents.FirstChildElement('package')
             while xpackage:
@@ -2736,7 +2732,6 @@ class Packager:
 
         xcontents = TiXmlElement('contents')
         if self.host:
-            xcontents.SetAttribute('host', self.host)
             he = self.hosts.get(self.host, None)
             if he:
                 xhost = he.makeXml(packager = self)

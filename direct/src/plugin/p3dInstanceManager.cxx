@@ -169,7 +169,7 @@ P3DInstanceManager::
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-initialize(const string &contents_filename, const string &download_url,
+initialize(const string &contents_filename, const string &host_url,
            bool verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
@@ -312,7 +312,7 @@ initialize(const string &contents_filename, const string &download_url,
        << ", _temp_directory = " << _temp_directory
        << ", platform = " << _platform
        << ", contents_filename = " << contents_filename
-       << ", download_url = " << download_url
+       << ", host_url = " << host_url
        << ", verify_contents = " << verify_contents
        << "\n";
 
@@ -330,10 +330,10 @@ initialize(const string &contents_filename, const string &download_url,
   _is_initialized = true;
 
   if (!_verify_contents &&
-      !download_url.empty() && !contents_filename.empty()) {
+      !host_url.empty() && !contents_filename.empty()) {
     // Attempt to pre-read the supplied contents.xml file, to avoid an
     // unnecessary download later.
-    P3DHost *host = get_host(download_url);
+    P3DHost *host = get_host(host_url);
     if (!host->read_contents_file(contents_filename)) {
       nout << "Couldn't read " << contents_filename << "\n";
     }
