@@ -40,13 +40,27 @@ PackageVersion(const PackageVersionKey &key) :
 //               false if no chain can be found.
 ////////////////////////////////////////////////////////////////////
 bool P3DPatchFinder::PackageVersion::
-get_patch_chain(Patchfiles &chain, PackageVersion *start_pv) {
+get_patch_chain(Patchfiles &chain, PackageVersion *start_pv,
+                const PackageVersionsList &already_visited_in) {
   chain.clear();
   if (this == start_pv) {
     // We're already here.  A zero-length patch chain is therefore the
     // answer.
     return true;
   }
+  if (::find(already_visited_in.begin(), already_visited_in.end(), this) != already_visited_in.end()) {
+    // We've already been here; this is a loop.  Avoid infinite
+    // recursion.
+    return false;
+  }
+
+  // Yeah, we make a new copy of this vector at each stage of the
+  // recursion.  This could be made much faster with a linked list
+  // instead, but I'm working on the assumption that there will be no
+  // more than a few dozen patchfiles, in which case this naive
+  // approach should be fast enough.
+  PackageVersionsList already_visited = already_visited_in;
+  already_visited.push_back(this);
 
   bool found_any = false;
   Patchfiles::iterator pi;
@@ -55,7 +69,7 @@ get_patch_chain(Patchfiles &chain, PackageVersion *start_pv) {
     PackageVersion *from_pv = patchfile->_from_pv;
     assert(from_pv != NULL);
     Patchfiles this_chain;
-    if (from_pv->get_patch_chain(this_chain, start_pv)) {
+    if (from_pv->get_patch_chain(this_chain, start_pv, already_visited)) {
       // There's a path through this patchfile.
       this_chain.push_back(patchfile);
       if (!found_any || this_chain.size() < chain.size()) {
@@ -341,7 +355,7 @@ get_patch_chain_to_current(Patchfiles &chain, TiXmlDocument *doc,
   PackageVersion *to_pv = package->_current_pv;
 
   if (to_pv != NULL && from_pv != NULL) {
-    return to_pv->get_patch_chain(chain, from_pv);
+    return to_pv->get_patch_chain(chain, from_pv, PackageVersionsList());
   }
 
   return false;

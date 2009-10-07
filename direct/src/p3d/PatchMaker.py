@@ -23,9 +23,10 @@ class PatchMaker:
             self.printName = None
 
             # The Package object that produces this version, if this
-            # is the current form or the base form, respectively.
+            # is the current, base, or top form, respectively.
             self.packageCurrent = None
             self.packageBase = None
+            self.packageTop = None
 
             # A list of patchfiles that can produce this version.
             self.fromPatches = []
@@ -41,7 +42,7 @@ class PatchMaker:
             if self.tempFile:
                 self.tempFile.unlink()
 
-        def getPatchChain(self, startPv):
+        def getPatchChain(self, startPv, alreadyVisited = []):
             """ Returns a list of patches that, when applied in
             sequence to the indicated PackageVersion object, will
             produce this PackageVersion object.  Returns None if no
@@ -51,11 +52,18 @@ class PatchMaker:
                 # We're already here.  A zero-length patch chain is
                 # therefore the answer.
                 return []
+            if self in alreadyVisited:
+                # We've already been here; this is a loop.  Avoid
+                # infinite recursion.
+                return None
+
+            alreadyVisited = alreadyVisited[:]
+            alreadyVisited.append(self)
 
             bestPatchChain = None
             for patchfile in self.fromPatches:
                 fromPv = patchfile.fromPv
-                patchChain = fromPv.getPatchChain(startPv)
+                patchChain = fromPv.getPatchChain(startPv, alreadyVisited)
                 if patchChain is not None:
                     # There's a path through this patchfile.
                     patchChain = patchChain + [patchfile]
@@ -66,18 +74,26 @@ class PatchMaker:
             # paths found.
             return bestPatchChain
 
-        def getRecreateFilePlan(self):
+        def getRecreateFilePlan(self, alreadyVisited = []):
             """ Returns the tuple (startFile, startPv, plan),
             describing how to recreate the archive file for this
             version.  startFile and startPv is the Filename and
             packageVersion of the file to start with, and plan is a
             list of tuples (patchfile, pv), listing the patches to
             apply in sequence, and the packageVersion object
-            associated with each patch.  Returns (None, None) if there
-            is no way to recreate this archive file.  """
+            associated with each patch.  Returns (None, None, None) if
+            there is no way to recreate this archive file.  """
             
             if self.tempFile:
                 return (self.tempFile, self, [])
+
+            if self in alreadyVisited:
+                # We've already been here; this is a loop.  Avoid
+                # infinite recursion.
+                return (None, None, None)
+
+            alreadyVisited = alreadyVisited[:]
+            alreadyVisited.append(self)
 
             if self.packageCurrent:
                 # This PackageVersion instance represents the current
@@ -97,7 +113,7 @@ class PatchMaker:
             bestStartPv = None
             for patchfile in self.fromPatches:
                 fromPv = patchfile.fromPv
-                startFile, startPv, plan = fromPv.getRecreateFilePlan()
+                startFile, startPv, plan = fromPv.getRecreateFilePlan(alreadyVisited)
                 if plan is not None:
                     # There's a path through this patchfile.
                     plan = plan + [(patchfile, self)]
@@ -279,6 +295,7 @@ class PatchMaker:
             self.patchVersion = 1
             self.currentPv = None
             self.basePv = None
+            self.topPv = None
 
             self.packageName = None
             self.platform = None
@@ -303,14 +320,22 @@ class PatchMaker:
             
             return (self.packageName, self.platform, self.version, self.hostUrl, self.baseFile)
 
+        def getTopKey(self):
+            """ Returns the key to locate the "top" or newest version
+            of this package. """
+            
+            return (self.packageName, self.platform, self.version, self.hostUrl, self.topFile)
+
         def getGenericKey(self, fileSpec):
             """ Returns the key that has the indicated hash. """
             return (self.packageName, self.platform, self.version, self.hostUrl, fileSpec)
 
-        def readDescFile(self):
+        def readDescFile(self, doProcessing = False):
             """ Reads the existing package.xml file and stores it in
-            this class for later rewriting.  Returns true on success,
-            false on failure. """
+            this class for later rewriting.  if doProcessing is true,
+            it may massage the file and the directory contents in
+            preparation for building patches.  Returns true on
+            success, false on failure. """
 
             self.anyChanges = False
 
@@ -361,7 +386,6 @@ class PatchMaker:
                     isNewVersion = False
                 else:
                     # There's a new version this pass.  Update it.
-                    self.topFile = copy.copy(self.currentFile)
                     self.anyChanges = True
                 
             else:
@@ -399,15 +423,18 @@ class PatchMaker:
                 compressedFile.loadXml(xcompressed)
 
                 oldCompressedFilename = compressedFile.filename
-                newCompressedFilename = '%s.%s.pz' % (self.currentFile.filename, self.patchVersion)
-                oldCompressedPathname = Filename(self.packageDir, oldCompressedFilename)
-                newCompressedPathname = Filename(self.packageDir, newCompressedFilename)
-                if oldCompressedPathname.renameTo(newCompressedPathname):
-                    compressedFile.fromFile(self.packageDir, newCompressedFilename)
-                    compressedFile.storeXml(xcompressed)
+                self.compressedFilename = oldCompressedFilename
 
-                self.compressedFilename = newCompressedFilename
-                self.anyChanges = True
+                if doProcessing:
+                    newCompressedFilename = '%s.%s.pz' % (self.currentFile.filename, self.patchVersion)
+                    oldCompressedPathname = Filename(self.packageDir, oldCompressedFilename)
+                    newCompressedPathname = Filename(self.packageDir, newCompressedFilename)
+                    if oldCompressedPathname.renameTo(newCompressedPathname):
+                        compressedFile.fromFile(self.packageDir, newCompressedFilename)
+                        compressedFile.storeXml(xcompressed)
+
+                    self.compressedFilename = newCompressedFilename
+                    self.anyChanges = True
 
             # Get the base_version--the bottom (oldest) of the patch
             # chain.
@@ -429,7 +456,7 @@ class PatchMaker:
                 self.baseFile.filename += '.base'
 
                 # Also duplicate the (compressed) file itself.
-                if self.compressedFilename:
+                if doProcessing and self.compressedFilename:
                     fromPathname = Filename(self.packageDir, self.compressedFilename)
                     toPathname = Filename(self.packageDir, self.baseFile.filename + '.pz')
                     fromPathname.copyTo(toPathname)
@@ -460,7 +487,7 @@ class PatchMaker:
             # Remove all of the old patch entries from the desc file
             # we read earlier.
             xremove = []
-            for value in ['base_version', 'patch']:
+            for value in ['base_version', 'top_version', 'patch']:
                 xpatch = xpackage.FirstChildElement(value)
                 while xpatch:
                     xremove.append(xpatch)
@@ -478,8 +505,9 @@ class PatchMaker:
             self.baseFile.storeXml(xarchive)
             xpackage.InsertEndChild(xarchive)
 
+            # The current version is now the top version.
             xarchive = TiXmlElement('top_version')
-            self.topFile.storeXml(xarchive)
+            self.currentFile.storeXml(xarchive)
             xpackage.InsertEndChild(xarchive)
             
             for patchfile in self.patches:
@@ -554,7 +582,7 @@ class PatchMaker:
         object, or None on failure. """
 
         package = self.Package(Filename(descFilename), self)
-        if not package.readDescFile():
+        if not package.readDescFile(doProcessing = False):
             return None
         
         self.packages.append(package)
@@ -581,7 +609,7 @@ class PatchMaker:
                 if filename and not solo:
                     filename = Filename(filename)
                     package = self.Package(filename, self, xpackage)
-                    package.readDescFile()
+                    package.readDescFile(doProcessing = True)
                     self.packages.append(package)
                     
                 xpackage = xpackage.NextSiblingElement('package')
@@ -638,6 +666,10 @@ class PatchMaker:
             package.basePv = basePv
             basePv.packageBase = package
             basePv.printName = package.baseFile.filename
+
+            topPv = self.getPackageVersion(package.getTopKey())
+            package.topPv = topPv
+            topPv.packageTop = package
             
             for patchfile in package.patches:
                 self.recordPatchfile(patchfile)
@@ -682,22 +714,15 @@ class PatchMaker:
             # No versions.
             return
 
-        # Starting with the package base, how far forward can we go?
+        # What's the current version on the top of the tree?
+        topPv = package.topPv
         currentPv = package.currentPv
-        basePv = package.basePv
-
-        pv = basePv
-        nextPv = pv.getNext(package)
-        while nextPv:
-            pv = nextPv
-            nextPv = pv.getNext(package)
         
-        if pv.packageCurrent != package:
-            # It doesn't reach all the way to the latest version, so
-            # build a new patch.
+        if topPv != currentPv:
+            # They're different, so build a new patch.
             filename = Filename(package.currentFile.filename + '.%s.patch' % (package.patchVersion))
             assert filename not in self.patchFilenames
-            if not self.buildPatch(pv, currentPv, package, filename):
+            if not self.buildPatch(topPv, currentPv, package, filename):
                 raise StandardError, "Couldn't build patch."
 
     def buildPatch(self, v1, v2, package, patchFilename):

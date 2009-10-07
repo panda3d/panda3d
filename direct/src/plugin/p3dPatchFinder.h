@@ -35,8 +35,10 @@ class P3DPatchFinder {
 public:
   class Package;
   class Patchfile;
+  class PackageVersion;
 
   typedef vector<Patchfile *> Patchfiles;
+  typedef vector<PackageVersion *> PackageVersionsList;
 
   // This class is used to index into a map to locate PackageVersion
   // objects, below.
@@ -65,7 +67,8 @@ public:
   public:
     PackageVersion(const PackageVersionKey &key);
 
-    bool get_patch_chain(Patchfiles &chain, PackageVersion *start_pv);
+    bool get_patch_chain(Patchfiles &chain, PackageVersion *start_pv,
+                         const PackageVersionsList &already_visited_in);
 
   public:
     string _package_name;
