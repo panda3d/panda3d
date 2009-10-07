@@ -173,7 +173,7 @@ class ObjectPropertyUI(ScrolledPanel):
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                             self.editor.objectMgr.onLeaveObjectPropUI,
-                            lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectModel(p0, p1))
+                            lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectModelFromUI(p0, p1))
 
         for key in objDef.properties.keys():
             propDef = objDef.properties[key]

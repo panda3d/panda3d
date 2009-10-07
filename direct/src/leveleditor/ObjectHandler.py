@@ -56,8 +56,6 @@ class ObjectHandler:
             b.reparentTo(objNP)
             a.removeNode()
 
-        base.direct.select(objNP)
-
     def createPanda(self):
         pandaActor = PandaActor()
         return pandaActor

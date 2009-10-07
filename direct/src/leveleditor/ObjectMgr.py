@@ -57,7 +57,7 @@ class ObjectMgr:
             self.lastUidMod = 0
         return newUid
 
-    def addNewObject(self, typeName, uid = None, model = None, parent=None):
+    def addNewObject(self, typeName, uid = None, model = None, parent=None, fSelectObject=True):
         """ function to add new obj to the scene """
         if parent is None:
             parent = render
@@ -93,9 +93,8 @@ class ObjectMgr:
 
             if uid is None:
                 uid = self.genUniqueId()
-                isLoadingArea = False
             else:
-                isLoadingArea = True
+                fSelectObject = False
 
             # populate obj data using default values
             properties = {}
@@ -106,7 +105,7 @@ class ObjectMgr:
             self.objects[uid] = [uid, newobj, objDef, model, properties]
             self.npIndex[NodePath(newobj)] = uid
 
-            if not isLoadingArea:
+            if fSelectObject:
                 base.direct.select(newobj)
 
         return newobj
@@ -235,12 +234,8 @@ class ObjectMgr:
         np.setSy(float(self.editor.ui.objectPropertyUI.propSY.getValue()))
         np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))        
 
-    def updateObjectModel(self, event, obj):
+    def updateObjectModel(self, model, obj, fSelectObject=True):
         """ replace object's model """
-        model = event.GetString()
-        if model is None:
-            return
-
         if obj[OG.OBJ_MODEL] != model:
             base.direct.deselectAll()
 
@@ -269,8 +264,16 @@ class ObjectMgr:
             obj[OG.OBJ_NP] = newobj
             obj[OG.OBJ_MODEL] = model
             self.npIndex[NodePath(newobj)] = obj[OG.OBJ_UID]
-            
-            base.direct.select(newobj)        
+
+            if fSelectObject:
+                base.direct.select(newobj)        
+        
+
+    def updateObjectModelFromUI(self, event, obj):
+        """ replace object's model with one selected from UI """
+        model = event.GetString()
+        if model is not None:
+            self.updateObjectModel(model, obj)
 
     def updateObjectProperty(self, event, obj, propName):
         """
@@ -329,7 +332,7 @@ class ObjectMgr:
         # now update object prop value and call update function
         self.updateObjectPropValue(obj, propName, val)
 
-    def updateObjectPropValue(self, obj, propName, val):
+    def updateObjectPropValue(self, obj, propName, val, fSelectObject=True):
         """
         Update object property value and
         call update function if defined.         
@@ -367,6 +370,9 @@ class ObjectMgr:
 
         # finally call update function
         func(**kwargs)
+
+        if fSelectObject:
+            base.direct.select(obj[OG.OBJ_NP])
 
     def updateObjectProperties(self, nodePath, propValues):
         """
@@ -417,5 +423,51 @@ class ObjectMgr:
         self.saveData = []
         self.traverse(render)
         return self.saveData
+
+    def duplicateObject(self, nodePath, parent=None):
+        obj = self.findObjectByNodePath(nodePath)
+        if obj is None:
+            return None
+        objDef = obj[OG.OBJ_DEF]
+        if parent is None:
+            parent = nodePath.getParent()
+
+        newObjNP = self.addNewObject(objDef.name, parent=parent, fSelectObject = False)
+
+        # copy transform data
+        newObjNP.setPos(obj[OG.OBJ_NP].getPos())
+        newObjNP.setHpr(obj[OG.OBJ_NP].getHpr())
+        newObjNP.setScale(obj[OG.OBJ_NP].getScale())
+
+        newObj = self.findObjectByNodePath(NodePath(newObjNP))
+        if newObj is None:
+            return None
+        # copy model info
+        self.updateObjectModel(obj[OG.OBJ_MODEL], newObj, fSelectObject=False)
+
+        # copy other properties
+        for key in obj[OG.OBJ_PROP]:
+            self.updateObjectPropValue(newObj, key, obj[OG.OBJ_PROP][key], fSelectObject=False)
+
+        return newObjNP
+
+    def duplicateChild(self, nodePath, parent):
+        children = nodePath.findAllMatches('=OBJRoot')
+        for childNP in children:
+            newChildObjNP = self.duplicateObject(childNP, parent)
+            if newChildObjNP is not None:
+                self.duplicateChild(childNP, newChildObjNP)
     
-    
+    def duplicateSelected(self):
+        selectedNPs = base.direct.selected.getSelectedAsList()
+        duplicatedNPs = []
+        for nodePath in selectedNPs:
+            newObjNP = self.duplicateObject(nodePath)
+            if newObjNP is not None:
+                self.duplicateChild(nodePath, newObjNP)
+                duplicatedNPs.append(newObjNP)
+
+        base.direct.deselectAll()
+        print duplicatedNPs
+        for newNodePath in duplicatedNPs:
+            base.direct.select(newNodePath, fMultiSelect = 1)

@@ -48,6 +48,18 @@ class LevelEditorUI(WxAppShell):
 
         menuItem = self.menuFile.Insert(2, -1 , "&Save")
         self.Bind(wx.EVT_MENU, self.onSave, menuItem)
+
+        menuItem = self.menuFile.Insert(3, -1 , "Save &As")
+        self.Bind(wx.EVT_MENU, self.onSaveAs, menuItem)
+
+        self.menuEdit = wx.Menu()
+        self.menuBar.Insert(1, self.menuEdit, "&Edit")
+
+        menuItem = self.menuEdit.Append(-1, "&Duplicate")
+        self.Bind(wx.EVT_MENU, self.onDuplicate, menuItem)
+
+        self.gridSnapMenuItem = self.menuEdit.Append(-1, "&Grid Snap", kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
         
     def createInterface(self):
         self.createMenu()
@@ -132,7 +144,22 @@ class LevelEditorUI(WxAppShell):
         dialog.Destroy()
 
     def onSave(self, evt):
+        if self.editor.currentFile is None:
+            self.onSaveAs(evt)
+        else:
+            self.editor.save()
+
+    def onSaveAs(self, evt):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.SAVE)
         if dialog.ShowModal() == wx.ID_OK:
-            self.editor.save(dialog.GetPath())
+            self.editor.saveAs(dialog.GetPath())
         dialog.Destroy()
+
+    def onDuplicate(self, evt):
+        self.editor.objectMgr.duplicateSelected()
+
+    def toggleGridSnap(self, evt):
+        if self.gridSnapMenuItem.IsChecked():
+            base.direct.manipulationControl.fGridSnap = 1
+        else:
+            base.direct.manipulationControl.fGridSnap = 0            

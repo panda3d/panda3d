@@ -19,6 +19,7 @@ class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """ 
     def __init__(self):
         #loadPrcFileData('startup', 'window-type none')
+        self.currentFile = None
         self.actionEvents = []
         self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
@@ -130,9 +131,14 @@ class LevelEditorBase(DirectObject):
         base.direct.deselectAll()
         self.objectMgr.reset()
 
-    def save(self, fileName):
+    def save(self):
+        if self.currentFile:
+            self.fileMgr.saveToFile(self.currentFile)
+
+    def saveAs(self, fileName):
         self.fileMgr.saveToFile(fileName)
 
     def load(self, fileName):
         self.reset()
         self.fileMgr.loadFromFile(fileName)
+        self.currentFile = fileName
