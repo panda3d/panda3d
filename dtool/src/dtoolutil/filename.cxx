@@ -917,7 +917,7 @@ standardize() {
   while (p < _filename.length()) {
     size_t slash = _filename.find('/', p);
     string component = _filename.substr(p, slash - p);
-    if (component == ".") {
+    if (component == "." && p != 0) {
       // Ignore /./.
     } else if (component == ".." && !components.empty() &&
                !(components.back() == "..")) {
