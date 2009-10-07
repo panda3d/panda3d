@@ -323,6 +323,12 @@ class Packager:
             # only three settings: None (unset), True, or False.
             self.platformSpecificConfig = self.configs.get('platform_specific', None)
             if self.platformSpecificConfig is not None:
+                # First, convert it to an int, in case it's "0" or "1".
+                try:
+                    self.platformSpecificConfig = int(self.platformSpecificConfig)
+                except ValueError:
+                    pass
+                # Then, make it a bool.
                 self.platformSpecificConfig = bool(self.platformSpecificConfig)
                 del self.configs['platform_specific']
 
@@ -2655,7 +2661,8 @@ class Packager:
                 prefix += '/'
             for subfile in dirList:
                 filename = subfile.getFilename()
-                self.__recurseDir(filename, prefix + filename.getBasename())
+                self.__recurseDir(filename, prefix + filename.getBasename(),
+                                  unprocessed = unprocessed)
             return
 
         # It's a file name.  Add it.

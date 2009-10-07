@@ -51,7 +51,8 @@ class panda3d(package):
            'direct.particles.*',
            'direct.showbase.*',
            'direct.showutil.*',
-           'direct.stdpy.*')
+           'direct.stdpy.*',
+           'direct.task.*')
 
     # Exclude these Panda3D libs; they are big and many applications don't
     # use them.  We define them as separate, optional packages, below,

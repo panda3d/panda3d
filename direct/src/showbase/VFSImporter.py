@@ -1,4 +1,4 @@
-from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem
+from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
 import sys
 import new
 import os
@@ -203,8 +203,9 @@ class VFSLoader:
             # It's a real file.
             filename = self.filename
         elif self.filename.exists():
-            # It's a virtual file, but it's shadowing a real file.
-            # Assume they're the same, and load the real one.
+            # It's a virtual file, but it's shadowing a real file in
+            # the same directory.  Assume they're the same, and load
+            # the real one.
             filename = self.filename
         else:
             # It's a virtual file with no real-world existence.  Dump
@@ -214,7 +215,7 @@ class VFSLoader:
                                           type = Filename.TDso)
             filename.setExtension(self.filename.getExtension())
             filename.setBinary()
-            sin = vfile.openReadFile()
+            sin = vfile.openReadFile(True)
             sout = OFileStream()
             if not filename.openWrite(sout):
                 raise IOError
