@@ -577,6 +577,7 @@ $[idl_to_gen] : $[GENERATED_IDL_DEPENDENCIES]
 $[TAB] $[IDL_GENERATOR_RULE]
 
 $[ODIR]/$[IDL_BASENAME].h : $[idl_to_gen]
+#define idl $[idl_to_gen]
 $[TAB] $[MIDL_COMMAND]
 
 // this is a complete hack.  I dont know how add a generated .h to the dependency list of $[IDL_BASENAME].cpp.
@@ -588,6 +589,7 @@ $[TAB]  // empty, dependency-only 'rule'
 #end file
 
 $[ODIR]/$[IDL_BASENAME].tlb : $[idl_to_gen]
+#define idl $[idl_to_gen]
 $[TAB] $[MIDL_COMMAND]
 #endif
 
