@@ -19,13 +19,6 @@ from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
 
 # Also see panda3d.pdef.
 
-packager.setHost('file:///c:/cygwin/home/drose/p3dstage',
-                 downloadUrl = 'file:///c:/cygwin/home/drose/p3dstage_1',
-                 mirrors = ['file:///c:/cygwin/home/drose/mirror1',
-                            'file:///c:/cygwin/home/drose/mirror2',
-                            'http://www.ddrose.com/~drose/mirror3',
-                            'http://www.ddrose.com/~drose/mirror4'])
-
 class coreapi(solo):
     # The special "coreapi" package.  As a "solo", this is just a
     # single .dll (or dylib, or whatever).
