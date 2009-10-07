@@ -164,6 +164,10 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   }
 #endif
 
+  // Seed the lame random number generator in rand(); we use it to
+  // select a mirror for downloading.
+  srand((unsigned int)time(NULL));
+
   return NPERR_NO_ERROR;
 }
 
