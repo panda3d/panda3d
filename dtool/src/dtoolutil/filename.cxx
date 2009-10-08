@@ -921,8 +921,15 @@ standardize() {
       // Ignore /./.
     } else if (component == ".." && !components.empty() &&
                !(components.back() == "..")) {
-      // Back up.
-      components.pop_back();
+      if (components.back() == ".") {
+        // To "back up" over a leading ./ means simply to remove the
+        // leading ./
+        components.pop_back();
+        components.push_back(component);
+      } else {
+        // Back up normally.
+        components.pop_back();
+      }
     } else {
       components.push_back(component);
     }
