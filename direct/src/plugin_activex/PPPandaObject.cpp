@@ -154,8 +154,13 @@ STDMETHODIMP PPandaObject::Invoke(
 
     switch ( wFlags )
     {
-    case DISPATCH_METHOD:
+    case ( DISPATCH_METHOD ):
+    case ( DISPATCH_METHOD | DISPATCH_PROPERTYGET ):
         {
+            // NOTE: http://msdn.microsoft.com/en-us/library/ms221479.aspx
+            // The member is invoked as a method. If a property has the same name, 
+            // both the DISPATCH_METHOD and the DISPATCH_PROPERTYGET flag may be set.
+
             bool hasMethod( false );
             hr = m_interface->P3DHasMethod( m_p3dObject, name, hasMethod );
             if ( SUCCEEDED( hr ) && hasMethod )
@@ -164,12 +169,12 @@ STDMETHODIMP PPandaObject::Invoke(
             }
         }
         break;
-    case DISPATCH_PROPERTYGET:
+    case ( DISPATCH_PROPERTYGET ):
         {
             hr = m_interface->P3DGetProperty( m_p3dObject, name, pvarResult );
         }
         break;
-    case DISPATCH_PROPERTYPUT:
+    case ( DISPATCH_PROPERTYPUT ):
         {
             bool result( false );
             hr = m_interface->P3DSetProperty( m_p3dObject, name, pdispparams, result );
