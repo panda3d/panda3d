@@ -199,16 +199,6 @@ operator = (const HTTPClient &copy) {
   _verify_ssl = copy._verify_ssl;
   _usernames = copy._usernames;
   _cookies = copy._cookies;
-  clear_expected_servers();
-
-  ExpectedServers::const_iterator ei;
-  for (ei = copy._expected_servers.begin();
-       ei != copy._expected_servers.end();
-       ++ei) {
-    X509_NAME *orig_name = (*ei);
-    X509_NAME *new_name = X509_NAME_dup(orig_name);
-    _expected_servers.push_back(new_name);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,9 +215,6 @@ HTTPClient::
     _ssl_ctx->cert_store = NULL;
     SSL_CTX_free(_ssl_ctx);
   }
-
-  // Free all of the expected server definitions.
-  clear_expected_servers();
 
   unload_client_certificate();
 }
@@ -976,52 +963,6 @@ load_certificates(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_expected_server
-//       Access: Published
-//  Description: Adds the indicated string as a definition of a valid
-//               server to contact via https.  If no servers have been
-//               been added, an https connection will be allowed to
-//               any server.  If at least one server has been added,
-//               an https connection will be allowed to any of the
-//               named servers, but none others.
-//
-//               The string passed in defines a subset of the server
-//               properties that are to be insisted on, using the X509
-//               naming convention, e.g. O=WDI/OU=VRStudio/CN=ttown.
-//
-//               It makes sense to use this in conjunction with
-//               set_verify_ssl(), which insists that the https
-//               connection uses a verifiable certificate.
-////////////////////////////////////////////////////////////////////
-bool HTTPClient::
-add_expected_server(const string &server_attributes) {
-  X509_NAME *name = parse_x509_name(server_attributes);
-  if (name == (X509_NAME *)NULL) {
-    return false;
-  }
-
-  _expected_servers.push_back(name);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_expected_servers
-//       Access: Published
-//  Description: Clears the set of expected servers; the HTTPClient
-//               will allow an https connection to any server.
-////////////////////////////////////////////////////////////////////
-void HTTPClient::
-clear_expected_servers() {
-  for (ExpectedServers::iterator ei = _expected_servers.begin();
-       ei != _expected_servers.end();
-       ++ei) {
-    X509_NAME *name = (*ei);
-    X509_NAME_free(name);
-  }
-  _expected_servers.clear();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::make_channel
 //       Access: Published
 //  Description: Returns a new HTTPChannel object that may be used
@@ -1138,13 +1079,6 @@ get_ssl_ctx() {
   // Make sure the error strings are loaded.
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
   sslw->notify_ssl_errors();
-
-  // Get the configured set of expected servers.
-  int num_servers = expected_ssl_server.get_num_unique_values();
-  for (int si = 0; si < num_servers; si++) {
-    string expected_server = expected_ssl_server.get_unique_value(si);
-    add_expected_server(expected_server);
-  }
 
   SSL_CTX_set_cert_store(_ssl_ctx, sslw->get_x509_store());
 

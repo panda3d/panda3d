@@ -88,6 +88,7 @@ PUBLISHED:
     SC_http_error_watermark,
 
     SC_ssl_invalid_server_certificate,
+    SC_ssl_self_signed_server_certificate,
     SC_ssl_unexpected_server,
     
     // These errors are only generated after a download_to_*() call
@@ -247,7 +248,6 @@ private:
   bool parse_content_range(const string &content_range);
 
   void check_socket();
-  bool verify_server(X509_NAME *subject) const;
 
   static string get_x509_name_component(X509_NAME *name, int nid);
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);

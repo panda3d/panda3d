@@ -117,9 +117,6 @@ PUBLISHED:
   INLINE void set_cipher_list(const string &cipher_list);
   INLINE const string &get_cipher_list() const;
 
-  bool add_expected_server(const string &server_attributes);
-  void clear_expected_servers();
-
   PT(HTTPChannel) make_channel(bool persistent_connection);
   BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
   BLOCKING PT(HTTPChannel) get_document(const URLSpec &url);
@@ -185,11 +182,6 @@ private:
   Filename _client_certificate_filename;
   string _client_certificate_pem;
   string _client_certificate_passphrase;
-
-  // List of allowable SSL servers to connect to.  If the list is
-  // empty, any server is acceptable.
-  typedef pvector<X509_NAME *> ExpectedServers;
-  ExpectedServers _expected_servers;
 
   SSL_CTX *_ssl_ctx;
   bool _client_certificate_loaded;

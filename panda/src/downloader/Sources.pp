@@ -106,14 +106,3 @@
   #define IGATESCAN all
 
 #end lib_target
-
-// This is a handy file for identifying public certificate authorities
-// (and thus almost any public https server).  It was taken from the
-// OpenSSL distribution; if you need a fresher copy, go get a new one
-// from the latest OpenSSL.  To use this file, point the variable
-// ssl-certificates in your Configrc file to its installed location,
-// e.g:
-//
-// ssl-certificates /usr/local/panda/install/shared/ca-bundle.crt
-//
-#define INSTALL_DATA ca-bundle.crt

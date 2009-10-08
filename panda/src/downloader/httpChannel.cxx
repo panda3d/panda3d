@@ -1594,7 +1594,7 @@ run_ssl_handshake() {
   _bio->set_bio(_sbio);
   _sbio = NULL;
 
-  // Now verify the server is who we expect it to be.
+  // Now verify the server certificate is valid.
   long verify_result = SSL_get_verify_result(ssl);
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
@@ -1610,6 +1610,16 @@ run_ssl_handshake() {
       << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
       _status_entry._status_code = SC_ssl_invalid_server_certificate;
+      _state = S_failure;
+      return false;
+    }
+
+  } else if (verify_result == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
+             verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
+    downloader_cat.info()
+      << "Self-signed certificate from " << _request.get_url().get_server_and_port() << "\n";
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
+      _status_entry._status_code = SC_ssl_self_signed_server_certificate;
       _state = S_failure;
       return false;
     }
@@ -1630,8 +1640,7 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "No certificate was presented by server.\n";
     // This shouldn't be possible, per the SSL specs.
-    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify ||
-        !_client->_expected_servers.empty()) {
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
       _status_entry._status_code = SC_ssl_invalid_server_certificate;
       _state = S_failure;
       return false;
@@ -1660,9 +1669,36 @@ run_ssl_handshake() {
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
       // Check that the server is someone we expected to be talking
       // to.
-      if (!verify_server(subject)) {
+      string common_name = get_x509_name_component(subject, NID_commonName);
+      string hostname = _request.get_url().get_server();
+      
+      /*
+      X509_STORE *store = OpenSSLWrapper::get_global_ptr()->get_x509_store();
+
+      // Create the X509_STORE_CTX for verifying the cert.
+      X509_STORE_CTX *ctx = X509_STORE_CTX_new();
+      X509_STORE_CTX_init(ctx, store, cert, NULL);
+      X509_STORE_CTX_set_cert(ctx, cert);
+
+      if (!X509_verify_cert(ctx)) {
+        int verify_result = X509_STORE_CTX_get_error(ctx);
         downloader_cat.info()
-          << "Server does not match any expected server.\n";
+          << "Server certificate from " << hostname
+          << " is invalid: " << verify_result << "\n";
+        _status_entry._status_code = SC_ssl_invalid_server_certificate;
+        }
+        _state = S_failure;
+        return false;
+      }
+      
+      X509_STORE_CTX_cleanup(ctx);
+      X509_STORE_CTX_free(ctx);
+      */
+
+      if (common_name != hostname) {
+        downloader_cat.info()
+          << "Server certificate from " << hostname
+          << " provides wrong name: " << common_name << "\n";
         _status_entry._status_code = SC_ssl_unexpected_server;
         _state = S_failure;
         return false;
@@ -3125,63 +3161,6 @@ check_socket() {
     }
     reset_to_new();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::verify_server
-//       Access: Private
-//  Description: Returns true if the indicated server matches one of
-//               our expected servers (or the list of expected servers
-//               is empty), or false if it does not match any of our
-//               expected servers.
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-verify_server(X509_NAME *subject) const {
-  if (_client->_expected_servers.empty()) {
-    if (downloader_cat.is_debug()) {
-      downloader_cat.debug()
-        << "No expected servers on list; allowing any https connection.\n";
-    }
-    return true;
-  }
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug() << "checking server: " << flush;
-    X509_NAME_print_ex_fp(stderr, subject, 0, 0);
-    fflush(stderr);
-    downloader_cat.debug(false) << "\n";
-  }
-
-  HTTPClient::ExpectedServers::const_iterator ei;
-  for (ei = _client->_expected_servers.begin();
-       ei != _client->_expected_servers.end();
-       ++ei) {
-    X509_NAME *expected_name = (*ei);
-    if (x509_name_subset(expected_name, subject)) {
-      if (downloader_cat.is_debug()) {
-        downloader_cat.debug()
-          << "Match found!\n";
-      }
-      return true;
-    }
-  }
-
-  // None of the lines matched.
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
-      << "No match found against any of the following expected servers:\n";
-
-    for (ei = _client->_expected_servers.begin();
-         ei != _client->_expected_servers.end();
-         ++ei) {
-      X509_NAME *expected_name = (*ei);
-      X509_NAME_print_ex_fp(stderr, expected_name, 0, 0);
-      fputs("\n", stderr);
-    }
-    fflush(stderr);      
-  }
-  
-  return false;
 }
 
 /*

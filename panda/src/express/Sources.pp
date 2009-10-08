@@ -10,6 +10,7 @@
 
   #define SOURCES \
     buffer.I buffer.h \
+    ca_bundle_data_src.c \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
@@ -199,6 +200,20 @@
   #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE]],AppKit]
 
 #end lib_target
+
+#begin test_bin_target
+  // Not really a "test" program; this program is used to regenerate
+  // ca_bundle_data_src.c.
+
+  #define TARGET make_ca_bundle
+  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define OTHER_LIBS pystub
+
+  #define SOURCES \
+    make_ca_bundle.cxx
+
+#end test_bin_target
+
 
 #begin test_bin_target
   #define TARGET test_types

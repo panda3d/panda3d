@@ -19,6 +19,8 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "filename.h"
+
 #define OPENSSL_NO_KRB5
 #include "openssl/ssl.h"
 #include "openssl/rand.h"
@@ -43,8 +45,11 @@ private:
   ~OpenSSLWrapper();
 
 public:
+  void clear_certificates();
   int load_certificates(const Filename &filename);
-  int load_certificates_from_ram(const char *data, size_t data_size);
+  int load_certificates_from_pem_ram(const char *data, size_t data_size);
+  int load_certificates_from_der_ram(const char *data, size_t data_size);
+
   X509_STORE *get_x509_store();
 
   void notify_ssl_errors();

@@ -17,6 +17,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "virtualFileSystem.h"
+#include "ca_bundle_data_src.c"
 
 OpenSSLWrapper *OpenSSLWrapper::_global_ptr = NULL;
 
@@ -37,6 +38,10 @@ OpenSSLWrapper() {
 
   _x509_store = X509_STORE_new();
   X509_STORE_set_default_paths(_x509_store);
+
+  // Load in the well-known certificate authorities compiled into this
+  // program.
+  load_certificates_from_der_ram((const char *)ca_bundle_data, ca_bundle_data_len);
 
   // Load in any default certificates listed in the Config.prc file.
   if (!ca_bundle_filename.empty()) {
@@ -63,12 +68,31 @@ OpenSSLWrapper::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OpenSSLWrapper::clear_certificates
+//       Access: Public
+//  Description: Removes all the certificates from the global store,
+//               including the compiled-in certificates loaded from
+//               ca_bundle_data.c.  You can add new certificates by
+//               calling load_certificates().
+////////////////////////////////////////////////////////////////////
+void OpenSSLWrapper::
+clear_certificates() {
+  // We do this by deleting the store and creating a new one.
+  X509_STORE_free(_x509_store);
+  _x509_store = X509_STORE_new();
+
+  // We don't set the default path either.  We want a squeaky-clean store.
+  //X509_STORE_set_default_paths(_x509_store);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OpenSSLWrapper::load_certificates
 //       Access: Public
-//  Description: Reads the certificate(s) (delimited by -----BEGIN
-//               CERTIFICATE----- and -----END CERTIFICATE-----) from
-//               the indicated file and adds them to the global store
-//               object, retrieved via get_x509_store().  
+//  Description: Reads the PEM-formatted certificate(s) (delimited by
+//               -----BEGIN CERTIFICATE----- and -----END
+//               CERTIFICATE-----) from the indicated file and adds
+//               them to the global store object, retrieved via
+//               get_x509_store().
 //
 //               Returns the number of certificates read on success,
 //               or 0 on failure.
@@ -90,7 +114,7 @@ load_certificates(const Filename &filename) {
     return 0;
   }
 
-  int result = load_certificates_from_ram(data.data(), data.size());
+  int result = load_certificates_from_pem_ram(data.data(), data.size());
 
   if (result <= 0) {
     express_cat.info()
@@ -109,19 +133,20 @@ load_certificates(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenSSLWrapper::load_certificates_from_ram
+//     Function: OpenSSLWrapper::load_certificates_from_pem_ram
 //       Access: Public
 //  Description: Reads a chain of trusted certificates from the
 //               indicated data buffer and adds them to the X509_STORE
-//               object.  Returns the number of certificates read on
-//               success, or 0 on failure.
+//               object.  The data buffer should be PEM-formatted.
+//               Returns the number of certificates read on success,
+//               or 0 on failure.
 //
 //               You should call this only with trusted,
 //               locally-stored certificates; not with certificates
 //               received from an untrusted source.
 ////////////////////////////////////////////////////////////////////
 int OpenSSLWrapper::
-load_certificates_from_ram(const char *data, size_t data_size) {
+load_certificates_from_pem_ram(const char *data, size_t data_size) {
   STACK_OF(X509_INFO) *inf;
 
   // Create an in-memory BIO to read the "file" from the buffer, and
@@ -188,6 +213,43 @@ load_certificates_from_ram(const char *data, size_t data_size) {
     }
   }
   sk_X509_INFO_pop_free(inf, X509_INFO_free);
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenSSLWrapper::load_certificates_from_der_ram
+//       Access: Public
+//  Description: Reads a chain of trusted certificates from the
+//               indicated data buffer and adds them to the X509_STORE
+//               object.  The data buffer should be DER-formatted.
+//               Returns the number of certificates read on success,
+//               or 0 on failure.
+//
+//               You should call this only with trusted,
+//               locally-stored certificates; not with certificates
+//               received from an untrusted source.
+////////////////////////////////////////////////////////////////////
+int OpenSSLWrapper::
+load_certificates_from_der_ram(const char *data, size_t data_size) {
+  int count = 0;
+
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
+  // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
+  const unsigned char *bp, *bp_end;
+#else
+  // Prior to 0.9.8, d2i_X509() accepted an unsigned char **.
+  unsigned char *bp, *bp_end;
+#endif
+
+  bp = (unsigned char *)data;
+  bp_end = bp + data_size;
+  X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
+  while (x509 != NULL) {
+    X509_STORE_add_cert(_x509_store, x509);
+    ++count;
+    x509 = d2i_X509(NULL, &bp, bp_end - bp);
+  }
 
   return count;
 }

@@ -122,12 +122,4 @@ egg-object-type-glow            <Scalar> blend { add }
 # maya2egg itself.  So if it appears in an egg file, it means nothing.
 egg-object-type-keep-all-uvsets
 
-
-# This names the ca-bundle.crt file in its standard installation dir.
-# This is useful for validating https servers correctly.  It is also
-# used when packaging up the p3dcert application for publish.
-#define install_dir $[$[upcase $[PACKAGE]]_INSTALL]
-#define install_data_dir $[or $[INSTALL_DATA_DIR],$[install_dir]/shared]
-ca-bundle-filename $[install_data_dir]/ca-bundle.crt
-
 #end 20_panda.prc
