@@ -60,5 +60,6 @@ private:
     PPDownloadCallbackSync& m_downloadSync;
 
     DWORD m_dwTotalRead;
+    DWORD m_dwTotalInStream;
 
 };

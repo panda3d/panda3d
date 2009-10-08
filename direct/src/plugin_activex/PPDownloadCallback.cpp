@@ -18,7 +18,8 @@
 
 
 PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync ) 
-    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ), m_ulObjRefCount( 1 ) 
+    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ), 
+      m_dwTotalInStream( 0 ), m_ulObjRefCount( 1 ) 
 {
 }
 
@@ -148,6 +149,7 @@ STDMETHODIMP PPDownloadCallback::OnProgress(ULONG ulProgress,
         ulStatusCode = UF_BINDSTATUS_LAST + 1;
     }
 
+    m_dwTotalInStream = ulProgressMax;
     m_downloadSync.ProgressNotify( ulProgress, ulProgressMax );
 
 #ifdef _DEBUG
@@ -209,7 +211,7 @@ STDMETHODIMP PPDownloadCallback::OnDataAvailable(DWORD grfBSCF, DWORD dwSize,
                 pBytes[dwActuallyRead] = 0;
                 if (dwActuallyRead>0)
                 {
-                    bool ret = m_downloadSync.DataNotify( dwSize, (const void*)pBytes, dwActuallyRead );
+                    bool ret = m_downloadSync.DataNotify( m_dwTotalInStream, (const void*)pBytes, dwActuallyRead );
                     if (!ret)
                     {
                         hr = E_ABORT;
