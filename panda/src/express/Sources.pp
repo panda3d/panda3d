@@ -126,6 +126,7 @@
 
   #define INSTALL_HEADERS  \
     buffer.I buffer.h \
+    ca_bundle_data_src.c \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
