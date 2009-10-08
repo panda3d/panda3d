@@ -69,6 +69,8 @@ private:
   void read_cert_file(const wxString &cert_filename);
   void get_friendly_name();
   void verify_cert();
+  int load_certificates_from_der_ram(X509_STORE *store,
+                                     const char *data, size_t data_size);
 
   void layout();
   void get_text(wxString &header, wxString &text);

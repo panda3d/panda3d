@@ -15,6 +15,8 @@
 #include "p3dCert.h"
 #include "wx/cmdline.h"
 #include "wx/filename.h"
+
+#include "ca_bundle_data_src.c"
          
 #ifdef __WXMAC__
 #include <Carbon/Carbon.h>
@@ -359,25 +361,8 @@ verify_cert() {
   X509_STORE *store = X509_STORE_new();
   X509_STORE_set_default_paths(store);
 
-  // Find the ca-bundle.crt.
-  char *p3dcert_root = getenv("P3DCERT_ROOT");
-  if (p3dcert_root != NULL) {
-    wxString ca_filename(p3dcert_root, wxConvUTF8);
-    ca_filename += wxT("/ca-bundle.crt");
-    
-    // Read the trusted certificates.
-    FILE *fp = fopen(ca_filename.mb_str(), "r");
-    if (fp == NULL) {
-      cerr << "Couldn't read " << ca_filename.mb_str() << "\n";
-    } else {
-      X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
-      while (c != NULL) {
-        X509_STORE_add_cert(store, c);
-        c = PEM_read_X509(fp, NULL, NULL, (void *)"");
-      }
-      fclose(fp);
-    }
-  }
+  // Add in the well-known certificate authorities.
+  load_certificates_from_der_ram(store, (const char *)ca_bundle_data, ca_bundle_data_len);
 
   // Create the X509_STORE_CTX for verifying the cert and chain.
   X509_STORE_CTX *ctx = X509_STORE_CTX_new();
@@ -396,6 +381,44 @@ verify_cert() {
 
   cerr << "Got certificate from " << _friendly_name.mb_str()
        << ", verify_result = " << _verify_result << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuthDialog::load_certificates_from_der_ram
+//       Access: Public
+//  Description: Reads a chain of trusted certificates from the
+//               indicated data buffer and adds them to the X509_STORE
+//               object.  The data buffer should be DER-formatted.
+//               Returns the number of certificates read on success,
+//               or 0 on failure.
+//
+//               You should call this only with trusted,
+//               locally-stored certificates; not with certificates
+//               received from an untrusted source.
+////////////////////////////////////////////////////////////////////
+int AuthDialog::
+load_certificates_from_der_ram(X509_STORE *store,
+                               const char *data, size_t data_size) {
+  int count = 0;
+
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
+  // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
+  const unsigned char *bp, *bp_end;
+#else
+  // Prior to 0.9.8, d2i_X509() accepted an unsigned char **.
+  unsigned char *bp, *bp_end;
+#endif
+
+  bp = (unsigned char *)data;
+  bp_end = bp + data_size;
+  X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
+  while (x509 != NULL) {
+    X509_STORE_add_cert(store, x509);
+    ++count;
+    x509 = d2i_X509(NULL, &bp, bp_end - bp);
+  }
+
+  return count;
 }
 
 ////////////////////////////////////////////////////////////////////

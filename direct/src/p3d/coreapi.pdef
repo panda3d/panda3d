@@ -71,9 +71,3 @@ class p3dcert(package):
     config(display_name = "Authorization Dialog")
 
     file('p3dcert.exe')
-
-    # Also add the certificate authority file.
-    cvar = ConfigVariableFilename('ca-bundle-filename')
-    filename = Filename(cvar.getValue())
-    if not filename.empty():
-        file(filename, newName = 'ca-bundle.crt', extract = True)
