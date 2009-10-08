@@ -441,6 +441,8 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
         }
     case VT_DISPATCH:
         {
+          // The following commented-out code crashes IE7:
+          /*
             CComPtr<IDispatch> pDispObject( variant->pdispVal );
             CComPtr<ITypeInfo> pTypeInfo;
             HRESULT hr = pDispObject->GetTypeInfo( 0, 0, &pTypeInfo );
@@ -451,6 +453,7 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
 
                 pTypeInfo->ReleaseTypeAttr( pTypeAttr );
             }
+          */
             return new PPBrowserObject( this, variant->pdispVal );
             break;
         }
