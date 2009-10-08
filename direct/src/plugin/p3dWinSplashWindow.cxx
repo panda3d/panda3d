@@ -302,9 +302,16 @@ stop_thread() {
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
   }
 
-  if (_thread != NULL){ 
-    WaitForSingleObject(_thread, INFINITE);
-
+  if (_thread != NULL){
+    // If the thread doesn't close right away, call PeekMessage() to
+    // check for Windows messages that the thread might be waiting
+    // for.
+    while (WaitForSingleObject(_thread, 200) == WAIT_TIMEOUT) {
+      MSG msg;
+      PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+      nout << "Waiting for thread\n";
+    }
+ 
     CloseHandle(_thread);
     _thread = NULL;
 

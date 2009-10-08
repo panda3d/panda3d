@@ -408,8 +408,8 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   }
 
   log.read(buffer, size);
-  P3D_object *result = new P3DStringObject(buffer, size);
+  P3D_object *result = new P3DStringObject(buffer, log.gcount());
   delete[] buffer;
-  
+
   return result;
 }
