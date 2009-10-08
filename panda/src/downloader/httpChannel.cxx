@@ -2250,7 +2250,7 @@ run_download_to_file() {
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
-  static const size_t buffer_size = 1024;
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   size_t remaining_this_pass = buffer_size;
@@ -2272,6 +2272,7 @@ run_download_to_file() {
       }
     }
 
+    thread_consider_yield();
     _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
     count = _body_stream->gcount();
   }
@@ -2312,7 +2313,7 @@ run_download_to_ram() {
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
-  static const size_t buffer_size = 1024;
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   size_t remaining_this_pass = buffer_size;
@@ -2334,6 +2335,7 @@ run_download_to_ram() {
       }
     }
 
+    thread_consider_yield();
     _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
     count = _body_stream->gcount();
   }
@@ -2361,7 +2363,7 @@ run_download_to_stream() {
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
-  static const size_t buffer_size = 1024;
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   size_t remaining_this_pass = buffer_size;
@@ -2383,6 +2385,7 @@ run_download_to_stream() {
       }
     }
 
+    thread_consider_yield();
     _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
     count = _body_stream->gcount();
   }
