@@ -1737,6 +1737,15 @@ class Packager:
         for a given host, for instance.  Returns the newly-created
         HostEntry object."""
 
+        scheme = URLSpec(host).getScheme()
+        if scheme == 'https' and downloadUrl is None:
+            # If we specified an SSL-protected host URL, but no
+            # explicit download URL, then assume the download URL is
+            # the same, over cleartext.
+            url = URLSpec(host)
+            url.setScheme('http')
+            downloadUrl = url.getUrl()
+
         he = self.hosts.get(host, None)
         if he is None:
             # Define a new host entry
@@ -2688,6 +2697,10 @@ class Packager:
         processing. """
 
         self.hosts = {}
+        # Since we've blown away the self.hosts map, we have to make
+        # sure that our own host at least is added to the map.
+        self.addHost(self.host)
+
         self.contents = {}
         self.contentsChanged = False
 
@@ -2712,10 +2725,6 @@ class Packager:
                 pe.loadXml(xpackage)
                 self.contents[pe.getKey()] = pe
                 xpackage = xpackage.NextSiblingElement('package')
-
-        # Since we've blown away the self.hosts map, we have to make
-        # sure that our own host at least is added to the map.
-        self.addHost(self.host)
 
     def writeContentsFile(self):
         """ Rewrites the contents.xml file at the end of
