@@ -6,8 +6,8 @@ class HTMLTree(ET.ElementTree):
         ET.ElementTree.__init__(self, root)
 
         head = ET.SubElement(root, 'HEAD')
-        title = ET.SubElement(head, 'TITLE')
-        title.text = title
+        titleTag = ET.SubElement(head, 'TITLE')
+        titleTag.text = title
 
         body = ET.SubElement(root, 'BODY')
 
