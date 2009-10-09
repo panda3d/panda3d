@@ -3327,8 +3327,8 @@ validate_server_name(X509 *cert) {
 
   // According to RFC 2818, we should check the DNS name(s) in the
   // subjectAltName extension first, if that extension exists.
-  GENERAL_NAMES *subject_alt_names =
-    (GENERAL_NAMES *)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
+  STACK_OF(GENERAL_NAME) *subject_alt_names =
+    (STACK_OF(GENERAL_NAME) *)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
   if (subject_alt_names != NULL) {
     int num_alts = sk_GENERAL_NAME_num(subject_alt_names);
     for (int i = 0; i < num_alts; ++i) {

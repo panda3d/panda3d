@@ -959,7 +959,7 @@ parse_http_version_string(const string &version) {
 bool HTTPClient::
 load_certificates(const Filename &filename) {
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
-  return sslw->load_certificates(filename);
+  return (sslw->load_certificates(filename) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
