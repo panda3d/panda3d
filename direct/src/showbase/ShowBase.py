@@ -2473,7 +2473,8 @@ class ShowBase(DirectObject.DirectObject):
         # p3d file.  When we *are* within a p3d file, the Panda
         # runtime has to be responsible for running the main loop, so
         # we can't allow the application to do it.
-        if self.appRunner is None or self.appRunner.dummy or self.appRunner.interactiveConsole:
+        if self.appRunner is None or self.appRunner.dummy or \
+           (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()
 
 

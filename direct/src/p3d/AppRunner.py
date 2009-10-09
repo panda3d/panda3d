@@ -79,6 +79,7 @@ class AppRunner(DirectObject):
         # setP3DFilename() is called.
         self.allowPythonDev = False
         self.interactiveConsole = False
+        self.initialAppImport = False
 
         self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
@@ -368,7 +369,7 @@ class AppRunner(DirectObject):
         except:
             # Some unexpected Python exception; pass it to the
             # optional handler, if it is defined.
-            if self.exceptionHandler:
+            if self.exceptionHandler and not self.interactiveConsole:
                 self.exceptionHandler()
             else:
                 raise
@@ -431,19 +432,18 @@ class AppRunner(DirectObject):
                 if mainName:
                     moduleName = mainName
 
-            # Temporarily clear this flag while we import the app, so
+            # Temporarily set this flag while we import the app, so
             # that if the app calls run() within its own main.py, it
             # will properly get ignored by ShowBase.
-            interactiveConsole = self.interactiveConsole
-            self.interactiveConsole = False
+            self.initialAppImport = True
 
             __import__(moduleName)
             main = sys.modules[moduleName]
             if hasattr(main, 'main') and callable(main.main):
                 main.main(self)
 
-            # Now restore this flag.
-            self.interactiveConsole = interactiveConsole
+            # Now clear this flag.
+            self.initialAppImport = False
 
             if self.interactiveConsole:
                 # At this point, we have successfully loaded the app.

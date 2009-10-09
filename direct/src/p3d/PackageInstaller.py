@@ -3,6 +3,7 @@ from direct.stdpy.threading import Lock
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.p3d.PackageInfo import PackageInfo
+from pandac.PandaModules import TPLow
 
 class PackageInstaller(DirectObject):
 
@@ -145,7 +146,8 @@ class PackageInstaller(DirectObject):
         # If the task chain hasn't yet been set up, create the
         # default parameters now.
         if not taskMgr.hasTaskChain(self.taskChain):
-            taskMgr.setupTaskChain(self.taskChain, numThreads = 1)
+            taskMgr.setupTaskChain(self.taskChain, numThreads = 1,
+                                   threadPriority = TPLow)
 
         self.callbackLock = Lock()
         self.calledDownloadStarted = False
