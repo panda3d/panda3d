@@ -227,9 +227,15 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     // to recurse twice: either consume one character of the candidate
     // string and continue to try matching the *, or stop trying to
     // match the * here.
-    return
-      matches_substr(pi, pend, ci + 1, cend) ||
-      matches_substr(pi + 1, pend, ci, cend);
+    if (_nomatch_chars.find(*ci) == string::npos) {
+      return
+        matches_substr(pi, pend, ci + 1, cend) ||
+        matches_substr(pi + 1, pend, ci, cend);
+    } else {
+      // On the other hand, if this is one of the nomatch chars, we
+      // can only stop here.
+      return matches_substr(pi + 1, pend, ci, cend);
+    }
 
   case '?':
     // A '?' in the pattern string means to match exactly one

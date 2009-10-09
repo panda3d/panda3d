@@ -126,6 +126,28 @@ get_case_sensitive() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::set_nomatch_chars
+//       Access: Public
+//  Description: Specifies a set of characters that are not matched by
+//               * or ?.
+////////////////////////////////////////////////////////////////////
+INLINE void GlobPattern::
+set_nomatch_chars(const string &nomatch_chars) {
+  _nomatch_chars = nomatch_chars;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::get_nomatch_chars
+//       Access: Public
+//  Description: Returns the set of characters that are not matched by
+//               * or ?.
+////////////////////////////////////////////////////////////////////
+INLINE const string &GlobPattern::
+get_nomatch_chars() const {
+  return _nomatch_chars;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::matches
 //       Access: Public
 //  Description: Returns true if the candidate string matches the
