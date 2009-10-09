@@ -147,6 +147,11 @@ mount(const Filename &physical_filename, const Filename &mount_point,
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
+  if (express_cat->is_debug()) {
+    express_cat->debug()
+      << "mount " << *mount << " under " << mount_point << "\n";
+  }
+
   _lock.acquire();
   bool result = do_mount(mount, mount_point, flags);
   _lock.release();
@@ -174,6 +179,10 @@ unmount(Multifile *multifile) {
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile() == multifile) {
         // Remove this one.  Don't increment wi.
+        if (express_cat->is_debug()) {
+          express_cat->debug()
+            << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+        }
         mount->_file_system = NULL;
 
       } else {
@@ -215,6 +224,10 @@ unmount(const Filename &physical_filename) {
         DCAST(VirtualFileMountSystem, mount);
       if (smount->get_physical_filename() == physical_filename) {
         // Remove this one.  Don't increment wi.
+        if (express_cat->is_debug()) {
+          express_cat->debug()
+            << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+        }
         mount->_file_system = NULL;
         
       } else {
@@ -227,6 +240,10 @@ unmount(const Filename &physical_filename) {
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile()->get_multifile_name() == physical_filename) {
         // Remove this one.  Don't increment wi.
+        if (express_cat->is_debug()) {
+          express_cat->debug()
+            << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+        }
         mount->_file_system = NULL;
 
       } else {
@@ -264,6 +281,10 @@ unmount(VirtualFileMount *mount) {
     (*wi) = (*ri);
     if ((*ri) == mount) {
       // Remove this one.  Don't increment wi.
+      if (express_cat->is_debug()) {
+        express_cat->debug()
+          << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+      }
       (*ri)->_file_system = NULL;
 
     } else {
@@ -299,6 +320,10 @@ unmount_point(const Filename &mount_point) {
 
     if (mount->get_mount_point() == nmp) {
       // Remove this one.  Don't increment wi.
+      if (express_cat->is_debug()) {
+        express_cat->debug()
+          << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+      }
       mount->_file_system = NULL;
 
     } else {
@@ -326,7 +351,12 @@ unmount_all() {
   _lock.acquire();
   Mounts::iterator ri;
   for (ri = _mounts.begin(); ri != _mounts.end(); ++ri) {
-    (*ri)->_file_system = NULL;
+    VirtualFileMount *mount = (*ri);
+    if (express_cat->is_debug()) {
+      express_cat->debug()
+        << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+    }
+    mount->_file_system = NULL;
   }
 
   int num_removed = _mounts.size();

@@ -62,6 +62,7 @@ PUBLISHED:
 
   int get_num_mounts() const;
   PT(VirtualFileMount) get_mount(int n) const;
+  MAKE_SEQ(get_mounts, get_num_mounts, get_mount);
 
   BLOCKING bool chdir(const Filename &new_directory);
   BLOCKING Filename get_cwd() const;

@@ -2154,6 +2154,8 @@ standardize_subfile_name(const string &subfile_name) const {
 
   if (name[0] == '/') {
     return name.get_fullpath().substr(1);
+  } else if (name.length() > 2 && name[0] == '.' && name[1] == '/') {
+    return name.get_fullpath().substr(2);
   } else {
     return name.get_fullpath();
   }
