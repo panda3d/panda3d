@@ -39,6 +39,7 @@ public:
   inline void set_filename(const string &filename);
   inline string get_pathname(const string &package_dir) const;
   inline size_t get_size() const;
+  inline time_t get_timestamp() const;
   
   bool quick_verify(const string &package_dir);
   bool quick_verify_pathname(const string &pathname);

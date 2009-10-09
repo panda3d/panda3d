@@ -21,6 +21,7 @@
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
 #include "dtool_platform.h"
+#include "pandaVersion.h"
 
 #include <ctype.h>
 #include <sstream>
@@ -770,6 +771,16 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
   }
 
   // Successfully loaded.
+#ifdef PANDA_OFFICIAL_VERSION
+  static const bool official = true;
+#else
+  static const bool official = false;
+#endif
+  P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+                         P3D_PLUGIN_SEQUENCE_VERSION, official,
+                         PANDA_DISTRIBUTOR,
+                         PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+
   return true;
 }
 

@@ -130,6 +130,25 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object->set_bool_property("downloadComplete", false);
   _panda_script_object->set_string_property("status", "initial");
 
+  ostringstream stream;
+  stream << inst_mgr->get_plugin_major_version() << "."
+         << inst_mgr->get_plugin_minor_version() << "."
+         << inst_mgr->get_plugin_sequence_version();
+  if (!inst_mgr->get_plugin_official_version()) {
+    stream << "c";
+  }
+  _panda_script_object->set_string_property("pluginVersionString", stream.str());
+  _panda_script_object->set_int_property("pluginMajorVersion", inst_mgr->get_plugin_major_version());
+  _panda_script_object->set_int_property("pluginMinorVersion", inst_mgr->get_plugin_minor_version());
+  _panda_script_object->set_int_property("pluginSequenceVersion", inst_mgr->get_plugin_sequence_version());
+  _panda_script_object->set_bool_property("pluginOfficialVersion", inst_mgr->get_plugin_official_version());
+  _panda_script_object->set_string_property("pluginDistributor", inst_mgr->get_plugin_distributor());
+  _panda_script_object->set_string_property("coreapiHostUrl", inst_mgr->get_coreapi_host_url());
+  time_t timestamp = inst_mgr->get_coreapi_timestamp();
+  _panda_script_object->set_int_property("coreapiTimestamp", timestamp);
+  _panda_script_object->set_string_property("coreapiTimestampString", ctime(&timestamp));
+
+
   // We'll start off with the "download" image displayed in the splash
   // window (when it opens), until we get stuff downloaded.
   set_background_image(IT_download);

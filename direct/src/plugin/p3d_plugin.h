@@ -152,6 +152,14 @@ P3D_initialize_func(int api_version, const char *contents_filename,
 typedef void
 P3D_finalize_func();
 
+/* This function establishes the version of the calling plugin, for
+   reporting to JavaScript and the like. */
+typedef void
+P3D_set_plugin_version_func(int major, int minor, int sequence,
+                            bool official, const char *distributor,
+                            const char *coreapi_host_url,
+                            time_t coreapi_timestamp);
+
 /* This function defines a "super mirror" URL: a special URL that is
    consulted first whenever downloading any package referenced by a
    p3d file.  This setting is global, and affects all package
@@ -877,6 +885,7 @@ P3D_instance_handle_event_func(P3D_instance *instance, P3D_event_data event);
 /* Define all of the actual prototypes for the above functions. */
 EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
 EXPCL_P3D_PLUGIN P3D_finalize_func P3D_finalize;
+EXPCL_P3D_PLUGIN P3D_set_plugin_version_func P3D_set_plugin_version;
 EXPCL_P3D_PLUGIN P3D_set_super_mirror_func P3D_set_super_mirror;
 
 EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;

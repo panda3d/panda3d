@@ -70,6 +70,18 @@ public:
   inline bool get_trusted_environment() const;
   inline bool get_console_environment() const;
 
+  void set_plugin_version(int major, int minor, int sequence,
+                          bool official, const string &distributor,
+                          const string &coreapi_host_url,
+                          time_t coreapi_timestamp);
+  inline int get_plugin_major_version() const;
+  inline int get_plugin_minor_version() const;
+  inline int get_plugin_sequence_version() const;
+  inline bool get_plugin_official_version() const;
+  inline const string &get_plugin_distributor() const;
+  inline const string &get_coreapi_host_url() const;
+  inline time_t get_coreapi_timestamp() const;
+
   void set_super_mirror(const string &super_mirror_url);
   inline const string &get_super_mirror() const;
 
@@ -136,6 +148,13 @@ private:
   string _temp_directory;
   bool _trusted_environment;
   bool _console_environment;
+  int _plugin_major_version;
+  int _plugin_minor_version;
+  int _plugin_sequence_version;
+  bool _plugin_official_version;
+  string _plugin_distributor;
+  string _coreapi_host_url;
+  time_t _coreapi_timestamp;
   string _super_mirror_url;
 
   P3D_object *_undefined_object;

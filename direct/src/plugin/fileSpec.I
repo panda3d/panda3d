@@ -57,6 +57,17 @@ get_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::get_timestamp
+//       Access: Public
+//  Description: Returns the expected last-modify timestamp of this
+//               file on disk.
+////////////////////////////////////////////////////////////////////
+inline time_t FileSpec::
+get_timestamp() const {
+  return _timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_actual_file
 //       Access: Public
 //  Description: After a call to quick_verify() or full_verify(), this

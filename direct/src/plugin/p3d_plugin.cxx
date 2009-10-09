@@ -85,6 +85,26 @@ P3D_finalize() {
 }
 
 void
+P3D_set_plugin_version(int major, int minor, int sequence,
+                       bool official, const char *distributor,
+                       const char *coreapi_host_url,
+                       time_t coreapi_timestamp) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  if (distributor == NULL) {
+    distributor = "";
+  }
+  if (coreapi_host_url == NULL) {
+    coreapi_host_url = "";
+  }
+
+  ACQUIRE_LOCK(_api_lock);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  inst_mgr->set_plugin_version(major, minor, sequence, official, distributor,
+                               coreapi_host_url, coreapi_timestamp);
+  RELEASE_LOCK(_api_lock);
+}
+
+void
 P3D_set_super_mirror(const char *super_mirror_url) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (super_mirror_url == NULL) {

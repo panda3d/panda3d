@@ -64,7 +64,7 @@ class FileSpec:
         if self.size:
             xelement.SetAttribute('size', str(self.size))
         if self.timestamp:
-            xelement.SetAttribute('timestamp', str(self.timestamp))
+            xelement.SetAttribute('timestamp', str(int(self.timestamp)))
         if self.hash:
             xelement.SetAttribute('hash', self.hash)
 

@@ -153,6 +153,86 @@ get_console_environment() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_plugin_major_version
+//       Access: Public
+//  Description: Returns the plugin's reported major version number.
+////////////////////////////////////////////////////////////////////
+inline int P3DInstanceManager::
+get_plugin_major_version() const {
+  return _plugin_major_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_plugin_minor_version
+//       Access: Public
+//  Description: Returns the plugin's reported minor version number.
+////////////////////////////////////////////////////////////////////
+inline int P3DInstanceManager::
+get_plugin_minor_version() const {
+  return _plugin_minor_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_plugin_sequence_version
+//       Access: Public
+//  Description: Returns the plugin's reported sequence version number.
+////////////////////////////////////////////////////////////////////
+inline int P3DInstanceManager::
+get_plugin_sequence_version() const {
+  return _plugin_sequence_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_plugin_official_version
+//       Access: Public
+//  Description: Returns true if the plugin claims to be from an
+//               "official" build, and the its version number is
+//               authoritative; or false if it makes no such claim
+//               (for instance, it was built by someone checking out
+//               from cvs).
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+get_plugin_official_version() const {
+  return _plugin_official_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_plugin_distributor
+//       Access: Public
+//  Description: Returns the "distributor" reported by the plugin.
+//               This should represent the entity that built and
+//               hosted the plugin.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_plugin_distributor() const {
+  return _plugin_distributor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_coreapi_host_url
+//       Access: Public
+//  Description: Returns the host URL from which this Core API was
+//               downloaded (according to the plugin).
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_coreapi_host_url() const {
+  return _coreapi_host_url;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_coreapi_timestamp
+//       Access: Public
+//  Description: Returns the timestamp associated with this Core API
+//               DLL (according to the plugin).  This is the timestamp
+//               shown in the contents.xml for this host, and is
+//               usually the time at which the plugin was built.
+////////////////////////////////////////////////////////////////////
+inline time_t P3DInstanceManager::
+get_coreapi_timestamp() const {
+  return _coreapi_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_super_mirror
 //       Access: Public
 //  Description: Returns the "super mirror" URL.  See p3d_plugin.h.

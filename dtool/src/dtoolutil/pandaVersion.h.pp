@@ -70,6 +70,13 @@ $[cdefine PANDA_OFFICIAL_VERSION]
    is no associated package. */
 # define PANDA_PACKAGE_HOST_URL "$[PANDA_PACKAGE_HOST_URL]"
 
+#if HAVE_P3D_PLUGIN
+/* Similar definitions for the plugin versioning, if in use. */
+$[cdefine P3D_PLUGIN_MAJOR_VERSION]
+$[cdefine P3D_PLUGIN_MINOR_VERSION]
+$[cdefine P3D_PLUGIN_SEQUENCE_VERSION]
+#endif
+
 #end pandaVersion.h
 
 

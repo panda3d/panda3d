@@ -216,6 +216,8 @@ has_method(const string &method_name) {
 P3D_object *P3DMainObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   if (method_name == "play") {
     return call_play(params, num_params);
   } else if (method_name == "read_game_log") {

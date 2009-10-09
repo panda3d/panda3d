@@ -57,6 +57,13 @@ P3DInstanceManager() {
   _next_temp_filename_counter = 1;
   _unique_id = 0;
   _trusted_environment = false;
+  _console_environment = false;
+
+  _plugin_major_version = 0;
+  _plugin_minor_version = 0;
+  _plugin_sequence_version = 0;
+  _plugin_official_version = false;
+  _coreapi_timestamp = 0;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -340,6 +347,26 @@ initialize(const string &contents_filename, const string &host_url,
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::set_plugin_version
+//       Access: Public
+//  Description: Specifies the version of the calling plugin, for
+//               reporting to JavaScript and the like.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+set_plugin_version(int major, int minor, int sequence,
+                   bool official, const string &distributor,
+                   const string &coreapi_host_url,
+                   time_t coreapi_timestamp) {
+  _plugin_major_version = major;
+  _plugin_minor_version = minor;
+  _plugin_sequence_version = sequence;
+  _plugin_official_version = official;
+  _plugin_distributor = distributor;
+  _coreapi_host_url = coreapi_host_url;
+  _coreapi_timestamp = coreapi_timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////

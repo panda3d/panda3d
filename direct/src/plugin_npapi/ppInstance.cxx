@@ -24,6 +24,7 @@
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
 #include "dtool_platform.h"
+#include "pandaVersion.h"
 
 #include <fstream>
 #include <algorithm>
@@ -1133,6 +1134,17 @@ do_load_plugin() {
     nout << "Unable to launch core API in " << pathname << "\n";
     return;
   }
+
+#ifdef PANDA_OFFICIAL_VERSION
+  static const bool official = true;
+#else
+  static const bool official = false;
+#endif
+  P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+                         P3D_PLUGIN_SEQUENCE_VERSION, official,
+                         PANDA_DISTRIBUTOR,
+                         PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+
   create_instance();
 }
 
