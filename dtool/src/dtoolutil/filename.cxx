@@ -577,7 +577,7 @@ get_user_appdata_directory() {
 #ifdef WIN32
     char buffer[MAX_PATH];
 
-    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
+    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_LOCAL_APPDATA, true)) {
       Filename dirname = from_os_specific(buffer);
       if (dirname.is_directory()) {
         if (dirname.make_canonical()) {
