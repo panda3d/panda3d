@@ -4,8 +4,8 @@
     string vector windows.h winsock2.h zlib.h files.h hex.h \
     math.h md5.h evp.h bits/pthreadtypes.h \
     openssl/md5.h openssl/evp.h openssl/rand.h openssl/ssl.h \
-    openssl/x509.h openssl/err.h openssl/rsa.h openssl/crypto.h \
-    openssl/pem.h \
+    openssl/x509.h openssl/x509v3.h openssl/err.h openssl/rsa.h \
+    openssl/crypto.h openssl/pem.h \
     nurbs.hh stddef.h krb5.h MainHelix.h dllpath.h hxcom.h \
     hxcomm.h hxcore.h hxengin.h hxerror.h hxfiles.h hxtbuf.h \
     hxtbuff.h hxwin.h Python.h py_panda.h Cg/cg.h Cg/cgGL.h \
