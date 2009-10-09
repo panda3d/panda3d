@@ -21,6 +21,7 @@
 #include "config_downloader.h"
 #include "virtualFileMountHTTP.h"
 #include "ramfile.h"
+#include "globPattern.h"
 
 #include <stdio.h>
 
@@ -1669,36 +1670,7 @@ run_ssl_handshake() {
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
       // Check that the server is someone we expected to be talking
       // to.
-      string common_name = get_x509_name_component(subject, NID_commonName);
-      string hostname = _request.get_url().get_server();
-      
-      /*
-      X509_STORE *store = OpenSSLWrapper::get_global_ptr()->get_x509_store();
-
-      // Create the X509_STORE_CTX for verifying the cert.
-      X509_STORE_CTX *ctx = X509_STORE_CTX_new();
-      X509_STORE_CTX_init(ctx, store, cert, NULL);
-      X509_STORE_CTX_set_cert(ctx, cert);
-
-      if (!X509_verify_cert(ctx)) {
-        int verify_result = X509_STORE_CTX_get_error(ctx);
-        downloader_cat.info()
-          << "Server certificate from " << hostname
-          << " is invalid: " << verify_result << "\n";
-        _status_entry._status_code = SC_ssl_invalid_server_certificate;
-        }
-        _state = S_failure;
-        return false;
-      }
-      
-      X509_STORE_CTX_cleanup(ctx);
-      X509_STORE_CTX_free(ctx);
-      */
-
-      if (common_name != hostname) {
-        downloader_cat.info()
-          << "Server certificate from " << hostname
-          << " provides wrong name: " << common_name << "\n";
+      if (!validate_server_name(cert)) {
         _status_entry._status_code = SC_ssl_unexpected_server;
         _state = S_failure;
         return false;
@@ -3341,6 +3313,115 @@ certificate signing
 
 */
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::validate_server_name
+//       Access: Private
+//  Description: Returns true if the name in the cert matches the
+//               hostname of the server, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+validate_server_name(X509 *cert) {
+  string hostname = _request.get_url().get_server();
+
+  vector_string cert_names;
+
+  // According to RFC 2818, we should check the DNS name(s) in the
+  // subjectAltName extension first, if that extension exists.
+  GENERAL_NAMES *subject_alt_names =
+    (GENERAL_NAMES *)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
+  if (subject_alt_names != NULL) {
+    int num_alts = sk_GENERAL_NAME_num(subject_alt_names);
+    for (int i = 0; i < num_alts; ++i) {
+      // Get the ith alt name.
+      const GENERAL_NAME *alt_name = 
+        sk_GENERAL_NAME_value(subject_alt_names, i);
+      
+      if (alt_name->type == GEN_DNS) {
+        char *buffer = NULL;
+        ASN1_STRING_to_UTF8((unsigned char**)&buffer,
+                            alt_name->d.ia5);
+        cert_names.push_back(buffer);
+        OPENSSL_free(buffer);
+      }
+    }
+  }
+
+  if (cert_names.empty()) {
+    // If there were no DNS names, use the common name instead.
+  
+    X509_NAME *xname = X509_get_subject_name(cert);
+    if (xname != NULL) {
+      string common_name = get_x509_name_component(xname, NID_commonName);
+      cert_names.push_back(common_name);
+    }
+  }
+
+  if (cert_names.empty()) {
+    downloader_cat.info()
+      << "Server certificate from " << hostname
+      << " provides no name.\n";
+    return false;
+  }
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Server certificate from " << hostname
+      << " provides name(s):";
+    vector_string::const_iterator si;
+    for (si = cert_names.begin(); si != cert_names.end(); ++si) {
+      const string &cert_name = (*si);
+      downloader_cat.debug(false)
+        << " " << cert_name;
+    }
+    downloader_cat.debug(false)
+      << "\n";
+  }
+
+  // Now validate the names we found.  If any of them matches, the
+  // cert matches.
+  vector_string::const_iterator si;
+  for (si = cert_names.begin(); si != cert_names.end(); ++si) {
+    const string &cert_name = (*si);
+
+    if (match_cert_name(cert_name, hostname)) {
+      return true;
+    }
+  }
+
+  downloader_cat.info()
+    << "Server certificate from " << hostname
+    << " provides wrong name(s):";
+  for (si = cert_names.begin(); si != cert_names.end(); ++si) {
+    const string &cert_name = (*si);
+    downloader_cat.info(false)
+      << " " << cert_name;
+  }
+  downloader_cat.info(false)
+    << "\n";
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::match_cert_name
+//       Access: Private, Static
+//  Description: Returns true if this particular name from the
+//               certificate matches the indicated hostname, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+match_cert_name(const string &cert_name, const string &hostname) {
+  // We use GlobPattern to match the name.  This isn't quite
+  // consistent with RFC2818, since it also accepts additional
+  // wildcard characters like "?" and "[]", but I think it's close
+  // enough.
+
+  GlobPattern pattern(cert_name);
+  pattern.set_case_sensitive(false);
+  pattern.set_nomatch_chars(".");
+  return pattern.matches(hostname);
+}
+    
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_x509_name_component
 //       Access: Private, Static

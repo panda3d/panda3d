@@ -26,6 +26,7 @@
 #include "openssl/rand.h"
 #include "openssl/err.h"
 #include "openssl/x509.h"
+#include "openssl/x509v3.h"
 
 // Windows may define this macro inappropriately.
 #ifdef X509_NAME

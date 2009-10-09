@@ -249,6 +249,8 @@ private:
 
   void check_socket();
 
+  bool validate_server_name(X509 *cert);
+  static bool match_cert_name(const string &cert_name, const string &hostname);
   static string get_x509_name_component(X509_NAME *name, int nid);
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
