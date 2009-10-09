@@ -82,7 +82,6 @@ def makePackedApp(args):
 
     root = Filename('.')
     main = None
-    signParams = []
     configFlags = []
     requires = []
     allowPythonDev = False
@@ -93,7 +92,11 @@ def makePackedApp(args):
         elif option == '-m':
             main = value
         elif option == '-S':
-            signParams.append(value)
+            tokens = value.split(',')
+            while len(tokens) < 4:
+                tokens.append('')
+            certificate, chain, pkey, password = tokens[:4]
+            packager.signParams.append((certificate, chain, pkey, password))
         elif option == '-c':
             configFlags.append(value.split('=', 1))
         elif option == '-r':
@@ -158,14 +161,6 @@ def makePackedApp(args):
 
         packager.do_dir(root)
         packager.do_mainModule(mainModule)
-
-        for param in signParams:
-            tokens = param.split(',')
-            while len(tokens) < 4:
-                tokens.append('')
-            certificate, chain, pkey, password = tokens[:4]
-            packager.do_sign(certificate, chain = chain, pkey = pkey, password = password)
-
         packager.endPackage()
         packager.close()
         

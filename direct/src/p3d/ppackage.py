@@ -62,6 +62,14 @@ Options:
      This option may be repeated as necessary.  These directories may
      also be specified with the pdef-path Config.prc variable.
 
+  -S file.crt[,chain.crt[,file.key[,\"password\"]]]
+     Signs any resulting p3d file(s) with the indicated certificate.
+     You may specify the signing certificate, the optional
+     authorization chain, and the private key in three different
+     files, or they may all be combined in the first file.  If the
+     private key is encrypted, the password will be required to
+     decrypt it.
+
   -D
      Sets the allow_python_dev flag in any applications built with
      this command.  This enables additional runtime debug operations,
@@ -96,7 +104,7 @@ packager = Packager.Packager()
 buildPatches = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:DP:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DP:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -107,6 +115,12 @@ for opt, arg in opts:
         buildPatches = True
     elif opt == '-s':
         packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
+    elif opt == '-S':
+        tokens = arg.split(',')
+        while len(tokens) < 4:
+            tokens.append('')
+        certificate, chain, pkey, password = tokens[:4]
+        packager.signParams.append((certificate, chain, pkey, password))
     elif opt == '-D':
         packager.allowPythonDev = True
     elif opt == '-P':

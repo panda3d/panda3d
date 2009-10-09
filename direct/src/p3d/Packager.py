@@ -1582,6 +1582,11 @@ class Packager:
         # any applications.
         self.allowPythonDev = False
 
+        # Fill this with a list of (certificate, chain, pkey,
+        # password) tuples to automatically sign each p3d file
+        # generated.
+        self.signParams = []
+
         # The platform string.
         self.platform = PandaSystem.getPlatform()
 
@@ -2015,6 +2020,7 @@ class Packager:
             raise PackagerError, 'unmatched endPackage'
 
         package = self.currentPackage
+        package.signParams += self.signParams[:]
         package.close()
 
         self.packageList.append(package)
