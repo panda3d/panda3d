@@ -143,8 +143,13 @@ def makePackedApp(args):
     mainModule = mainModule.cStr().replace('/', '.')
     
     packager.installDir = appDir
-    getModelPath().appendDirectory(root)
     packager.allowPythonDev = allowPythonDev
+
+    # Put the root directory on the front of the model-path, so that
+    # any texture references in egg or bam files that reference
+    # textures from the top of the root directory will be properly
+    # resolved.
+    getModelPath().prependDirectory(root)
 
     try:
         packager.setup()

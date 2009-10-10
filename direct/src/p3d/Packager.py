@@ -533,14 +533,15 @@ class Packager:
                     # Any other file.
                     self.addComponent(file)
 
-            # Finally, now add the model files.  It's important to add
-            # these after we have added all of the texture files, so
-            # we can determine which textures need to be implicitly
-            # pulled in.
+            # Now add the model files.  It's important to add these
+            # after we have added all of the texture files, so we can
+            # determine which textures need to be implicitly pulled
+            # in.
 
-            # We walk through the list as we modify it.  That's OK,
-            # because we may add new files that we want to process.
-            for file in self.files:
+            # We walk through a copy of the files list, since we might
+            # be adding more files (textures) to this list as we
+            # discover them in model files referenced in this list.
+            for file in self.files[:]:
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
@@ -700,29 +701,31 @@ class Packager:
                     file.filename.unlink()
 
         def addFile(self, *args, **kw):
-            """ Adds the named file to the package. """
+            """ Adds the named file to the package.  Returns the file
+            object, or None if it was not added by this call. """
 
             file = Packager.PackFile(self, *args, **kw)
             if file.filename in self.sourceFilenames:
                 # Don't bother, it's already here.
-                return
+                return None
 
             if file.newName in self.targetFilenames:
                 # Another file is already in the same place.
                 file2 = self.targetFilenames[file.newName]
                 self.packager.notify.warning(
                     "%s is shadowing %s" % (file2.filename, file.filename))
-                return
+                return None
 
             self.sourceFilenames[file.filename] = file
 
             if file.text is None and not file.filename.exists():
                 if not file.isExcluded(self):
                     self.packager.notify.warning("No such file: %s" % (file.filename))
-                return
+                return None
             
             self.files.append(file)
             self.targetFilenames[file.newName] = file
+            return file
 
         def excludeFile(self, filename):
             """ Excludes the named file (or glob pattern) from the
@@ -1387,8 +1390,16 @@ class Packager:
                     self.importedMapsDir, filename.getBasenameWoExtension(),
                     uniqueId, filename.getExtension())
 
-            self.addFile(filename, newName = newName, explicit = False,
-                         compress = False)
+            file = self.addFile(
+                filename, newName = newName, explicit = False,
+                compress = False)
+
+            if file:
+                # If we added the file in this pass, then also
+                # immediately add it to the multifile (because we
+                # won't be visiting the files list again).
+                self.addComponent(file)
+
             return newName
 
         def addDcFile(self, file):
