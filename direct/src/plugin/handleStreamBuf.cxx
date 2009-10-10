@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <libio.h>
 #endif  // _WIN32
 
 static const size_t handle_buffer_size = 4096;

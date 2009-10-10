@@ -23,6 +23,7 @@
 #include <sys/wait.h>
 #include <sys/select.h>
 #include <signal.h>
+#include <stdint.h>
 
 // Clamps a value to two boundaries.
 #define clamp(x, lb, hb) (x < lb ? lb : (x > hb ? hb : x))
