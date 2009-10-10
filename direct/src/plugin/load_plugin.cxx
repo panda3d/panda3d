@@ -308,6 +308,7 @@ load_plugin(const string &p3d_plugin_filename,
       << "\nP3D_instance_feed_url_stream = " << P3D_instance_feed_url_stream
       << "\nP3D_instance_handle_event = " << P3D_instance_handle_event
       << "\n";
+    unload_dso();
     return false;
   }
 

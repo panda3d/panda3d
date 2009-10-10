@@ -43,6 +43,7 @@
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
 #include "dtool_platform.h"
+#include "pandaVersion.h"
 
 #define P3D_CONTENTS_FILENAME "contents.xml"
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
@@ -447,6 +448,17 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
       if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;
+      } else {
+#ifdef PANDA_OFFICIAL_VERSION
+        static const bool official = true;
+#else
+        static const bool official = false;
+#endif
+        P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+                               P3D_PLUGIN_SEQUENCE_VERSION, official,
+                               PANDA_DISTRIBUTOR,
+                               PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+
       }
     }
 
