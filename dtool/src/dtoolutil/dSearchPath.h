@@ -30,7 +30,7 @@
 //               be built up explicitly.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL DSearchPath {
-public:
+PUBLISHED:
   class EXPCL_DTOOL Results {
   PUBLISHED:
     Results();
@@ -42,6 +42,12 @@ public:
     int get_num_files() const;
     const Filename &get_file(int n) const;
 
+    INLINE Filename operator [] (int n) const;
+    INLINE int size() const;
+
+    void output(ostream &out) const;
+    void write(ostream &out, int indent_level = 0) const;
+
   public:
     void add_file(const Filename &file);
 
@@ -50,7 +56,6 @@ public:
     Files _files;
   };
 
-PUBLISHED:
   DSearchPath();
   DSearchPath(const string &path, const string &separator = string());
   DSearchPath(const Filename &directory);
@@ -73,6 +78,7 @@ PUBLISHED:
 
   Filename find_file(const Filename &filename) const;
   int find_all_files(const Filename &filename, Results &results) const;
+  INLINE Results find_all_files(const Filename &filename) const;
 
   INLINE static Filename
   search_path(const Filename &filename, const string &path,

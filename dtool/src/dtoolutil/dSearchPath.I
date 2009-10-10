@@ -14,8 +14,47 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::operator []
+//       Access: Published
+//  Description: Returns the nth filename in the set.  This method is
+//               defined to make the Results object appear to be a
+//               list in Python.
+////////////////////////////////////////////////////////////////////
+INLINE Filename DSearchPath::Results::
+operator [] (int n) const {
+  return get_file(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::size
+//       Access: Published
+//  Description: Returns the num of filenames in the set.  This method
+//               is defined to make the Results object appear to be a
+//               list in Python.
+////////////////////////////////////////////////////////////////////
+INLINE int DSearchPath::Results::
+size() const {
+  return get_num_files();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::find_all_files
+//       Access: Published
+//  Description: This variant of find_all_files() returns the new
+//               Results object, instead of filling on in on the
+//               parameter list.  This is a little more convenient to
+//               call from Python.
+////////////////////////////////////////////////////////////////////
+INLINE DSearchPath::Results DSearchPath::
+find_all_files(const Filename &filename) const {
+  Results results;
+  find_all_files(filename, results);
+  return results;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::search_path
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: A quick-and-easy way to search a searchpath for a
 //               file when you don't feel like building or keeping
 //               around a DSearchPath object.  This simply

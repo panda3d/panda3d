@@ -76,6 +76,7 @@ PUBLISHED:
   INLINE Filename find_file(const Filename &filename) const;
   INLINE int find_all_files(const Filename &filename, 
                             DSearchPath::Results &results) const;
+  INLINE DSearchPath::Results find_all_files(const Filename &filename) const;
 
   INLINE void output(ostream &out) const;
   INLINE void write(ostream &out) const;

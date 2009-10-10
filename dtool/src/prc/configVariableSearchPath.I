@@ -287,6 +287,19 @@ find_all_files(const Filename &filename,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::find_all_files
+//       Access: Published
+//  Description: This variant of find_all_files() returns the new
+//               Results object, instead of filling on in on the
+//               parameter list.  This is a little more convenient to
+//               call from Python.
+////////////////////////////////////////////////////////////////////
+INLINE DSearchPath::Results ConfigVariableSearchPath::
+find_all_files(const Filename &filename) const {
+  return get_value().find_all_files(filename);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableSearchPath::output
 //       Access: Published
 //  Description: 
