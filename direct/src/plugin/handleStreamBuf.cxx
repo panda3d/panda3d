@@ -22,8 +22,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <libio.h>
 #endif  // _WIN32
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <libio.h>
+#endif // !_WIN32 && !__APPLE__
 
 static const size_t handle_buffer_size = 4096;
 
