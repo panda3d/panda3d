@@ -549,21 +549,8 @@ handle_event(void *event) {
   }
 
 #ifdef __APPLE__
-  EventRecord *er = (EventRecord *)event;
-
-  switch (er->what) {
-  case NPEventType_GetFocusEvent:
-  case NPEventType_LoseFocusEvent:
-    retval = true;
-    break;
-
-  case NPEventType_AdjustCursorEvent:
-    retval = true;
-    break;
-  }
-
   P3D_event_data edata;
-  edata._event = er;
+  edata._event = (EventRecord *)event;
   if (P3D_instance_handle_event(_p3d_inst, edata)) {
     retval = true;
   }
