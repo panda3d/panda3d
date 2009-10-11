@@ -43,18 +43,6 @@ is_same_system_thread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::get_current_time
-//       Access: Public
-//  Description: Returns elapsed time in seconds from some undefined
-//               epoch, via whatever clock the manager is using for
-//               all thread timing.
-////////////////////////////////////////////////////////////////////
-INLINE double ThreadSimpleManager::
-get_current_time() const {
-  return _clock->get_short_raw_time();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::get_global_ptr
 //       Access: Public, Static
 //  Description: 

@@ -76,7 +76,7 @@ public:
   static void system_sleep(double seconds);
   static void system_yield();
 
-  INLINE double get_current_time() const;
+  double get_current_time() const;
   INLINE static ThreadSimpleManager *get_global_ptr();
 
   void write_status(ostream &out) const;

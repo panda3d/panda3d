@@ -21,7 +21,27 @@
 
 #if defined(PHAVE_UCONTEXT_H)
 
-/* The getcontext() / setcontext() implementation.  Easy-peasy. */
+#else  /* PHAVE_UCONTEXT_H */
+
+#endif  /* PHAVE_UCONTEXT_H */
+
+#if defined(PHAVE_UCONTEXT_H)
+
+/* We'd prefer to use getcontext() / setcontext() to portably change
+   execution contexts within C code.  That's what these library
+   functions are designed for. */
+#include <ucontext.h>
+
+struct ThreadContext {
+  ucontext_t _ucontext;
+#ifdef __APPLE__
+  // Due to a bug in OSX 10.5, the system ucontext_t declaration
+  // doesn't reserve enough space, and we need to reserve some
+  // additional space to make room.
+#define EXTRA_PADDING_SIZE 4096
+  char _extra_padding[EXTRA_PADDING_SIZE];
+#endif
+};
 
 static void
 begin_context(ContextFunction *thread_func, void *data) {
@@ -89,7 +109,42 @@ switch_to_thread_context(struct ThreadContext *context) {
 
 #else
 
-/* The setjmp() / longjmp() implementation.  A bit hackier. */
+/* Unfortunately, setcontext() is not defined everywhere (even though
+   it claims to be adopted by Posix).  So we have to fall back to
+   setjmp() / longjmp() in its absence.  This is a hackier solution. */
+
+#if defined(_M_IX86) || defined(__i386__)
+/* Maybe we can implement our own setjmp/longjmp in assembly code.
+   This will be safer than the system version, since who knows what
+   that one's really doing? */
+
+typedef int cs_jmp_buf[33];
+
+#define CS_JB_SP 4
+
+#else
+
+/* Fall back to the system implmentation of setjmp/longjmp. */
+#include <setjmp.h>
+
+typedef jmp_buf cs_jmp_buf;
+#define cs_setjmp setjmp
+#define cs_longjmp(buf) longjmp(buf, 1)
+
+#ifdef JB_SP
+#define CS_JB_SP JB_SP
+
+#elif defined(__ppc__)
+  /* This was determined experimentally through test_setjmp. */
+#define CS_JB_SP 0
+
+#endif
+
+#endif  /* __i386__ */
+
+struct ThreadContext {
+  cs_jmp_buf _jmp_context;
+};
 
 /* The approach is: hack our way onto the new stack pointer right now,
    then call setjmp() to record that stack pointer in the
@@ -333,4 +388,43 @@ switch_to_thread_context(struct ThreadContext *context) {
 }
 
 #endif  /* PHAVE_UCONTEXT_H */
+
+struct ThreadContext *
+alloc_thread_context() {
+  struct ThreadContext *context =
+    (struct ThreadContext *)malloc(sizeof(struct ThreadContext));
+
+#if defined(__APPLE__) && defined(_DEBUG)
+  {
+    int p;
+    // Pre-fill the extra_padding with bytes that we can recognize
+    // later.
+    for (p = 0; p < EXTRA_PADDING_SIZE; ++p) {
+      context->_extra_padding[p] = (p & 0xff);
+    }
+  }
+#endif  // __APPLE__
+
+  return context;
+}
+
+void
+free_thread_context(struct ThreadContext *context) {
+#if defined(__APPLE__) && defined(_DEBUG)
+  {
+    // Because of the OSX 10.5 bug, we anticipate that the extra_padding
+    // may have been filled in with junk.  Confirm this.
+    int p = EXTRA_PADDING_SIZE;
+    while (p > 0) {
+      --p;
+      if (context->_extra_padding[p] != (char)(p & 0xff)) {
+        fprintf(stderr, "Context was mangled at byte %d: %d!\n", p, context->_extra_padding[p]);
+        break;
+      }
+    }
+  }
+#endif  // __APPLE__
+  free(context);
+}
+
 #endif  /* THREAD_SIMPLE_IMPL */

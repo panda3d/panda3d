@@ -45,6 +45,7 @@ ThreadSimpleImpl(Thread *parent_obj) :
   _stop_time = 0.0;
   _wake_time = 0.0;
 
+  _context = alloc_thread_context();
   _stack = NULL;
   _stack_size = 0;
 
@@ -64,6 +65,8 @@ ThreadSimpleImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
   nassertv(_status != TS_running);
+
+  free_thread_context(_context);
 
   if (_stack != (void *)NULL) {
     memory_hook->mmap_free(_stack, _stack_size);
@@ -136,7 +139,7 @@ start(ThreadPriority priority, bool joinable) {
   PyThreadState_Swap(_python_state);
 #endif  // HAVE_PYTHON
 
-  init_thread_context(&_context, _stack, _stack_size, st_begin_thread, this);
+  init_thread_context(_context, _stack, _stack_size, st_begin_thread, this);
 
   _manager->enqueue_ready(this, false);
   return true;

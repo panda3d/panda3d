@@ -125,7 +125,7 @@ private:
   // This records the time at which a sleeping thread should wake up.
   double _wake_time;
 
-  ThreadContext _context;
+  ThreadContext *_context;
   unsigned char *_stack;
   size_t _stack_size;
 

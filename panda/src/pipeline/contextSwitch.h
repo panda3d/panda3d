@@ -30,61 +30,7 @@
 
 #ifdef THREAD_SIMPLE_IMPL
 
-#if defined(PHAVE_UCONTEXT_H)
-/* We'd prefer to use getcontext() / setcontext() to portably change
-   execution contexts within C code.  That's what these library
-   functions are designed for. */
-#include <ucontext.h>
-
-struct ThreadContext {
-  ucontext_t _ucontext;
-#if defined(__APPLE__) && defined(_STRUCT_MCONTEXT)
-  // Due to a bug in OSX 10.5, the system ucontext_t declaration
-  // doesn't reserve enough space, and we need to reserve some
-  // additional space to make room.
-  _STRUCT_MCONTEXT _extra_padding;
-#endif
-};
-
-#else  /* PHAVE_UCONTEXT_H */
-/* Unfortunately, setcontext() is not defined everywhere (even though
-   it claims to be adopted by Posix).  So we have to fall back to
-   setjmp() / longjmp() in its absence.  This is a hackier solution. */
-
-#if defined(_M_IX86) || defined(__i386__)
-/* Maybe we can implement our own setjmp/longjmp in assembly code.
-   This will be safer than the system version, since who knows what
-   that one's really doing? */
-
-typedef int cs_jmp_buf[33];
-
-#define CS_JB_SP 4
-
-#else
-
-/* Fall back to the system implmentation of setjmp/longjmp. */
-#include <setjmp.h>
-
-typedef jmp_buf cs_jmp_buf;
-#define cs_setjmp setjmp
-#define cs_longjmp(buf) longjmp(buf, 1)
-
-#ifdef JB_SP
-#define CS_JB_SP JB_SP
-
-#elif defined(__ppc__)
-  /* This was determined experimentally through test_setjmp. */
-#define CS_JB_SP 0
-
-#endif
-
-#endif  /* __i386__ */
-
-struct ThreadContext {
-  cs_jmp_buf _jmp_context;
-};
-
-#endif  /* PHAVE_UCONTEXT_H */
+struct ThreadContext;
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,6 +57,13 @@ void save_thread_context(struct ThreadContext *context,
    called, it will return from save_thread_context() in the saved
    stack (or begin executing thread_func()). */
 void switch_to_thread_context(struct ThreadContext *context);
+
+/* Use this pair of functions to transparently allocate and destroy an
+   opaque ThreadContext object of the appropriate size.  These
+   functions only allocate memory; they do not initialize the values
+   of the context (see init_thread_context(), above, for that). */
+struct ThreadContext *alloc_thread_context();
+void free_thread_context(struct ThreadContext *context);
 
 #ifdef __cplusplus
 }
