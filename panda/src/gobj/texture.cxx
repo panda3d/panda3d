@@ -3131,7 +3131,6 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
         tex->_num_components != _num_components ||
         tex->_component_width != _component_width ||
         tex->_texture_type != _texture_type ||
-        tex->_format != _format ||
         tex->_component_type != _component_type) {
 
       _x_size = tex->_x_size;
