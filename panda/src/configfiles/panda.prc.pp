@@ -34,6 +34,16 @@ aux-display pandadx8
 aux-display tinydisplay
 #endif
 
+# Define an appropriate default audio library.
+#if $[HAVE_RAD_MSS]
+audio-library-name miles_audio
+#elif $[HAVE_FMODEX]
+audio-library-name p3fmod_audio
+#elif $[HAVE_OPENAL]
+audio-library-name p3openal_audio
+#endif
+
+
 # The egg loader is handy to have available by default.  This allows
 # clients to load egg files.  (The bam loader is built-in so bam files
 # are always loadable).

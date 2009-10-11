@@ -32,19 +32,7 @@ ConfigVariableInt audio_cache_limit
  PRC_DESC("The number of sounds in the cache."));
 
 ConfigVariableString audio_library_name
-("audio-library-name", 
-#if defined(HAVE_RAD_MSS)
- "miles_audio"
-#elif defined(HAVE_FMODEX)
- "fmodex_audio"
-#elif defined(HAVE_FMOD)
- "fmod_audio"
-#elif defined(HAVE_OPENAL)
- "openal_audio"
-#else
- ""
-#endif
- );
+("audio-library-name", "null");
 
 ConfigVariableDouble audio_volume 
 ("audio-volume", 1.0f);

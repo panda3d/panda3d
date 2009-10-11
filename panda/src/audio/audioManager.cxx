@@ -60,7 +60,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void *handle = load_dso(get_plugin_path().get_value(), dl_name);
       if (handle == (void *)NULL) {
-        audio_error("  LoadLibrary() failed, will use NullAudioManager");
+        audio_error("  load_dso(" << dl_name << ") failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
         nassertr(_create_AudioManager == create_NullAudioManager, NULL);
       } else {
