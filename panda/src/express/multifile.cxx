@@ -1188,7 +1188,8 @@ flush() {
     return false;
   }
 
-  if (_next_index == (streampos)0) {
+  bool new_file = (_next_index == (streampos)0);
+  if (new_file) {
     // If we don't have an index yet, we don't have a header.  Write
     // the header.
     if (!write_header()) {
@@ -1216,7 +1217,7 @@ flush() {
 
   bool wrote_ok = true;
 
-  if (!_new_subfiles.empty()) {
+  if (!_new_subfiles.empty() || new_file) {
     // Add a few more files to the end.  We always add subfiles at the
     // end of the multifile, so go there first.
     sort(_new_subfiles.begin(), _new_subfiles.end(), IndirectLess<Subfile>());
