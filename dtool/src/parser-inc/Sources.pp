@@ -8,7 +8,7 @@
     openssl/crypto.h openssl/pem.h \
     nurbs.hh stddef.h krb5.h MainHelix.h dllpath.h hxcom.h \
     hxcomm.h hxcore.h hxengin.h hxerror.h hxfiles.h hxtbuf.h \
-    hxtbuff.h hxwin.h Python.h py_panda.h Cg/cg.h Cg/cgGL.h \
+    hxtbuff.h hxwin.h pyconfig.h Python.h py_panda.h Cg/cg.h Cg/cgGL.h \
     cv.h cvtypes.h cxcore.h cxerror.h cxtypes.h highgui.h \
     avcodec.h avformat.h avio.h avutil.h swscale.h integer.h \
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
