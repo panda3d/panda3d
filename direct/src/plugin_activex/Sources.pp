@@ -4,7 +4,7 @@
 // developing the plugin system itself.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build this directory.
 
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[WINDOWS_PLATFORM]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[WINDOWS_PLATFORM],$[HAVE_ACTIVEX]]
 
 #define USE_PACKAGES tinyxml
 

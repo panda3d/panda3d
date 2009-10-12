@@ -756,6 +756,8 @@
 #define NPAPI_LIBS
 #define HAVE_NPAPI
 
+#define HAVE_ACTIVEX $[WINDOWS_PLATFORM]
+
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may
 // cause libdirect.dll to fail to load on Win98 clients.
