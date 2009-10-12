@@ -26,6 +26,9 @@
   #if $[USE_DEBUG_PYTHON]
     #define python $[PYTHON_DEBUG_COMMAND]
   #endif
+  #if $[>= $[OPTIMIZE], 4]
+    #define python $[python] -OO
+  #endif
 
   #foreach scriptname $[BUILD_P3D_SCRIPTS]
     #if $[eq $[PLATFORM],Win32]
