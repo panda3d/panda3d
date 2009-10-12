@@ -129,9 +129,34 @@ class openal(package):
 plugin-path $OPENAL_ROOT
 audio-library-name p3openal_audio
 """)
+    
+class miles(package):
+    # This package includes the Miles Sound System audio library.
+    # This is closed-source and always requires a licensing fee.
+
+    config(display_name = "Miles Sound System")
+    require('panda3d')
+
+    file('libmiles_audio.dll')
+    if platform.startswith('win'):
+        file('mssmp3.asi', 'avcodec.dll', 'avutil.dll', 'avformat.dll',
+             executable = True)
+
+    elif platform.startswith('osx'):
+        file('libMilesMachO.dylib',
+             'libMilesMachOx86.dylib',
+             'mssmp3.asi', 'mssmixer.mix', 'Miles_MP3_Decoder.asi',
+             executable = True)
+
+    file('miles.prc', extract = True, text = """
+plugin-path $MILES_ROOT
+audio-library-name miles_audio
+""")
 
 class audio(package):
-    # This package includes the best audio library for the given platform.
+    # This package includes the best audio library for the given
+    # platform, assuming a non-commercial application.
+    
     if platform.startswith('osx'):
         require('fmod')
     else:
