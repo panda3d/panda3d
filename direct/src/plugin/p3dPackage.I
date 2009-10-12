@@ -202,3 +202,18 @@ inline void P3DPackage::InstallStep::
 report_step_progress() {
   _package->report_progress(this);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::RequiredPackage::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DPackage::RequiredPackage::
+RequiredPackage(const string &package_name, const string &package_version,
+                P3DHost *host) :
+  _package_name(package_name),
+  _package_version(package_version),
+  _host(host)
+{
+}
+

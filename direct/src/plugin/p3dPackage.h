@@ -211,6 +211,19 @@ private:
 
   bool is_extractable(FileSpec &file, const string &filename) const;
 
+public:
+  class RequiredPackage {
+  public:
+    inline RequiredPackage(const string &package_name,
+                           const string &package_version,
+                           P3DHost *host);
+    string _package_name;
+    string _package_version;
+    P3DHost *_host;
+  };
+  typedef vector<RequiredPackage> Requires;
+  Requires _requires;
+
 private:
   P3DHost *_host;
   int _host_contents_seq;

@@ -238,16 +238,39 @@ class AppRunner(DirectObject):
                 packageName, version, hostUrl)
             return False
 
+        return self.__rInstallPackage(package, [])
+
+    def __rInstallPackage(self, package, nested):
+        """ The recursive implementation of installPackage().  The new
+        parameter, nested, is a list of packages that we are
+        recursively calling this from, to avoid recursive loops. """
+
         if not package.downloadDescFile(self.http):
             return False
 
+        # Now that we've downloaded and read the desc file, we can
+        # install all of the required packages first.
+        nested = nested[:] + [self]
+        for packageName, version, host in package.requires:
+            if host.downloadContentsFile(self.http):
+                p2 = host.getPackage(packageName, version)
+                if not p2:
+                    print "Couldn't find %s %s on %s" % (packageName, version, host.hostUrl)
+                else:
+                    if p2 not in nested:
+                        self.__rInstallPackage(p2, nested)
+
+        # Now that all of the required packages are installed, carry
+        # on to download and install this package.
         if not package.downloadPackage(self.http):
             return False
 
         if not package.installPackage(self):
             return False
 
-        print "Package %s %s installed." % (packageName, version)
+        print "Package %s %s installed." % (
+            package.packageName, package.packageVersion)
+        return True
 
     def getHostWithAlt(self, hostUrl):
         """ Returns a suitable HostInfo object for downloading
@@ -289,7 +312,6 @@ class AppRunner(DirectObject):
         This returns the literal referenced host.  To return the
         mapped host, which is the one we should actually download
         from, see getHostWithAlt().  """
-
 
         if hostUrl is None:
             hostUrl = PandaSystem.getPackageHostUrl()

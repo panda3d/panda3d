@@ -90,6 +90,7 @@ public:
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
+  void add_package(const string &name, const string &version, P3DHost *host);
   void add_package(P3DPackage *package);
   bool get_packages_info_ready() const;
   bool get_packages_ready() const;
@@ -154,8 +155,7 @@ private:
   void mark_p3d_untrusted();
   void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
-  string find_alt_host_url(TiXmlElement *xpackage, 
-                           const string &host_url, const string &alt_host);
+  string find_alt_host_url(const string &host_url, const string &alt_host);
 
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
@@ -218,6 +218,7 @@ private:
   P3DWindowParams _wparams;
 
   bool _p3d_trusted;
+  TiXmlElement *_xpackage;
   
   // For downloading the p3dcert authorization program.
   P3DPackage *_p3dcert_package;

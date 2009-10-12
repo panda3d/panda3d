@@ -79,6 +79,7 @@ class PackageInfo:
         self.uncompressedArchive = None
         self.compressedArchive = None
         self.extracts = []
+        self.requires = []
         self.installPlans = None
  
         # This is updated during downloadPackage().  It is in the
@@ -253,12 +254,26 @@ class PackageInfo:
             self.compressedArchive.loadXml(xcompressedArchive)
 
         # The list of files that should be extracted to disk.
+        self.extracts = []
         xextract = xpackage.FirstChildElement('extract')
         while xextract:
             file = FileSpec()
             file.loadXml(xextract)
             self.extracts.append(file)
             xextract = xextract.NextSiblingElement('extract')
+
+        # The list of additional packages that must be installed for
+        # this package to function properly.
+        self.requires = []
+        xrequires = xpackage.FirstChildElement('requires')
+        while xrequires:
+            packageName = xrequires.Attribute('name')
+            version = xrequires.Attribute('version')
+            hostUrl = xrequires.Attribute('host')
+            if packageName and hostUrl:
+                host = self.host.appRunner.getHostWithAlt(hostUrl)
+                self.requires.append((packageName, version, host))
+            xrequires = xrequires.NextSiblingElement('requires')
 
         self.hasDescFile = True
 

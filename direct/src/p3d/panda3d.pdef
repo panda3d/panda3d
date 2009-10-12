@@ -99,7 +99,43 @@ aux-display tinydisplay
 plugin-path $PANDA3D_ROOT
 default-model-extension .bam
 """ + auxDisplays)
+    
+class fmod(package):
+    # This package includes the FMod audio library.  This is
+    # full-featured and robust, but it is closed-source and the
+    # licensing is cost-free only for non-commercial products.
 
+    config(display_name = "FMod audio library")
+    require('panda3d')
+
+    file('libp3fmod_audio.dll')
+
+    file('fmod.prc', extract = True, text = """
+plugin-path $FMOD_ROOT
+audio-library-name p3fmod_audio
+""")
+
+class openal(package):
+    # This package includes the OpenAL audio libraries.  This is free
+    # in both senses, but there are some technical issues, especially
+    # on certain platforms.
+
+    config(display_name = "OpenAL audio library")
+    require('panda3d')
+
+    file('libp3openal_audio.dll')
+
+    file('openal.prc', extract = True, text = """
+plugin-path $OPENAL_ROOT
+audio-library-name p3openal_audio
+""")
+
+class audio(package):
+    # This package includes the best audio library for the given platform.
+    if platform.startswith('osx'):
+        require('fmod')
+    else:
+        require('openal')
 
 class egg(package):
     # This package contains the code for reading and operating on egg

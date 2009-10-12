@@ -169,8 +169,8 @@ get_formatted_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::add_instance
 //       Access: Public
-//  Description: Specifies an instance that may be responsible for
-//               downloading this package.
+//  Description: Specifies an instance that that will be using this
+//               package, and may be responsible for downloading it.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 add_instance(P3DInstance *inst) {
@@ -182,8 +182,9 @@ add_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::remove_instance
 //       Access: Public
-//  Description: Indicates that the given instance will no longer be
-//               responsible for downloading this package.
+//  Description: Indicates that the given instance is no longer
+//               interested in this package and will not be
+//               responsible for downloading it.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 remove_instance(P3DInstance *inst) {
@@ -567,26 +568,33 @@ desc_file_download_finished(bool success) {
 void P3DPackage::
 got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xpackage = doc->FirstChildElement("package");
-  TiXmlElement *xuncompressed_archive = NULL;
-  TiXmlElement *xcompressed_archive = NULL;
-  
-  if (xpackage != NULL) {
-    xpackage->Attribute("patch_version", &_patch_version);
-
-    xuncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
-    xcompressed_archive = xpackage->FirstChildElement("compressed_archive");
-
-    TiXmlElement *xconfig = xpackage->FirstChildElement("config");
-    if (xconfig != NULL) {
-      const char *display_name_cstr = xconfig->Attribute("display_name");
-      if (display_name_cstr != NULL) {
-        _package_display_name = display_name_cstr;
-      }
-
-      // Save the config entry within this class for others to query.
-      _xconfig = (TiXmlElement *)xconfig->Clone();
+  if (xpackage == NULL) {
+    nout << _package_name << " desc file contains no <package>\n";
+    if (!freshly_downloaded) {
+      download_desc_file();
+      return;
     }
+    report_done(false);
+    return;
   }
+  
+  xpackage->Attribute("patch_version", &_patch_version);
+  
+  TiXmlElement *xconfig = xpackage->FirstChildElement("config");
+  if (xconfig != NULL) {
+    const char *display_name_cstr = xconfig->Attribute("display_name");
+    if (display_name_cstr != NULL) {
+      _package_display_name = display_name_cstr;
+    }
+    
+    // Save the config entry within this class for others to query.
+    _xconfig = (TiXmlElement *)xconfig->Clone();
+  }
+
+  TiXmlElement *xuncompressed_archive = 
+    xpackage->FirstChildElement("uncompressed_archive");
+  TiXmlElement *xcompressed_archive = 
+    xpackage->FirstChildElement("compressed_archive");
 
   if (xuncompressed_archive == NULL || xcompressed_archive == NULL) {
     // The desc file didn't include the archive file itself, weird.
@@ -604,18 +612,37 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   // Now get all the extractable components.
   _unpack_size = 0;
   _extracts.clear();
-  TiXmlElement *extract = xpackage->FirstChildElement("extract");
-  while (extract != NULL) {
+  TiXmlElement *xextract = xpackage->FirstChildElement("extract");
+  while (xextract != NULL) {
     FileSpec file;
-    file.load_xml(extract);
+    file.load_xml(xextract);
     _extracts.push_back(file);
     _unpack_size += file.get_size();
-    extract = extract->NextSiblingElement("extract");
+    xextract = xextract->NextSiblingElement("extract");
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  // Get the required packages.
+  _requires.clear();
+  TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
+  while (xrequires != NULL) {
+    const char *package_name = xrequires->Attribute("name");
+    const char *version = xrequires->Attribute("version");
+    const char *host_url = xrequires->Attribute("host");
+    if (package_name != NULL && host_url != NULL) {
+      P3DHost *host = inst_mgr->get_host(host_url);
+      if (version == NULL) {
+        version = "";
+      }
+      _requires.push_back(RequiredPackage(package_name, version, host));
+    }
+
+    xrequires = xrequires->NextSiblingElement("requires");
   }
 
   // Get a list of all of the files in the directory, so we can remove
   // files that don't belong.
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   vector<string> contents;
   inst_mgr->scan_directory_recursively(_package_dir, contents);
 

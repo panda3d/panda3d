@@ -85,6 +85,7 @@ P3DInstance(P3D_request_ready_func *func,
   _got_fparams = false;
   _got_wparams = false;
   _p3d_trusted = false;
+  _xpackage = NULL;
   _p3dcert_package = NULL;
 
   _fparams.set_tokens(tokens, num_tokens);
@@ -223,6 +224,11 @@ P3DInstance::
   if (_temp_p3d_filename != NULL) {
     delete _temp_p3d_filename;
     _temp_p3d_filename = NULL;
+  }
+  
+  if (_xpackage != NULL) {
+    delete _xpackage;
+    _xpackage = NULL;
   }
 
 #ifdef __APPLE__
@@ -770,6 +776,33 @@ handle_event(P3D_event_data event) {
 //               instances that use the same package.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
+add_package(const string &name, const string &version, P3DHost *host) {
+  string alt_host = _fparams.lookup_token("alt_host");
+
+  // Look up in the p3d_info.xml file to see if this p3d file has
+  // a specific alt_host indication for this host_url.
+  string alt_host_url = find_alt_host_url(host->get_host_url(), alt_host);
+  if (!alt_host_url.empty()) {
+    // If it does, we go ahead and switch to that host now,
+    // instead of bothering to contact the original host.
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    host = inst_mgr->get_host(alt_host_url);
+    alt_host.clear();
+  }
+  
+  P3DPackage *package = host->get_package(name, version, alt_host);
+  add_package(package);
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_package
+//       Access: Public
+//  Description: Adds the package to the list of packages used by this
+//               instance.  The instance will share responsibility for
+//               downloading the package with any of the other
+//               instances that use the same package.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
 add_package(P3DPackage *package) {
   if (find(_packages.begin(), _packages.end(), package) != _packages.end()) {
     // Already have this package.
@@ -1259,13 +1292,15 @@ scan_app_desc_file(TiXmlDocument *doc) {
   if (xpackage == NULL) {
     return;
   }
+  assert(_xpackage == NULL);
+  _xpackage = (TiXmlElement *)xpackage->Clone();
 
-  const char *log_basename = xpackage->Attribute("log_basename");
+  const char *log_basename = _xpackage->Attribute("log_basename");
   if (log_basename != NULL) {
     _log_basename = log_basename;
   }
 
-  TiXmlElement *xconfig = xpackage->FirstChildElement("config");
+  TiXmlElement *xconfig = _xpackage->FirstChildElement("config");
   if (xconfig != NULL) {
     int hidden = 0;
     if (xconfig->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
@@ -1308,9 +1343,7 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _wparams.set_window_type(P3D_WT_hidden);
   }
 
-  string alt_host = _fparams.lookup_token("alt_host");
-
-  TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
+  TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
     const char *name = xrequires->Attribute("name");
     const char *host_url = xrequires->Attribute("host");
@@ -1320,20 +1353,7 @@ scan_app_desc_file(TiXmlDocument *doc) {
         version = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
-      string this_alt_host = alt_host;
-
-      // Look up in the p3d_info.xml file to see if this p3d file has
-      // a specific alt_host indication for this host_url.
-      string alt_host_url = find_alt_host_url(xpackage, host_url, alt_host);
-      if (!alt_host_url.empty()) {
-        // If it does, we go ahead and switch to that host now,
-        // instead of bothering to contact the original host.
-        host = inst_mgr->get_host(alt_host_url);
-        this_alt_host.clear();
-      }
-        
-      P3DPackage *package = host->get_package(name, version, this_alt_host);
-      add_package(package);
+      add_package(name, version, host);
     }
 
     xrequires = xrequires->NextSiblingElement("requires");
@@ -1348,9 +1368,8 @@ scan_app_desc_file(TiXmlDocument *doc) {
 //               Returns empty string if there is no match.
 ////////////////////////////////////////////////////////////////////
 string P3DInstance::
-find_alt_host_url(TiXmlElement *xpackage, 
-                  const string &host_url, const string &alt_host) {
-  TiXmlElement *xhost = xpackage->FirstChildElement("host");
+find_alt_host_url(const string &host_url, const string &alt_host) {
+  TiXmlElement *xhost = _xpackage->FirstChildElement("host");
   while (xhost != NULL) {
     const char *url = xhost->Attribute("url");
     if (url != NULL && host_url == url) {
@@ -1843,6 +1862,14 @@ report_package_info_ready(P3DPackage *package) {
 
     package->activate_download();
     return;
+  }
+
+  // Now that the package's info is ready, we know its set of required
+  // packages, and we can add these to the list.
+  P3DPackage::Requires::const_iterator ri;
+  for (ri = package->_requires.begin(); ri != package->_requires.end(); ++ri) {
+    const P3DPackage::RequiredPackage &rp = (*ri);
+    add_package(rp._package_name, rp._package_version, rp._host);
   }
 
   if (get_packages_info_ready()) {

@@ -1545,15 +1545,15 @@ class Packager:
         def requirePackage(self, package):
             """ Indicates a dependency on the given package.  This
             also implicitly requires all of the package's requirements
-            as well. """
+            as well (though this transitive requirement happens at
+            runtime, not here at build time). """
 
-            for p2 in package.requires + [package]:
-                if p2 not in self.requires:
-                    self.requires.append(p2)
-                    for filename in p2.targetFilenames.keys():
-                        self.skipFilenames[filename] = True
-                    for moduleName, mdef in p2.moduleNames.items():
-                        self.skipModules[moduleName] = mdef
+            if package not in self.requires:
+                self.requires.append(package)
+                for filename in package.targetFilenames.keys():
+                    self.skipFilenames[filename] = True
+                for moduleName, mdef in package.moduleNames.items():
+                    self.skipModules[moduleName] = mdef
 
     # Packager constructor
     def __init__(self):

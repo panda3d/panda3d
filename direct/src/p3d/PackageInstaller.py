@@ -76,6 +76,13 @@ class PackageInstaller(DirectObject):
             # getDescFile().
             self.downloadEffort = 0
 
+        def __cmp__(self, pp):
+            """ Python comparision function.  This makes all
+            PendingPackages withe same (packageName, version, host)
+            combination be deemed equivalent. """
+            return cmp((self.packageName, self.version, self.host),
+                       (pp.packageName, pp.version, pp.host))
+
         def getProgress(self):
             """ Returns the download progress of this package in the
             range 0..1. """
@@ -230,16 +237,37 @@ class PackageInstaller(DirectObject):
 
         self.packageLock.acquire()
         try:
-            self.packages.append(pp)
-            if not pp.checkDescFile():
-                # Still need to download the desc file.
-                self.needsDescFile.append(pp)
-                if not self.descFileTask:
-                    self.descFileTask = taskMgr.add(
-                        self.__getDescFileTask, 'getDescFile',
-                        taskChain = self.taskChain)
+            self.__internalAddPackage(pp)
+        finally:
+            self.packageLock.release()
 
-            elif not pp.package.hasPackage:
+    def __internalAddPackage(self, pp):
+        """ Adds the indicated "pending package" to the appropriate
+        list(s) for downloading and installing.  Assumes packageLock
+        is already held."""
+
+        if pp in self.packages:
+            # Already added.
+            return
+        
+        self.packages.append(pp)
+        if not pp.checkDescFile():
+            # Still need to download the desc file.
+            self.needsDescFile.append(pp)
+            if not self.descFileTask:
+                self.descFileTask = taskMgr.add(
+                    self.__getDescFileTask, 'getDescFile',
+                    taskChain = self.taskChain)
+
+        else:
+            # The desc file is ready, which means so are the requirements.
+            for packageName, version, host in pp.package.requires:
+                pp2 = self.PendingPackage(packageName, version, host)
+                self.__internalAddPackage(pp2)
+
+            # Now that we've added the required packages, add the
+            # package itself.
+            if not pp.package.hasPackage:
                 # The desc file is good, but the package itself needs
                 # to be downloaded.
                 self.needsDownload.append(pp)
@@ -247,9 +275,6 @@ class PackageInstaller(DirectObject):
             else:
                 # The package is already fully downloaded.
                 self.earlyDone.append(pp)
-                    
-        finally:
-            self.packageLock.release()
 
     def donePackages(self):
         """ After calling addPackage() for each package to be
@@ -494,6 +519,10 @@ class PackageInstaller(DirectObject):
         # This package is now ready to be downloaded.
         self.packageLock.acquire()
         try:
+            # Also add any packages required by this one.
+            for packageName, version, host in pp.package.requires:
+                pp2 = self.PendingPackage(packageName, version, host)
+                self.__internalAddPackage(pp2)
             self.needsDownload.append(pp)
         finally:
             self.packageLock.release()
