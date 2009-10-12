@@ -3338,10 +3338,14 @@ validate_server_name(X509 *cert) {
       
       if (alt_name->type == GEN_DNS) {
         char *buffer = NULL;
-        ASN1_STRING_to_UTF8((unsigned char**)&buffer,
-                            alt_name->d.ia5);
-        cert_names.push_back(buffer);
-        OPENSSL_free(buffer);
+        int len = ASN1_STRING_to_UTF8((unsigned char**)&buffer,
+                                      alt_name->d.ia5);
+        if (len > 0) {
+          cert_names.push_back(string(buffer, len));
+        }
+        if (buffer != NULL) {
+          OPENSSL_free(buffer);
+        }
       }
     }
   }
