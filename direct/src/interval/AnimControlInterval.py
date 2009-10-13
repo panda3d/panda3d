@@ -48,12 +48,14 @@ class AnimControlInterval(Interval.Interval):
         id = 'AnimControl-%d' % (AnimControlInterval.animNum)
         AnimControlInterval.animNum += 1
         # Record class specific variables
-        if(isinstance(controls, AnimControlCollection)):
+
+        if(isinstance(controls, AnimControlCollection)):            
             self.controls = controls
-            checkSz = self.controls.getAnim(0).getNumFrames()
-            for i in range(1,self.controls.getNumAnims()):
-                if(checkSz != self.controls.getAnim(i).getNumFrames()):
-                    self.notify.error("anim controls don't have the same number of frames!")
+            if(config.GetBool("strict-anim-ival",0)):
+                checkSz = self.controls.getAnim(0).getNumFrames()
+                for i in range(1,self.controls.getNumAnims()):
+                    if(checkSz != self.controls.getAnim(i).getNumFrames()):
+                        self.notify.error("anim controls don't have the same number of frames!")
         elif(isinstance(controls, AnimControl)):
             self.controls = AnimControlCollection()
             self.controls.storeAnim(controls,"")
