@@ -773,7 +773,11 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) SceneGraphReducer::
 collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
-  return node2->combine_with(node1);
+  PT(PandaNode) result = node2->combine_with(node1);
+  if (result == NULL) {
+    result = node1->combine_with(node2);
+  }
+  return result;
 }
 
 
