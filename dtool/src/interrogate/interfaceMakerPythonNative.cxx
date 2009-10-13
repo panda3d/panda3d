@@ -2782,6 +2782,11 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
 
   if (remap->_return_type->new_type_is_atomic_string()) {
     if (TypeManager::is_char_pointer(orig_type)) {
+      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+      indent(out, indent_level)<<"{\n";
+      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+      indent(out, indent_level)<<"    return Py_None;\n";
+      indent(out, indent_level)<<"}\n";
       indent(out, indent_level)
         << "return PyString_FromString(" << return_expr << ");\n";
 
@@ -2838,6 +2843,11 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
           << "return PyFloat_FromDouble(" << return_expr << ");\n";
 
   } else if (TypeManager::is_char_pointer(type)) {
+      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+      indent(out, indent_level)<<"{\n";
+      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+      indent(out, indent_level)<<"    return Py_None;\n";
+      indent(out, indent_level)<<"}\n";
       indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
 
