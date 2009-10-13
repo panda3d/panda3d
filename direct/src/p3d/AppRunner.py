@@ -28,11 +28,13 @@ else:
     # Otherwise, we can import the VFSImporter normally.  We have to
     # import PandaModules first, to get the funny renaming with
     # pandaexpress.
+    import direct
     from pandac import PandaModules
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, PandaSystem, URLSpec, Notify, StreamWriter, ConfigVariableString
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString
+from pandac import PandaModules
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
@@ -88,7 +90,10 @@ class AppRunner(DirectObject):
         self.started = False
         self.windowOpened = False
         self.windowPrc = None
-        self.http = HTTPClient.getGlobalPtr()
+
+        self.http = None
+        if hasattr(PandaModules, 'HTTPClient'):
+            self.http = PandaModules.HTTPClient.getGlobalPtr()
 
         self.Undefined = Undefined
         self.ConcreteStruct = ConcreteStruct
@@ -332,8 +337,10 @@ class AppRunner(DirectObject):
             # It's good, keep it.
             return True
 
+        assert self.http
+
         # It's stale, get a new one.
-        url = URLSpec(host.hostUrlPrefix + fileSpec.filename)
+        url = PandaModules.URLSpec(host.hostUrlPrefix + fileSpec.filename)
         print "Freshening %s" % (url)
         doc = self.http.getDocument(url)
         if not doc.isValid():
@@ -581,9 +588,9 @@ class AppRunner(DirectObject):
         self.p3dPackage = None
         self.p3dConfig = None
         self.allowPythonDev = False
-        
+
         i = mf.findSubfile('p3d_info.xml')
-        if i >= 0:
+        if i >= 0 and hasattr(PandaModules, 'readXmlStream'):
             stream = mf.openReadSubfile(i)
             self.p3dInfo = readXmlStream(stream)
             mf.closeReadSubfile(stream)

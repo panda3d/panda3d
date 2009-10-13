@@ -1,4 +1,5 @@
-from pandac.PandaModules import TiXmlDocument, HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
+from pandac.PandaModules import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
+from pandac import PandaModules
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 import time
@@ -78,24 +79,25 @@ class HostInfo:
             # We've already got one.
             return True
 
-        url = self.hostUrlPrefix + 'contents.xml'
-        # Append a uniquifying query string to the URL to force the
-        # download to go all the way through any caches.  We use the
-        # time in seconds; that's unique enough.
-        url += '?' + str(int(time.time()))
+        if http:
+            url = self.hostUrlPrefix + 'contents.xml'
+            # Append a uniquifying query string to the URL to force the
+            # download to go all the way through any caches.  We use the
+            # time in seconds; that's unique enough.
+            url += '?' + str(int(time.time()))
 
-        # We might as well explicitly request the cache to be disabled
-        # too, since we have an interface for that via HTTPChannel.
-        request = DocumentSpec(url)
-        request.setCacheControl(DocumentSpec.CCNoCache)
+            # We might as well explicitly request the cache to be disabled
+            # too, since we have an interface for that via HTTPChannel.
+            request = DocumentSpec(url)
+            request.setCacheControl(DocumentSpec.CCNoCache)
 
-        print "Downloading contents file %s" % (request)
+            print "Downloading contents file %s" % (request)
 
-        rf = Ramfile()
-        channel = http.makeChannel(False)
-        channel.getDocument(request)
-        if not channel.downloadToRam(rf):
-            print "Unable to download %s" % (url)
+            rf = Ramfile()
+            channel = http.makeChannel(False)
+            channel.getDocument(request)
+            if not channel.downloadToRam(rf):
+                print "Unable to download %s" % (url)
 
         filename = Filename(self.hostDir, 'contents.xml')
         filename.makeDir()
@@ -150,7 +152,10 @@ class HostInfo:
 
         filename = Filename(self.hostDir, 'contents.xml')
 
-        doc = TiXmlDocument(filename.toOsSpecific())
+        if not hasattr(PandaModules, 'TiXmlDocument'):
+            return False
+        
+        doc = PandaModules.TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
             return False
         

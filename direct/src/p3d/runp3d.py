@@ -56,6 +56,16 @@ def parseSysArgs():
 
     return [arg0] + args[1:]
 
+def runPackedApp(pathname):
+    runner = AppRunner()
+    runner.gotWindow = True
+    try:
+        runner.setP3DFilename(pathname, tokens = [], argv = [],
+                              instanceId = 0, interactiveConsole = False)
+    except ArgumentError, e:
+        print e.args[0]
+        sys.exit(1)
+
 if __name__ == '__main__':
     runner = AppRunner()
     runner.gotWindow = True

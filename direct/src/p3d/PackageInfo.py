@@ -1,4 +1,5 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, Patchfile, ExecutionEnvironment
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment
+from pandac import PandaModules
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
 import os
@@ -221,7 +222,9 @@ class PackageInfo:
 
         filename = Filename(self.packageDir, self.descFileBasename)
 
-        doc = TiXmlDocument(filename.toOsSpecific())
+        if not hasattr(PandaModules, 'TiXmlDocument'):
+            return False
+        doc = PandaModules.TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
             return False
 
@@ -683,7 +686,7 @@ class PackageInfo:
         result = Filename.temporary('', 'patch_')
         print "Patching %s with %s" % (origPathname, patchPathname)
 
-        p = Patchfile()  # The C++ class
+        p = PandaModules.Patchfile()  # The C++ class
 
         ret = p.initiate(patchPathname, origPathname, result)
         if ret == EUSuccess:
