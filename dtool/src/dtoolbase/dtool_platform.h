@@ -34,8 +34,6 @@
 #elif defined(__APPLE__)
 #if defined(BUILD_IPHONE)
 #define DTOOL_PLATFORM "iphone"
-#elif defined(UNIVERSAL_BINARIES)
-#define DTOOL_PLATFORM "osx"
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "osx_ppc"
 #else
