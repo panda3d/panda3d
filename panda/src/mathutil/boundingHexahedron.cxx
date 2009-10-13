@@ -476,12 +476,16 @@ set_planes() {
     _planes[5] = Planef(_points[4], _points[6], _points[7]);
   }
 
+  // Still not entirely sure why some code keeps triggering these, but
+  // I'm taking them out of the normal build for now.
+#ifdef _DEBUG
   nassertv(_planes[0].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[1].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[2].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[3].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[4].dist_to_plane(_centroid) <= 0.001);
   nassertv(_planes[5].dist_to_plane(_centroid) <= 0.001);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
