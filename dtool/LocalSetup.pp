@@ -534,7 +534,7 @@ $[cdefine HAVE_IOS_BINARY]
 /* Can we safely call getenv() at static init time? */
 $[cdefine STATIC_INIT_GETENV]
 
-/* Can we read the file /proc/self/* to determine our
+/* Can we read the file /proc/self/[*] to determine our
    environment variables at static init time? */
 $[cdefine HAVE_PROC_SELF_EXE]
 $[cdefine HAVE_PROC_SELF_MAPS]
