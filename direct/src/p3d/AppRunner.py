@@ -592,7 +592,7 @@ class AppRunner(DirectObject):
         i = mf.findSubfile('p3d_info.xml')
         if i >= 0 and hasattr(PandaModules, 'readXmlStream'):
             stream = mf.openReadSubfile(i)
-            self.p3dInfo = readXmlStream(stream)
+            self.p3dInfo = PandaModules.readXmlStream(stream)
             mf.closeReadSubfile(stream)
         if self.p3dInfo:
             self.p3dPackage = self.p3dInfo.FirstChildElement('package')
