@@ -41,6 +41,11 @@
   #error OPENGLES_2 should not be defined!
 #endif
 
+// This prevents glext.h from getting included by gl.h
+// That way, we can provide our own, better version.
+#define __glext_h_
+#define ES1_GLEXT_H_GUARD
+
 #ifdef IS_OSX
   #include <OpenGLES/ES1/gl.h>
   #include <OpenGLES/ES1/glext.h>
@@ -48,6 +53,8 @@
   #include <GLES/gl.h>
   #include <GLES/glext.h>
 #endif
+
+#include "panda_esglext.h"
 
 // This helps to keep the source clean of hundreds of #ifdefs.
 #define GL_NONE GL_NONE_OES

@@ -53,7 +53,6 @@ extern "C" void initlibdirect();
 int startup = 0;
 
 - (void)applicationDidFinishLaunching: (UIApplication *)application { 
-
   // Get the App bundle directory.
   NSBundle *bundle = [NSBundle mainBundle];
   if (bundle != nil) {
@@ -125,7 +124,7 @@ int startup = 0;
     Py_Initialize();
 
     int argv = 1;
-    NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
+    NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.p3d" ];
     const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
     char *argc[] = { (char *)script_pathname_cstr, NULL };
     PySys_SetArgv(argv, argc);
@@ -143,40 +142,28 @@ int startup = 0;
     initlibdirect();
 #endif  // LINK_ALL_STATIC
 
-#if 0
-    PyImport_ImportFrozenModule("direct");
-    PyImport_ImportFrozenModule("direct.showbase");
-    int n = PyImport_ImportFrozenModule("direct.showbase.RunAppMF");
-    if (n == 0) {
-      cerr << "RunAppMF not frozen in binary\n";
-      Py_Finalize();
-      exit(1);
-    } else if (n < 0) {
+    PyObject *module = PyImport_ImportModule("direct");
+    if (module == (PyObject *)NULL) {
+      cerr << "direct not importable\n";
       PyErr_Print();
       Py_Finalize();
       exit(1);
     }
-#endif
+    Py_DECREF(module);
 
-    PyObject *module = PyImport_ImportModule("direct");
+    module = PyImport_ImportModule("direct.p3d");
     if (module == (PyObject *)NULL) {
-      cerr << "direct not importable\n";
+      cerr << "direct.p3d not importable\n";
+      PyErr_Print();
       Py_Finalize();
       exit(1);
     }
     Py_DECREF(module);
 
-    module = PyImport_ImportModule("direct.showbase");
+    module = PyImport_ImportModule("direct.p3d.runp3d");
     if (module == (PyObject *)NULL) {
-      cerr << "direct.showbase not importable\n";
-      Py_Finalize();
-      exit(1);
-    }
-    Py_DECREF(module);
-
-    module = PyImport_ImportModule("direct.showbase.RunAppMF");
-    if (module == (PyObject *)NULL) {
-      cerr << "RunAppMF not importable\n";
+      cerr << "runp3d not importable\n";
+      PyErr_Print();
       Py_Finalize();
       exit(1);
     }
@@ -186,13 +173,13 @@ int startup = 0;
 
   } else if (startup == 1) {
     // Now that Python is initialized, call the startup function.
-    PyObject *module = PyImport_ImportModule("direct.showbase.RunAppMF");
+    PyObject *module = PyImport_ImportModule("direct.p3d.runp3d");
     if (module != (PyObject *)NULL) {
       PyObject *func = PyObject_GetAttrString(module, "runPackedApp");
       if (func != (PyObject *)NULL) {
-        NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
+        NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.p3d" ];
         const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
-        PyObject *result = PyObject_CallFunction(func, "([s])", script_pathname_cstr);
+        PyObject *result = PyObject_CallFunction(func, "(s)", script_pathname_cstr);
         Py_XDECREF(result);
         Py_DECREF(func);
       }
@@ -210,7 +197,7 @@ int startup = 0;
   } else {
     // We are fully initialized and running.  Run taskMgr.step() once
     // each frame.
-    PyObject *module = PyImport_ImportModule("__builtin__");
+    PyObject *module = PyImport_ImportModule("direct.p3d.runp3d");
     if (module != (PyObject *)NULL) {
       PyObject *taskMgr = PyObject_GetAttrString(module, "taskMgr");
       if (taskMgr != (PyObject *)NULL) {
@@ -244,117 +231,6 @@ int startup = 0;
 
 extern "C" int main(int argc, char *argv[]);
 
-int quickstart() {
-#ifdef LINK_ALL_STATIC
-  // Ensure that all the relevant Panda modules are initialized.
-  extern void init_libpanda();
-  init_libpanda();
-
-  // Ensure the IPhoneDisplay is available.
-  extern void init_libiphonedisplay();
-  init_libiphonedisplay();
-#endif
-
-  NSString *app_directory;
-  NSBundle *bundle = [NSBundle mainBundle];
-  if (bundle != nil) {
-    app_directory = [bundle bundlePath];
-  }
-
-  {
-    Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
-    NSString *app_pathname = [app_directory stringByAppendingString: @"/iphone_runappmf" ];
-    const char *app_pathname_cstr = [app_pathname cStringUsingEncoding: NSASCIIStringEncoding];
-    Py_SetProgramName((char *)app_pathname_cstr);
-    Py_Initialize();
-
-    int argv = 1;
-    NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
-    const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
-    char *argc[] = { (char *)script_pathname_cstr, NULL };
-    PySys_SetArgv(argv, argc);
-
-    const char *app_directory_cstr = [app_directory cStringUsingEncoding: NSASCIIStringEncoding];
-    Py_SetPythonHome((char *)app_directory_cstr);
-
-#ifdef LINK_ALL_STATIC
-    // Construct the Python modules for the interrogate-generated data
-    // we know we've already linked in.
-    initlibpandaexpress();
-    initlibpanda();
-    initlibpandaphysics();
-    initlibpandafx();
-    initlibdirect();
-#endif  // LINK_ALL_STATIC
-
-#if 0
-    PyImport_ImportFrozenModule("direct");
-    PyImport_ImportFrozenModule("direct.showbase");
-    int n = PyImport_ImportFrozenModule("direct.showbase.RunAppMF");
-    if (n == 0) {
-      cerr << "RunAppMF not frozen in binary\n";
-      Py_Finalize();
-      exit(1);
-    } else if (n < 0) {
-      PyErr_Print();
-      Py_Finalize();
-      exit(1);
-    }
-#endif
-  }
-  {
-    PyObject *module = PyImport_ImportModule("direct");
-    if (module == (PyObject *)NULL) {
-      cerr << "direct not importable\n";
-      PyErr_Print();
-      Py_Finalize();
-      exit(1);
-    }
-    Py_DECREF(module);
-
-    module = PyImport_ImportModule("direct.showbase");
-    if (module == (PyObject *)NULL) {
-      cerr << "direct.showbase not importable\n";
-      PyErr_Print();
-      Py_Finalize();
-      exit(1);
-    }
-    Py_DECREF(module);
-
-    module = PyImport_ImportModule("direct.showbase.RunAppMF");
-    if (module == (PyObject *)NULL) {
-      cerr << "RunAppMF not importable\n";
-      PyErr_Print();
-      Py_Finalize();
-      exit(1);
-    }
-    Py_DECREF(module);
-  }
-  {
-    // Now that Python is initialized, call the startup function.
-    PyObject *module = PyImport_ImportModule("direct.showbase.RunAppMF");
-    if (module != (PyObject *)NULL) {
-      PyObject *func = PyObject_GetAttrString(module, "runPackedApp");
-      if (func != (PyObject *)NULL) {
-        NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
-        const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
-        PyObject *result = PyObject_CallFunction(func, "([s])", script_pathname_cstr);
-        Py_XDECREF(result);
-        Py_DECREF(func);
-      }
-      Py_DECREF(module);
-    }
-
-    if (PyErr_Occurred()) {
-      PyErr_Print();
-      Py_Finalize();
-      exit(1);
-    }
-  }
-  cerr << "Successfully started.\n";
-  return 0;
-}
-
 int
 main(int argc, char *argv[]) { 
   /*
@@ -371,7 +247,6 @@ main(int argc, char *argv[]) {
 
   /* Call with the name of our application delegate class */ 
   int retVal = UIApplicationMain(argc, argv, nil, @"AppMFAppDelegate"); 
-  //int retVal = quickstart();
 
   [pool release]; 
   return retVal; 

@@ -40,8 +40,8 @@ if __name__ == '__main__':
     main = open('iphone_runappmf_src.mm', 'r').read()
     freezer.mainInitCode = main
 
-    target = 'sim'
-    #target = 'phone'
+    #target = 'sim'
+    target = 'phone'
 
     if target == 'sim':
         platform = 'IPhoneSimulator'
@@ -81,9 +81,7 @@ if __name__ == '__main__':
     freezer.linkExe = "%s %s %s -o %%(basename)s %s %s %%(basename)s.o" % (cc, arch, lflags, lpath, libs)
 
     freezer.addModule('direct.*.*')
-    freezer.addModule('direct.showbase.RunAppMF')
-    freezer.excludeModule('direct.extensions.*')
-    freezer.compileToExe = True
-    freezer.done()
+    freezer.addModule('direct.p3d.runp3d')
+    freezer.done(compileToExe = True)
 
-    freezer.generateCode(basename)
+    freezer.generateCode(basename, compileToExe = True)
