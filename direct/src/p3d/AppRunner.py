@@ -173,6 +173,11 @@ class AppRunner(DirectObject):
             print "Ignoring request: %s" % (args,)
         self.requestFunc = defaultRequestFunc
 
+        # This will be filled in with the default WindowProperties for
+        # this instance, e.g. the WindowProperties necessary to
+        # re-embed a window in the browser frame.
+        self.windowProperties = None
+        
         # Store our pointer so DirectStart-based apps can find us.
         if AppRunnerGlobal.appRunner is None:
             AppRunnerGlobal.appRunner = self
@@ -680,6 +685,10 @@ class AppRunner(DirectObject):
             self.windowPrc = None
         WindowProperties.clearDefault()
 
+        # However, we keep the self.windowProperties object around, in
+        # case an application wants to return the window to the
+        # browser frame.
+
     def setupWindow(self, windowType, x, y, width, height,
                     parent):
         """ Applies the indicated window parameters to the prc
@@ -730,6 +739,7 @@ class AppRunner(DirectObject):
         if width or height:
             wp.setSize(width, height)
 
+        self.windowProperties = wp
         self.windowPrc = loadPrcFileData("setupWindow", data)
         WindowProperties.setDefault(wp)
 
