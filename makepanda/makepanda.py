@@ -405,7 +405,7 @@ if (COMPILER=="LINUX"):
     PkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     PkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
     PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
-    PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("quat.h", "vrpn_Types.h"))
+    PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
     PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RUNTIME):
@@ -721,7 +721,8 @@ def CompileLib(lib, obj, opts):
             cmd = 'ar cru ' + BracketNameWithQuotes(lib)
         for x in obj: cmd=cmd + ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
-        os.system('chmod +x ' + BracketNameWithQuotes(lib))
+
+        oscmd("ranlib " + BracketNameWithQuotes(lib))
 
 ########################################################################
 ##
@@ -802,6 +803,8 @@ def CompileLink(dll, obj, opts):
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         
         oscmd(cmd)
+        if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4):
+            oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
 ##########################################################################################
@@ -902,10 +905,11 @@ def FreezePy(target, inputs, opts):
 ##########################################################################################
 
 def Package(target, inputs, opts):
+    assert len(inputs) == 1
     # Invoke the ppackage script.
     command = SDK["PYTHONEXEC"] + " direct/src/p3d/ppackage.py"
     command += " -i \"" + GetOutputDir() + "/stage\""
-    command += " direct/src/p3d/panda3d.pdef"
+    command += " " + inputs[0]
     oscmd(command)
 
 ##########################################################################################
@@ -1851,17 +1855,18 @@ TargetAdd('interrogate_module.exe', input='libcppParser.ilb')
 TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
 TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL'])
 
-TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
-TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
-TargetAdd('parse_file.exe', input='libcppParser.ilb')
-TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
+if (not RUNTIME):
+  TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
+  TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
+  TargetAdd('parse_file.exe', input='libcppParser.ilb')
+  TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
 #
 
-if (PkgSkip("OPENSSL")==0):
+if (PkgSkip("OPENSSL")==0 and not RUNTIME):
   OPTS=['DIR:dtool/src/prckeys', 'OPENSSL']
   TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
   TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
@@ -1872,11 +1877,12 @@ if (PkgSkip("OPENSSL")==0):
 # DIRECTORY: dtool/src/test_interrogate/
 #
 
-OPTS=['DIR:dtool/src/test_interrogate']
-TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
-TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
-TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
+if (not RUNTIME):
+  OPTS=['DIR:dtool/src/test_interrogate']
+  TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
+  TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
+  TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
 # DIRECTORY: panda/src/pandabase/
@@ -2550,7 +2556,7 @@ if PkgSkip("OPENAL") == 0:
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if PkgSkip("OPENSSL")==0:
+if (PkgSkip("OPENSSL")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI']
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
@@ -2597,7 +2603,7 @@ if PkgSkip("OPENSSL")==0:
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if PkgSkip("ZLIB")==0:
+if (PkgSkip("ZLIB")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
@@ -2911,13 +2917,14 @@ TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
 # DIRECTORY: panda/src/testbed/
 #
 
-OPTS=['DIR:panda/src/testbed']
-TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
-TargetAdd('pview.exe', input='pview_pview.obj')
-TargetAdd('pview.exe', input='libp3framework.dll')
-TargetAdd('pview.exe', input='libpandafx.dll')
-TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-TargetAdd('pview.exe', opts=['ADVAPI'])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/testbed']
+  TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
+  TargetAdd('pview.exe', input='pview_pview.obj')
+  TargetAdd('pview.exe', input='libp3framework.dll')
+  TargetAdd('pview.exe', input='libpandafx.dll')
+  TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('pview.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: panda/src/tinydisplay/
@@ -2958,15 +2965,16 @@ if (PkgSkip("PYTHON")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
-  TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
-  TargetAdd('packpanda.exe', input='packpanda.obj')
-  TargetAdd('packpanda.exe', opts=['PYTHON'])
+  if (not RUNTIME):
+    DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
+    TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
+    TargetAdd('packpanda.exe', input='packpanda.obj')
+    TargetAdd('packpanda.exe', opts=['PYTHON'])
 
-  DefSymbol("BUILDING:EGGCACHER", "IMPORT_MODULE", "direct.directscripts.eggcacher")
-  TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx')
-  TargetAdd('eggcacher.exe', input='eggcacher.obj')
-  TargetAdd('eggcacher.exe', opts=['PYTHON'])
+    DefSymbol("BUILDING:EGGCACHER", "IMPORT_MODULE", "direct.directscripts.eggcacher")
+    TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx')
+    TargetAdd('eggcacher.exe', input='eggcacher.obj')
+    TargetAdd('eggcacher.exe', opts=['PYTHON'])
 
 #
 # DIRECTORY: direct/src/dcparser/
@@ -3092,7 +3100,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/dcparse/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and not RUNTIME):
   OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI']
   TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
@@ -4015,6 +4023,7 @@ if (PkgSkip("PYTHON")==0):
 if (RUNTIME):
   OPTS=['DIR:direct/src/p3d']
   TargetAdd('panda3d', opts=OPTS, input='panda3d.pdef')
+  TargetAdd('coreapi', opts=OPTS, input='coreapi.pdef')
 
 #
 # Generate the models directory and samples directory
