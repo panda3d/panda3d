@@ -51,6 +51,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
 CheckPandaSourceTree()
 
 VERSION=ParsePandaVersion("dtool/PandaVersion.pp")
+PLUGIN_VERSION=ParsePluginVersion("dtool/PandaVersion.pp")
 
 def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
@@ -383,10 +384,11 @@ if (COMPILER=="LINUX"):
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
     ffmpeg_libs = ("libavutil", "libavcodec", "libavformat", "libswscale")
+    fcollada_libs = ("FColladaUD", "FColladaD", "FColladaSUD", "FColladaSD")
 
     #         Name         pkg-config   libs, include(dir)s
     PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
-    PkgEnable("FCOLLADA",  "",          ("FCollada"), "FCollada.h")
+    PkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
     PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
     PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
     PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
@@ -407,7 +409,7 @@ if (COMPILER=="LINUX"):
     PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
     PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RUNTIME):
-        PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h"))
+        PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr/prtypes.h", "nspr"))
         PkgEnable("WX",    tool = "wx-config")
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
@@ -665,7 +667,11 @@ def CompileIgate(woutd,wsrc,opts):
     if (building): cmd += " -DBUILDING_"+building
     if ("LINK_ALL_STATIC" in opts): cmd += " -DLINK_ALL_STATIC"
     cmd += ' -module ' + module + ' -library ' + library
-    for x in wsrc: cmd += ' ' + BracketNameWithQuotes(os.path.basename(x))
+    for x in wsrc:
+        if (x.startswith("/")):
+            cmd += ' ' + BracketNameWithQuotes(x)
+        else:
+            cmd += ' ' + BracketNameWithQuotes(os.path.basename(x))
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
     return
@@ -1338,6 +1344,10 @@ def CreatePandaVersionFiles():
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
     version3=int(VERSION.split(".")[2])
+    if RUNTIME:
+        pversion1=int(PLUGIN_VERSION.split(".")[0])
+        pversion2=int(PLUGIN_VERSION.split(".")[1])
+        pversion3=int(PLUGIN_VERSION.split(".")[2])
     nversion=version1*1000000+version2*1000+version3
     
     pandaversion_h = PANDAVERSION_H.replace("$VERSION1",str(version1))
@@ -1350,6 +1360,10 @@ def CreatePandaVersionFiles():
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
         pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
+    if RUNTIME:
+        pandaversion_h += "\n#define P3D_PLUGIN_MAJOR_VERSION %s\n" % pversion1
+        pandaversion_h += "\n#define P3D_PLUGIN_MINOR_VERSION %s\n" % pversion1
+        pandaversion_h += "\n#define P3D_PLUGIN_SEQUENCE_VERSION %s\n" % pversion1
     
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
@@ -3143,7 +3157,7 @@ if (RUNTIME):
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0):
-    OPTS=['DIR:direct/src/plugin', 'OPENSSL', 'WX']
+    OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
     TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
     TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
     TargetAdd('p3dcert.exe', opts=['OPENSSL', 'WX', 'CARBON'])

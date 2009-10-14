@@ -1506,6 +1506,19 @@ def ParsePandaVersion(fn):
     except: version="0.0.0"
     return version
 
+def ParsePluginVersion(fn):
+    try:
+        f = file(fn, "r")
+        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
+        for line in f:
+            match = pattern.match(line,0)
+            if (match):
+                version = match.group(1)+"."+match.group(2)+"."+match.group(3)
+                break
+        f.close()
+    except: version="0.0.0"
+    return version
+
 ########################################################################
 ##
 ## FindLocation
