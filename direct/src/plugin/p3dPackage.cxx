@@ -485,6 +485,7 @@ download_desc_file() {
                                     _package_name, _package_version)) {
     nout << "Couldn't find package " << _package_fullname
          << " in contents file.\n";
+    report_done(false);
     return;
   }
 
