@@ -79,12 +79,12 @@ if not options.nsis or not options.license:
         options.license = os.path.join(PANDA, 'LICENSE')
 
 if not options.welcome_image:
-    filename = Filename('plugin_images/download.jpg')
+    filename = Filename('plugin_images/download.png')
     found = filename.resolveFilename(getModelPath().getValue())
     if not found:
         found = filename.resolveFilename("models")
     if not found:
-        sys.exit("Couldn't find download.jpg for welcome_image.")
+        sys.exit("Couldn't find download.png for welcome_image.")
     options.welcome_image = filename
 
 def parseDependenciesWindows(tempFile):
