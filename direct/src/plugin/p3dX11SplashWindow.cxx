@@ -439,7 +439,10 @@ rt_thread_run() {
   while (true) {
     TiXmlDocument *doc = read_xml(_pipe_read, nout);
     if (doc == NULL) {
-      // Some error on reading.
+      // Some error on reading.  The splash window must have gone
+      // away, e.g. because the user explicitly closed it; tell the
+      // instance to exit.
+      _inst->request_stop_sub_thread();
       return;
     }
 
