@@ -152,7 +152,7 @@ run(int argc, char *argv[]) {
 
     case 'l':
       _log_dirname = Filename::from_os_specific(optarg).to_os_specific();
-      _log_basename = "panda3d";
+      _log_basename = "p3dcore";
       break;
 
     case 'i':

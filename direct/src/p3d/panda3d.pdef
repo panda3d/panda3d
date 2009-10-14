@@ -156,6 +156,7 @@ audio-library-name miles_audio
 class audio(package):
     # This package includes the best audio library for the given
     # platform, assuming a non-commercial application.
+    require('panda3d')
     
     if platform.startswith('osx'):
         require('fmod')

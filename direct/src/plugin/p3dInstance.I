@@ -108,6 +108,17 @@ is_started() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::is_failed
+//       Access: Public
+//  Description: Returns true if this instance has tried and failed to
+//               launch for some reason.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstance::
+is_failed() const {
+  return _failed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::ImageFile::Constructor
 //       Access: Public
 //  Description: 

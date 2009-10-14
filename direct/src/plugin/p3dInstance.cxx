@@ -93,11 +93,13 @@ P3DInstance(P3D_request_ready_func *func,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
+  _has_log_basename = false;
   _hidden = (_fparams.lookup_token_int("hidden") != 0);
   _allow_python_dev = false;
   _keep_user_env = false;
   _auto_start = false;
   _auth_button_approved = false;
+  _failed = false;
   _session = NULL;
   _auth_session = NULL;
   _panda3d = NULL;
@@ -320,6 +322,7 @@ set_p3d_filename(const string &p3d_filename) {
 
   if (!_mf_reader.open_read(_fparams.get_p3d_filename())) {
     nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
+    set_failed();
     return;
   }
 
@@ -1189,6 +1192,9 @@ void P3DInstance::
 mark_p3d_untrusted() {
   // Failed test.
   nout << "p3d untrusted\n";
+  if (is_failed()) {
+    return;
+  }
 
   if (_p3dcert_package == NULL) {
     // We have to go download this package.
@@ -1238,7 +1244,7 @@ mark_p3d_trusted() {
   stringstream sstream;
   if (!_mf_reader.extract_one(sstream, "p3d_info.xml")) {
     nout << "No p3d_info.xml file found in " << _fparams.get_p3d_filename() << "\n";
-    // TODO: fail.
+    set_failed();
 
   } else {
     sstream.seekg(0);
@@ -1296,8 +1302,10 @@ scan_app_desc_file(TiXmlDocument *doc) {
   _xpackage = (TiXmlElement *)xpackage->Clone();
 
   const char *log_basename = _xpackage->Attribute("log_basename");
+  _has_log_basename = false;
   if (log_basename != NULL) {
     _log_basename = log_basename;
+    _has_log_basename = false;
   }
 
   TiXmlElement *xconfig = _xpackage->FirstChildElement("config");
@@ -1676,6 +1684,21 @@ handle_script_request(const string &operation, P3D_object *object,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_failed
+//       Access: Private
+//  Description: Sets the "failed" indication to display sadness to
+//               the user--we're unable to launch the instance for
+//               some reason.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_failed() {
+  _failed = true;
+  set_button_image(IT_none);
+  set_background_image(IT_failed);
+  make_splash_window();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::make_splash_window
 //       Access: Private
 //  Description: Creates the splash window to be displayed at startup,
@@ -1696,6 +1719,12 @@ make_splash_window() {
     // splash window unless we have stuff to download, or a button to
     // display.
     make_visible = false;
+  }
+
+  if (_failed) {
+    // But, if we've failed to launch somehow, we need to let the user
+    // know.
+    make_visible = true;
   }
 
   if (_splash_window != NULL) {
@@ -1929,7 +1958,7 @@ start_next_download() {
   while (_download_package_index < (int)_downloading_packages.size()) {
     P3DPackage *package = _downloading_packages[_download_package_index];
     if (package->get_failed()) {
-      // Too bad.  TODO: fail.
+      set_failed();
       return;
     }
 
@@ -2001,8 +2030,8 @@ mark_download_complete() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
-  if (is_started()) {
-    // Already started.
+  if (is_started() || is_failed()) {
+    // Already started--or never mind.
     return;
   }
 
@@ -2160,7 +2189,7 @@ report_package_done(P3DPackage *package, bool success) {
     report_package_progress(package, 1.0);
     start_next_download();
   } else {
-    // TODO: fail.
+    set_failed();
   }
 }
 

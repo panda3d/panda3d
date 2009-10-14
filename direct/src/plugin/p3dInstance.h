@@ -99,6 +99,7 @@ public:
   inline bool is_trusted() const;
   void start_download(P3DDownload *download);
   inline bool is_started() const;
+  inline bool is_failed() const;
   void request_stop_sub_thread();
   void request_stop_main_thread();
   void request_refresh();
@@ -164,6 +165,7 @@ private:
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
 
+  void set_failed();
   void make_splash_window();
   void set_background_image(ImageType image_type);
   void set_button_image(ImageType image_type);
@@ -226,11 +228,13 @@ private:
   int _instance_id;
   string _session_key;
   string _log_basename;
+  bool _has_log_basename;
   bool _hidden;
   bool _allow_python_dev;
   bool _keep_user_env;
   bool _auto_start;
   bool _auth_button_approved;
+  bool _failed;
 
   P3DSession *_session;
   P3DAuthSession *_auth_session;

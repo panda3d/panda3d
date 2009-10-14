@@ -222,17 +222,18 @@ initialize(const string &contents_filename, const string &host_url,
     _log_basename = P3D_PLUGIN_LOG_BASENAME2;
   }
 #endif
-  if (!_log_basename.empty()) {
-    _log_pathname = _log_directory;
-    _log_pathname += _log_basename;
-    _log_pathname += ".log";
-
-    logfile.clear();
-    logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
-    if (logfile) {
-      logfile.setf(ios::unitbuf);
-      nout_stream = &logfile;
-    }
+  if (_log_basename.empty()) {
+    _log_basename = "p3dcore";
+  }
+  _log_pathname = _log_directory;
+  _log_pathname += _log_basename;
+  _log_pathname += ".log";
+  
+  logfile.clear();
+  logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+  if (logfile) {
+    logfile.setf(ios::unitbuf);
+    nout_stream = &logfile;
   }
 
   // Determine the temporary directory.
@@ -434,6 +435,11 @@ set_p3d_filename(P3DInstance *inst, bool is_local,
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 start_instance(P3DInstance *inst) {
+  if (inst->is_failed()) {
+    // Don't bother trying again.
+    return false;
+  }
+
   if (inst->is_started()) {
     // Already started.
     return true;

@@ -64,6 +64,7 @@ public:
 
 private:
   void start_p3dpython(P3DInstance *inst);
+  void set_failed();
 
   void spawn_read_thread();
   void join_read_thread();
@@ -93,6 +94,7 @@ private:
   string _python_root_dir;
   string _start_dir;
   bool _keep_user_env;
+  bool _failed;
 
   // This information is passed to create_process(), or to
   // p3dpython_thread_run().

@@ -56,6 +56,8 @@ P3DSession(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _session_id = inst_mgr->get_unique_id();
   _session_key = inst->get_session_key();
+  _keep_user_env = false;
+  _failed = false;
 
   _start_dir = inst_mgr->get_root_dir() + "/start";
   _p3dpython_one_process = false;
@@ -214,6 +216,10 @@ void P3DSession::
 start_instance(P3DInstance *inst) {
   assert(inst->_session == NULL);
   assert(inst->get_session_key() == _session_key);
+  if (_failed) {
+    inst->set_failed();
+    return;
+  }
 
   inst->ref();
   ACQUIRE_LOCK(_instances_lock);
@@ -342,6 +348,7 @@ command_and_response(TiXmlDocument *command) {
     // in recursively.
     _response_ready.release();
     Instances::iterator ii;
+    // TODO: should we acquire _instances_lock?  Deadlock concerns?
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
       P3DInstance *inst = (*ii).second;
       inst->bake_requests();
@@ -678,6 +685,7 @@ start_p3dpython(P3DInstance *inst) {
 
   if (inst->_panda3d == NULL) {
     nout << "Couldn't start Python: no panda3d dependency.\n";
+    set_failed();
     return;
   }
 
@@ -823,7 +831,7 @@ start_p3dpython(P3DInstance *inst) {
     const char *dont_keep[] = {
       "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
       "PYTHONPATH", "PYTHONHOME", "PRC_PATH", "PANDA_PRC_PATH",
-      "TEMP",
+      "TEMP", "CTPROJS",
       NULL
     };
 
@@ -931,19 +939,24 @@ start_p3dpython(P3DInstance *inst) {
 
   // Get the log filename from the p3d_info.xml file.
   string log_basename = inst->_log_basename;
+  bool has_log_basename = inst->_has_log_basename;
 
   // But we also let it be overridden by the tokens.
   if (inst->get_fparams().has_token("log_basename")) {
     log_basename = inst->get_fparams().lookup_token("log_basename");
+    has_log_basename = true;
   }
 
+  if (!has_log_basename) {
 #ifdef P3D_PLUGIN_LOG_BASENAME3
-  if (log_basename.empty()) {
     // No log_basename specified for the app; use the compiled-in
     // default.
     log_basename = P3D_PLUGIN_LOG_BASENAME3;
-  }
 #endif
+    if (log_basename.empty()) {
+      log_basename = "p3dsession";
+    }
+  }
 
   // However, it is always written into the log directory only; the
   // user may not override the log file to put it anywhere else.
@@ -975,6 +988,7 @@ start_p3dpython(P3DInstance *inst) {
   // Create the pipe to the process.
   if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
     nout << "failed to create pipe\n";
+    set_failed();
   } else {
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -984,6 +998,7 @@ start_p3dpython(P3DInstance *inst) {
   // Create the pipe from the process.
   if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
     nout << "failed to create pipe\n";
+    set_failed();
   } else { 
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -1000,10 +1015,12 @@ start_p3dpython(P3DInstance *inst) {
   int to_fd[2];
   if (pipe(to_fd) < 0) {
     perror("failed to create pipe");
+    set_failed();
   }
   int from_fd[2];
   if (pipe(from_fd) < 0) {
     perror("failed to create pipe");
+    set_failed();
   }
 
   _input_handle = to_fd[0];
@@ -1011,6 +1028,10 @@ start_p3dpython(P3DInstance *inst) {
   _pipe_read.open_read(from_fd[0]);
   _pipe_write.open_write(to_fd[1]);
 #endif // _WIN32
+
+  if (_failed) {
+    return;
+  }
 
   // Get the filename of the Panda3D multifile.  We need to pass this
   // to p3dpython.
@@ -1072,6 +1093,30 @@ start_p3dpython(P3DInstance *inst) {
     delete (*ci);
   }
   _commands.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::set_failed
+//       Access: Private
+//  Description: Sets the "failed" indication to display sadness to
+//               the user--we're unable to launch the instance for
+//               some reason.
+//
+//               When this is called on the P3DSession instead of on a
+//               particular P3DInstance, it means that all instances
+//               attached to this session are marked failed.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+set_failed() {
+  _failed = true;
+
+  Instances::iterator ii;
+  ACQUIRE_LOCK(_instances_lock);
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    P3DInstance *inst = (*ii).second;
+    inst->set_failed();
+  }
+  RELEASE_LOCK(_instances_lock);
 }
 
 ////////////////////////////////////////////////////////////////////

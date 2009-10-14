@@ -90,6 +90,7 @@ set_wparams(const P3DWindowParams &wparams) {
       EventTypeSpec list1[] = { 
         { kEventClassWindow, kEventWindowDrawContent },
         { kEventClassWindow, kEventWindowBoundsChanged },
+        { kEventClassWindow, kEventWindowClose },
         { kEventClassMouse, kEventMouseUp },
         { kEventClassMouse, kEventMouseDown },
         { kEventClassMouse, kEventMouseMoved },
@@ -605,6 +606,12 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
 
     case kEventWindowDrawContent:
       paint_window();
+      break;
+
+    case kEventWindowClose:
+      // When the user closes the splash window, stop the instance.
+      _inst->request_stop_sub_thread();
+      break;
     };
     break;
 
