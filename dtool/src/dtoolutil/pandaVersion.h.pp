@@ -50,7 +50,7 @@ $[cdefine PANDA_OFFICIAL_VERSION]
 
 /* This is the panda numeric version as a single number, with three
    digits reserved for each component. */
-# define PANDA_VERSION $[+ $[* $[PANDA_MAJOR_VERSION],1000000],$[* $[PANDA_MINOR_VERSION],1000],$[PANDA_SEQUENCE_VERSION]]
+$[cdefine PANDA_NUMERIC_VERSION]
 
 /* This is the panda version expressed as a string.  It ends in the
    letter "c" if this is not an "official" version (e.g. it was checked

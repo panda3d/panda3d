@@ -239,17 +239,23 @@ has_property(NPIdentifier name) {
 ////////////////////////////////////////////////////////////////////
 bool PPPandaObject::
 get_property(NPIdentifier name, NPVariant *result) {
+  // Actually, we never return false.  If the property doesn't exist,
+  // we return undefined, to be consistent with JavaScript (and with
+  // IE).
+
   string property_name = identifier_to_string(name);
   //nout << this << ".get_property(" << property_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
-    return false;
+    VOID_TO_NPVARIANT(*result);
+    return true;
   }
 
   P3D_object *value = P3D_OBJECT_GET_PROPERTY(_p3d_object, property_name.c_str());
   if (value == NULL) {
     // No such property.
-    return false;
+    VOID_TO_NPVARIANT(*result);
+    return true;
   }
 
   // We have the property, and its value is stored in value.

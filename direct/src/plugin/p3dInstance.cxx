@@ -140,11 +140,24 @@ P3DInstance(P3D_request_ready_func *func,
   if (!inst_mgr->get_plugin_official_version()) {
     stream << "c";
   }
+  
+// The plugin version as a single number, with three digits reserved
+// for each component.
+  int numeric_version = 
+    inst_mgr->get_plugin_major_version() * 1000000 + 
+    inst_mgr->get_plugin_minor_version() * 1000 + 
+    inst_mgr->get_plugin_sequence_version();
+  if (!inst_mgr->get_plugin_official_version()) { 
+    // Subtract 1 if we are not an official version.
+    --numeric_version;
+  }
+
   _panda_script_object->set_string_property("pluginVersionString", stream.str());
   _panda_script_object->set_int_property("pluginMajorVersion", inst_mgr->get_plugin_major_version());
   _panda_script_object->set_int_property("pluginMinorVersion", inst_mgr->get_plugin_minor_version());
   _panda_script_object->set_int_property("pluginSequenceVersion", inst_mgr->get_plugin_sequence_version());
   _panda_script_object->set_bool_property("pluginOfficialVersion", inst_mgr->get_plugin_official_version());
+  _panda_script_object->set_int_property("pluginNumericVersion", numeric_version);
   _panda_script_object->set_string_property("pluginDistributor", inst_mgr->get_plugin_distributor());
   _panda_script_object->set_string_property("coreapiHostUrl", inst_mgr->get_coreapi_host_url());
   time_t timestamp = inst_mgr->get_coreapi_timestamp();
