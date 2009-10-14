@@ -4244,6 +4244,7 @@ Description: The Panda3D free 3D engine
 # the user will be required to install Maya in order
 # to install the resulting RPM.
 INSTALLER_SPEC_FILE="""
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 Summary: The Panda3D free 3D engine
 Name: panda3d
 Version: VERSION
@@ -4271,6 +4272,7 @@ The Panda3D engine.
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
 /usr/%_lib
+%{python_sitelib}
 /usr/include/panda3d
 """
 

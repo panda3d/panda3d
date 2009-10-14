@@ -100,7 +100,7 @@ def WriteKeysFile(fname, info):
 
 def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
-    PPATH=get_python_lib()
+    PPATH=get_python_lib(1)
     oscmd("mkdir -p "+destdir+prefix+"/bin")
     oscmd("mkdir -p "+destdir+prefix+"/include")
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d")
