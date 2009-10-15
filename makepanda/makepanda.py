@@ -4272,7 +4272,7 @@ The Panda3D engine.
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
 /usr/%_lib
-%{python_sitelib}
+%{python_sitearch}
 /usr/include/panda3d
 """
 
