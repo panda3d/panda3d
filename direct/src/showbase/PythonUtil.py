@@ -4021,17 +4021,26 @@ def histogramDict(l):
 def unescapeHtmlString(s):
     # converts %## to corresponding character
     # replaces '+' with ' '
-    while 1:
-        try:
-            i = s.index('%')
-        except:
-            break
-        lastCharIndex = len(s)-1
-        if i <= lastCharIndex-2:
-            num = eval('0x' + s[i+1:i+3])
-            s = s[:i] + chr(num) + s[i+3:]
-    s = s.replace('+', ' ')
-    return s
+    result = ''
+    i = 0
+    while i < len(s):
+        char = s[i]
+        if char == '+':
+            char = ' '
+        elif char == '%':
+            if i < (len(s)-2):
+                num = eval('0x' + s[i+1:i+3])
+                char = chr(num)
+                i += 2
+        i += 1
+        result += char
+    return result
+
+if __debug__:
+    assert unescapeHtmlString('asdf') == 'asdf'
+    assert unescapeHtmlString('as+df') == 'as df'
+    assert unescapeHtmlString('as%32df') == 'as2df'
+    assert unescapeHtmlString('asdf%32') == 'asdf2'
 
 import __builtin__
 __builtin__.Functor = Functor
