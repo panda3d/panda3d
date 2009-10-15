@@ -300,6 +300,7 @@ make_rgb() {
 ////////////////////////////////////////////////////////////////////
 INLINE const xel &PNMImage::
 get_xel_val(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size && y >= 0 && y < _y_size, _array[0]);
   return row(y)[x];
 }
 
@@ -311,6 +312,7 @@ get_xel_val(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, const xel &value) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   row(y)[x] = value;
 }
 
@@ -322,6 +324,7 @@ set_xel_val(int x, int y, const xel &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, xelval r, xelval g, xelval b) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_ASSIGN(row(y)[x], r, g, b);
 }
 
@@ -334,6 +337,7 @@ set_xel_val(int x, int y, xelval r, xelval g, xelval b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, xelval gray) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_ASSIGN(row(y)[x], gray, gray, gray);
 }
 
@@ -395,6 +399,7 @@ get_gray_val(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_alpha_val(int x, int y) const {
+  nassertr(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size, 0);
   return alpha_row(y)[x];
 }
 
@@ -407,6 +412,7 @@ get_alpha_val(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_red_val(int x, int y, xelval r) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_PUTR(row(y)[x], r);
 }
 
@@ -419,6 +425,7 @@ set_red_val(int x, int y, xelval r) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_green_val(int x, int y, xelval g) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_PUTG(row(y)[x], g);
 }
 
@@ -431,6 +438,7 @@ set_green_val(int x, int y, xelval g) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_blue_val(int x, int y, xelval b) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_PUTB(row(y)[x], b);
 }
 
@@ -448,6 +456,7 @@ set_blue_val(int x, int y, xelval b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_gray_val(int x, int y, xelval gray) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   PPM_PUTB(row(y)[x], gray);
 }
 
@@ -461,6 +470,7 @@ set_gray_val(int x, int y, xelval gray) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_alpha_val(int x, int y, xelval a) {
+  nassertv(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   alpha_row(y)[x] = a;
 }
 
@@ -857,6 +867,7 @@ allocate_alpha() {
 ////////////////////////////////////////////////////////////////////
 INLINE xel *PNMImage::
 row(int y) const {
+  nassertr(y >= 0 && y < _y_size, NULL);
   return _array + y * _x_size;
 }
 
@@ -868,6 +879,7 @@ row(int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE xelval *PNMImage::
 alpha_row(int y) const {
+  nassertr(_alpha != NULL && y >= 0 && y < _y_size, NULL);
   return _alpha + y * _x_size;
 }
 
