@@ -164,6 +164,21 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   }
 #endif
 
+  int browser_major = HIBYTE(browser->version);
+  int browser_minor = LOBYTE(browser->version);
+  nout << "Browser version " << browser_major << "." << browser_minor << "\n";
+
+  int expected_major = NP_VERSION_MAJOR;
+  int expected_minor = NP_VERSION_MINOR;
+
+  nout << "Expected version " << expected_major << "." << expected_minor
+       << "\n";
+  if (browser_major < expected_major ||
+      (browser_major == expected_major && browser_minor < expected_minor)) {
+    nout << "Cannot run: unsupported version of NPAPI detected.\n";
+    return NPERR_GENERIC_ERROR;
+  }
+
   // Seed the lame random number generator in rand(); we use it to
   // select a mirror for downloading.
   srand((unsigned int)time(NULL));
