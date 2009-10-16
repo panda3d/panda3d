@@ -4516,7 +4516,7 @@ do_issue_material() {
 
   GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
   GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
-  GLP(Materialf)(face, GL_SHININESS, material->get_shininess());
+  GLP(Materialf)(face, GL_SHININESS, min(material->get_shininess(), 128.0f));
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
