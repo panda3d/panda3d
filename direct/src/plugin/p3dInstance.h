@@ -59,6 +59,7 @@ public:
 
   void set_p3d_url(const string &p3d_url);
   void set_p3d_filename(const string &p3d_filename);
+  int make_p3d_stream(const string &p3d_url);
   inline const P3DFileParams &get_fparams() const;
 
   void set_wparams(const P3DWindowParams &wparams);
@@ -97,7 +98,7 @@ public:
   bool get_packages_failed() const;
   
   inline bool is_trusted() const;
-  void start_download(P3DDownload *download);
+  int start_download(P3DDownload *download, bool add_request = true);
   inline bool is_started() const;
   inline bool is_failed() const;
   void request_stop_sub_thread();

@@ -92,6 +92,7 @@ public:
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
                         const string &p3d_filename);
+  int make_p3d_stream(P3DInstance *inst, const string &p3d_url);
   bool start_instance(P3DInstance *inst);
   void finish_instance(P3DInstance *inst);
   P3DAuthSession *authorize_instance(P3DInstance *inst);

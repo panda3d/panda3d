@@ -425,6 +425,22 @@ set_p3d_filename(P3DInstance *inst, bool is_local,
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::make_p3d_stream
+//       Access: Public
+//  Description: Indicates an intention to transmit the p3d data as a
+//               stream.  Should return a new unique stream ID to
+//               receive it.
+////////////////////////////////////////////////////////////////////
+int P3DInstanceManager::
+make_p3d_stream(P3DInstance *inst, const string &p3d_url) {
+  if (inst->is_started()) {
+    nout << "Instance started twice: " << inst << "\n";
+    return -1;
+  }
+  return inst->make_p3d_stream(p3d_url);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::start_instance

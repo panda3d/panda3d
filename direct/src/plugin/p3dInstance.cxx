@@ -279,7 +279,8 @@ P3DInstance::
 //       Access: Public
 //  Description: Specifies a URL that should be contacted to download
 //               the instance data.  Normally this, or
-//               set_p3d_filename(), is only called once.
+//               set_p3d_filename() or make_p3d_stream(), is only
+//               called once.
 //
 //               The instance data at the other end of this URL is
 //               key.  We can't start the instance until we have
@@ -313,6 +314,41 @@ set_p3d_url(const string &p3d_url) {
 
   _panda_script_object->set_string_property("status", "downloading_instance");
   start_download(download);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::make_p3d_stream
+//       Access: Public
+//  Description: Indicates an intention to transmit the p3d data as a
+//               stream.  Should return a new unique stream ID to
+//               receive it.
+////////////////////////////////////////////////////////////////////
+int P3DInstance::
+make_p3d_stream(const string &p3d_url) {
+  // Make a temporary file to receive the instance data.
+  assert(_temp_p3d_filename == NULL);
+  _temp_p3d_filename = new P3DTemporaryFile(".p3d");
+  _stuff_to_download = true;
+
+  // Maybe it's time to open a splash window now.
+  make_splash_window();
+
+  // Mark the time we started downloading, so we'll know when to reveal
+  // the progress bar.
+#ifdef _WIN32
+  _start_dl_instance_tick = GetTickCount();
+#else
+  gettimeofday(&_start_dl_instance_timeval, NULL);
+#endif
+  _show_dl_instance_progress = false;
+
+  // Start downloading the data.
+  InstanceDownload *download = new InstanceDownload(this);
+  download->set_url(p3d_url);
+  download->set_filename(_temp_p3d_filename->get_filename());
+
+  _panda_script_object->set_string_property("status", "downloading_instance");
+  return start_download(download, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -908,9 +944,18 @@ get_packages_failed() const {
 //               This increments the P3DDownload object's reference
 //               count, and will decrement it (and possibly delete the
 //               object) after download_finished() has been called.
+//
+//               add_request should be true to actually request the
+//               URL from the plugin, or false not to.  Normally, this
+//               should always be set true, except in the one special
+//               case of make_p3d_stream(), in which case the plugin
+//               is already prepared to send the stream and doesn't
+//               need to have it requested.
+//
+//               Returns the unique ID of this stream.
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
-start_download(P3DDownload *download) {
+int P3DInstance::
+start_download(P3DDownload *download, bool add_request) {
   assert(download->get_download_id() == 0);
   assert(!download->get_url().empty());
 
@@ -923,12 +968,16 @@ start_download(P3DDownload *download) {
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
   assert(inserted);
 
-  P3D_request *request = new P3D_request;
-  request->_request_type = P3D_RT_get_url;
-  request->_request._get_url._url = strdup(download->get_url().c_str());
-  request->_request._get_url._unique_id = download_id;
+  if (add_request) {
+    P3D_request *request = new P3D_request;
+    request->_request_type = P3D_RT_get_url;
+    request->_request._get_url._url = strdup(download->get_url().c_str());
+    request->_request._get_url._unique_id = download_id;
+    
+    add_baked_request(request);
+  }
 
-  add_baked_request(request);
+  return download_id;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ P3D_set_plugin_version_func *P3D_set_plugin_version;
 P3D_set_super_mirror_func *P3D_set_super_mirror;
 P3D_new_instance_func *P3D_new_instance;
 P3D_instance_start_func *P3D_instance_start;
+P3D_instance_start_stream_func *P3D_instance_start_stream;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
@@ -193,6 +194,7 @@ load_plugin(const string &p3d_plugin_filename,
   P3D_set_super_mirror = (P3D_set_super_mirror_func *)get_func(module, "P3D_set_super_mirror");  
   P3D_new_instance = (P3D_new_instance_func *)get_func(module, "P3D_new_instance");  
   P3D_instance_start = (P3D_instance_start_func *)get_func(module, "P3D_instance_start");  
+  P3D_instance_start_stream = (P3D_instance_start_stream_func *)get_func(module, "P3D_instance_start_stream");  
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
@@ -234,6 +236,7 @@ load_plugin(const string &p3d_plugin_filename,
       P3D_set_super_mirror == NULL ||
       P3D_new_instance == NULL ||
       P3D_instance_start == NULL ||
+      P3D_instance_start_stream == NULL ||
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
 
@@ -275,6 +278,7 @@ load_plugin(const string &p3d_plugin_filename,
       << "\nP3D_set_super_mirror = " << P3D_set_super_mirror
       << "\nP3D_new_instance = " << P3D_new_instance
       << "\nP3D_instance_start = " << P3D_instance_start
+      << "\nP3D_instance_start_stream = " << P3D_instance_start_stream
       << "\nP3D_instance_finish = " << P3D_instance_finish
       << "\nP3D_instance_setup_window = " << P3D_instance_setup_window
       
@@ -371,6 +375,7 @@ unload_dso() {
   P3D_set_super_mirror = NULL;
   P3D_new_instance = NULL;
   P3D_instance_start = NULL;
+  P3D_instance_start_stream = NULL;
   P3D_instance_finish = NULL;
   P3D_instance_setup_window = NULL;
 

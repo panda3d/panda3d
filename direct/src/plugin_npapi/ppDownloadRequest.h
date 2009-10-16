@@ -28,8 +28,7 @@ public:
   enum RequestType {
     RT_contents_file,
     RT_core_dll,
-    RT_user,
-    RT_instance_data
+    RT_user
   };
 
   inline PPDownloadRequest(RequestType rtype, int user_id = 0);

@@ -26,6 +26,7 @@ extern P3D_set_plugin_version_func *P3D_set_plugin_version;
 extern P3D_set_super_mirror_func *P3D_set_super_mirror;
 extern P3D_new_instance_func *P3D_new_instance;
 extern P3D_instance_start_func *P3D_instance_start;
+extern P3D_instance_start_stream_func *P3D_instance_start_stream;
 extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 

@@ -192,19 +192,12 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     // stream we receive is the instance data; any other unsolicited
     // stream is an error.
 
-    // We don't let Mozilla finish downloading the instance data, but
-    // we do extract its URL to pass to the instance.
-    if (!_got_instance_url && stream->url != NULL) {
+    if (!_got_instance_url && stream->url != NULL && _p3d_inst != NULL) {
       _got_instance_url = true;
       _instance_url = stream->url;
-      if (_p3d_inst != NULL) {
-        P3D_instance_start(_p3d_inst, false, _instance_url.c_str());
-      } 
+      int user_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
 
-      // We don't want the rest of this stream any more, but we can't
-      // just return NPERR_GENERIC_ERROR, though--that seems to freak
-      // out Firefox.
-      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
+      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_user, user_id);
 
       *stype = NP_NORMAL;
       return NPERR_NO_ERROR;
@@ -263,13 +256,6 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
                                  P3D_RC_in_progress, 0,
                                  stream->end, buffer, len);
     return len;
-
-  case PPDownloadRequest::RT_instance_data:
-    // Here's a stream we don't really want.  But stopping it here
-    // seems to freak out Safari.  (And stopping it before it starts
-    // freaks out Firefox.)  Whatever.  We'll just quietly ignore the
-    // data.
-    return len;
     
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";
@@ -307,9 +293,6 @@ destroy_stream(NPStream *stream, NPReason reason) {
                                    result_code, 0, stream->end, NULL, 0);
       req->_notified_done = true;
     }
-    break;
-
-  case PPDownloadRequest::RT_instance_data:
     break;
 
   default:

@@ -313,13 +313,28 @@ P3D_new_instance_func(P3D_request_ready_func *func,
 
    If is_local is true, then p3d_filename contains the name of a local
    p3d file on disk.  If false, then p3d_filename contains a URL that
-   should be downloaded to retrieve the p3d file.
+   should be downloaded to retrieve the p3d file.  Also see
+   P3D_instance_start_stream(), below.
 
    The return value is true on success, false on failure. */
 typedef bool
 P3D_instance_start_func(P3D_instance *instance, bool is_local,
                         const char *p3d_filename);
 
+/* This function is an alternative to P3D_instance_start(); it
+   indicates an intention to feed the p3d file data to the instance as
+   a stream.  The instance should return a unique integer ID for this
+   stream, as if the instance had requested the stream via a get_url
+   request (below).  The plugin will then send the p3d file data to
+   the instance via a series of calls to
+   P3D_instance_feed_url_stream(), using the unique ID returned by
+   this function.  When the stream has been transmitted successfully,
+   the instance will automatically start.
+
+   The p3d_url string passed to this function is informational only.
+   The instance will not explicitly request this URL. */
+typedef int
+P3D_instance_start_stream_func(P3D_instance *instance, const char *p3d_url);
 
 /* Call this function to interrupt a particular instance and stop it
    from rendering, for instance when the user navigates away from the
@@ -890,6 +905,7 @@ EXPCL_P3D_PLUGIN P3D_set_super_mirror_func P3D_set_super_mirror;
 
 EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;
 EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
+EXPCL_P3D_PLUGIN P3D_instance_start_stream_func P3D_instance_start_stream;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 

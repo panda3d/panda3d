@@ -151,6 +151,23 @@ P3D_instance_start(P3D_instance *instance, bool is_local,
   return result;
 }
 
+int
+P3D_instance_start_stream(P3D_instance *instance, const char *p3d_url) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  if (p3d_url == NULL) {
+    p3d_url = "";
+  }
+  ACQUIRE_LOCK(_api_lock);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  int result = -1;
+  if (inst != NULL) {
+    result = inst_mgr->make_p3d_stream(inst, p3d_url);
+  }
+  RELEASE_LOCK(_api_lock);
+  return result;
+}
+
 void
 P3D_instance_finish(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
