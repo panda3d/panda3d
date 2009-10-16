@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""
+usageText = """
 
 This command will pack a Panda application, consisting of a directory
 tree of .py files and models, into a p3d file for convenient
@@ -106,7 +106,7 @@ def makePackedApp(args):
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
-            print __doc__ % (os.path.split(sys.argv[0])[1])
+            print usageText % (os.path.split(sys.argv[0])[1])
             sys.exit(1)
 
     if not args:

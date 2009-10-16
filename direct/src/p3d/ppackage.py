@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""
+usageText = """
 This script can be used to produce a Panda3D downloadable "package",
 which may contain arbitrary files--for instance, Python code, bam
 files, and/or compiled DLL's--and which may be downloaded by
@@ -96,7 +96,7 @@ from direct.p3d import Packager
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__ % {'prog' : os.path.split(sys.argv[0])[1]}
+    print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
     print >> sys.stderr, msg
     sys.exit(code)
 

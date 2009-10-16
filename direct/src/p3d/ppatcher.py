@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""
+usageText = """
 
 This script generates the patches required to support incremental
 download of Panda3D packages.  It can be run as a post-process on a
@@ -63,7 +63,7 @@ from direct.p3d.PatchMaker import PatchMaker
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__ % {'prog' : os.path.split(sys.argv[0])[1]}
+    print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
     print >> sys.stderr, msg
     sys.exit(code)
 

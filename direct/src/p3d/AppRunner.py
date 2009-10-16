@@ -660,7 +660,7 @@ class AppRunner(DirectObject):
     
     def loadMultifilePrcFiles(self, mf, root):
         """ Loads any prc files in the root of the indicated
-        Multifile, which is presumbed to have been mounted already
+        Multifile, which is presumed to have been mounted already
         under root. """
         
         # We have to load these prc files explicitly, since the
