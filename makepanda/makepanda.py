@@ -413,7 +413,8 @@ if (COMPILER=="LINUX"):
         PkgEnable("WX",    tool = "wx-config")
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
-        PkgEnable("CGGL",  "",          ("CgGL"), "Cg/cgGL.h", framework = "CgGL")
+        if (PkgSkip("NVIDIACG")==0):
+            PkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
         PkgEnable("X11",   "x11", "X11", "Xlib.h")
         PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
