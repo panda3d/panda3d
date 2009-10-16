@@ -76,6 +76,28 @@ get_camera(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_display_region_2d
+//       Access: Public
+//  Description: Returns the default DisplayRegion created for the 2-d
+//               scene (render2d).
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *WindowFramework::
+get_display_region_2d() const {
+  return _display_region_2d;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_display_region_3d
+//       Access: Public
+//  Description: Returns the default DisplayRegion created for the 3-d
+//               scene (render).
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *WindowFramework::
+get_display_region_3d() const {
+  return _display_region_3d;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::get_anim_controls
 //       Access: Public
 //  Description: Returns the current state of the anim_controls flag.
