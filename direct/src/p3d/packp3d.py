@@ -12,9 +12,12 @@ also be used to build p3d applications, using a pdef description file.
 
 Usage:
 
-  %s [opts] app.p3d
+  %s [opts] -o app.p3d
 
 Options:
+
+  -o app.p3d
+     Specify the name of the p3d file to generate.  This is required.
 
   -d application_root
      Specify the root directory of the application source; this is a
@@ -76,10 +79,11 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'd:m:S:c:r:s:Dh')
+    opts, args = getopt.getopt(args, 'o:d:m:S:c:r:s:Dh')
 
     packager = Packager.Packager()
 
+    appFilename = None
     root = Filename('.')
     main = None
     configFlags = []
@@ -87,7 +91,9 @@ def makePackedApp(args):
     allowPythonDev = False
     
     for option, value in opts:
-        if option == '-d':
+        if option == '-o':
+            appFilename = Filename.fromOsSpecific(value)
+        elif option == '-d':
             root = Filename.fromOsSpecific(value)
         elif option == '-m':
             main = value
@@ -109,13 +115,12 @@ def makePackedApp(args):
             print usageText % (os.path.split(sys.argv[0])[1])
             sys.exit(1)
 
-    if not args:
-        raise ArgumentError, "No target app specified.  Use:\n%s app.p3d" % (os.path.split(sys.argv[0])[1])
+    if not appFilename:
+        raise ArgumentError, "No target app specified.  Use:\n%s -o app.p3d" % (os.path.split(sys.argv[0])[1])
 
-    if len(args) > 1:
-        raise ArgumentError, "Too many arguments."
+    if args:
+        raise ArgumentError, "Extra arguments on command line."
 
-    appFilename = Filename.fromOsSpecific(args[0])
     if appFilename.getExtension() != 'p3d':
         raise ArgumentError, 'Application filename must end in ".p3d".'
 
