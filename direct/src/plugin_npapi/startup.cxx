@@ -164,8 +164,8 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   }
 #endif
 
-  int browser_major = HIBYTE(browser->version);
-  int browser_minor = LOBYTE(browser->version);
+  int browser_major = (browser->version >> 8) && 0xff;
+  int browser_minor = browser->version & 0xff;
   nout << "Browser version " << browser_major << "." << browser_minor << "\n";
 
   int expected_major = NP_VERSION_MAJOR;
