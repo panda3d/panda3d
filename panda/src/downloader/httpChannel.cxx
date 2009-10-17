@@ -95,6 +95,7 @@ HTTPChannel(HTTPClient *client) :
   _body_stream = NULL;
   _owns_body_stream = false;
   _sbio = NULL;
+  _cipher_list = _client->get_cipher_list();
   _last_status_code = 0;
   _last_run_time = 0.0f;
   _download_to_ramfile = NULL;
@@ -1477,7 +1478,17 @@ run_setup_ssl() {
   SSL *ssl = NULL;
   BIO_get_ssl(_sbio, &ssl);
   nassertr(ssl != (SSL *)NULL, false);
-  string cipher_list = _client->get_cipher_list();
+
+  // We only take one word at a time from the _cipher_list.  If that
+  // connection fails, then we take the next word.
+  string cipher_list = _cipher_list;
+  if (!cipher_list.empty()) {
+    size_t space = cipher_list.find(" ");
+    if (space != string::npos) {
+      cipher_list = cipher_list.substr(0, space);
+    }
+  }
+
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "Setting ssl-cipher-list '" << cipher_list << "'\n";
@@ -1566,6 +1577,26 @@ run_ssl_handshake() {
 
     // It seems to be an error to free sbio at this point; perhaps
     // it's already been freed?
+
+    if (!_cipher_list.empty()) {
+      // If we've got another cipher to try, do so.
+      size_t space = _cipher_list.find(" ");
+      if (space != string::npos) {
+        while (space < _cipher_list.length() && _cipher_list[space] == ' ') {
+          ++space;
+        }
+        _cipher_list = _cipher_list.substr(space);
+        if (!_cipher_list.empty()) {
+          close_connection();
+          reconsider_proxy();
+          _state = S_connecting;
+          return false;
+        }
+      }
+    }
+
+    // All done trying ciphers; they all failed.
+    _cipher_list = _client->get_cipher_list();
     _status_entry._status_code = SC_ssl_no_handshake;
     _state = S_failure;
     return false;

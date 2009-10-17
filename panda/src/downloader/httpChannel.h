@@ -423,6 +423,7 @@ private:
   ISocketStream *_body_stream;
   bool _owns_body_stream;
   BIO *_sbio;
+  string _cipher_list;
   pvector<URLSpec> _redirect_trail;
   int _last_status_code;
   double _last_run_time;
