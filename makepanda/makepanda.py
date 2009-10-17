@@ -2682,6 +2682,7 @@ TargetAdd('egg_lexer.obj', opts=OPTS, input='lexer.lxx')
 TargetAdd('egg_composite1.obj', opts=OPTS, input='egg_composite1.cxx')
 TargetAdd('egg_composite2.obj', opts=OPTS, input='egg_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite.cxx"])
+if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
 TargetAdd('libegg.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libegg.in', opts=['IMOD:pandaegg', 'ILIB:libegg', 'SRCDIR:panda/src/egg'])
 TargetAdd('libegg_igate.obj', input='libegg.in', opts=["DEPENDENCYONLY"])
@@ -2989,7 +2990,8 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
   TargetAdd('dcparser_composite.obj', opts=OPTS, input='dcparser_composite.cxx')
   IGATEFILES=GetDirectoryContents('direct/src/dcparser', ["*.h", "*_composite.cxx"])
-  IGATEFILES.remove('dcmsgtypes.h')
+  if "dcParser.h" in IGATEFILES: IGATEFILES.remove("dcParser.h")
+  if "dcmsgtypes.h" in IGATEFILES: IGATEFILES.remove('dcmsgtypes.h')
   TargetAdd('libdcparser.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libdcparser.in', opts=['IMOD:p3direct', 'ILIB:libdcparser', 'SRCDIR:direct/src/dcparser'])
   TargetAdd('libdcparser_igate.obj', input='libdcparser.in', opts=["DEPENDENCYONLY"])
@@ -4030,34 +4032,35 @@ if (RUNTIME):
 # Generate the models directory and samples directory
 #
 
-model_extensions = ["*.egg"]
-if (PkgSkip("PANDATOOL")==0):
-    model_extensions.append("*.flt")
+if (not RUNTIME):
+  model_extensions = ["*.egg"]
+  if (PkgSkip("PANDATOOL")==0):
+      model_extensions.append("*.flt")
 
-for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
-    eggpz = model[:-4] + ".egg.pz"
-    TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
+  for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
+      eggpz = model[:-4] + ".egg.pz"
+      TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
 
-for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
-    eggpz = model[:-4] + ".egg.pz"
-    TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
+  for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
+      eggpz = model[:-4] + ".egg.pz"
+      TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
 
-for model in GetDirectoryContents("models", model_extensions):
-    eggpz = model[:-4] + ".egg.pz"
-    TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
+  for model in GetDirectoryContents("models", model_extensions):
+      eggpz = model[:-4] + ".egg.pz"
+      TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
 
-CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
-CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
+  CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+  CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
 
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".jpg")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".png")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgb")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgba")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".jpg")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".png")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgb")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgba")
 
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
-CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
+  CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
 ##########################################################################################
 #
