@@ -1389,21 +1389,13 @@ CreatePandaVersionFiles()
 
 ##########################################################################################
 #
-# Generate direct/__init__.py
+# Copy the "direct" tree
 #
 ##########################################################################################
 
-DIRECTINIT="""
-import os,sys
-srcdir1 = os.path.join(__path__[0], 'src')
-srcdir2 = os.path.join(__path__[0], '..', '..', 'direct', 'src')
-if    (os.path.isdir(srcdir1)): __path__[0] = srcdir1
-elif  (os.path.isdir(srcdir2)): __path__[0] = srcdir2
-else: sys.exit("Cannot find the 'direct' tree")
-"""
-
 if (PkgSkip("PYTHON")==0):
-    ConditionalWriteFile(GetOutputDir()+'/direct/__init__.py', DIRECTINIT)
+    CopyTree(GetOutputDir()+'/direct','direct/src')
+    ConditionalWriteFile(GetOutputDir()+'/direct/__init__.py', "")
 
 ##########################################################################################
 #
