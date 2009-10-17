@@ -1672,11 +1672,14 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
         for x in input:
             fullinput = FindLocation(x, ipath)
             t.inputs.append(fullinput)
-            t.deps[fullinput] = 1
-            (base,suffix) = os.path.splitext(x)
-            if (SUFFIX_INC.count(suffix)):
-                for d in CxxCalcDependencies(fullinput, ipath, []):
-                    t.deps[d] = 1
+            # Don't re-link a library or binary if just it's dependency dll's have been altered.
+            # This should work out fine in most cases, and often reduces recompilation time.
+            if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
+                t.deps[fullinput] = 1
+                (base,suffix) = os.path.splitext(x)
+                if (SUFFIX_INC.count(suffix)):
+                    for d in CxxCalcDependencies(fullinput, ipath, []):
+                        t.deps[d] = 1
     if (dep != 0):                
         for x in dep:
             fulldep = FindLocation(x, ipath)
