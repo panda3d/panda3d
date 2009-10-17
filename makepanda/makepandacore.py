@@ -717,7 +717,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR+"/models/maps")
     MakeDirectory(OUTPUTDIR+"/models/misc")
     MakeDirectory(OUTPUTDIR+"/models/gui")
-    MakeDirectory(OUTPUTDIR+"/direct")
     MakeDirectory(OUTPUTDIR+"/pandac")
     MakeDirectory(OUTPUTDIR+"/pandac/input")
 
@@ -1500,11 +1499,11 @@ def ParsePandaVersion(fn):
         for line in f:
             match = pattern.match(line,0)
             if (match):
-                version = match.group(1)+"."+match.group(2)+"."+match.group(3)
-                break
+                f.close()
+                return match.group(1)+"."+match.group(2)+"."+match.group(3)
         f.close()
-    except: version="0.0.0"
-    return version
+    except: pass
+    return "0.0.0"
 
 def ParsePluginVersion(fn):
     try:
@@ -1513,11 +1512,11 @@ def ParsePluginVersion(fn):
         for line in f:
             match = pattern.match(line,0)
             if (match):
-                version = match.group(1)+"."+match.group(2)+"."+match.group(3)
-                break
+                f.close()
+                return match.group(1)+"."+match.group(2)+"."+match.group(3)
         f.close()
-    except: version="0.0.0"
-    return version
+    except: pass
+    return "0.0.0"
 
 ########################################################################
 ##

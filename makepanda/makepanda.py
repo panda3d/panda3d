@@ -1323,6 +1323,7 @@ PANDAVERSION_H="""
 #define PANDA_MINOR_VERSION $VERSION2
 #define PANDA_SEQUENCE_VERSION $VERSION2
 #define PANDA_VERSION $NVERSION
+#define PANDA_NUMERIC_VERSION $NVERSION
 #define PANDA_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR "$RUNTIME_VERSION"
@@ -1354,6 +1355,9 @@ def CreatePandaVersionFiles():
         pversion2=int(PLUGIN_VERSION.split(".")[1])
         pversion3=int(PLUGIN_VERSION.split(".")[2])
     nversion=version1*1000000+version2*1000+version3
+    if (DISTRIBUTOR != "cmu"):
+        # Subtract 1 if we are not an official version.
+        nversion -= 1
     
     pandaversion_h = PANDAVERSION_H.replace("$VERSION1",str(version1))
     pandaversion_h = pandaversion_h.replace("$VERSION2",str(version2))
@@ -1367,8 +1371,8 @@ def CreatePandaVersionFiles():
         pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
     if RUNTIME:
         pandaversion_h += "\n#define P3D_PLUGIN_MAJOR_VERSION %s\n" % pversion1
-        pandaversion_h += "\n#define P3D_PLUGIN_MINOR_VERSION %s\n" % pversion1
-        pandaversion_h += "\n#define P3D_PLUGIN_SEQUENCE_VERSION %s\n" % pversion1
+        pandaversion_h += "\n#define P3D_PLUGIN_MINOR_VERSION %s\n" % pversion2
+        pandaversion_h += "\n#define P3D_PLUGIN_SEQUENCE_VERSION %s\n" % pversion3
     
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
