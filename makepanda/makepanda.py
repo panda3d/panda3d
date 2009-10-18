@@ -1261,9 +1261,9 @@ def WriteConfigSettings():
     if (RUNTIME):
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
-        #plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
 
@@ -4173,6 +4173,11 @@ except:
 ##########################################################################################
 
 def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
+    if (RUNTIME):
+        # Invoke the make_installer script.
+        oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py")
+        return
+    
     print "Building "+fullname+" installer. This can take up to an hour."
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
