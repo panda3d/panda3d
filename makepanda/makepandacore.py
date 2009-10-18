@@ -19,6 +19,7 @@ STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
 CUSTOM_OUTPUTDIR=False
+THIRDPARTYDIR=None
 OPTIMIZE="3"
 VERBOSE=False
 
@@ -645,58 +646,6 @@ def CreateFile(file):
         WriteFile(file,"")
 
 ########################################################################
-##
-## Visual Studio Manifest Manipulation.
-##
-########################################################################
-
-VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
-
-def GetVC90CRTVersion(fn):
-    manifest = ReadFile(fn)
-    version = VC90CRTVERSIONRE.search(manifest)
-    if (version == None):
-        exit("Cannot locate version number in "+fn)
-    return version.group(1)
-
-def SetVC90CRTVersion(fn, ver):
-    manifest = ReadFile(fn)
-    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
-    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
-    WriteFile(fn, manifest)
-
-########################################################################
-##
-## Thirdparty libraries paths
-##
-########################################################################
-
-if (sys.platform == "win32"):
-    if (platform.architecture()[0] == "64bit"):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
-    else:
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    if not os.path.isdir(THIRDPARTYLIBS):
-        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
-    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
-else:
-    if (sys.platform == "darwin"):
-        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
-    elif (sys.platform.startswith("linux")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
-    elif (sys.platform.startswith("freebsd")):
-      if (platform.architecture()[0] == "64bit"):
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
-      else:
-          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
-    else:
-        exit("Unknown platform: %s" % sys.platform)
-    VC90CRTVERSION = 0
-
-########################################################################
 #
 # Create the panda build tree.
 #
@@ -732,6 +681,71 @@ def CheckPandaSourceTree():
         (os.path.exists(os.path.join(dir, "dtool","src","dtoolbase","dtoolbase.h"))==0) or
         (os.path.exists(os.path.join(dir, "panda","src","pandabase","pandabase.h"))==0)):
         exit("Current directory is not the root of the panda tree.")
+
+########################################################################
+##
+## Thirdparty libraries paths
+##
+########################################################################
+
+def GetThirdpartyDir():
+    global THIRDPARTYDIR
+    if (THIRDPARTYDIR != None):
+        return THIRDPARTYDIR
+    if (sys.platform.startswith("win")):
+        if (platform.architecture()[0] == "64bit"):
+            THIRDPARTYDIR="thirdparty/win-libs-vc9-x64/"
+        else:
+            THIRDPARTYDIR="thirdparty/win-libs-vc9/"
+        if not os.path.isdir(THIRDPARTYDIR):
+            THIRDPARTYDIR="thirdparty/win-libs-vc9/"
+    elif (sys.platform == "darwin"):
+        THIRDPARTYDIR="thirdparty/darwin-libs-a/"
+    elif (sys.platform.startswith("linux")):
+        if (platform.architecture()[0] == "64bit"):
+            THIRDPARTYDIR="thirdparty/linux-libs-x64/"
+        else:
+            THIRDPARTYDIR="thirdparty/linux-libs-a/"
+    elif (sys.platform.startswith("freebsd")):
+        if (platform.architecture()[0] == "64bit"):
+            THIRDPARTYDIR="thirdparty/freebsd-libs-x64/"
+        else:
+            THIRDPARTYDIR="thirdparty/freebsd-libs-a/"
+    else:
+        print GetColor("red") + "WARNING:" + GetColor("Unsupported platform: " + sys.platform)
+    return THIRDPARTYDIR
+
+########################################################################
+##
+## Visual Studio Manifest Manipulation.
+##
+########################################################################
+
+VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
+VC90CRTVERSION=None
+
+def GetVC90CRTVersion(fn = None):
+    global VC90CRTVERSION
+    if (VC90CRTVERSION != None):
+        return VC90CRTVERSION
+    if (not sys.platform.startswith("win")):
+        VC90CRTVERSION = 0
+        return 0
+    if (fn == None):
+        fn = GetThirdpartyDir()+"extras/bin/Microsoft.VC90.CRT.manifest"
+    manifest = ReadFile(fn)
+    version = VC90CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot locate version number in "+fn)
+    VC90CRTVERSION = version.group(1)
+    return version.group(1)
+
+def SetVC90CRTVersion(fn, ver = None):
+    if (ver == None): ver = GetVC90CRTVersion()
+    manifest = ReadFile(fn)
+    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
+    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
+    WriteFile(fn, manifest)
 
 ########################################################################
 ##
@@ -976,16 +990,16 @@ def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, fram
         for d in olddefs:
             defs[d] = ""
     
-    if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
-        IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
-        LibDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/lib")
+    if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
+        IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
+        LibDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
         for l in libs:
             libname = l
             if (l.startswith("lib")):
                 libname = l[3:]
             # This is for backward compatibility - in the thirdparty dir, we kept some libs with "panda" prefix, like libpandatiff.
-            if (len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/libpanda%s.*" % libname)) > 0 and
-                len(glob.glob(THIRDPARTYLIBS + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
+            if (len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/libpanda%s.*" % libname)) > 0 and
+                len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
                 libname = "panda" + libname
             LibName(pkg, "-l" + libname)
         for d, v in defs.values():

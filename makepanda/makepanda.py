@@ -30,7 +30,6 @@ from installpanda import *
 ########################################################################
 
 COMPILER=0
-VC90CRTVERSION=""
 INSTALLER=0
 GENMAN=0
 COMPRESSOR="zlib"
@@ -289,7 +288,7 @@ if (COMPILER=="MSVC"):
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             else:
-                IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
+                IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
     for pkg in DXVERSIONS:
         if (PkgSkip(pkg)==0):
             vnum=pkg[2:]
@@ -320,35 +319,35 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      THIRDPARTYLIBS + "png/lib/libpandapng.lib")
-    if (PkgSkip("JPEG")==0):     LibName("JPEG",     THIRDPARTYLIBS + "jpeg/lib/libpandajpeg.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     THIRDPARTYLIBS + "tiff/lib/libpandatiff.lib")
-    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     THIRDPARTYLIBS + "zlib/lib/libpandazlib1.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     THIRDPARTYLIBS + "vrpn/lib/vrpn.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     THIRDPARTYLIBS + "vrpn/lib/quat.lib")
-    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   THIRDPARTYLIBS + "fmodex/lib/fmodex_vc.lib")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   THIRDPARTYLIBS + "openal/lib/pandaopenal32.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     THIRDPARTYLIBS + "nvidiacg/lib/cgGL.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    THIRDPARTYLIBS + "nvidiacg/lib/cgD3D9.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", THIRDPARTYLIBS + "nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  THIRDPARTYLIBS + "openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  THIRDPARTYLIBS + "openssl/lib/libpandaeay.lib")
-    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", THIRDPARTYLIBS + "freetype/lib/freetype.lib")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     THIRDPARTYLIBS + "fftw/lib/rfftw.lib")        
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     THIRDPARTYLIBS + "fftw/lib/fftw.lib")        
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   THIRDPARTYLIBS + "ffmpeg/lib/avcodec-51-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   THIRDPARTYLIBS + "ffmpeg/lib/avformat-50-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   THIRDPARTYLIBS + "ffmpeg/lib/avutil-49-panda.lib")
-    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",THIRDPARTYLIBS + "artoolkit/lib/libAR.lib")
-    if (PkgSkip("ODE")==0):      LibName("ODE",      THIRDPARTYLIBS + "ode/lib/ode.lib")
-    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", THIRDPARTYLIBS + "fcollada/lib/FCollada.lib")
-    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   THIRDPARTYLIBS + "squish/lib/squish.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/cv.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/highgui.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/cvaux.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/ml.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/cxcore.lib")
-    if (PkgSkip("TINYXML")==0):  LibName("TINYXML",  THIRDPARTYLIBS + "tinyxml/lib/tinyxml.lib")
+    if (PkgSkip("PNG")==0):      LibName("PNG",      GetThirdpartyDir() + "png/lib/libpandapng.lib")
+    if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/libpandajpeg.lib")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libpandatiff.lib")
+    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/libpandazlib1.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
+    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
+    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")        
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")        
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec-51-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat-50-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil-49-panda.lib")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
+    if (PkgSkip("ODE")==0):      LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode.lib")
+    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
+    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squish.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cv.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/highgui.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/ml.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cxcore.lib")
+    if (PkgSkip("TINYXML")==0):  LibName("TINYXML",  GetThirdpartyDir() + "tinyxml/lib/tinyxml.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
@@ -768,7 +767,7 @@ def CompileLink(dll, obj, opts):
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " " + BracketNameWithQuotes(name)
         oscmd(cmd)
-        SetVC90CRTVersion(dll+".manifest", VC90CRTVERSION)
+        SetVC90CRTVersion(dll+".manifest")
         mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
         if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
         else:                          mtcmd = mtcmd + ";1"
@@ -1435,14 +1434,14 @@ ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 for pkg in PkgListGet():
     if (PkgSkip(pkg)==0):
         if (COMPILER == "MSVC"):
-            if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/bin")):
-                CopyAllFiles(GetOutputDir()+"/bin/",THIRDPARTYLIBS+pkg.lower()+"/bin/")
+            if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/bin")):
+                CopyAllFiles(GetOutputDir()+"/bin/",GetThirdpartyDir()+pkg.lower()+"/bin/")
         if (COMPILER == "LINUX"):
-            if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/lib")):
-                CopyAllFiles(GetOutputDir()+"/lib/",THIRDPARTYLIBS+pkg.lower()+"/lib/")
+            if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/lib")):
+                CopyAllFiles(GetOutputDir()+"/lib/",GetThirdpartyDir()+pkg.lower()+"/lib/")
 
 if (COMPILER=="MSVC"):
-    CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
+    CopyAllFiles(GetOutputDir()+"/bin/", GetThirdpartyDir()+"extras"+"/bin/")
 if (sys.platform.startswith("win")):
     if (PkgSkip("PYTHON")==0):
         pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
