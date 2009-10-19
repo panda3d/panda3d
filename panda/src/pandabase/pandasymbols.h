@@ -72,6 +72,14 @@
   #define EXPTP_PANDA extern
 #endif
 
+#ifdef BUILDING_PANDAAWESOMIUM
+  #define EXPCL_PANDAAWESOMIUM __declspec(dllexport)
+  #define EXPTP_PANDAAWESOMIUM
+#else
+  #define EXPCL_PANDAAWESOMIUM __declspec(dllimport)
+  #define EXPTP_PANDAAWESOMIUM extern
+#endif
+
 #ifdef BUILDING_PANDACR
   #define EXPCL_PANDACR __declspec(dllexport)
   #define EXPTP_PANDACR
@@ -252,6 +260,9 @@
 #define EXPCL_PANDA
 #define EXPTP_PANDA
 
+#define EXPCL_PANDAAWESOMIUM
+#define EXPTP_PANDAAWESOMIUM
+
 #define EXPCL_PANDACR
 #define EXPTP_PANDACR
 
@@ -284,6 +295,7 @@
 
 #define EXPCL_PANDAODE
 #define EXPTP_PANDAODE
+
 
 #define EXPCL_PANDAPHYSICS
 #define EXPTP_PANDAPHYSICS
