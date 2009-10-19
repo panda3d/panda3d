@@ -247,6 +247,7 @@ builtdir = os.path.join(os.path.abspath(GetOutputDir()))
 AddToPathEnv("PYTHONPATH", builtdir)
 AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
 if (sys.platform.startswith("win")):
+    AddToPathEnv("PATH", os.path.join(builtdir, "plugins"))
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
 else:
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
@@ -3262,7 +3263,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
-  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
+  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/

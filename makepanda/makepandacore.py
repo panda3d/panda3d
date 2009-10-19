@@ -1222,16 +1222,6 @@ def SdkLocatePython():
             pv = pv[7:10]
             SDK["PYTHONVERSION"]="python"+pv
 
-        elif (sys.platform == "darwin"):
-            if "MACOSX" not in SDK: SdkLocateMacOSX()
-            if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
-                pv = os.readlink("%s/System/Library/Frameworks/Python.framework/Versions/Current" % SDK["MACOSX"])
-                SDK["PYTHON"] = SDK["MACOSX"] + "/System/Library/Frameworks/Python.framework/Headers"
-                SDK["PYTHONVERSION"] = "python " +pv
-                SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
-            else:
-                exit("Could not find the python framework!")
-
         else:
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
