@@ -258,6 +258,7 @@ write_ready(NPStream *stream) {
       // instance.
       assert(_got_instance_url);
       int user_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+      nout << "Got p3d instance to stream " << user_id << "\n";
       req->_rtype = PPDownloadRequest::RT_user;
       req->_user_id = user_id;
     }
@@ -1194,10 +1195,6 @@ create_instance() {
       // script_object with the proper P3D_object pointer.
       P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
       _script_object->set_main(main);
-    }
-
-    if (_got_instance_url) {
-      P3D_instance_start(_p3d_inst, false, _instance_url.c_str());
     }
 
     if (_got_window) {

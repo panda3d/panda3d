@@ -359,6 +359,12 @@ make_p3d_stream(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
+  if (!_fparams.get_p3d_filename().empty()) {
+    nout << "p3d_filename already set to: " << _fparams.get_p3d_filename()
+         << ", trying to set to " << p3d_filename << "\n";
+    return;
+  }
+
   _fparams.set_p3d_filename(p3d_filename);
   _got_fparams = true;
 
