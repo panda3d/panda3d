@@ -4,6 +4,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
 from LandingPage import LandingPage
+from direct.showbase import ElementTree as ET
 
 notify = directNotify.newCategory('WebRequestDispatcher')
 
@@ -63,13 +64,33 @@ class WebRequest(object):
 # --------------------------------------------------------------------------------
     
 class SkinningReplyTo:
-    def __init__(self, replyTo, dispatcher, uri):
+    def __init__(self, replyTo, dispatcher, uri, doSkin):
         self._replyTo = replyTo
         self._dispatcher = dispatcher
         self._uri = uri
+        self._doSkin = doSkin
+        self._headTags = self._dispatcher._headTags[:]
+        self._dispatcher._clearHeadTags()
 
     def respond(self, response):
-        self._replyTo.respond(self._dispatcher.landingPage.skin(response, self._uri))
+        if self._doSkin:
+            self._addHeadTags()
+            response = self._dispatcher.landingPage.skin(response, self._uri)
+            self._removeHeadTags()
+        self._replyTo.respond(response)
+
+    def addTagToHead(self, tag):
+        self._headTags.append(tag)
+
+    def _addHeadTags(self):
+        head = self._dispatcher.landingPage.getHead()
+        for tag in self._headTags:
+            head.append(tag)
+
+    def _removeHeadTags(self):
+        head = self._dispatcher.landingPage.getHead()
+        for tag in self._headTags:
+            head.remove(tag)
 
 class WebRequestDispatcher(object):
     """
@@ -110,6 +131,7 @@ class WebRequestDispatcher(object):
 
     def __init__(self, wantLandingPage = True):
         self.enableLandingPage(wantLandingPage)
+        self._headTags = []
 
     def listenOnPort(self,listenPort):
         """
@@ -151,14 +173,23 @@ class WebRequestDispatcher(object):
                 req.respond(self.landingPage.skin(result,uri))
             else:
                 req.respond(result)
+            self._clearHeadTags()
         else:
-            if autoSkin:
-                rt = SkinningReplyTo(req, self, uri)
-            else:
-                rt = req
-            args["replyTo"] = rt
+            args["replyTo"] = SkinningReplyTo(req, self, uri, autoSkin)
             apply(callable,(),args)
 
+    def addTagToHead(self, tag):
+        # adds a sub-tag within the head tag for the next outgoing response in returnsResponse mode
+        # for non-returnsResponse mode, use API on SkinningReplyTo
+        head = self.landingPage.getHead()
+        head.append(tag)
+        self._headTags.append(tag)
+
+    def _clearHeadTags(self):
+        head = self.landingPage.getHead()
+        for tag in self._headTags:
+            head.remove(tag)
+        self._headTags = []
 
     def poll(self):
         """
