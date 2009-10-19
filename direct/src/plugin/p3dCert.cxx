@@ -24,57 +24,57 @@ extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #endif
 
 static const wxString
-self_signed_cert_text = _T
-  ("This Panda3D application has been signed by what's known as a "
-   "self-signed certificate.  This means the name on the certificate can't "
-   "be verified, and you have no way of knowing for sure who wrote it.\n\n"
+self_signed_cert_text =
+  _T("This Panda3D application has been signed by what's known as a ")
+  _T("self-signed certificate.  This means the name on the certificate can't ")
+  _T("be verified, and you have no way of knowing for sure who wrote it.\n\n")
 
-   "We recommend you click Cancel to avoid running this application.");
-
-static const wxString
-unknown_auth_cert_text = _T
-  ("This Panda3D application has been signed, but we don't recognize "
-   "the authority that verifies the signature.  This means the name "
-   "on the certificate can't be trusted, and you have no way of knowing "
-   "for sure who wrote it.\n\n"
-
-   "We recommend you click Cancel to avoid running this application.");
+  _T("We recommend you click Cancel to avoid running this application.");
 
 static const wxString
-verified_cert_text = _T
-  ("This Panda3D application has been signed by %s. "
-   "If you trust %s, then click the Run button below "
-   "to run this application on your computer.  This will also "
-   "automatically approve this and any other applications signed by "
-   "%s in the future.\n\n"
+unknown_auth_cert_text =
+  _T("This Panda3D application has been signed, but we don't recognize ")
+  _T("the authority that verifies the signature.  This means the name ")
+  _T("on the certificate can't be trusted, and you have no way of knowing ")
+  _T("for sure who wrote it.\n\n")
 
-   "If you are unsure about this application, "
-   "you should click Cancel instead.");
+  _T("We recommend you click Cancel to avoid running this application.");
 
 static const wxString
-expired_cert_text = _T
-  ("This Panda3D application has been signed by %s, "
-   "but the certificate has expired.\n\n"
+verified_cert_text =
+  _T("This Panda3D application has been signed by %s. ")
+  _T("If you trust %s, then click the Run button below ")
+  _T("to run this application on your computer.  This will also ")
+  _T("automatically approve this and any other applications signed by ")
+  _T("%s in the future.\n\n")
 
-   "You should check the current date set on your computer's clock "
-   "to make sure it is correct.\n\n"
-
-   "If your computer's date is correct, we recommend "
-   "you click Cancel to avoid running this application.");
-
-static const wxString
-generic_error_cert_text = _T
-  ("This Panda3D application has been signed, but there is a problem "
-   "with the certificate (OpenSSL error code %d).\n\n"
-
-   "We recommend you click Cancel to avoid running this application.");
+  _T("If you are unsure about this application, ")
+  _T("you should click Cancel instead.");
 
 static const wxString
-no_cert_text = _T
-  ("This Panda3D application has not been signed.  This means you have "
-   "no way of knowing for sure who wrote it.\n\n"
+expired_cert_text =
+  _T("This Panda3D application has been signed by %s, ")
+  _T("but the certificate has expired.\n\n")
 
-   "Click Cancel to avoid running this application.");
+  _T("You should check the current date set on your computer's clock ")
+  _T("to make sure it is correct.\n\n")
+
+  _T("If your computer's date is correct, we recommend ")
+  _T("you click Cancel to avoid running this application.");
+
+static const wxString
+generic_error_cert_text =
+  _T("This Panda3D application has been signed, but there is a problem ")
+  _T("with the certificate (OpenSSL error code %d).\n\n")
+
+  _T("We recommend you click Cancel to avoid running this application.");
+
+static const wxString
+no_cert_text =
+  _T("This Panda3D application has not been signed.  This means you have ")
+  _T("no way of knowing for sure who wrote it.\n\n")
+
+  _T("Click Cancel to avoid running this application.");
 
 // wxWidgets boilerplate macro to define main() and start up the
 // application.
@@ -630,3 +630,4 @@ layout() {
   GetSize(&width, &height);
   SetSize(min(width, 600), max(height, 400));
 }
+
