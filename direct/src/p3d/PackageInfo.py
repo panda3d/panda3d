@@ -820,8 +820,6 @@ class PackageInfo:
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.mount(mf, root, vfs.MFReadOnly)
 
-        appRunner.loadMultifilePrcFiles(mf, root)
-
         # Add this to the Python search path, if it's not already
         # there.  We have to take a bit of care to check if it's
         # already there, since there can be some ambiguity in
@@ -850,6 +848,10 @@ class PackageInfo:
         # Set the environment variable to reference the package root.
         envvar = '%s_ROOT' % (self.packageName.upper())
         ExecutionEnvironment.setEnvironmentVariable(envvar, self.packageDir.toOsSpecific())
+
+        # Now that the environment variable is set, read all of the
+        # prc files in the package.
+        appRunner.loadMultifilePrcFiles(mf, root)
 
         # Also, find any toplevel Python packages, and add these as
         # shared packages.  This will allow different packages

@@ -352,7 +352,8 @@ class Packager:
                 self.compressionLevel = 6
 
                 # Every p3dapp requires panda3d.
-                self.packager.do_require('panda3d')
+                if 'panda3d' not in map(lambda p: p.packageName, self.requires):
+                    self.packager.do_require('panda3d')
 
                 # If this flag is set, enable allow_python_dev.
                 if self.packager.allowPythonDev:

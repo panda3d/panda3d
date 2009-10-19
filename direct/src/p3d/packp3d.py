@@ -44,7 +44,7 @@ Options:
      Sets the indicated config flag in the application.  This option
      may be repeated as necessary.
 
-  -r package
+  -r package[,version[,hostURL]]
      Names an additional package that this application requires at
      startup time.  The default package is 'panda3d'; you may repeat
      this option to indicate dependencies on additional packages.
@@ -106,7 +106,11 @@ def makePackedApp(args):
         elif option == '-c':
             configFlags.append(value.split('=', 1))
         elif option == '-r':
-            requires.append(value)
+            tokens = value.split(',')
+            while len(tokens) < 3:
+                tokens.append('')
+            name, version, host = tokens[:3]
+            requires.append((name, version, host))
         elif option == '-s':
             packager.installSearch.appendDirectory(Filename.fromOsSpecific(value))
         elif option == '-D':
@@ -159,11 +163,7 @@ def makePackedApp(args):
     try:
         packager.setup()
         packager.beginPackage(appBase, p3dApplication = True)
-        for requireName in requires:
-            tokens = requireName.split(',')
-            while len(tokens) < 3:
-                tokens.append(None)
-            name, version, host = tokens
+        for name, version, host in requires:
             packager.do_require(name, version = version, host = host)
 
         if configFlags:
