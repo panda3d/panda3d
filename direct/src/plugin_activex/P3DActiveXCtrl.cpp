@@ -19,7 +19,6 @@
 #include "P3DActiveXCtrl.h"
 #include "P3DActiveXPropPage.h"
 #include "PPBrowserObject.h"
-#include ".\p3dactivexctrl.h"
 
 #include "Mshtml.h"
 #include "atlconv.h"
