@@ -321,7 +321,7 @@
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure
 // interfaces like libpandaegg and libpandafx.
-#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx $[if $[HAVE_ODE],libpandaode]
+#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx $[if $[HAVE_ODE],libpandaode] 
 
 // Normally, Python source files are copied into the INSTALL_LIB_DIR
 // defined above, along with the compiled C++ library objects, when
@@ -747,6 +747,16 @@
 #define ODE_LPATH
 #define ODE_LIBS $[if $[WINDOWS_PLATFORM],ode.lib,ode]
 #defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
+
+// Is Awesomium installed, and where?
+#define AWESOMIUM_IPATH
+#define AWESOMIUM_LPATH
+#if $[OSX_PLATFORM]
+  #define AWESOMIUM_LIBS
+#else
+  #define AWESOMIUM_LIBS $[if $[WINDOWS_PLATFORM],awesomium.lib,awesomium]
+#endif
+#defer HAVE_AWESOMIUM $[libtest $[AWESOMIUM_LPATH],$[AWESOMIUM_LIBS]]
 
 // Mozilla's so-called Gecko SDK, a.k.a. Xulrunner SDK, implements
 // NPAPI, Mozilla's semi-standard API to build a web plugin for

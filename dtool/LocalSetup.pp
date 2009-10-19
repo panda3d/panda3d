@@ -183,6 +183,11 @@
 #else
 #print - Did not find ODE
 #endif
+#if $[HAVE_AWESOMIUM]
+#print + AWESOMIUM
+#else
+#print - Did not find AWESOMIUM
+#endif
 #if $[HAVE_MAYA]
 #print + OpenMaya
 #else
@@ -358,6 +363,9 @@ $[cdefine HAVE_SWSCALE]
 
 /* Define if we have ODE installed and want to build for ODE.  */
 $[cdefine HAVE_ODE]
+
+/* Define if we have AWESOMIUM installed and want to build for AWESOMIUM.  */
+$[cdefine HAVE_AWESOMIUM]
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]

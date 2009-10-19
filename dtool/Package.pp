@@ -268,6 +268,12 @@
 #set ODE_LIBS $[ODE_LIBS]
 #set HAVE_ODE $[HAVE_ODE]
 
+#set AWESOMIUM_IPATH $[unixfilename $[AWESOMIUM_IPATH]]
+#set AWESOMIUM_LPATH $[unixfilename $[AWESOMIUM_LPATH]]
+#set AWESOMIUM_LIBS $[AWESOMIUM_LIBS]
+//#set AWESOMIUM_FRAMEWORK $[unixfilename $[AWESOMIUM_FRAMEWORK]]
+#set HAVE_AWESOMIUM $[HAVE_AWESOMIUM]
+
 #set NPAPI_IPATH $[unixfilename $[NPAPI_IPATH]]
 #set NPAPI_LPATH $[unixfilename $[NPAPI_LPATH]]
 #set NPAPI_LIBS $[NPAPI_LIBS]
@@ -378,6 +384,10 @@
 
 #if $[HAVE_PHYSX]
   #define GENPYCODE_LIBS $[GENPYCODE_LIBS] libpandaphysx
+#endif
+
+#if $[HAVE_AWESOMIUM]
+  #define GENPYCODE_LIBS $[GENPYCODE_LIBS] libpandaawesomium
 #endif
 
 // Finally, include the system configure file.
