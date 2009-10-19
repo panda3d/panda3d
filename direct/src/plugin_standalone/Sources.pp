@@ -1,5 +1,7 @@
-// This directory is still experimental.  Define HAVE_P3D_PLUGIN in
-// your Config.pp to build it.
+// This directory contains the code for the panda3d.exe executable,
+// the "standalone" part of the Panda3D plugin/runtime system.  Define
+// HAVE_P3D_PLUGIN in your Config.pp to build it.
+
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TINYXML]]
 
 #begin bin_target
@@ -20,10 +22,6 @@
     panda3d.cxx panda3d.h panda3d.I
 
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
-  #if $[OSX_PLATFORM]
-    // Squelch objections about ___dso_handle.
-    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
-  #endif
 
 #end bin_target
 

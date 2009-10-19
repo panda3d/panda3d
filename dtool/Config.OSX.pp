@@ -85,13 +85,15 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer LINK_BIN_C $[cc_ld] $[ARCH_FLAGS] $[OSX_CFLAGS] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
- $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
-#defer LINK_BIN_C++ $[cxx_ld] $[ARCH_FLAGS] $[OSX_CFLAGS] \
+#defer link_bin_opts $[ARCH_FLAGS] $[OSX_CFLAGS] \
+ $[if $[not $[LINK_ALL_STATIC]],-undefined dynamic_lookup] \
  -o $[target] $[sources]\
  $[flags]\
  $[lpath:%=-L%] $[libs:%=-l%]\
  $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
+
+#defer LINK_BIN_C $[cc_ld] $[link_bin_opts]
+#defer LINK_BIN_C++ $[cxx_ld] $[link_bin_opts]
 
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o

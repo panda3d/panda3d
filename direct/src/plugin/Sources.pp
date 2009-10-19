@@ -131,10 +131,6 @@
   #define SOURCES p3dCert.cxx
   #define OSX_SYS_FRAMEWORKS Carbon
 
-  #if $[OSX_PLATFORM]
-    // Squelch objections about ___dso_handle.
-    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
-  #endif
 #end bin_target
 
 
@@ -202,13 +198,6 @@
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
   #define OSX_SYS_FRAMEWORKS Carbon
 
-  #if $[OSX_PLATFORM]
-    // Not entirely sure why this option is required for OSX, but we
-    // get objections about ___dso_handle otherwise--but only when
-    // building universal binaries.
-    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
-  #endif
-
   #define WIN_SYS_LIBS user32.lib
 #end bin_target
 
@@ -255,13 +244,6 @@
   // If you have to link with a static Python library, define it here.
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
   #define OSX_SYS_FRAMEWORKS Carbon
-
-  #if $[OSX_PLATFORM]
-    // Not entirely sure why this option is required for OSX, but we
-    // get objections about ___dso_handle otherwise--but only when
-    // building universal binaries.
-    #define LFLAGS $[LFLAGS] -undefined dynamic_lookup
-  #endif
 
   #define WIN_SYS_LIBS user32.lib
 #end bin_target
