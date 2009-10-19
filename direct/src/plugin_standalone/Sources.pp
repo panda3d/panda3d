@@ -1,6 +1,6 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TINYXML]]
 
 #begin bin_target
   #define USE_PACKAGES openssl zlib
