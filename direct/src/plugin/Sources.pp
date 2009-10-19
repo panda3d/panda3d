@@ -16,7 +16,7 @@
 #begin lib_target
 
 // 
-// libp3d_plugin.dll, the main entry point to the Core API.
+// p3d_plugin.dll, the main entry point to the Core API.
 //
 
   #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
