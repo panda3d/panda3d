@@ -1080,7 +1080,7 @@ usage() {
     << "    Runs the application interactively.  This requires that the application\n"
     << "    was built with -D on the packp3d command line.  If so, this option will\n"
     << "    create an interactive Python prompt after the application has loaded.\n"
-    << "    It will also the PYTHONPATH environment variable from the user's\n"
+    << "    It will also retain the PYTHONPATH environment variable from the user's\n"
     << "    environment, allowing Python files on disk to shadow the same-named\n"
     << "    Python files within the p3d file, for rapid iteration on the Python\n"
     << "    code.\n\n"
@@ -1093,7 +1093,7 @@ usage() {
 
     << "    Specify the URL of the Panda3D download server.  This is the host\n"
     << "    from which the plugin itself will be downloaded if necessary.  The\n"
-    << "    default is\n \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
+    << "    default is \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
 
     << "  -M super_mirror_url\n"
     << "    Specifies the \"super mirror\" URL, the special URL that is consulted\n"
