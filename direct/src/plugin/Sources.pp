@@ -24,7 +24,14 @@
   #define TARGET p3d_plugin
   #define LIB_PREFIX
 
-  #define OTHER_LIBS $[if $[OSX_PLATFORM],subprocbuffer]
+  #define OTHER_LIBS \
+    $[if $[OSX_PLATFORM],subprocbuffer] \
+    prc:c dtoolutil:c dtoolbase:c dtool:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    express:c downloader:c pandaexpress:m \
+    pstatclient:c pandabase:c linmath:c putil:c \
+    pipeline:c panda:m \
+    pystub
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx
