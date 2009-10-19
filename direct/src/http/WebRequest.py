@@ -62,6 +62,14 @@ class WebRequest(object):
 
 # --------------------------------------------------------------------------------
     
+class SkinningReplyTo:
+    def __init__(self, replyTo, dispatcher, uri):
+        self._replyTo = replyTo
+        self._dispatcher = dispatcher
+        self._uri = uri
+
+    def respond(self, response):
+        self._replyTo.respond(self._dispatcher.landingPage.skin(response, self._uri))
 
 class WebRequestDispatcher(object):
     """
@@ -144,7 +152,11 @@ class WebRequestDispatcher(object):
             else:
                 req.respond(result)
         else:
-            args["replyTo"] = req
+            if autoSkin:
+                rt = SkinningReplyTo(req, self, uri)
+            else:
+                rt = req
+            args["replyTo"] = rt
             apply(callable,(),args)
 
 
