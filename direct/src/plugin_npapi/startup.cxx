@@ -346,10 +346,11 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 ////////////////////////////////////////////////////////////////////
 int32
 NPP_WriteReady(NPP instance, NPStream *stream) {
-  // We're supposed to return the maximum amount of data the plugin is
-  // prepared to handle.  Gee, I don't know.  As much as you can give
-  // me, I guess.
-  return 0x7fffffff;
+  PPInstance::generic_browser_call();
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  return inst->write_ready(stream);
 }
 
 ////////////////////////////////////////////////////////////////////

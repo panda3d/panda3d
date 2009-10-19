@@ -46,6 +46,8 @@ public:
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
                      bool seekable, uint16 *stype);
+
+  int32 write_ready(NPStream *stream);
   int write_stream(NPStream *stream, int offset, int len, void *buffer);
   NPError destroy_stream(NPStream *stream, NPReason reason);
   void url_notify(const char *url, NPReason reason, void *notifyData);

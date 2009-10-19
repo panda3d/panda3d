@@ -192,13 +192,11 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     // stream we receive is the instance data; any other unsolicited
     // stream is an error.
 
-    if (!_got_instance_url && stream->url != NULL && _p3d_inst != NULL) {
+    if (!_got_instance_url && stream->url != NULL) {
       _got_instance_url = true;
       _instance_url = stream->url;
-      int user_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
-
-      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_user, user_id);
-
+      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
+      
       *stype = NP_NORMAL;
       return NPERR_NO_ERROR;
     }
@@ -233,6 +231,42 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
   }
 
   return NPERR_GENERIC_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::write_ready
+//       Access: Public
+//  Description: Called by the browser to ask how much data is ready
+//               to be received for the indicated stream.
+////////////////////////////////////////////////////////////////////
+int32 PPInstance::
+write_ready(NPStream *stream) {
+  if (stream->notifyData != NULL) {
+    PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
+    if (req->_rtype == PPDownloadRequest::RT_instance_data) {
+      // There's a special case for the RT_instance_data stream.  This
+      // is the first, unsolicited stream that indicates the p3d
+      // instance data.  We have to send this stream into the
+      // instance, but we can only do this once the instance itself
+      // has been created.
+      if (_p3d_inst == NULL) {
+        // The instance hasn't yet been created.  We're not ready for
+        // data yet.
+        return 0;
+      }
+      // The instance has been created.  Redirect the stream into the
+      // instance.
+      assert(_got_instance_url);
+      int user_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+      req->_rtype = PPDownloadRequest::RT_user;
+      req->_user_id = user_id;
+    }
+  }
+
+  // We're supposed to return the maximum amount of data the plugin is
+  // prepared to handle.  Gee, I don't know.  As much as you can give
+  // me, I guess.
+  return 0x7fffffff;
 }
 
 ////////////////////////////////////////////////////////////////////
