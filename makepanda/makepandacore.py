@@ -12,8 +12,8 @@
 import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob,getpass
 from distutils import sysconfig
 
-SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r",".plist"]
-SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd"]
+SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r",".plist",".idl"]
+SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
@@ -829,7 +829,7 @@ def PkgSelected(pkglist, pkg):
 
 def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     """Returns a bool whether the pkg-config package is installed."""
-    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+    if (sys.platform == "win32" or not LocateBinary(tool)):
         return False
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
@@ -841,7 +841,7 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     """Returns a list of libs for the package, prefixed by -l."""
-    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+    if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
@@ -856,7 +856,7 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     """Returns a list of includes for the package, NOT prefixed by -I."""
-    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+    if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags-only-I " + pkgname)
@@ -873,7 +873,7 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
     """Returns a list of library paths for the package, NOT prefixed by -L."""
-    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+    if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
@@ -892,7 +892,7 @@ def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     """Returns a dictionary of preprocessor definitions."""
-    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+    if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags " + pkgname)
@@ -1562,10 +1562,13 @@ def CalcLocation(fn, ipath):
     if (sys.platform.startswith("win")):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
+        if (fn.endswith(".idl")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".res")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".tlb")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
         if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".ocx")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
         if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
         if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dli"

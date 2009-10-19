@@ -44,7 +44,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","GTK2","PANDATOOL"
+  "OPENCV","FFMPEG","FCOLLADA","GTK2","WX", "PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -224,6 +224,9 @@ SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
 
+if (RUNTIME and SDK["PYTHONVERSION"] != "python2.6" and DISTRIBUTOR == "cmu"):
+    exit("The CMU runtime distribution must be built against Python 2.6!")
+
 ########################################################################
 ##
 ## Choose a Compiler.
@@ -308,6 +311,8 @@ if (COMPILER=="MSVC"):
     LibName("WINMM", "winmm.lib")
     LibName("WINIMM", "imm32.lib")
     LibName("WINKERNEL", "kernel32.lib")
+    LibName("WINOLE", "ole32.lib")
+    LibName("WINOLEAUT", "oleaut32.lib")
     LibName("WINOLDNAMES", "oldnames.lib")
     LibName("WINSHELL", "shell32.lib")
     LibName("WINGDI", "gdi32.lib")
@@ -348,6 +353,12 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/ml.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cxcore.lib")
     if (PkgSkip("TINYXML")==0):  LibName("TINYXML",  GetThirdpartyDir() + "tinyxml/lib/tinyxml.lib")
+    if (PkgSkip("WX")==0):
+        LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
+        LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
+        DefSymbol("WX",     "__WXMSW__", "")
+        DefSymbol("WX",     "_UNICODE", "")
+        DefSymbol("WX",     "UNICODE", "")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
@@ -383,7 +394,7 @@ if (COMPILER=="LINUX"):
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
     ffmpeg_libs = ("libavutil", "libavcodec", "libavformat", "libswscale")
-    fcollada_libs = ("FColladaUD", "FColladaD", "FColladaSUD", "FColladaSD")
+    fcollada_libs = ("FColladaD", "FColladaSD")
 
     #         Name         pkg-config   libs, include(dir)s
     PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
@@ -792,9 +803,9 @@ def CompileLink(dll, obj, opts):
                 else:
                     cmd += ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -L' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' ' + BracketNameWithQuotes(name)
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + BracketNameWithQuotes(name)
         cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
@@ -949,6 +960,26 @@ def CompileBundle(target, inputs, opts):
 
 ##########################################################################################
 #
+# CompileMIDL
+#
+##########################################################################################
+
+def CompileMIDL(target, src, opts):
+    ipath = GetListOption(opts, "DIR:")
+    if (COMPILER=="MSVC"):
+        cmd = "midl"
+        cmd += " /out" + BracketNameWithQuotes(os.path.dirname(target))
+        for x in ipath: cmd += " /I" + x
+        for (opt,dir) in INCDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
+        for (opt,var,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
+        cmd += " " + BracketNameWithQuotes(src)
+
+        oscmd(cmd)
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -969,6 +1000,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         else:
             ProgressOutput(progress, "Building frozen library", target)
         return FreezePy(target, inputs, opts)
+    elif (infile.endswith(".idl")):
+        ProgressOutput(progress, "Compiling MIDL file", infile)
+        return CompileMIDL(target, infile, opts)
     elif (infile.endswith(".pdef")):
         ProgressOutput(progress, "Building package from pdef file", infile)
         return Package(target, inputs, opts)
@@ -3145,7 +3179,7 @@ if (RUNTIME):
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
-  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'MSIMG'])
+  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
@@ -3166,7 +3200,7 @@ if (RUNTIME):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
     TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
     TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-    TargetAdd('p3dcert.exe', opts=['OPENSSL', 'WX', 'CARBON'])
+    TargetAdd('p3dcert.exe', opts=['OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG'])
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
@@ -3194,7 +3228,27 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     if (sys.platform.startswith("win")):
       TargetAdd('nppanda3d.dll', input='nppanda3d.res')
       TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
-    TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])
+    TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE'])
+
+#
+# DIRECTORY: direct/src/plugin_activex/
+#
+
+#if (RUNTIME and sys.platform.startswith("win")):
+#  OPTS=['DIR:direct/src/plugin_activex', 'PLUGIN', 'ACTIVEX', 'TINYXML']
+#  DefSymbol('ACTIVEX', '_USRDLL', '')
+#  DefSymbol('ACTIVEX', '_WINDLL', '')
+#  DefSymbol('ACTIVEX', '_AFXDLL', '')
+#  DefSymbol('ACTIVEX', '_MBCS', '')
+#  TargetAdd('P3DActiveX.tlb', opts=OPTS, input='P3DActiveX.idl')
+#  TargetAdd('P3DActiveX.res', opts=OPTS, input='P3DActiveX.rc')
+#  
+#  TargetAdd('plugin_activex_p3dactivex_composite1.obj', opts=OPTS, input='p3dactivex_composite1.cxx')
+#  
+#  TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
+#  TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
+#  TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
+#  TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
 
 #
 # DIRECTORY: direct/src/plugin_standalone/
