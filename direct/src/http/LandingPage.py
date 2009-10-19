@@ -3,13 +3,18 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from pandac.PandaModules import VirtualFileSystem
 from pandac.PandaModules import Filename
 from pandac.PandaModules import DSearchPath
+from direct.showbase import ElementTree as ET
 import LandingPageHTML
+from StringIO import StringIO
 
 class LandingPage:
     notify  = directNotify.newCategory("LandingPage")
     def __init__(self):
         self.headerTemplate = LandingPageHTML.header
         self.footerTemplate = LandingPageHTML.footer
+
+        # allow modifications to the page head tag
+        self._headET = ET.Element('head')
         
         self.menu = {}
 
@@ -47,10 +52,18 @@ class LandingPage:
         return LandingPageHTML.getTabs(self.menu,activeTab)
 
     def getHeader(self, activeTab = "Main"):
+        headContent = ''
+        for child in self._headET.getchildren():
+            fileStr = StringIO()
+            ET.ElementTree(child).write(fileStr)
+            headContent += fileStr.getvalue()
         s = self.headerTemplate % {'titlestring' : LandingPageHTML.title,
-                                   'menustring' : self.getMenu(activeTab)}
+                                   'menustring' : self.getMenu(activeTab),
+                                   'headContent' : headContent,}
         return s
-        
+
+    def getHead(self):
+        return self._headET
 
     def getFooter(self):
         return self.footerTemplate % {'contact' : LandingPageHTML.contactInfo}
