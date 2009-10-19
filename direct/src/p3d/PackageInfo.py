@@ -824,21 +824,21 @@ class PackageInfo:
         # there.  We have to take a bit of care to check if it's
         # already there, since there can be some ambiguity in
         # os-specific path strings.
-        root = self.packageDir.toOsSpecific()
+        osRoot = self.packageDir.toOsSpecific()
         foundOnPath = False
         for p in sys.path:
-            if root == p:
+            if osRoot == p:
                 # Already here, exactly.
                 foundOnPath = True
                 break
-            elif root == Filename.fromOsSpecific(p).toOsSpecific():
+            elif osRoot == Filename.fromOsSpecific(p).toOsSpecific():
                 # Already here, with some futzing.
                 foundOnPath = True
                 break
 
         if not foundOnPath:
             # Not already here; add it.
-            sys.path.append(root)
+            sys.path.append(osRoot)
 
         # Put it on the model-path, too.  We do this indiscriminantly,
         # because the Panda3D runtime won't be adding things to the
@@ -847,11 +847,11 @@ class PackageInfo:
 
         # Set the environment variable to reference the package root.
         envvar = '%s_ROOT' % (self.packageName.upper())
-        ExecutionEnvironment.setEnvironmentVariable(envvar, self.packageDir.toOsSpecific())
+        ExecutionEnvironment.setEnvironmentVariable(envvar, osRoot)
 
         # Now that the environment variable is set, read all of the
         # prc files in the package.
-        appRunner.loadMultifilePrcFiles(mf, root)
+        appRunner.loadMultifilePrcFiles(mf, self.packageDir)
 
         # Also, find any toplevel Python packages, and add these as
         # shared packages.  This will allow different packages

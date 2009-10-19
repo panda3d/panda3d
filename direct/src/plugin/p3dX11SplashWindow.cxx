@@ -260,6 +260,7 @@ start_subprocess() {
 
   if (child == 0) {
     // Here we are in the child process.
+    init_xml();
 
     // Open the read end of the pipe, and close the write end.
     _pipe_read.open_read(to_fd[0]);

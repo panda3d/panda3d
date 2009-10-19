@@ -41,6 +41,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
              FHandle input_handle, FHandle output_handle, 
              const char *log_pathname, bool interactive_console) {
   P3DWindowHandle::init_type();
+  init_xml();
 
   _read_thread_continue = false;
   _program_continue = true;
@@ -1179,6 +1180,9 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
 
   if (result == NULL) {
     PyErr_Print();
+    if (!_interactive_console) {
+      exit(1);
+    }
   }
   Py_XDECREF(result);
 }
@@ -1210,6 +1214,9 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
 
   if (result == NULL) {
     PyErr_Print();
+    if (!_interactive_console) {
+      exit(1);
+    }
   }
   Py_XDECREF(result);
 }
@@ -1274,6 +1281,9 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
   if (result == NULL) {
     PyErr_Print();
+    if (!_interactive_console) {
+      exit(1);
+    }
   }
   Py_XDECREF(result);
 }
@@ -1370,6 +1380,9 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
 
   if (result == NULL) {
     PyErr_Print();
+    if (!_interactive_console) {
+      exit(1);
+    }
   }
   Py_XDECREF(result);
 }

@@ -36,6 +36,19 @@ static const size_t length_nonce1 = 812311453;
 static const size_t length_nonce2 = 612811373;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: init_xml
+//  Description: Should be called before spawning any threads to
+//               ensure the lock is initialized.
+////////////////////////////////////////////////////////////////////
+void
+init_xml() {
+  if (!xml_lock_initialized) {
+    INIT_LOCK(xml_lock);
+    xml_lock_initialized = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: write_xml_node
 //  Description: Recursively writes a node and all of its children to
 //               the given stream.
@@ -254,9 +267,7 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
 ////////////////////////////////////////////////////////////////////
 void
 write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
-  if (!xml_lock_initialized) {
-    INIT_LOCK(xml_lock);
-  }
+  assert(xml_lock_initialized);
   ACQUIRE_LOCK(xml_lock);
 
 #ifdef DO_BINARY_XML
@@ -301,10 +312,12 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *
 read_xml(istream &in, ostream &logfile) {
-  if (!xml_lock_initialized) {
-    INIT_LOCK(xml_lock);
-  }
-  ACQUIRE_LOCK(xml_lock);
+  // We don't acquire xml_lock while reading.  We can't, because our
+  // XML readers are all designed to block until data is available,
+  // and they can't block while holding the lock.
+
+  // Fortunately, there should be only one reader at a time, so a lock
+  // isn't really needed here.
 
 #if DO_BINARY_XML
   // binary read.
@@ -313,7 +326,6 @@ read_xml(istream &in, ostream &logfile) {
   TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length, logfile);
   delete[] buffer;
   if (xnode == NULL) {
-    RELEASE_LOCK(xml_lock);
     return NULL;
   }
 
@@ -326,7 +338,6 @@ read_xml(istream &in, ostream &logfile) {
   in >> *doc;
   if (in.fail() || in.eof()) {
     delete doc;
-    RELEASE_LOCK(xml_lock);
     return NULL;
   }
 #endif
@@ -339,6 +350,5 @@ read_xml(istream &in, ostream &logfile) {
     logfile << logout.str() << flush;
   }
 
-  RELEASE_LOCK(xml_lock);
   return doc;
 }

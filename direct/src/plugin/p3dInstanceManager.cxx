@@ -25,6 +25,7 @@
 #include "find_root_dir.h"
 #include "fileSpec.h"
 #include "get_tinyxml.h"
+#include "binaryXml.h"
 #include "mkdir_complete.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
@@ -53,6 +54,8 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 P3DInstanceManager() {
+  init_xml();
+
   _is_initialized = false;
   _next_temp_filename_counter = 1;
   _unique_id = 0;
