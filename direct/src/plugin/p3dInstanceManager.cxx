@@ -189,6 +189,11 @@ initialize(const string &contents_filename, const string &host_url,
     _platform = DTOOL_PLATFORM;
   }
 
+  _host_url = host_url;
+  if (_host_url.empty()) {
+    _host_url = PANDA_PACKAGE_HOST_URL;
+  }
+
   _root_dir = find_root_dir();
 
   // Allow the caller (e.g. panda3d.exe) to specify a log directory.

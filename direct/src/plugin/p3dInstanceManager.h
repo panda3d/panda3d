@@ -62,6 +62,7 @@ public:
   inline bool get_verify_contents() const;
   inline void reset_verify_contents();
 
+  inline const string &get_host_url() const;
   inline const string &get_root_dir() const;
   inline const string &get_platform() const;
   inline const string &get_temp_directory() const;
@@ -139,6 +140,7 @@ private:
 
 private:
   bool _is_initialized;
+  string _host_url;
   string _root_dir;
   string _certs_dir;
   bool _verify_contents;

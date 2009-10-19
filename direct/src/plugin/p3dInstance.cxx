@@ -96,8 +96,8 @@ P3DInstance(P3D_request_ready_func *func,
   _has_log_basename = false;
   _hidden = (_fparams.lookup_token_int("hidden") != 0);
   _allow_python_dev = false;
-  _keep_user_env = false;
-  _auto_start = false;
+  _keep_user_env = (_fparams.lookup_token_int("keep_user_env") != 0);
+  _auto_start = (_fparams.lookup_token_int("auto_start") != 0);
   _auth_button_approved = false;
   _failed = false;
   _session = NULL;
@@ -174,7 +174,7 @@ P3DInstance(P3D_request_ready_func *func,
   // it eventually, and it's good to have it loaded early, so we can
   // put up a splash image (for instance, the above IT_download image)
   // while we download the real contents.
-  P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+  P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
   _image_package = host->get_package("images", "");
   if (_image_package != NULL) {
     _image_package->add_instance(this);
@@ -1261,7 +1261,7 @@ mark_p3d_untrusted() {
   if (_p3dcert_package == NULL) {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-    P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+    P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
     _p3dcert_package = host->get_package("p3dcert", "");
     if (_p3dcert_package != NULL) {
       _p3dcert_package->add_instance(this);
@@ -1395,11 +1395,6 @@ scan_app_desc_file(TiXmlDocument *doc) {
     }
   }
 
-  // auto_start is true if it is set in the application itself, or in
-  // the web tokens.
-  if (_fparams.lookup_token_int("auto_start") != 0) {
-    _auto_start = true;
-  }
   if (_auth_button_approved) {
     // But finally, if the user has already clicked through the red
     // "auth" button, no need to present him/her with another green

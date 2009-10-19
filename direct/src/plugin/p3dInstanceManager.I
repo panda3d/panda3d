@@ -52,6 +52,22 @@ reset_verify_contents() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_host_url
+//       Access: Public
+//  Description: Returns the standard host_url which the instances
+//               should attempt to contact to download auxiliary
+//               packages associated with the core API, such as the
+//               p3dcert and images packages.  This is normally the
+//               compiled-in PANDA_PACKAGE_HOST_URL, but it might be
+//               set to something different by the -u parameter on the
+//               panda3d executable.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_host_url() const {
+  return _host_url;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_root_dir
 //       Access: Public
 //  Description: Returns the root directory into which all the P3D
@@ -212,7 +228,9 @@ get_plugin_distributor() const {
 //     Function: P3DInstanceManager::get_coreapi_host_url
 //       Access: Public
 //  Description: Returns the host URL from which this Core API was
-//               downloaded (according to the plugin).
+//               downloaded (according to the plugin).  This is for
+//               reporting purposes only; see get_host_url() for the
+//               URL to contact to actually download content.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DInstanceManager::
 get_coreapi_host_url() const {
