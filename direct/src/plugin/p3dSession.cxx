@@ -1128,7 +1128,7 @@ set_failed() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 spawn_read_thread() {
-  assert(!_read_thread_continue);
+  assert(!_started_read_thread && !_read_thread_continue);
 
   _read_thread_continue = true;
   SPAWN_THREAD(_read_thread, rt_thread_run, this);

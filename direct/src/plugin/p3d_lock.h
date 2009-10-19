@@ -46,23 +46,25 @@ public:
 // Threads.
 #define THREAD HANDLE
 #define INIT_THREAD(thread) (thread) = NULL;
-#define SPAWN_THREAD(thread, callback_function, this) \
+#define SPAWN_THREAD(thread, callback_function, this)                   \
   (thread) = CreateThread(NULL, 0, &win_ ## callback_function, (this), 0, NULL)
-#define JOIN_THREAD(thread) \
-  assert((thread) != NULL); \
-  WaitForSingleObject((thread), INFINITE); \
-  CloseHandle((thread)); \
-  (thread) = NULL;
+#define JOIN_THREAD(thread)                     \
+  {                                             \
+    assert((thread) != NULL);                   \
+    WaitForSingleObject((thread), INFINITE);    \
+    CloseHandle((thread));                      \
+    (thread) = NULL;                            \
+  }
 
 // Declare this macro within your class declaration.  This implements
 // the callback function wrapper necessary to hook into the above
 // SPAWN_THREAD call.  The wrapper will in turn call the method
 // function you provide.
 #define THREAD_CALLBACK_DECLARATION(class, callback_function) \
-  static DWORD WINAPI                           \
-  win_ ## callback_function(LPVOID data) {        \
-    ((class *)data)->callback_function();       \
-    return 0;                                   \
+  static DWORD WINAPI                                         \
+  win_ ## callback_function(LPVOID data) {                    \
+    ((class *)data)->callback_function();                     \
+    return 0;                                                 \
   }
 
 
@@ -75,12 +77,12 @@ public:
 // request_ready call from within the API, which in turn is allowed to
 // call back into the API.
 #define LOCK pthread_mutex_t
-#define INIT_LOCK(lock) { \
-    pthread_mutexattr_t attr; \
-    pthread_mutexattr_init(&attr); \
+#define INIT_LOCK(lock) {                                      \
+    pthread_mutexattr_t attr;                                  \
+    pthread_mutexattr_init(&attr);                             \
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE); \
-    int result = pthread_mutex_init(&(lock), &attr);        \
-    pthread_mutexattr_destroy(&attr); \
+    int result = pthread_mutex_init(&(lock), &attr);           \
+    pthread_mutexattr_destroy(&attr);                          \
   }
 #define ACQUIRE_LOCK(lock) pthread_mutex_lock(&(lock))
 #define RELEASE_LOCK(lock) pthread_mutex_unlock(&(lock))
@@ -88,25 +90,34 @@ public:
 
 #define THREAD pthread_t
 #define INIT_THREAD(thread) (thread) = 0;
-#define SPAWN_THREAD(thread, callback_function, this) \
-  pthread_attr_t attr; \
-  pthread_attr_init(&attr); \
-  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM); \
-  pthread_create(&(thread), &attr, &posix_ ## callback_function, (void *)(this)); \
-  pthread_attr_destroy(&attr);
+#define SPAWN_THREAD(thread, callback_function, this)                   \
+  {                                                                     \
+    pthread_attr_t attr;                                                \
+    pthread_attr_init(&attr);                                           \
+    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);                 \
+    pthread_create(&(thread), &attr, &posix_ ## callback_function, (void *)(this)); \
+    pthread_attr_destroy(&attr);                                        \
+  }
 
-#define JOIN_THREAD(thread) \
-  assert((thread) != 0); \
-  void *return_val; \
-pthread_join((thread), &return_val); \
-  (thread) = 0;
+#define JOIN_THREAD(thread)                             \
+  {                                                     \
+    assert((thread) != 0);                              \
+    void *return_val;                                   \
+    int success = pthread_join((thread), &return_val);  \
+    (thread) = 0;                                       \
+    if (success != 0) {                                 \
+      nout << "Failed to join: " << success << "\n";    \
+    } else {                                            \
+      nout << "Successfully joined thread: " << return_val << "\n";     \
+    }                                                   \
+  }
 
 // As above, declare this macro within your class declaration.
 #define THREAD_CALLBACK_DECLARATION(class, callback_function) \
   static void *                                               \
-  posix_ ## callback_function(void *data) {        \
-    ((class *)data)->callback_function();       \
-    return NULL;                                   \
+  posix_ ## callback_function(void *data) {                   \
+    ((class *)data)->callback_function();                     \
+    return NULL;                                              \
   }
 
 #endif  // _WIN32

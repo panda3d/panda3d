@@ -527,8 +527,8 @@ paint_progress_bar(CGContextRef context) {
     CGPoint end_point = CGContextGetTextPosition(context);
     float text_width = end_point.x;
 
-    int text_x = (_win_width - text_width) / 2;
-    int text_y = bar_y - text_height * 1.5;
+    int text_x = (int)(_win_width - text_width) / 2;
+    int text_y = (int)(bar_y - text_height * 1.5);
 
     // Clear the rectangle behind the text to white.
     CGRect text_rect = { { text_x - 2, text_y - 2 }, { text_width + 4, text_height + 4 } };
