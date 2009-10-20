@@ -37,7 +37,6 @@ THREADCOUNT=0
 CFLAGS=""
 RUNTIME=0
 RUNTIME_VERSION="dev"
-RUNTIME_PLATFORM="other"
 DISTRIBUTOR=""
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
@@ -177,24 +176,6 @@ if (RUNTIME):
     RUNTIME_VERSION = DISTRIBUTOR.strip() + "_" + VERSION[:3]
 elif (DISTRIBUTOR == ""):
     DISTRIBUTOR = "makepanda"
-
-if (sys.platform.startswith("win")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "win64"
-    else:
-        RUNTIME_PLATFORM = "win32"
-elif (sys.platform.startswith("linux")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "linux.amd64"
-    else:
-        RUNTIME_PLATFORM = "linux.i386"
-elif (sys.platform == "darwin"):
-    RUNTIME_PLATFORM = "osx.fat"
-elif (sys.platform.startswith("freebsd")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "freebsd.amd64"
-    else:
-        RUNTIME_PLATFORM = "freebsd.i386"
 
 ########################################################################
 ##
