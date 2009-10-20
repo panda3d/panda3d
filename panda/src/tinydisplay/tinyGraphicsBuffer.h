@@ -37,6 +37,8 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
+  INLINE ZBuffer *get_frame_buffer();
+
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
