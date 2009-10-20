@@ -40,92 +40,158 @@ reportedMissing = {}
 # Our own Python source trees to watch out for.
 sourceTrees = ['direct']
 
-# The command to compile a c to an object file.  Replace %(basename)s
-# with the basename of the source file, and an implicit .c extension.
-compileObj = 'error'
+class CompilationEnvironment:
+    """ Create an instance of this class to record the commands to
+    invoke the compiler on a given platform.  If needed, the caller
+    can create a custom instance of this class (or simply set the
+    compile strings directly) to customize the build environment. """
 
-# The command to link a single object file into an executable.  As
-# above, replace $(basename)s with the basename of the original source
-# file, and of the target executable.
-linkExe = 'error'
+    def __init__(self):
+        # The command to compile a c to an object file.  Replace %(basename)s
+        # with the basename of the source file, and an implicit .c extension.
+        self.compileObj = 'error'
 
-# The command to link a single object file into a shared library.
-linkDll = 'error'
+        # The command to link a single object file into an executable.  As
+        # above, replace $(basename)s with the basename of the original source
+        # file, and of the target executable.
+        self.linkExe = 'error'
 
-# Paths to Python stuff.
-Python = None
-PythonIPath = get_python_inc()
-PythonVersion = get_python_version()
+        # The command to link a single object file into a shared library.
+        self.linkDll = 'error'
 
-# The VC directory of Microsoft Visual Studio (if relevant)
-MSVC = None
-# Directory to Windows Platform SDK (if relevant)
-PSDK = None
+        # Paths to Python stuff.
+        self.Python = None
+        self.PythonIPath = get_python_inc()
+        self.PythonVersion = get_python_version()
 
-# The setting to control release vs. debug builds.  Only relevant on
-# Windows.
-MD = None
+        # The VC directory of Microsoft Visual Studio (if relevant)
+        self.MSVC = None
+        # Directory to Windows Platform SDK (if relevant)
+        self.PSDK = None
 
-# The _d extension to add to dll filenames on Windows in debug builds.
-dllext = ''
+        # The setting to control release vs. debug builds.  Only relevant on
+        # Windows.
+        self.MD = None
 
+        # The _d extension to add to dll filenames on Windows in debug builds.
+        self.dllext = ''
 
-if sys.platform == 'win32':
-    Python = PREFIX
-    
-    if ('VCINSTALLDIR' in os.environ):
-        MSVC = os.environ['VCINSTALLDIR']
-    elif (Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').exists()):
-        MSVC = Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').toOsSpecific()
-    elif (Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists()):
-        MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
-    else:
-        print 'Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.'
-        sys.exit(1)
-    
-    if ('WindowsSdkDir' in os.environ):
-        PSDK = os.environ['WindowsSdkDir']
-    elif (platform.architecture()[0] == '32bit' and Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
-        PSDK = Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').toOsSpecific()
-    elif (os.path.exists(os.path.join(MSVC, 'PlatformSDK'))):
-        PSDK = os.path.join(MSVC, 'PlatformSDK')
-    else:
-        print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
-        sys.exit(1)
+        self.determineStandardSetup()
 
-    # We need to use the correct compiler setting for debug vs. release builds.
-    MD = '/MD'
-    if isDebugBuild:
-        MD = '/MDd'
-        dllext = '_d'
-    
-    # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
-    if ('MAKEPANDA' in os.environ):
-        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
-        linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
-    else:
-        os.environ['PATH'] += ';' + MSVC + '\\bin;' + MSVC + '\\Common7\\IDE;' + PSDK + '\\bin'
-        
-        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
-        linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
+    def determineStandardSetup(self):
+        if sys.platform == 'win32':
+            self.Python = PREFIX
 
-elif sys.platform == 'darwin':
-    # OSX
-    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
-    linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
-    linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
+            if ('VCINSTALLDIR' in os.environ):
+                self.MSVC = os.environ['VCINSTALLDIR']
+            elif (Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').exists()):
+                self.MSVC = Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').toOsSpecific()
+            elif (Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists()):
+                self.MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
+            else:
+                print 'Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.'
+                sys.exit(1)
 
-else:
-    # Unix
-    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I %(pythonIPath)s"
-    linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s"
-    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s"
-    
-    if (platform.uname()[1]=="pcbsd"):
-        linkExe += " -L/usr/PCBSD/local/lib"
-        linkDll += " -L/usr/PCBSD/local/lib"
+            if ('WindowsSdkDir' in os.environ):
+                self.PSDK = os.environ['WindowsSdkDir']
+            elif (platform.architecture()[0] == '32bit' and Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
+                self.PSDK = Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').toOsSpecific()
+            elif (os.path.exists(os.path.join(self.MSVC, 'PlatformSDK'))):
+                self.PSDK = os.path.join(self.MSVC, 'PlatformSDK')
+            else:
+                print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
+                sys.exit(1)
+
+            # We need to use the correct compiler setting for debug vs. release builds.
+            self.MD = '/MD'
+            if isDebugBuild:
+                self.MD = '/MDd'
+                self.dllext = '_d'
+
+            # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
+            if ('MAKEPANDA' in os.environ):
+                self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
+                self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+                self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
+            else:
+                os.environ['PATH'] += ';' + self.MSVC + '\\bin;' + self.MSVC + '\\Common7\\IDE;' + self.PSDK + '\\bin'
+
+                self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+                self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+                self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
+
+        elif sys.platform == 'darwin':
+            # OSX
+            self.compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
+            self.linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
+
+        else:
+            # Unix
+            self.compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I %(pythonIPath)s"
+            self.linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s"
+            self.linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s"
+
+            if (platform.uname()[1]=="pcbsd"):
+                self.linkExe += " -L/usr/PCBSD/local/lib"
+                self.linkDll += " -L/usr/PCBSD/local/lib"
+
+    def compileExe(self, filename, basename):
+        compile = self.compileObj % {
+            'python' : self.Python,
+            'MSVC' : self.MSVC,
+            'PSDK' : self.PSDK,
+            'MD' : self.MD,
+            'pythonIPath' : self.PythonIPath,
+            'pythonVersion' : self.PythonVersion,
+            'filename' : filename,
+            'basename' : basename,
+            }
+        print >> sys.stderr, compile
+        if os.system(compile) != 0:
+            raise StandardError
+
+        link = self.linkExe % {
+            'python' : self.Python,
+            'MSVC' : self.MSVC,
+            'PSDK' : self.PSDK,
+            'pythonIPath' : self.PythonIPath,
+            'pythonVersion' : self.PythonVersion,
+            'filename' : filename,
+            'basename' : basename,
+            }
+        print >> sys.stderr, link
+        if os.system(link) != 0:
+            raise StandardError
+
+    def compileDll(self, filename, basename):
+        compile = self.compileObj % {
+            'python' : self.Python,
+            'MSVC' : self.MSVC,
+            'PSDK' : self.PSDK,
+            'MD' : self.MD,
+            'pythonIPath' : self.PythonIPath,
+            'pythonVersion' : self.PythonVersion,
+            'filename' : filename,
+            'basename' : basename,
+            }
+        print >> sys.stderr, compile
+        if os.system(compile) != 0:
+            raise StandardError
+
+        link = self.linkDll % {
+            'python' : self.Python,
+            'MSVC' : self.MSVC,
+            'PSDK' : self.PSDK,
+            'pythonIPath' : self.PythonIPath,
+            'pythonVersion' : self.PythonVersion,
+            'filename' : filename,
+            'basename' : basename,
+            'dllext' : self.dllext,
+            }
+        print >> sys.stderr, link
+        if os.system(link) != 0:
+            raise StandardError
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -459,11 +525,11 @@ class Freezer:
         # if untrue.
         self.platform = sys.platform
 
-        # You will also need to change these for a cross-compiler
-        # situation.
-        self.compileObj = compileObj
-        self.linkExe = linkExe
-        self.linkDll = linkDll
+        # This is the compilation environment.  Fill in your own
+        # object here if you have custom needs (for instance, for a
+        # cross-compiler or something).  If this is None, then a
+        # default object will be created when it is needed.
+        self.cenv = None
 
         # The filename extension to append to the source file before
         # compiling.
@@ -1134,6 +1200,9 @@ class Freezer:
             dllexport = '__declspec(dllexport) '
             dllimport = '__declspec(dllimport) '
 
+        if not self.cenv:
+            self.cenv = CompilationEnvironment()
+            
         if compileToExe:
             code = self.frozenMainCode
             if self.platform == 'win32':
@@ -1150,11 +1219,11 @@ class Freezer:
             else:
                 target = basename
 
-            compileFunc = self.compileExe
+            compileFunc = self.cenv.compileExe
             
         else:
             if self.platform == 'win32':
-                target = basename + dllext + '.pyd'
+                target = basename + self.cenv.dllext + '.pyd'
             else:
                 target = basename + '.so'
             
@@ -1164,7 +1233,7 @@ class Freezer:
                 'dllexport' : dllexport,
                 'dllimport' : dllimport,
                 }
-            compileFunc = self.compileDll
+            compileFunc = self.cenv.compileDll
 
         text = programFile % {
             'moduleDefs' : '\n'.join(moduleDefs),
@@ -1185,63 +1254,6 @@ class Freezer:
                 os.unlink(basename + self.objectExtension)
         
         return target
-
-    def compileExe(self, filename, basename):
-        compile = self.compileObj % {
-            'python' : Python,
-            'MSVC' : MSVC,
-            'PSDK' : PSDK,
-            'MD' : MD,
-            'pythonIPath' : PythonIPath,
-            'pythonVersion' : PythonVersion,
-            'filename' : filename,
-            'basename' : basename,
-            }
-        print >> sys.stderr, compile
-        if os.system(compile) != 0:
-            raise StandardError
-
-        link = self.linkExe % {
-            'python' : Python,
-            'MSVC' : MSVC,
-            'PSDK' : PSDK,
-            'pythonIPath' : PythonIPath,
-            'pythonVersion' : PythonVersion,
-            'filename' : filename,
-            'basename' : basename,
-            }
-        print >> sys.stderr, link
-        if os.system(link) != 0:
-            raise StandardError
-
-    def compileDll(self, filename, basename):
-        compile = self.compileObj % {
-            'python' : Python,
-            'MSVC' : MSVC,
-            'PSDK' : PSDK,
-            'MD' : MD,
-            'pythonIPath' : PythonIPath,
-            'pythonVersion' : PythonVersion,
-            'filename' : filename,
-            'basename' : basename,
-            }
-        print >> sys.stderr, compile
-        if os.system(compile) != 0:
-            raise StandardError
-
-        link = self.linkDll % {
-            'python' : Python,
-            'MSVC' : MSVC,
-            'PSDK' : PSDK,
-            'pythonIPath' : PythonIPath,
-            'pythonVersion' : PythonVersion,
-            'filename' : filename,
-            'basename' : basename,
-            'dllext' : dllext,
-            }
-        print >> sys.stderr, link
-        if os.system(link) != 0:
-            raise StandardError
 
     def makeModuleDef(self, mangledName, code):
         result = ''
