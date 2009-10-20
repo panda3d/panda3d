@@ -962,7 +962,11 @@ create_instance(const string &p3d, P3D_window_type window_type,
   } else {
     // Send output to the console.
     token._keyword = "console_output";
+#ifdef NON_CONSOLE
+    token._value = "0";
+#else
     token._value = "1";
+#endif
     tokens.push_back(token);
   }
 
