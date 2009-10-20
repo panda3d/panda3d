@@ -3263,7 +3263,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
-  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE'])
+  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
