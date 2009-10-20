@@ -1645,7 +1645,7 @@ class Packager:
 
         # Text files that are copied (and compressed) to the package
         # without processing.
-        self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg' ]
+        self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg', 'sha' ]
 
         # Binary files that are copied (and compressed) without
         # processing.
