@@ -3,7 +3,7 @@
 #define BUILD_DIRECTORY $[CTPROJS]
 #if $[CTPROJS]
 
-  #define LOCAL_LIBS dtoolbase
+  #define LOCAL_LIBS dtoolbase pystub
 
   #begin bin_target
     #define TARGET newheader
