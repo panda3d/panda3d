@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename
+from pandac.PandaModules import Filename, PandaSystem, getModelPath
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -99,6 +99,25 @@ aux-display tinydisplay
 plugin-path $PANDA3D_ROOT
 default-model-extension .bam
 """ + auxDisplays)
+
+class models(package):
+    # The standard models package.  This is the contents of the
+    # "models" directory that ships with Panda; it includes a few
+    # default fonts, and some silly little sample models like smiley
+    # and teapot.
+    config(display_name = "Standard models")
+
+    # We assign it the same version as the panda3d package.  This
+    # would be assigned by default if we had a requirement on panda3d,
+    # but there's no real reason to declare that requirement.
+    config(version = PandaSystem.getPackageVersionString())
+
+    # Look for cmss12.egg on the model-path.  Wherever this is found,
+    # we assume this is the models directory.
+    pathname = getModelPath().findFile('cmss12.egg')
+    if pathname:
+        dir(pathname.getDirname(), newDir = '')
+    
     
 class fmod(package):
     # This package includes the FMod audio library.  This is
