@@ -530,12 +530,9 @@ int PPInstance::Start( const std::string& p3dFilename  )
     
     P3D_instance_setup_window( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, parent_window );
 
-    std::string p3dRemoteFilename( GetHostUrl() );
-    p3dRemoteFilename += p3dFilename;
+    nout << "Starting new P3D instance " << p3dFilename << "\n";
 
-    nout << "Starting new P3D instance " << p3dRemoteFilename << "\n";
-
-    if ( !P3D_instance_start( m_p3dInstance, false, p3dRemoteFilename.c_str() ) )
+    if ( !P3D_instance_start( m_p3dInstance, false, p3dFilename.c_str() ) )
     {
         nout << "Error starting P3D instance: " << GetLastError() << "\n";
         return 1;
