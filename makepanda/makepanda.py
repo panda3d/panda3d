@@ -399,10 +399,10 @@ if (COMPILER=="LINUX"):
     PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
     PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
-    if (RUNTIME and sys.platform == "darwin"):
+    if (RUNTIME and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX runtime build. I'm afraid it gives problems somewhere.
         PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
-    else:
+    elif("PYTHONVERSION" in SDK):
         PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RUNTIME):
         PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr/prtypes.h", "nspr"))
