@@ -33,6 +33,7 @@
   #define SOURCES \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
+    $[if $[IS_OSX],find_root_dir_assist.mm] \
     get_tinyxml.h \
     binaryXml.cxx binaryXml.h \
     fhandle.h \
@@ -149,6 +150,7 @@
     load_plugin.cxx load_plugin.h \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
+    $[if $[IS_OSX],find_root_dir_assist.mm] \
     is_pathsep.h is_pathsep.I \
     mkdir_complete.cxx mkdir_complete.h
 

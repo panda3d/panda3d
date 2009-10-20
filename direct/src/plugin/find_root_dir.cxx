@@ -241,8 +241,15 @@ find_root_dir() {
     }
   }
 
+#elif defined(__APPLE__)
+  // e.g., /Users/<username>/Library/Caches/Panda3D
+  string root = find_osx_root_dir();
+  if (!root.empty()) {
+    return root;
+  }
+
 #else  // _WIN32
-  // e.g., /home/<username>/.panda3d
+  // e.g., /home/<username>/Panda3D
 
   string root;
   const char *uname = getlogin();
@@ -255,7 +262,7 @@ find_root_dir() {
     root = pwdata->pw_dir;
   }
   
-  root += "/.panda3d";
+  root += "/Panda3D";
   if (mkdir(root.c_str(), 0700) == 0 || errno == EEXIST) {
     return root;
   }
