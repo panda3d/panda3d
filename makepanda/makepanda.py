@@ -578,7 +578,7 @@ def CompileCxx(obj,src,opts):
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
-        if (sys.platform == "darwin"):
+        if (sys.platform == "darwin" and not RUNTIME):
             if (int(platform.mac_ver()[0][3]) >= 6):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64"
             else:
@@ -814,7 +814,7 @@ def CompileLink(dll, obj, opts):
         cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
-        if (sys.platform == "darwin"):
+        if (sys.platform == "darwin" and not RUNTIME):
             cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         
