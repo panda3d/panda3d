@@ -182,24 +182,32 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
     X509_INFO *itmp = sk_X509_INFO_value(inf, i);
 
     if (itmp->x509) {
-      X509_STORE_add_cert(_x509_store, itmp->x509);
-      count++;
+      int result = X509_STORE_add_cert(_x509_store, itmp->x509);
+      if (result == 0) {
+        notify_ssl_errors();
+      } else {
+        ++count;
+      }
+
       if (express_cat.is_spam()) {
         express_cat.spam()
           << "Entry " << i << " is x509\n";
       }
 
     } else if (itmp->crl) {
-      X509_STORE_add_crl(_x509_store, itmp->crl);
-      count++;
+      int result = X509_STORE_add_crl(_x509_store, itmp->crl);
+      if (result == 0) {
+        notify_ssl_errors();
+      } else {
+        ++count;
+      }
+
       if (express_cat.is_spam()) {
         express_cat.spam()
           << "Entry " << i << " is crl\n";
       }
 
     } else if (itmp->x_pkey) {
-      //      X509_STORE_add_crl(_x509_store, itmp->x_pkey);
-      //      count++;
       if (express_cat.is_spam()) {
         express_cat.spam()
           << "Entry " << i << " is pkey\n";
@@ -213,6 +221,11 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
     }
   }
   sk_X509_INFO_pop_free(inf, X509_INFO_free);
+
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "successfully loaded " << count << " entries.\n";
+  }
 
   return count;
 }
@@ -232,6 +245,12 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
 ////////////////////////////////////////////////////////////////////
 int OpenSSLWrapper::
 load_certificates_from_der_ram(const char *data, size_t data_size) {
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "load_certificates_from_der_ram(" << (void *)data
+      << ", " << data_size << ")\n";
+  }
+
   int count = 0;
 
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
@@ -244,11 +263,25 @@ load_certificates_from_der_ram(const char *data, size_t data_size) {
 
   bp = (unsigned char *)data;
   bp_end = bp + data_size;
-  X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-  while (x509 != NULL) {
-    X509_STORE_add_cert(_x509_store, x509);
-    ++count;
-    x509 = d2i_X509(NULL, &bp, bp_end - bp);
+  while (bp < bp_end) {
+    X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
+    if (x509 == NULL) {
+      notify_ssl_errors();
+      break;
+    }
+
+    int result = X509_STORE_add_cert(_x509_store, x509);
+    if (result == 0) {
+      notify_ssl_errors();
+    } else {
+      ++count;
+    }
+  }
+
+
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "loaded " << count << " certificates\n";
   }
 
   return count;
