@@ -72,12 +72,15 @@ class SkinningReplyTo:
         self._headTags = self._dispatcher._headTags[:]
         self._dispatcher._clearHeadTags()
 
-    def respond(self, response):
+    def respondHTTP(self,status,body):
         if self._doSkin:
             self._addHeadTags()
-            response = self._dispatcher.landingPage.skin(response, self._uri)
+            body = self._dispatcher.landingPage.skin(body, self._uri)
             self._removeHeadTags()
-        self._replyTo.respond(response)
+        self._replyTo.respondHTTP(status, body)
+
+    def respond(self, response):
+        self.respondHTTP("200 OK", response)
 
     def addTagToHead(self, tag):
         self._headTags.append(tag)
@@ -91,6 +94,14 @@ class SkinningReplyTo:
         head = self._dispatcher.landingPage.getHead()
         for tag in self._headTags:
             head.remove(tag)
+
+    def __getattr__(self, attrName):
+        if not hasattr(self, attrName):
+            # pass-through to replyTo object which this object is a proxy to
+            return getattr(self._replyTo, attrName)
+        if attrName in self.__dict__:
+            return self.__dict__[attrName]
+        return getattr(self.__class__, attrName)
 
 class WebRequestDispatcher(object):
     """
