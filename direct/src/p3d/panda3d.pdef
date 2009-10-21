@@ -45,6 +45,7 @@ class panda3d(package):
            'direct.directtools.*',
            'direct.directutil.*',
            'direct.distributed.*',
+           'direct.filter.*',
            'direct.fsm.*',
            'direct.gui.*',
            'direct.interval.*',
@@ -53,6 +54,10 @@ class panda3d(package):
            'direct.showutil.*',
            'direct.stdpy.*',
            'direct.task.*')
+
+    # Pick up the shader files that appear in direct/src/filter.
+    import direct
+    file(Filename(direct.__path__[0], 'filter/*.sha'), newDir = 'direct/filter')
 
     # Exclude these Panda3D libs; they are big and many applications don't
     # use them.  We define them as separate, optional packages, below,
