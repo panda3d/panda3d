@@ -969,7 +969,7 @@ glsl_compile_shader(GSG *gsg) {
     
     // Set the vertex output limit to the maximum
     nassertr(gsg->_glProgramParameteri != NULL, false);
-    int max_vertices;
+    GLint max_vertices;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &max_vertices);
     gsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_EXT, max_vertices); 
   }

@@ -1140,8 +1140,8 @@ reset() {
   _max_fb_samples = 0;
 #ifndef OPENGLES
   if (_supports_framebuffer_multisample) {
-    GLfloat max_samples;
-    GLP(GetFloatv)(GL_MAX_SAMPLES_EXT, &max_samples);
+    GLint max_samples;
+    GLP(GetIntegerv)(GL_MAX_SAMPLES_EXT, &max_samples);
     _max_fb_samples = max_samples;
   }
 #endif
