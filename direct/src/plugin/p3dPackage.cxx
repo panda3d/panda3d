@@ -1047,10 +1047,10 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  if (is_contents_file && inst_mgr->get_verify_contents()) {
-    // When we're downloading the contents file with verify_contents
-    // true, we always go straight to the authoritative host, not even
-    // to the super-mirror.
+  if (dtype == DT_redownload_contents_file) {
+    // When we're redownloading the contents file after a download
+    // error, we always go straight to the authoritative host, not
+    // even to the super-mirror.
 
   } else {
     // In other cases, if the "super mirror" is enabled, we try that
