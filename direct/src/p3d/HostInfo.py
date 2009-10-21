@@ -70,7 +70,7 @@ class HostInfo:
         assert self.hostDir
         self.importsDir = Filename(self.hostDir, 'imports')
 
-    def downloadContentsFile(self, http):
+    def downloadContentsFile(self, http, redownload = False):
         """ Downloads the contents.xml file for this particular host,
         synchronously, and then reads it.  Returns true on success,
         false on failure. """
@@ -79,31 +79,51 @@ class HostInfo:
             # We've already got one.
             return True
 
+        rf = None
         if http:
-            url = self.hostUrlPrefix + 'contents.xml'
-            # Append a uniquifying query string to the URL to force the
-            # download to go all the way through any caches.  We use the
-            # time in seconds; that's unique enough.
-            url += '?' + str(int(time.time()))
+            if not redownload and self.appRunner and self.appRunner.superMirrorUrl:
+                # We start with the "super mirror", if it's defined.
+                url = self.appRunner.superMirrorUrl + 'contents.xml'
+                request = DocumentSpec(url)
+                print "Downloading contents file %s" % (request)
 
-            # We might as well explicitly request the cache to be disabled
-            # too, since we have an interface for that via HTTPChannel.
-            request = DocumentSpec(url)
-            request.setCacheControl(DocumentSpec.CCNoCache)
+                rf = Ramfile()
+                channel = http.makeChannel(False)
+                channel.getDocument(request)
+                if not channel.downloadToRam(rf):
+                    print "Unable to download %s" % (url)
+                    rf = None
 
-            print "Downloading contents file %s" % (request)
+            if not rf:
+                # Then go to the main host, if our super mirror let us
+                # down.
 
-            rf = Ramfile()
-            channel = http.makeChannel(False)
-            channel.getDocument(request)
-            if not channel.downloadToRam(rf):
-                print "Unable to download %s" % (url)
+                url = self.hostUrlPrefix + 'contents.xml'
+                # Append a uniquifying query string to the URL to force the
+                # download to go all the way through any caches.  We use the
+                # time in seconds; that's unique enough.
+                url += '?' + str(int(time.time()))
+
+                # We might as well explicitly request the cache to be disabled
+                # too, since we have an interface for that via HTTPChannel.
+                request = DocumentSpec(url)
+                request.setCacheControl(DocumentSpec.CCNoCache)
+
+                print "Downloading contents file %s" % (request)
+
+                rf = Ramfile()
+                channel = http.makeChannel(False)
+                channel.getDocument(request)
+                if not channel.downloadToRam(rf):
+                    print "Unable to download %s" % (url)
+                    rf = None
 
         filename = Filename(self.hostDir, 'contents.xml')
-        filename.makeDir()
-        f = open(filename.toOsSpecific(), 'wb')
-        f.write(rf.getData())
-        f.close()
+        if rf:
+            filename.makeDir()
+            f = open(filename.toOsSpecific(), 'wb')
+            f.write(rf.getData())
+            f.close()
 
         if not self.readContentsFile():
             print "Failure reading %s" % (filename)
@@ -127,7 +147,7 @@ class HostInfo:
 
         # Now download it again.
         self.hasContentsFile = False
-        if not self.downloadContentsFile(http):
+        if not self.downloadContentsFile(http, redownload = True):
             return False
 
         hv2 = HashVal()

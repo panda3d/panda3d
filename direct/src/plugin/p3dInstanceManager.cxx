@@ -385,6 +385,9 @@ set_plugin_version(int major, int minor, int sequence,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 set_super_mirror(const string &super_mirror_url) {
+  if (!super_mirror_url.empty()) {
+    nout << "super_mirror = " << super_mirror_url << "\n";
+  }
   _super_mirror_url = super_mirror_url;
 
   // Make sure it ends with a slash.
