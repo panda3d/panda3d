@@ -3249,6 +3249,7 @@ if (RUNTIME):
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
+  TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
   TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
   TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
