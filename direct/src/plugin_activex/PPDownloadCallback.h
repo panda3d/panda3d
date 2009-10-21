@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <atlbase.h>
+
 enum
 {
     UF_BINDSTATUS_FIRST = BINDSTATUS_FINDINGRESOURCE,
