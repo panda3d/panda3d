@@ -248,8 +248,8 @@ find_root_dir() {
     return root;
   }
 
-#else  // _WIN32
-  // e.g., /home/<username>/Panda3D
+#else  // The Linux case
+  // e.g., /home/<username>/.panda3d
 
   string root;
   const char *uname = getlogin();
@@ -262,7 +262,7 @@ find_root_dir() {
     root = pwdata->pw_dir;
   }
   
-  root += "/Panda3D";
+  root += "/.panda3d";
   if (mkdir(root.c_str(), 0700) == 0 || errno == EEXIST) {
     return root;
   }
