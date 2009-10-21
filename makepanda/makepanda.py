@@ -760,7 +760,7 @@ def CompileLink(dll, obj, opts):
                 pass
             else: cmd += ' ' + BracketNameWithQuotes(x)
         if (GetOrigExt(dll)==".exe"):
-            cmd += " built/tmp/pandaIcon.res"
+            cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " " + BracketNameWithQuotes(name)
         oscmd(cmd)
