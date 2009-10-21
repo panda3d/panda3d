@@ -23,8 +23,14 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
-#ifndef GL_GEOMETRY_SHADER
-#define GL_GEOMETRY_SHADER 0x8DD9
+#ifndef GL_GEOMETRY_SHADER_EXT
+#define GL_GEOMETRY_SHADER_EXT 0x8DD9
+#endif
+#ifndef GL_GEOMETRY_VERTICES_OUT_EXT
+#define GL_GEOMETRY_VERTICES_OUT_EXT 0x8DDA
+#endif
+#ifndef GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT
+#define GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT 0x8DE0
 #endif
 
 #ifdef HAVE_CG
@@ -288,9 +294,8 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       for (int i = 0; i < param_count; ++i) {
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
         PT(InternalName) inputname = InternalName::make(param_name);
-        if (inputname->get_name().substr(0, 4) == "p3d_" || inputname->get_name().substr(0, 3) == "gl_") {
-          if (inputname->get_name().substr(0, 3) == "gl_") noprefix = inputname->get_name().substr(3);
-          else noprefix = inputname->get_name().substr(4);
+        if (inputname->get_name().substr(0, 4) == "p3d_") {
+          noprefix = inputname->get_name().substr(4);
           Shader::ShaderVarSpec bind;
           Shader::ShaderArgId arg_id;
           arg_id._name  = param_name;
@@ -913,7 +918,7 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
       handle = gsg->_glCreateShader(GL_FRAGMENT_SHADER);
       break;
     case Shader::ST_geometry:
-      handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER);
+      handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER_EXT);
       break;
     default:
       return 0;
@@ -942,9 +947,6 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
 glsl_compile_shader(GSG *gsg) {
-  // Terribly hacky. I hope this will go away when we
-  // add support for separated shader programs later.
-
   _glsl_program = gsg->_glCreateProgram();
   if (!_glsl_program) return false;
 
@@ -964,6 +966,12 @@ glsl_compile_shader(GSG *gsg) {
     _glsl_gshader = glsl_compile_entry_point(gsg, Shader::ST_geometry);
     if (!_glsl_gshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_gshader);
+    
+    // Set the vertex output limit to the maximum
+    nassertr(gsg->_glProgramParameteri != NULL, false);
+    int max_vertices;
+    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &max_vertices);
+    gsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_EXT, max_vertices); 
   }
   
   // There might be warnings. Only report them for one shader program.

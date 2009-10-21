@@ -943,6 +943,17 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES
+  if (has_extension("GL_EXT_geometry_shader4")) {
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "ProgramParameteriEXT");
+  } else {
+    _glProgramParameteri = NULL;
+  }
+#else
+  _glProgramParameteri = NULL;
+#endif
+
 #ifdef OPENGLES_2
   _glAttachShader = glAttachShader;
   _glBindAttribLocation = glBindAttribLocation;

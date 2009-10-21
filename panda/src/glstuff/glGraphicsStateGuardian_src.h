@@ -145,7 +145,10 @@ typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, con
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
-#endif
+#endif  // OPENGLES_1
+#ifndef OPENGLES
+typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIEXTPROC) (GLuint program, GLenum pname, GLint value);
+#endif  // OPENGLES
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -619,7 +622,10 @@ public:
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
-#endif
+#endif  // OPENGLES_1
+#ifndef OPENGLES
+  PFNGLPROGRAMPARAMETERIEXTPROC _glProgramParameteri;
+#endif  // OPENGLES
 
   GLenum _edge_clamp;
   GLenum _border_clamp;
