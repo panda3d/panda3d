@@ -1035,8 +1035,17 @@ delete_instance(P3D_instance *inst) {
 void Panda3D::
 usage() {
   cerr
-    << "\nUsage:\n"
-    << "   panda3d [opts] file.p3d [args]\n\n"
+    << "\nThis is panda3d version " 
+    << P3D_PLUGIN_MAJOR_VERSION << "."
+    << P3D_PLUGIN_MINOR_VERSION << "."
+    << P3D_PLUGIN_SEQUENCE_VERSION;
+#ifndef PANDA_OFFICIAL_VERSION
+  cerr << "c";
+#endif
+
+  cerr
+    << "\n\nUsage:\n"
+    << "   panda3d [opts] file.p3d [args]\n"
     << "   panda3d -m [opts] file_a.p3d file_b.p3d [file_c.p3d ...]\n\n"
   
     << "This program is used to execute a Panda3D application bundle stored\n"
