@@ -11,6 +11,15 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+         
+#ifdef __APPLE__
+// We have to include this before we include any Panda libraries,
+// because one of the things we pick up in Panda defines a macro for
+// TCP_NODELAY and friends, causing heartaches for the header files
+// picked up here.
+#include <Carbon/Carbon.h>
+extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
+#endif
 
 #include "showBase.h"
 
@@ -19,11 +28,6 @@
 #include "renderBuffer.h"
 #include "camera.h"
 #include "graphicsPipeSelection.h"
-         
-#ifdef __APPLE__
-#include <Carbon/Carbon.h>
-extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
-#endif
 
 #ifdef WIN32
 #include <windows.h>  // For SystemParametersInfo()
