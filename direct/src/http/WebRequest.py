@@ -96,12 +96,12 @@ class SkinningReplyTo:
             head.remove(tag)
 
     def __getattr__(self, attrName):
-        if not hasattr(self, attrName):
-            # pass-through to replyTo object which this object is a proxy to
-            return getattr(self._replyTo, attrName)
         if attrName in self.__dict__:
             return self.__dict__[attrName]
-        return getattr(self.__class__, attrName)
+        if hasattr(self.__class__, attrName):
+            return getattr(self.__class__, attrName)
+        # pass-through to replyTo object which this object is a proxy to
+        return getattr(self._replyTo, attrName)
 
 class WebRequestDispatcher(object):
     """
