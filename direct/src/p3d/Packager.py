@@ -1711,15 +1711,16 @@ class Packager:
         self.excludeSystemGlobs = [
             GlobPattern('d3dx9_*.dll'),
 
-            GlobPattern('linux-gate.so*'),
-            GlobPattern('libdl.so*'),
-            GlobPattern('libm.so*'),
-            GlobPattern('libc.so*'),
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
             GlobPattern('libGLcore.so*'),
-            GlobPattern('libnvidia*.so*'),
             GlobPattern('libX*.so*'),
+            GlobPattern('libc.so*'),
+            GlobPattern('libdl.so*'),
+            GlobPattern('libm.so*'),
+            GlobPattern('libnvidia*.so*'),
+            GlobPattern('libpthread.so*')
+            GlobPattern('linux-gate.so*'),
             ]
 
         # A Loader for loading models.
