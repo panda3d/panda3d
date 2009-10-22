@@ -2,13 +2,15 @@
 
 import os
 import sys
+import shutil
+import platform
 from optparse import OptionParser
 import subprocess
 import direct
 from pandac.PandaModules import *
 
 usage = """
-This command invokes NSIS to construct a Windows installer for the
+This command creates a graphical installer for the
 Panda3D plugin and runtime environment.
 
   %prog [opts]"""
@@ -20,11 +22,14 @@ parser.add_option('-n', '--short', dest = 'short_name',
 parser.add_option('-N', '--long', dest = 'long_name',
                   help = 'The product long name',
                   default = 'Panda3D Game Engine')
+parser.add_option('-v', '--version', dest = 'version',
+                  help = 'The product version',
+                  default = PandaSystem.getVersionString())
 parser.add_option('-p', '--publisher', dest = 'publisher',
                   help = 'The name of the publisher',
                   default = 'Carnegie Mellon Entertainment Technology Center')
 parser.add_option('-i', '--install', dest = 'install_dir',
-                  help = "The install directory on the user's machine",
+                  help = "The install directory on the user's machine (Windows-only)",
                   default = '$PROGRAMFILES\\Panda3D')
 parser.add_option('-l', '--license', dest = 'license',
                   help = 'A file containing the license or EULA text',
@@ -35,14 +40,14 @@ parser.add_option('-w', '--website', dest = 'website',
 parser.add_option('', '--start', dest = 'start',
                   help = 'Specify this option to add a start menu',
                   action = 'store_false', default = False)
-parser.add_option('', '--nsis', dest = 'nsis',
-                  help = 'The directory containing NSIS',
-                  default = None)
 parser.add_option('', '--welcome_image', dest = 'welcome_image',
                   help = 'The image to display on the installer',
                   default = None)
 parser.add_option('', '--install_icon', dest = 'install_icon',
                   help = 'The icon to give to the installer',
+                  default = None)
+parser.add_option('', '--nsis', dest = 'nsis',
+                  help = 'The directory containing NSIS',
                   default = None)
 
 (options, args) = parser.parse_args()
@@ -51,34 +56,34 @@ this_dir = os.path.split(sys.argv[0])[0]
 
 ##############################################################################
 #
-# Locate the relevant trees.
+# Locate the relevant files.
 #
 ##############################################################################
 
-if not options.nsis or not options.license:
-    PANDA=None
-    for dir in sys.path:
-        if (dir != "") and os.path.exists(os.path.join(dir,"direct")) and os.path.exists(os.path.join(dir,"pandac")):
-            PANDA=os.path.abspath(dir)
-    if (PANDA is None):
-      sys.exit("Cannot locate the panda root directory in the python path (cannot locate directory containing direct and pandac).")
-    print "PANDA located at "+PANDA
-
-    if (os.path.exists(os.path.join(PANDA,"..","makepanda","makepanda.py"))) and (sys.platform != "win32" or os.path.exists(os.path.join(PANDA,"..","thirdparty","win-nsis","makensis.exe"))):
-      PSOURCE=os.path.abspath(os.path.join(PANDA,".."))
-      if (sys.platform == "win32"):
-        NSIS=os.path.abspath(os.path.join(PANDA,"..","thirdparty","win-nsis"))
+if not options.nsis:
+    if sys.platform == "win32":
+        makensis = None
+        for p in os.defpath.split(";") + os.environ["PATH"].split(";"):
+            if os.path.isfile(os.path.join(p, "makensis.exe")):
+                makensis = os.path.join(p, "makensis.exe")
+        if not makensis:
+            import pandac
+            makensis = os.path.dirname(os.path.dirname(pandac.__file__))
+            makensis = os.path.join(makensis, "nsis", "makensis.exe")
+            if not os.path.isfile(makensis):
+                makensis = None
+        options.nsis = makensis
     else:
-      PSOURCE=PANDA
-      if (sys.platform == "win32"):
-        NSIS=os.path.join(PANDA,"nsis")
+        for p in os.defpath.split(":") + os.environ["PATH"].split(":"):
+            if os.path.isfile(os.path.join(p, "makensis")):
+                options.nsis = os.path.join(p, "makensis")
 
-    if not options.nsis:
-        options.nsis = NSIS
-    if not options.license:
-        options.license = os.path.join(PANDA, 'LICENSE')
+if not options.license:
+    import pandac
+    options.license = os.path.join(os.path.dirname(os.path.dirname(pandac.__file__)), "LICENSE")
+    if not os.path.isfile(options.license): options.license = None
 
-if not options.welcome_image:
+if sys.platform == "win32" and not options.welcome_image:
     filename = Filename('plugin_images/download.png')
     found = filename.resolveFilename(getModelPath().getValue())
     if not found:
@@ -125,13 +130,30 @@ def parseDependenciesWindows(tempFile):
     # At least we got some data.
     return filenames
 
+def parseDependenciesUnix(tempFile):
+    """ Reads the indicated temporary file, the output from
+    otool -XL or ldd, to determine the list of dll's this
+    executable file depends on. """
+    
+    lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+    filenames = []
+    for l in lines:
+        filenames.append(l.strip().split(' ', 1)[0])
+    return filenames
+
 def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
     """ Checks the named file for DLL dependencies, and adds any
     appropriate dependencies found into pluginDependencies and
     dependentFiles. """
     
     tempFile = Filename.temporary('', 'p3d_', '.txt')
-    command = 'dumpbin /dependents "%s" >"%s"' % (
+    if sys.platform == "darwin":
+        command = 'otool -XL "%s" >"%s"'
+    elif sys.platform == "win32":
+        command = 'dumpbin /dependents "%s" >"%s"'
+    else:
+        command = 'ldd "%s" >"%s"'
+    command = command % (
         pathname.toOsSpecific(),
         tempFile.toOsSpecific())
     try:
@@ -141,7 +163,10 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
     filenames = None
 
     if tempFile.exists():
-        filenames = parseDependenciesWindows(tempFile)
+        if sys.platform == "win32":
+            filenames = parseDependenciesWindows(tempFile)
+        else:
+            filenames = parseDependenciesUnix(tempFile)
         tempFile.unlink()
     if filenames is None:
         sys.exit("Unable to determine dependencies from %s" % (pathname))
@@ -175,16 +200,28 @@ def makeInstaller():
     pluginDependencies = {}
     dependentFiles = {}
 
-    # These are the four primary files that make up the
-    # plugin/runtime.
-    ocx = 'p3dactivex.ocx'
-    npapi = 'nppanda3d.dll'
-    panda3d = 'panda3d.exe'
-    panda3dw = 'panda3dw.exe'
+    # These are the primary files that make
+    # up the plugin/runtime.
+    if sys.platform == "darwin":
+        npapi = 'nppanda3d.plugin'
+        panda3d = 'panda3d'
+        baseFiles = [npapi, panda3d]
+    else:
+        ocx = 'p3dactivex.ocx'
+        npapi = 'nppanda3d.dll'
+        panda3d = 'panda3d.exe'
+        panda3dw = 'panda3dw.exe'
+        baseFiles = [ocx, npapi, panda3d, panda3dw]
 
     path = DSearchPath()
-    path.appendPath(os.environ['PATH'])
-    for file in [ocx, npapi, panda3d, panda3dw]:
+    if 'PATH' in os.environ:
+        path.appendPath(os.environ['PATH'])
+    if sys.platform != "win32" and 'LD_LIBRARY_PATH' in os.environ:
+        path.appendPath(os.environ['LD_LIBRARY_PATH'])
+    if sys.platform == "darwin" and 'DYLD_LIBRARY_PATH' in os.environ:
+        path.appendPath(os.environ['DYLD_LIBRARY_PATH'])
+    path.appendPath(os.defpath)
+    for file in baseFiles:
         pathname = path.findFile(file)
         if not pathname:
             sys.exit("Couldn't find %s." % (file))
@@ -192,78 +229,121 @@ def makeInstaller():
         pluginFiles[file] = pathname.toOsSpecific()
         pluginDependencies[file] = []
 
-        # Also look for the dll's that these plugins reference.
-        addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
+        if sys.platform == "win32":
+            # Also look for the dll's that these plugins reference.
+            addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
 
-    welcomeBitmap = None
-    if options.welcome_image:
-        # Convert the image from its current format to a bmp file, for NSIS.
-        p = PNMImage()
-        if not p.read(options.welcome_image):
-            sys.exit("Couldn't read %s" % (options.welcome_image))
+    if sys.platform == "darwin":
+        tmproot = Filename("/var/tmp/Panda3D Runtime/")
+        if tmproot.exists():
+            shutil.rmtree(tmproot.toOsSpecific())
+        tmproot.makeDir()
+        dst_npapi = Filename(tmproot, Filename("Library/Internet Plug-Ins", npapi))
+        dst_panda3d = Filename(tmproot, Filename("usr/bin", panda3d))
+        dst_npapi.makeDir()
+        dst_panda3d.makeDir()
+        shutil.copytree(pluginFiles[npapi], dst_npapi.toOsSpecific())
+        shutil.copyfile(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
+        CMD = "/Developer/usr/bin/packagemaker"
+        CMD += ' --id org.panda3d.runtime' #TODO: make this customizable
+        CMD += ' --version "%s"' % options.version
+        CMD += ' --title "%s"' % options.long_name
+        CMD += ' --out p3d-setup.pkg'
+        CMD += ' --target %s' % platform.mac_ver()[0][:4]
+        CMD += ' --domain system'
+        CMD += ' --root "%s"' % tmproot.toOsSpecific()
+        
+        print ""
+        print CMD
+        subprocess.call(CMD, shell = True)
+        shutil.rmtree(tmproot.toOsSpecific())
+        
+        # Pack the .pkg into a .dmg
+        tmproot.makeDir()
+        shutil.copyfile("p3d-setup.pkg", Filename(tmproot, "p3d-setup.pkg").toOsSpecific())
+        tmpdmg = Filename.temporary("", "p3d-setup", "").toOsSpecific() + ".dmg"
+        CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
+        print ""
+        print CMD
+        subprocess.call(CMD, shell = True)
+        shutil.rmtree(tmproot.toOsSpecific())
+        
+        # Compress the .dmg (and make it read-only)
+        CMD = 'hdiutil convert "%s" -format UDBZ -o "p3d-setup.dmg"' % tmpdmg
+        print ""
+        print CMD
+        subprocess.call(CMD, shell = True)
+        
+    else:
+        welcomeBitmap = None
+        if options.welcome_image:
+            # Convert the image from its current format to a bmp file, for NSIS.
+            p = PNMImage()
+            if not p.read(options.welcome_image):
+                sys.exit("Couldn't read %s" % (options.welcome_image))
 
-        # We also must scale it to fit within 170x312, the space
-        # allotted within the installer window.
-        size = (170, 312)
-        xscale = float(size[0]) / p.getXSize()
-        yscale = float(size[1]) / p.getYSize()
-        scale = min(xscale, yscale, 1)
-        resized = PNMImage((int)(scale * p.getXSize() + 0.5),
-                           (int)(scale * p.getYSize() + 0.5))
-        resized.quickFilterFrom(p)
+            # We also must scale it to fit within 170x312, the space
+            # allotted within the installer window.
+            size = (170, 312)
+            xscale = float(size[0]) / p.getXSize()
+            yscale = float(size[1]) / p.getYSize()
+            scale = min(xscale, yscale, 1)
+            resized = PNMImage((int)(scale * p.getXSize() + 0.5),
+                               (int)(scale * p.getYSize() + 0.5))
+            resized.quickFilterFrom(p)
 
-        # Now center it within the full window.
-        result = PNMImage(size[0], size[1])
-        result.fill(1, 1, 1)
-        xc = (size[0] - resized.getXSize()) / 2
-        yc = (size[1] - resized.getYSize()) / 2
-        result.copySubImage(resized, xc, yc)
+            # Now center it within the full window.
+            result = PNMImage(size[0], size[1])
+            result.fill(1, 1, 1)
+            xc = (size[0] - resized.getXSize()) / 2
+            yc = (size[1] - resized.getYSize()) / 2
+            result.copySubImage(resized, xc, yc)
 
-        welcomeBitmap = Filename.temporary('', 'p3d_', '.bmp')
-        result.write(welcomeBitmap)
+            welcomeBitmap = Filename.temporary('', 'p3d_', '.bmp')
+            result.write(welcomeBitmap)
 
-    # Now build the NSIS command.
-    CMD = "\"" + options.nsis + "\\makensis.exe\" /V3 "
-    CMD += '/DPRODUCT_NAME="' + options.long_name + '" '
-    CMD += '/DPRODUCT_NAME_SHORT="' + options.short_name + '" '
-    CMD += '/DPRODUCT_PUBLISHER="' + options.publisher + '" '
-    CMD += '/DPRODUCT_WEB_SITE="' + options.website + '" '
-    CMD += '/DINSTALL_DIR="' + options.install_dir + '" '
-    CMD += '/DLICENSE_FILE="' + options.license + '" '
-    CMD += '/DOCX="' + ocx + '" '
-    CMD += '/DOCX_PATH="' + pluginFiles[ocx] + '" '
-    CMD += '/DNPAPI="' + npapi + '" '
-    CMD += '/DNPAPI_PATH="' + pluginFiles[npapi] + '" '
-    CMD += '/DPANDA3D="' + panda3d + '" '
-    CMD += '/DPANDA3D_PATH="' + pluginFiles[panda3d] + '" '
-    CMD += '/DPANDA3DW="' + panda3dw + '" '
-    CMD += '/DPANDA3DW_PATH="' + pluginFiles[panda3dw] + '" '
+        # Now build the NSIS command.
+        CMD = "\"" + options.nsis + "\\makensis.exe\" /V3 "
+        CMD += '/DPRODUCT_NAME="' + options.long_name + '" '
+        CMD += '/DPRODUCT_NAME_SHORT="' + options.short_name + '" '
+        CMD += '/DPRODUCT_PUBLISHER="' + options.publisher + '" '
+        CMD += '/DPRODUCT_WEB_SITE="' + options.website + '" '
+        CMD += '/DINSTALL_DIR="' + options.install_dir + '" '
+        CMD += '/DLICENSE_FILE="' + options.license + '" '
+        CMD += '/DOCX="' + ocx + '" '
+        CMD += '/DOCX_PATH="' + pluginFiles[ocx] + '" '
+        CMD += '/DNPAPI="' + npapi + '" '
+        CMD += '/DNPAPI_PATH="' + pluginFiles[npapi] + '" '
+        CMD += '/DPANDA3D="' + panda3d + '" '
+        CMD += '/DPANDA3D_PATH="' + pluginFiles[panda3d] + '" '
+        CMD += '/DPANDA3DW="' + panda3dw + '" '
+        CMD += '/DPANDA3DW_PATH="' + pluginFiles[panda3dw] + '" '
 
-    dependencies = dependentFiles.items()
-    for i in range(len(dependencies)):
-        CMD += '/DDEP%s="%s" ' % (i, dependencies[i][0])
-        CMD += '/DDEP%sP="%s" ' % (i, dependencies[i][1])
-    dependencies = pluginDependencies[npapi]
-    for i in range(len(dependencies)):
-        CMD += '/DNPAPI_DEP%s="%s" ' % (i, dependencies[i])
+        dependencies = dependentFiles.items()
+        for i in range(len(dependencies)):
+            CMD += '/DDEP%s="%s" ' % (i, dependencies[i][0])
+            CMD += '/DDEP%sP="%s" ' % (i, dependencies[i][1])
+        dependencies = pluginDependencies[npapi]
+        for i in range(len(dependencies)):
+            CMD += '/DNPAPI_DEP%s="%s" ' % (i, dependencies[i])
 
-    if options.start:
-        CMD += '/DADD_START_MENU '
-    
-    if welcomeBitmap:
-        CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
-        CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
-    if options.install_icon:
-        CMD += '/DINSTALL_ICON="' + options.install_icon + '" '
+        if options.start:
+            CMD += '/DADD_START_MENU '
+        
+        if welcomeBitmap:
+            CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
+            CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
+        if options.install_icon:
+            CMD += '/DINSTALL_ICON="' + options.install_icon + '" '
 
-    CMD += '"' + this_dir + '\\p3d_installer.nsi"' 
-    
-    print ""
-    print CMD
-    print "packing..."
-    subprocess.call(CMD)
+        CMD += '"' + this_dir + '\\p3d_installer.nsi"' 
+        
+        print ""
+        print CMD
+        print "packing..."
+        subprocess.call(CMD)
 
-    if welcomeBitmap:
-        welcomeBitmap.unlink()
+        if welcomeBitmap:
+            welcomeBitmap.unlink()
 
 makeInstaller()
