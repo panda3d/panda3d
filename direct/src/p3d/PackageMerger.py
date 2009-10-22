@@ -79,6 +79,7 @@ class PackageMerger:
         """ Reads the contents.xml file from the indicated sourceDir,
         and updates the internal set of packages appropriately. """
 
+        assert sourceDir != None, "No source directory was specified!"
         contentsFilename = Filename(sourceDir, 'contents.xml')
         doc = TiXmlDocument(contentsFilename.toOsSpecific())
         if not doc.LoadFile():
