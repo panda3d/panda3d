@@ -1719,7 +1719,7 @@ class Packager:
             GlobPattern('libdl.so*'),
             GlobPattern('libm.so*'),
             GlobPattern('libnvidia*.so*'),
-            GlobPattern('libpthread.so*')
+            GlobPattern('libpthread.so*'),
             GlobPattern('linux-gate.so*'),
             ]
 
