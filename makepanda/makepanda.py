@@ -4385,6 +4385,12 @@ def MakeInstallerLinux():
 #    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
 
 def MakeInstallerOSX():
+    if (RUNTIME):
+        # Invoke the make_installer script.
+        AddToPathEnv("DYLD_LIBRARY_PATH", GetOutputDir() + "/plugins")
+        oscmd(SDK["PYTHONEXEC"] + " direct/src/plugin_installer/make_installer.py")
+        return
+
     import compileall
     PYTHONV=SDK["PYTHONVERSION"].replace("python", "").strip()
     if (os.path.isfile("Panda3D-tpl-rw.dmg")): oscmd("rm -f Panda3D-tpl-rw.dmg")
