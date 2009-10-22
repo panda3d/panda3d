@@ -481,6 +481,7 @@ set_wparams(const P3DWindowParams &wparams) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DInstance::
 get_panda_script_object() const {
+  nout << "get_panda_script_object\n";
   return _panda_script_object;
 }
 

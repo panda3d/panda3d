@@ -597,6 +597,7 @@ get_panda_script_object() {
   if (_p3d_inst != NULL) {
     main = P3D_instance_get_panda_script_object(_p3d_inst);
   }
+  nout << "get_panda_script_object, main = " << main << "\n";
 
   _script_object = PPToplevelObject::make_new(this);
   _script_object->set_main(main);
@@ -1194,6 +1195,7 @@ create_instance() {
       // Now that we have a true instance, initialize our
       // script_object with the proper P3D_object pointer.
       P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
+      nout << "new instance, setting main = " << main << "\n";
       _script_object->set_main(main);
     }
 
