@@ -20,11 +20,6 @@
 #include <assert.h>
 #include <string.h>  // strrchr
 using namespace std;
-         
-#ifdef __APPLE__
-#include <Carbon/Carbon.h>
-extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
-#endif
 
 #if defined(_WIN32) && defined(NON_CONSOLE)
 // On Windows, we may need to build p3dpythonw.exe, a non-console
@@ -154,16 +149,6 @@ main(int argc, char *argv[]) {
       interactive_console = (flag != 0);
     }
   }
-
-#ifdef __APPLE__
-  // In case the application is going to run a wx app, allow it to
-  // have access to the desktop.
-  ProcessSerialNumber psn;
-  
-  GetCurrentProcess(&psn);
-  CPSEnableForegroundOperation(&psn);
-  SetFrontProcess(&psn);
-#endif
 
   if (!run_p3dpython(program_name, archive_file, input_handle, output_handle, 
                      NULL, interactive_console)) {

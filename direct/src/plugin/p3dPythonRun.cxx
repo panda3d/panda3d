@@ -1180,9 +1180,10 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
 
   if (result == NULL) {
     PyErr_Print();
-    if (!_interactive_console) {
-      exit(1);
+    if (_interactive_console) {
+      run_interactive_console();
     }
+    exit(1);
   }
   Py_XDECREF(result);
 }
@@ -1214,10 +1215,12 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
 
   if (result == NULL) {
     PyErr_Print();
-    if (!_interactive_console) {
-      exit(1);
+    if (_interactive_console) {
+      run_interactive_console();
     }
+    exit(1);
   }
+
   Py_XDECREF(result);
 }
 
@@ -1281,9 +1284,10 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
   if (result == NULL) {
     PyErr_Print();
-    if (!_interactive_console) {
-      exit(1);
+    if (_interactive_console) {
+      run_interactive_console();
     }
+    exit(1);
   }
   Py_XDECREF(result);
 }
@@ -1380,9 +1384,10 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
 
   if (result == NULL) {
     PyErr_Print();
-    if (!_interactive_console) {
-      exit(1);
+    if (_interactive_console) {
+      run_interactive_console();
     }
+    exit(1);
   }
   Py_XDECREF(result);
 }

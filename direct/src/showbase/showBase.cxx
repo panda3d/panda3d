@@ -19,6 +19,11 @@
 #include "renderBuffer.h"
 #include "camera.h"
 #include "graphicsPipeSelection.h"
+         
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
+#endif
 
 #ifdef WIN32
 #include <windows.h>  // For SystemParametersInfo()
@@ -53,6 +58,23 @@ DConfig &
 get_config_showbase() {
   static DConfig config_showbase;
   return config_showbase;
+}
+
+// Initialize the application for making a Gui-based app, such as wx.
+// At the moment, this is a no-op except on Mac.
+void
+init_app_for_gui() {
+  static bool initted_for_gui = false;
+  if (!initted_for_gui) {
+    initted_for_gui = true;
+#ifdef IS_OSX
+    ProcessSerialNumber psn;
+    
+    GetCurrentProcess(&psn);
+    CPSEnableForegroundOperation(&psn);
+    SetFrontProcess(&psn);
+#endif  // IS_OSX
+  }
 }
 
 // klunky interface since we cant pass array from python->C++ to use verify_window_sizes directly

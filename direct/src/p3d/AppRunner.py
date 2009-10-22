@@ -33,7 +33,7 @@ else:
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, initAppForGui
 from pandac import PandaModules
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
@@ -80,6 +80,7 @@ class AppRunner(DirectObject):
         # These will be set from the application flags when
         # setP3DFilename() is called.
         self.allowPythonDev = False
+        self.guiApp = False
         self.interactiveConsole = False
         self.initialAppImport = False
 
@@ -518,29 +519,41 @@ class AppRunner(DirectObject):
         self.superMirrorUrl = superMirrorUrl
 
     def addPackageInfo(self, name, platform, version, hostUrl):
-        """ Called by the browser to list all of the "required"
-        packages that were preloaded before starting the
-        application.  If for some reason the package isn't already
-        downloaded, this will download it on the spot. """
+        """ Called by the browser for each one of the "required"
+        packages that were preloaded before starting the application.
+        If for some reason the package isn't already downloaded, this
+        will download it on the spot.  Raises OSError on failure. """
 
         host = self.getHost(hostUrl)
 
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
-                print "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
-                return
+                message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
+                raise OSError, message
 
         if not platform:
             platform = None
         package = host.getPackage(name, version, platform = platform)
         if not package:
-            print "Couldn't find %s %s on %s" % (name, version, hostUrl)
-            return
+            message = "Couldn't find %s %s on %s" % (name, version, hostUrl)
+            raise OSError, message
 
         package.checkStatus()
-        package.downloadDescFile(self.http)
-        package.downloadPackage(self.http)
-        package.installPackage(self)
+        if not package.downloadDescFile(self.http):
+            message = "Couldn't get desc file for %s" % (name)
+            raise OSError, message
+        
+        if not package.downloadPackage(self.http):
+            message = "Couldn't download %s" % (name)
+            raise OSError, message
+        
+        if not package.installPackage(self):
+            message = "Couldn't install %s" % (name)
+            raise OSError, message
+
+        if package.guiApp:
+            self.guiApp = True
+            initAppForGui()
 
     def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
                        interactiveConsole):
@@ -608,6 +621,9 @@ class AppRunner(DirectObject):
             allowPythonDev = self.p3dConfig.Attribute('allow_python_dev')
             if allowPythonDev:
                 self.allowPythonDev = int(allowPythonDev)
+            guiApp = self.p3dConfig.Attribute('gui_app')
+            if guiApp:
+                self.guiApp = int(guiApp)
 
             xhost = self.p3dConfig.FirstChildElement('host')
             while xhost:
@@ -624,6 +640,9 @@ class AppRunner(DirectObject):
             # Set the fps text to remind the user that
             # allow_python_dev is enabled.
             ConfigVariableString('frame-rate-meter-text-pattern').setValue('allow_python_dev %0.1f fps')
+
+        if self.guiApp:
+            initAppForGui()
 
         self.initPackedAppEnvironment()
 

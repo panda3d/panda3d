@@ -214,6 +214,7 @@ class ode(package):
 
 class wx(package):
     config(display_name = "wxPython GUI Toolkit")
+    config(gui_app = True)
     require('panda3d')
 
     module('direct.showbase.WxGlobal', 'wx', 'wx.*')
@@ -221,6 +222,7 @@ class wx(package):
 
 class tk(package):
     config(display_name = "Tk GUI Toolkit")
+    config(gui_app = True)
     require('panda3d')
 
     module('Tkinter',

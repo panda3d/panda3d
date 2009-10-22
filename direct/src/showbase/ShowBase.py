@@ -2429,6 +2429,7 @@ class ShowBase(DirectObject.DirectObject):
     def startWx(self, fWantWx = 1):
         self.wantWx = fWantWx
         if self.wantWx:
+            initAppForGui()
             from direct.showbase import WxGlobal
             taskMgr.remove('wxLoop')
             WxGlobal.spawnWxLoop()
@@ -2436,6 +2437,7 @@ class ShowBase(DirectObject.DirectObject):
     def startTk(self, fWantTk = 1):
         self.wantTk = fWantTk
         if self.wantTk:
+            initAppForGui()
             from direct.showbase import TkGlobal
             taskMgr.remove('tkLoop')
             TkGlobal.spawnTkLoop()

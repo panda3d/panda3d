@@ -77,6 +77,7 @@ class PackageInfo:
         self.hasDescFile = False
         self.patchVersion = None
         self.displayName = None
+        self.guiApp = False
         self.uncompressedArchive = None
         self.compressedArchive = None
         self.extracts = []
@@ -242,6 +243,11 @@ class PackageInfo:
         if xconfig:
             # The name for display to an English-speaking user.
             self.displayName = xconfig.Attribute('display_name')
+
+            # True if any apps that use this package must be GUI apps.
+            guiApp = xconfig.Attribute('gui_app')
+            if guiApp:
+                self.guiApp = int(guiApp)
 
         # The uncompressed archive, which will be mounted directly,
         # and also used for patching.
@@ -800,7 +806,7 @@ class PackageInfo:
 
     def installPackage(self, appRunner):
         """ Mounts the package and sets up system paths so it becomes
-        available for use. """
+        available for use.  Returns true on success, false on failure. """
 
         assert self.hasPackage
         if self.installed:

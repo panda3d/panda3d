@@ -40,7 +40,7 @@ EXPCL_DIRECT ConfigVariableSearchPath &get_particle_path();
 EXPCL_DIRECT void throw_new_frame();
 
 EXPCL_DIRECT DConfig &get_config_showbase();
-
+EXPCL_DIRECT void init_app_for_gui();
 
 // klunky interface since we cant pass array from python->C++
 EXPCL_DIRECT void add_fullscreen_testsize(int xsize, int ysize);
