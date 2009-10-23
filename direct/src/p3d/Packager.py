@@ -10,6 +10,9 @@ import marshal
 import new
 import string
 import types
+import hashlib
+import getpass
+import platform
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
@@ -816,6 +819,53 @@ class Packager:
 
             # At least we got some data.
             return filenames
+            
+        def __locateFrameworkLibrary(self, library):
+            """ Locates the given library inside it's framework on the
+            default framework paths, and returns it's location as Filename. """
+            
+            # If it's already a full existing path, we
+            # don't search for it anymore, of course.
+            if Filename.fromOsSpecific(library).exists():
+                return Filename.fromOsSpecific(library)
+            
+            # DSearchPath appears not to work well for directories.
+            fpath = []
+            fpath.append(Filename("/Library/Frameworks"))
+            fpath.append(Filename("/System/Library/Frameworks"))
+            fpath.append(Filename("/Developer/Library/Frameworks"))
+            fpath.append(Filename("/Users/%s" % getpass.getuser(), "Library/Frameworks"))
+            if "HOME" in os.environ:
+                fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
+            ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
+            ffilename = Filename(ffilename, library.split('.framework/', 1)[-1])
+            for i in fpath:
+                if Filename(i, ffilename).exists():
+                    return Filename(i, ffilename)
+            
+            # Not found? Well, let's just return the framework + file
+            # path, the user will be presented with a warning later.
+            return ffilename
+
+        def __alterFrameworkDependencies(self, file, framework_deps):
+            """ Copies the given library file to a temporary directory,
+            and alters the dependencies so that it doesn't contain absolute
+            framework dependencies. """
+            
+            # Copy the file to a temporary location because we don't want
+            # to modify the original (there's a big chance that we break it)
+            assert file.filename.exists(), "File doesn't exist: %s" % ffilename
+            tmpfile = Filename.fromOsSpecific("/tmp/p3d_" + hashlib.md5(file.filename.toOsSpecific()).hexdigest())
+            if not tmpfile.exists():
+                file.filename.copyTo(tmpfile)
+            
+            # Alter the dependencies to have a relative path rather than absolute
+            for filename in framework_deps:
+                if self.__locateFrameworkLibrary(filename) == file.filename:
+                    os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), tmpfile.toOsSpecific()))
+                else:
+                    os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, os.path.basename(filename), tmpfile.toOsSpecific()))
+            self.sourceFilenames[file.filename].filename = tmpfile
 
         def __addImplicitDependenciesOSX(self):
             """ Walks through the list of files, looking for dylib's
@@ -856,9 +906,26 @@ class Packager:
                 # the PATH.
                 path = DSearchPath(Filename(file.filename.getDirname()))
 
+                # Find the dependencies that are referencing a framework
+                framework_deps = []
                 for filename in filenames:
-                    filename = Filename.fromOsSpecific(filename)
-                    filename.resolveFilename(path)
+                    if '.framework/' in filename:
+                        framework_deps.append(filename)
+                
+                if len(framework_deps) > 0:
+                    # Fixes dependencies like @executable_path/../Library/Frameworks/Cg.framework/Cg
+                    self.__alterFrameworkDependencies(file, framework_deps)
+
+                for filename in filenames:
+                    if '.framework/' in filename:
+                        # It references a framework, and besides the fact
+                        # that those often contain absolute paths, they
+                        # aren't commonly on the library path either.
+                        filename = self.__locateFrameworkLibrary(filename)
+                    else:
+                        # It's just a normal library - find it on the path.
+                        filename = Filename.fromOsSpecific(filename)
+                        filename.resolveFilename(path)
                     self.addFile(filename, newName = filename.getBasename(),
                                  explicit = False, executable = True)
                     
