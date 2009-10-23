@@ -179,7 +179,9 @@
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c net:c display:c panda:m
+    pipeline:c event:c display:c panda:m \
+    $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
@@ -226,7 +228,9 @@
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c net:c display:c panda:m
+    pipeline:c event:c display:c panda:m \
+    $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
@@ -270,7 +274,9 @@
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c net:c display:c panda:m
+    pipeline:c event:c display:c panda:m \
+    $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
