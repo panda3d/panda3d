@@ -54,6 +54,7 @@ public:
   X509_STORE *get_x509_store();
 
   void notify_ssl_errors();
+  void notify_debug_ssl_errors();
 
   static OpenSSLWrapper *get_global_ptr();
 

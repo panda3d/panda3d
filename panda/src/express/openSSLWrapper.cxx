@@ -184,7 +184,7 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
     if (itmp->x509) {
       int result = X509_STORE_add_cert(_x509_store, itmp->x509);
       if (result == 0) {
-        notify_ssl_errors();
+        notify_debug_ssl_errors();
       } else {
         ++count;
       }
@@ -197,7 +197,7 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
     } else if (itmp->crl) {
       int result = X509_STORE_add_crl(_x509_store, itmp->crl);
       if (result == 0) {
-        notify_ssl_errors();
+        notify_debug_ssl_errors();
       } else {
         ++count;
       }
@@ -272,7 +272,7 @@ load_certificates_from_der_ram(const char *data, size_t data_size) {
 
     int result = X509_STORE_add_cert(_x509_store, x509);
     if (result == 0) {
-      notify_ssl_errors();
+      notify_debug_ssl_errors();
     } else {
       ++count;
     }
@@ -330,6 +330,34 @@ notify_ssl_errors() {
     char buffer[buffer_len];
     ERR_error_string_n(e, buffer, buffer_len);
     express_cat.warning() << buffer << "\n";
+    e = ERR_get_error();
+  }
+#endif  //  REPORT_OPENSSL_ERRORS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenSSLWrapper::notify_debug_ssl_errors
+//       Access: Public
+//  Description: As notify_ssl_errors(), but sends the output to debug
+//               instead of warning.
+////////////////////////////////////////////////////////////////////
+void OpenSSLWrapper::
+notify_debug_ssl_errors() {
+#ifdef REPORT_OPENSSL_ERRORS
+  static bool strings_loaded = false;
+  if (!strings_loaded) {
+    SSL_load_error_strings();
+    strings_loaded = true;
+  }
+
+  unsigned long e = ERR_get_error();
+  while (e != 0) {
+    if (express_cat.is_debug()) {
+      static const size_t buffer_len = 256;
+      char buffer[buffer_len];
+      ERR_error_string_n(e, buffer, buffer_len);
+      express_cat.debug() << buffer << "\n";
+    }
     e = ERR_get_error();
   }
 #endif  //  REPORT_OPENSSL_ERRORS
