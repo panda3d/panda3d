@@ -831,6 +831,12 @@ typedef enum {
      There may or may not be data associated with this error as well.
      However, no more data will be delivered after this call. */
   P3D_RC_http_error,
+
+  /* The download was interrupted because we're about to shut down the
+     instance.  The instance should not attempt to restart a new
+     download in response to this. */
+  P3D_RC_shutdown
+
 } P3D_result_code;
 
 /* This function is used by the host to handle a get_url request,

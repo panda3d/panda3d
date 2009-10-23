@@ -40,6 +40,7 @@ public:
   inline double get_download_progress() const;
   inline bool get_download_finished() const;
   inline bool get_download_success() const;
+  inline bool get_download_terminated() const;
   inline size_t get_total_data() const;
 
   void cancel();

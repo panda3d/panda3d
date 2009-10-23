@@ -74,6 +74,18 @@ get_download_success() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::get_download_terminated
+//       Access: Public
+//  Description: Returns true if the download has failed because the
+//               instance is about to be shut down, or false if it
+//               hasn't failed, or failed for some other reason.
+////////////////////////////////////////////////////////////////////
+inline bool P3DDownload::
+get_download_terminated() const {
+  return _status == P3D_RC_shutdown;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::set_download_id
 //       Access: Public
 //  Description: Called only by P3DInstance to set a unique ID for

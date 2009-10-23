@@ -46,6 +46,7 @@ public:
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
                      bool seekable, uint16 *stype);
+  void stop_outstanding_streams();
 
   int32 write_ready(NPStream *stream);
   int write_stream(NPStream *stream, int offset, int len, void *buffer);
@@ -116,6 +117,12 @@ private:
 
   bool _got_instance_url;
   string _instance_url;
+ 
+  // We need to keep a list of the NPStream objects that the instance
+  // owns, because Safari (at least) won't automatically delete all of
+  // the outstanding streams when the instance is destroyed.
+  typedef vector<NPStream *> Streams;
+  Streams _streams;
 
   // This class is used for feeding local files (accessed via a
   // "file://" url) into the core API.

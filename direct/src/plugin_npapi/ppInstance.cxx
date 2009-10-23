@@ -84,6 +84,8 @@ PPInstance::
     _p3d_inst = NULL;
   }
 
+  assert(_streams.empty());
+
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
   }
@@ -187,6 +189,8 @@ set_window(NPWindow *window) {
 ////////////////////////////////////////////////////////////////////
 NPError PPInstance::
 new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
+  assert(find(_streams.begin(), _streams.end(), stream) == _streams.end());
+
   if (stream->notifyData == NULL) {
     // This is an unsolicited stream.  Assume the first unsolicited
     // stream we receive is the instance data; any other unsolicited
@@ -198,6 +202,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
       stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
       
       *stype = NP_NORMAL;
+      _streams.push_back(stream);
       return NPERR_NO_ERROR;
     }
 
@@ -211,18 +216,21 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     // This is the initial contents.xml file.  We'll just download
     // this directly to a file, since it is small and this is easy.
     *stype = NP_ASFILEONLY;
+    _streams.push_back(stream);
     return NPERR_NO_ERROR;
 
   case PPDownloadRequest::RT_core_dll:
     // This is the core API DLL (or dylib or whatever).  We want to
     // download this to file for convenience.
     *stype = NP_ASFILEONLY;
+    _streams.push_back(stream);
     return NPERR_NO_ERROR;
 
   case PPDownloadRequest::RT_user:
     // This is a request from the plugin.  We'll receive this as a
     // stream.
     *stype = NP_NORMAL;
+    _streams.push_back(stream);
     return NPERR_NO_ERROR;
 
   default:
@@ -231,6 +239,29 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
   }
 
   return NPERR_GENERIC_ERROR;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::stop_outstanding_streams
+//       Access: Public
+//  Description: Stops any download streams that are currently active
+//               on the instance.  It is necessary to call this
+//               explicitly before destroying the instance, at least
+//               for Safari.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+stop_outstanding_streams() {
+  Streams::iterator si;
+  Streams streams;
+  streams.swap(_streams);
+  for (si = streams.begin(); si != streams.end(); ++si) {
+    NPStream *stream = (*si);
+    nout << "Stopping stream " << stream->url << "\n";
+    browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
+  }
+
+  assert(_streams.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,6 +341,13 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
 ////////////////////////////////////////////////////////////////////
 NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
+  Streams::iterator si = find(_streams.begin(), _streams.end(), stream);
+  if (si == _streams.end()) {
+    nout << "Got destroy_stream for unknown stream\n";
+  } else {
+    _streams.erase(si);
+  }
+
   if (stream->notifyData == NULL) {
     nout << "Unexpected destroy_stream on " << stream->url << "\n";
     return NPERR_NO_ERROR;
@@ -321,13 +359,23 @@ destroy_stream(NPStream *stream, NPReason reason) {
     {
       P3D_result_code result_code = P3D_RC_done;
       if (reason != NPRES_DONE) {
-        result_code = P3D_RC_generic_error;
+        if (reason == NPRES_USER_BREAK) {
+          result_code = P3D_RC_shutdown;
+        } else {
+          result_code = P3D_RC_generic_error;
+        }
       }
       assert(!req->_notified_done);
       P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
                                    result_code, 0, stream->end, NULL, 0);
       req->_notified_done = true;
     }
+    break;
+
+  case PPDownloadRequest::RT_core_dll:
+  case PPDownloadRequest::RT_contents_file:
+    // These are received as a full-file only, so we don't care about
+    // the destroy_stream notification.
     break;
 
   default:
@@ -372,13 +420,17 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     if (reason != NPRES_DONE) {
       nout << "Failure downloading " << url << "\n";
 
-      // Couldn't download a fresh contents.xml for some reason.  If
-      // there's an outstanding contents.xml file on disk, try to load
-      // that one as a fallback.
-      string contents_filename = _root_dir + "/contents.xml";
-      if (!read_contents_file(contents_filename)) {
-        nout << "Unable to read contents file " << contents_filename << "\n";
-        // TODO: fail
+      if (reason == NPRES_USER_BREAK) {
+        nout << "Failure due to user break\n";
+      } else {
+        // Couldn't download a fresh contents.xml for some reason.  If
+        // there's an outstanding contents.xml file on disk, try to
+        // load that one as a fallback.
+        string contents_filename = _root_dir + "/contents.xml";
+        if (!read_contents_file(contents_filename)) {
+          nout << "Unable to read contents file " << contents_filename << "\n";
+          // TODO: fail
+        }
       }
     }
     break;
@@ -386,13 +438,18 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
   case PPDownloadRequest::RT_core_dll:
     if (reason != NPRES_DONE) {
       nout << "Failure downloading " << url << "\n";
-      // Couldn't download from this mirror.  Try the next one.
-      if (!_core_urls.empty()) {
-        string url = _core_urls.back();
-        _core_urls.pop_back();
-        
-        PPDownloadRequest *req2 = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
-        start_download(url, req2);
+
+      if (reason == NPRES_USER_BREAK) {
+        nout << "Failure due to user break\n";
+      } else {
+        // Couldn't download from this mirror.  Try the next one.
+        if (!_core_urls.empty()) {
+          string url = _core_urls.back();
+          _core_urls.pop_back();
+          
+          PPDownloadRequest *req2 = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+          start_download(url, req2);
+        }
       }
     }
     break;

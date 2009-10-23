@@ -243,11 +243,12 @@ NP_Shutdown(void) {
 NPError 
 NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
         int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
-  nout << "new instance\n";
+  nout << "new instance " << instance << "\n";
 
   PPInstance *inst = new PPInstance(pluginType, instance, mode,
                                     argc, argn, argv, saved);
   instance->pdata = inst;
+  nout << "new instance->pdata = " << inst << "\n";
 
   // To experiment with a "windowless" plugin, which really means we
   // create our own window without an intervening window, try this.
@@ -267,10 +268,15 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
-  nout << "destroy instance " << instance << "\n";
+  nout << "destroy instance " << instance << ", " 
+       << (PPInstance *)instance->pdata << "\n";
   nout << "save = " << (void *)save << "\n";
   //  (*save) = NULL;
-  delete (PPInstance *)(instance->pdata);
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+  inst->stop_outstanding_streams();
+
+  delete inst;
   instance->pdata = NULL;
 
   return NPERR_NO_ERROR;
@@ -330,7 +336,8 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
        << ", " << stream->end 
        << ", notifyData = " << stream->notifyData
        << ", reason = " << reason
-       << "\n";
+       << ", for " << instance 
+       << ", " << (PPInstance *)(instance->pdata) << "\n";
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -346,6 +353,7 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 ////////////////////////////////////////////////////////////////////
 int32
 NPP_WriteReady(NPP instance, NPStream *stream) {
+  //  nout << "WriteReady " << stream->url << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -362,7 +370,7 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 int32
 NPP_Write(NPP instance, NPStream *stream, int32 offset, 
           int32 len, void *buffer) {
-  //  nout << "Write " << stream->url << ", " << len << "\n";
+  //  nout << "Write " << stream->url << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);

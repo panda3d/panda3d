@@ -112,6 +112,7 @@ private:
     IT_step_complete,
     IT_step_failed,
     IT_continue,
+    IT_terminate,
   };
 
   class InstallStep {

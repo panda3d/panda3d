@@ -712,7 +712,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::clear_install_plans
 //       Access: Private
-//  Description:a Empties _install_plans cleanly.
+//  Description: Empties _install_plans cleanly.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 clear_install_plans() {
@@ -882,6 +882,12 @@ follow_install_plans(bool download_finished) {
         // This plan has failed.
         plan_failed = true;
         break;
+
+      case IT_terminate:
+        // All plans have failed.
+        _install_plans.clear();
+        report_done(false);
+        return;
 
       case IT_continue:
         // A callback hook has been attached; we'll come back later.
@@ -1213,6 +1219,13 @@ download_finished(bool success) {
   close_file();
 
   if (!success) {
+    if (get_download_terminated()) {
+      // Short-circuit the exit.
+      _try_urls.clear();
+      resume_download_finished(false);
+      return;
+    }
+
     // Maybe it failed because our contents.xml file is out-of-date.
     // Go try to freshen it.
     bool is_contents_file = (_dtype == DT_contents_file || _dtype == DT_redownload_contents_file);
@@ -1352,6 +1365,10 @@ do_step(bool download_finished) {
   if (_download->get_download_success()) {
     // The Download object has already validated the hash.
     return IT_step_complete;
+  } else if (_download->get_download_terminated()) {
+    // The download was interrupted because we're shutting down.
+    // Don't try any other plans.
+    return IT_terminate;
   } else {
     // The Download object has already tried all of the mirrors, and
     // they all failed.
