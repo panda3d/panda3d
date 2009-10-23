@@ -944,6 +944,11 @@ create_instance(const string &p3d, P3D_window_type window_type,
   string os_p3d_filename = p3d;
   bool is_local = !is_url(p3d);
   if (is_local) {
+    if (!p3d_filename.exists()) {
+      cerr << "No such file: " << p3d_filename << "\n";
+      exit(1);
+    }
+
     p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
   } 

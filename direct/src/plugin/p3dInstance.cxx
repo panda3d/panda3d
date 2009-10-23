@@ -975,6 +975,9 @@ start_download(P3DDownload *download, bool add_request) {
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
   assert(inserted);
 
+  // add_request will be false only for the initial p3d stream, which
+  // the plugin already knows about.  For all other download streams,
+  // add_request is true in order to ask the plugin for the stream.
   if (add_request) {
     P3D_request *request = new P3D_request;
     request->_request_type = P3D_RT_get_url;
@@ -2560,5 +2563,8 @@ download_finished(bool success) {
   if (success) {
     // We've successfully downloaded the instance data.
     _inst->set_p3d_filename(get_filename());
+  } else {
+    // Oops, no joy on the instance data.
+    _inst->set_failed();
   }
 }

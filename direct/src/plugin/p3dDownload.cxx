@@ -183,5 +183,6 @@ download_progress() {
 void P3DDownload::
 download_finished(bool success) {
   nout << "Downloaded " << get_url() << ": " 
-       << int(get_download_progress() * 1000.0) / 10.0 << "\n";
+       << int(get_download_progress() * 1000.0) / 10.0 
+       << ", success = " << success << "\n";
 }
