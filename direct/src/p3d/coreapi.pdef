@@ -69,4 +69,16 @@ class p3dcert(package):
     # user to accept or deny unknown applications, is its own package.
     config(display_name = "Authorization Dialog")
 
-    file('p3dcert.exe')
+    if platform.startswith('osx'):
+        # On Mac, we package up a P3DCert.app bundle.  This includes
+        # specifications in the plist file to avoid creating a dock
+        # icon and stuff.
+        
+        # Find p3dcert.plist in the direct source tree.
+        import direct
+        plist = Filename(direct.__path__[0], 'plugin/p3dcert.plist')
+        makeBundle('P3DCert.app', plist, executable = 'p3dcert')
+
+    else:
+        # Anywhere else, we just ship the executable file p3dcert.exe.
+        file('p3dcert.exe')

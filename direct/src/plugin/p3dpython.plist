@@ -5,38 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>Panda3D Runtime</string>
-	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Panda3D applet</string>
-                        <key>CFBundleTypeIconFile</key>
-                        <string>panda3d.icns</string>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>p3d</string>
-			</array>
-			<key>CFBundleTypeMIMETypes</key>
-			<array>
-                                <string>application/x-panda3d</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
-                        <key>LSTypeIsPackage</key>
-                        <false/>
-		</dict>
-	</array>
+	<string>P3DPython</string>
 	<key>CFBundleExecutable</key>
-	<string>panda3d_mac</string>
-	<key>CFBundleIconFile</key>
-	<string>panda3d.icns</string>
+	<string>p3dpython</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.panda3d.runtime.panda3d_mac</string>
+	<string>org.panda3d.runtime.p3dpython</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Panda3D</string>
+	<string>P3DPython</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,6 +22,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>0.9.3</string>
+	<key>LSUIElement</key>
+	<string>1</string>
 	<key>LSHasLocalizedDisplayName</key>
 	<false/>
 	<key>NSAppleScriptEnabled</key>

@@ -1077,7 +1077,17 @@ os_open_window(WindowProperties &req_properties) {
     GlobalInits = true;
     
     ProcessSerialNumber psn = { 0, kCurrentProcess };
-    TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+
+    // Determine if we're running from a bundle.
+    CFDictionaryRef dref =
+      ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
+    // If the dictionary doesn't have "BundlePath", then we're not
+    // running from a bundle, and we need to call TransformProcessType
+    // to make the process a "foreground" application, with its own
+    // icon in the dock and such.
+    if (!CFDictionaryContainsKey(dref, CFSTR("BundlePath"))) {
+      TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    }
     SetFrontProcess(&psn);
   }
   

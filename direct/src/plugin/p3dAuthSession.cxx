@@ -155,6 +155,10 @@ start_p3dcert() {
 #ifdef _WIN32
   _p3dcert_exe += ".exe";
 #endif
+#ifdef __APPLE__
+  // On OSX, run from the packaged bundle.
+  _p3dcert_exe = root_dir + "/P3DCert.app/Contents/MacOS/p3dcert";
+#endif
 
   // Populate the new process' environment.
   _env = string();

@@ -786,6 +786,10 @@ start_p3dpython(P3DInstance *inst) {
   _p3dpython_exe = P3D_PLUGIN_P3DPYTHON;
   if (_p3dpython_exe.empty()) {
     _p3dpython_exe = _python_root_dir + "/p3dpython";
+#ifdef __APPLE__
+    // On OSX, run from the packaged bundle.
+    _p3dpython_exe = _python_root_dir + "/P3DPython.app/Contents/MacOS/p3dpython";
+#endif
   }
 #ifdef _WIN32
   if (!inst_mgr->get_console_environment()) {

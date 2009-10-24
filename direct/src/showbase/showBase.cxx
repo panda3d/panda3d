@@ -11,15 +11,6 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
-         
-#ifdef __APPLE__
-// We have to include this before we include any Panda libraries,
-// because one of the things we pick up in Panda defines a macro for
-// TCP_NODELAY and friends, causing heartaches for the header files
-// picked up here.
-#include <Carbon/Carbon.h>
-extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
-#endif
 
 #include "showBase.h"
 
@@ -68,6 +59,9 @@ get_config_showbase() {
 // At the moment, this is a no-op except on Mac.
 void
 init_app_for_gui() {
+  // Actually, this may not be necessary after all.  Let's assume the
+  // user will always be running from a bundle or from pythonw.
+  /*
   static bool initted_for_gui = false;
   if (!initted_for_gui) {
     initted_for_gui = true;
@@ -79,6 +73,7 @@ init_app_for_gui() {
     SetFrontProcess(&psn);
 #endif  // IS_OSX
   }
+  */
 }
 
 // klunky interface since we cant pass array from python->C++ to use verify_window_sizes directly

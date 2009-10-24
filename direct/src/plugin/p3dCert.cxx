@@ -17,11 +17,6 @@
 #include "wx/filename.h"
 
 #include "ca_bundle_data_src.c"
-         
-#ifdef __WXMAC__
-#include <Carbon/Carbon.h>
-extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
-#endif
 
 static const wxString
 self_signed_cert_text =
@@ -96,19 +91,11 @@ OnInit() {
 
   OpenSSL_add_all_algorithms();
 
-#ifdef __WXMAC__
-  // Enable the dialog to go to the foreground on Mac, even without
-  // having to wrap it up in a bundle.
-  ProcessSerialNumber psn;
-  
-  GetCurrentProcess(&psn);
-  CPSEnableForegroundOperation(&psn);
-  SetFrontProcess(&psn);
-#endif
-
   AuthDialog *dialog = new AuthDialog(_cert_filename, _cert_dir);
   SetTopWindow(dialog);
   dialog->Show(true);
+  dialog->SetFocus();
+  dialog->Raise();
 
   // Return true to enter the main loop and wait for user input.
   return true;
@@ -155,7 +142,11 @@ END_EVENT_TABLE()
 ////////////////////////////////////////////////////////////////////
 AuthDialog::
 AuthDialog(const wxString &cert_filename, const wxString &cert_dir) : 
-  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition),
+  // I hate stay-on-top dialogs, but if we don't set this flag, it
+  // doesn't come to the foreground on OSX, and might be lost behind
+  // the browser window.
+  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition,
+           wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP),
   _cert_dir(cert_dir)
 {
   _view_cert_dialog = NULL;
