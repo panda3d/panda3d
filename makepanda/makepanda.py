@@ -1483,6 +1483,8 @@ else:
     configprc = configprc.replace("aux-display pandadx8","")
 
 if (sys.platform == "darwin"):
+    configprc = configprc.replace(".panda3d","Library/Caches/Panda3D-%s" % VERSION)
+    
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio","p3fmod_audio")
 
