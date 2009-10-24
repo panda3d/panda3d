@@ -1,0 +1,79 @@
+#! /usr/bin/env python
+
+"""
+
+This script constructs the bundle directory structure for the OSX
+program panda3d_mac, which is built by the code in this directory.  It
+takes no parameters, and produces the app bundle in the same place.
+
+"""
+
+import getopt
+import sys
+import os
+import glob
+import shutil
+
+import direct
+from pandac.PandaModules import Filename, DSearchPath, getModelPath
+
+def usage(code, msg = ''):
+    print >> sys.stderr, __doc__
+    print >> sys.stderr, msg
+    sys.exit(code)
+
+def makeBundle(startDir):
+    fstartDir = Filename.fromOsSpecific(startDir)
+
+    # Search for nppandad along $PATH.
+    path = DSearchPath()
+    if 'PATH' in os.environ:
+        path.appendPath(os.environ['PATH'])
+    path.appendPath(os.defpath)
+    panda3d_mac = path.findFile('panda3d_mac')
+    if not panda3d_mac:
+        raise StandardError, "Couldn't find panda3d_mac on path."
+
+    # Find the icon file on the model-path.
+    icons = getModelPath().findFile('plugin_images/panda3d.icns')
+    if not icons:
+        icons = getModelPath().findFile('models/plugin_images/panda3d.icns')
+    if not icons:
+        raise StandardError, "Couldn't find panda3d.icns on model-path."
+
+    # Generate the bundle directory structure
+    rootFilename = Filename(fstartDir)
+    bundleFilename = Filename(rootFilename, 'Panda3DRuntime.app')
+    plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
+    plistFilename.makeDir()
+    exeFilename = Filename(bundleFilename, 'Contents/MacOS/panda3d_mac')
+    exeFilename.makeDir()
+    iconFilename = Filename(bundleFilename, 'Contents/Resources/panda3d.icns')
+    iconFilename.makeDir()
+
+    # Copy in Info.plist, the icon file, and the compiled executable.
+    shutil.copyfile(Filename(fstartDir, "panda3d_mac.plist").toOsSpecific(), plistFilename.toOsSpecific())
+    shutil.copyfile(icons.toOsSpecific(), iconFilename.toOsSpecific())
+    shutil.copyfile(panda3d_mac.toOsSpecific(), exeFilename.toOsSpecific())
+    os.chmod(exeFilename.toOsSpecific(), 0755)
+
+    # All done!
+    bundleFilename.touch()
+    print bundleFilename.toOsSpecific()
+
+if __name__ == '__main__':
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'h')
+    except getopt.error, msg:
+        usage(1, msg)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            usage(0)
+
+    if args:
+        usage(1, 'No arguments are expected.')
+
+    startDir = os.path.split(sys.argv[0])[0]
+    makeBundle(startDir)
+    
