@@ -43,7 +43,7 @@ def makeBundle(startDir):
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir)
-    bundleFilename = Filename(rootFilename, 'Panda3DRuntime.app')
+    bundleFilename = Filename(rootFilename, 'Panda3D.app')
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
     exeFilename = Filename(bundleFilename, 'Contents/MacOS/panda3d_mac')
