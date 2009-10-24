@@ -305,7 +305,7 @@ run_command_line(int argc, char *argv[]) {
 void Panda3D::
 run_main_loop() {
 #ifdef _WIN32
-  if (window_type == P3D_WT_embedded) {
+  if (_window_type == P3D_WT_embedded) {
     // Wait for new messages from Windows, and new requests from the
     // plugin.
     MSG msg;
