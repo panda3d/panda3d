@@ -243,7 +243,7 @@ def makeInstaller():
         dst_npapi.makeDir()
         dst_panda3d.makeDir()
         shutil.copytree(pluginFiles[npapi], dst_npapi.toOsSpecific())
-        shutil.copyfile(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
+        shutil.copytree(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
         CMD = "/Developer/usr/bin/packagemaker"
         CMD += ' --id org.panda3d.runtime' #TODO: make this customizable
         CMD += ' --version "%s"' % options.version
