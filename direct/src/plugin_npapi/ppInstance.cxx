@@ -57,10 +57,18 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
   // Copy the tokens and save them within this object.
   _tokens.reserve(argc);
   for (int i = 0; i < argc; ++i) {
-    P3D_token token;
-    token._keyword = strdup(argn[i]);
-    token._value = strdup(argv[i]);
-    _tokens.push_back(token);
+    if (argn[i] != NULL) {
+      const char *v = argv[i];
+      if (v == NULL) {
+        // Firefox might give us a NULL argv[i] in some cases.
+        v = "";
+      }
+
+      P3D_token token;
+      token._keyword = strdup(argn[i]);
+      token._value = strdup(v);
+      _tokens.push_back(token);
+    }
   }
 
   _root_dir = global_root_dir;
