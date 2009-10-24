@@ -35,9 +35,11 @@ GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
 CFLAGS=""
+RTDIST=0
+RTDIST_VERSION="dev"
 RUNTIME=0
-RUNTIME_VERSION="dev"
 DISTRIBUTOR=""
+VERSION=None
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
@@ -47,9 +49,6 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
 ])
 
 CheckPandaSourceTree()
-
-VERSION=ParsePandaVersion("dtool/PandaVersion.pp")
-PLUGIN_VERSION=ParsePluginVersion("dtool/PandaVersion.pp")
 
 def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
@@ -94,11 +93,11 @@ def usage(problem):
     os._exit(0)
 
 def parseopts(args):
-    global INSTALLER,RUNTIME,GENMAN,DISTRIBUTOR
+    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
     global VERSION,COMPRESSOR,THREADCOUNT
     longopts = [
-        "help","distributor=","verbose",
-        "optimize=","everything","nothing","installer","runtime",
+        "help","distributor=","verbose","runtime",
+        "optimize=","everything","nothing","installer","rtdist",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
     optimize = ""
@@ -112,6 +111,7 @@ def parseopts(args):
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
+            elif (option=="--rtdist"): RTDIST=1
             elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): PkgEnableAll()
@@ -134,7 +134,9 @@ def parseopts(args):
             anything = 1
     except: usage(0)
     if (anything==0): usage(0)
-    if (optimize=="" and RUNTIME): optimize = "4"
+    if (RTDIST and RUNTIME):
+        usage("Options --runtime and --rtdist cannot be specified at the same time!")
+    if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
     try:
         SetOptimize(int(optimize))
@@ -160,22 +162,53 @@ os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 
 ########################################################################
 ##
-## Store version and platform for the runtime build.
+## Configure things based on the command-line parameters.
 ##
 ########################################################################
 
-if (RUNTIME):
+if (VERSION == None):
+    if (RUNTIME):
+        VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
+    else:
+        VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+
+if (RUNTIME or RTDIST):
     PkgDisable("PANDATOOL")
     
     if (DISTRIBUTOR.strip() == ""):
-        exit("You must provide a valid distributor name when making a plugin runtime build!")
+        exit("You must provide a valid distributor name when making a runtime or rtdist build!")
 
     if (not CUSTOM_OUTPUTDIR):
-        SetOutputDir("built_" + DISTRIBUTOR.strip())
+        if (RTDIST):
+            SetOutputDir("built_" + DISTRIBUTOR.strip())
+        elif (RUNTIME):
+            SetOutputDir("built_" + DISTRIBUTOR.strip() + "_rt")
 
-    RUNTIME_VERSION = DISTRIBUTOR.strip() + "_" + VERSION[:3]
+    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + VERSION[:3]
 elif (DISTRIBUTOR == ""):
     DISTRIBUTOR = "makepanda"
+
+if (RUNTIME):
+    for pkg in PkgListGet():
+        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI"]:
+            PkgDisable(pkg)
+        elif (PkgSkip(pkg)==1):
+            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib and NPAPI support!")
+
+if (sys.platform.startswith("win")):
+    os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
+
+if (INSTALLER and RTDIST):
+    exit("Cannot build an installer for the rtdist build!")
+
+if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME):
+    exit("Cannot build installer without python")
+
+if (RTDIST or RUNTIME) and (PkgSkip("TINYXML")):
+    exit("Cannot build rtdist or runtime without tinyxml")
+
+if (RUNTIME):
+    SetLinkAllStatic(True)
 
 ########################################################################
 ##
@@ -205,8 +238,8 @@ SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
 
-if (RUNTIME and SDK["PYTHONVERSION"] != "python2.6" and DISTRIBUTOR == "cmu"):
-    exit("The CMU runtime distribution must be built against Python 2.6!")
+if (RTDIST and SDK["PYTHONVERSION"] != "python2.6" and DISTRIBUTOR == "cmu"):
+    exit("The CMU rtdist distribution must be built against Python 2.6!")
 
 ########################################################################
 ##
@@ -233,21 +266,6 @@ if (sys.platform.startswith("win")):
 else:
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "lib"))
-
-##########################################################################################
-#
-# Disable packages that are currently broken or not supported.
-#
-##########################################################################################
-
-if (sys.platform.startswith("win")):
-    os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
-
-if (INSTALLER) and (PkgSkip("PYTHON")):
-    exit("Cannot build installer without python")
-
-if (RUNTIME) and (PkgSkip("TINYXML")):
-    exit("Cannot build runtime without tinyxml")
 
 ########################################################################
 ##
@@ -399,14 +417,15 @@ if (COMPILER=="LINUX"):
     PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
     PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
-    if (RUNTIME and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
-        # Don't use the framework for the OSX runtime build. I'm afraid it gives problems somewhere.
+    if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
+        # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
         PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
-    elif("PYTHONVERSION" in SDK):
+    elif("PYTHONVERSION" in SDK and not RUNTIME):
         PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+    if (RTDIST):
+        PkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
         PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr/prtypes.h", "nspr"))
-        PkgEnable("WX",    tool = "wx-config")
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0):
@@ -468,6 +487,8 @@ if (COMPILER=="LINUX"):
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
 IncDirectory("ALWAYS", GetOutputDir()+"/include")
+if GetLinkAllStatic():
+    DefSymbol("ALWAYS", "LINK_ALL_STATIC", "")
 
 ########################################################################
 ##
@@ -485,16 +506,18 @@ def printStatus(header,warnings):
         for x in PkgListGet():
             if (PkgSkip(x)==0): tkeep = tkeep + x + " "
             else:                  tomit = tomit + x + " "
+        if RTDIST:  print "Makepanda: Runtime distribution build"
+        elif RUNTIME: print "Makepanda: Runtime build"
+        else:        print "Makepanda: Regular build"
         print "Makepanda: Compiler:",COMPILER
         print "Makepanda: Optimize:",GetOptimize()
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
         if (GENMAN): print "Makepanda: Generate API reference manual"
         else       : print "Makepanda: Don't generate API reference manual"
-        if (sys.platform == "win32"):
+        if (sys.platform == "win32" and not RTDIST):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
-            if RUNTIME:    print "Makepanda: Runtime will be built"
         print "Makepanda: Version ID: "+VERSION
         for x in warnings: print "Makepanda: "+x
         print "-------------------------------------------------------------------"
@@ -547,7 +570,6 @@ def CompileCxx(obj,src,opts):
         cmd += " /Fd" + obj[:-4] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
-        if ("LINK_ALL_STATIC" in opts): cmd += " /DLINK_ALL_STATIC"
         if ("BIGOBJ" in opts): cmd += " /bigobj"
         cmd += " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
@@ -559,7 +581,7 @@ def CompileCxx(obj,src,opts):
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
-        if (sys.platform == "darwin" and not RUNTIME):
+        if (sys.platform == "darwin" and not RTDIST):
             if (int(platform.mac_ver()[0][3]) >= 6):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64"
             else:
@@ -573,7 +595,6 @@ def CompileCxx(obj,src,opts):
         if (CFLAGS !=""): cmd += " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " -DBUILDING_" + building
-        if ("LINK_ALL_STATIC" in opts): cmd += " -DLINK_ALL_STATIC"
         cmd += ' ' + BracketNameWithQuotes(src)
         oscmd(cmd)
 
@@ -662,7 +683,6 @@ def CompileIgate(woutd,wsrc,opts):
         if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
     building = GetValueOption(opts, "BUILDING:")
     if (building): cmd += " -DBUILDING_"+building
-    if ("LINK_ALL_STATIC" in opts): cmd += " -DLINK_ALL_STATIC"
     cmd += ' -module ' + module + ' -library ' + library
     for x in wsrc:
         if (x.startswith("/")):
@@ -795,7 +815,7 @@ def CompileLink(dll, obj, opts):
         cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
-        if (sys.platform == "darwin" and not RUNTIME):
+        if (sys.platform == "darwin" and not RTDIST):
             cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         
@@ -998,10 +1018,10 @@ def CompileAnything(target, inputs, opts, progress = None):
     elif (infile.endswith(".pdef")):
         ProgressOutput(progress, "Building package from pdef file", infile)
         return Package(target, inputs, opts)
-    elif SUFFIX_LIB.count(origsuffix):
+    elif origsuffix in SUFFIX_LIB:
         ProgressOutput(progress, "Linking static library", target)
         return CompileLib(target, inputs, opts)
-    elif SUFFIX_DLL.count(origsuffix):
+    elif origsuffix in SUFFIX_DLL:
         if (origsuffix==".exe"):
             ProgressOutput(progress, "Linking executable", target)
         else:
@@ -1287,7 +1307,7 @@ def WriteConfigSettings():
     if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
-    if (RUNTIME):
+    if (RTDIST or RUNTIME):
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
@@ -1313,7 +1333,7 @@ def WriteConfigSettings():
         del dtool_config[key]
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
-    if (RUNTIME):
+    if (RTDIST or RUNTIME):
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
         for key in plugin_config.keys():
             val = plugin_config[key]
@@ -1349,12 +1369,26 @@ if os.path.isfile("direct/src/plugin/p3d_plugin_config.h"):
 PANDAVERSION_H="""
 #define PANDA_MAJOR_VERSION $VERSION1
 #define PANDA_MINOR_VERSION $VERSION2
-#define PANDA_SEQUENCE_VERSION $VERSION2
+#define PANDA_SEQUENCE_VERSION $VERSION3
 #define PANDA_VERSION $NVERSION
 #define PANDA_NUMERIC_VERSION $NVERSION
 #define PANDA_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
-#define PANDA_PACKAGE_VERSION_STR "$RUNTIME_VERSION"
+#define PANDA_PACKAGE_VERSION_STR "$RTDIST_VERSION"
+#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
+"""
+
+PANDAVERSION_H_RUNTIME="""
+#define PANDA_MAJOR_VERSION 0
+#define PANDA_MINOR_VERSION 0
+#define PANDA_SEQUENCE_VERSION 0
+#define PANDA_VERSION_STR "0.0.0"
+#define P3D_PLUGIN_MAJOR_VERSION $VERSION1
+#define P3D_PLUGIN_MINOR_VERSION $VERSION2
+#define P3D_PLUGIN_SEQUENCE_VERSION $VERSION3
+#define P3D_PLUGIN_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
+#define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
+#define PANDA_PACKAGE_VERSION_STR ""
 #define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
 """
 
@@ -1378,43 +1412,44 @@ def CreatePandaVersionFiles():
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
     version3=int(VERSION.split(".")[2])
-    if RUNTIME:
-        pversion1=int(PLUGIN_VERSION.split(".")[0])
-        pversion2=int(PLUGIN_VERSION.split(".")[1])
-        pversion3=int(PLUGIN_VERSION.split(".")[2])
     nversion=version1*1000000+version2*1000+version3
     if (DISTRIBUTOR != "cmu"):
         # Subtract 1 if we are not an official version.
         nversion -= 1
     
-    pandaversion_h = PANDAVERSION_H.replace("$VERSION1",str(version1))
+    if (RUNTIME):
+        pandaversion_h = PANDAVERSION_H_RUNTIME
+    else:
+        pandaversion_h = PANDAVERSION_H
+    pandaversion_h = pandaversion_h.replace("$VERSION1",str(version1))
     pandaversion_h = pandaversion_h.replace("$VERSION2",str(version2))
     pandaversion_h = pandaversion_h.replace("$VERSION3",str(version3))
     pandaversion_h = pandaversion_h.replace("$NVERSION",str(nversion))
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
-    pandaversion_h = pandaversion_h.replace("$RUNTIME_VERSION",RUNTIME_VERSION)
+    pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
     if (DISTRIBUTOR == "cmu"):
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
         pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
-    if RUNTIME:
-        pandaversion_h += "\n#define P3D_PLUGIN_MAJOR_VERSION %s\n" % pversion1
-        pandaversion_h += "\n#define P3D_PLUGIN_MINOR_VERSION %s\n" % pversion2
-        pandaversion_h += "\n#define P3D_PLUGIN_SEQUENCE_VERSION %s\n" % pversion3
     
-    checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
-    checkpandaversion_cxx = checkpandaversion_cxx.replace("$NVERSION",str(nversion))
-    
-    checkpandaversion_h = CHECKPANDAVERSION_H.replace("$VERSION1",str(version1))
-    checkpandaversion_h = checkpandaversion_h.replace("$VERSION2",str(version2))
-    checkpandaversion_h = checkpandaversion_h.replace("$VERSION3",str(version3))
-    checkpandaversion_h = checkpandaversion_h.replace("$NVERSION",str(nversion))
+    if not RUNTIME:
+        checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
+        checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
+        checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
+        checkpandaversion_cxx = checkpandaversion_cxx.replace("$NVERSION",str(nversion))
+        
+        checkpandaversion_h = CHECKPANDAVERSION_H.replace("$VERSION1",str(version1))
+        checkpandaversion_h = checkpandaversion_h.replace("$VERSION2",str(version2))
+        checkpandaversion_h = checkpandaversion_h.replace("$VERSION3",str(version3))
+        checkpandaversion_h = checkpandaversion_h.replace("$NVERSION",str(nversion))
 
     ConditionalWriteFile(GetOutputDir()+'/include/pandaVersion.h',        pandaversion_h)
-    ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
-    ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
+    if RUNTIME:
+        ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', '')
+        ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h', '')
+    else:
+        ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
+        ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
     ConditionalWriteFile(GetOutputDir()+"/tmp/null.cxx","")
 
 CreatePandaVersionFiles()
@@ -1533,6 +1568,7 @@ CopyAllHeaders('panda/src/pandabase')
 CopyAllHeaders('panda/src/express')
 CopyAllHeaders('panda/src/downloader')
 CopyAllHeaders('panda/metalibs/pandaexpress')
+
 CopyAllHeaders('panda/src/pipeline')
 CopyAllHeaders('panda/src/putil')
 CopyAllHeaders('dtool/src/prckeys')
@@ -1613,8 +1649,10 @@ CopyAllHeaders('direct/src/showbase')
 CopyAllHeaders('direct/metalibs/direct')
 CopyAllHeaders('direct/src/dcparse')
 CopyAllHeaders('direct/src/heapq')
-if (RUNTIME):
+
+if (RUNTIME or RTDIST):
     CopyAllHeaders('direct/src/plugin', skip=["p3d_plugin_config.h"])
+if (RUNTIME):
     CopyAllHeaders('direct/src/plugin_npapi')
     CopyAllHeaders('direct/src/plugin_standalone')
 
@@ -1720,13 +1758,6 @@ TargetAdd('dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx
 TargetAdd('dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
 TargetAdd('dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
 
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:dtool/src/dtoolbase', 'LINK_ALL_STATIC']
-  TargetAdd('static_dtoolbase_composite1.obj', opts=OPTS, input='dtoolbase_composite1.cxx')
-  TargetAdd('static_dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx')
-  TargetAdd('static_dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
-  TargetAdd('static_dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
-
 #
 # DIRECTORY: dtool/src/dtoolutil/
 #
@@ -1737,12 +1768,6 @@ TargetAdd('dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
 TargetAdd('dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
 if (sys.platform == 'darwin'):
   TargetAdd('dtoolutil_filename_assist.obj',   opts=OPTS, input='filename_assist.mm')
-
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:dtool/src/dtoolutil', 'LINK_ALL_STATIC']
-  TargetAdd('static_dtoolutil_gnu_getopt.obj',  opts=OPTS, input='gnu_getopt.c')
-  TargetAdd('static_dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
-  TargetAdd('static_dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
 
 #
 # DIRECTORY: dtool/metalibs/dtool/
@@ -1762,36 +1787,18 @@ TargetAdd('libp3dtool.dll', input='dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_lookup3.obj')
 TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
-if (RUNTIME):
-  pref = ""
-  if (sys.platform.startswith("win")):
-    pref = "static_"
-    OPTS=['DIR:dtool/metalibs/dtool', 'LINK_ALL_STATIC']
-    TargetAdd('static_dtool_dtool.obj', opts=OPTS, input='dtool.cxx')
-  
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtool_dtool.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_gnu_getopt.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_gnu_getopt1.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_composite.obj')
-  if (sys.platform == 'darwin'):
-    TargetAdd('libp3dtool_s.ilb', input='dtoolutil_filename_assist.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_composite1.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_composite2.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_indent.obj')
-  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_lookup3.obj')
-  TargetAdd('libp3dtool_s.ilb', opts=['ADVAPI','WINSHELL','WINKERNEL'])
-
 #
 # DIRECTORY: dtool/src/cppparser/
 #
 
-OPTS=['DIR:dtool/src/cppparser', 'BISONPREFIX_cppyy']
-CreateFile(GetOutputDir()+"/include/cppBison.h")
-TargetAdd('cppParser_cppBison.obj',  opts=OPTS, input='cppBison.yxx')
-TargetAdd('cppBison.h', input='cppParser_cppBison.obj', opts=['DEPENDENCYONLY'])
-TargetAdd('cppParser_composite.obj', opts=OPTS, input='cppParser_composite.cxx')
-TargetAdd('libcppParser.ilb', input='cppParser_composite.obj')
-TargetAdd('libcppParser.ilb', input='cppParser_cppBison.obj')
+if (not RUNTIME):
+  OPTS=['DIR:dtool/src/cppparser', 'BISONPREFIX_cppyy']
+  CreateFile(GetOutputDir()+"/include/cppBison.h")
+  TargetAdd('cppParser_cppBison.obj',  opts=OPTS, input='cppBison.yxx')
+  TargetAdd('cppBison.h', input='cppParser_cppBison.obj', opts=['DEPENDENCYONLY'])
+  TargetAdd('cppParser_composite.obj', opts=OPTS, input='cppParser_composite.cxx')
+  TargetAdd('libcppParser.ilb', input='cppParser_composite.obj')
+  TargetAdd('libcppParser.ilb', input='cppParser_cppBison.obj')
 
 #
 # DIRECTORY: dtool/src/prc/
@@ -1800,10 +1807,6 @@ TargetAdd('libcppParser.ilb', input='cppParser_cppBison.obj')
 OPTS=['DIR:dtool/src/prc', 'BUILDING:DTOOLCONFIG', 'OPENSSL']
 TargetAdd('prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
 
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:dtool/src/prc', 'LINK_ALL_STATIC', 'OPENSSL']
-  TargetAdd('static_prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
-
 #
 # DIRECTORY: dtool/src/dconfig/
 #
@@ -1811,20 +1814,12 @@ if (sys.platform.startswith("win") and RUNTIME):
 OPTS=['DIR:dtool/src/dconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
 
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:dtool/src/dconfig', 'LINK_ALL_STATIC']
-  TargetAdd('static_dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
-
 #
 # DIRECTORY: dtool/src/interrogatedb/
 #
 
 OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:DTOOLCONFIG']
 TargetAdd('interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
-
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:dtool/src/interrogatedb', 'LINK_ALL_STATIC']
-  TargetAdd('static_interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
 
 #
 # DIRECTORY: dtool/metalibs/dtoolconfig/
@@ -1845,14 +1840,6 @@ TargetAdd('libp3dtoolconfig.dll', input='prc_composite.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
 
-if (RUNTIME):
-  pref = ""
-  if (sys.platform.startswith("win")): pref = "static_"
-  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'interrogatedb_composite.obj')
-  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'dconfig_composite.obj')
-  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'prc_composite.obj')
-  TargetAdd('libp3dtoolconfig_s.ilb', opts=['ADVAPI',  'OPENSSL'])
-
 #
 # DIRECTORY: dtool/src/pystub/
 #
@@ -1863,37 +1850,30 @@ TargetAdd('libp3pystub.dll', input='pystub_pystub.obj')
 TargetAdd('libp3pystub.dll', input='libp3dtool.dll')
 TargetAdd('libp3pystub.dll', opts=['ADVAPI'])
 
-if (RUNTIME):
-  pref = ""
-  if (sys.platform.startswith("win")): pref = "static_"
-  TargetAdd(pref+'pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
-  TargetAdd('libp3pystub_s.ilb', input=pref+'pystub_pystub.obj')
-  TargetAdd('libp3pystub_s.ilb', input='libp3dtool.dll')
-  TargetAdd('libp3pystub_s.ilb', opts=['ADVAPI'])
-
 #
 # DIRECTORY: dtool/src/interrogate/
 #
 
-OPTS=['DIR:dtool/src/interrogate', 'DIR:dtool/src/cppparser', 'DIR:dtool/src/interrogatedb']
-TargetAdd('interrogate_composite.obj', opts=OPTS, input='interrogate_composite.cxx')
-TargetAdd('interrogate.exe', input='interrogate_composite.obj')
-TargetAdd('interrogate.exe', input='libcppParser.ilb')
-TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
-
-TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
-TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
-TargetAdd('interrogate_module.exe', input='libcppParser.ilb')
-TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL'])
-
 if (not RUNTIME):
-  TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
-  TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
-  TargetAdd('parse_file.exe', input='libcppParser.ilb')
-  TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
+  OPTS=['DIR:dtool/src/interrogate', 'DIR:dtool/src/cppparser', 'DIR:dtool/src/interrogatedb']
+  TargetAdd('interrogate_composite.obj', opts=OPTS, input='interrogate_composite.cxx')
+  TargetAdd('interrogate.exe', input='interrogate_composite.obj')
+  TargetAdd('interrogate.exe', input='libcppParser.ilb')
+  TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
+
+  TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
+  TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
+  TargetAdd('interrogate_module.exe', input='libcppParser.ilb')
+  TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL'])
+
+  if (not RTDIST):
+    TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
+    TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
+    TargetAdd('parse_file.exe', input='libcppParser.ilb')
+    TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
@@ -1910,7 +1890,7 @@ if (PkgSkip("OPENSSL")==0 and not RUNTIME):
 # DIRECTORY: dtool/src/test_interrogate/
 #
 
-if (not RUNTIME):
+if (not RTDIST and not RUNTIME):
   OPTS=['DIR:dtool/src/test_interrogate']
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
@@ -1936,15 +1916,6 @@ TargetAdd('libexpress.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libexpress.in', opts=['IMOD:pandaexpress', 'ILIB:libexpress', 'SRCDIR:panda/src/express'])
 TargetAdd('libexpress_igate.obj', input='libexpress.in', opts=["DEPENDENCYONLY"])
 
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:panda/src/express', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
-  TargetAdd('static_express_composite1.obj', opts=OPTS, input='express_composite1.cxx')
-  TargetAdd('static_express_composite2.obj', opts=OPTS, input='express_composite2.cxx')
-  
-  TargetAdd('static_libexpress.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('static_libexpress.in', opts=['IMOD:pandaexpress', 'ILIB:libexpress', 'SRCDIR:panda/src/express'])
-  TargetAdd('static_libexpress_igate.obj', input='static_libexpress.in', opts=["DEPENDENCYONLY"])
-
 #
 # DIRECTORY: panda/src/downloader/
 #
@@ -1955,10 +1926,6 @@ IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite.cxx
 TargetAdd('libdownloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libdownloader.in', opts=['IMOD:pandaexpress', 'ILIB:libdownloader', 'SRCDIR:panda/src/downloader'])
 TargetAdd('libdownloader_igate.obj', input='libdownloader.in', opts=["DEPENDENCYONLY"])
-
-if (sys.platform.startswith("win") and RUNTIME):
-  OPTS=['DIR:panda/src/downloader', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
-  TargetAdd('static_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -1982,272 +1949,282 @@ TargetAdd('libpandaexpress.dll', input='pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
 TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
-if (RUNTIME):
-  pref = ""
-  if (sys.platform.startswith("win")): pref = "static_"
-  
-  TargetAdd('libpandaexpress_s.ilb', input=pref+'downloader_composite.obj')
-  TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite1.obj')
-  TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite2.obj')
-  TargetAdd('libpandaexpress_s.ilb', input=pref+'libexpress_igate.obj')
-  TargetAdd('libpandaexpress_s.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
-
 #
 # DIRECTORY: panda/src/pipeline/
 #
 
-OPTS=['DIR:panda/src/pipeline', 'BUILDING:PANDA']
-TargetAdd('pipeline_composite.obj', opts=OPTS, input='pipeline_composite.cxx')
-TargetAdd('pipeline_contextSwitch.obj', opts=OPTS, input='contextSwitch.c')
-IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite.cxx"])
-TargetAdd('libpipeline.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libpipeline.in', opts=['IMOD:panda', 'ILIB:libpipeline', 'SRCDIR:panda/src/pipeline'])
-TargetAdd('libpipeline_igate.obj', input='libpipeline.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pipeline', 'BUILDING:PANDA']
+  TargetAdd('pipeline_composite.obj', opts=OPTS, input='pipeline_composite.cxx')
+  TargetAdd('pipeline_contextSwitch.obj', opts=OPTS, input='contextSwitch.c')
+  IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpipeline.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpipeline.in', opts=['IMOD:panda', 'ILIB:libpipeline', 'SRCDIR:panda/src/pipeline'])
+  TargetAdd('libpipeline_igate.obj', input='libpipeline.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/putil/
 #
 
-OPTS=['DIR:panda/src/putil', 'BUILDING:PANDA',  'ZLIB']
-TargetAdd('putil_composite1.obj', opts=OPTS, input='putil_composite1.cxx')
-TargetAdd('putil_composite2.obj', opts=OPTS, input='putil_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove("test_bam.h")
-TargetAdd('libputil.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libputil.in', opts=['IMOD:panda', 'ILIB:libputil', 'SRCDIR:panda/src/putil'])
-TargetAdd('libputil_igate.obj', input='libputil.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/putil', 'BUILDING:PANDA',  'ZLIB']
+  TargetAdd('putil_composite1.obj', opts=OPTS, input='putil_composite1.cxx')
+  TargetAdd('putil_composite2.obj', opts=OPTS, input='putil_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove("test_bam.h")
+  TargetAdd('libputil.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libputil.in', opts=['IMOD:panda', 'ILIB:libputil', 'SRCDIR:panda/src/putil'])
+  TargetAdd('libputil_igate.obj', input='libputil.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/audio/
 #
 
-OPTS=['DIR:panda/src/audio', 'BUILDING:PANDA']
-TargetAdd('audio_composite.obj', opts=OPTS, input='audio_composite.cxx')
-IGATEFILES=["audio.h"]
-TargetAdd('libaudio.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libaudio.in', opts=['IMOD:panda', 'ILIB:libaudio', 'SRCDIR:panda/src/audio'])
-TargetAdd('libaudio_igate.obj', input='libaudio.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/audio', 'BUILDING:PANDA']
+  TargetAdd('audio_composite.obj', opts=OPTS, input='audio_composite.cxx')
+  IGATEFILES=["audio.h"]
+  TargetAdd('libaudio.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libaudio.in', opts=['IMOD:panda', 'ILIB:libaudio', 'SRCDIR:panda/src/audio'])
+  TargetAdd('libaudio_igate.obj', input='libaudio.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/event/
 #
 
-OPTS=['DIR:panda/src/event', 'BUILDING:PANDA']
-TargetAdd('event_composite.obj', opts=OPTS, input='event_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite.cxx"])
-TargetAdd('libevent.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libevent.in', opts=['IMOD:panda', 'ILIB:libevent', 'SRCDIR:panda/src/event'])
-TargetAdd('libevent_igate.obj', input='libevent.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/event', 'BUILDING:PANDA']
+  TargetAdd('event_composite.obj', opts=OPTS, input='event_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite.cxx"])
+  TargetAdd('libevent.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libevent.in', opts=['IMOD:panda', 'ILIB:libevent', 'SRCDIR:panda/src/event'])
+  TargetAdd('libevent_igate.obj', input='libevent.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/linmath/
 #
 
-OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
-TargetAdd('linmath_composite.obj', opts=OPTS, input='linmath_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove('lmat_ops_src.h')
-IGATEFILES.remove('cast_to_double.h')
-IGATEFILES.remove('lmat_ops.h')
-IGATEFILES.remove('cast_to_float.h')
-TargetAdd('liblinmath.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('liblinmath.in', opts=['IMOD:panda', 'ILIB:liblinmath', 'SRCDIR:panda/src/linmath'])
-TargetAdd('liblinmath_igate.obj', input='liblinmath.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
+  TargetAdd('linmath_composite.obj', opts=OPTS, input='linmath_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove('lmat_ops_src.h')
+  IGATEFILES.remove('cast_to_double.h')
+  IGATEFILES.remove('lmat_ops.h')
+  IGATEFILES.remove('cast_to_float.h')
+  TargetAdd('liblinmath.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('liblinmath.in', opts=['IMOD:panda', 'ILIB:liblinmath', 'SRCDIR:panda/src/linmath'])
+  TargetAdd('liblinmath_igate.obj', input='liblinmath.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/mathutil/
 #
 
-OPTS=['DIR:panda/src/mathutil', 'BUILDING:PANDA', 'FFTW']
-TargetAdd('mathutil_composite.obj', opts=OPTS, input='mathutil_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite.cxx"])
-TargetAdd('libmathutil.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libmathutil.in', opts=['IMOD:panda', 'ILIB:libmathutil', 'SRCDIR:panda/src/mathutil'])
-TargetAdd('libmathutil_igate.obj', input='libmathutil.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/mathutil', 'BUILDING:PANDA', 'FFTW']
+  TargetAdd('mathutil_composite.obj', opts=OPTS, input='mathutil_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite.cxx"])
+  TargetAdd('libmathutil.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libmathutil.in', opts=['IMOD:panda', 'ILIB:libmathutil', 'SRCDIR:panda/src/mathutil'])
+  TargetAdd('libmathutil_igate.obj', input='libmathutil.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/gsgbase/
 #
 
-OPTS=['DIR:panda/src/gsgbase', 'BUILDING:PANDA']
-TargetAdd('gsgbase_composite.obj', opts=OPTS, input='gsgbase_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/gsgbase', ["*.h", "*_composite.cxx"])
-TargetAdd('libgsgbase.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libgsgbase.in', opts=['IMOD:panda', 'ILIB:libgsgbase', 'SRCDIR:panda/src/gsgbase'])
-TargetAdd('libgsgbase_igate.obj', input='libgsgbase.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/gsgbase', 'BUILDING:PANDA']
+  TargetAdd('gsgbase_composite.obj', opts=OPTS, input='gsgbase_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/gsgbase', ["*.h", "*_composite.cxx"])
+  TargetAdd('libgsgbase.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libgsgbase.in', opts=['IMOD:panda', 'ILIB:libgsgbase', 'SRCDIR:panda/src/gsgbase'])
+  TargetAdd('libgsgbase_igate.obj', input='libgsgbase.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pnmimage/
 #
 
-OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
-TargetAdd('pnmimage_composite.obj', opts=OPTS, input='pnmimage_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite.cxx"])
-TargetAdd('libpnmimage.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libpnmimage.in', opts=['IMOD:panda', 'ILIB:libpnmimage', 'SRCDIR:panda/src/pnmimage'])
-TargetAdd('libpnmimage_igate.obj', input='libpnmimage.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
+  TargetAdd('pnmimage_composite.obj', opts=OPTS, input='pnmimage_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpnmimage.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpnmimage.in', opts=['IMOD:panda', 'ILIB:libpnmimage', 'SRCDIR:panda/src/pnmimage'])
+  TargetAdd('libpnmimage_igate.obj', input='libpnmimage.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/nativenet/
 #
 
-OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
-TargetAdd('nativenet_composite.obj', opts=OPTS, input='nativenet_composite1.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite.cxx"])
-TargetAdd('libnativenet.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libnativenet.in', opts=['IMOD:panda', 'ILIB:libnativenet', 'SRCDIR:panda/src/nativenet'])
-TargetAdd('libnativenet_igate.obj', input='libnativenet.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
+  TargetAdd('nativenet_composite.obj', opts=OPTS, input='nativenet_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite.cxx"])
+  TargetAdd('libnativenet.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libnativenet.in', opts=['IMOD:panda', 'ILIB:libnativenet', 'SRCDIR:panda/src/nativenet'])
+  TargetAdd('libnativenet_igate.obj', input='libnativenet.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/net/
 #
 
-OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
-TargetAdd('net_composite.obj', opts=OPTS, input='net_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove("datagram_ui.h")
-TargetAdd('libnet.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libnet.in', opts=['IMOD:panda', 'ILIB:libnet', 'SRCDIR:panda/src/net'])
-TargetAdd('libnet_igate.obj', input='libnet.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
+  TargetAdd('net_composite.obj', opts=OPTS, input='net_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove("datagram_ui.h")
+  TargetAdd('libnet.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libnet.in', opts=['IMOD:panda', 'ILIB:libnet', 'SRCDIR:panda/src/net'])
+  TargetAdd('libnet_igate.obj', input='libnet.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pstatclient/
 #
 
-OPTS=['DIR:panda/src/pstatclient', 'BUILDING:PANDA']
-TargetAdd('pstatclient_composite.obj', opts=OPTS, input='pstatclient_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite.cxx"])
-TargetAdd('libpstatclient.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libpstatclient.in', opts=['IMOD:panda', 'ILIB:libpstatclient', 'SRCDIR:panda/src/pstatclient'])
-TargetAdd('libpstatclient_igate.obj', input='libpstatclient.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pstatclient', 'BUILDING:PANDA']
+  TargetAdd('pstatclient_composite.obj', opts=OPTS, input='pstatclient_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpstatclient.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpstatclient.in', opts=['IMOD:panda', 'ILIB:libpstatclient', 'SRCDIR:panda/src/pstatclient'])
+  TargetAdd('libpstatclient_igate.obj', input='libpstatclient.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ"]
-TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
-TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
-if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
-TargetAdd('libgobj.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libgobj.in', opts=['IMOD:panda', 'ILIB:libgobj', 'SRCDIR:panda/src/gobj'])
-TargetAdd('libgobj_igate.obj', input='libgobj.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ"]
+  TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
+  TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
+  if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
+  TargetAdd('libgobj.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libgobj.in', opts=['IMOD:panda', 'ILIB:libgobj', 'SRCDIR:panda/src/gobj'])
+  TargetAdd('libgobj_igate.obj', input='libgobj.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/lerp/
 #
 
-OPTS=['DIR:panda/src/lerp', 'BUILDING:PANDA']
-TargetAdd('lerp_composite.obj', opts=OPTS, input='lerp_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/lerp', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove("lerpchans.h")
-TargetAdd('liblerp.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('liblerp.in', opts=['IMOD:panda', 'ILIB:liblerp', 'SRCDIR:panda/src/lerp'])
-TargetAdd('liblerp_igate.obj', input='liblerp.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/lerp', 'BUILDING:PANDA']
+  TargetAdd('lerp_composite.obj', opts=OPTS, input='lerp_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/lerp', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove("lerpchans.h")
+  TargetAdd('liblerp.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('liblerp.in', opts=['IMOD:panda', 'ILIB:liblerp', 'SRCDIR:panda/src/lerp'])
+  TargetAdd('liblerp_igate.obj', input='liblerp.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pgraphnodes/
 #
 
-OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA', "BIGOBJ"]
-TargetAdd('pgraphnodes_composite1.obj', opts=OPTS, input='pgraphnodes_composite1.cxx')
-TargetAdd('pgraphnodes_composite2.obj', opts=OPTS, input='pgraphnodes_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite.cxx"])
-TargetAdd('libpgraphnodes.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libpgraphnodes.in', opts=['IMOD:panda', 'ILIB:libpgraphnodes', 'SRCDIR:panda/src/pgraphnodes'])
-TargetAdd('libpgraphnodes_igate.obj', input='libpgraphnodes.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA', "BIGOBJ"]
+  TargetAdd('pgraphnodes_composite1.obj', opts=OPTS, input='pgraphnodes_composite1.cxx')
+  TargetAdd('pgraphnodes_composite2.obj', opts=OPTS, input='pgraphnodes_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpgraphnodes.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpgraphnodes.in', opts=['IMOD:panda', 'ILIB:libpgraphnodes', 'SRCDIR:panda/src/pgraphnodes'])
+  TargetAdd('libpgraphnodes_igate.obj', input='libpgraphnodes.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pgraph/
 #
 
-OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA']
-TargetAdd('pgraph_nodePath.obj', opts=OPTS, input='nodePath.cxx')
-TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite1.cxx')
-TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite2.cxx')
-TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite3.cxx')
-TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite4.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
-# IGATEFILES.remove("antialiasAttrib.h")
-TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ"], input=IGATEFILES)
-TargetAdd('libpgraph.in', opts=['IMOD:panda', 'ILIB:libpgraph', 'SRCDIR:panda/src/pgraph'])
-TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA']
+  TargetAdd('pgraph_nodePath.obj', opts=OPTS, input='nodePath.cxx')
+  TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite1.cxx')
+  TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite2.cxx')
+  TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite3.cxx')
+  TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite4.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
+  TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ"], input=IGATEFILES)
+  TargetAdd('libpgraph.in', opts=['IMOD:panda', 'ILIB:libpgraph', 'SRCDIR:panda/src/pgraph'])
+  TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
 
 #
 # DIRECTORY: panda/src/cull/
 #
 
-OPTS=['DIR:panda/src/cull', 'BUILDING:PANDA']
-TargetAdd('cull_composite.obj', opts=OPTS, input='cull_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite.cxx"])
-TargetAdd('libcull.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libcull.in', opts=['IMOD:panda', 'ILIB:libcull', 'SRCDIR:panda/src/cull'])
-TargetAdd('libcull_igate.obj', input='libcull.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/cull', 'BUILDING:PANDA']
+  TargetAdd('cull_composite.obj', opts=OPTS, input='cull_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite.cxx"])
+  TargetAdd('libcull.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libcull.in', opts=['IMOD:panda', 'ILIB:libcull', 'SRCDIR:panda/src/cull'])
+  TargetAdd('libcull_igate.obj', input='libcull.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/chan/
 #
 
-OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA']
-TargetAdd('chan_composite.obj', opts=OPTS, input='chan_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove('movingPart.h')
-IGATEFILES.remove('animChannelFixed.h')
-TargetAdd('libchan.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libchan.in', opts=['IMOD:panda', 'ILIB:libchan', 'SRCDIR:panda/src/chan'])
-TargetAdd('libchan_igate.obj', input='libchan.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA']
+  TargetAdd('chan_composite.obj', opts=OPTS, input='chan_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove('movingPart.h')
+  IGATEFILES.remove('animChannelFixed.h')
+  TargetAdd('libchan.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libchan.in', opts=['IMOD:panda', 'ILIB:libchan', 'SRCDIR:panda/src/chan'])
+  TargetAdd('libchan_igate.obj', input='libchan.in', opts=["DEPENDENCYONLY"])
 
 
 # DIRECTORY: panda/src/char/
 #
 
-OPTS=['DIR:panda/src/char', 'BUILDING:PANDA']
-TargetAdd('char_composite.obj', opts=OPTS, input='char_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite.cxx"])
-TargetAdd('libchar.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libchar.in', opts=['IMOD:panda', 'ILIB:libchar', 'SRCDIR:panda/src/char'])
-TargetAdd('libchar_igate.obj', input='libchar.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/char', 'BUILDING:PANDA']
+  TargetAdd('char_composite.obj', opts=OPTS, input='char_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite.cxx"])
+  TargetAdd('libchar.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libchar.in', opts=['IMOD:panda', 'ILIB:libchar', 'SRCDIR:panda/src/char'])
+  TargetAdd('libchar_igate.obj', input='libchar.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/dgraph/
 #
 
-OPTS=['DIR:panda/src/dgraph', 'BUILDING:PANDA']
-TargetAdd('dgraph_composite.obj', opts=OPTS, input='dgraph_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite.cxx"])
-TargetAdd('libdgraph.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libdgraph.in', opts=['IMOD:panda', 'ILIB:libdgraph', 'SRCDIR:panda/src/dgraph'])
-TargetAdd('libdgraph_igate.obj', input='libdgraph.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/dgraph', 'BUILDING:PANDA']
+  TargetAdd('dgraph_composite.obj', opts=OPTS, input='dgraph_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite.cxx"])
+  TargetAdd('libdgraph.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdgraph.in', opts=['IMOD:panda', 'ILIB:libdgraph', 'SRCDIR:panda/src/dgraph'])
+  TargetAdd('libdgraph_igate.obj', input='libdgraph.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/display/
 #
 
-OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
-TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ"], input='display_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove("renderBuffer.h")
-TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libdisplay.in', opts=['IMOD:panda', 'ILIB:libdisplay', 'SRCDIR:panda/src/display'])
-TargetAdd('libdisplay_igate.obj', input='libdisplay.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
+  TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ"], input='display_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove("renderBuffer.h")
+  TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdisplay.in', opts=['IMOD:panda', 'ILIB:libdisplay', 'SRCDIR:panda/src/display'])
+  TargetAdd('libdisplay_igate.obj', input='libdisplay.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/device/
 #
 
-OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
-TargetAdd('device_composite.obj', opts=OPTS, input='device_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite.cxx"])
-TargetAdd('libdevice.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libdevice.in', opts=['IMOD:panda', 'ILIB:libdevice', 'SRCDIR:panda/src/device'])
-TargetAdd('libdevice_igate.obj', input='libdevice.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
+  TargetAdd('device_composite.obj', opts=OPTS, input='device_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite.cxx"])
+  TargetAdd('libdevice.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdevice.in', opts=['IMOD:panda', 'ILIB:libdevice', 'SRCDIR:panda/src/device'])
+  TargetAdd('libdevice_igate.obj', input='libdevice.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pnmtext/
 #
 
-if (PkgSkip("FREETYPE")==0):
+if (PkgSkip("FREETYPE")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/pnmtext', 'BUILDING:PANDA',  'FREETYPE']
   TargetAdd('pnmtext_composite.obj', opts=OPTS, input='pnmtext_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/pnmtext', ["*.h", "*_composite.cxx"])
@@ -2259,104 +2236,113 @@ if (PkgSkip("FREETYPE")==0):
 # DIRECTORY: panda/src/text/
 #
 
-OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ']
-TargetAdd('text_composite.obj', opts=OPTS, input='text_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite.cxx"])
-TargetAdd('libtext.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libtext.in', opts=['IMOD:panda', 'ILIB:libtext', 'SRCDIR:panda/src/text'])
-TargetAdd('libtext_igate.obj', input='libtext.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ']
+  TargetAdd('text_composite.obj', opts=OPTS, input='text_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite.cxx"])
+  TargetAdd('libtext.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libtext.in', opts=['IMOD:panda', 'ILIB:libtext', 'SRCDIR:panda/src/text'])
+  TargetAdd('libtext_igate.obj', input='libtext.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/movies/
 #
 
-OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG', 'DX9', 'DIRECTCAM']
-TargetAdd('movies_composite1.obj', opts=OPTS, input='movies_composite1.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite.cxx"])
-TargetAdd('libmovies.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libmovies.in', opts=['IMOD:panda', 'ILIB:libmovies', 'SRCDIR:panda/src/movies'])
-TargetAdd('libmovies_igate.obj', input='libmovies.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG', 'DX9', 'DIRECTCAM']
+  TargetAdd('movies_composite1.obj', opts=OPTS, input='movies_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite.cxx"])
+  TargetAdd('libmovies.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libmovies.in', opts=['IMOD:panda', 'ILIB:libmovies', 'SRCDIR:panda/src/movies'])
+  TargetAdd('libmovies_igate.obj', input='libmovies.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/grutil/
 #
 
-OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ']
-TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
-TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite1.cxx')
-TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
-TargetAdd('libgrutil.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libgrutil.in', opts=['IMOD:panda', 'ILIB:libgrutil', 'SRCDIR:panda/src/grutil'])
-TargetAdd('libgrutil_igate.obj', input='libgrutil.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ']
+  TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
+  TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite1.cxx')
+  TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
+  TargetAdd('libgrutil.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libgrutil.in', opts=['IMOD:panda', 'ILIB:libgrutil', 'SRCDIR:panda/src/grutil'])
+  TargetAdd('libgrutil_igate.obj', input='libgrutil.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/tform/
 #
 
-OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ']
-TargetAdd('tform_composite.obj', opts=OPTS, input='tform_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite.cxx"])
-TargetAdd('libtform.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libtform.in', opts=['IMOD:panda', 'ILIB:libtform', 'SRCDIR:panda/src/tform'])
-TargetAdd('libtform_igate.obj', input='libtform.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ']
+  TargetAdd('tform_composite.obj', opts=OPTS, input='tform_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite.cxx"])
+  TargetAdd('libtform.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libtform.in', opts=['IMOD:panda', 'ILIB:libtform', 'SRCDIR:panda/src/tform'])
+  TargetAdd('libtform_igate.obj', input='libtform.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/collide/
 #
 
-OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA']
-TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ"], input='collide_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
-TargetAdd('libcollide.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libcollide.in', opts=['IMOD:panda', 'ILIB:libcollide', 'SRCDIR:panda/src/collide'])
-TargetAdd('libcollide_igate.obj', input='libcollide.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA']
+  TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ"], input='collide_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
+  TargetAdd('libcollide.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libcollide.in', opts=['IMOD:panda', 'ILIB:libcollide', 'SRCDIR:panda/src/collide'])
+  TargetAdd('libcollide_igate.obj', input='libcollide.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/parametrics/
 #
 
-OPTS=['DIR:panda/src/parametrics', 'BUILDING:PANDA']
-TargetAdd('parametrics_composite.obj', opts=OPTS, input='parametrics_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite.cxx"])
-TargetAdd('libparametrics.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libparametrics.in', opts=['IMOD:panda', 'ILIB:libparametrics', 'SRCDIR:panda/src/parametrics'])
-TargetAdd('libparametrics_igate.obj', input='libparametrics.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/parametrics', 'BUILDING:PANDA']
+  TargetAdd('parametrics_composite.obj', opts=OPTS, input='parametrics_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite.cxx"])
+  TargetAdd('libparametrics.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libparametrics.in', opts=['IMOD:panda', 'ILIB:libparametrics', 'SRCDIR:panda/src/parametrics'])
+  TargetAdd('libparametrics_igate.obj', input='libparametrics.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pgui/
 #
 
-OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA']
-TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ"], input='pgui_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
-TargetAdd('libpgui.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libpgui.in', opts=['IMOD:panda', 'ILIB:libpgui', 'SRCDIR:panda/src/pgui'])
-TargetAdd('libpgui_igate.obj', input='libpgui.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA']
+  TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ"], input='pgui_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpgui.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpgui.in', opts=['IMOD:panda', 'ILIB:libpgui', 'SRCDIR:panda/src/pgui'])
+  TargetAdd('libpgui_igate.obj', input='libpgui.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pnmimagetypes/
 #
 
-OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB',  'JPEG', 'TIFF']
-TargetAdd('pnmimagetypes_composite.obj', opts=OPTS, input='pnmimagetypes_composite.cxx')
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB',  'JPEG', 'TIFF']
+  TargetAdd('pnmimagetypes_composite.obj', opts=OPTS, input='pnmimagetypes_composite.cxx')
 
 #
 # DIRECTORY: panda/src/recorder/
 #
 
-OPTS=['DIR:panda/src/recorder', 'BUILDING:PANDA']
-TargetAdd('recorder_composite.obj', opts=OPTS, input='recorder_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/recorder', ["*.h", "*_composite.cxx"])
-TargetAdd('librecorder.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('librecorder.in', opts=['IMOD:panda', 'ILIB:librecorder', 'SRCDIR:panda/src/recorder'])
-TargetAdd('librecorder_igate.obj', input='librecorder.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/recorder', 'BUILDING:PANDA']
+  TargetAdd('recorder_composite.obj', opts=OPTS, input='recorder_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/recorder', ["*.h", "*_composite.cxx"])
+  TargetAdd('librecorder.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('librecorder.in', opts=['IMOD:panda', 'ILIB:librecorder', 'SRCDIR:panda/src/recorder'])
+  TargetAdd('librecorder_igate.obj', input='librecorder.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/vrpn/
 #
 
-if (PkgSkip("VRPN")==0):
+if (PkgSkip("VRPN")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/vrpn', 'BUILDING:PANDA',  'VRPN']
   TargetAdd('vrpn_composite.obj', opts=OPTS, input='vrpn_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/vrpn', ["*.h", "*_composite.cxx"])
@@ -2368,217 +2354,222 @@ if (PkgSkip("VRPN")==0):
 # DIRECTORY: panda/metalibs/panda/
 #
 
-OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
-    'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
-    'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT', 'OPENCV']
+if (not RUNTIME):
+  OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
+      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
+      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT', 'OPENCV']
 
-TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
+  TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
-TargetAdd('libpanda_module.obj', input='librecorder.in')
-TargetAdd('libpanda_module.obj', input='libpgraphnodes.in')
-TargetAdd('libpanda_module.obj', input='libpgraph.in')
-TargetAdd('libpanda_module.obj', input='libcull.in')
-TargetAdd('libpanda_module.obj', input='libgrutil.in')
-TargetAdd('libpanda_module.obj', input='libchan.in')
-TargetAdd('libpanda_module.obj', input='libpstatclient.in')
-TargetAdd('libpanda_module.obj', input='libchar.in')
-TargetAdd('libpanda_module.obj', input='libcollide.in')
-TargetAdd('libpanda_module.obj', input='libdevice.in')
-TargetAdd('libpanda_module.obj', input='libdgraph.in')
-TargetAdd('libpanda_module.obj', input='libdisplay.in')
-TargetAdd('libpanda_module.obj', input='libpipeline.in')
-TargetAdd('libpanda_module.obj', input='libevent.in')
-TargetAdd('libpanda_module.obj', input='libgobj.in')
-TargetAdd('libpanda_module.obj', input='libgsgbase.in')
-TargetAdd('libpanda_module.obj', input='liblinmath.in')
-TargetAdd('libpanda_module.obj', input='libmathutil.in')
-TargetAdd('libpanda_module.obj', input='libparametrics.in')
-TargetAdd('libpanda_module.obj', input='libpnmimage.in')
-TargetAdd('libpanda_module.obj', input='libtext.in')
-TargetAdd('libpanda_module.obj', input='libtform.in')
-TargetAdd('libpanda_module.obj', input='liblerp.in')
-TargetAdd('libpanda_module.obj', input='libputil.in')
-TargetAdd('libpanda_module.obj', input='libaudio.in')
-TargetAdd('libpanda_module.obj', input='libnativenet.in')
-TargetAdd('libpanda_module.obj', input='libnet.in')
-TargetAdd('libpanda_module.obj', input='libpgui.in')
-TargetAdd('libpanda_module.obj', input='libmovies.in')
+  TargetAdd('libpanda_module.obj', input='librecorder.in')
+  TargetAdd('libpanda_module.obj', input='libpgraphnodes.in')
+  TargetAdd('libpanda_module.obj', input='libpgraph.in')
+  TargetAdd('libpanda_module.obj', input='libcull.in')
+  TargetAdd('libpanda_module.obj', input='libgrutil.in')
+  TargetAdd('libpanda_module.obj', input='libchan.in')
+  TargetAdd('libpanda_module.obj', input='libpstatclient.in')
+  TargetAdd('libpanda_module.obj', input='libchar.in')
+  TargetAdd('libpanda_module.obj', input='libcollide.in')
+  TargetAdd('libpanda_module.obj', input='libdevice.in')
+  TargetAdd('libpanda_module.obj', input='libdgraph.in')
+  TargetAdd('libpanda_module.obj', input='libdisplay.in')
+  TargetAdd('libpanda_module.obj', input='libpipeline.in')
+  TargetAdd('libpanda_module.obj', input='libevent.in')
+  TargetAdd('libpanda_module.obj', input='libgobj.in')
+  TargetAdd('libpanda_module.obj', input='libgsgbase.in')
+  TargetAdd('libpanda_module.obj', input='liblinmath.in')
+  TargetAdd('libpanda_module.obj', input='libmathutil.in')
+  TargetAdd('libpanda_module.obj', input='libparametrics.in')
+  TargetAdd('libpanda_module.obj', input='libpnmimage.in')
+  TargetAdd('libpanda_module.obj', input='libtext.in')
+  TargetAdd('libpanda_module.obj', input='libtform.in')
+  TargetAdd('libpanda_module.obj', input='liblerp.in')
+  TargetAdd('libpanda_module.obj', input='libputil.in')
+  TargetAdd('libpanda_module.obj', input='libaudio.in')
+  TargetAdd('libpanda_module.obj', input='libnativenet.in')
+  TargetAdd('libpanda_module.obj', input='libnet.in')
+  TargetAdd('libpanda_module.obj', input='libpgui.in')
+  TargetAdd('libpanda_module.obj', input='libmovies.in')
 
-TargetAdd('libpanda.dll', input='panda_panda.obj')
-TargetAdd('libpanda.dll', input='libpanda_module.obj')
-TargetAdd('libpanda.dll', input='recorder_composite.obj')
-TargetAdd('libpanda.dll', input='librecorder_igate.obj')
-TargetAdd('libpanda.dll', input='pgraphnodes_composite1.obj')
-TargetAdd('libpanda.dll', input='pgraphnodes_composite2.obj')
-TargetAdd('libpanda.dll', input='libpgraphnodes_igate.obj')
-TargetAdd('libpanda.dll', input='pgraph_nodePath.obj')
-TargetAdd('libpanda.dll', input='pgraph_composite1.obj')
-TargetAdd('libpanda.dll', input='pgraph_composite2.obj')
-TargetAdd('libpanda.dll', input='pgraph_composite3.obj')
-TargetAdd('libpanda.dll', input='pgraph_composite4.obj')
-TargetAdd('libpanda.dll', input='libpgraph_igate.obj')
-TargetAdd('libpanda.dll', input='cull_composite.obj')
-TargetAdd('libpanda.dll', input='movies_composite1.obj')
-TargetAdd('libpanda.dll', input='libmovies_igate.obj')
-TargetAdd('libpanda.dll', input='grutil_multitexReducer.obj')
-TargetAdd('libpanda.dll', input='grutil_composite1.obj')
-TargetAdd('libpanda.dll', input='grutil_composite2.obj')
-TargetAdd('libpanda.dll', input='libgrutil_igate.obj')
-TargetAdd('libpanda.dll', input='chan_composite.obj')
-TargetAdd('libpanda.dll', input='libchan_igate.obj')
-TargetAdd('libpanda.dll', input='pstatclient_composite.obj')
-TargetAdd('libpanda.dll', input='libpstatclient_igate.obj')
-TargetAdd('libpanda.dll', input='char_composite.obj')
-TargetAdd('libpanda.dll', input='libchar_igate.obj')
-TargetAdd('libpanda.dll', input='collide_composite.obj')
-TargetAdd('libpanda.dll', input='libcollide_igate.obj')
-TargetAdd('libpanda.dll', input='device_composite.obj')
-TargetAdd('libpanda.dll', input='libdevice_igate.obj')
-TargetAdd('libpanda.dll', input='dgraph_composite.obj')
-TargetAdd('libpanda.dll', input='libdgraph_igate.obj')
-TargetAdd('libpanda.dll', input='display_composite.obj')
-TargetAdd('libpanda.dll', input='libdisplay_igate.obj')
-TargetAdd('libpanda.dll', input='pipeline_composite.obj')
-TargetAdd('libpanda.dll', input='pipeline_contextSwitch.obj')
-TargetAdd('libpanda.dll', input='libpipeline_igate.obj')
-TargetAdd('libpanda.dll', input='event_composite.obj')
-TargetAdd('libpanda.dll', input='libevent_igate.obj')
-TargetAdd('libpanda.dll', input='gobj_composite1.obj')
-TargetAdd('libpanda.dll', input='gobj_composite2.obj')
-TargetAdd('libpanda.dll', input='libgobj_igate.obj')
-TargetAdd('libpanda.dll', input='gsgbase_composite.obj')
-TargetAdd('libpanda.dll', input='libgsgbase_igate.obj')
-TargetAdd('libpanda.dll', input='linmath_composite.obj')
-TargetAdd('libpanda.dll', input='liblinmath_igate.obj')
-TargetAdd('libpanda.dll', input='mathutil_composite.obj')
-TargetAdd('libpanda.dll', input='libmathutil_igate.obj')
-TargetAdd('libpanda.dll', input='parametrics_composite.obj')
-TargetAdd('libpanda.dll', input='libparametrics_igate.obj')
-TargetAdd('libpanda.dll', input='pnmimagetypes_composite.obj')
-TargetAdd('libpanda.dll', input='pnmimage_composite.obj')
-TargetAdd('libpanda.dll', input='libpnmimage_igate.obj')
-TargetAdd('libpanda.dll', input='text_composite.obj')
-TargetAdd('libpanda.dll', input='libtext_igate.obj')
-TargetAdd('libpanda.dll', input='tform_composite.obj')
-TargetAdd('libpanda.dll', input='libtform_igate.obj')
-TargetAdd('libpanda.dll', input='lerp_composite.obj')
-TargetAdd('libpanda.dll', input='liblerp_igate.obj')
-TargetAdd('libpanda.dll', input='putil_composite1.obj')
-TargetAdd('libpanda.dll', input='putil_composite2.obj')
-TargetAdd('libpanda.dll', input='libputil_igate.obj')
-TargetAdd('libpanda.dll', input='audio_composite.obj')
-TargetAdd('libpanda.dll', input='libaudio_igate.obj')
-TargetAdd('libpanda.dll', input='pgui_composite.obj')
-TargetAdd('libpanda.dll', input='libpgui_igate.obj')
-TargetAdd('libpanda.dll', input='net_composite.obj')
-TargetAdd('libpanda.dll', input='libnet_igate.obj')
-TargetAdd('libpanda.dll', input='nativenet_composite.obj')
-TargetAdd('libpanda.dll', input='libnativenet_igate.obj')
-TargetAdd('libpanda.dll', input='pandabase_pandabase.obj')
-TargetAdd('libpanda.dll', input='libpandaexpress.dll')
-TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
-TargetAdd('libpanda.dll', input='libp3dtool.dll')
+  TargetAdd('libpanda.dll', input='panda_panda.obj')
+  TargetAdd('libpanda.dll', input='libpanda_module.obj')
+  TargetAdd('libpanda.dll', input='recorder_composite.obj')
+  TargetAdd('libpanda.dll', input='librecorder_igate.obj')
+  TargetAdd('libpanda.dll', input='pgraphnodes_composite1.obj')
+  TargetAdd('libpanda.dll', input='pgraphnodes_composite2.obj')
+  TargetAdd('libpanda.dll', input='libpgraphnodes_igate.obj')
+  TargetAdd('libpanda.dll', input='pgraph_nodePath.obj')
+  TargetAdd('libpanda.dll', input='pgraph_composite1.obj')
+  TargetAdd('libpanda.dll', input='pgraph_composite2.obj')
+  TargetAdd('libpanda.dll', input='pgraph_composite3.obj')
+  TargetAdd('libpanda.dll', input='pgraph_composite4.obj')
+  TargetAdd('libpanda.dll', input='libpgraph_igate.obj')
+  TargetAdd('libpanda.dll', input='cull_composite.obj')
+  TargetAdd('libpanda.dll', input='movies_composite1.obj')
+  TargetAdd('libpanda.dll', input='libmovies_igate.obj')
+  TargetAdd('libpanda.dll', input='grutil_multitexReducer.obj')
+  TargetAdd('libpanda.dll', input='grutil_composite1.obj')
+  TargetAdd('libpanda.dll', input='grutil_composite2.obj')
+  TargetAdd('libpanda.dll', input='libgrutil_igate.obj')
+  TargetAdd('libpanda.dll', input='chan_composite.obj')
+  TargetAdd('libpanda.dll', input='libchan_igate.obj')
+  TargetAdd('libpanda.dll', input='pstatclient_composite.obj')
+  TargetAdd('libpanda.dll', input='libpstatclient_igate.obj')
+  TargetAdd('libpanda.dll', input='char_composite.obj')
+  TargetAdd('libpanda.dll', input='libchar_igate.obj')
+  TargetAdd('libpanda.dll', input='collide_composite.obj')
+  TargetAdd('libpanda.dll', input='libcollide_igate.obj')
+  TargetAdd('libpanda.dll', input='device_composite.obj')
+  TargetAdd('libpanda.dll', input='libdevice_igate.obj')
+  TargetAdd('libpanda.dll', input='dgraph_composite.obj')
+  TargetAdd('libpanda.dll', input='libdgraph_igate.obj')
+  TargetAdd('libpanda.dll', input='display_composite.obj')
+  TargetAdd('libpanda.dll', input='libdisplay_igate.obj')
+  TargetAdd('libpanda.dll', input='pipeline_composite.obj')
+  TargetAdd('libpanda.dll', input='pipeline_contextSwitch.obj')
+  TargetAdd('libpanda.dll', input='libpipeline_igate.obj')
+  TargetAdd('libpanda.dll', input='event_composite.obj')
+  TargetAdd('libpanda.dll', input='libevent_igate.obj')
+  TargetAdd('libpanda.dll', input='gobj_composite1.obj')
+  TargetAdd('libpanda.dll', input='gobj_composite2.obj')
+  TargetAdd('libpanda.dll', input='libgobj_igate.obj')
+  TargetAdd('libpanda.dll', input='gsgbase_composite.obj')
+  TargetAdd('libpanda.dll', input='libgsgbase_igate.obj')
+  TargetAdd('libpanda.dll', input='linmath_composite.obj')
+  TargetAdd('libpanda.dll', input='liblinmath_igate.obj')
+  TargetAdd('libpanda.dll', input='mathutil_composite.obj')
+  TargetAdd('libpanda.dll', input='libmathutil_igate.obj')
+  TargetAdd('libpanda.dll', input='parametrics_composite.obj')
+  TargetAdd('libpanda.dll', input='libparametrics_igate.obj')
+  TargetAdd('libpanda.dll', input='pnmimagetypes_composite.obj')
+  TargetAdd('libpanda.dll', input='pnmimage_composite.obj')
+  TargetAdd('libpanda.dll', input='libpnmimage_igate.obj')
+  TargetAdd('libpanda.dll', input='text_composite.obj')
+  TargetAdd('libpanda.dll', input='libtext_igate.obj')
+  TargetAdd('libpanda.dll', input='tform_composite.obj')
+  TargetAdd('libpanda.dll', input='libtform_igate.obj')
+  TargetAdd('libpanda.dll', input='lerp_composite.obj')
+  TargetAdd('libpanda.dll', input='liblerp_igate.obj')
+  TargetAdd('libpanda.dll', input='putil_composite1.obj')
+  TargetAdd('libpanda.dll', input='putil_composite2.obj')
+  TargetAdd('libpanda.dll', input='libputil_igate.obj')
+  TargetAdd('libpanda.dll', input='audio_composite.obj')
+  TargetAdd('libpanda.dll', input='libaudio_igate.obj')
+  TargetAdd('libpanda.dll', input='pgui_composite.obj')
+  TargetAdd('libpanda.dll', input='libpgui_igate.obj')
+  TargetAdd('libpanda.dll', input='net_composite.obj')
+  TargetAdd('libpanda.dll', input='libnet_igate.obj')
+  TargetAdd('libpanda.dll', input='nativenet_composite.obj')
+  TargetAdd('libpanda.dll', input='libnativenet_igate.obj')
+  TargetAdd('libpanda.dll', input='pandabase_pandabase.obj')
+  TargetAdd('libpanda.dll', input='libpandaexpress.dll')
+  TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
+  TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
-if PkgSkip("VRPN")==0:
-  TargetAdd('libpanda.dll', input="vrpn_composite.obj")
-  TargetAdd('libpanda.dll', input="libvrpn_igate.obj")
-  TargetAdd('libpanda_module.obj', input='libvrpn.in')
+  if PkgSkip("VRPN")==0:
+    TargetAdd('libpanda.dll', input="vrpn_composite.obj")
+    TargetAdd('libpanda.dll', input="libvrpn_igate.obj")
+    TargetAdd('libpanda_module.obj', input='libvrpn.in')
 
-if PkgSkip("FREETYPE")==0:
-  TargetAdd('libpanda.dll', input="pnmtext_composite.obj")
-  TargetAdd('libpanda.dll', input="libpnmtext_igate.obj")
-  TargetAdd('libpanda_module.obj', input='libpnmtext.in')
+  if PkgSkip("FREETYPE")==0:
+    TargetAdd('libpanda.dll', input="pnmtext_composite.obj")
+    TargetAdd('libpanda.dll', input="libpnmtext_igate.obj")
+    TargetAdd('libpanda_module.obj', input='libpnmtext.in')
 
-TargetAdd('libpanda_module.obj', opts=OPTS)
-TargetAdd('libpanda_module.obj', opts=['IMOD:panda', 'ILIB:libpanda'])
+  TargetAdd('libpanda_module.obj', opts=OPTS)
+  TargetAdd('libpanda_module.obj', opts=['IMOD:panda', 'ILIB:libpanda'])
 
-TargetAdd('libpanda.dll', dep='dtool_have_vrpn.dat')
-TargetAdd('libpanda.dll', dep='dtool_have_freetype.dat')
-TargetAdd('libpanda.dll', opts=OPTS)
-
-#
-# DIRECTORY: panda/src/skel
-#
-
-OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
-TargetAdd('skel_composite.obj', opts=OPTS, input='skel_composite.cxx')
-IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite.cxx"])
-TargetAdd('libskel.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libskel.in', opts=['IMOD:pandaskel', 'ILIB:libskel', 'SRCDIR:panda/src/skel'])
-TargetAdd('libskel_igate.obj', input='libskel.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('libpanda.dll', dep='dtool_have_vrpn.dat')
+  TargetAdd('libpanda.dll', dep='dtool_have_freetype.dat')
+  TargetAdd('libpanda.dll', opts=OPTS)
 
 #
 # DIRECTORY: panda/src/skel
 #
 
-OPTS=['BUILDING:PANDASKEL', 'ADVAPI']
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
+  TargetAdd('skel_composite.obj', opts=OPTS, input='skel_composite.cxx')
+  IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite.cxx"])
+  TargetAdd('libskel.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libskel.in', opts=['IMOD:pandaskel', 'ILIB:libskel', 'SRCDIR:panda/src/skel'])
+  TargetAdd('libskel_igate.obj', input='libskel.in', opts=["DEPENDENCYONLY"])
 
-TargetAdd('libpandaskel_module.obj', input='libskel.in')
-TargetAdd('libpandaskel_module.obj', opts=OPTS)
-TargetAdd('libpandaskel_module.obj', opts=['IMOD:pandaskel', 'ILIB:libpandaskel'])
+#
+# DIRECTORY: panda/src/skel
+#
 
-TargetAdd('libpandaskel.dll', input='skel_composite.obj')
-TargetAdd('libpandaskel.dll', input='libskel_igate.obj')
-TargetAdd('libpandaskel.dll', input='libpandaskel_module.obj')
-TargetAdd('libpandaskel.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libpandaskel.dll', opts=OPTS)
+if (not RUNTIME):
+  OPTS=['BUILDING:PANDASKEL', 'ADVAPI']
+
+  TargetAdd('libpandaskel_module.obj', input='libskel.in')
+  TargetAdd('libpandaskel_module.obj', opts=OPTS)
+  TargetAdd('libpandaskel_module.obj', opts=['IMOD:pandaskel', 'ILIB:libpandaskel'])
+
+  TargetAdd('libpandaskel.dll', input='skel_composite.obj')
+  TargetAdd('libpandaskel.dll', input='libskel_igate.obj')
+  TargetAdd('libpandaskel.dll', input='libpandaskel_module.obj')
+  TargetAdd('libpandaskel.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandaskel.dll', opts=OPTS)
 
 #
 # DIRECTORY: panda/src/distort/
 #
 
-OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
-TargetAdd('distort_composite.obj', opts=OPTS, input='distort_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite.cxx"])
-TargetAdd('libdistort.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libdistort.in', opts=['IMOD:pandafx', 'ILIB:libdistort', 'SRCDIR:panda/src/distort'])
-TargetAdd('libdistort_igate.obj', input='libdistort.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
+  TargetAdd('distort_composite.obj', opts=OPTS, input='distort_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite.cxx"])
+  TargetAdd('libdistort.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdistort.in', opts=['IMOD:pandafx', 'ILIB:libdistort', 'SRCDIR:panda/src/distort'])
+  TargetAdd('libdistort_igate.obj', input='libdistort.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/effects/
 #
 
-OPTS=['DIR:panda/src/effects', 'BUILDING:PANDAFX',  'NVIDIACG']
-TargetAdd('effects_composite.obj', opts=OPTS, input='effects_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/effects', ["*.h", "*_composite.cxx"])
-TargetAdd('libeffects.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libeffects.in', opts=['IMOD:pandafx', 'ILIB:libeffects', 'SRCDIR:panda/src/effects'])
-TargetAdd('libeffects_igate.obj', input='libeffects.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/effects', 'BUILDING:PANDAFX',  'NVIDIACG']
+  TargetAdd('effects_composite.obj', opts=OPTS, input='effects_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/effects', ["*.h", "*_composite.cxx"])
+  TargetAdd('libeffects.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libeffects.in', opts=['IMOD:pandafx', 'ILIB:libeffects', 'SRCDIR:panda/src/effects'])
+  TargetAdd('libeffects_igate.obj', input='libeffects.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/metalibs/pandafx/
 #
 
-OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
-TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
+if (not RUNTIME):
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
+  TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
-TargetAdd('libpandafx_module.obj', input='libdistort.in')
-TargetAdd('libpandafx_module.obj', input='libeffects.in')
-TargetAdd('libpandafx_module.obj', opts=OPTS)
-TargetAdd('libpandafx_module.obj', opts=['IMOD:pandafx', 'ILIB:libpandafx'])
+  TargetAdd('libpandafx_module.obj', input='libdistort.in')
+  TargetAdd('libpandafx_module.obj', input='libeffects.in')
+  TargetAdd('libpandafx_module.obj', opts=OPTS)
+  TargetAdd('libpandafx_module.obj', opts=['IMOD:pandafx', 'ILIB:libpandafx'])
 
-TargetAdd('libpandafx.dll', input='pandafx_pandafx.obj')
-TargetAdd('libpandafx.dll', input='libpandafx_module.obj')
-TargetAdd('libpandafx.dll', input='distort_composite.obj')
-TargetAdd('libpandafx.dll', input='libdistort_igate.obj')
-TargetAdd('libpandafx.dll', input='effects_composite.obj')
-TargetAdd('libpandafx.dll', input='libeffects_igate.obj')
-TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
-
+  TargetAdd('libpandafx.dll', input='pandafx_pandafx.obj')
+  TargetAdd('libpandafx.dll', input='libpandafx_module.obj')
+  TargetAdd('libpandafx.dll', input='distort_composite.obj')
+  TargetAdd('libpandafx.dll', input='libdistort_igate.obj')
+  TargetAdd('libpandafx.dll', input='effects_composite.obj')
+  TargetAdd('libpandafx.dll', input='libeffects_igate.obj')
+  TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
 
 #
 # DIRECTORY: panda/src/audiotraits/
 #
 
-if PkgSkip("FMODEX") == 0:
+if PkgSkip("FMODEX") == 0 and not RUNTIME:
   OPTS=['DIR:panda/src/audiotraits', 'BUILDING:FMOD_AUDIO',  'FMODEX']
   TargetAdd('fmod_audio_fmod_audio_composite.obj', opts=OPTS, input='fmod_audio_composite.cxx')
   TargetAdd('libp3fmod_audio.dll', input='fmod_audio_fmod_audio_composite.obj')
   TargetAdd('libp3fmod_audio.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3fmod_audio.dll', opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMODEX'])
 
-if PkgSkip("OPENAL") == 0:
+if PkgSkip("OPENAL") == 0 and not RUNTIME:
   OPTS=['DIR:panda/src/audiotraits', 'BUILDING:OPENAL_AUDIO',  'OPENAL']
   TargetAdd('openal_audio_openal_audio_composite.obj', opts=OPTS, input='openal_audio_composite.cxx')
   TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite.obj')
@@ -2589,7 +2580,7 @@ if PkgSkip("OPENAL") == 0:
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if (PkgSkip("OPENSSL")==0 and not RUNTIME):
+if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME):
   OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI']
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
@@ -2636,7 +2627,7 @@ if (PkgSkip("OPENSSL")==0 and not RUNTIME):
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if (PkgSkip("ZLIB")==0 and not RUNTIME):
+if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME):
   OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
@@ -2658,7 +2649,7 @@ if (PkgSkip("ZLIB")==0 and not RUNTIME):
 # DIRECTORY: panda/src/windisplay/
 #
 
-if (sys.platform.startswith("win")):
+if (sys.platform.startswith("win") and not RUNTIME):
   OPTS=['DIR:panda/src/windisplay', 'BUILDING:PANDAWIN']
   TargetAdd('windisplay_composite.obj', opts=OPTS+["BIGOBJ"], input='windisplay_composite.cxx')
   TargetAdd('windisplay_windetectdx8.obj', opts=OPTS + ["DX8"], input='winDetectDx8.cxx')
@@ -2673,7 +2664,7 @@ if (sys.platform.startswith("win")):
 # DIRECTORY: panda/metalibs/pandadx8/
 #
 
-if PkgSkip("DX8")==0:
+if PkgSkip("DX8")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg8', 'DIR:panda/metalibs/pandadx8', 'BUILDING:PANDADX', 'DX8']
   TargetAdd('dxgsg8_dxGraphicsStateGuardian8.obj', opts=OPTS, input='dxGraphicsStateGuardian8.cxx')
   TargetAdd('dxgsg8_composite.obj', opts=OPTS, input='dxgsg8_composite.cxx')
@@ -2689,7 +2680,7 @@ if PkgSkip("DX8")==0:
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if PkgSkip("DX9")==0:
+if PkgSkip("DX9")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
   TargetAdd('dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('dxgsg9_composite.obj', opts=OPTS, input='dxgsg9_composite.cxx')
@@ -2706,88 +2697,94 @@ if PkgSkip("DX9")==0:
 # DIRECTORY: panda/src/egg/
 #
 
-OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG',  'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI']
-CreateFile(GetOutputDir()+"/include/parser.h")
-TargetAdd('egg_parser.obj', opts=OPTS, input='parser.yxx')
-TargetAdd('parser.h', input='egg_parser.obj', opts=['DEPENDENCYONLY'])
-TargetAdd('egg_lexer.obj', opts=OPTS, input='lexer.lxx')
-TargetAdd('egg_composite1.obj', opts=OPTS, input='egg_composite1.cxx')
-TargetAdd('egg_composite2.obj', opts=OPTS, input='egg_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite.cxx"])
-if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
-TargetAdd('libegg.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libegg.in', opts=['IMOD:pandaegg', 'ILIB:libegg', 'SRCDIR:panda/src/egg'])
-TargetAdd('libegg_igate.obj', input='libegg.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG',  'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI']
+  CreateFile(GetOutputDir()+"/include/parser.h")
+  TargetAdd('egg_parser.obj', opts=OPTS, input='parser.yxx')
+  TargetAdd('parser.h', input='egg_parser.obj', opts=['DEPENDENCYONLY'])
+  TargetAdd('egg_lexer.obj', opts=OPTS, input='lexer.lxx')
+  TargetAdd('egg_composite1.obj', opts=OPTS, input='egg_composite1.cxx')
+  TargetAdd('egg_composite2.obj', opts=OPTS, input='egg_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite.cxx"])
+  if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
+  TargetAdd('libegg.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libegg.in', opts=['IMOD:pandaegg', 'ILIB:libegg', 'SRCDIR:panda/src/egg'])
+  TargetAdd('libegg_igate.obj', input='libegg.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/egg2pg/
 #
 
-OPTS=['DIR:panda/src/egg2pg', 'BUILDING:PANDAEGG']
-TargetAdd('egg2pg_composite.obj', opts=OPTS, input='egg2pg_composite.cxx')
-IGATEFILES=['load_egg_file.h']
-TargetAdd('libegg2pg.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libegg2pg.in', opts=['IMOD:pandaegg', 'ILIB:libegg2pg', 'SRCDIR:panda/src/egg2pg'])
-TargetAdd('libegg2pg_igate.obj', input='libegg2pg.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/egg2pg', 'BUILDING:PANDAEGG']
+  TargetAdd('egg2pg_composite.obj', opts=OPTS, input='egg2pg_composite.cxx')
+  IGATEFILES=['load_egg_file.h']
+  TargetAdd('libegg2pg.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libegg2pg.in', opts=['IMOD:pandaegg', 'ILIB:libegg2pg', 'SRCDIR:panda/src/egg2pg'])
+  TargetAdd('libegg2pg_igate.obj', input='libegg2pg.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/framework/
 #
 
-OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK']
-TargetAdd('framework_composite.obj', opts=OPTS, input='framework_composite.cxx')
-TargetAdd('libp3framework.dll', input='framework_composite.obj')
-TargetAdd('libp3framework.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libp3framework.dll', opts=['ADVAPI'])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/framework', 'BUILDING:FRAMEWORK']
+  TargetAdd('framework_composite.obj', opts=OPTS, input='framework_composite.cxx')
+  TargetAdd('libp3framework.dll', input='framework_composite.obj')
+  TargetAdd('libp3framework.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 
 #
 # DIRECTORY: panda/src/glstuff/
 #
 
-OPTS=['DIR:panda/src/glstuff',  'NVIDIACG', 'CGGL']
-TargetAdd('glstuff_glpure.obj', opts=OPTS, input='glpure.cxx')
-TargetAdd('libp3glstuff.dll', input='glstuff_glpure.obj')
-TargetAdd('libp3glstuff.dll', input='libpandafx.dll')
-TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'GLUT',  'NVIDIACG', 'CGGL'])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/glstuff',  'NVIDIACG', 'CGGL']
+  TargetAdd('glstuff_glpure.obj', opts=OPTS, input='glpure.cxx')
+  TargetAdd('libp3glstuff.dll', input='glstuff_glpure.obj')
+  TargetAdd('libp3glstuff.dll', input='libpandafx.dll')
+  TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'GLUT',  'NVIDIACG', 'CGGL'])
 
 #
 # DIRECTORY: panda/src/glgsg/
 #
 
-OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'DIR:panda/src/gobj', 'BUILDING:PANDAGL',  'NVIDIACG']
-TargetAdd('glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
-TargetAdd('glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'DIR:panda/src/gobj', 'BUILDING:PANDAGL',  'NVIDIACG']
+  TargetAdd('glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
+  TargetAdd('glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaegg/
 #
 
-OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg', 'BUILDING:PANDAEGG']
-TargetAdd('pandaegg_pandaegg.obj', opts=OPTS, input='pandaegg.cxx')
+if (not RUNTIME):
+  OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg', 'BUILDING:PANDAEGG']
+  TargetAdd('pandaegg_pandaegg.obj', opts=OPTS, input='pandaegg.cxx')
 
-TargetAdd('libpandaegg_module.obj', input='libegg2pg.in')
-TargetAdd('libpandaegg_module.obj', input='libegg.in')
-TargetAdd('libpandaegg_module.obj', opts=OPTS)
-TargetAdd('libpandaegg_module.obj', opts=['IMOD:pandaegg', 'ILIB:libpandaegg'])
+  TargetAdd('libpandaegg_module.obj', input='libegg2pg.in')
+  TargetAdd('libpandaegg_module.obj', input='libegg.in')
+  TargetAdd('libpandaegg_module.obj', opts=OPTS)
+  TargetAdd('libpandaegg_module.obj', opts=['IMOD:pandaegg', 'ILIB:libpandaegg'])
 
-TargetAdd('libpandaegg.dll', input='pandaegg_pandaegg.obj')
-TargetAdd('libpandaegg.dll', input='libpandaegg_module.obj')
-TargetAdd('libpandaegg.dll', input='egg2pg_composite.obj')
-TargetAdd('libpandaegg.dll', input='libegg2pg_igate.obj')
-TargetAdd('libpandaegg.dll', input='egg_composite1.obj')
-TargetAdd('libpandaegg.dll', input='egg_composite2.obj')
-TargetAdd('libpandaegg.dll', input='egg_parser.obj')
-TargetAdd('libpandaegg.dll', input='egg_lexer.obj')
-TargetAdd('libpandaegg.dll', input='libegg_igate.obj')
-TargetAdd('libpandaegg.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
+  TargetAdd('libpandaegg.dll', input='pandaegg_pandaegg.obj')
+  TargetAdd('libpandaegg.dll', input='libpandaegg_module.obj')
+  TargetAdd('libpandaegg.dll', input='egg2pg_composite.obj')
+  TargetAdd('libpandaegg.dll', input='libegg2pg_igate.obj')
+  TargetAdd('libpandaegg.dll', input='egg_composite1.obj')
+  TargetAdd('libpandaegg.dll', input='egg_composite2.obj')
+  TargetAdd('libpandaegg.dll', input='egg_parser.obj')
+  TargetAdd('libpandaegg.dll', input='egg_lexer.obj')
+  TargetAdd('libpandaegg.dll', input='libegg_igate.obj')
+  TargetAdd('libpandaegg.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 
 #
 # DIRECTORY: panda/src/mesadisplay/
 #
 
-if (not sys.platform.startswith("win")):
+if (not sys.platform.startswith("win") and not RUNTIME):
   OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
@@ -2801,7 +2798,7 @@ if (not sys.platform.startswith("win")):
 # DIRECTORY: panda/src/x11display/
 #
 
-if (sys.platform != "win32" and sys.platform != "darwin"):
+if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
   OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11', 'X11']
   TargetAdd('x11display_composite.obj', opts=OPTS, input='x11display_composite.cxx')
 
@@ -2809,7 +2806,7 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if (sys.platform != "win32" and sys.platform != "darwin"):
+if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
   OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
   TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
@@ -2828,7 +2825,7 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
 # DIRECTORY: panda/src/osxdisplay/
 #
 
-if (sys.platform == 'darwin'):
+if (sys.platform == 'darwin' and not RUNTIME):
   OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
   TargetAdd('osxdisplay_composite1.obj', opts=OPTS, input='osxdisplay_composite1.cxx')
   TargetAdd('osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
@@ -2848,7 +2845,7 @@ if (sys.platform == 'darwin'):
 # DIRECTORY: panda/src/wgldisplay/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform == "win32" and not RUNTIME):
   OPTS=['DIR:panda/src/wgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
   TargetAdd('wgldisplay_composite.obj', opts=OPTS, input='wgldisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
@@ -2866,7 +2863,7 @@ if (sys.platform == "win32"):
 #
 # DIRECTORY: panda/src/ode/
 #
-if (PkgSkip("ODE")==0):
+if (PkgSkip("ODE")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/ode', 'BUILDING:PANDAODE', 'ODE']
   TargetAdd('pode_composite1.obj', opts=OPTS, input='pode_composite1.cxx')
   TargetAdd('pode_composite2.obj', opts=OPTS, input='pode_composite2.cxx')
@@ -2882,7 +2879,7 @@ if (PkgSkip("ODE")==0):
 #
 # DIRECTORY: panda/metalibs/pandaode/
 #
-if (PkgSkip("ODE")==0):
+if (PkgSkip("ODE")==0 and not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandaode', 'BUILDING:PANDAODE', 'ODE']
   TargetAdd('pandaode_pandaode.obj', opts=OPTS, input='pandaode.cxx')
   
@@ -2903,55 +2900,58 @@ if (PkgSkip("ODE")==0):
 # DIRECTORY: panda/src/physics/
 #
 
-OPTS=['DIR:panda/src/physics', 'BUILDING:PANDAPHYSICS']
-TargetAdd('physics_composite.obj', opts=OPTS, input='physics_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/physics', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove("forces.h")
-TargetAdd('libphysics.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libphysics.in', opts=['IMOD:pandaphysics', 'ILIB:libphysics', 'SRCDIR:panda/src/physics'])
-TargetAdd('libphysics_igate.obj', input='libphysics.in', opts=["DEPENDENCYONLY"])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/physics', 'BUILDING:PANDAPHYSICS']
+  TargetAdd('physics_composite.obj', opts=OPTS, input='physics_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/physics', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove("forces.h")
+  TargetAdd('libphysics.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libphysics.in', opts=['IMOD:pandaphysics', 'ILIB:libphysics', 'SRCDIR:panda/src/physics'])
+  TargetAdd('libphysics_igate.obj', input='libphysics.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/particlesystem/
 #
 
-OPTS=['DIR:panda/src/particlesystem', 'BUILDING:PANDAPHYSICS']
-TargetAdd('particlesystem_composite.obj', opts=OPTS, input='particlesystem_composite.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/particlesystem', ["*.h", "*_composite.cxx"])
-IGATEFILES.remove('orientedParticle.h')
-IGATEFILES.remove('orientedParticleFactory.h')
-IGATEFILES.remove('particlefactories.h')
-IGATEFILES.remove('emitters.h')
-IGATEFILES.remove('particles.h')
-TargetAdd('libparticlesystem.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libparticlesystem.in', opts=['IMOD:pandaphysics', 'ILIB:libparticlesystem', 'SRCDIR:panda/src/particlesystem'])
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/particlesystem', 'BUILDING:PANDAPHYSICS']
+  TargetAdd('particlesystem_composite.obj', opts=OPTS, input='particlesystem_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/particlesystem', ["*.h", "*_composite.cxx"])
+  IGATEFILES.remove('orientedParticle.h')
+  IGATEFILES.remove('orientedParticleFactory.h')
+  IGATEFILES.remove('particlefactories.h')
+  IGATEFILES.remove('emitters.h')
+  IGATEFILES.remove('particles.h')
+  TargetAdd('libparticlesystem.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libparticlesystem.in', opts=['IMOD:pandaphysics', 'ILIB:libparticlesystem', 'SRCDIR:panda/src/particlesystem'])
 
 #
 # DIRECTORY: panda/metalibs/pandaphysics/
 #
 
-OPTS=['DIR:panda/metalibs/pandaphysics', 'BUILDING:PANDAPHYSICS']
-TargetAdd('pandaphysics_pandaphysics.obj', opts=OPTS, input='pandaphysics.cxx')
+if (not RUNTIME):
+  OPTS=['DIR:panda/metalibs/pandaphysics', 'BUILDING:PANDAPHYSICS']
+  TargetAdd('pandaphysics_pandaphysics.obj', opts=OPTS, input='pandaphysics.cxx')
 
-TargetAdd('libpandaphysics_module.obj', input='libphysics.in')
-TargetAdd('libpandaphysics_module.obj', input='libparticlesystem.in')
-TargetAdd('libpandaphysics_module.obj', opts=OPTS)
-TargetAdd('libpandaphysics_module.obj', opts=['IMOD:pandaphysics', 'ILIB:libpandaphysics'])
+  TargetAdd('libpandaphysics_module.obj', input='libphysics.in')
+  TargetAdd('libpandaphysics_module.obj', input='libparticlesystem.in')
+  TargetAdd('libpandaphysics_module.obj', opts=OPTS)
+  TargetAdd('libpandaphysics_module.obj', opts=['IMOD:pandaphysics', 'ILIB:libpandaphysics'])
 
-TargetAdd('libpandaphysics.dll', input='pandaphysics_pandaphysics.obj')
-TargetAdd('libpandaphysics.dll', input='libpandaphysics_module.obj')
-TargetAdd('libpandaphysics.dll', input='physics_composite.obj')
-TargetAdd('libpandaphysics.dll', input='libphysics_igate.obj')
-TargetAdd('libpandaphysics.dll', input='particlesystem_composite.obj')
-TargetAdd('libpandaphysics.dll', input='libparticlesystem_igate.obj')
-TargetAdd('libpandaphysics.dll', input=COMMON_PANDA_LIBS)
-TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
+  TargetAdd('libpandaphysics.dll', input='pandaphysics_pandaphysics.obj')
+  TargetAdd('libpandaphysics.dll', input='libpandaphysics_module.obj')
+  TargetAdd('libpandaphysics.dll', input='physics_composite.obj')
+  TargetAdd('libpandaphysics.dll', input='libphysics_igate.obj')
+  TargetAdd('libpandaphysics.dll', input='particlesystem_composite.obj')
+  TargetAdd('libpandaphysics.dll', input='libparticlesystem_igate.obj')
+  TargetAdd('libpandaphysics.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
 
 #
 # DIRECTORY: panda/src/testbed/
 #
 
-if (not RUNTIME):
+if (not RTDIST and not RUNTIME):
   OPTS=['DIR:panda/src/testbed']
   TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
   TargetAdd('pview.exe', input='pview_pview.obj')
@@ -2964,32 +2964,33 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/tinydisplay/
 #
 
-OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
-TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
-TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
-TargetAdd('tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
-TargetAdd('tinydisplay_ztriangle_2.obj', opts=OPTS, input='ztriangle_2.cxx')
-TargetAdd('tinydisplay_ztriangle_3.obj', opts=OPTS, input='ztriangle_3.cxx')
-TargetAdd('tinydisplay_ztriangle_4.obj', opts=OPTS, input='ztriangle_4.cxx')
-TargetAdd('tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.cxx')
-if (sys.platform == "darwin"):
-  TargetAdd('tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
-  TargetAdd('libtinydisplay.dll', input='tinydisplay_tinyOsxGraphicsWindow.obj')
-  TargetAdd('libtinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
-elif (sys.platform == "win32"):
-  TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
-  TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
-else:
-  TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
-  TargetAdd('libtinydisplay.dll', opts=['X11', 'XF86DGA'])
-TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_2.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_3.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_4.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_table.obj')
-TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
+  TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
+  TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
+  TargetAdd('tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
+  TargetAdd('tinydisplay_ztriangle_2.obj', opts=OPTS, input='ztriangle_2.cxx')
+  TargetAdd('tinydisplay_ztriangle_3.obj', opts=OPTS, input='ztriangle_3.cxx')
+  TargetAdd('tinydisplay_ztriangle_4.obj', opts=OPTS, input='ztriangle_4.cxx')
+  TargetAdd('tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.cxx')
+  if (sys.platform == "darwin"):
+    TargetAdd('tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
+    TargetAdd('libtinydisplay.dll', input='tinydisplay_tinyOsxGraphicsWindow.obj')
+    TargetAdd('libtinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
+  elif (sys.platform == "win32"):
+    TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
+    TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
+  else:
+    TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
+    TargetAdd('libtinydisplay.dll', opts=['X11', 'XF86DGA'])
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_2.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_3.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_4.obj')
+  TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_table.obj')
+  TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: direct/src/directbase/
@@ -2999,7 +3000,7 @@ if (PkgSkip("PYTHON")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
-  if (not RUNTIME):
+  if (not RTDIST and not RUNTIME):
     DefSymbol("BUILDING:PACKPANDA", "IMPORT_MODULE", "direct.directscripts.packpanda")
     TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
     TargetAdd('packpanda.exe', input='packpanda.obj')
@@ -3135,7 +3136,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/dcparse/
 #
 
-if (PkgSkip("PYTHON")==0 and not RUNTIME):
+if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
   OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI']
   TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
@@ -3159,12 +3160,12 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/plugin/
 #
 
-if (RUNTIME):
+if (RTDIST or RUNTIME):
   # Explicitly define this as we don't include dtool_config.h here.
   if (sys.platform != "darwin" and not sys.platform.startswith("win")):
-    DefSymbol("PLUGIN", "HAVE_X11", "1")
+    DefSymbol("RUNTIME", "HAVE_X11", "1")
   
-  OPTS=['DIR:direct/src/plugin', 'PLUGIN', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
   
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
@@ -3177,18 +3178,19 @@ if (RUNTIME):
   TargetAdd('plugin_fileSpec.obj', opts=OPTS, input='fileSpec.cxx')
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
-  TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_mkdir_complete.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir.obj')
-  if (sys.platform == "darwin"):
-    TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir_assist.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_fileSpec.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
-  TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
-  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+  if (RTDIST):
+    TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_mkdir_complete.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir.obj')
+    if (sys.platform == "darwin"):
+      TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir_assist.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_fileSpec.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
+    TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
+    TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
-  if (PkgSkip("PYTHON")==0):
+  if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
     TargetAdd('plugin_p3dPythonRun.obj', opts=OPTS, input='p3dPythonRun.cxx')
     TargetAdd('plugin_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
@@ -3203,7 +3205,7 @@ if (RUNTIME):
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
-  if (PkgSkip("OPENSSL")==0):
+  if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
     TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
     TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
@@ -3214,7 +3216,7 @@ if (RUNTIME):
 #
 
 if (RUNTIME and PkgSkip("NPAPI")==0):
-  OPTS=['DIR:direct/src/plugin_npapi', 'PLUGIN']
+  OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME']
   if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
   elif (sys.platform=="darwin"):
@@ -3242,7 +3244,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
 #
 
 #if (RUNTIME and sys.platform.startswith("win")):
-#  OPTS=['DIR:direct/src/plugin_activex', 'PLUGIN', 'ACTIVEX', 'TINYXML']
+#  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX', 'TINYXML']
 #  DefSymbol('ACTIVEX', '_USRDLL', '')
 #  DefSymbol('ACTIVEX', '_WINDLL', '')
 #  DefSymbol('ACTIVEX', '_AFXDLL', '')
@@ -3262,28 +3264,29 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
 #
 
 if (RUNTIME):
-  OPTS=['DIR:direct/src/plugin_standalone', 'PLUGIN', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
-  if (sys.platform != "darwin"):
-    TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
-    TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
-    TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
-    TargetAdd('panda3d.exe', input='plugin_common.obj')
-    TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
-    TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
-    TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
-    TargetAdd('panda3d.exe', input='libp3pystub_s.ilb')
-    TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
-  else:
+  
+  TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
+  TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
+  TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
+  TargetAdd('panda3d.exe', input='plugin_common.obj')
+  TargetAdd('panda3d.exe', input='libpandaexpress.dll')
+  TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
+  TargetAdd('panda3d.exe', input='libp3dtool.dll')
+  TargetAdd('panda3d.exe', input='libp3pystub.dll')
+  TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  
+  if (sys.platform == "darwin"):
     TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
     TargetAdd('Panda3D.app', input='plugin_standalone_panda3d.obj')
     TargetAdd('Panda3D.app', input='plugin_standalone_panda3dMac.obj')
     TargetAdd('Panda3D.app', input='plugin_common.obj')
     TargetAdd('Panda3D.app', input='plugin_find_root_dir_assist.obj')
-    TargetAdd('Panda3D.app', input='libpandaexpress_s.ilb')
-    TargetAdd('Panda3D.app', input='libp3dtoolconfig_s.ilb')
-    TargetAdd('Panda3D.app', input='libp3dtool_s.ilb')
-    TargetAdd('Panda3D.app', input='libp3pystub_s.ilb')
+    TargetAdd('Panda3D.app', input='libpandaexpress.dll')
+    TargetAdd('Panda3D.app', input='libp3dtoolconfig.dll')
+    TargetAdd('Panda3D.app', input='libp3dtool.dll')
+    TargetAdd('Panda3D.app', input='libp3pystub.dll')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
     TargetAdd('Panda3D.app', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
@@ -3293,10 +3296,10 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
     TargetAdd('panda3dw.exe', input='plugin_common.obj')
-    TargetAdd('panda3dw.exe', input='libpandaexpress_s.ilb')
-    TargetAdd('panda3dw.exe', input='libp3dtoolconfig_s.ilb')
-    TargetAdd('panda3dw.exe', input='libp3dtool_s.ilb')
-    TargetAdd('panda3dw.exe', input='libp3pystub_s.ilb')
+    TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
+    TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
+    TargetAdd('panda3dw.exe', input='libp3dtool.dll')
+    TargetAdd('panda3dw.exe', input='libp3pystub.dll')
     TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 #
@@ -4104,15 +4107,6 @@ if (PkgSkip("PYTHON")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
 
 #
-# Build the runtime.
-#
-
-if (RUNTIME):
-  OPTS=['DIR:direct/src/p3d']
-  TargetAdd('panda3d', opts=OPTS, input='panda3d.pdef')
-  TargetAdd('coreapi', opts=OPTS, input='coreapi.pdef')
-
-#
 # Generate the models directory and samples directory
 #
 
@@ -4122,19 +4116,28 @@ if (not RUNTIME):
       model_extensions.append("*.flt")
 
   for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
-      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
+      if os.path.basename(newname) == os.path.basename(model):
+          CopyFile(GetOutputDir()+"/models/misc/"+newname, "dmodels/src/misc/"+model)
+      else:
+          TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
 
   for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
-      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
+      if os.path.basename(newname) == os.path.basename(model):
+          CopyFile(GetOutputDir()+"/models/gui/"+newname, "dmodels/src/gui/"+model)
+      else:
+          TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
 
   for model in GetDirectoryContents("models", model_extensions):
-      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
+      if os.path.basename(newname) == os.path.basename(model):
+          CopyFile(GetOutputDir()+"/models/"+newname, "models/"+model)
+      else:
+          TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
 
   CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
   CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
@@ -4148,6 +4151,15 @@ if (not RUNTIME):
   CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
   CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
   CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
+
+#
+# Build the rtdist.
+#
+
+if (RTDIST):
+  OPTS=['DIR:direct/src/p3d']
+  TargetAdd('panda3d', opts=OPTS, input='panda3d.pdef')
+  TargetAdd('coreapi', opts=OPTS, input='coreapi.pdef')
 
 ##########################################################################################
 #
@@ -4265,7 +4277,7 @@ except:
 ##########################################################################################
 
 def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
-    if (RUNTIME):
+    if (RTDIST):
         # Invoke the make_installer script.
         oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py")
         return
@@ -4374,7 +4386,10 @@ The Panda3D engine.
 
 def MakeInstallerLinux():
     import compileall
-    PYTHONV=SDK["PYTHONVERSION"]
+    if RUNTIME: # No worries, it won't be used
+      PYTHONV="python"
+    else:
+      PYTHONV=SDK["PYTHONVERSION"]
     PV=PYTHONV.replace("python", "")
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
@@ -4533,5 +4548,5 @@ if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
-print GetColor("green") + "Build successfully finished." + GetColor()
+print GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor()
 

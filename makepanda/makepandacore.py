@@ -22,6 +22,7 @@ CUSTOM_OUTPUTDIR=False
 THIRDPARTYDIR=None
 OPTIMIZE="3"
 VERBOSE=False
+LINK_ALL_STATIC=False
 
 ########################################################################
 ##
@@ -776,6 +777,17 @@ def GetVerbose():
 def SetVerbose(verbose):
   global VERBOSE
   VERBOSE=verbose
+
+def GetLinkAllStatic():
+  return LINK_ALL_STATIC
+
+def SetLinkAllStatic(val = True):
+  global LINK_ALL_STATIC
+  LINK_ALL_STATIC = val
+
+def UnsetLinkAllStatic():
+  global LINK_ALL_STATIC
+  LINK_ALL_STATIC = False
 
 ########################################################################
 ##
@@ -1598,6 +1610,8 @@ def CalcLocation(fn, ipath):
 
 
 def FindLocation(fn, ipath):
+    if (GetLinkAllStatic() and fn.endswith(".dll")):
+        fn = fn[:-4]+".lib"
     loc = CalcLocation(fn, ipath)
     (base,ext) = os.path.splitext(fn)
     ORIG_EXT[loc] = ext
