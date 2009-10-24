@@ -904,7 +904,10 @@ def FreezePy(target, inputs, opts):
 def Package(target, inputs, opts):
     assert len(inputs) == 1
     # Invoke the ppackage script.
-    command = SDK["PYTHONEXEC"] + " direct/src/p3d/ppackage.py"
+    command = SDK["PYTHONEXEC"]
+    if (GetOptimizeOption(opts) >= 4):
+        command += " -OO"
+    command += " direct/src/p3d/ppackage.py"
     command += " -i \"" + GetOutputDir() + "/stage\""
     command += " " + inputs[0]
     oscmd(command)
@@ -915,7 +918,7 @@ def Package(target, inputs, opts):
 #
 ##########################################################################################
 
-def CompileBundle(target, inputs, opts):
+def CompileBundle(target, inputs, opts, exe):
     if (sys.platform != "darwin"): return
     plist = None
     resources = []
@@ -924,9 +927,9 @@ def CompileBundle(target, inputs, opts):
         if (i.endswith(".plist")):
             if (plist != None): exit("Only one plist file can be used when creating a bundle!")
             plist = i
-        elif (i.endswith(".rsrc")):
+        elif (i.endswith(".rsrc") or i.endswith(".icns")):
             resources.append(i)
-        elif (GetOrigExt(i) == ".obj"):
+        elif (GetOrigExt(i) == ".obj" or GetOrigExt(i) in SUFFIX_LIB or GetOrigExt(i) in SUFFIX_DLL):
             objects.append(i)
         else:
             exit("Don't know how to bundle file %s" % i)
@@ -938,7 +941,10 @@ def CompileBundle(target, inputs, opts):
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
     oscmd("mkdir -p %s/Contents/Resources/" % target)
-    SetOrigExt("%s/Contents/MacOS/%s" % (target, bundleName), ".dll")
+    if target.endswith(".app"):
+        SetOrigExt("%s/Contents/MacOS/%s" % (target, bundleName), ".exe")
+    else:
+        SetOrigExt("%s/Contents/MacOS/%s" % (target, bundleName), ".dll")
     CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
     oscmd("cp %s %s/Contents/Info.plist" % (plist, target))
     for r in resources:
@@ -1006,6 +1012,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         return CompileIgate(target, inputs, opts)
     elif (origsuffix==".plugin"):
         ProgressOutput(progress, "Building plugin bundle", target)
+        return CompileBundle(target, inputs, opts)
+    elif (origsuffix==".app"):
+        ProgressOutput(progress, "Building application bundle", target)
         return CompileBundle(target, inputs, opts)
     elif (origsuffix==".pz"):
         ProgressOutput(progress, "Compressing", target)
@@ -1853,6 +1862,14 @@ TargetAdd('pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
 TargetAdd('libp3pystub.dll', input='pystub_pystub.obj')
 TargetAdd('libp3pystub.dll', input='libp3dtool.dll')
 TargetAdd('libp3pystub.dll', opts=['ADVAPI'])
+
+if (RUNTIME):
+  pref = ""
+  if (sys.platform.startswith("win")): pref = "static_"
+  TargetAdd(pref+'pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
+  TargetAdd('libp3pystub_s.ilb', input=pref+'pystub_pystub.obj')
+  TargetAdd('libp3pystub_s.ilb', input='libp3dtool.dll')
+  TargetAdd('libp3pystub_s.ilb', opts=['ADVAPI'])
 
 #
 # DIRECTORY: dtool/src/interrogate/
@@ -3247,14 +3264,40 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
 if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'PLUGIN', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
-  TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
-  TargetAdd('panda3d.exe', input='plugin_common.obj')
-  if (sys.platform == "darwin"):
-    TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
-  TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
-  TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
-  TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
-  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  if (sys.platform != "darwin"):
+    TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
+    TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
+    TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
+    TargetAdd('panda3d.exe', input='plugin_common.obj')
+    TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
+    TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
+    TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
+    TargetAdd('panda3d.exe', input='libp3pystub_s.ilb')
+    TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  else:
+    TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
+    TargetAdd('Panda3D.app', input='plugin_standalone_panda3d.obj')
+    TargetAdd('Panda3D.app', input='plugin_standalone_panda3dMac.obj')
+    TargetAdd('Panda3D.app', input='plugin_common.obj')
+    TargetAdd('Panda3D.app', input='plugin_find_root_dir_assist.obj')
+    TargetAdd('Panda3D.app', input='libpandaexpress_s.ilb')
+    TargetAdd('Panda3D.app', input='libp3dtoolconfig_s.ilb')
+    TargetAdd('Panda3D.app', input='libp3dtool_s.ilb')
+    TargetAdd('Panda3D.app', input='libp3pystub_s.ilb')
+    TargetAdd('Panda3D.app', input='panda3d_mac.plist')
+    TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
+    TargetAdd('Panda3D.app', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  
+  if (sys.platform.startswith("win")):
+    TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
+    TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
+    TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
+    TargetAdd('panda3dw.exe', input='plugin_common.obj')
+    TargetAdd('panda3dw.exe', input='libpandaexpress_s.ilb')
+    TargetAdd('panda3dw.exe', input='libp3dtoolconfig_s.ilb')
+    TargetAdd('panda3dw.exe', input='libp3dtool_s.ilb')
+    TargetAdd('panda3dw.exe', input='libp3pystub_s.ilb')
+    TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
@@ -4079,16 +4122,19 @@ if (not RUNTIME):
       model_extensions.append("*.flt")
 
   for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
-      eggpz = model[:-4] + ".egg.pz"
-      TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
+      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      else: newname = model[:-4] + ".egg"
+      TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
 
   for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
-      eggpz = model[:-4] + ".egg.pz"
-      TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
+      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      else: newname = model[:-4] + ".egg"
+      TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
 
   for model in GetDirectoryContents("models", model_extensions):
-      eggpz = model[:-4] + ".egg.pz"
-      TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
+      if (PkgSkip("ZLIB")==0): newname = model[:-4] + ".egg.pz"
+      else: newname = model[:-4] + ".egg"
+      TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
 
   CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
   CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")

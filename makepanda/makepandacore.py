@@ -1582,6 +1582,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".dat")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".rsrc")):  return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".app")):   return OUTPUTDIR+"/"+fn
         if (fn.endswith(".in")):    return OUTPUTDIR+"/pandac/input/"+fn
     else:
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
