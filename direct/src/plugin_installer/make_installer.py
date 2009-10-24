@@ -269,6 +269,8 @@ def makeInstaller():
         shutil.rmtree(tmproot.toOsSpecific())
         
         # Compress the .dmg (and make it read-only)
+        if os.path.exists("p3d-setup.dmg"):
+            os.remove("p3d-setup.dmg")
         CMD = 'hdiutil convert "%s" -format UDBZ -o "p3d-setup.dmg"' % tmpdmg
         print ""
         print CMD
