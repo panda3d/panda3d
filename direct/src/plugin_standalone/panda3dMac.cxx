@@ -49,59 +49,19 @@ void Panda3DMac::
 open_p3d_file(FSRef *ref) {
   OSErr err;
 
-  // Get the size and basename of the file.
-  FSCatalogInfo catalog_info;
-  HFSUniStr255 basename_unicode;
-
-  err = FSGetCatalogInfo(ref, kFSCatInfoDataSizes, &catalog_info,
-                         &basename_unicode, NULL, NULL);
+  static const size_t buffer_size = 4096;
+  UInt8 filename[buffer_size];
+  err = FSRefMakePath(ref, filename, buffer_size);
   if (err) {
-    cerr << "Couldn't query file information.\n";
+    cerr << "Couldn't get filename\n";
     return;
   }
 
-  // A poor-man's unicode-to-ascii conversion.
-  string basename;
-  for (int i = 0; i < basename_unicode.length; ++i) {
-    basename += (char)basename_unicode.unicode[i];
-  }
-  size_t data_size = (size_t)catalog_info.dataLogicalSize;
-
-  // We could try to figure out full pathname of the p3d file we've
-  // got here, but it's probably better just to open the file and read
-  // it.  This way, it works regardless of the source of the p3d file,
-  // even if it's not actually a file on disk.
-  FSIORefNum io_ref;
-  err = FSOpenFork(ref, 0, NULL, fsRdPerm, &io_ref);
-  if (!err) {
-    // Create an instance, and tell it we'll be sending it the p3d
-    // data in a forthcoming stream.
-    P3D_instance *inst = create_instance
-      (basename.c_str(), false, 
-       _win_x, _win_y, _win_width, _win_height,
-       NULL, 0);
-    int stream_id = P3D_instance_start_stream(inst, basename.c_str());
-
-    // Now start to read the data.
-    static const size_t buffer_size = 8192;
-    static char buffer[buffer_size];
-    ByteCount read_count;
-    err = FSReadFork(io_ref, fsAtMark, 0, buffer_size, buffer, &read_count);
-    while (read_count != 0) {
-      P3D_instance_feed_url_stream(inst, stream_id, P3D_RC_in_progress, 0,
-                                   data_size, buffer, read_count);
-      err = FSReadFork(io_ref, fsAtMark, 0, buffer_size, buffer, &read_count);
-    }
-
-    P3D_result_code status = P3D_RC_done;
-    if (err != eofErr) {
-      status = P3D_RC_generic_error;
-      cerr << "Error reading file\n";
-    }
-    
-    P3D_instance_feed_url_stream
-      (inst, stream_id, status, 0, data_size, NULL, 0);
-  }
+  // Create an instance.
+  P3D_instance *inst = create_instance
+    ((char *)filename, true,
+     _win_x, _win_y, _win_width, _win_height,
+     NULL, 0);
 }
 
 static pascal OSErr
