@@ -24,7 +24,7 @@ parser.add_option('-N', '--long', dest = 'long_name',
                   default = 'Panda3D Game Engine')
 parser.add_option('-v', '--version', dest = 'version',
                   help = 'The product version',
-                  default = PandaSystem.getVersionString())
+                  default = None)
 parser.add_option('-p', '--publisher', dest = 'publisher',
                   help = 'The name of the publisher',
                   default = 'Carnegie Mellon Entertainment Technology Center')
@@ -53,6 +53,8 @@ parser.add_option('', '--nsis', dest = 'nsis',
 (options, args) = parser.parse_args()
 
 this_dir = os.path.split(sys.argv[0])[0]
+
+assert options.version != None, "A version number must be supplied!"
 
 ##############################################################################
 #
@@ -204,8 +206,9 @@ def makeInstaller():
     # up the plugin/runtime.
     if sys.platform == "darwin":
         npapi = 'nppanda3d.plugin'
-        panda3d = 'Panda3D.app'
-        baseFiles = [npapi, panda3d]
+        panda3d = 'panda3d'
+        panda3dapp = 'Panda3D.app'
+        baseFiles = [npapi, panda3d, panda3dapp]
     else:
         ocx = 'p3dactivex.ocx'
         npapi = 'nppanda3d.dll'
@@ -241,13 +244,16 @@ def makeInstaller():
             os.remove("p3d-setup.pkg")
         tmproot.makeDir()
         dst_npapi = Filename(tmproot, Filename("Library/Internet Plug-Ins", npapi))
-        dst_panda3d = Filename(tmproot, Filename("Applications", panda3d))
+        dst_panda3d = Filename(tmproot, Filename("usr/bin", panda3d))
+        dst_panda3dapp = Filename(tmproot, Filename("Applications", panda3dapp))
         dst_npapi.makeDir()
         dst_panda3d.makeDir()
+        dst_panda3dapp.makeDir()
         shutil.copytree(pluginFiles[npapi], dst_npapi.toOsSpecific())
-        shutil.copytree(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
+        shutil.copyfile(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
+        shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp.toOsSpecific())
         CMD = "/Developer/usr/bin/packagemaker"
-        CMD += ' --id org.panda3d.runtime' #TODO: make this customizable
+        CMD += ' --id org.panda3d.pkg.runtime' #TODO: maybe more customizable?
         CMD += ' --version "%s"' % options.version
         CMD += ' --title "%s"' % options.long_name
         CMD += ' --out p3d-setup.pkg'
