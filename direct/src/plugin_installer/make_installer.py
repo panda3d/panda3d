@@ -237,6 +237,8 @@ def makeInstaller():
         tmproot = Filename("/var/tmp/Panda3D Runtime/")
         if tmproot.exists():
             shutil.rmtree(tmproot.toOsSpecific())
+        if os.path.exists("p3d-setup.pkg"):
+            os.remove("p3d-setup.pkg")
         tmproot.makeDir()
         dst_npapi = Filename(tmproot, Filename("Library/Internet Plug-Ins", npapi))
         dst_panda3d = Filename(tmproot, Filename("Applications", panda3d))
