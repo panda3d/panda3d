@@ -107,7 +107,7 @@ main(int argc, char *argv[]) {
   this_prog = new Panda3DMac;
   handler = NewAEEventHandlerUPP(open_documents_handler);
   err = AEInstallEventHandler
-    (kCoreEventClass, kAEOpenDocuments, handler, NULL, false);
+    (kCoreEventClass, kAEOpenDocuments, handler, 0, false);
 
   return this_prog->run_command_line(argc, argv);
 }
