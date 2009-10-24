@@ -918,7 +918,7 @@ def Package(target, inputs, opts):
 #
 ##########################################################################################
 
-def CompileBundle(target, inputs, opts, exe):
+def CompileBundle(target, inputs, opts):
     if (sys.platform != "darwin"): return
     plist = None
     resources = []
