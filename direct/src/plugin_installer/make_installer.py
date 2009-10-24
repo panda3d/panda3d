@@ -204,7 +204,7 @@ def makeInstaller():
     # up the plugin/runtime.
     if sys.platform == "darwin":
         npapi = 'nppanda3d.plugin'
-        panda3d = 'panda3d'
+        panda3d = 'Panda3D.app'
         baseFiles = [npapi, panda3d]
     else:
         ocx = 'p3dactivex.ocx'
@@ -239,7 +239,7 @@ def makeInstaller():
             shutil.rmtree(tmproot.toOsSpecific())
         tmproot.makeDir()
         dst_npapi = Filename(tmproot, Filename("Library/Internet Plug-Ins", npapi))
-        dst_panda3d = Filename(tmproot, Filename("usr/bin", panda3d))
+        dst_panda3d = Filename(tmproot, Filename("Applications", panda3d))
         dst_npapi.makeDir()
         dst_panda3d.makeDir()
         shutil.copytree(pluginFiles[npapi], dst_npapi.toOsSpecific())
