@@ -3284,7 +3284,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libp3dtoolconfig_s.ilb')
     TargetAdd('Panda3D.app', input='libp3dtool_s.ilb')
     TargetAdd('Panda3D.app', input='libp3pystub_s.ilb')
-    TargetAdd('Panda3D.app', input='panda3d_mac.plist')
+    TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
     TargetAdd('Panda3D.app', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   
