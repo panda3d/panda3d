@@ -38,11 +38,13 @@
 ////////////////////////////////////////////////////////////////////
 class Panda3D {
 public:
-  Panda3D();
+  Panda3D(bool console_environment);
 
-  int run(int argc, char *argv[]);
+  int run_command_line(int argc, char *argv[]);
+  void run_main_loop();
 
-private:
+protected:
+  bool post_arg_processing();
   bool get_plugin();
   bool read_contents_file(const Filename &contents_filename);
   void find_host(TiXmlElement *xcontents);
@@ -52,13 +54,11 @@ private:
   bool get_core_api(const Filename &contents_filename, TiXmlElement *xplugin);
   void run_getters();
   void handle_request(P3D_request *request);
-  void make_parent_window(P3D_window_handle &parent_window, 
-                          int win_width, int win_height);
+  void make_parent_window();
 
   P3D_instance *
-  create_instance(const string &p3d, P3D_window_type window_type,
+  create_instance(const string &p3d, bool start_instance,
                   int win_x, int win_y, int win_width, int win_height,
-                  P3D_window_handle parent_window,
                   char **args, int num_args);
   void delete_instance(P3D_instance *instance);
 
@@ -70,28 +70,37 @@ private:
   void report_downloading_package(P3D_instance *instance);
   void report_download_complete(P3D_instance *instance);
 
+  inline bool time_to_exit();
+
 #ifdef __APPLE__
   static pascal void st_timer_callback(EventLoopTimerRef timer, void *user_data);
   void timer_callback(EventLoopTimerRef timer);
 #endif
 
-private:
+protected:
   string _root_dir;
   string _log_dirname;
   string _log_basename;
   string _this_platform;
   bool _verify_contents;
+  P3D_window_type _window_type;
+  P3D_window_handle _parent_window;
+  int _win_x, _win_y;
+  int _win_width, _win_height;
+  bool _exit_with_last_instance;
 
   string _host_url;
-  string _super_mirror_url_prefix;
+  string _super_mirror_url;
   string _host_url_prefix;
   string _download_url_prefix;
+  string _super_mirror_url_prefix;
   typedef pvector<string> Mirrors;
   Mirrors _mirrors;
   
   FileSpec _core_api_dll;
   bool _reporting_download;
   bool _enable_security;
+  bool _console_environment;
 
   typedef pset<P3D_instance *> Instances;
   Instances _instances;

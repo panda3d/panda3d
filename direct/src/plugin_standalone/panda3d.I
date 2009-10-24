@@ -14,6 +14,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::time_to_exit
+//       Access: Public
+//  Description: Returns true if it is time to exit because the last
+//               instance has exited, or false if we should continue
+//               running.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+time_to_exit() {
+  return _instances.empty() && _exit_with_last_instance;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::URLGetter::get_instance
 //       Access: Public
 //  Description: Returns the P3D_instance associated with this
@@ -23,4 +35,3 @@ P3D_instance *Panda3D::URLGetter::
 get_instance() {
   return _instance;
 }
-

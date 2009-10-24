@@ -15,7 +15,7 @@ import glob
 import shutil
 
 import direct
-from pandac.PandaModules import Filename
+from pandac.PandaModules import Filename, DSearchPath
 
 def usage(code, msg = ''):
     print >> sys.stderr, __doc__
@@ -25,14 +25,15 @@ def usage(code, msg = ''):
 def makeBundle(startDir):
     fstartDir = Filename.fromOsSpecific(startDir)
 
-    # First, make sure there is only one Opt?-* directory, to avoid
-    # ambiguity.
-    optDirs = glob.glob(fstartDir.toOsSpecific() + '/Opt?-*')
-    if len(optDirs) == 0:
-        raise StandardError, 'Application has not yet been compiled.'
-    if len(optDirs) > 1:
-        raise StandardError, 'Too many compiled directories; ambiguous.'
-    optDir = optDirs[0]
+    # Search for nppandad along $DYLD_LIBRARY_PATH.
+    path = DSearchPath()
+    if 'LD_LIBRARY_PATH' in os.environ:
+        path.appendPath(os.environ['LD_LIBRARY_PATH'])
+    if 'DYLD_LIBRARY_PATH' in os.environ:
+        path.appendPath(os.environ['DYLD_LIBRARY_PATH'])
+    nppanda3d = path.findFile('nppanda3d')
+    if not nppanda3d:
+        raise StandardError, "Couldn't find nppanda3d on path."
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir, 'bundle')
@@ -53,7 +54,7 @@ def makeBundle(startDir):
 
     # Copy in Info.plist and the compiled executable.
     shutil.copyfile(Filename(fstartDir, "nppanda3d.plist").toOsSpecific(), plistFilename.toOsSpecific())
-    shutil.copyfile(optDir + '/nppanda3d', exeFilename.toOsSpecific())
+    shutil.copyfile(nppanda3d.toOsSpecific(), exeFilename.toOsSpecific())
 
     # All done!
     bundleFilename.touch()

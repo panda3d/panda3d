@@ -50,10 +50,24 @@ static const double wait_cycle = 0.2;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 Panda3D::
-Panda3D() {
+Panda3D(bool console_environment) {
+  _console_environment = console_environment;
+
   _root_dir = find_root_dir();
   _reporting_download = false;
   _enable_security = false;
+
+  _window_type = P3D_WT_toplevel;
+
+  _win_x = 0;
+  _win_y = 0;
+  _win_width = 640;
+  _win_height = 480;
+
+  _exit_with_last_instance = true;
+  _host_url = PANDA_PACKAGE_HOST_URL;
+  _this_platform = DTOOL_PLATFORM;
+  _verify_contents = false;
 
   // Seed the lame random number generator in rand(); we use it to
   // select a mirror for downloading.
@@ -61,13 +75,13 @@ Panda3D() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::run
+//     Function: Panda3D::run_command_line
 //       Access: Public
-//  Description: Starts the program going.  Returns 0 on success,
-//               nonzero on failure.
+//  Description: Starts the program going, with command-line arguments.  
+//               Returns 0 on success, nonzero on failure.
 ////////////////////////////////////////////////////////////////////
 int Panda3D::
-run(int argc, char *argv[]) {
+run_command_line(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
 
@@ -77,14 +91,6 @@ run(int argc, char *argv[]) {
   const char *optstr = "+mu:M:Sp:fw:t:s:o:l:ih";
 
   bool allow_multiple = false;
-  _host_url = PANDA_PACKAGE_HOST_URL;
-  string super_mirror_url;
-  _this_platform = DTOOL_PLATFORM;
-  _verify_contents = false;
-
-  P3D_window_type window_type = P3D_WT_toplevel;
-  int win_x = 0, win_y = 0;
-  int win_width = 640, win_height = 480;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -99,7 +105,7 @@ run(int argc, char *argv[]) {
       break;
 
     case 'M':
-      super_mirror_url = optarg;
+      _super_mirror_url = optarg;
       break;
 
     case 'S':
@@ -116,13 +122,13 @@ run(int argc, char *argv[]) {
 
     case 'w':
       if (strcmp(optarg, "toplevel") == 0) {
-        window_type = P3D_WT_toplevel;
+        _window_type = P3D_WT_toplevel;
       } else if (strcmp(optarg, "embedded") == 0) {
-        window_type = P3D_WT_embedded;
+        _window_type = P3D_WT_embedded;
       } else if (strcmp(optarg, "fullscreen") == 0) {
-        window_type = P3D_WT_fullscreen;
+        _window_type = P3D_WT_fullscreen;
       } else if (strcmp(optarg, "hidden") == 0) {
-        window_type = P3D_WT_hidden;
+        _window_type = P3D_WT_hidden;
       } else {
         cerr << "Invalid value for -w: " << optarg << "\n";
         return 1;
@@ -137,14 +143,14 @@ run(int argc, char *argv[]) {
       break;
 
     case 's':
-      if (!parse_int_pair(optarg, win_width, win_height)) {
+      if (!parse_int_pair(optarg, _win_width, _win_height)) {
         cerr << "Invalid value for -s: " << optarg << "\n";
         return 1;
       }
       break;
 
     case 'o':
-      if (!parse_int_pair(optarg, win_x, win_y)) {
+      if (!parse_int_pair(optarg, _win_x, _win_y)) {
         cerr << "Invalid value for -o: " << optarg << "\n";
         return 1;
       }
@@ -193,127 +199,111 @@ run(int argc, char *argv[]) {
   argc -= (optind-1);
   argv += (optind-1);
 
-  if (argc < 2) {
+  if (argc < 2 && _exit_with_last_instance) {
+    // No instances on the command line--that *might* be an error.
     usage();
     return 1;
   }
 
-  // Set host_url_prefix to end with a slash.
-  _host_url_prefix = _host_url;
-  if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.length() - 1] != '/') {
-    _host_url_prefix += '/';
-  }
-  _download_url_prefix = _host_url_prefix;
-
-  // If the "super mirror" URL is a filename, convert it to a file:// url.
-  if (!super_mirror_url.empty()) {
-    if (!is_url(super_mirror_url)) {
-      Filename filename = Filename::from_os_specific(super_mirror_url);
-      filename.make_absolute();
-      string path = filename.to_os_generic();
-      if (!path.empty() && path[0] != '/') {
-        // On Windows, a leading drive letter must be preceded by an
-        // additional slash.
-        path = "/" + path;
-      }
-      super_mirror_url = "file://" + path;
-    }
-
-    // And make sure the super_mirror_url_prefix ends with a slash.
-    _super_mirror_url_prefix = super_mirror_url;
-    if (!_super_mirror_url_prefix.empty() && _super_mirror_url_prefix[_super_mirror_url_prefix.length() - 1] != '/') {
-      _super_mirror_url_prefix += '/';
-    }
-  }
-
-  if (!get_plugin()) {
-    cerr << "Unable to load Panda3D plugin.\n";
+  if (!post_arg_processing()) {
     return 1;
-  }
-
-  // Set up the "super mirror" URL, if specified.
-  if (!super_mirror_url.empty()) {
-    P3D_set_super_mirror(super_mirror_url.c_str());
   }
 
   int num_instance_filenames, num_instance_args;
   char **instance_filenames, **instance_args;
 
-  if (allow_multiple) {
-    // With -m, the remaining arguments are all instance filenames.
-    num_instance_filenames = argc - 1;
-    instance_filenames = argv + 1;
-    num_instance_args = 0;
-    instance_args = argv + argc;
-
-  } else {
-    // Without -m, there is one instance filename, and everything else
-    // gets delivered to that instance.
-    num_instance_filenames = 1;
-    instance_filenames = argv + 1;
-    num_instance_args = argc - 2;
-    instance_args = argv + 2;
-  }
-
-  P3D_window_handle parent_window;
-  if (window_type == P3D_WT_embedded) {
-    // The user asked for an embedded window.  Create a toplevel
-    // window to be its parent, of the requested size.
-    if (win_width == 0 && win_height == 0) {
-      win_width = 640;
-      win_height = 480;
+  if (argc > 1) {
+    if (allow_multiple) {
+      // With -m, the remaining arguments are all instance filenames.
+      num_instance_filenames = argc - 1;
+      instance_filenames = argv + 1;
+      num_instance_args = 0;
+      instance_args = argv + argc;
+      
+    } else {
+      // Without -m, there is one instance filename, and everything else
+      // gets delivered to that instance.
+      num_instance_filenames = 1;
+      instance_filenames = argv + 1;
+      num_instance_args = argc - 2;
+      instance_args = argv + 2;
     }
-
-    make_parent_window(parent_window, win_width, win_height);
     
-    // Center the child window(s) within the parent window.
+    if (_window_type == P3D_WT_embedded) {
+      // The user asked for an embedded window.  Create a toplevel
+      // window to be its parent, of the requested size.
+      if (_win_width == 0 && _win_height == 0) {
+        _win_width = 640;
+        _win_height = 480;
+      }
+      
+      make_parent_window();
+      
+      // Center the child window(s) within the parent window.
 #ifdef _WIN32
-    RECT rect;
-    GetClientRect(parent_window._hwnd, &rect);
-
-    win_x = (int)(rect.right * 0.1);
-    win_y = (int)(rect.bottom * 0.1);
-    win_width = (int)(rect.right * 0.8);
-    win_height = (int)(rect.bottom * 0.8);
+      RECT rect;
+      GetClientRect(_parent_window._hwnd, &rect);
+      
+      _win_x = (int)(rect.right * 0.1);
+      _win_y = (int)(rect.bottom * 0.1);
+      _win_width = (int)(rect.right * 0.8);
+      _win_height = (int)(rect.bottom * 0.8);
 #endif
-
-    // Subdivide the window into num_x_spans * num_y_spans sub-windows.
-    int num_y_spans = int(sqrt((double)num_instance_filenames));
-    int num_x_spans = (num_instance_filenames + num_y_spans - 1) / num_y_spans;
-    
-    int inst_width = win_width / num_x_spans;
-    int inst_height = win_height / num_y_spans;
-
-    for (int yi = 0; yi < num_y_spans; ++yi) {
-      for (int xi = 0; xi < num_x_spans; ++xi) {
-        int i = yi * num_x_spans + xi;
-        if (i >= num_instance_filenames) {
-          continue;
+      
+      // Subdivide the window into num_x_spans * num_y_spans sub-windows.
+      int num_y_spans = int(sqrt((double)num_instance_filenames));
+      int num_x_spans = (num_instance_filenames + num_y_spans - 1) / num_y_spans;
+      
+      int inst_width = _win_width / num_x_spans;
+      int inst_height = _win_height / num_y_spans;
+      
+      for (int yi = 0; yi < num_y_spans; ++yi) {
+        for (int xi = 0; xi < num_x_spans; ++xi) {
+          int i = yi * num_x_spans + xi;
+          if (i >= num_instance_filenames) {
+            continue;
+          }
+          
+          // Create instance i at window slot (xi, yi).
+          int inst_x = _win_x + xi * inst_width;
+          int inst_y = _win_y + yi * inst_height;
+          
+          P3D_instance *inst = create_instance
+            (instance_filenames[i], true,
+             inst_x, inst_y, inst_width, inst_height,
+             instance_args, num_instance_args);
+          _instances.insert(inst);
         }
-
-        // Create instance i at window slot (xi, yi).
-        int inst_x = win_x + xi * inst_width;
-        int inst_y = win_y + yi * inst_height;
-
+      }
+      
+    } else {
+      // Not an embedded window.  Create each window with the same parameters.
+      for (int i = 0; i < num_instance_filenames; ++i) {
         P3D_instance *inst = create_instance
-          (instance_filenames[i], P3D_WT_embedded, 
-           inst_x, inst_y, inst_width, inst_height, parent_window,
+          (instance_filenames[i], true, 
+           _win_x, _win_y, _win_width, _win_height,
            instance_args, num_instance_args);
         _instances.insert(inst);
       }
     }
-
-  } else {
-    // Not an embedded window.  Create each window with the same parameters.
-    for (int i = 0; i < num_instance_filenames; ++i) {
-      P3D_instance *inst = create_instance
-        (instance_filenames[i], window_type, 
-         win_x, win_y, win_width, win_height, parent_window,
-         instance_args, num_instance_args);
-      _instances.insert(inst);
-    }
   }
+    
+  run_main_loop();
 
+  // All instances have finished; we can exit.
+  unload_plugin();
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::run_main_loop
+//       Access: Public
+//  Description: Gets lost in the application main loop, waiting for
+//               system events and notifications from the open
+//               instance(s).
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+run_main_loop() {
 #ifdef _WIN32
   if (window_type == P3D_WT_embedded) {
     // Wait for new messages from Windows, and new requests from the
@@ -321,10 +311,10 @@ run(int argc, char *argv[]) {
     MSG msg;
     int retval;
     retval = GetMessage(&msg, NULL, 0, 0);
-    while (retval != 0 && !_instances.empty()) {
+    while (retval != 0 && !time_to_exit()) {
       if (retval == -1) {
         cerr << "Error processing message queue.\n";
-        exit(1);
+        return;
       }
       TranslateMessage(&msg);
       DispatchMessage(&msg);
@@ -357,7 +347,7 @@ run(int argc, char *argv[]) {
   } else {
     // Not an embedded window, so we don't have our own window to
     // generate Windows events.  Instead, just wait for requests.
-    while (!_instances.empty()) {
+    while (!time_to_exit()) {
       P3D_instance *inst = P3D_check_request(wait_cycle);
       if (inst != (P3D_instance *)NULL) {
         P3D_request *request = P3D_instance_get_request(inst);
@@ -391,7 +381,7 @@ run(int argc, char *argv[]) {
 #else  // _WIN32, __APPLE__
 
   // Now wait while we process pending requests.
-  while (!_instances.empty()) {
+  while (!time_to_exit()) {
     P3D_instance *inst = P3D_check_request(wait_cycle);
     if (inst != (P3D_instance *)NULL) {
       P3D_request *request = P3D_instance_get_request(inst);
@@ -403,15 +393,61 @@ run(int argc, char *argv[]) {
   }
 
 #endif  // _WIN32, __APPLE__
+}
 
-  // All instances have finished; we can exit.
-  unload_plugin();
-  return 0;
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::post_arg_processing
+//       Access: Protected
+//  Description: Sets up some internal state after processing the
+//               command-line arguments.  Returns true on success,
+//               false on failure.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+post_arg_processing() {
+  // Set host_url_prefix to end with a slash.
+  _host_url_prefix = _host_url;
+  if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.length() - 1] != '/') {
+    _host_url_prefix += '/';
+  }
+  _download_url_prefix = _host_url_prefix;
+
+  // If the "super mirror" URL is a filename, convert it to a file:// url.
+  if (!_super_mirror_url.empty()) {
+    if (!is_url(_super_mirror_url)) {
+      Filename filename = Filename::from_os_specific(_super_mirror_url);
+      filename.make_absolute();
+      string path = filename.to_os_generic();
+      if (!path.empty() && path[0] != '/') {
+        // On Windows, a leading drive letter must be preceded by an
+        // additional slash.
+        path = "/" + path;
+      }
+      _super_mirror_url = "file://" + path;
+    }
+
+    // And make sure the super_mirror_url_prefix ends with a slash.
+    _super_mirror_url_prefix = _super_mirror_url;
+    if (!_super_mirror_url_prefix.empty() && _super_mirror_url_prefix[_super_mirror_url_prefix.length() - 1] != '/') {
+      _super_mirror_url_prefix += '/';
+    }
+  }
+
+  if (!get_plugin()) {
+    cerr << "Unable to load Panda3D plugin.\n";
+    return false;
+  }
+
+  // Set up the "super mirror" URL, if specified.
+  if (!_super_mirror_url.empty()) {
+    P3D_set_super_mirror(_super_mirror_url.c_str());
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::get_plugin
-//       Access: Private
+//       Access: Protected
 //  Description: Downloads the contents.xml file from the named URL
 //               and attempts to use it to load the core API.  Returns
 //               true on success, false on failure.
@@ -497,7 +533,7 @@ get_plugin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::read_contents_file
-//       Access: Private
+//       Access: Protected
 //  Description: Attempts to open and read the contents.xml file on
 //               disk, and uses that data to load the plugin, if
 //               possible.  Returns true on success, false on failure.
@@ -539,7 +575,7 @@ read_contents_file(const Filename &contents_filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::find_host
-//       Access: Private
+//       Access: Protected
 //  Description: Scans the <contents> element for the matching <host>
 //               element.
 ////////////////////////////////////////////////////////////////////
@@ -575,7 +611,7 @@ find_host(TiXmlElement *xcontents) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::read_xhost
-//       Access: Private
+//       Access: Protected
 //  Description: Reads the host data from the <host> (or <alt_host>)
 //               entry in the contents.xml file.
 ////////////////////////////////////////////////////////////////////
@@ -611,7 +647,7 @@ read_xhost(TiXmlElement *xhost) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::add_mirror
-//       Access: Private
+//       Access: Protected
 //  Description: Adds a new URL to serve as a mirror for this host.
 //               The mirrors will be consulted first, before
 //               consulting the host directly.
@@ -658,7 +694,7 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::get_core_api
-//       Access: Private
+//       Access: Protected
 //  Description: Checks the core API DLL file against the
 //               specification in the contents file, and downloads it
 //               if necessary.
@@ -756,15 +792,9 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
 
   bool trusted_environment = !_enable_security;
 
-#ifdef NON_CONSOLE
-  static const bool console_environment = false;
-#else
-  static const bool console_environment = true;
-#endif
-
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    _host_url, _verify_contents, _this_platform, _log_dirname,
-                   _log_basename, trusted_environment, console_environment,
+                   _log_basename, trusted_environment, _console_environment,
                    cerr)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
@@ -786,7 +816,7 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::run_getters
-//       Access: Private
+//       Access: Protected
 //  Description: Polls all of the active URL requests.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
@@ -810,7 +840,7 @@ run_getters() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::handle_request
-//       Access: Private
+//       Access: Protected
 //  Description: Handles a single request received via the plugin API
 //               from a p3d instance.
 ////////////////////////////////////////////////////////////////////
@@ -871,13 +901,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::make_parent_window
-//       Access: Private
+//       Access: Protected
 //  Description: Creates a toplevel window to contain the embedded
 //               instances.  Windows implementation.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
-make_parent_window(P3D_window_handle &parent_window, 
-                   int win_width, int win_height) {
+make_parent_window() {
   WNDCLASS wc;
 
   HINSTANCE application = GetModuleHandle(NULL);
@@ -899,7 +928,7 @@ make_parent_window(P3D_window_handle &parent_window,
 
   HWND toplevel_window = 
     CreateWindow("panda3d", "Panda3D", window_style,
-                 CW_USEDEFAULT, CW_USEDEFAULT, win_width, win_height,
+                 CW_USEDEFAULT, CW_USEDEFAULT, _win_width, _win_height,
                  NULL, NULL, application, 0);
   if (!toplevel_window) {
     cerr << "Could not create toplevel window!\n";
@@ -907,21 +936,20 @@ make_parent_window(P3D_window_handle &parent_window,
   }
 
   ShowWindow(toplevel_window, SW_SHOWNORMAL);
-
-  parent_window._hwnd = toplevel_window;
+  
+  _parent_window._hwnd = toplevel_window;
 }
 
 #else
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::make_parent_window
-//       Access: Private
+//       Access: Protected
 //  Description: Creates a toplevel window to contain the embedded
 //               instances.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
-make_parent_window(P3D_window_handle &parent_window, 
-                   int win_width, int win_height) {
+make_parent_window() {
   // TODO.
   assert(false);
 }
@@ -930,20 +958,22 @@ make_parent_window(P3D_window_handle &parent_window,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::create_instance
-//       Access: Private
+//       Access: Protected
 //  Description: Uses the plugin API to create a new P3D instance to
-//               play a particular .p3d file.
+//               play a particular .p3d file.  This instance is also
+//               started if start_instance is true (which requires
+//               that the named p3d file exists).
 ////////////////////////////////////////////////////////////////////
 P3D_instance *Panda3D::
-create_instance(const string &p3d, P3D_window_type window_type,
+create_instance(const string &p3d, bool start_instance,
                 int win_x, int win_y, int win_width, int win_height,
-                P3D_window_handle parent_window, char **args, int num_args) {
+                char **args, int num_args) {
   // Check to see if the p3d filename we were given is a URL, or a
   // local file.
   Filename p3d_filename = Filename::from_os_specific(p3d);
   string os_p3d_filename = p3d;
   bool is_local = !is_url(p3d);
-  if (is_local) {
+  if (is_local && start_instance) {
     if (!p3d_filename.exists()) {
       cerr << "No such file: " << p3d_filename << "\n";
       exit(1);
@@ -967,11 +997,11 @@ create_instance(const string &p3d, P3D_window_type window_type,
   } else {
     // Send output to the console.
     token._keyword = "console_output";
-#ifdef NON_CONSOLE
-    token._value = "0";
-#else
-    token._value = "1";
-#endif
+    if (_console_environment) {
+      token._value = "1";
+    } else {
+      token._value = "0";
+    }
     tokens.push_back(token);
   }
 
@@ -996,11 +1026,15 @@ create_instance(const string &p3d, P3D_window_type window_type,
                                         argv.size(), &argv[0], NULL);
 
   if (inst != NULL) {
-    // We call start() first, to give the core API a chance to notice
-    // the "hidden" attrib before we set the window parameters.
-    P3D_instance_start(inst, is_local, os_p3d_filename.c_str());
+    if (start_instance) {
+      // We call start() first, to give the core API a chance to
+      // notice the "hidden" attrib before we set the window
+      // parameters.
+      P3D_instance_start(inst, is_local, os_p3d_filename.c_str());
+    }
+
     P3D_instance_setup_window
-      (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
+      (inst, _window_type, _win_x, _win_y, _win_width, _win_height, _parent_window);
   }
 
   return inst;
@@ -1008,7 +1042,7 @@ create_instance(const string &p3d, P3D_window_type window_type,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::delete_instance
-//       Access: Private
+//       Access: Protected
 //  Description: Deletes the indicated instance and removes it from
 //               the internal structures.
 ////////////////////////////////////////////////////////////////////
@@ -1034,7 +1068,7 @@ delete_instance(P3D_instance *inst) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::usage
-//       Access: Private
+//       Access: Protected
 //  Description: Reports the available command-line options.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
@@ -1127,7 +1161,7 @@ usage() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::parse_token
-//       Access: Private
+//       Access: Protected
 //  Description: Parses a web token of the form token=value, and
 //               stores it in _tokens.  Returns true on success, false
 //               on failure.
@@ -1154,7 +1188,7 @@ parse_token(char *arg) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::parse_int_pair
-//       Access: Private
+//       Access: Protected
 //  Description: Parses a string into an x,y pair of integers.
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
@@ -1175,7 +1209,7 @@ parse_int_pair(char *arg, int &x, int &y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::is_url
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Returns true if the indicated string appears to be a
 //               URL, with a leading http:// or file:// or whatever,
 //               or false if it must be a local filename instead.
@@ -1208,7 +1242,7 @@ is_url(const string &param) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::report_downloading_package
-//       Access: Private
+//       Access: Protected
 //  Description: Tells the user we have to download a package.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
@@ -1234,7 +1268,7 @@ report_downloading_package(P3D_instance *instance) {
  
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::report_download_complete
-//       Access: Private
+//       Access: Protected
 //  Description: Tells the user we're done downloading packages
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
@@ -1247,7 +1281,7 @@ report_download_complete(P3D_instance *instance) {
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::st_timer_callback
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Installed as a timer on the event loop, so we can
 //               process local events, in the Apple implementation.
 ////////////////////////////////////////////////////////////////////
@@ -1260,7 +1294,7 @@ st_timer_callback(EventLoopTimerRef timer, void *user_data) {
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::timer_callback
-//       Access: Private
+//       Access: Protected
 //  Description: Installed as a timer on the event loop, so we can
 //               process local events, in the Apple implementation.
 ////////////////////////////////////////////////////////////////////
@@ -1280,7 +1314,7 @@ timer_callback(EventLoopTimerRef timer) {
   run_getters();
 
   // If we're out of instances, exit the application.
-  if (_instances.empty()) {
+  if (time_to_exit()) {
     QuitApplicationEventLoop();
   }
 }
@@ -1365,79 +1399,3 @@ run() {
      _bytes_sent, NULL, 0);
   return false;
 }
-
-
-#if defined(_WIN32) && defined(NON_CONSOLE)
-// On Windows, we may need to build panda3dw.exe, a non-console
-// version of this program.
-
-// Returns a newly-allocated string representing the quoted argument
-// beginning at p.  Advances p to the first character following the
-// close quote.
-static char *
-parse_quoted_arg(char *&p) {
-  char quote = *p;
-  ++p;
-  string result;
-
-  while (*p != '\0' && *p != quote) {
-    // TODO: handle escape characters?  Not sure if we need to.
-    result += *p;
-    ++p;
-  }
-  if (*p == quote) {
-    ++p;
-  }
-  return strdup(result.c_str());
-}
-
-// Returns a newly-allocated string representing the unquoted argument
-// beginning at p.  Advances p to the first whitespace following the
-// argument.
-static char *
-parse_unquoted_arg(char *&p) {
-  string result;
-  while (*p != '\0' && !isspace(*p)) {
-    result += *p;
-    ++p;
-  }
-  return strdup(result.c_str());
-}
-
-int WINAPI 
-WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-  char *command_line = GetCommandLine();
-
-  vector<char *> argv;
-  
-  char *p = command_line;
-  while (*p != '\0') {
-    if (*p == '"') {
-      char *arg = parse_quoted_arg(p);
-      argv.push_back(arg);
-    } else {
-      char *arg = parse_unquoted_arg(p);
-      argv.push_back(arg);
-    }
-
-    // Skip whitespace.
-    while (*p != '\0' && isspace(*p)) {
-      ++p;
-    }
-  }
-
-  assert(!argv.empty());
-
-  Panda3D program;
-  return program.run(argv.size(), &argv[0]);
-}
-
-#else  // NON_CONSOLE
-
-// The normal, "console" program.
-int
-main(int argc, char *argv[]) {
-  Panda3D program;
-  return program.run(argc, argv);
-}
-#endif  // NON_CONSOLE
