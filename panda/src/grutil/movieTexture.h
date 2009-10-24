@@ -16,6 +16,9 @@
 #define MOVIETEXTURE_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_AUDIO
+
 #include "movieVideo.h"
 #include "audioSound.h"
 #include "pipelineCycler.h"
@@ -137,5 +140,6 @@ private:
 
 #include "movieTexture.I"
 
+#endif  // HAVE_AUDIO
 
 #endif

@@ -94,8 +94,10 @@ init_libgrutil() {
   PipeOcclusionCullTraverser::init_type();
   SceneGraphAnalyzerMeter::init_type();
 
+#ifdef HAVE_AUDIO
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
+#endif  // HAVE_AUDIO
 #ifdef HAVE_OPENCV
   OpenCVTexture::init_type();
   OpenCVTexture::register_with_read_factory();

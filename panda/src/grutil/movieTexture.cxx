@@ -14,6 +14,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_AUDIO
+
 #include "movieVideo.h"
 #include "movieVideoCursor.h"
 #include "movieTexture.h"
@@ -671,3 +673,5 @@ unsynchronize() {
   CDWriter cdata(_cycler);
   cdata->_synchronize = 0;
 }
+
+#endif  // HAVE_AUDIO
