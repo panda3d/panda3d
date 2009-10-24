@@ -109,5 +109,8 @@ main(int argc, char *argv[]) {
   err = AEInstallEventHandler
     (kCoreEventClass, kAEOpenDocuments, handler, 0, false);
 
-  return this_prog->run_command_line(argc, argv);
+  // The command-line options are weird when we start from the
+  // Launcher.  Just ignore them.
+  this_prog->run_main_loop();
+  return 0;
 }
