@@ -103,8 +103,10 @@ PGItem(const PGItem &copy) :
   _has_frame(copy._has_frame),
   _frame(copy._frame),
   _state(copy._state),
-  _flags(copy._flags),
-  _sounds(copy._sounds)
+  _flags(copy._flags)
+#ifdef HAVE_AUDIO
+  , _sounds(copy._sounds)
+#endif
 {
   _notify = NULL;
   _region = new PGMouseWatcherRegion(this);

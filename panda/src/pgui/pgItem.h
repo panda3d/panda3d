@@ -25,12 +25,15 @@
 #include "nodePath.h"
 #include "luse.h"
 #include "pointerTo.h"
-#include "audioSound.h"
 #include "textNode.h"
 #include "plane.h"
 #include "pmap.h"
 #include "lightReMutex.h"
 #include "lightReMutexHolder.h"
+
+#ifdef HAVE_AUDIO
+#include "audioSound.h"
+#endif
 
 class PGTop;
 class MouseWatcherParameter;
