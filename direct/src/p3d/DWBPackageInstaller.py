@@ -13,6 +13,11 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
     Specify updateText = True (the default) to update the text label
     with the name of the package or False to leave it up to you to set
     it.
+
+    You can specify a callback function with finished = func; this
+    function will be called, with one boolean parameter, when the
+    download has completed.  The parameter will be true on success, or
+    false on failure.
     """
 
     def __init__(self, appRunner, parent = None, **kw):
@@ -30,6 +35,7 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
             ('text_scale',     0.1,                None),
             ('perPackage',     False,              None),
             ('updateText',     True,               None),
+            ('finished',       None,               None),
             )
         self.defineoptions(kw, optiondefs)
         DirectWaitBar.__init__(self, parent, **kw)
@@ -84,3 +90,5 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
 
         self.hide()
         
+        if self['finished']:
+            self['finished'](success)

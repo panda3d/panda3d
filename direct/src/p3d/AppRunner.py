@@ -804,7 +804,7 @@ class AppRunner(DirectObject):
         plugin takes down the splash window when it sees the
         onwindowopen notification. """
 
-        self.sendRequest('notify', message)
+        self.sendRequest('notify', message.lower())
 
     def evalScript(self, expression, needsResponse = False):
         """ Evaluates an arbitrary JavaScript expression in the global
