@@ -6,7 +6,6 @@ import shutil
 import platform
 from optparse import OptionParser
 import subprocess
-import direct
 from pandac.PandaModules import *
 
 usage = """
