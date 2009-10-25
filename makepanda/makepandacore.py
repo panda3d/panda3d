@@ -1238,6 +1238,8 @@ def SdkLocatePython():
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
             SDK["PYTHONEXEC"] = sys.executable
+    else:
+        SDK["PYTHONEXEC"] = sys.executable
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
