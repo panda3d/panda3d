@@ -1562,24 +1562,25 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (sys.platform.startswith("win")):
-        if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
-        if (fn.endswith(".idl")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".res")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".tlb")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
-        if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
-        if (fn.endswith(".ocx")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
-        if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
-        if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
-        if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dli"
-        if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dle"
-        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn
-        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+dllext+".lib"
-        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+dllext+".lib"
-        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
+        if (fn.endswith(".def")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".rc")):    return CxxFindSource(fn, ipath)
+        if (fn.endswith(".idl")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".res")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".tlb")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".ocx")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
+        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
+        if (fn.endswith(".dlo")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
+        if (fn.endswith(".dli")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dli"
+        if (fn.endswith(".dle")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dle"
+        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".dll"
+        if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn
+        if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+dllext+".lib"
+        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+dllext+".lib"
+        if (fn.endswith(".dat")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".in")):    return OUTPUTDIR+"/pandac/input/"+fn
     elif (sys.platform == "darwin"):
         if (fn.endswith(".mm")):    return CxxFindSource(fn, ipath)
         if (fn.endswith(".r")):     return CxxFindSource(fn, ipath)
@@ -1597,15 +1598,16 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".app")):   return OUTPUTDIR+"/bin/"+fn
         if (fn.endswith(".in")):    return OUTPUTDIR+"/pandac/input/"+fn
     else:
-        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
-        if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn
-        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
-        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
-        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
-        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
+        if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".in")):    return OUTPUTDIR+"/pandac/input/"+fn
     return fn
 
 

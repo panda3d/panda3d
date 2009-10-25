@@ -3227,19 +3227,15 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   OPTS += ['NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
   
-  if (sys.platform=="darwin"):
-    TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
-    TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
+  TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
+  TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
+  if (sys.platform.startswith("win")):
+    TargetAdd('nppanda3d.plugin', input='nppanda3d.res')
+    TargetAdd('nppanda3d.plugin', input='nppanda3d.def', ipath=OPTS)
+  elif (sys.platform == "darwin"):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.rsrc')
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
-    TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'CARBON'])
-  else:
-    TargetAdd('nppanda3d.dll', input='plugin_common.obj')
-    TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
-    if (sys.platform.startswith("win")):
-      TargetAdd('nppanda3d.dll', input='nppanda3d.res')
-      TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
-    TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE'])
+  TargetAdd('nppanda3d.plugin', opts=['FORCE_DYNAMIC', 'NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
