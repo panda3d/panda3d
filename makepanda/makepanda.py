@@ -3193,19 +3193,26 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
-    TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
-    TargetAdd('plugin_p3dPythonRun.obj', opts=OPTS, input='p3dPythonRun.cxx')
-    TargetAdd('plugin_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
-    TargetAdd('plugin_run_p3dpython.obj', opts=OPTS, input='run_p3dpython.cxx')
-    TargetAdd('p3dpython.exe', input='plugin_p3dCInstance.obj')
-    TargetAdd('p3dpython.exe', input='plugin_binaryXml.obj')
-    TargetAdd('p3dpython.exe', input='plugin_handleStream.obj')
-    TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
-    TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
-    TargetAdd('p3dpython.exe', input='plugin_p3dPythonMain.obj')
-    TargetAdd('p3dpython.exe', input='plugin_run_p3dpython.obj')
+    TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
+    TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
+    TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
+    TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+    
+    TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
+    TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3dpython.dll', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+    
+    if (sys.platform.startswith("win")):
+      DefSymbol("NON_CONSOLE", "NON_CONSOLE", "")
+      opts.append("NON_CONSOLE")
+      TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
+      TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
+      TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
+      TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
+      TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
+      TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
@@ -3288,8 +3295,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
     TargetAdd('Panda3D.app', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
-  
-  if (sys.platform.startswith("win")):
+  elif (sys.platform.startswith("win")):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
