@@ -190,10 +190,10 @@ elif (DISTRIBUTOR == ""):
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI"]:
+        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "PNG"]:
             PkgDisable(pkg)
         elif (PkgSkip(pkg)==1):
-            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib and NPAPI support!")
+            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG and PNG support!")
 
 if (sys.platform.startswith("win")):
     os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
