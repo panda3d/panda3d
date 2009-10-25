@@ -1847,7 +1847,18 @@ make_splash_window() {
     }
   }
 
+  if (_current_background_image != IT_none) {
+    _splash_window->set_image_filename(_image_files[_current_background_image]._filename, P3DSplashWindow::IP_background);
+  }
+  
+  // Update the splash window.
+  if (_splash_window != NULL) {
+  }
+
   if (_current_button_image != IT_none) {
+    _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
+    _splash_window->set_image_filename(_image_files[_current_button_image + 1]._filename, P3DSplashWindow::IP_button_rollover);
+    _splash_window->set_image_filename(_image_files[_current_button_image + 2]._filename, P3DSplashWindow::IP_button_click); 
     _splash_window->set_button_active(true);
   }
 }
@@ -1863,7 +1874,8 @@ make_splash_window() {
 void P3DInstance::
 set_background_image(ImageType image_type) {
   if (image_type != _current_background_image) {
-    nout << "setting background to " << _image_type_names[image_type] << "\n";
+    nout << "setting background to " << _image_type_names[image_type]
+         << ", splash_window = " << _splash_window << "\n";
     // Remove the previous image.
     _image_files[_current_background_image]._image_placement = P3DSplashWindow::IP_none;
 
