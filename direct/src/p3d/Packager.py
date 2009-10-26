@@ -10,7 +10,6 @@ import marshal
 import new
 import string
 import types
-import hashlib
 import getpass
 import platform
 from direct.p3d.FileSpec import FileSpec
