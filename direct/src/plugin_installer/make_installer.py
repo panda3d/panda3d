@@ -62,7 +62,7 @@ parser.add_option('', '--mssdk', dest = 'mssdk',
 
 this_dir = os.path.split(sys.argv[0])[0]
 
-assert options.version != None, "A version number must be supplied!"
+assert options.version, "A version number must be supplied!"
 
 ##############################################################################
 #
@@ -413,6 +413,7 @@ def makeInstaller():
         CMD += '/DPRODUCT_NAME_SHORT="' + options.short_name + '" '
         CMD += '/DPRODUCT_PUBLISHER="' + options.publisher + '" '
         CMD += '/DPRODUCT_WEB_SITE="' + options.website + '" '
+        CMD += '/DPRODUCT_VERSION="' + options.version + '" '
         CMD += '/DINSTALL_DIR="' + options.install_dir + '" '
         CMD += '/DLICENSE_FILE="' + options.license + '" '
         CMD += '/DOCX="' + ocx + '" '
