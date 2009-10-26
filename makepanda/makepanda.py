@@ -2214,11 +2214,11 @@ if (not RUNTIME):
   TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libdisplay.in', opts=['IMOD:panda', 'ILIB:libdisplay', 'SRCDIR:panda/src/display'])
   TargetAdd('libdisplay_igate.obj', input='libdisplay.in', opts=["DEPENDENCYONLY"])
-
-if (RUNTIME and sys.platform == "darwin"):
-  OPTS=['DIR:panda/src/display']
-  TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
-  TargetAdd('libsubprocbuffer.ilb', input='subprocessWindowBuffer.obj')
+  
+  if (RTDIST and sys.platform == "darwin"):
+    OPTS=['DIR:panda/src/display']
+    TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
+    TargetAdd('libsubprocbuffer.ilb', input='subprocessWindowBuffer.obj')
 
 #
 # DIRECTORY: panda/src/device/
