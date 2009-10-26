@@ -787,8 +787,11 @@ start_p3dpython(P3DInstance *inst) {
   if (_p3dpython_exe.empty()) {
     _p3dpython_exe = _python_root_dir + "/p3dpython";
 #ifdef __APPLE__
-    // On OSX, run from the packaged bundle.
-    _p3dpython_exe = _python_root_dir + "/P3DPython.app/Contents/MacOS/p3dpython";
+    // On OSX, run from the packaged bundle, if it exists.
+    string bundle_exe = _python_root_dir + "/P3DPython.app/Contents/MacOS/p3dpython";
+    if (access(bundle_exe.c_str(), X_OK) == 0) {
+      _p3dpython_exe = bundle_exe;
+    }
 #endif
   }
 #ifdef _WIN32
@@ -1065,6 +1068,13 @@ start_p3dpython(P3DInstance *inst) {
     // Fall back to running it in a sub-thread within the same
     // process.  This isn't nearly as good, but I guess it's better
     // than nothing.
+#ifndef _WIN32
+    // Let's only do this sub-thread fallback on Windows.  On Mac and
+    // Linux, just fail.
+    set_failed();
+    return;
+#endif  // _WIN32
+
     INIT_THREAD(_p3dpython_thread);
     SPAWN_THREAD(_p3dpython_thread, p3dpython_thread_run, this);
     _p3dpython_one_process = true;
@@ -1377,6 +1387,12 @@ win_create_process() {
 ////////////////////////////////////////////////////////////////////
 int P3DSession::
 posix_create_process() {
+  // If the program file doesn't exist or isn't executable, don't even
+  // bother to try.
+  if (access(_p3dpython_exe.c_str(), X_OK) != 0) {
+    return -1;
+  }
+
   // Fork and exec.
   pid_t child = fork();
   if (child < 0) {
@@ -1444,7 +1460,57 @@ posix_create_process() {
   close(_input_handle);
   close(_output_handle);
 
-  return child;
+  // Let's wait a few milliseconds and see if the child is going to
+  // immediately exit with a failure status.  This isn't 100%
+  // reliable, but it's a lot easier than sending back a "yes I
+  // successfully started the program" message.  Maybe I'll put in the
+  // more reliable test later.
+
+  struct timeval start;
+  gettimeofday(&start, NULL);
+  int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
+  
+  int status;
+  pid_t result = waitpid(child, &status, WNOHANG);
+  while (result != child) {
+    if (result == -1) {
+      perror("waitpid");
+      break;
+    }
+    
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+    int elapsed = now_ms - start_ms;
+    if (elapsed > 100) {
+      // OK, we've waited, and the child process is still alive.
+      // Assume it will stay that way.
+      nout << "child still alive after " << elapsed << " ms\n";
+      return child;
+    }
+        
+    // Yield the timeslice and wait some more.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+    select(0, NULL, NULL, NULL, &tv);
+    result = waitpid(child, &status, WNOHANG);
+  }
+
+  // The child process died for some reason; maybe it couldn't exec()
+  // its process.  Report an error condition.
+  nout << "Python process stopped immediately.\n";
+  if (WIFEXITED(status)) {
+    nout << "  exited normally, status = "
+         << WEXITSTATUS(status) << "\n";
+  } else if (WIFSIGNALED(status)) {
+    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+         << WCOREDUMP(status) << "\n";
+  } else if (WIFSTOPPED(status)) {
+    nout << "  stopped by " << WSTOPSIG(status) << "\n";
+  }
+  
+  return -1;
 }
 #endif  // _WIN32
 

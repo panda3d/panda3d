@@ -236,7 +236,8 @@ initialize(const string &contents_filename, const string &host_url,
   _log_pathname = _log_directory;
   _log_pathname += _log_basename;
   _log_pathname += ".log";
-  
+
+  logfile.close();
   logfile.clear();
   logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
   if (logfile) {

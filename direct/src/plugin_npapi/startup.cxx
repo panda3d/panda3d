@@ -74,7 +74,8 @@ open_logfile() {
       string log_pathname = log_directory;
       log_pathname += log_basename;
       log_pathname += ".log";
-      
+
+      logfile.close();
       logfile.clear();
       logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
       logfile.setf(ios::unitbuf);

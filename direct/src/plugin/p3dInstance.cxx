@@ -502,6 +502,7 @@ get_panda_script_object() const {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_browser_script_object(P3D_object *browser_script_object) {
+  nout << "set_browser_script_object\n";
   if (browser_script_object != _browser_script_object) {
     P3D_OBJECT_XDECREF(_browser_script_object);
     _browser_script_object = browser_script_object;
@@ -513,6 +514,41 @@ set_browser_script_object(P3D_object *browser_script_object) {
       send_browser_script_object();
     }
   }
+
+  // Query the location hostname.  We'll use this to limit access to
+  // the scripting interfaces for a particular p3d file.
+  _web_hostname = "";
+  if (_browser_script_object != NULL) {
+    P3D_object *location = P3D_OBJECT_GET_PROPERTY(_browser_script_object, "location");
+    if (location != NULL) {
+      P3D_object *hostname = P3D_OBJECT_GET_PROPERTY(location, "hostname");
+      if (hostname != NULL) {
+        int size = P3D_OBJECT_GET_STRING(hostname, NULL, 0);
+        char *buffer = new char[size];
+        P3D_OBJECT_GET_STRING(hostname, buffer, size);
+        _web_hostname = string(buffer, size);
+        delete [] buffer;
+
+        P3D_OBJECT_DECREF(hostname);
+      }
+
+      P3D_object *protocol = P3D_OBJECT_GET_PROPERTY(location, "protocol");
+      if (protocol != NULL) {
+        int size = P3D_OBJECT_GET_STRING(protocol, NULL, 0);
+        char *buffer = new char[size];
+        P3D_OBJECT_GET_STRING(protocol, buffer, size);
+        if (string(buffer, size) == "file:") {
+          _web_hostname = "local";
+        }
+        delete [] buffer;
+        P3D_OBJECT_DECREF(protocol);
+      }
+
+      P3D_OBJECT_DECREF(location);
+    }
+  }
+
+  nout << "_web_hostname is " << _web_hostname << "\n";
 }
 
 

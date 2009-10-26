@@ -131,7 +131,8 @@ void PPLogger::Open( const std::string &rootDir )
       std::string log_pathname = log_directory;
       log_pathname += log_basename;
       log_pathname += ".log";
-      
+
+      m_logfile.close();
       m_logfile.clear();
       m_logfile.open(log_pathname.c_str(), std::ios::out | std::ios::trunc);
       m_logfile.setf(std::ios::unitbuf);
