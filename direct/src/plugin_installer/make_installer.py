@@ -266,13 +266,14 @@ def makeInstaller():
             shutil.rmtree(tmproot)
         if os.path.exists("p3d-setup.pkg"):
             os.remove("p3d-setup.pkg")
-        tmproot.makeDir()
+        if not os.path.exists(tmproot):
+            os.makedirs(tmproot)
         dst_npapi = os.path.join(tmproot, "Library", "Internet Plug-Ins", npapi)
         dst_panda3d = os.path.join(tmproot, "usr", "bin", panda3d)
         dst_panda3dapp = os.path.join(tmproot, "Applications", panda3dapp)
-        dst_npapi.makeDir()
-        dst_panda3d.makeDir()
-        dst_panda3dapp.makeDir()
+        if not os.path.exists(dst_npapi): os.makedirs(dst_npapi)
+        if not os.path.exists(dst_panda3d): os.makedirs(dst_panda3d)
+        if not os.path.exists(dst_panda3dapp): os.makedirs(dst_panda3dapp)
         shutil.copytree(pluginFiles[npapi], dst_npapi)
         shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
         shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
@@ -291,7 +292,7 @@ def makeInstaller():
         shutil.rmtree(tmproot)
         
         # Pack the .pkg into a .dmg
-        tmproot.makeDir()
+        if not os.path.exists(tmproot): os.makedirs(tmproot)
         shutil.copyfile("p3d-setup.pkg", os.path.join(tmproot, "p3d-setup.pkg"))
         tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
