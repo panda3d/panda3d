@@ -801,9 +801,9 @@ def CompileLink(dll, obj, opts):
                 cmd = 'g++ -undefined dynamic_lookup'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
                 else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
-                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
                 base = os.path.basename(x)
