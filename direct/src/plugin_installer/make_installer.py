@@ -48,6 +48,15 @@ parser.add_option('', '--install_icon', dest = 'install_icon',
 parser.add_option('', '--nsis', dest = 'nsis',
                   help = 'The path to the makensis executable',
                   default = None)
+parser.add_option('', '--spc', dest = 'spc',
+                  help = 'Generate an ActiveX CAB file, then sign it with the indicated spc file.  You must also specify --pvk.',
+                  default = None)
+parser.add_option('', '--pvk', dest = 'pvk',
+                  help = 'Specifies the private key to be used in conjuction with --spc to sign a CAB file.',
+                  default = None)
+parser.add_option('', '--mssdk', dest = 'mssdk',
+                  help = 'The path to the MS Platform SDK directory.  mssdk/bin should contain cabarc.exe and signcode.exe.',
+                  default = None)
 
 (options, args) = parser.parse_args()
 
@@ -61,12 +70,24 @@ assert options.version != None, "A version number must be supplied!"
 #
 ##############################################################################
 
-if not options.nsis:
+def findExecutable(filename):
+    """ Searches for the named .exe or .dll file along the system PATH
+    and returns its full path if found, or None if not found. """
+    
     if sys.platform == "win32":
-        makensis = None
         for p in os.defpath.split(";") + os.environ["PATH"].split(";"):
-            if os.path.isfile(os.path.join(p, "makensis.exe")):
-                makensis = os.path.join(p, "makensis.exe")
+            if os.path.isfile(os.path.join(p, filename)):
+                return os.path.join(p, filename)
+    else:
+        for p in os.defpath.split(":") + os.environ["PATH"].split(":"):
+            if os.path.isfile(os.path.join(p, filename)):
+                return os.path.join(p, filename)
+    return None
+    
+
+if not options.nsis:
+    makensis = findExecutable('makensis.exe')
+    if sys.platform == "win32":
         if not makensis:
             try:
                 import pandac
@@ -80,10 +101,6 @@ if not options.nsis:
             if not os.path.isfile(makensis):
                 makensis = None
         options.nsis = makensis
-    else:
-        for p in os.defpath.split(":") + os.environ["PATH"].split(":"):
-            if os.path.isfile(os.path.join(p, "makensis")):
-                options.nsis = os.path.join(p, "makensis")
 
 if not options.license:
     try:
@@ -100,9 +117,9 @@ if not options.license:
         options.license = os.path.abspath(options.license)
 
 if sys.platform == "win32" and not options.welcome_image:
-    filename = os.path.join('models', 'plugin_images', 'download.bmp')
+    filename = os.path.join('models', 'plugin_images', 'installer.bmp')
     if not os.path.exists(filename):
-        sys.exit("Couldn't find download.bmp for welcome_image.")
+        sys.exit("Couldn't find installer.bmp for welcome_image.")
     options.welcome_image = os.path.abspath(filename)
 
 def parseDependenciesWindows(tempFile):
@@ -208,9 +225,88 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
                 # Also recurse.
                 addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
 
-        if dfilelower in dependentFiles:
+        if dfilelower in dependentFiles and dfilelower not in pluginDependencies[file]:
             pluginDependencies[file].append(dfilelower)
 
+def getDllVersion(filename):
+    """ Returns the DLL version number in the indicated DLL, as a
+    string of comma-separated integers.  Windows only. """
+
+    # This relies on the VBScript program in the same directory as
+    # this script.
+    thisdir = os.path.split(sys.argv[0])[0]
+    versionInfo = os.path.join(thisdir, 'VersionInfo.vbs')
+    tempfile = 'tversion.txt'
+    tempdata = open(tempfile, 'w+')
+    cmd = 'cscript //nologo "%s" "%s"' % (versionInfo, filename)
+    print cmd
+    result = subprocess.call(cmd, stdout = tempdata)
+    if result:
+        sys.exit(result)
+
+    tempdata.seek(0)
+    data = tempdata.read()
+    tempdata.close()
+    os.unlink(tempfile)
+    return ','.join(data.strip().split('.'))
+    
+
+def makeCabFile(ocx, pluginDependencies):
+    """ Creates an ActiveX CAB file.  Windows only. """
+
+    cabFilename = os.path.splitext(ocx)[0] + '.cab'
+    
+    cabarc = 'cabarc'
+    signcode = 'signcode'
+    if options.mssdk:
+        cabarc = options.mssdk + '/bin/cabarc'
+        signcode = options.mssdk + '/bin/signcode'
+
+    # First, we must generate an INF file.
+    infFile = 'temp.inf'
+    inf = open(infFile, 'w')
+
+    print >> inf, '[Add.Code]\n%s=%s\n%s=%s' % (infFile, infFile, ocx, ocx)
+    dependencies = pluginDependencies[ocx]
+    for filename in dependencies:
+        print >> inf, '%s=%s' % (filename, filename)
+    print >> inf, '\n[%s]\nfile=thiscab' % (infFile)
+    print >> inf, '\n[%s]\nfile=thiscab\nclsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}\nRegisterServer=yes\nFileVersion=%s' % (ocx, getDllVersion(ocx))
+
+    fullpaths = []
+    for filename in dependencies:
+        fullpath = findExecutable(filename)
+        fullpaths.append(fullpath)
+        print >> inf, '\n[%s]\nfile=thiscab\nDestDir=11\nRegisterServer=yes\nFileVersion=%s' % (filename, getDllVersion(fullpath))
+    inf.close()
+
+    # Now process the inf file with cabarc.
+    try:
+        os.unlink(cabFilename)
+    except OSError:
+        pass
+    
+    cmd = '"%s" -s 6144 n "%s"' % (cabarc, cabFilename)
+    for fullpath in fullpaths:
+        cmd += ' "%s"' % (fullpath)
+    cmd += ' "%s" %s' % (findExecutable(ocx), infFile)
+    print cmd
+    result = subprocess.call(cmd)
+    if result:
+        sys.exit(result)
+    if not os.path.exists(cabFilename):
+        print "Couldn't generate %s" % (cabFilename)
+        sys.exit(1)
+        
+    print "Successfully generated %s" % (cabFilename)
+
+    # Now we have to sign the cab file.
+    cmd = '"%s" -spc "%s" -k "%s" "%s"' % (signcode, options.spc, options.pvk, cabFilename)
+    print cmd
+    result = subprocess.call(cmd)
+    if result:
+        sys.exit(result)
+    
 def makeInstaller():
     # Locate the plugin(s).
     pluginFiles = {}
@@ -349,6 +445,13 @@ def makeInstaller():
         print ""
         print CMD
         print "packing..."
-        sys.exit(subprocess.call(CMD))
+        #result = subprocess.call(CMD)
+        #if result:
+        #    sys.exit(result)
+
+        if options.spc and options.pvk:
+            # Generate a CAB file and sign it.
+            makeCabFile(ocx, pluginDependencies)
+            
 
 makeInstaller()
