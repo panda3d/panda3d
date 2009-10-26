@@ -2215,6 +2215,11 @@ if (not RUNTIME):
   TargetAdd('libdisplay.in', opts=['IMOD:panda', 'ILIB:libdisplay', 'SRCDIR:panda/src/display'])
   TargetAdd('libdisplay_igate.obj', input='libdisplay.in', opts=["DEPENDENCYONLY"])
 
+if (RUNTIME and sys.platform == "darwin"):
+  OPTS=['DIR:panda/src/display']
+  TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
+  TargetAdd('libsubprocbuffer.ilb', input='subprocessWindowBuffer.obj')
+
 #
 # DIRECTORY: panda/src/device/
 #
@@ -3195,6 +3200,7 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
     TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
     TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
+    TargetAdd('p3d_plugin.dll', input='libsubprocbuffer.ilb')
     TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
