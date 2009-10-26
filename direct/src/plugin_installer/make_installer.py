@@ -4,9 +4,9 @@ import os
 import sys
 import shutil
 import platform
+import tempfile
 from optparse import OptionParser
 import subprocess
-from pandac.PandaModules import *
 
 usage = """
 This command creates a graphical installer for the
@@ -40,13 +40,13 @@ parser.add_option('', '--start', dest = 'start',
                   help = 'Specify this option to add a start menu',
                   action = 'store_false', default = False)
 parser.add_option('', '--welcome_image', dest = 'welcome_image',
-                  help = 'The image to display on the installer',
+                  help = 'The image to display on the installer, 170x312 BMP',
                   default = None)
 parser.add_option('', '--install_icon', dest = 'install_icon',
                   help = 'The icon to give to the installer',
                   default = None)
 parser.add_option('', '--nsis', dest = 'nsis',
-                  help = 'The directory containing NSIS',
+                  help = 'The path to the makensis executable',
                   default = None)
 
 (options, args) = parser.parse_args()
@@ -68,9 +68,15 @@ if not options.nsis:
             if os.path.isfile(os.path.join(p, "makensis.exe")):
                 makensis = os.path.join(p, "makensis.exe")
         if not makensis:
-            import pandac
-            makensis = os.path.dirname(os.path.dirname(pandac.__file__))
-            makensis = os.path.join(makensis, "nsis", "makensis.exe")
+            try:
+                import pandac
+                makensis = os.path.dirname(os.path.dirname(pandac.__file__))
+                makensis = os.path.join(makensis, "nsis", "makensis.exe")
+                if not os.path.isfile(makensis):
+                    makensis = None
+            except ImportError: pass
+        if not makensis:
+            makensis = os.path.join("thirdparty", "win-nsis", "makensis.exe")
             if not os.path.isfile(makensis):
                 makensis = None
         options.nsis = makensis
@@ -80,25 +86,31 @@ if not options.nsis:
                 options.nsis = os.path.join(p, "makensis")
 
 if not options.license:
-    import pandac
-    options.license = os.path.join(os.path.dirname(os.path.dirname(pandac.__file__)), "LICENSE")
-    if not os.path.isfile(options.license): options.license = None
+    try:
+        import pandac
+        options.license = os.path.join(os.path.dirname(os.path.dirname(pandac.__file__)), "LICENSE")
+        if not os.path.isfile(options.license):
+            options.license = None
+    except: pass
+    if not options.license:
+        options.license = os.path.join("doc", "LICENSE")
+        if not os.path.isfile(options.license):
+            options.license = None
+    if options.license:
+        options.license = os.path.abspath(options.license)
 
 if sys.platform == "win32" and not options.welcome_image:
-    filename = Filename('plugin_images/download.png')
-    found = filename.resolveFilename(getModelPath().getValue())
-    if not found:
-        found = filename.resolveFilename("models")
-    if not found:
-        sys.exit("Couldn't find download.png for welcome_image.")
-    options.welcome_image = filename
+    filename = os.path.join('models', 'plugin_images', 'download.bmp')
+    if not os.path.exists(filename):
+        sys.exit("Couldn't find download.bmp for welcome_image.")
+    options.welcome_image = os.path.abspath(filename)
 
 def parseDependenciesWindows(tempFile):
     """ Reads the indicated temporary file, the output from
     dumpbin /dependents, to determine the list of dll's this
     executable file depends on. """
 
-    lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+    lines = open(tempFile, 'rU').readlines()
     li = 0
     while li < len(lines):
         line = lines[li]
@@ -136,7 +148,7 @@ def parseDependenciesUnix(tempFile):
     otool -XL or ldd, to determine the list of dll's this
     executable file depends on. """
     
-    lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+    lines = open(tempFile, 'rU').readlines()
     filenames = []
     for l in lines:
         filenames.append(l.strip().split(' ', 1)[0])
@@ -147,28 +159,26 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
     appropriate dependencies found into pluginDependencies and
     dependentFiles. """
     
-    tempFile = Filename.temporary('', 'p3d_', '.txt')
+    tempFile = tempfile.mktemp('.txt', 'p3d_')
     if sys.platform == "darwin":
         command = 'otool -XL "%s" >"%s"'
     elif sys.platform == "win32":
         command = 'dumpbin /dependents "%s" >"%s"'
     else:
         command = 'ldd "%s" >"%s"'
-    command = command % (
-        pathname.toOsSpecific(),
-        tempFile.toOsSpecific())
+    command = command % (pathname, tempFile)
     try:
         os.system(command)
     except:
         pass
     filenames = None
 
-    if tempFile.exists():
+    if os.path.isfile(tempFile):
         if sys.platform == "win32":
             filenames = parseDependenciesWindows(tempFile)
         else:
             filenames = parseDependenciesUnix(tempFile)
-        tempFile.unlink()
+        os.unlink(tempFile)
     if filenames is None:
         sys.exit("Unable to determine dependencies from %s" % (pathname))
 
@@ -184,10 +194,16 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
                dfilelower.startswith('mfc') or \
                (dfile.startswith('lib') and dfile == dfilelower) or \
                dfilelower.startswith('python'):
-                pathname = path.findFile(dfile)
+                pathname = None
+                for pitem in path:
+                    pathname = os.path.join(pitem, dfile)
+                    if os.path.exists(pathname):
+                        break
+                    pathname = None
                 if not pathname:
                     sys.exit("Couldn't find %s." % (dfile))
-                dependentFiles[dfilelower] = pathname.toOsSpecific()
+                pathname = os.path.abspath(pathname)
+                dependentFiles[dfilelower] = pathname
 
                 # Also recurse.
                 addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
@@ -215,20 +231,29 @@ def makeInstaller():
         panda3dw = 'panda3dw.exe'
         baseFiles = [ocx, npapi, panda3d, panda3dw]
 
-    path = DSearchPath()
+    path = []
+    pathsep = ':'
+    if sys.platform == "win32":
+        pathsep = ';'
     if 'PATH' in os.environ:
-        path.appendPath(os.environ['PATH'])
+        path += os.environ['PATH'].split(pathsep)
     if sys.platform != "win32" and 'LD_LIBRARY_PATH' in os.environ:
-        path.appendPath(os.environ['LD_LIBRARY_PATH'])
+        path += os.environ['LD_LIBRARY_PATH'].split(pathsep)
     if sys.platform == "darwin" and 'DYLD_LIBRARY_PATH' in os.environ:
-        path.appendPath(os.environ['DYLD_LIBRARY_PATH'])
-    path.appendPath(os.defpath)
+        path += os.environ['DYLD_LIBRARY_PATH'].split(pathsep)
+    path += os.defpath.split(pathsep)
     for file in baseFiles:
-        pathname = path.findFile(file)
+        pathname = None
+        for pitem in path:
+            pathname = os.path.join(pitem, file)
+            if os.path.exists(pathname):
+                break
+            pathname = None
         if not pathname:
             sys.exit("Couldn't find %s." % (file))
 
-        pluginFiles[file] = pathname.toOsSpecific()
+        pathname = os.path.abspath(pathname)
+        pluginFiles[file] = pathname
         pluginDependencies[file] = []
 
         if sys.platform == "win32":
@@ -236,21 +261,21 @@ def makeInstaller():
             addDependencies(path, pathname, file, pluginDependencies, dependentFiles)
 
     if sys.platform == "darwin":
-        tmproot = Filename("/var/tmp/Panda3D Runtime/")
-        if tmproot.exists():
-            shutil.rmtree(tmproot.toOsSpecific())
+        tmproot = "/var/tmp/Panda3D Runtime/"
+        if os.path.exists(tmproot):
+            shutil.rmtree(tmproot)
         if os.path.exists("p3d-setup.pkg"):
             os.remove("p3d-setup.pkg")
         tmproot.makeDir()
-        dst_npapi = Filename(tmproot, Filename("Library/Internet Plug-Ins", npapi))
-        dst_panda3d = Filename(tmproot, Filename("usr/bin", panda3d))
-        dst_panda3dapp = Filename(tmproot, Filename("Applications", panda3dapp))
+        dst_npapi = os.path.join(tmproot, "Library", "Internet Plug-Ins", npapi)
+        dst_panda3d = os.path.join(tmproot, "usr", "bin", panda3d)
+        dst_panda3dapp = os.path.join(tmproot, "Applications", panda3dapp)
         dst_npapi.makeDir()
         dst_panda3d.makeDir()
         dst_panda3dapp.makeDir()
-        shutil.copytree(pluginFiles[npapi], dst_npapi.toOsSpecific())
-        shutil.copyfile(pluginFiles[panda3d], dst_panda3d.toOsSpecific())
-        shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp.toOsSpecific())
+        shutil.copytree(pluginFiles[npapi], dst_npapi)
+        shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
+        shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
         CMD = "/Developer/usr/bin/packagemaker"
         CMD += ' --id org.panda3d.pkg.runtime' #TODO: maybe more customizable?
         CMD += ' --version "%s"' % options.version
@@ -258,22 +283,22 @@ def makeInstaller():
         CMD += ' --out p3d-setup.pkg'
         CMD += ' --target %s' % platform.mac_ver()[0][:4]
         CMD += ' --domain system'
-        CMD += ' --root "%s"' % tmproot.toOsSpecific()
+        CMD += ' --root "%s"' % tmproot
         
         print ""
         print CMD
         subprocess.call(CMD, shell = True)
-        shutil.rmtree(tmproot.toOsSpecific())
+        shutil.rmtree(tmproot)
         
         # Pack the .pkg into a .dmg
         tmproot.makeDir()
-        shutil.copyfile("p3d-setup.pkg", Filename(tmproot, "p3d-setup.pkg").toOsSpecific())
-        tmpdmg = Filename.temporary("", "p3d-setup", "").toOsSpecific() + ".dmg"
+        shutil.copyfile("p3d-setup.pkg", os.path.join(tmproot, "p3d-setup.pkg"))
+        tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
         print ""
         print CMD
         subprocess.call(CMD, shell = True)
-        shutil.rmtree(tmproot.toOsSpecific())
+        shutil.rmtree(tmproot)
         
         # Compress the .dmg (and make it read-only)
         if os.path.exists("p3d-setup.dmg"):
@@ -284,35 +309,8 @@ def makeInstaller():
         subprocess.call(CMD, shell = True)
         
     else:
-        welcomeBitmap = None
-        if options.welcome_image:
-            # Convert the image from its current format to a bmp file, for NSIS.
-            p = PNMImage()
-            if not p.read(options.welcome_image):
-                sys.exit("Couldn't read %s" % (options.welcome_image))
-
-            # We also must scale it to fit within 170x312, the space
-            # allotted within the installer window.
-            size = (170, 312)
-            xscale = float(size[0]) / p.getXSize()
-            yscale = float(size[1]) / p.getYSize()
-            scale = min(xscale, yscale, 1)
-            resized = PNMImage((int)(scale * p.getXSize() + 0.5),
-                               (int)(scale * p.getYSize() + 0.5))
-            resized.quickFilterFrom(p)
-
-            # Now center it within the full window.
-            result = PNMImage(size[0], size[1])
-            result.fill(1, 1, 1)
-            xc = (size[0] - resized.getXSize()) / 2
-            yc = (size[1] - resized.getYSize()) / 2
-            result.copySubImage(resized, xc, yc)
-
-            welcomeBitmap = Filename.temporary('', 'p3d_', '.bmp')
-            result.write(welcomeBitmap)
-
         # Now build the NSIS command.
-        CMD = "\"" + options.nsis + "\\makensis.exe\" /V3 "
+        CMD = "\"" + options.nsis + "\" /V3 "
         CMD += '/DPRODUCT_NAME="' + options.long_name + '" '
         CMD += '/DPRODUCT_NAME_SHORT="' + options.short_name + '" '
         CMD += '/DPRODUCT_PUBLISHER="' + options.publisher + '" '
@@ -339,9 +337,9 @@ def makeInstaller():
         if options.start:
             CMD += '/DADD_START_MENU '
         
-        if welcomeBitmap:
-            CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
-            CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + welcomeBitmap.toOsSpecific() + '" '
+        if options.welcome_image:
+            CMD += '/DMUI_WELCOMEFINISHPAGE_BITMAP="' + options.welcome_image + '" '
+            CMD += '/DMUI_UNWELCOMEFINISHPAGE_BITMAP="' + options.welcome_image + '" '
         if options.install_icon:
             CMD += '/DINSTALL_ICON="' + options.install_icon + '" '
 
@@ -350,9 +348,6 @@ def makeInstaller():
         print ""
         print CMD
         print "packing..."
-        subprocess.call(CMD)
-
-        if welcomeBitmap:
-            welcomeBitmap.unlink()
+        sys.exit(subprocess.call(CMD))
 
 makeInstaller()
