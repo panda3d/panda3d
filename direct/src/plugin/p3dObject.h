@@ -69,6 +69,8 @@ public:
   string get_string_property(const string &property);
   void set_string_property(const string &property, const string &value);
 
+  void set_undefined_property(const string &property);
+
 public:
   static P3D_class_definition _object_class;
   static P3D_class_definition _generic_class;

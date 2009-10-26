@@ -139,16 +139,18 @@ private:
   enum ImageType {
     // Also update _image_type_names when you update this list.
     IT_download,
+    IT_unauth,
     IT_ready,
     IT_failed,
     IT_launch,
-    IT_play_ready,
-    IT_play_rollover,
-    IT_play_click,
-    IT_unauth,
+    IT_active,
+    IT_done,
     IT_auth_ready,
     IT_auth_rollover,
     IT_auth_click,
+    IT_play_ready,
+    IT_play_rollover,
+    IT_play_click,
     IT_none,                // Must be the last value
     IT_num_image_types,     // Not a real value
   };
@@ -274,6 +276,7 @@ private:
   int _download_package_index;
   size_t _total_download_size;
   size_t _total_downloaded;
+  time_t _download_begin;
   bool _download_complete;
 
   // We keep the _panda3d pointer separately because it's so

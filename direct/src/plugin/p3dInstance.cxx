@@ -49,16 +49,18 @@ typedef P3DSplashWindow SplashWindowType;
 // splash window.  This list must match the ImageType enum.
 const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
   "download",
+  "unauth",
   "ready",
   "failed",
   "launch",
-  "play_ready",
-  "play_rollover",
-  "play_click",
-  "unauth",
+  "active",
+  "done",
   "auth_ready",
   "auth_rollover",
   "auth_click",
+  "play_ready",
+  "play_rollover",
+  "play_click",
   "none",  // Not really used.
 };
 
@@ -128,6 +130,10 @@ P3DInstance(P3D_request_ready_func *func,
   // Set some initial properties.
   _panda_script_object->set_float_property("instanceDownloadProgress", 0.0);
   _panda_script_object->set_float_property("downloadProgress", 0.0);
+  _panda_script_object->set_undefined_property("downloadElapsedSeconds");
+  _panda_script_object->set_undefined_property("downloadElapsedFormatted");
+  _panda_script_object->set_undefined_property("downloadRemainingSeconds");
+  _panda_script_object->set_undefined_property("downloadRemainingFormatted");
   _panda_script_object->set_string_property("downloadPackageName", "");
   _panda_script_object->set_string_property("downloadPackageDisplayName", "");
   _panda_script_object->set_bool_property("downloadComplete", false);
@@ -1817,6 +1823,9 @@ make_splash_window() {
   // Go get the required images.
   for (int i = 0; i < (int)IT_none; ++i) {
     string token_keyword = string(_image_type_names[i]) + "_img";
+    if (!_fparams.has_token(token_keyword) && i != IT_done) {
+      token_keyword = "splash_img";
+    }
     if (!_fparams.has_token(token_keyword)) {
       // No specific image for this type is specified; get the default
       // image.  We do this via the P3DPackage interface, so we can
@@ -2000,6 +2009,7 @@ report_package_info_ready(P3DPackage *package) {
       _download_complete = false;
       _download_package_index = 0;
       _total_downloaded = 0;
+      _download_begin = time(NULL);
       
       nout << "Beginning install of " << _downloading_packages.size()
            << " packages, total " << _total_download_size
@@ -2018,6 +2028,8 @@ report_package_info_ready(P3DPackage *package) {
       _panda_script_object->set_string_property("status", "downloading");
       _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
       _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
+      _panda_script_object->set_int_property("downloadElapsedSeconds", 0);
+      _panda_script_object->set_undefined_property("downloadRemainingSeconds");
       send_notify("ondownloadbegin");
       
       start_next_download();
@@ -2200,6 +2212,23 @@ report_package_progress(P3DPackage *package, double progress) {
     _splash_window->set_install_progress(progress);
   }
   _panda_script_object->set_float_property("downloadProgress", progress);
+
+  static const size_t buffer_size = 256;
+  char buffer[buffer_size];
+
+  time_t elapsed = time(NULL) - _download_begin;
+  _panda_script_object->set_int_property("downloadElapsedSeconds", elapsed);
+
+  sprintf(buffer, "%d:%02d", elapsed / 60, elapsed % 60);
+  _panda_script_object->set_string_property("downloadElapsedFormatted", buffer);
+
+  if (progress > 0 && (elapsed > 5 || progress > 0.2)) {
+    time_t total = (time_t)((double)elapsed / progress);
+    time_t remaining = max(total, elapsed) - elapsed;
+    _panda_script_object->set_int_property("downloadRemainingSeconds", remaining);
+    sprintf(buffer, "%d:%02d", remaining / 60, remaining % 60);
+    _panda_script_object->set_string_property("downloadRemainingFormatted", buffer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

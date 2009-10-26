@@ -747,7 +747,7 @@ start_p3dpython(P3DInstance *inst) {
   if (!prc_name.empty()) {
     // Add the prc_name to the path too, even if this directory doesn't
     // actually exist.
-    prc_path = inst_mgr->get_root_dir() + "/" + prc_name + sep + prc_path;    
+    prc_path = inst_mgr->get_root_dir() + "/prc/" + prc_name + sep + prc_path;    
   }
 
   if (keep_pythonpath) {

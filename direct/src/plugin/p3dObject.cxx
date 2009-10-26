@@ -17,6 +17,7 @@
 #include "p3dIntObject.h"
 #include "p3dFloatObject.h"
 #include "p3dStringObject.h"
+#include "p3dInstanceManager.h"
 #include <string.h>  // strncpy
 
 // The following functions are C-style wrappers around the below
@@ -501,4 +502,18 @@ set_string_property(const string &property, const string &value) {
   P3D_object *svalue = new P3DStringObject(value);
   set_property(property, false, svalue);
   P3D_OBJECT_DECREF(svalue);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::set_undefined_property
+//       Access: Public
+//  Description: Changes the value of the named property to the
+//               undefined value.
+////////////////////////////////////////////////////////////////////
+void P3DObject::
+set_undefined_property(const string &property) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3D_object *uvalue = inst_mgr->new_undefined_object();
+  set_property(property, false, uvalue);
+  P3D_OBJECT_DECREF(uvalue);
 }
