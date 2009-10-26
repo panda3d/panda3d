@@ -752,7 +752,9 @@ def CompileLink(dll, obj, opts):
         cmd = "link /nologo"
         if (platform.architecture()[0] == "64bit"):
             cmd += " /MACHINE:X64"
-        cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /DEBUG"
+        if ("MFC" not in opts):
+            cmd += " /NOD:MFC90.LIB"
+        cmd += " /NOD:MFC80.LIB /NOD:LIBCI.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
@@ -760,6 +762,9 @@ def CompileLink(dll, obj, opts):
         if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
         if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
         if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+        if ("MFC" in OPTS):
+            if (optlevel<=2): cmd += " /NOD:MSVCRT.LIB /NOD:mfcs90.lib mfcs90.lib MSVCRT.lib"
+            else: cmd += " /NOD:MSVCRTD.LIB /NOD:mfcs90.lib /NOD:mfcs90d.lib mfcs90d.lib MSVCRTD.lib"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
@@ -3248,21 +3253,22 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
 # DIRECTORY: direct/src/plugin_activex/
 #
 
-#if (RUNTIME and sys.platform.startswith("win")):
-#  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX', 'TINYXML']
-#  DefSymbol('ACTIVEX', '_USRDLL', '')
-#  DefSymbol('ACTIVEX', '_WINDLL', '')
-#  DefSymbol('ACTIVEX', '_AFXDLL', '')
-#  DefSymbol('ACTIVEX', '_MBCS', '')
-#  TargetAdd('P3DActiveX.tlb', opts=OPTS, input='P3DActiveX.idl')
-#  TargetAdd('P3DActiveX.res', opts=OPTS, input='P3DActiveX.rc')
-#  
-#  TargetAdd('plugin_activex_p3dactivex_composite1.obj', opts=OPTS, input='p3dactivex_composite1.cxx')
-#  
-#  TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
-#  TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
-#  TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
-#  TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
+if (RUNTIME and sys.platform.startswith("win")):
+  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX', 'TINYXML']
+  DefSymbol('ACTIVEX', '_USRDLL', '')
+  DefSymbol('ACTIVEX', '_WINDLL', '')
+  DefSymbol('ACTIVEX', '_AFXDLL', '')
+  DefSymbol('ACTIVEX', '_MBCS', '')
+  TargetAdd('P3DActiveX.tlb', opts=OPTS, input='P3DActiveX.idl')
+  TargetAdd('P3DActiveX.res', opts=OPTS, input='P3DActiveX.rc')
+  
+  TargetAdd('plugin_activex_p3dactivex_composite1.obj', opts=OPTS, input='p3dactivex_composite1.cxx')
+  
+  TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
+  TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
+  TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
+  TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
+  TargetAdd('p3dactivex.ocx', opts=['MFC', 'WINSOCK2', 'OPENSSL', 'TINYXML'])
 
 #
 # DIRECTORY: direct/src/plugin_standalone/
@@ -3276,7 +3282,8 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
+  if (sys.platform == "darwin"):
+    TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
   TargetAdd('panda3d.exe', input='libpandaexpress.dll')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
@@ -4554,4 +4561,3 @@ WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
 print GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor()
-
