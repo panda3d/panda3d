@@ -567,7 +567,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==2): cmd += " /MDd /Zi"
         if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING"
         if (optlevel==4): cmd += " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL"
-        cmd += " /Fd" + obj[:-4] + ".pdb"
+        cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
         if ("BIGOBJ" in opts): cmd += " /bigobj"
@@ -768,15 +768,15 @@ def CompileLink(dll, obj, opts):
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
-            cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[len(GetOutputDir()+"/bin/"):-4]+".lib"
+            cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
         for x in obj:
             if (x.endswith(".dll")):
-                cmd += ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
+                cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
             elif (x.endswith(".lib")):
-                dname = x[:-4]+".dll"
-                if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
+                dname = os.path.splitext(dll)[0]+".dll"
+                if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
                 cmd += ' ' + BracketNameWithQuotes(x)
             elif (x.endswith(".def")):
@@ -1026,7 +1026,7 @@ def CompileAnything(target, inputs, opts, progress = None):
     elif origsuffix in SUFFIX_LIB:
         ProgressOutput(progress, "Linking static library", target)
         return CompileLib(target, inputs, opts)
-    elif origsuffix in SUFFIX_DLL:
+    elif origsuffix in SUFFIX_DLL or (origsuffix==".plugin" and sys.platform != "darwin"):
         if (origsuffix==".exe"):
             ProgressOutput(progress, "Linking executable", target)
         else:
@@ -1035,7 +1035,7 @@ def CompileAnything(target, inputs, opts, progress = None):
     elif (origsuffix==".in"):
         ProgressOutput(progress, "Building Interrogate database", target)
         return CompileIgate(target, inputs, opts)
-    elif (origsuffix==".plugin"):
+    elif (origsuffix==".plugin" and sys.platform == "darwin"):
         ProgressOutput(progress, "Building plugin bundle", target)
         return CompileBundle(target, inputs, opts)
     elif (origsuffix==".app"):
@@ -4289,9 +4289,11 @@ except:
 ##########################################################################################
 
 def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
-    if (RTDIST):
+    if (RUNTIME):
         # Invoke the make_installer script.
-        oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py")
+        AddToPathEnv("PATH", GetOutputDir() + "\\bin")
+        AddToPathEnv("PATH", GetOutputDir() + "\\plugins")
+        oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py --version %s" % VERSION)
         return
     
     print "Building "+fullname+" installer. This can take up to an hour."
@@ -4461,7 +4463,7 @@ def MakeInstallerOSX():
     if (RUNTIME):
         # Invoke the make_installer script.
         AddToPathEnv("DYLD_LIBRARY_PATH", GetOutputDir() + "/plugins")
-        oscmd(SDK["PYTHONEXEC"] + " direct/src/plugin_installer/make_installer.py")
+        oscmd(SDK["PYTHONEXEC"] + " direct/src/plugin_installer/make_installer.py --version %s" % VERSION)
         return
 
     import compileall

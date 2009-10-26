@@ -1373,6 +1373,8 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
     if (platform.architecture()[0]=="32bit"):
         AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
+        AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC90.CRT")
+        AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC90.MFC")
     elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\x64")):
         AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\x64")
     elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\amd64")):
