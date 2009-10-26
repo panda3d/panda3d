@@ -254,6 +254,7 @@ def getDllVersion(filename):
 def makeCabFile(ocx, pluginDependencies):
     """ Creates an ActiveX CAB file.  Windows only. """
 
+    ocxFullpath = findExecutable(ocx)
     cabFilename = os.path.splitext(ocx)[0] + '.cab'
     
     cabarc = 'cabarc'
@@ -271,7 +272,7 @@ def makeCabFile(ocx, pluginDependencies):
     for filename in dependencies:
         print >> inf, '%s=%s' % (filename, filename)
     print >> inf, '\n[%s]\nfile=thiscab' % (infFile)
-    print >> inf, '\n[%s]\nfile=thiscab\nclsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}\nRegisterServer=yes\nFileVersion=%s' % (ocx, getDllVersion(ocx))
+    print >> inf, '\n[%s]\nfile=thiscab\nclsid={924B4927-D3BA-41EA-9F7E-8A89194AB3AC}\nRegisterServer=yes\nFileVersion=%s' % (ocx, getDllVersion(ocxFullpath))
 
     fullpaths = []
     for filename in dependencies:
@@ -289,7 +290,7 @@ def makeCabFile(ocx, pluginDependencies):
     cmd = '"%s" -s 6144 n "%s"' % (cabarc, cabFilename)
     for fullpath in fullpaths:
         cmd += ' "%s"' % (fullpath)
-    cmd += ' "%s" %s' % (findExecutable(ocx), infFile)
+    cmd += ' "%s" %s' % (ocxFullpath, infFile)
     print cmd
     result = subprocess.call(cmd)
     if result:
@@ -445,9 +446,9 @@ def makeInstaller():
         print ""
         print CMD
         print "packing..."
-        #result = subprocess.call(CMD)
-        #if result:
-        #    sys.exit(result)
+        result = subprocess.call(CMD)
+        if result:
+            sys.exit(result)
 
         if options.spc and options.pvk:
             # Generate a CAB file and sign it.
