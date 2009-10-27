@@ -762,9 +762,9 @@ def CompileLink(dll, obj, opts):
         if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
         if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
         if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
-        if ("MFC" in OPTS):
-            if (optlevel<=2): cmd += " /NOD:MSVCRT.LIB /NOD:mfcs90.lib mfcs90.lib MSVCRT.lib"
-            else: cmd += " /NOD:MSVCRTD.LIB /NOD:mfcs90.lib /NOD:mfcs90d.lib mfcs90d.lib MSVCRTD.lib"
+        if ("MFC" in opts):
+            if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB /NOD:mfcs90d.lib mfcs90d.lib MSVCRTD.lib"
+            else: cmd += " /NOD:MSVCRT.LIB /NOD:mfcs90.lib mfcs90.lib MSVCRT.lib"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
