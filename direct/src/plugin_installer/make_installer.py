@@ -374,18 +374,34 @@ def makeInstaller():
         shutil.copytree(pluginFiles[npapi], dst_npapi)
         shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
         shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
-        CMD = "/Developer/usr/bin/packagemaker"
-        CMD += ' --id org.panda3d.pkg.runtime' #TODO: maybe more customizable?
-        CMD += ' --version "%s"' % options.version
-        CMD += ' --title "%s"' % options.long_name
-        CMD += ' --out p3d-setup.pkg'
-        CMD += ' --target %s' % platform.mac_ver()[0][:4]
-        CMD += ' --domain system'
-        CMD += ' --root "%s"' % tmproot
+
+        packagemaker = "/Developer/usr/bin/packagemaker"
+        if os.path.exists(packagemaker):
+            # PackageMaker 3.0 or better, e.g. OSX 10.5.
+            CMD = packagemaker
+            CMD += ' --id org.panda3d.pkg.runtime' #TODO: maybe more customizable?
+            CMD += ' --version "%s"' % options.version
+            CMD += ' --title "%s"' % options.long_name
+            CMD += ' --out p3d-setup.pkg'
+            CMD += ' --target %s' % platform.mac_ver()[0][:4]
+            CMD += ' --domain system'
+            CMD += ' --root "%s"' % tmproot
+        else:
+            # PackageMaker 2.0, e.g. OSX 10.4.
+            packagemaker = "/Developer/Tools/packagemaker"
+            CMD = packagemaker
+            CMD += ' -build'
+            CMD += ' -f "%s"' % tmproot
+            CMD += ' -p p3d-setup.pkg'
+            # Hmm, this isn't enough.  I guess we have to build up an
+            # Info.plist file in this case?  It's not clear what the
+            # contents of this file should look like.
         
         print ""
         print CMD
-        subprocess.call(CMD, shell = True)
+        result = subprocess.call(CMD, shell = True)
+        if result:
+            sys.exit(result)
         shutil.rmtree(tmproot)
         
         # Pack the .pkg into a .dmg
@@ -395,7 +411,9 @@ def makeInstaller():
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
         print ""
         print CMD
-        subprocess.call(CMD, shell = True)
+        result = subprocess.call(CMD, shell = True)
+        if result:
+            sys.exit(result)
         shutil.rmtree(tmproot)
         
         # Compress the .dmg (and make it read-only)
@@ -404,7 +422,9 @@ def makeInstaller():
         CMD = 'hdiutil convert "%s" -format UDBZ -o "p3d-setup.dmg"' % tmpdmg
         print ""
         print CMD
-        subprocess.call(CMD, shell = True)
+        result = subprocess.call(CMD, shell = True)
+        if result:
+            sys.exit(result)
         
     else:
         # Now build the NSIS command.
