@@ -68,6 +68,10 @@ function P3D_GetArgs(args, classid, mimeType){
         ret.params['data'] = args[i+1];
         break;
 
+    case "codebase":
+        ret.objAttrs['codebase'] = args[i+1];
+        break;
+
     case "id":
     case "width":
     case "height":
