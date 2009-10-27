@@ -74,10 +74,10 @@ Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleIdentifier</key>
-	<string>%(package_id)s</string>
-	<key>CFBundleShortVersionString</key>
-	<string>%(version)s</string>
+  <key>CFBundleIdentifier</key>
+  <string>%(package_id)s</string>
+  <key>CFBundleShortVersionString</key>
+  <string>%(version)s</string>
 </dict>
 </plist>
 """
@@ -380,8 +380,10 @@ def makeInstaller():
         tmproot = "/var/tmp/Panda3D Runtime/"
         if os.path.exists(tmproot):
             shutil.rmtree(tmproot)
-        if os.path.exists("p3d-setup.pkg"):
+        if os.path.isfile("p3d-setup.pkg"):
             os.remove("p3d-setup.pkg")
+        elif os.path.isdir("p3d-setup.pkg"):
+            shutil.rmtree("p3d-setup.pkg")
         if not os.path.exists(tmproot):
             os.makedirs(tmproot)
         dst_npapi = os.path.join(tmproot, "Library", "Internet Plug-Ins", npapi)
