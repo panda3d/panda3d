@@ -28,7 +28,7 @@ parser.add_option('-p', '--publisher', dest = 'publisher',
                   help = 'The name of the publisher',
                   default = 'Carnegie Mellon Entertainment Technology Center')
 parser.add_option('-i', '--install', dest = 'install_dir',
-                  help = "The install directory on the user's machine (Windows-only)",
+                  help = "The install directory on the user's machine (Windows only)",
                   default = '$PROGRAMFILES\\Panda3D')
 parser.add_option('-l', '--license', dest = 'license',
                   help = 'A file containing the license or EULA text',
@@ -49,13 +49,13 @@ parser.add_option('', '--nsis', dest = 'nsis',
                   help = 'The path to the makensis executable',
                   default = None)
 parser.add_option('', '--spc', dest = 'spc',
-                  help = 'Generate an ActiveX CAB file, then sign it with the indicated spc file.  You must also specify --pvk.',
+                  help = 'Generate an ActiveX CAB file, then sign it with the indicated spc file (Windows only).  You must also specify --pvk.',
                   default = None)
 parser.add_option('', '--pvk', dest = 'pvk',
-                  help = 'Specifies the private key to be used in conjuction with --spc to sign a CAB file.',
+                  help = 'Specifies the private key to be used in conjuction with --spc to sign a CAB file (Windows only).',
                   default = None)
 parser.add_option('', '--mssdk', dest = 'mssdk',
-                  help = 'The path to the MS Platform SDK directory.  mssdk/bin should contain cabarc.exe and signcode.exe.',
+                  help = 'The path to the MS Platform SDK directory (Windows only).  mssdk/bin should contain cabarc.exe and signcode.exe.',
                   default = None)
 
 (options, args) = parser.parse_args()
@@ -63,6 +63,25 @@ parser.add_option('', '--mssdk', dest = 'mssdk',
 this_dir = os.path.split(sys.argv[0])[0]
 
 assert options.version, "A version number must be supplied!"
+
+##############################################################################
+#
+# This Info.plist file is used only for the OSX 10.4 version of packagemaker.
+#
+##############################################################################
+
+Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>%(package_id)s</string>
+	<key>CFBundleShortVersionString</key>
+	<string>%(version)s</string>
+</dict>
+</plist>
+"""
+
 
 ##############################################################################
 #
@@ -375,27 +394,36 @@ def makeInstaller():
         shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
         shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
 
+        package_id = 'org.panda3d.pkg.runtime' #TODO: maybe more customizable?
+
+
+        plistFilename = None
         packagemaker = "/Developer/usr/bin/packagemaker"
         if os.path.exists(packagemaker):
             # PackageMaker 3.0 or better, e.g. OSX 10.5.
             CMD = packagemaker
-            CMD += ' --id org.panda3d.pkg.runtime' #TODO: maybe more customizable?
+            CMD += ' --id "%s"' % (package_id)
             CMD += ' --version "%s"' % options.version
             CMD += ' --title "%s"' % options.long_name
             CMD += ' --out p3d-setup.pkg'
-            CMD += ' --target %s' % platform.mac_ver()[0][:4]
+            CMD += ' --target 10.4' # The earliest version of OSX supported by Panda
             CMD += ' --domain system'
             CMD += ' --root "%s"' % tmproot
         else:
             # PackageMaker 2.0, e.g. OSX 10.4.
             packagemaker = "/Developer/Tools/packagemaker"
+            plistFilename = '/tmp/Info_plist'
+            plist = open(plistFilename, 'w')
+            plist.write(Info_plist % {
+                'package_id' : package_id,
+                'version' : options.version
+                })
+            plist.close()
             CMD = packagemaker
             CMD += ' -build'
             CMD += ' -f "%s"' % tmproot
             CMD += ' -p p3d-setup.pkg'
-            # Hmm, this isn't enough.  I guess we have to build up an
-            # Info.plist file in this case?  It's not clear what the
-            # contents of this file should look like.
+            CMD += ' -i "%s"' % (plistFilename)
         
         print ""
         print CMD
@@ -403,10 +431,13 @@ def makeInstaller():
         if result:
             sys.exit(result)
         shutil.rmtree(tmproot)
+
+        if plistFilename:
+            os.unlink(plistFilename)
         
         # Pack the .pkg into a .dmg
         if not os.path.exists(tmproot): os.makedirs(tmproot)
-        shutil.copyfile("p3d-setup.pkg", os.path.join(tmproot, "p3d-setup.pkg"))
+        shutil.copytree("p3d-setup.pkg", os.path.join(tmproot, "p3d-setup.pkg"))
         tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
         print ""
