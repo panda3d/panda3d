@@ -825,7 +825,7 @@ def CompileLink(dll, obj, opts):
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         
         oscmd(cmd)
-        if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4):
+        if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
             oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
@@ -3210,7 +3210,7 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+    TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'TINYXML', 'WINUSER'])
     
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
@@ -3221,16 +3221,16 @@ if (RTDIST or RUNTIME):
       OPTS.append("NON_CONSOLE")
       TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
       TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
-      TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
-      TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
-      TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
-      TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+      TargetAdd('p3dpythonw.exe', input='p3dpython_p3dpython_composite1.obj')
+      TargetAdd('p3dpythonw.exe', input='p3dpython_p3dPythonMain.obj')
+      TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
+      TargetAdd('p3dpythonw.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
     TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
     TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-    TargetAdd('p3dcert.exe', opts=['OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG'])
+    TargetAdd('p3dcert.exe', opts=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG'])
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
@@ -3309,7 +3309,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libp3pystub.dll')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
-    TargetAdd('Panda3D.app', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('Panda3D.app', opts=['NOSTRIP', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   elif (sys.platform.startswith("win")):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
