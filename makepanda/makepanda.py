@@ -3219,8 +3219,8 @@ if (RTDIST or RUNTIME):
     if (sys.platform.startswith("win")):
       DefSymbol("NON_CONSOLE", "NON_CONSOLE", "")
       OPTS.append("NON_CONSOLE")
-      TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
-      TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
+      TargetAdd('p3dpythonw_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
+      TargetAdd('p3dpythonw_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
       TargetAdd('p3dpythonw.exe', input='p3dpython_p3dpython_composite1.obj')
       TargetAdd('p3dpythonw.exe', input='p3dpython_p3dPythonMain.obj')
       TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
