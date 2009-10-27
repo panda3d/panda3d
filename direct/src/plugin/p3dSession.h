@@ -44,6 +44,7 @@ public:
 
   inline const string &get_session_key() const;
   inline const string &get_log_pathname() const;
+  inline bool get_matches_script_origin() const;
 
   void start_instance(P3DInstance *inst);
   void terminate_instance(P3DInstance *inst);
@@ -93,6 +94,7 @@ private:
   string _log_pathname;
   string _python_root_dir;
   string _start_dir;
+  bool _matches_script_origin;
   bool _keep_user_env;
   bool _failed;
 

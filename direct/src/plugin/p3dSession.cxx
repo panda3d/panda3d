@@ -56,6 +56,7 @@ P3DSession(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _session_id = inst_mgr->get_unique_id();
   _session_key = inst->get_session_key();
+  _matches_script_origin = inst->get_matches_script_origin();
   _keep_user_env = false;
   _failed = false;
 

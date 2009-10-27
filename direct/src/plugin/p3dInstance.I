@@ -97,6 +97,19 @@ is_trusted() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_matches_script_origin
+//       Access: Public
+//  Description: Returns true if this instance is allowed to be
+//               scripted by its embedding web page, false otherwise.
+//               This may not be known until the p3d file has been
+//               fully downloaded and opened.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstance::
+get_matches_script_origin() const {
+  return _matches_script_origin;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::is_started
 //       Access: Public
 //  Description: Returns true if this instance has already been

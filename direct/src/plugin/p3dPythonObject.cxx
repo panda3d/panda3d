@@ -154,6 +154,11 @@ get_property(const string &property) {
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
+  if (!_session->get_matches_script_origin()) {
+    // If you can't be scripting us, you can't be setting properties either.
+    return false;
+  }
+
   bool bresult = !needs_response;
 
   P3D_object *params[2];
@@ -234,6 +239,11 @@ has_method(const string &method_name) {
 P3D_object *P3DPythonObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
+  if (!_session->get_matches_script_origin()) {
+    // If you can't be scripting us, you can't be calling methods.
+    return NULL;
+  }
+
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");

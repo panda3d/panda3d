@@ -98,6 +98,7 @@ public:
   bool get_packages_failed() const;
   
   inline bool is_trusted() const;
+  inline bool get_matches_script_origin() const;
   int start_download(P3DDownload *download, bool add_request = true);
   inline bool is_started() const;
   inline bool is_failed() const;
@@ -155,6 +156,15 @@ private:
     IT_num_image_types,     // Not a real value
   };
 
+  void priv_set_p3d_filename(const string &p3d_filename);
+  void determine_p3d_basename(const string &p3d_url);
+
+  bool check_matches_origin(const string &origin_match);
+  bool check_matches_origin_one(const string &origin_match);
+  bool check_matches_hostname(const string &orig, const string &match);
+  void separate_components(vector<string> &components, const string &str);
+  bool check_matches_component(const string &orig, const string &match);
+
   bool check_p3d_signature();
   void mark_p3d_untrusted();
   void mark_p3d_trusted();
@@ -193,7 +203,10 @@ private:
   P3D_request_ready_func *_func;
   P3D_object *_browser_script_object;
   P3DMainObject *_panda_script_object;
-  string _web_hostname;
+  string _p3d_basename;
+  string _origin_protocol;
+  string _origin_hostname;
+  string _origin_port;
 
   P3DTemporaryFile *_temp_p3d_filename;
 
@@ -234,6 +247,8 @@ private:
   string _log_basename;
   bool _has_log_basename;
   bool _hidden;
+  bool _matches_run_origin;
+  bool _matches_script_origin;
   bool _allow_python_dev;
   bool _keep_user_env;
   bool _auto_start;
@@ -302,6 +317,7 @@ private:
   friend class P3DSession;
   friend class P3DAuthSession;
   friend class ImageDownload;
+  friend class InstanceDownload;
   friend class P3DWindowParams;
   friend class P3DPackage;
 };

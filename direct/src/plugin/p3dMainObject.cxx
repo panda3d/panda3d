@@ -322,6 +322,9 @@ call_play(P3D_object *params[], int num_params) {
     return inst_mgr->new_bool_object(false);
   }
 
+  // I guess there's no harm in allowing JavaScript to call play(),
+  // with or without explicit scripting authorization.
+
   if (!_inst->is_trusted()) {
     // Requires authorization.  We allow this only once; beyond that,
     // and you're only annoying the user.
@@ -349,6 +352,12 @@ P3D_object *P3DMainObject::
 call_read_game_log(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (_inst == NULL) {
+    return inst_mgr->new_undefined_object();
+  }
+
+  if (!_inst->get_matches_script_origin()) {
+    // If you're not allowed to be scripting us, you can't query the
+    // game log either.  (But you can query the system log.)
     return inst_mgr->new_undefined_object();
   }
 

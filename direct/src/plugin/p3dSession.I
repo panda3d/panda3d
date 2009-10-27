@@ -38,6 +38,18 @@ get_log_pathname() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::get_matches_script_origin
+//       Access: Public
+//  Description: Returns true if the instances of this session are
+//               allowed to be scripted by its embedding web page,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DSession::
+get_matches_script_origin() const {
+  return _matches_script_origin;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running

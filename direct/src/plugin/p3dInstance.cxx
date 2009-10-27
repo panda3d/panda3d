@@ -97,6 +97,8 @@ P3DInstance(P3D_request_ready_func *func,
   _instance_id = inst_mgr->get_unique_id();
   _has_log_basename = false;
   _hidden = (_fparams.lookup_token_int("hidden") != 0);
+  _matches_run_origin = true;
+  _matches_script_origin = false;
   _allow_python_dev = false;
   _keep_user_env = (_fparams.lookup_token_int("keep_user_env") != 0);
   _auto_start = (_fparams.lookup_token_int("auto_start") != 0);
@@ -296,6 +298,10 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_url(const string &p3d_url) {
+  // Save the last part of the URL as the p3d_basename, for reporting
+  // purposes or whatever.
+  determine_p3d_basename(p3d_url);
+
   // Make a temporary file to receive the instance data.
   assert(_temp_p3d_filename == NULL);
   _temp_p3d_filename = new P3DTemporaryFile(".p3d");
@@ -331,6 +337,10 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 int P3DInstance::
 make_p3d_stream(const string &p3d_url) {
+  // Save the last part of the URL as the p3d_basename, for reporting
+  // purposes or whatever.
+  determine_p3d_basename(p3d_url);
+
   // Make a temporary file to receive the instance data.
   assert(_temp_p3d_filename == NULL);
   _temp_p3d_filename = new P3DTemporaryFile(".p3d");
@@ -365,33 +375,8 @@ make_p3d_stream(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
-  if (!_fparams.get_p3d_filename().empty()) {
-    nout << "p3d_filename already set to: " << _fparams.get_p3d_filename()
-         << ", trying to set to " << p3d_filename << "\n";
-    return;
-  }
-
-  _fparams.set_p3d_filename(p3d_filename);
-  _got_fparams = true;
-
-  _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
-
-  // Generate a special notification: onpluginload, indicating the
-  // plugin has read its parameters and is ready to be queried (even
-  // if Python has not yet started).
-  send_notify("onpluginload");
-
-  if (!_mf_reader.open_read(_fparams.get_p3d_filename())) {
-    nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
-    set_failed();
-    return;
-  }
-
-  if (check_p3d_signature()) {
-    mark_p3d_trusted();
-  } else {
-    mark_p3d_untrusted();
-  }
+  determine_p3d_basename(p3d_filename);
+  priv_set_p3d_filename(p3d_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -515,40 +500,61 @@ set_browser_script_object(P3D_object *browser_script_object) {
     }
   }
 
-  // Query the location hostname.  We'll use this to limit access to
-  // the scripting interfaces for a particular p3d file.
-  _web_hostname = "";
+  // Query the origin: protocol, hostname, and port.  We'll use this to
+  // limit access to the scripting interfaces for a particular p3d
+  // file.
+  _origin_protocol.clear();
+  _origin_hostname.clear();
+  _origin_port.clear();
   if (_browser_script_object != NULL) {
     P3D_object *location = P3D_OBJECT_GET_PROPERTY(_browser_script_object, "location");
     if (location != NULL) {
-      P3D_object *hostname = P3D_OBJECT_GET_PROPERTY(location, "hostname");
-      if (hostname != NULL) {
-        int size = P3D_OBJECT_GET_STRING(hostname, NULL, 0);
-        char *buffer = new char[size];
-        P3D_OBJECT_GET_STRING(hostname, buffer, size);
-        _web_hostname = string(buffer, size);
-        delete [] buffer;
-
-        P3D_OBJECT_DECREF(hostname);
-      }
-
       P3D_object *protocol = P3D_OBJECT_GET_PROPERTY(location, "protocol");
       if (protocol != NULL) {
         int size = P3D_OBJECT_GET_STRING(protocol, NULL, 0);
         char *buffer = new char[size];
         P3D_OBJECT_GET_STRING(protocol, buffer, size);
-        if (string(buffer, size) == "file:") {
-          _web_hostname = "local";
-        }
+        _origin_protocol = string(buffer, size);
         delete [] buffer;
         P3D_OBJECT_DECREF(protocol);
+      }
+
+      P3D_object *hostname = P3D_OBJECT_GET_PROPERTY(location, "hostname");
+      if (hostname != NULL) {
+        int size = P3D_OBJECT_GET_STRING(hostname, NULL, 0);
+        char *buffer = new char[size];
+        P3D_OBJECT_GET_STRING(hostname, buffer, size);
+        _origin_hostname = string(buffer, size);
+        delete [] buffer;
+        P3D_OBJECT_DECREF(hostname);
+      }
+
+      P3D_object *port = P3D_OBJECT_GET_PROPERTY(location, "port");
+      if (port != NULL) {
+        int size = P3D_OBJECT_GET_STRING(port, NULL, 0);
+        char *buffer = new char[size];
+        P3D_OBJECT_GET_STRING(port, buffer, size);
+        _origin_port = string(buffer, size);
+        delete [] buffer;
+        P3D_OBJECT_DECREF(port);
+      }
+
+      if (_origin_port.empty()) {
+        // Maybe the actual URL doesn't include the port, in which
+        // case it is implicit.
+        if (_origin_protocol == "http:") {
+          _origin_port = "80";
+        } else if (_origin_protocol == "https:") {
+          _origin_port = "443";
+        }
       }
 
       P3D_OBJECT_DECREF(location);
     }
   }
 
-  nout << "_web_hostname is " << _web_hostname << "\n";
+  nout << "origin is " << _origin_protocol << "//" << _origin_hostname
+       << ":" << _origin_port << "\n";
 }
 
 
@@ -1255,6 +1261,247 @@ auth_finished_main_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::priv_set_p3d_filename
+//       Access: Private
+//  Description: The private implementation of set_p3d_filename(),
+//               this does all the work except for updating
+//               p3d_basename.  It is intended to be called
+//               internally, and might be passed a temporary filename.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+priv_set_p3d_filename(const string &p3d_filename) {
+  if (!_fparams.get_p3d_filename().empty()) {
+    nout << "p3d_filename already set to: " << _fparams.get_p3d_filename()
+         << ", trying to set to " << p3d_filename << "\n";
+    return;
+  }
+
+  _fparams.set_p3d_filename(p3d_filename);
+  _got_fparams = true;
+
+  _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
+
+  // Generate a special notification: onpluginload, indicating the
+  // plugin has read its parameters and is ready to be queried (even
+  // if Python has not yet started).
+  send_notify("onpluginload");
+
+  if (!_mf_reader.open_read(_fparams.get_p3d_filename())) {
+    nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
+    set_failed();
+    return;
+  }
+
+  if (check_p3d_signature()) {
+    mark_p3d_trusted();
+  } else {
+    mark_p3d_untrusted();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::determine_p3d_basename
+//       Access: Private
+//  Description: Determines _p3d_basename from the indicated URL.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+determine_p3d_basename(const string &p3d_url) {
+  string file_part = p3d_url;
+  size_t question = file_part.find('?');
+  if (question != string::npos) {
+    file_part = file_part.substr(0, question);
+  }
+  size_t slash = file_part.rfind('/');
+  if (slash != string::npos) {
+    file_part = file_part.substr(slash + 1);
+  }
+  _p3d_basename = file_part;
+
+  nout << "p3d_basename = " << _p3d_basename << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::check_matches_origin
+//       Access: Private
+//  Description: Returns true if the indicated origin_match string,
+//               one of either run_origin or script_origin from the
+//               p3d_info.xml file, matches the origin of the page
+//               that embedded the p3d file.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+check_matches_origin(const string &origin_match) {
+  // First, separate the string up at the semicolons.
+  size_t p = 0;
+  size_t semicolon = origin_match.find(';');
+  while (semicolon != string::npos) {
+    if (check_matches_origin_one(origin_match.substr(p, semicolon - p))) {
+      return true;
+    }
+    p = semicolon + 1;
+    semicolon = origin_match.find(';', p);
+  }
+  if (check_matches_origin_one(origin_match.substr(p))) {
+    return true;
+  }
+
+  // It doesn't match any of the semicolon-delimited strings within
+  // origin_match.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::check_matches_origin_one
+//       Access: Private
+//  Description: Called for each semicolon-delimited string within
+//               origin_match passed to check_matches_origin().
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+check_matches_origin_one(const string &origin_match) {
+  // Do we have a protocol?
+  size_t p = 0;
+  size_t colon = origin_match.find(':');
+  if (colon + 1 < origin_match.length() && origin_match[colon + 1] == '/') {
+    // Yes.  It should therefore match the protocol we have in the origin.
+    string protocol = origin_match.substr(0, colon + 1);
+    if (!check_matches_component(_origin_protocol, protocol)) {
+      return false;
+    }
+    p = colon + 2;
+    // We'll support both http://hostname and http:/hostname, in case
+    // the user is sloppy.
+    if (p < origin_match.length() && origin_match[p] == '/') {
+      ++p;
+    }
+    colon = origin_match.find(':', p);
+  }
+
+  // Do we have a port?
+  if (colon < origin_match.length() && isdigit(origin_match[colon + 1])) {
+    // Yes.  It should therefore match the port we have in the origin.
+    string port = origin_match.substr(colon + 1);
+    if (!check_matches_component(_origin_port, port)) {
+      return false;
+    }
+  }
+
+  // The hostname should also match what we have in the origin.
+  string hostname = origin_match.substr(p, colon - p);
+  if (!check_matches_hostname(_origin_hostname, hostname)) {
+    return false;
+  }
+
+  // Everything matches.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::check_matches_hostname
+//       Access: Private
+//  Description: Matches the hostname of check_matches_origin:
+//               the individual components of the hostname are matched
+//               independently, with '**.' allowed at the beginning to
+//               indicate zero or more prefixes.  Returns true on
+//               match, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+check_matches_hostname(const string &orig, const string &match) {
+  // First, separate both strings up at the dots.
+  vector<string> orig_components;
+  separate_components(orig_components, orig);
+
+  vector<string> match_components;
+  separate_components(match_components, match);
+
+  // If the first component of match is "**", it means we accept any
+  // number, zero or more, of components at the beginning of the
+  // hostname.
+  if (!match_components.empty() && match_components[0] == "**") {
+    // Remove the leading "**"
+    match_components.erase(match_components.begin());
+    // Then remove any extra components from the beginning of
+    // orig_components; we won't need to check them.
+    if (orig_components.size() > match_components.size()) {
+      size_t num_to_remove = orig_components.size() - match_components.size();
+      orig_components.erase(orig_components.begin(), orig_components.begin() + num_to_remove);
+    }
+  }
+
+  // Now match the remaining components one-to-one.
+  if (match_components.size() != orig_components.size()) {
+    return false;
+  }
+
+  vector<string>::const_iterator p = orig_components.begin();
+  vector<string>::const_iterator p2 = match_components.begin();
+
+  while (p != orig_components.end()) {
+    assert(p2 != match_components.end());
+    if (!check_matches_component(*p, *p2)) {
+      return false;
+    }
+    ++p;
+    ++p2;
+  }
+
+  assert(p2 == match_components.end());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::separate_components
+//       Access: Private
+//  Description: Separates the indicated hostname into its components
+//               at the dots.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+separate_components(vector<string> &components, const string &str) {
+  size_t p = 0;
+  size_t dot = str.find('.');
+  while (dot != string::npos) {
+    components.push_back(str.substr(p, dot - p));
+    p = dot + 1;
+    dot = str.find('.', p);
+  }
+  components.push_back(str.substr(p));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::check_matches_component
+//       Access: Private
+//  Description: Matches a single component of check_matches_origin:
+//               either protocol or port, or a single component of the
+//               hostname.  Case-insensitive, and supports the '*'
+//               wildcard operator to match the entire component.
+//               Returns true on match, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+check_matches_component(const string &orig, const string &match) {
+  if (match == "*") {
+    return true;
+  }
+
+  // Case-insensitive compare.
+  if (orig.length() != match.length()) {
+    return false;
+  }
+
+  string::const_iterator p = orig.begin();
+  string::const_iterator p2 = match.begin();
+
+  while (p != orig.end()) {
+    assert(p2 != match.end());
+    if (tolower(*p) != tolower(*p2)) {
+      return false;
+    }
+    ++p;
+    ++p2;
+  }
+
+  assert(p2 == match.end());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::check_p3d_signature
 //       Access: Private
 //  Description: Checks the signature(s) encoded in the p3d file, and
@@ -1431,6 +1678,16 @@ scan_app_desc_file(TiXmlDocument *doc) {
       }
     }
 
+    const char *run_origin = xconfig->Attribute("run_origin");
+    if (run_origin != NULL) {
+      _matches_run_origin = check_matches_origin(run_origin);
+    }
+
+    const char *script_origin = xconfig->Attribute("script_origin");
+    if (script_origin != NULL) {
+      _matches_script_origin = check_matches_origin(script_origin);
+    }
+
     int allow_python_dev = 0;
     if (xconfig->QueryIntAttribute("allow_python_dev", &allow_python_dev) == TIXML_SUCCESS) {
       _allow_python_dev = (allow_python_dev != 0);
@@ -1445,6 +1702,16 @@ scan_app_desc_file(TiXmlDocument *doc) {
     if (xconfig->QueryIntAttribute("auto_start", &auto_start) == TIXML_SUCCESS) {
       _auto_start = (auto_start != 0);
     }
+  }
+
+  nout << "_matches_run_origin = " << _matches_run_origin << "\n";
+  nout << "_matches_script_origin = " << _matches_script_origin << "\n";
+
+  if (inst_mgr->get_trusted_environment()) {
+    // If we're in a trusted environment, it is as if the origin
+    // always matches.
+    _matches_run_origin = true;
+    _matches_script_origin = true;
   }
 
   if (_auth_button_approved) {
@@ -1474,6 +1741,13 @@ scan_app_desc_file(TiXmlDocument *doc) {
     }
 
     xrequires = xrequires->NextSiblingElement("requires");
+  }
+
+  if (!_matches_run_origin) {
+    nout << "Cannot run " << _p3d_basename << " from origin " 
+         << _origin_protocol << "//" << _origin_hostname
+         << ":" << _origin_port << "\n";
+    set_failed();
   }
 }
 
@@ -1624,28 +1898,32 @@ handle_notify_request(const string &message) {
     // Once Python is up and running, we can get the actual main
     // object from the Python side, and merge it with our own.
 
-    TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlElement *xcommand = new TiXmlElement("command");
-    xcommand->SetAttribute("cmd", "pyobj");
-    xcommand->SetAttribute("op", "get_panda_script_object");
-    doc->LinkEndChild(xcommand);
-    TiXmlDocument *response = _session->command_and_response(doc);
-    
-    P3D_object *result = NULL;
-    if (response != NULL) {
-      TiXmlElement *xresponse = response->FirstChildElement("response");
-      if (xresponse != NULL) {
-        TiXmlElement *xvalue = xresponse->FirstChildElement("value");
-        if (xvalue != NULL) {
-          result = _session->xml_to_p3dobj(xvalue);
+    // But only if this web page is allowed to call our scripting
+    // functions.
+    if (_matches_script_origin) {
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "pyobj");
+      xcommand->SetAttribute("op", "get_panda_script_object");
+      doc->LinkEndChild(xcommand);
+      TiXmlDocument *response = _session->command_and_response(doc);
+      
+      P3D_object *result = NULL;
+      if (response != NULL) {
+        TiXmlElement *xresponse = response->FirstChildElement("response");
+        if (xresponse != NULL) {
+          TiXmlElement *xvalue = xresponse->FirstChildElement("value");
+          if (xvalue != NULL) {
+            result = _session->xml_to_p3dobj(xvalue);
+          }
         }
+        delete response;
       }
-      delete response;
-    }
-
-    if (result != NULL) {
-      _panda_script_object->set_pyobj(result);
-      P3D_OBJECT_DECREF(result);
+      
+      if (result != NULL) {
+        _panda_script_object->set_pyobj(result);
+        P3D_OBJECT_DECREF(result);
+      }
     }
 
     _panda_script_object->set_string_property("status", "starting");
@@ -2639,7 +2917,7 @@ download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   if (success) {
     // We've successfully downloaded the instance data.
-    _inst->set_p3d_filename(get_filename());
+    _inst->priv_set_p3d_filename(get_filename());
   } else {
     // Oops, no joy on the instance data.
     _inst->set_failed();
