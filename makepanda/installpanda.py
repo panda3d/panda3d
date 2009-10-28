@@ -129,10 +129,6 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     WriteMimeXMLFile(destdir+prefix+"/share/mime/packages/panda3d.xml", MIME_INFO)
     WriteApplicationsFile(destdir+prefix+"/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO)
     oscmd("cp makepanda/pview.desktop           "+destdir+prefix+"/share/applications/pview.desktop")
-    if (os.path.exists(outputdir+"/lib/nppanda3d.so")):
-        oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/mozilla/plugins/nppanda3d.so")
-        oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/mozilla-firefox/plugins/nppanda3d.so")
-        oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/xulrunner-addons/plugins/nppanda3d.so")
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/share/panda3d/LICENSE")
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
@@ -163,11 +159,11 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/application-registry")
     oscmd("mkdir -p "+destdir+prefix+"/share/applications")
     oscmd("mkdir -p "+destdir+prefix+libdir+"/panda3d")
-    if (os.path.exists(outputdir+"/lib/nppanda3d.so")):
+    if (os.path.exists(outputdir+"/plugins/nppanda3d.so")):
         oscmd("mkdir -p "+destdir+prefix+libdir+"/mozilla/plugins")
         oscmd("mkdir -p "+destdir+prefix+libdir+"/mozilla-firefox/plugins")
         oscmd("mkdir -p "+destdir+prefix+libdir+"/xulrunner-addons/plugins")
-        oscmd("cp "+outputdir+"/lib/nppanda3d.so            "+destdir+prefix+libdir+"/panda3d/nppanda3d.so")
+        oscmd("cp "+outputdir+"/plugins/nppanda3d.so        "+destdir+prefix+libdir+"/panda3d/nppanda3d.so")
         oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/mozilla/plugins/nppanda3d.so")
         oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/mozilla-firefox/plugins/nppanda3d.so")
         oscmd("ln -s "+prefix+libdir+"/panda3d/nppanda3d.so "+destdir+prefix+libdir+"/xulrunner-addons/plugins/nppanda3d.so")
