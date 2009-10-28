@@ -377,6 +377,17 @@ get_mouse() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_button_thrower
+//       Access: Public
+//  Description: Returns the node in the data graph corresponding to
+//               the ButtonThrower object associated with this window.
+////////////////////////////////////////////////////////////////////
+NodePath WindowFramework::
+get_button_thrower() {
+  return _button_thrower;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::enable_keyboard
 //       Access: Public
 //  Description: Creates a ButtonThrower to listen to button presses
@@ -402,7 +413,7 @@ enable_keyboard() {
     mods.add_button(KeyboardButton::alt());
     mods.add_button(KeyboardButton::meta());
     bt->set_modifier_buttons(mods);
-    mouse.attach_new_node(bt);
+    _button_thrower = mouse.attach_new_node(bt);
   }
 
   _got_keyboard = true;
