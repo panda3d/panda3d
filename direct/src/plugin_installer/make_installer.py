@@ -222,13 +222,15 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
     # have to be included too.  Also, any Panda-based libraries, or
     # the Python DLL, should be included, in case panda3d.exe wasn't
     # built static.  The Panda-based libraries begin with "lib" and
-    # are all lowercase.
+    # are all lowercase, or start with libpanda/libp3d.
     for dfile in filenames:
         dfilelower = dfile.lower()
         if dfilelower not in dependentFiles:
             if dfilelower.startswith('msvc') or \
                dfilelower.startswith('mfc') or \
                (dfile.startswith('lib') and dfile == dfilelower) or \
+               dfilelower.startswith('libpanda') or \
+               dfilelower.startswith('libp3d') or \
                dfilelower.startswith('python'):
                 pathname = None
                 for pitem in path:
