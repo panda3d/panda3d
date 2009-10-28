@@ -190,10 +190,10 @@ elif (DISTRIBUTOR == ""):
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
             PkgDisable(pkg)
         elif (PkgSkip(pkg)==1):
-            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG and PNG support!")
+            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
 if (sys.platform.startswith("win")):
     os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
@@ -427,12 +427,13 @@ if (COMPILER=="LINUX"):
         PkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
         PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr/prtypes.h", "nspr"))
-    if (sys.platform != "darwin" and not RUNTIME):
+    if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
-        if (PkgSkip("NVIDIACG")==0):
+        if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
             PkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
         PkgEnable("X11",   "x11", "X11", "Xlib.h")
-        PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+        if (not RUNTIME):
+            PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
