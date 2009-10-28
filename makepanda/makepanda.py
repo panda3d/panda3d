@@ -40,6 +40,7 @@ RTDIST_VERSION="dev"
 RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
+OSXTARGET=None
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
@@ -78,6 +79,7 @@ def usage(problem):
     print "  --version         (set the panda version number)"
     print "  --lzma            (use lzma compression when building installer)"
     print "  --threads N       (use the multithreaded build system. see manual)"
+    print "  --osxtarget N     (the OSX version number to build for (OSX only))"
     print ""
     for pkg in PkgListGet():
         p = pkg.lower()
@@ -96,7 +98,7 @@ def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
     global VERSION,COMPRESSOR,THREADCOUNT
     longopts = [
-        "help","distributor=","verbose","runtime",
+        "help","distributor=","verbose","runtime","osxtarget",
         "optimize=","everything","nothing","installer","rtdist",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
@@ -118,6 +120,7 @@ def parseopts(args):
             elif (option=="--nothing"): PkgDisableAll()
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
+            elif (option=="--osxtarget"): OSXTARGET=value.strip()
             elif (option=="--version"):
                 VERSION=value
                 if (len(VERSION.split(".")) != 3): raise "usage"
@@ -138,6 +141,13 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
+    if (osxtarget != None):
+        if (len(osxtarget) != 4 or not OSXTARGET.startswith("10.")):
+            usage("Invalid setting for OSXTARGET")
+        try:
+            OSXTARGET = "10.%d" % int(OSXTARGET[-1])
+        except:
+            usage("Invalid setting for OSXTARGET")
     try:
         SetOptimize(int(optimize))
         assert GetOptimize() in [1, 2, 3, 4]
@@ -159,6 +169,8 @@ if ("RPM_OPT_FLAGS" in os.environ):
 CFLAGS = CFLAGS.strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
+if (sys.platform == "darwin" and OSXTARGET != None):
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = OSXTARGET
 
 ########################################################################
 ##
@@ -229,7 +241,7 @@ MakeBuildTree()
 SdkLocateDirectX()
 SdkLocateMaya()
 SdkLocateMax()
-SdkLocateMacOSX()
+SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython()
 SdkLocateVisualStudio()
 SdkLocateMSPlatform()
