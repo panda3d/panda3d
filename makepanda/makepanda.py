@@ -3258,7 +3258,8 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   elif (sys.platform == "darwin"):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.rsrc')
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
-  TargetAdd('nppanda3d.plugin', opts=['FORCE_DYNAMIC', 'NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
+    TargetAdd('nppanda3d.plugin', input='plugin_find_root_dir_assist.obj')
+  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
