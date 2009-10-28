@@ -586,7 +586,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64 -arch i386"
             else:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
-            if ("NOPPC" not in opts): cmd += " -arch ppc"
+                if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -g -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
@@ -826,7 +826,7 @@ def CompileLink(dll, obj, opts):
                 cmd += " -arch x86_64 -arch i386"
             else:
                 cmd += " -arch i386"
-            if ("NOPPC" not in opts): cmd += " -arch ppc"
+                if ("NOPPC" not in opts): cmd += " -arch ppc"
         
         oscmd(cmd)
         if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
