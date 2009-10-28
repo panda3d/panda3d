@@ -1534,8 +1534,9 @@ if (sys.platform.startswith("win")):
 
 CopyFile(GetOutputDir()+"/", "doc/LICENSE")
 CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
-CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
-CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
+if (PkgSkip("PANDATOOL")==0):
+    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
+    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
 if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
     CopyTree(GetOutputDir()+'/Pmw',         'thirdparty/Pmw')
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
