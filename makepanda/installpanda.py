@@ -14,6 +14,7 @@
 
 import os, sys, platform, compileall
 from distutils.sysconfig import get_python_lib
+from optparse import OptionParser
 from makepandacore import *
 
 if (platform.architecture()[0] == "64bit"):
@@ -177,25 +178,31 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
 if (__name__ == "__main__"):
     if (sys.platform != "linux2"):
         exit("This script only works on linux at the moment!")
-    destdir = ""
-    if (len(sys.argv) > 1):
-        print "Reading out commandline arguments"
-        destdir = " ".join(sys.argv[1:])
-        if (destdir.endswith("/")):
-            destdir = destdir[:-1]
-        if (destdir != "" and not os.path.isdir(destdir)):
-            exit("Directory '%s' does not exist!" % destdir)
-        print "Installing Panda3D into " + destdir
-    elif (os.environ.has_key("DESTDIR")):
-        print "Reading out DESTDIR"
+
+    destdir = "/"
+    if (os.environ.has_key("DESTDIR")):
         destdir = os.environ["DESTDIR"]
-        if (destdir.endswith("/")):
-            destdir = destdir[:-1]
-        if (destdir != "" and not os.path.isdir(destdir)):
-            exit("Directory '%s' does not exist!" % destdir)
-        print "Installing Panda3D into " + destdir
+
+    parser = OptionParser()
+    parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
+    parser.add_option('', '--destdir', dest = 'destdir', help = 'Destination directory [default=%s]' % destdir, default = destdir)
+    parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr]', default = '/usr')
+    parser.add_option('', '--runtime', dest = 'runtime', help = 'Specify if runtime build [default=no]', action = 'store_true', default = False)
+    (options, args) = parser.parse_args()
+
+    destdir = options.destdir
+    if (destdir.endswith("/")):
+        destdir = destdir[:-1]
+    if (destdir == "/"):
+        destdir = ""
+    if (destdir != "" and not os.path.isdir(destdir)):
+        exit("Directory '%s' does not exist!" % destdir)
+    
+    if (options.runtime):
+        print "Installing Panda3D Runtime into " + destdir + options.prefix
+        InstallRuntime(destdir = destdir, prefix = options.prefix, outputdir = options.outputdir)
     else:
-        print "Installing Panda3D into /"
-    InstallPanda(destdir)
-    print "Install done!"
+        print "Installing Panda3D into " + destdir + options.prefix
+        InstallPanda(destdir = destdir, prefix = options.prefix, outputdir = options.outputdir)
+    print "Installation finished!"
 
