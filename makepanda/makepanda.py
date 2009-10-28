@@ -3233,9 +3233,12 @@ if (RTDIST or RUNTIME):
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
+    if (sys.platform=="darwin"): OPTS += ['OPT:2']
     TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
     TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-    TargetAdd('p3dcert.exe', opts=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG'])
+    OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+    if (sys.platform=="darwin"): OPTS += ['OPT:2']
+    TargetAdd('p3dcert.exe', opts=OPTS)
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
