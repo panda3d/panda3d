@@ -397,25 +397,26 @@ if (COMPILER=="LINUX"):
     fcollada_libs = ("FColladaD", "FColladaSD")
 
     #         Name         pkg-config   libs, include(dir)s
-    PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
-    PkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
-    PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
-    PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
-    PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-    PkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-    PkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
-    PkgEnable("GTK2",      "gtk+-2.0")
+    if (not RUNTIME):
+        PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
+        PkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
+        PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
+        PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
+        PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
+        PkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+        PkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        PkgEnable("GTK2",      "gtk+-2.0")
+        PkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
+        PkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
+        PkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        PkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
+        PkgEnable("SQUISH",    "",          ("squish"), "squish.h")
+        PkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
+        PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     PkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    PkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
-    PkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
-    PkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-    PkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
     PkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     PkgEnable("PNG",       "libpng",    ("png"), "png.h")
-    PkgEnable("SQUISH",    "",          ("squish"), "squish.h")
-    PkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
     PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
-    PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
@@ -426,7 +427,7 @@ if (COMPILER=="LINUX"):
         PkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
         PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr/prtypes.h", "nspr"))
-    if (sys.platform != "darwin"):
+    if (sys.platform != "darwin" and not RUNTIME):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0):
             PkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
