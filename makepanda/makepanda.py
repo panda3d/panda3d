@@ -583,10 +583,10 @@ def CompileCxx(obj,src,opts):
         for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin" and not RTDIST):
             if (int(platform.mac_ver()[0][3]) >= 6):
-                cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64"
+                cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64 -arch i386"
             else:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
-                if ("NOPPC" not in opts): cmd += " -arch ppc"
+            if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -g -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
@@ -821,7 +821,11 @@ def CompileLink(dll, obj, opts):
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
         if (sys.platform == "darwin" and not RTDIST):
-            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch i386"
+            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
+            if (int(platform.mac_ver()[0][3]) >= 6):
+                cmd += " -arch x86_64 -arch i386"
+            else:
+                cmd += " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         
         oscmd(cmd)
