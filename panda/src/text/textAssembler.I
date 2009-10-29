@@ -90,6 +90,28 @@ get_dynamic_merge() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::set_multiline_mode
+//       Access: Published
+//  Description: Sets the multiline mode flag. Set the multiline
+//               mode to allow text to wrap. It defaults to true.
+////////////////////////////////////////////////////////////////////
+INLINE void TextAssembler::
+set_multiline_mode(bool flag) {
+  _multiline_mode = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_multiline_mode
+//       Access: Published
+//  Description: Returns the multline_mode flag.  See
+//               TextNode::set_multiline_mode().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextAssembler::
+get_multiline_mode() const {
+  return _multiline_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::set_properties
 //       Access: Published
 //  Description: Specifies the default TextProperties that are applied

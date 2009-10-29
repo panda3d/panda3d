@@ -89,7 +89,8 @@ TextAssembler(TextEncoder *encoder) :
   _encoder(encoder),
   _usage_hint(Geom::UH_static),
   _max_rows(0),
-  _dynamic_merge(text_dynamic_merge)
+  _dynamic_merge(text_dynamic_merge),
+  _multiline_mode(true)
 {
   _initial_cprops = new ComputedProperties(TextProperties());
   clear();
@@ -111,7 +112,8 @@ TextAssembler(const TextAssembler &copy) :
   _encoder(copy._encoder),
   _usage_hint(copy._usage_hint),
   _max_rows(copy._max_rows),
-  _dynamic_merge(copy._dynamic_merge)
+  _dynamic_merge(copy._dynamic_merge),
+  _multiline_mode(copy._multiline_mode)
 {
 }
 
@@ -132,6 +134,7 @@ operator = (const TextAssembler &copy) {
   _usage_hint = copy._usage_hint;
   _max_rows = copy._max_rows;
   _dynamic_merge = copy._dynamic_merge;
+  _multiline_mode = copy._multiline_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1123,7 +1126,9 @@ wordwrap_text() {
       }
       _text_block.push_back(TextRow(p));
     }
-    needs_newline = true;
+    if (get_multiline_mode()){
+        needs_newline = true;
+    }
 
     if (_text_string[next_start - 1]._cprops->_properties.get_preserve_trailing_whitespace()) {
       q = next_start;

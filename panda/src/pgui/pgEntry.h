@@ -107,6 +107,9 @@ PUBLISHED:
   INLINE void set_obscure_mode(bool flag);
   INLINE bool get_obscure_mode() const;
 
+  INLINE void set_overflow_mode(bool flag);
+  INLINE bool get_overflow_mode() const;
+
   INLINE void set_candidate_active(const string &candidate_active);
   INLINE const string &get_candidate_active() const;
 
@@ -192,6 +195,9 @@ private:
 
   bool _cursor_keys_active;
   bool _obscure_mode;
+  bool _overflow_mode;
+
+  float _current_padding;
 
 public:
   static TypeHandle get_class_type() {

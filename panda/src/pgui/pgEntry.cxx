@@ -71,6 +71,9 @@ PGEntry(const string &name) :
 
   _cursor_keys_active = true;
   _obscure_mode = false;
+  _overflow_mode = false;
+
+  _current_padding = 0.0f;
 
   set_active(true);
   update_state();
@@ -114,7 +117,8 @@ PGEntry(const PGEntry &copy) :
   _blink_start(copy._blink_start),
   _blink_rate(copy._blink_rate),
   _cursor_keys_active(copy._cursor_keys_active),
-  _obscure_mode(copy._obscure_mode)
+  _obscure_mode(copy._obscure_mode),
+  _overflow_mode(copy._overflow_mode)
 {
   _cursor_stale = true;
   _last_text_def = (TextNode *)NULL;
@@ -210,6 +214,8 @@ press(const MouseWatcherParameter &param, bool background) {
       // Make sure _text is initialized properly.
       update_text();
 
+      bool overflow_mode = get_overflow_mode() && _num_lines == 1;
+
       ButtonHandle button = param.get_button();
       
       if (button == MouseButton::one() ||
@@ -268,6 +274,9 @@ press(const MouseWatcherParameter &param, bool background) {
               type(param);    
             }
             _cursor_stale = true;
+            if (overflow_mode){
+                _text_geom_stale = true;
+            }
           }
           
         } else if (button == KeyboardButton::right()) {
@@ -281,6 +290,9 @@ press(const MouseWatcherParameter &param, bool background) {
               type(param);
             }
             _cursor_stale = true;
+            if (overflow_mode){
+                _text_geom_stale = true;
+            }
           }
           
         } else if (button == KeyboardButton::home()) {
@@ -288,6 +300,9 @@ press(const MouseWatcherParameter &param, bool background) {
             // Home.  Move the cursor position to the beginning.
             _cursor_position = 0;
             _cursor_stale = true;
+            if (overflow_mode){
+                _text_geom_stale = true;
+            }
             type(param);
           }
           
@@ -296,6 +311,9 @@ press(const MouseWatcherParameter &param, bool background) {
             // End.  Move the cursor position to the end.
             _cursor_position = _text.get_num_characters();
             _cursor_stale = true;
+            if (overflow_mode){
+                _text_geom_stale = true;
+            }
             type(param);
           }
         }          
@@ -339,10 +357,14 @@ keystroke(const MouseWatcherParameter &param, bool background) {
         } else {
           _cursor_position = min(_cursor_position, _text.get_num_characters());
           bool too_long = !_text.set_wsubstr(new_char, _cursor_position, 0);
+          bool overflow_mode = get_overflow_mode() && _num_lines == 1;
+          if(overflow_mode){
+            too_long = false;
+          }
           if (_obscure_mode) {
             too_long = !_obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
           } else {
-            if (!too_long && (_text.get_num_rows() == _num_lines)) {
+            if (!too_long && (_text.get_num_rows() == _num_lines) && !overflow_mode) {
               // If we've filled up all of the available lines, we
               // must also ensure that the last line is not too long
               // (it might be, because of additional whitespace on
@@ -354,7 +376,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
               too_long = (last_line_width > _max_width);
             }
             
-            if (!too_long && keycode == ' ') {
+            if (!too_long && keycode == ' ' && !overflow_mode) {
               // Even if we haven't filled up all of the available
               // lines, we should reject a space that's typed at the
               // end of the current line if it would make that line
@@ -750,7 +772,7 @@ void PGEntry::
 update_text() {
   TextNode *node = get_text_def(get_state());
   nassertv(node != (TextNode *)NULL);
-
+    
   if (_text_geom_stale || node != _last_text_def) {
     TextProperties props = *node;
     props.set_wordwrap(_max_width);
@@ -764,6 +786,8 @@ update_text() {
       _text.set_wtext(_text.get_wtext());
       _last_text_def = node;
     }
+
+    _text.set_multiline_mode (!(get_overflow_mode() && _num_lines == 1));
 
     PT(PandaNode) assembled;
     if (_obscure_mode) {
@@ -811,7 +835,21 @@ update_text() {
 
     _current_text = 
       _text_render_root.attach_new_node(assembled);
+
     _current_text.set_mat(node->get_transform());
+
+    if (get_overflow_mode() && _num_lines == 1){
+        float padding = (_text.get_xpos(0, _cursor_position) - _max_width);
+        if (padding < 0){
+            padding = 0;
+        }
+        _current_text.set_x(_current_text.get_x() - padding);
+        _current_text.set_scissor(NodePath(this),
+            LPoint3f(0, 0, -0.5), LPoint3f(_max_width, 0, -0.5),
+            LPoint3f(_max_width, 0, 1.5), LPoint3f(0, 0, 1.5));
+        _current_padding = padding;
+    }
+
     _text_geom_stale = false;
     _text_geom_flattened = false;
     _cursor_stale = true;
@@ -855,7 +893,7 @@ update_cursor() {
       ypos = _text.get_ypos(row, column);
     }
 
-    _cursor_def.set_pos(xpos, 0.0f, ypos);
+    _cursor_def.set_pos(xpos - _current_padding, 0.0f, ypos);
     _cursor_stale = false;
     cursormove();
     

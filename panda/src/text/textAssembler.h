@@ -61,6 +61,9 @@ PUBLISHED:
   INLINE void set_dynamic_merge(bool dynamic_merge);
   INLINE bool get_dynamic_merge() const;
 
+  INLINE void set_multiline_mode(bool flag);
+  INLINE bool get_multiline_mode() const;
+
   INLINE void set_properties(const TextProperties &properties);
   INLINE const TextProperties &get_properties() const;
 
@@ -305,6 +308,8 @@ private:
   Geom::UsageHint _usage_hint;
   int _max_rows;
   bool _dynamic_merge;
+  bool _multiline_mode;
+
 };
 
 #include "textAssembler.I"

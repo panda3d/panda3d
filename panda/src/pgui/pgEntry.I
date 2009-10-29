@@ -386,6 +386,38 @@ get_obscure_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_overflow_mode
+//       Access: Published
+//  Description: Specifies whether overflow mode should be enabled.
+//               In overflow mode, text can overflow the boundaries
+//               of the Entry element horizontally.
+//
+//               Overflow mode only works when the number of lines
+//               is 1.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_overflow_mode(bool flag) {
+  LightReMutexHolder holder(_lock);
+  if (_overflow_mode != flag) {
+    _overflow_mode = flag;
+    _text_geom_stale = true;
+    _cursor_stale = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_overflow_mode
+//       Access: Published
+//  Description: Specifies whether overflow mode is enabled.  See
+//               set_overflow_mode().
+////////////////////////////////////////////////////////////////////
+INLINE bool PGEntry:: 
+get_overflow_mode() const {
+  LightReMutexHolder holder(_lock);
+  return _overflow_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::set_candidate_active
 //       Access: Published
 //  Description: Specifies the name of the TextProperties structure
