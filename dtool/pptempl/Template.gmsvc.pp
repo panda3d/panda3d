@@ -643,6 +643,15 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
+
+#if $[WIN_RESOURCE_FILE]
+  #define resource_file $[WIN_RESOURCE_FILE]
+  #define ver_resource "$[ODIR]\$[TARGET].res"
+$[ver_resource] : $[resource_file]
+$[TAB]  rc /n /I"$[ODIR]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[ver_resource] $[filter /D%, $[flags]]  "$[osfilename $[resource_file]]"
+  #set sources $[sources] $[ver_resource]
+#endif
+
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
