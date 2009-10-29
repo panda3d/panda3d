@@ -595,11 +595,12 @@ def CompileCxx(obj,src,opts):
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
-        if (sys.platform == "darwin" and not RTDIST):
-            if (int(platform.mac_ver()[0][3]) >= 6):
-                cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64 -arch i386"
-            else:
-                cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
+        if (sys.platform == "darwin"):
+            cmd += " -isysroot " + SDK["MACOSX"]
+            if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
+                cmd += " -arch x86_64 -arch i386"
+            elif (not RTDIST):
+                cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -g -D_DEBUG"
@@ -834,11 +835,11 @@ def CompileLink(dll, obj, opts):
         cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
-        if (sys.platform == "darwin" and not RTDIST):
+        if (sys.platform == "darwin"):
             cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
-            if (int(platform.mac_ver()[0][3]) >= 6):
+            if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
                 cmd += " -arch x86_64 -arch i386"
-            else:
+            elif (not RTDIST):
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         
