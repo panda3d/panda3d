@@ -596,7 +596,9 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin"):
-            cmd += " -isysroot " + SDK["MACOSX"]
+            if (OSXTARGET != None):
+                cmd += " -isysroot " + SDK["MACOSX"]
+                cmd += " -mmacosx-version-min=" + OSXTARGET
             if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
                 cmd += " -arch x86_64 -arch i386"
             elif (not RTDIST):
@@ -836,7 +838,9 @@ def CompileLink(dll, obj, opts):
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
         if (sys.platform == "darwin"):
-            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
+            if (OSXTARGET != None):
+                cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
+                cmd += " -mmacosx-version-min=" + OSXTARGET
             if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
                 cmd += " -arch x86_64 -arch i386"
             elif (not RTDIST):
