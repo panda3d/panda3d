@@ -96,9 +96,9 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
-    global VERSION,COMPRESSOR,THREADCOUNT
+    global VERSION,COMPRESSOR,THREADCOUNT,OSXTARGET
     longopts = [
-        "help","distributor=","verbose","runtime","osxtarget",
+        "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
@@ -141,8 +141,8 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
-    if (osxtarget != None):
-        if (len(osxtarget) != 4 or not OSXTARGET.startswith("10.")):
+    if (OSXTARGET != None):
+        if (len(OSXTARGET) != 4 or not OSXTARGET.startswith("10.")):
             usage("Invalid setting for OSXTARGET")
         try:
             OSXTARGET = "10.%d" % int(OSXTARGET[-1])
