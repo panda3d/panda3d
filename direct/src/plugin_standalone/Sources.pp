@@ -22,6 +22,7 @@
     panda3d.cxx panda3d.h panda3d.I \
     panda3dMain.cxx
 
+  #define WIN_RESOURCE_FILE panda3d.rc
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
 
 #end bin_target
@@ -48,6 +49,7 @@
     panda3d.cxx panda3d.h panda3d.I \
     panda3dWinMain.cxx
 
+  #define WIN_RESOURCE_FILE panda3d.rc
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
 
 #end bin_target
@@ -76,3 +78,5 @@
     panda3dMac.cxx panda3dMac.h panda3dMac.I
 
 #end bin_target
+
+#include $[THISDIRPREFIX]panda3d.rc.pp
