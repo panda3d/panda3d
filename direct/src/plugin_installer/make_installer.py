@@ -431,13 +431,18 @@ def makeInstaller():
         
         print ""
         print CMD
-        result = subprocess.call(CMD, shell = True)
-        if result:
-            sys.exit(result)
+
+        # Don't check the exit status of packagemaker; it's not always
+        # reliable.
+        subprocess.call(CMD, shell = True)
         shutil.rmtree(tmproot)
 
         if plistFilename:
             os.unlink(plistFilename)
+
+        if not os.path.exists('p3d-setup.pkg'):
+            print "Unable to create p3d-setup.pkg."
+            sys.exit(1)
         
         # Pack the .pkg into a .dmg
         if not os.path.exists(tmproot): os.makedirs(tmproot)
