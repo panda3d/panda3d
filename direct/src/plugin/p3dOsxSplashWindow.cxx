@@ -19,8 +19,12 @@
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
 
-#ifndef MAC_OS_X_VERSION_10_5
-  typedef float CGFloat;
+#ifndef CGFLOAT_DEFINED
+  #if defined(__LP64__) && __LP64__
+    typedef double CGFloat;
+  #else
+    typedef float CGFloat;
+  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
