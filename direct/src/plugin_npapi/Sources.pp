@@ -54,3 +54,6 @@
   #define INSTALL_HEADERS
 
 #end lib_target
+
+
+#include $[THISDIRPREFIX]nppanda3d.rc.pp

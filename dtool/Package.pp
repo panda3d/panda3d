@@ -36,6 +36,13 @@
 #define P3D_PLUGIN_MAJOR_VERSION $[word 1,$[P3D_PLUGIN_VERSION]]
 #define P3D_PLUGIN_MINOR_VERSION $[word 2,$[P3D_PLUGIN_VERSION]]
 #define P3D_PLUGIN_SEQUENCE_VERSION $[word 3,$[P3D_PLUGIN_VERSION]]
+#define P3D_PLUGIN_VERSION_STR $[P3D_PLUGIN_MAJOR_VERSION].$[P3D_PLUGIN_MINOR_VERSION].$[P3D_PLUGIN_SEQUENCE_VERSION]$[if $[not $[PANDA_OFFICIAL_VERSION]],c]
+
+// The plugin version as a dot-delimited integer quad, according to MS
+// conventions for DLL version numbers.
+#define P3D_PLUGIN_DLL_DOT_VERSION $[word 1,$[P3D_PLUGIN_VERSION]].$[word 2,$[P3D_PLUGIN_VERSION]].$[word 3,$[P3D_PLUGIN_VERSION]].$[if $[PANDA_OFFICIAL_VERSION],1000,0]
+// The same thing as a comma-delimited quad.
+#define P3D_PLUGIN_DLL_COMMA_VERSION $[word 1,$[P3D_PLUGIN_VERSION]],$[word 2,$[P3D_PLUGIN_VERSION]],$[word 3,$[P3D_PLUGIN_VERSION]],$[if $[PANDA_OFFICIAL_VERSION],1000,0]
 
 // What is the name of this source tree?
 #if $[eq $[PACKAGE],]

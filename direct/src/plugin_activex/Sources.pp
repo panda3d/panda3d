@@ -36,3 +36,5 @@
   #define INSTALL_HEADERS
 
 #end lib_target
+
+#include $[THISDIRPREFIX]P3DActiveX.rc.pp

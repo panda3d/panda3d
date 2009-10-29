@@ -1,27 +1,38 @@
+//
+// P3DActiveX.rc.pp
+//
+// This file defines the script to auto-generate P3DActiveX.rc at
+// ppremake time.  We use this to fill in the DLL version correctly.
+//
+
+#output P3DActiveX.rc notouch
+/$[]/#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
+/$[]/################################# DO NOT EDIT ###########################
+
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+#$[]include "resource.h"
 
-#define APSTUDIO_READONLY_SYMBOLS
+#$[]define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#$[]include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
+#$[]undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
+#$[]if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#$[]ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
+#$[]pragma code_page(1252)
+#$[]endif //_WIN32
 
-#ifdef APSTUDIO_INVOKED
+#$[]ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
@@ -34,7 +45,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#$[]include ""afxres.h""\r\n"
     "\0"
 END
 
@@ -44,7 +55,7 @@ BEGIN
     "\0"
 END
 
-#endif    // APSTUDIO_INVOKED
+#$[]endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,14 +64,14 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION $[P3D_PLUGIN_DLL_COMMA_VERSION]
+ PRODUCTVERSION $[P3D_PLUGIN_DLL_COMMA_VERSION]
  FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
+#$[]ifdef _DEBUG
  FILEFLAGS 0x1L
-#else
+#$[]else
  FILEFLAGS 0x0L
-#endif
+#$[]endif
  FILEOS 0x4L
  FILETYPE 0x2L
  FILESUBTYPE 0x0L
@@ -69,15 +80,14 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Disney"
-            VALUE "FileDescription", "P3D ActiveX "
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "P3DActiveX.ocx"
-            VALUE "LegalCopyright", "Disney (c).  All rights reserved."
+            VALUE "FileDescription", "Runs 3-D games and interactive applets\0"
+            VALUE "FileVersion", "$[P3D_PLUGIN_DLL_DOT_VERSION]"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "FileOpenName", "Panda3D applet\0"
             VALUE "OLESelfRegister", "\0"
             VALUE "OriginalFilename", "P3DActiveX.ocx"
-            VALUE "ProductName", "Disney P3D"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductName", "Panda3D Game Engine Plug-in $[P3D_PLUGIN_VERSION_STR]\0"
+            VALUE "ProductVersion", "$[P3D_PLUGIN_DLL_DOT_VERSION]"
         END
     END
     BLOCK "VarFileInfo"
@@ -113,7 +123,7 @@ END
 // DESIGNINFO
 //
 
-#ifdef APSTUDIO_INVOKED
+#$[]ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
     IDD_PROPPAGE_P3DACTIVEX, DIALOG
@@ -124,7 +134,7 @@ BEGIN
         BOTTOMMARGIN, 55
     END
 END
-#endif    // APSTUDIO_INVOKED
+#$[]endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -143,12 +153,12 @@ BEGIN
     IDS_P3DACTIVEX_PPG_CAPTION "General"
 END
 
-#endif    // English (U.S.) resources
+#$[]endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 
-#ifndef APSTUDIO_INVOKED
+#$[]ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 3 resource.
@@ -156,5 +166,8 @@ END
 1 TYPELIB "P3DActiveX.tlb"
 
 /////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
+#$[]endif    // not APSTUDIO_INVOKED
+
+
+#end P3DActiveX.rc
 
