@@ -8,6 +8,7 @@ from direct.wxwidgets.WxAppShell import *
 from ViewPort import *
 from ObjectPaletteUI import *
 from ObjectPropertyUI import *
+from SceneGraphUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
@@ -104,6 +105,7 @@ class LevelEditorUI(WxAppShell):
 
         self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane, self.editor)
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
+        self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane, self.editor)
 
     def onSetFocus(self):
         print 'wx got focus'

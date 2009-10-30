@@ -107,6 +107,8 @@ class ObjectMgr:
 
             if fSelectObject:
                 base.direct.select(newobj)
+                
+            self.editor.ui.sceneGraphUI.add(newobj)
 
         return newobj
 
