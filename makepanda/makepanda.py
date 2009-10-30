@@ -85,6 +85,7 @@ def usage(problem):
         p = pkg.lower()
         print "  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg)
     print ""
+    print "  --override \"O=V\"  (override dtool_config/prc option value)"
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
     print ""
@@ -100,7 +101,7 @@ def parseopts(args):
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist",
-        "version=","lzma","no-python","threads=","outputdir="]
+        "version=","lzma","no-python","threads=","outputdir=","override="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -125,6 +126,7 @@ def parseopts(args):
                 VERSION=value
                 if (len(VERSION.split(".")) != 3): raise "usage"
             elif (option=="--lzma"): COMPRESSOR="lzma"
+            elif (option=="--override"): AddOverride(value.strip())
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -1347,7 +1349,7 @@ def WriteConfigSettings():
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
-            val = prc_parameters[key]
+            val = OverrideValue(key, prc_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " " + val + "\n"
             del prc_parameters[key]
@@ -1355,7 +1357,7 @@ def WriteConfigSettings():
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
     for key in dtool_config.keys():
-        val = dtool_config[key]
+        val = OverrideValue(key, dtool_config[key])
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
         del dtool_config[key]

@@ -835,6 +835,29 @@ def PkgSelected(pkglist, pkg):
 
 ########################################################################
 ##
+## DTOOL/PRC Option value override
+##
+## This facility enables makepanda to keep a list of parameters
+## overriden by the command line.
+##
+########################################################################
+
+OVERRIDES_LIST={}
+
+def AddOverride(spec):
+    if (spec.find("=")==-1):return
+    pair = spec.split("=",1)
+    OVERRIDES_LIST[pair[0]] = pair[1]
+
+def OverrideValue(parameter, value):
+    if parameter in OVERRIDES_LIST:
+        print "Overriding value of key \"" + parameter + "\" with value \"" + OVERRIDES_LIST[parameter] + "\""
+        return OVERRIDES_LIST[parameter]
+    else:
+        return value
+
+########################################################################
+##
 ## These functions are for libraries which use pkg-config.
 ##
 ########################################################################
