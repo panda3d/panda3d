@@ -102,7 +102,7 @@ get_int_handle() const {
 ////////////////////////////////////////////////////////////////////
 void NativeWindowHandle::IntHandle::
 output(ostream &out) const {
-  out << _handle;
+  out << "(" << _handle << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void NativeWindowHandle::SubprocessHandle::
 output(ostream &out) const {
-  out << _filename;
+  out << "(" << _filename << ")";
 }
 
 #if defined(HAVE_X11) && !defined(CPPPARSER)

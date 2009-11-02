@@ -225,8 +225,12 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void WindowProperties::
 set_parent_window(size_t parent) {
-  PT(WindowHandle) handle = NativeWindowHandle::make_int(parent);
-  set_parent_window(handle);
+  if (parent == 0) {
+    set_parent_window((WindowHandle *)NULL);
+  } else {
+    PT(WindowHandle) handle = NativeWindowHandle::make_int(parent);
+    set_parent_window(handle);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
