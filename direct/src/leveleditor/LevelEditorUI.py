@@ -61,6 +61,12 @@ class LevelEditorUI(WxAppShell):
 
         self.gridSnapMenuItem = self.menuEdit.Append(-1, "&Grid Snap", kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
+
+        self.menuOptions = wx.Menu()
+        self.menuBar.Insert(2, self.menuOptions, "&Options")
+
+        self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size ")
+        self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
         
     def createInterface(self):
         self.createMenu()
@@ -165,3 +171,59 @@ class LevelEditorUI(WxAppShell):
             base.direct.manipulationControl.fGridSnap = 1
         else:
             base.direct.manipulationControl.fGridSnap = 0            
+
+    def onGridSize(self, evt):
+        gridSizeUI = GridSizeUI(self, -1, 'Change Grid Size', self.perspView.grid.gridSize, self.perspView.grid.gridSpacing)
+        gridSizeUI.ShowModal()
+        gridSizeUI.Destroy()        
+
+class GridSizeUI(wx.Dialog):
+    def __init__(self, parent, id, title, gridSize, gridSpacing):
+        wx.Dialog.__init__(self, parent, id, title, size=(250, 240))
+
+        self.parent = parent
+        panel = wx.Panel(self, -1)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        wx.StaticBox(panel, -1, 'Grid Size', (5, 5), (235, 80))
+
+        self.gridSizeSlider = WxSlider(panel, -1, float(gridSize), 10.0, 1000.0,
+                           pos = (10, 25), size=(220, -1),
+                           style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+        self.gridSizeSlider.Enable()
+
+        wx.StaticBox(panel, -1, 'Grid Space', (5, 90), (235, 80))
+
+        self.gridSpacingSlider = WxSlider(panel, -1, float(gridSpacing), 0.01, 20.0,
+                           pos = (10, 115), size=(220, -1),
+                           style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+        self.gridSpacingSlider.Enable()
+        
+        okButton = wx.Button(self, -1, 'Apply', size=(70, 20))
+        okButton.Bind(wx.EVT_BUTTON, self.onApply)
+        vbox.Add(panel)
+        vbox.Add(okButton, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 5)
+
+        self.SetSizer(vbox)
+
+    def onApply(self, evt):
+        newSize = self.gridSizeSlider.GetValue()
+        newSpacing = self.gridSpacingSlider.GetValue()
+
+        self.parent.perspView.grid.gridSize = newSize
+        self.parent.perspView.grid.gridSpacing = newSpacing
+        self.parent.perspView.grid.updateGrid()
+
+        self.parent.topView.grid.gridSize = newSize
+        self.parent.topView.grid.gridSpacing = newSpacing
+        self.parent.topView.grid.updateGrid()
+
+        self.parent.frontView.grid.gridSize = newSize
+        self.parent.frontView.grid.gridSpacing = newSpacing
+        self.parent.frontView.grid.updateGrid()
+
+        self.parent.leftView.grid.gridSize = newSize
+        self.parent.leftView.grid.gridSpacing = newSpacing
+        self.parent.leftView.grid.updateGrid()
+
+        self.Destroy()
