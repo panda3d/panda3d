@@ -1,11 +1,9 @@
-"""Undocumented Module"""
+"""The new Finite State Machine module. This replaces the module
+previously called FSM.py (now called ClassicFSM.py).
+"""
 
 __all__ = ['FSMException', 'FSM']
 
-"""
-The new Finite State Machine module.  This replaces the modules
-previously called FSM.py (now called ClassicFSM.py).
-"""
 
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
@@ -145,6 +143,7 @@ class FSM(DirectObject):
     def __init__(self, name):
         self.fsmLock = RLock()
         self.name = name
+        self.stateArray = []
         self._serialNum = FSM.SerialNum
         FSM.SerialNum += 1
         self._broadcastStateChanges = False
@@ -211,7 +210,7 @@ class FSM(DirectObject):
             return self.state == None
         finally:
             self.fsmLock.release()
-    
+
     def forceTransition(self, request, *args):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
@@ -277,7 +276,7 @@ class FSM(DirectObject):
         filterState() (that is, None if the request does not provoke a
         state transition, otherwise it is a tuple containing the name
         of the state followed by any optional args.)
-        
+
         If the FSM is currently in transition (i.e. in the middle of
         executing an enterState or exitState function), an
         AlreadyInTransition exception is raised (but see demand(),
@@ -393,39 +392,48 @@ class FSM(DirectObject):
         finally:
             self.fsmLock.release()
 
+
     def requestNext(self, *args):
-        """request the 'next' state in the predefined state array"""
+        """Request the 'next' state in the predefined state array."""
         self.fsmLock.acquire()
         try:
-            assert self.state in self.stateArray
+            if self.stateArray:
+                if not self.state in self.stateArray:
+                    self.request(self.stateArray[0])
+                else:
+                    cur_index = self.stateArray.index(self.state)
+                    new_index = (cur_index + 1) % len(self.stateArray)
+                    self.request(self.stateArray[new_index], args)
+            else:
+                assert self.notifier.debug(
+                                    "stateArray empty. Can't switch to next.")
 
-            curIndex = self.stateArray.index(self.state)
-            newIndex = (curIndex + 1) % len(self.stateArray)
-
-            self.request(self.stateArray[newIndex], args)
         finally:
             self.fsmLock.release()
 
     def requestPrev(self, *args):
-        """request the 'previous' state in the predefined state array"""
+        """Request the 'previous' state in the predefined state array."""
         self.fsmLock.acquire()
         try:
-            assert self.state in self.stateArray
-
-            curIndex = self.stateArray.index(self.state)
-            newIndex = (curIndex - 1) % len(self.stateArray)
-
-            self.request(self.stateArray[newIndex], args)
+            if self.stateArray:
+                if not self.state in self.stateArray:
+                    self.request(self.stateArray[0])
+                else:
+                    cur_index = self.stateArray.index(self.state)
+                    new_index = (cur_index - 1) % len(self.stateArray)
+                    self.request(self.stateArray[new_index], args)
+            else:
+                assert self.notifier.debug(
+                                    "stateArray empty. Can't switch to next.")
         finally:
             self.fsmLock.release()
-        
 
     def __setState(self, newState, *args):
         # Internal function to change unconditionally to the indicated
         # state.
         assert self.state
         assert self.notify.debug("%s to state %s." % (self.name, newState))
-        
+
         self.oldState = self.state
         self.newState = newState
         self.state = None
@@ -438,7 +446,7 @@ class FSM(DirectObject):
             # go directly to state "InternalError" and raise up the
             # exception.  This might leave things a little unclean
             # since we've partially transitioned, but what can you do?
-            
+
             self.state = 'InternalError'
             del self.oldState
             del self.newState
@@ -446,7 +454,7 @@ class FSM(DirectObject):
 
         if self._broadcastStateChanges:
             messenger.send(self.getStateChangeEvent())
-        
+
         self.state = newState
         del self.oldState
         del self.newState
@@ -479,7 +487,7 @@ class FSM(DirectObject):
             # defaultExit() instead.
             func = self.defaultExit
         func()
-            
+
     def __repr__(self):
         return self.__str__()
 
