@@ -2533,14 +2533,14 @@ report_package_progress(P3DPackage *package, double progress) {
   time_t elapsed = time(NULL) - _download_begin;
   _panda_script_object->set_int_property("downloadElapsedSeconds", elapsed);
 
-  sprintf(buffer, "%d:%02d", elapsed / 60, elapsed % 60);
+  sprintf(buffer, "%d:%02d", (int)(elapsed / 60), (int)(elapsed % 60));
   _panda_script_object->set_string_property("downloadElapsedFormatted", buffer);
 
   if (progress > 0 && (elapsed > 5 || progress > 0.2)) {
     time_t total = (time_t)((double)elapsed / progress);
     time_t remaining = max(total, elapsed) - elapsed;
     _panda_script_object->set_int_property("downloadRemainingSeconds", remaining);
-    sprintf(buffer, "%d:%02d", remaining / 60, remaining % 60);
+    sprintf(buffer, "%d:%02d", (int)(remaining / 60), (int)(remaining % 60));
     _panda_script_object->set_string_property("downloadRemainingFormatted", buffer);
   }
 }

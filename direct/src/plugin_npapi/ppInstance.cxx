@@ -138,6 +138,8 @@ begin() {
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
     start_download(url, req);
   }
+
+  handle_request_loop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -740,7 +742,8 @@ variant_to_p3dobj(const NPVariant *variant) {
     return P3D_new_float_object(NPVARIANT_TO_DOUBLE(*variant));
   } else if (NPVARIANT_IS_STRING(*variant)) {
     NPString str = NPVARIANT_TO_STRING(*variant);
-    return P3D_new_string_object(str.utf8characters, str.utf8length);
+    const UC_NPString &uc_str = *(UC_NPString *)(&str);
+    return P3D_new_string_object(uc_str.UTF8Characters, uc_str.UTF8Length);
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
     NPObject *object = NPVARIANT_TO_OBJECT(*variant);
     if (object->_class == &PPPandaObject::_object_class) {
@@ -890,7 +893,10 @@ request_ready(P3D_instance *instance) {
   // Since we are running at least Gecko 1.9, and we have this very
   // useful function, let's use it to ask the browser to call us back
   // in the main thread.
-  browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
+  //  nout << "async: " << (void *)browser->pluginthreadasynccall << "\n";
+  if (browser->pluginthreadasynccall != 0) {
+    browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
+  }
 #else  // HAS_PLUGIN_THREAD_ASYNC_CALL
 
   // If we're using an older version of Gecko, we have to do this some
@@ -1245,7 +1251,8 @@ create_instance() {
                                0, NULL, this);
 
   if (_p3d_inst != NULL) {
-    // Now get the browser's window object, to pass to the plugin.
+    // Now get the browser's toplevel DOM object (called the "window"
+    // object in JavaScript), to pass to the plugin.
     NPObject *window_object = NULL;
     if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                           &window_object) == NPERR_NO_ERROR) {
@@ -1298,6 +1305,11 @@ send_window() {
 #elif defined(__APPLE__)
     NP_Port *port = (NP_Port *)_window.window;
     parent_window._port = port->port;
+    /*
+    NP_CGContext *context = (NP_CGContext *)_window.window;
+    parent_window._context = context->context;
+    parent_window._window = (WindowRef)context->window;
+    */
 
 #elif defined(HAVE_X11)
     // We make it an 'unsigned long' instead of 'Window'
@@ -1321,6 +1333,11 @@ send_window() {
 #elif defined(__APPLE__)
     NP_Port *port = (NP_Port *)_window.window;
     parent_window._port = port->port;
+    /*
+    NP_CGContext *context = (NP_CGContext *)_window.window;
+    parent_window._context = context->context;
+    parent_window._window = (WindowRef)context->window;
+    */
 
 #elif defined(HAVE_X11)
     parent_window._xwindow = 0;
@@ -1428,7 +1445,8 @@ output_np_variant(ostream &out, const NPVariant &result) {
     out << "double " << NPVARIANT_TO_DOUBLE(result);
   } else if (NPVARIANT_IS_STRING(result)) {
     NPString str = NPVARIANT_TO_STRING(result);
-    out << "string " << string(str.utf8characters, str.utf8length);
+    const UC_NPString &uc_str = *(UC_NPString *)(&str);
+    out << "string " << string(uc_str.UTF8Characters, uc_str.UTF8Length);
   } else if (NPVARIANT_IS_OBJECT(result)) {
     NPObject *child = NPVARIANT_TO_OBJECT(result);
     out << "object " << child;

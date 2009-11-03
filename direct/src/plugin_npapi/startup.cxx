@@ -118,9 +118,11 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
     case NPPVpluginDescriptionString:
       *(const char **)value = "Runs 3-D games and interactive applets";
       break;
+      /*
     case NPPVpluginNeedsXEmbed:
-      *((PRBool *)value) = PR_FALSE;
+      *((NPBool *)value) = false;
       break;
+      */
     default:
       nout << "Ignoring GetValue request " << variable << "\n";
       return NPERR_INVALID_PARAM;
@@ -172,13 +174,16 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   int expected_major = NP_VERSION_MAJOR;
   int expected_minor = NP_VERSION_MINOR;
 
-  nout << "Expected version " << expected_major << "." << expected_minor
-       << "\n";
-  if (browser_major < expected_major ||
-      (browser_major == expected_major && browser_minor < expected_minor)) {
+  nout << "Plugin compiled with version "
+       << expected_major << "." << expected_minor << "\n";
+
+#ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
+  // We expect to find at least version NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL.
+  if (browser_major == 0 && browser_minor < NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
     nout << "Cannot run: unsupported version of NPAPI detected.\n";
     return NPERR_GENERIC_ERROR;
   }
+#endif
 
   // Seed the lame random number generator in rand(); we use it to
   // select a mirror for downloading.
@@ -200,8 +205,21 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   // open_logfile() also assigns global_root_dir.
   open_logfile();
   nout << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n";
-  pluginFuncs->version = 11;
-  pluginFuncs->size = sizeof(pluginFuncs);
+  if (pluginFuncs->size == 0) {
+    pluginFuncs->size = sizeof(*pluginFuncs);
+  }
+  if (pluginFuncs->size < sizeof(*pluginFuncs)) {
+    nout << "Invalid NPPPluginFuncs size\n";
+    return NPERR_INVALID_FUNCTABLE_ERROR;
+  }
+
+  // Not entirely sure what version number we should send back here.
+  // Sending the verion number of the NPAPI library we're compiled
+  // against doesn't seem 100% right, because there's no reason to
+  // think that *this* code knows about all of the functions provided
+  // by the particular library version it's compiled against.
+  pluginFuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
+
   pluginFuncs->newp = NPP_New;
   pluginFuncs->destroy = NPP_Destroy;
   pluginFuncs->setwindow = NPP_SetWindow;
@@ -209,7 +227,16 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   pluginFuncs->destroystream = NPP_DestroyStream;
   pluginFuncs->asfile = NPP_StreamAsFile;
   pluginFuncs->writeready = NPP_WriteReady;
-  pluginFuncs->write = NPP_Write;
+
+  // WebKit's NPAPI defines the wrong prototype for this type, so we
+  // have to cast it.  But the casting typename isn't consistent
+  // between WebKit and Mozilla's NPAPI headers.
+#ifdef NewNPP_WriteProc
+  pluginFuncs->write = NewNPP_WriteProc(NPP_Write);
+#else
+  pluginFuncs->write = (NPP_WriteProcPtr)NPP_Write;
+#endif
+
   pluginFuncs->print = NPP_Print;
   pluginFuncs->event = NPP_HandleEvent;
   pluginFuncs->urlnotify = NPP_URLNotify;
@@ -245,6 +272,28 @@ NPError
 NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
         int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
   nout << "new instance " << instance << "\n";
+
+  /*
+#ifdef __APPLE__
+  // We have to request the "core graphics" drawing model to be
+  // compatible with Snow Leopard.
+  NPBool supportsCoreGraphics = false;
+  NPError err = browser->getvalue(instance,
+                                  NPNVsupportsCoreGraphicsBool,
+                                  &supportsCoreGraphics);
+  if (err != NPERR_NO_ERROR || !supportsCoreGraphics) {
+    return NPERR_INCOMPATIBLE_VERSION_ERROR;
+  }
+  
+  // Set the drawing model
+  err = browser->setvalue(instance,
+                          (NPPVariable)NPNVpluginDrawingModel,
+                          (void *)NPDrawingModelCoreGraphics);
+  if (err != NPERR_NO_ERROR) {
+    return NPERR_INCOMPATIBLE_VERSION_ERROR;
+  }
+#endif
+  */
 
   PPInstance *inst = new PPInstance(pluginType, instance, mode,
                                     argc, argn, argv, saved);

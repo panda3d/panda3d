@@ -230,9 +230,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPBrowserObject::
 eval(const string &expression) const {
-  NPString npexpr;
-  npexpr.utf8characters = expression.c_str();
-  npexpr.utf8length = expression.length();
+  NPString npexpr = { expression.c_str(), expression.length() };
 
   NPVariant result;
   if (!browser->evaluate(_instance->get_npp_instance(), _npobj, 

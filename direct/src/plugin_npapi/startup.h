@@ -17,6 +17,10 @@
 
 #include "nppanda3d_common.h"
 
+#ifndef OSCALL
+#define OSCALL
+#endif
+
 extern "C" {
 #ifdef _WIN32
   NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs);

@@ -66,9 +66,25 @@ extern string global_root_dir;
 #endif  // _WIN32, __APPLE__
 
 #include "npapi.h"
-#include "npupp.h"
+#if NP_VERSION_MAJOR == 0 && NP_VERSION_MINOR <= 19
+  #include "npupp.h"
+#else
+  // Somewhere between version 0.19 and 0.22, Mozilla renamed npupp.h to
+  // npfunctions.h.
+  #include "npfunctions.h"
+#endif
 
 #include "load_plugin.h"
+
+// Mozilla's version of NPAPI has these names lowercase.  WebKit's
+// version has them uppercase.  What a mess.  We have to define a
+// duplicate of the structure to allow us to reference them
+// consistently.
+struct UC_NPString {
+  const NPUTF8 *UTF8Characters;
+  uint32_t UTF8Length;
+};
+
 
 // If we are building with a version of Gecko that supports the
 // asynchronous callback function, we should use it--it's just so
