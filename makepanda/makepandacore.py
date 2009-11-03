@@ -1476,6 +1476,7 @@ def CheckLinkerLibraryPath():
         if i.startswith("/usr/local/panda"): ldpath.remove(i)
     for i in dyldpath:
         if i.startswith("/Applications/Panda3D"): dyldpath.remove(i)
+        if i.startswith("/Developer/Panda3D"): dyldpath.remove(i)
     
     # Add built/lib/ to (DY)LD_LIBRARY_PATH if it's not already there
     if (ldpath.count(builtlib)==0):
