@@ -894,7 +894,7 @@ request_ready(P3D_instance *instance) {
   // useful function, let's use it to ask the browser to call us back
   // in the main thread.
   //  nout << "async: " << (void *)browser->pluginthreadasynccall << "\n";
-  if (browser->pluginthreadasynccall != 0) {
+  if ((void *)browser->pluginthreadasynccall != (void *)NULL) {
     browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
   }
 #else  // HAS_PLUGIN_THREAD_ASYNC_CALL
