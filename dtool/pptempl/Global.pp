@@ -232,6 +232,7 @@
   #define npapi_lpath $[wildcard $[NPAPI_LPATH]]
   #define npapi_cflags $[NPAPI_CFLAGS]
   #define npapi_libs $[NPAPI_LIBS]
+  #define npapi_framework $[NPAPI_FRAMEWORK]
 #endif
 
 #if $[HAVE_JPEG]
