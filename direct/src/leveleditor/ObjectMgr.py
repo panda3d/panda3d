@@ -332,9 +332,11 @@ class ObjectMgr:
             return
 
         # now update object prop value and call update function
-        self.updateObjectPropValue(obj, propName, val)
+        self.updateObjectPropValue(obj, propName, val, \
+                                   fSelectObject=(propType != OG.PROP_UI_SLIDE)
+                                   )
 
-    def updateObjectPropValue(self, obj, propName, val, fSelectObject=True):
+    def updateObjectPropValue(self, obj, propName, val, fSelectObject=False):
         """
         Update object property value and
         call update function if defined.         
@@ -449,7 +451,7 @@ class ObjectMgr:
 
         # copy other properties
         for key in obj[OG.OBJ_PROP]:
-            self.updateObjectPropValue(newObj, key, obj[OG.OBJ_PROP][key], fSelectObject=False)
+            self.updateObjectPropValue(newObj, key, obj[OG.OBJ_PROP][key])
 
         return newObjNP
 
