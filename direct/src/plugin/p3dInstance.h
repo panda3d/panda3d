@@ -165,7 +165,7 @@ private:
   void separate_components(vector<string> &components, const string &str);
   bool check_matches_component(const string &orig, const string &match);
 
-  bool check_p3d_signature();
+  void check_p3d_signature();
   void mark_p3d_untrusted();
   void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
@@ -238,6 +238,10 @@ private:
 
   bool _p3d_trusted;
   TiXmlElement *_xpackage;
+
+  // Holds the list of certificates that are pre-approved by the
+  // plugin vendor.
+  P3DPackage *_certlist_package;
   
   // For downloading the p3dcert authorization program.
   P3DPackage *_p3dcert_package;
@@ -252,7 +256,7 @@ private:
   bool _allow_python_dev;
   bool _keep_user_env;
   bool _auto_start;
-  bool _auth_button_approved;
+  bool _auth_button_clicked;
   bool _failed;
 
   P3DSession *_session;

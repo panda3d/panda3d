@@ -35,6 +35,7 @@ class P3DInstance;
 class P3DSession;
 class P3DAuthSession;
 class P3DHost;
+class P3DPackage;
 class FileSpec;
 class TiXmlElement;
 
@@ -120,6 +121,7 @@ public:
   void release_temp_filename(const string &filename);
 
   bool find_cert(X509 *cert);
+  void read_certlist(P3DPackage *package);
   string get_cert_dir(X509 *cert);
   static string cert_to_der(X509 *cert);
 

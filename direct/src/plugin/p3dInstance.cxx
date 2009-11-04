@@ -88,6 +88,7 @@ P3DInstance(P3D_request_ready_func *func,
   _got_wparams = false;
   _p3d_trusted = false;
   _xpackage = NULL;
+  _certlist_package = NULL;
   _p3dcert_package = NULL;
 
   _fparams.set_tokens(tokens, num_tokens);
@@ -102,7 +103,7 @@ P3DInstance(P3D_request_ready_func *func,
   _allow_python_dev = false;
   _keep_user_env = (_fparams.lookup_token_int("keep_user_env") != 0);
   _auto_start = (_fparams.lookup_token_int("auto_start") != 0);
-  _auth_button_approved = false;
+  _auth_button_clicked = false;
   _failed = false;
   _session = NULL;
   _auth_session = NULL;
@@ -232,6 +233,11 @@ P3DInstance::
   if (_image_package != NULL) {
     _image_package->remove_instance(this);
     _image_package = NULL;
+  }
+
+  if (_certlist_package != NULL) {
+    _certlist_package->remove_instance(this);
+    _certlist_package = NULL;
   }
 
   if (_p3dcert_package != NULL) {
@@ -539,6 +545,10 @@ set_browser_script_object(P3D_object *browser_script_object) {
         P3D_OBJECT_DECREF(port);
       }
 
+      if (_origin_hostname.empty() && _origin_protocol == "file:") {
+        _origin_hostname = "localhost";
+      }
+
       if (_origin_port.empty()) {
         // Maybe the actual URL doesn't include the port, in which
         // case it is implicit.
@@ -553,8 +563,11 @@ set_browser_script_object(P3D_object *browser_script_object) {
     }
   }
 
-  nout << "origin is " << _origin_protocol << "//" << _origin_hostname
-       << ":" << _origin_port << "\n";
+  nout << "origin is " << _origin_protocol << "//" << _origin_hostname;
+  if (!_origin_port.empty()) {
+    nout << ":" << _origin_port;
+  }
+  nout << "\n";
 }
 
 
@@ -1244,20 +1257,14 @@ auth_finished_sub_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 auth_finished_main_thread() {
+  // Set this flag to indicate that the user has clicked on the red
+  // "auth" button.  This eliminates the need to click on the green
+  // "start" button.
+  _auth_button_clicked = true;
+
   // After the authorization program has returned, check the signature
   // again.
-  if (check_p3d_signature()) {
-    // Set this flag to indicate that the user has clicked on the red
-    // "auth" button and successfully approved the application's
-    // certificate.  This eliminates the need to click on the green
-    // "start" button.
-    _auth_button_approved = true;
-    mark_p3d_trusted();
-
-  } else {
-    // Still untrusted.
-    mark_p3d_untrusted();
-  }
+  check_p3d_signature();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1292,11 +1299,7 @@ priv_set_p3d_filename(const string &p3d_filename) {
     return;
   }
 
-  if (check_p3d_signature()) {
-    mark_p3d_trusted();
-  } else {
-    mark_p3d_untrusted();
-  }
+  check_p3d_signature();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1505,18 +1508,21 @@ check_matches_component(const string &orig, const string &match) {
 //     Function: P3DInstance::check_p3d_signature
 //       Access: Private
 //  Description: Checks the signature(s) encoded in the p3d file, and
-//               looks to see if any of them are recognized.  Returns
-//               true if the signature is recognized and the file
-//               should be trusted, false otherwise.
+//               looks to see if any of them are recognized.
+//
+//               If the signature is recognized, calls
+//               mark_p3d_trusted(); otherwise, calls
+//               mark_p3d_untrusted().
 ////////////////////////////////////////////////////////////////////
-bool P3DInstance::
+void P3DInstance::
 check_p3d_signature() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (inst_mgr->get_trusted_environment()) {
     // If we're in a trusted environment (e.g. the panda3d command
     // line, where we've already downloaded the p3d file separately),
     // then everything is approved.
-    return true;
+    mark_p3d_trusted();
+    return;
   }
 
   // See if we've previously approved the certificate--any
@@ -1531,12 +1537,33 @@ check_p3d_signature() {
     // Look up the certificate to see if we've stored a copy in our
     // certs dir.
     if (inst_mgr->find_cert(cert)) {
-      return true;
+      mark_p3d_trusted();
+      return;
     }
   }
 
+  // Check the list of pre-approved certificates.
+  if (_certlist_package == NULL) {
+    // We have to go download this package.
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
+    _certlist_package = host->get_package("certlist", "");
+    if (_certlist_package != NULL) {
+      _certlist_package->add_instance(this);
+    }
+    
+    // When the package finishes downloading, we will come back here.
+    return;
+  }
+
+  if (!_certlist_package->get_ready() && !_certlist_package->get_failed()) {
+    // Wait for it to finish downloading.
+    return;
+  }
+
   // Couldn't find any approved certificates.
-  return false;
+  mark_p3d_untrusted();
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1714,7 +1741,7 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _matches_script_origin = true;
   }
 
-  if (_auth_button_approved) {
+  if (_auth_button_clicked) {
     // But finally, if the user has already clicked through the red
     // "auth" button, no need to present him/her with another green
     // "play" button as well.
@@ -2279,15 +2306,21 @@ set_button_image(ImageType image_type) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
-  if (package == _image_package || package == _p3dcert_package) {
-    // A special case: the image package and the p3dcert package get
-    // immediately downloaded, without waiting for anything else.
-    if (package == _p3dcert_package) {
-      // If we're downloading p3dcert, though, put up a progress bar.
+  if (package == _image_package || package == _certlist_package ||
+      package == _p3dcert_package) {
+    // A special case: these packages get immediately downloaded,
+    // without waiting for anything else.
+    if (package == _certlist_package || package == _p3dcert_package) {
+      // If we're downloading one of the two cert packages, though,
+      // put up a progress bar.
       make_splash_window();
       if (_splash_window != NULL) {
         _splash_window->set_install_progress(0.0);
-        _splash_window->set_install_label("Getting Authorization Dialog");
+        if (package == _certlist_package) {
+          _splash_window->set_install_label("Getting Certificates");
+        } else {          
+          _splash_window->set_install_label("Getting Authorization Dialog");
+        }
       }
     }
 
@@ -2503,7 +2536,7 @@ report_package_progress(P3DPackage *package, double progress) {
     // Ignore this.
     return;
   }
-  if (package == _p3dcert_package) {
+  if (package == _certlist_package || package == _p3dcert_package) {
     // This gets its own progress bar.
     if (_splash_window != NULL) {
       _splash_window->set_install_progress(progress);
@@ -2588,6 +2621,23 @@ report_package_done(P3DPackage *package, bool success) {
         }
       }
     }
+    return;
+  }
+
+  if (package == _certlist_package) {
+    // Another special case: successfully downloading certlist (or
+    // failing to download it) means we can finish checking the
+    // authenticity of the p3d file.
+
+    // Take down the download progress.
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(0.0);
+      _splash_window->set_install_label("");
+    }
+
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    inst_mgr->read_certlist(package);
+    check_p3d_signature();
     return;
   }
 

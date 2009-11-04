@@ -64,6 +64,20 @@ class images(package):
 
     config(**configDict)
 
+class certlist(package):
+    # This package holds any certificates that should be considered
+    # pre-approved by the plugin vendor.  If you build and host your
+    # own version of the Panda3D plugin, you can add your own
+    # certificates to this list.  The certificates in this package
+    # will be assumed to have been approved by the user when he/she
+    # installed the plugin.
+
+    # They should be PEM-encoded and their filenames must end in the
+    # ".pem" or ".crt" extension, and they should be added with the
+    # extract = True flag so they will be extracted to disk.
+    file('/home/drose/mycertpub.pem', extract = True)
+    
+
 class p3dcert(package):
     # This special application, used to pop up a dialog to prompt the
     # user to accept or deny unknown applications, is its own package.
