@@ -1059,11 +1059,34 @@ os_open_window(WindowProperties &req_properties) {
     // Determine if we're running from a bundle.
     CFDictionaryRef dref =
       ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
-    // If the dictionary doesn't have "BundlePath", then we're not
-    // running from a bundle, and we need to call TransformProcessType
-    // to make the process a "foreground" application, with its own
-    // icon in the dock and such.
-    if (!CFDictionaryContainsKey(dref, CFSTR("BundlePath"))) {
+    // If the dictionary doesn't have "BundlePath" (or the BundlePath
+    // is the same as the executable path), then we're not running
+    // from a bundle, and we need to call TransformProcessType to make
+    // the process a "foreground" application, with its own icon in
+    // the dock and such.
+
+    bool has_bundle = false;
+
+    CFStringRef bundle_path = (CFStringRef)CFDictionaryGetValue(dref, CFSTR("BundlePath"));
+    if (bundle_path != NULL) {
+      // OK, we have a bundle path.  We're probably running in a
+      // bundle . . .
+      has_bundle = true;
+
+      // . . . unless it turns out it's the same as the executable
+      // path.
+      CFStringRef exe_path = (CFStringRef)CFDictionaryGetValue(dref, kCFBundleExecutableKey);
+      if (exe_path != NULL) {
+        if (CFStringCompare(bundle_path, exe_path, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+          has_bundle = false;
+        }
+        CFRelease(exe_path);
+      }
+
+      CFRelease(bundle_path);
+    }
+
+    if (!has_bundle) {
       TransformProcessType(&psn, kProcessTransformToForegroundApplication);
     }
     SetFrontProcess(&psn);

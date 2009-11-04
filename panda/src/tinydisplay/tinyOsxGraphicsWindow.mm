@@ -854,45 +854,68 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
   
 	static bool GlobalInits = false;
 	if (!GlobalInits)
-	{
-		//
-		// one time aplication inits.. to get a window open from a standalone aplication..
+          {
+            //
+            // one time aplication inits.. to get a window open from a standalone aplication..
 
-		EventHandlerRef	application_event_ref_ref1;
-		EventTypeSpec	list1[] =
-		{ 
-			//{ kEventClassCommand,  kEventProcessCommand },
-			//{ kEventClassCommand,  kEventCommandUpdateStatus },
-			{ kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
-			{ kEventClassMouse, kEventMouseUp }, 
-			{ kEventClassMouse, kEventMouseMoved },
-			{ kEventClassMouse, kEventMouseDragged },
-			{ kEventClassMouse, kEventMouseWheelMoved } ,
-			{ kEventClassKeyboard, kEventRawKeyDown },
-			{ kEventClassKeyboard, kEventRawKeyUp } ,
-			{ kEventClassKeyboard, kEventRawKeyRepeat },
-			{ kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
-			{ kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
-		};
+            EventHandlerRef	application_event_ref_ref1;
+            EventTypeSpec	list1[] =
+              { 
+                //{ kEventClassCommand,  kEventProcessCommand },
+                //{ kEventClassCommand,  kEventCommandUpdateStatus },
+                { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
+                { kEventClassMouse, kEventMouseUp }, 
+                { kEventClassMouse, kEventMouseMoved },
+                { kEventClassMouse, kEventMouseDragged },
+                { kEventClassMouse, kEventMouseWheelMoved } ,
+                { kEventClassKeyboard, kEventRawKeyDown },
+                { kEventClassKeyboard, kEventRawKeyUp } ,
+                { kEventClassKeyboard, kEventRawKeyRepeat },
+                { kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
+                { kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
+              };
 
-		EventHandlerUPP	gEvtHandler = NewEventHandlerUPP(appEvtHndlr);
-		err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &application_event_ref_ref1 );
-		GlobalInits = true;
+            EventHandlerUPP	gEvtHandler = NewEventHandlerUPP(appEvtHndlr);
+            err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &application_event_ref_ref1 );
+            GlobalInits = true;
 
-		ProcessSerialNumber psn = { 0, kCurrentProcess };
+            ProcessSerialNumber psn = { 0, kCurrentProcess };
         
-                // Determine if we're running from a bundle.
-                CFDictionaryRef dref =
-                  ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
-                // If the dictionary doesn't have "BundlePath", then we're not
-                // running from a bundle, and we need to call TransformProcessType
-                // to make the process a "foreground" application, with its own
-                // icon in the dock and such.
-                if (!CFDictionaryContainsKey(dref, CFSTR("BundlePath"))) {
-                  TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+            // Determine if we're running from a bundle.
+            CFDictionaryRef dref =
+              ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
+            // If the dictionary doesn't have "BundlePath" (or the BundlePath
+            // is the same as the executable path), then we're not running
+            // from a bundle, and we need to call TransformProcessType to make
+            // the process a "foreground" application, with its own icon in
+            // the dock and such.
+
+            bool has_bundle = false;
+
+            CFStringRef bundle_path = (CFStringRef)CFDictionaryGetValue(dref, CFSTR("BundlePath"));
+            if (bundle_path != NULL) {
+              // OK, we have a bundle path.  We're probably running in a
+              // bundle . . .
+              has_bundle = true;
+
+              // . . . unless it turns out it's the same as the executable
+              // path.
+              CFStringRef exe_path = (CFStringRef)CFDictionaryGetValue(dref, kCFBundleExecutableKey);
+              if (exe_path != NULL) {
+                if (CFStringCompare(bundle_path, exe_path, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+                  has_bundle = false;
                 }
-                SetFrontProcess(&psn);
-	}
+                CFRelease(exe_path);
+              }
+
+              CFRelease(bundle_path);
+            }
+
+            if (!has_bundle) {
+              TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+            }
+            SetFrontProcess(&psn);
+          }
 
 	if (req_properties.has_fullscreen() && req_properties.get_fullscreen())
 	{
