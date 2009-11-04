@@ -122,6 +122,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp -R direct/src/*                   "+destdir+prefix+"/share/panda3d/direct")
     oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/pandac")
     oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/models")
+    oscmd("cp direct/src/ffi/panda3d.py         "+destdir+prefix+"/share/panda3d/panda3d.py")
     if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/samples")
     if os.path.isdir(outputdir+"/Pmw"):      oscmd("cp -R "+outputdir+"/Pmw     "+destdir+prefix+"/share/panda3d/Pmw")
     if os.path.isdir(outputdir+"/plugins"):  oscmd("cp -R "+outputdir+"/plugins "+destdir+prefix+"/share/panda3d/plugins")

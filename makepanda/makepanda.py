@@ -1486,7 +1486,7 @@ CreatePandaVersionFiles()
 
 ##########################################################################################
 #
-# Copy the "direct" tree
+# Copy the "direct" tree and panda3d.py
 #
 ##########################################################################################
 
@@ -4524,6 +4524,7 @@ def MakeInstallerOSX():
       oscmd("ln -s /usr/bin/python Panda3D-tpl-rw/Panda3D/%s/bin/ppython" % VERSION)
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
       WriteFile("Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION, "")
+      oscmd("cp direct/src/ffi/panda3d.py Panda3D-tpl-rw/Panda3D/%s/lib/panda3d.py" % VERSION)
       oscmd("cp %s/etc/Config.prc     Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (GetOutputDir(), VERSION))
       oscmd("cp %s/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % (GetOutputDir(), VERSION))
       oscmd("cp -R %s/include         Panda3D-tpl-rw/Panda3D/%s/include" % (GetOutputDir(), VERSION))
@@ -4547,6 +4548,7 @@ def MakeInstallerOSX():
       compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
+      oscmd("chmod 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/panda3d.py")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
       if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
       if os.path.isdir(GetOutputDir()+"/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
