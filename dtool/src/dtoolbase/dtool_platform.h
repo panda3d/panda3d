@@ -36,14 +36,16 @@
 #define DTOOL_PLATFORM "iphone"
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "osx_ppc"
-#else
+#elif defined(__i386__)
 #define DTOOL_PLATFORM "osx_i386"
+#elif defined(__x86_64)
+#define DTOOL_PLATFORM "osx_amd64"
 #endif
 
 #elif defined(__FreeBSD__)
 #if defined(__x86_64)
 #define DTOOL_PLATFORM "freebsd_amd64"
-#else
+#elif defined(__i386__)
 #define DTOOL_PLATFORM "freebsd_i386"
 #endif
 
@@ -58,11 +60,13 @@
 
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "linux_ppc"
-
-#else
-#error "Can't determine platform; please define DTOOL_PLATFORM in Config.pp file."
-
 #endif
+
+#ifndef DTOOL_PLATFORM
+#error "Can't determine platform; please define DTOOL_PLATFORM in Config.pp file."
+#endif
+
+
 
 #endif
 

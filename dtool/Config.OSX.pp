@@ -138,7 +138,9 @@
 #define HAVE_GL 1
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__FLT_EVAL_METHOD__=0  -D__i386__ -D__const=const -Dvolatile -Dmutable -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
+#define BASE_IGATE_FLAGS -D__FLT_EVAL_METHOD__=0  -D__const=const -Dvolatile -Dmutable -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
+#define IGATE_ARCH -D__i386__
+#defer SYSTEM_IGATE_FLAGS $[BASE_IGATE_FLAGS] $[IGATE_ARCH]
 
 // We don't need worry about defining WORDS_BIGENDIAN (and we
 // shouldn't anyway, since ppc and intel are different).  We rely on
