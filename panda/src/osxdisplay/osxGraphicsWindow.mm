@@ -9,10 +9,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-// We have to include this before we include the system OpenGL/gl.h
-// file.
-#include "glgsg.h"
-
 // We include these system header files first, because there is a
 // namescope conflict between them and some other header file that
 // gets included later (in particular, TCP_NODELAY must not be a
@@ -23,6 +19,11 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
+
+// We have to include this before we include the system OpenGL/gl.h
+// file, but after we include all of the above header files.  Deal
+// with this contradiction later.
+#include "glgsg.h"
 
 #include "osxGraphicsWindow.h"
 #include "config_osxdisplay.h"
