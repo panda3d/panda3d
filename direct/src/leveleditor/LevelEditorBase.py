@@ -23,6 +23,9 @@ class LevelEditorBase(DirectObject):
         self.actionEvents = []
         self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
+
+        # define your own config file in inherited class
+        self.settingsFile = None
         
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
@@ -85,6 +88,8 @@ class LevelEditorBase(DirectObject):
             else:
                 self.accept(event[0], event[1])        
 
+        self.loadSettings()
+        
     def removeNodePathHook(self, nodePath):
         if nodePath is None:
             return
@@ -142,3 +147,37 @@ class LevelEditorBase(DirectObject):
         self.reset()
         self.fileMgr.loadFromFile(fileName)
         self.currentFile = fileName
+
+    def saveSettings(self):
+        if self.settingsFile is None:
+            return
+        
+        try:
+            f = open(self.settingsFile, 'w')
+            f.write('gridSize %f\n'%self.ui.perspView.grid.gridSize)
+            f.write('gridSpacing %f\n'%self.ui.perspView.grid.gridSpacing)
+            f.close()
+        except:
+            pass        
+
+    def loadSettings(self):
+        if self.settingsFile is None:
+            return
+        
+        try:
+            f = open(self.settingsFile, 'r')
+            configLines = f.readlines()
+            f.close()
+
+            gridSize = 100.0
+            gridSpacing = 5.0
+            for line in configLines:
+                if line.startswith('gridSize'):
+                    gridSize = float(line.split()[1])
+                elif line.startswith('gridSpacing'):
+                    gridSpacing = float(line.split()[1])
+
+            self.ui.updateGrids(gridSize, gridSpacing)
+        except:
+            pass
+

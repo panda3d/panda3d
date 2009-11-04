@@ -177,6 +177,26 @@ class LevelEditorUI(WxAppShell):
         gridSizeUI.ShowModal()
         gridSizeUI.Destroy()        
 
+    def onDestroy(self, evt):
+        self.editor.saveSettings()
+
+    def updateGrids(self, newSize, newSpacing):
+        self.perspView.grid.gridSize = newSize
+        self.perspView.grid.gridSpacing = newSpacing
+        self.perspView.grid.updateGrid()
+
+        self.topView.grid.gridSize = newSize
+        self.topView.grid.gridSpacing = newSpacing
+        self.topView.grid.updateGrid()
+
+        self.frontView.grid.gridSize = newSize
+        self.frontView.grid.gridSpacing = newSpacing
+        self.frontView.grid.updateGrid()
+
+        self.leftView.grid.gridSize = newSize
+        self.leftView.grid.gridSpacing = newSpacing
+        self.leftView.grid.updateGrid()        
+
 class GridSizeUI(wx.Dialog):
     def __init__(self, parent, id, title, gridSize, gridSpacing):
         wx.Dialog.__init__(self, parent, id, title, size=(250, 240))
@@ -209,21 +229,5 @@ class GridSizeUI(wx.Dialog):
     def onApply(self, evt):
         newSize = self.gridSizeSlider.GetValue()
         newSpacing = self.gridSpacingSlider.GetValue()
-
-        self.parent.perspView.grid.gridSize = newSize
-        self.parent.perspView.grid.gridSpacing = newSpacing
-        self.parent.perspView.grid.updateGrid()
-
-        self.parent.topView.grid.gridSize = newSize
-        self.parent.topView.grid.gridSpacing = newSpacing
-        self.parent.topView.grid.updateGrid()
-
-        self.parent.frontView.grid.gridSize = newSize
-        self.parent.frontView.grid.gridSpacing = newSpacing
-        self.parent.frontView.grid.updateGrid()
-
-        self.parent.leftView.grid.gridSize = newSize
-        self.parent.leftView.grid.gridSpacing = newSpacing
-        self.parent.leftView.grid.updateGrid()
-
+        self.parent.updateGrids(newSize, newSpacing)
         self.Destroy()
