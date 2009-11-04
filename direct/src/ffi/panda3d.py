@@ -173,11 +173,14 @@ class panda3d_multisubmodule(type(sys)):
 class panda3d_module(type(sys)):
     """ Represents the main 'panda3d' module. """
     
+    __file__ = __file__
     modules = panda3d_modules
     
     def __getattr__(self, name):
         if name == "__all__":
             return self.modules.keys()
+        elif name == "__file__":
+            return self.__file__
         elif name in self.modules:
             return sys.modules["panda3d.%s" % name]
 
