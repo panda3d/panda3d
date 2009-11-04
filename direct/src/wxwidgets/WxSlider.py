@@ -46,7 +46,8 @@ class WxSlider(wx.Slider):
 
     def GetValue(self):
         # overriding wx.Slider.GetValue()
-        return (wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue)
+        #return (wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue)
+        return float(self.textValue.GetValue()) # [gjeon] since the value from the slider is not as precise as the value entered by the user
 
     def SetValue(self, value):
         # overriding wx.Slider.SetValue()
@@ -57,7 +58,8 @@ class WxSlider(wx.Slider):
     def onChange(self, event):
         # update textValue from slider
         self.textValue.Clear()
-        self.textValue.WriteText("%.2f"%self.GetValue())
+        floatVal = wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue
+        self.textValue.WriteText("%.2f"%floatVal)
         if self.updateCB: # callback function sould receive event as the argument
             self.updateCB(event)
         event.Skip()
