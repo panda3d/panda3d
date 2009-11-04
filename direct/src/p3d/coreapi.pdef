@@ -75,7 +75,7 @@ class certlist(package):
     # They should be PEM-encoded and their filenames must end in the
     # ".pem" or ".crt" extension, and they should be added with the
     # extract = True flag so they will be extracted to disk.
-    file('/home/drose/mycertpub.pem', extract = True)
+    pass
     
 
 class p3dcert(package):
