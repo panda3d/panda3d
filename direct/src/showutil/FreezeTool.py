@@ -76,6 +76,9 @@ class CompilationEnvironment:
         # The _d extension to add to dll filenames on Windows in debug builds.
         self.dllext = ''
 
+        # Any architecture-specific string.
+        self.arch = ''
+
         self.determineStandardSetup()
 
     def determineStandardSetup(self):
@@ -122,9 +125,17 @@ class CompilationEnvironment:
 
         elif sys.platform == 'darwin':
             # OSX
-            self.compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
-            self.linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
-            self.linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
+            plat = PandaSystem.getPlatform()
+            proc = plat.split('_', 1)[1]
+            if proc == 'i386':
+                self.arch = '-arch i386'
+            elif proc == 'ppc':
+                self.arch = '-arch ppc'
+            elif proc == 'x86_64':
+                self.arch = '-arch x86_x64'
+            self.compileObj = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
+            self.linkDll = "gcc %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
 
         else:
             # Unix
@@ -144,6 +155,7 @@ class CompilationEnvironment:
             'MD' : self.MD,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
+            'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
             }
@@ -157,6 +169,7 @@ class CompilationEnvironment:
             'PSDK' : self.PSDK,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
+            'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
             }
@@ -172,6 +185,7 @@ class CompilationEnvironment:
             'MD' : self.MD,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
+            'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
             }
@@ -185,6 +199,7 @@ class CompilationEnvironment:
             'PSDK' : self.PSDK,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
+            'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
             'dllext' : self.dllext,
