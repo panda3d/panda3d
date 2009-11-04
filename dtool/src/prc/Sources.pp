@@ -39,6 +39,9 @@
     streamReader.I streamReader.h \
     streamWrapper.I streamWrapper.h \
     streamWriter.I streamWriter.h
+
+  // A generated file
+  #define SOURCES $[SOURCES] prc_parameters.h 
   
   #define INCLUDED_SOURCES \
     config_prc.cxx \
