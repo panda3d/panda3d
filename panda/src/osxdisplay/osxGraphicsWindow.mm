@@ -9,6 +9,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+// We have to include this before we include the system OpenGL/gl.h
+// file.
+#include "glgsg.h"
+
 // We include these system header files first, because there is a
 // namescope conflict between them and some other header file that
 // gets included later (in particular, TCP_NODELAY must not be a
@@ -16,15 +20,14 @@
 
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
+#include <ApplicationServices/ApplicationServices.h>
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
-#include <ApplicationServices/ApplicationServices.h>
 
 #include "osxGraphicsWindow.h"
 #include "config_osxdisplay.h"
 #include "osxGraphicsPipe.h"
 #include "pStatTimer.h"
-#include "glgsg.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "osxGraphicsStateGuardian.h"
@@ -36,6 +39,7 @@
 #include "pset.h"
 #include "pmutex.h"
 
+
 ////////////////////////////////////
 
 static Mutex &
@@ -43,33 +47,6 @@ osx_global_mutex() {
   static Mutex m("osx_global_mutex");
   return m;
 }
-
-struct work1 {
-  volatile bool work_done;
-};
-
-#define PANDA_CREATE_WINDOW 101
-static void
-post_event_wait(unsigned short type, unsigned int data1, unsigned int data2,
-                int target_window) {
-  work1 w;
-  w.work_done = false;
-  NSEvent *ev = [NSEvent otherEventWithType:NSApplicationDefined 
-                 location:NSZeroPoint 
-                 modifierFlags:0 
-                 timestamp:0.0f 
-                 windowNumber:target_window 
-                 context:nil 
-                 subtype:type
-                 data1:data1
-                 data2:(int)&w]; 
- 
-  [NSApp postEvent:ev atStart:NO];
-  while(!w.work_done) {
-    usleep(10);
-  }
-}
-
 
 
 ////////////////////////// Global Objects .....
@@ -1222,27 +1199,7 @@ os_open_window(WindowProperties &req_properties) {
       gWinEvtHandler = NewEventHandlerUPP(window_event_handler); 
       InstallWindowEventHandler(_osx_window, gWinEvtHandler, GetEventTypeCount(list), list, (void*)this, NULL); // add event handler
  
-      /*if(!req_properties.has_parent_window())*/ {
-        ShowWindow (_osx_window);
-      } /*else {
-        NSWindow *parentWindow = (NSWindow *)req_properties.get_parent_window();
-        // NSView* aView = [[parentWindow contentView] viewWithTag:378];
-        // NSRect aRect = [aView frame];
-        // NSPoint origin = [parentWindow convertBaseToScreen:aRect.origin];
-        
-        // NSWindow* childWindow = [[NSWindow alloc] initWithWindowRef:_osx_window];
-        post_event_wait(PANDA_CREATE_WINDOW,(unsigned long) _osx_window,1,[parentWindow windowNumber]); 
-        
-        // [childWindow setFrameOrigin:origin];
-        // [childWindow setAcceptsMouseMovedEvents:YES];
-        // [childWindow setBackgroundColor:[NSColor blackColor]];
-        // this seems to block till the parent accepts the connection ?
-        // [parentWindow addChildWindow:childWindow ordered:NSWindowAbove];
-        // [childWindow orderFront:nil];
- 
-        _properties.set_parent_window(req_properties.get_parent_window());
-        req_properties.clear_parent_window();
-        } */
+      ShowWindow (_osx_window);
  
       if (osxdisplay_cat.is_debug()) {
         osxdisplay_cat.debug()
