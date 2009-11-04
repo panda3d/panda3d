@@ -89,6 +89,12 @@ MsgName2Id = {
     'CLIENT_SYSTEMMESSAGE_AKNOWLEDGE':               123,
     'CLIENT_CHANGE_GENERATE_ORDER':                  124,
 
+    # new toontown specific login message, adds last logged in, and if child account has parent acount
+    'CLIENT_LOGIN_TOONTOWN':                         125,
+    'CLIENT_LOGIN_TOONTOWN_RESP':                    126,  
+    
+    
+
     'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED':           2001,
     'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER':     2003,
     'STATESERVER_OBJECT_UPDATE_FIELD':                     2004,
