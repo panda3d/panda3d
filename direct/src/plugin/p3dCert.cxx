@@ -20,17 +20,17 @@
 
 static const wxString
 self_signed_cert_text =
-  _T("This Panda3D application has been signed by what's known as a ")
-  _T("self-signed certificate.  This means the name on the certificate can't ")
-  _T("be verified, and you have no way of knowing for sure who wrote it.\n\n")
+  _T("This Panda3D application uses a self-signed certificate.  ")
+  _T("This means the author's name can't be verified, and you have ")
+  _T("no way of knowing for sure who wrote it.\n\n")
 
   _T("We recommend you click Cancel to avoid running this application.");
 
 static const wxString
 unknown_auth_cert_text =
   _T("This Panda3D application has been signed, but we don't recognize ")
-  _T("the authority that verifies the signature.  This means the name ")
-  _T("on the certificate can't be trusted, and you have no way of knowing ")
+  _T("the authority that verifies the signature.  This means the author's ")
+  _T("name can't be trusted, and you have no way of knowing ")
   _T("for sure who wrote it.\n\n")
 
   _T("We recommend you click Cancel to avoid running this application.");
@@ -588,8 +588,8 @@ layout() {
   wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
 
   wxScrolledWindow *slwin = new wxScrolledWindow
-    (panel, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SUNKEN);
-  slwin->SetScrollRate(0, 20);
+    (panel, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxHSCROLL | wxBORDER_SUNKEN);
+  slwin->SetScrollRate(20, 20);
 
   wxBoxSizer *slsizer = new wxBoxSizer(wxVERTICAL);
 
@@ -615,10 +615,9 @@ layout() {
   panel->SetAutoLayout(true);
   vsizer->Fit(this);
 
-  // Make sure the resulting window is not too wide, and at least a
-  // certain amount tall.
+  // Make sure the resulting window is at least a certain size.
   int width, height;
   GetSize(&width, &height);
-  SetSize(min(width, 600), max(height, 400));
+  SetSize(max(width, 600), max(height, 400));
 }
 
