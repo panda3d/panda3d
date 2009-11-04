@@ -508,7 +508,7 @@
 #defer link_as_bundle $[and $[OSX_PLATFORM],$[LINK_AS_BUNDLE]]
 
 // On OSX 10.4, we need to have both a .dylib and an .so file.
-#defer link_extra_bundle $[and $[OSX_PLATFORM],$[or $[LINK_EXTRA_BUNDLE],$[BUNDLE_EXT]],$[not $[LINK_AS_BUNDLE]],$[not $[LINK_ALL_STATIC]]]
+#defer link_extra_bundle $[and $[OSX_PLATFORM],$[or $[LINK_EXTRA_BUNDLE],$[BUNDLE_EXT]],$[not $[LINK_AS_BUNDLE]],$[not $[LINK_ALL_STATIC]],$[not $[lib_is_static]]]
 
 // The default library extension various based on the OS.
 #defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
