@@ -2276,6 +2276,14 @@ class SerialNumGen:
         self.__counter += 1
         return self.__counter
 
+class SerialMaskedGen(SerialNumGen):
+    def __init__(self, mask, start=None):
+        self._mask = mask
+        SerialNumGen.__init__(self, start)
+    def next(self):
+        v = SerialNumGen.next(self)
+        return v & self._mask
+
 _serialGen = SerialNumGen()
 def serialNum():
     global _serialGen
@@ -4048,6 +4056,7 @@ __builtin__.Stack = Stack
 __builtin__.Queue = Queue
 __builtin__.Enum = Enum
 __builtin__.SerialNumGen = SerialNumGen
+__builtin__.SerialMaskedGen = SerialMaskedGen
 __builtin__.ScratchPad = ScratchPad
 __builtin__.DestructiveScratchPad = DestructiveScratchPad
 __builtin__.uniqueName = uniqueName
