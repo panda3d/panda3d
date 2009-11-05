@@ -292,6 +292,9 @@ class AppRunner(DirectObject):
         than the one given, for instance to download a version in
         testing. """
 
+        if hostUrl is None:
+            hostUrl = PandaSystem.getPackageHostUrl()
+
         altUrl = self.altHostMap.get(hostUrl, None)
         if altUrl:
             # We got an alternate host.  Use it.
@@ -617,6 +620,11 @@ class AppRunner(DirectObject):
         if self.p3dPackage:
             self.p3dConfig = self.p3dPackage.FirstChildElement('config')
 
+            xhost = self.p3dPackage.FirstChildElement('host')
+            while xhost:
+                self.__readHostXml(xhost)
+                xhost = xhost.NextSiblingElement('host')
+
         if self.p3dConfig:
             allowPythonDev = self.p3dConfig.Attribute('allow_python_dev')
             if allowPythonDev:
@@ -624,11 +632,6 @@ class AppRunner(DirectObject):
             guiApp = self.p3dConfig.Attribute('gui_app')
             if guiApp:
                 self.guiApp = int(guiApp)
-
-            xhost = self.p3dConfig.FirstChildElement('host')
-            while xhost:
-                self.__readHostXml(xhost)
-                xhost = xhost.NextSiblingElement('host')
 
         # The interactiveConsole flag can only be set true if the
         # application has allow_python_dev set.
