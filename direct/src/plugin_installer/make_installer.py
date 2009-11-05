@@ -397,6 +397,13 @@ def makeInstaller():
         shutil.copytree(pluginFiles[npapi], dst_npapi)
         shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
         shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
+        
+        tmpresdir = tempfile.mktemp('', 'p3d-resources')
+        if os.path.exists(tmpresdir):
+            shutil.rmtree(tmpresdir)
+        os.makedirs(tmpresdir)
+        if options.license:
+            shutil.copyfile(options.license, os.path.join(tmpresdir, "License.txt"))
 
         package_id = 'org.panda3d.pkg.runtime' #TODO: maybe more customizable?
 
@@ -412,6 +419,7 @@ def makeInstaller():
             CMD += ' --target 10.4' # The earliest version of OSX supported by Panda
             CMD += ' --domain system'
             CMD += ' --root "%s"' % tmproot
+            CMD += ' --resources "%s"' % tmpresdir
             CMD += ' --no-relocate'
         else:
             # PackageMaker 2.0, e.g. OSX 10.4.
@@ -426,6 +434,7 @@ def makeInstaller():
             CMD = packagemaker
             CMD += ' -build'
             CMD += ' -f "%s"' % tmproot
+            CMD += ' -r "%s"' % tmpresdir
             CMD += ' -p p3d-setup.pkg'
             CMD += ' -i "%s"' % (plistFilename)
         
@@ -439,6 +448,8 @@ def makeInstaller():
 
         if plistFilename:
             os.unlink(plistFilename)
+        if os.path.exists(tmpresdir):
+            shutil.rmtree(tmpresdir)
 
         if not os.path.exists('p3d-setup.pkg'):
             print "Unable to create p3d-setup.pkg."
