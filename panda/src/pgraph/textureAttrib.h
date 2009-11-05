@@ -126,11 +126,11 @@ private:
   vector_int _ff_tc_index;
   unsigned int _next_implicit_sort;
   
-  typedef ov_set<TextureStage *> OffStages;
+  typedef ov_set<PT(TextureStage) > OffStages;
   OffStages _off_stages;
   bool _off_all_stages;
 
-  typedef pmap< TextureStage *, PT(Texture) > OnTextures;
+  typedef pmap<PT(TextureStage), PT(Texture) > OnTextures;
   OnTextures _on_textures;
 
   typedef pmap< int, CPT(TextureAttrib) > Filtered;
