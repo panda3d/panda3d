@@ -400,19 +400,19 @@ def makeInstaller():
 
         package_id = 'org.panda3d.pkg.runtime' #TODO: maybe more customizable?
 
-
         plistFilename = None
         packagemaker = "/Developer/usr/bin/packagemaker"
         if os.path.exists(packagemaker):
             # PackageMaker 3.0 or better, e.g. OSX 10.5.
             CMD = packagemaker
-            CMD += ' --id "%s"' % (package_id)
+            CMD += ' --id "%s"' % package_id
             CMD += ' --version "%s"' % options.version
             CMD += ' --title "%s"' % options.long_name
             CMD += ' --out p3d-setup.pkg'
             CMD += ' --target 10.4' # The earliest version of OSX supported by Panda
             CMD += ' --domain system'
             CMD += ' --root "%s"' % tmproot
+            CMD += ' --no-relocate'
         else:
             # PackageMaker 2.0, e.g. OSX 10.4.
             packagemaker = "/Developer/Tools/packagemaker"
