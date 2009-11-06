@@ -86,6 +86,7 @@ get_output() {
         _output_filename.set_text();
       }
 
+      _output_stream.clear();
       if (!_output_filename.open_write(_output_stream)) {
         nout << "Unable to write to " << _output_filename << "\n";
         exit(1);
