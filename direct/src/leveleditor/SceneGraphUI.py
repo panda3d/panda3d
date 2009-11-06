@@ -41,6 +41,31 @@ class SceneGraphUI(wx.Panel):
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
 
+
+    def traversePandaObjects(self, item, objNodePath):
+        itemId = self.tree.GetItemPyData(item)
+        i = 0
+        # import pdb;pdb.set_trace()
+        for child in objNodePath.getChildren():
+            namestr = "%s %s"%(child.node().getType(), child.node().getName())
+            newItem = self.tree.AppendItem(item, namestr)
+            newItemId = "%s.%s"%(itemId, i)
+            self.tree.SetItemPyData(newItem, newItemId)
+            
+            # recursing...
+            self.traversePandaObjects(newItem, child)
+            i = i + 1
+
+    def addPandaObjectChildren(self, item):
+        # first, find Panda Object's NodePath of the item
+        itemId = self.tree.GetItemPyData(item)
+        obj = self.editor.objectMgr.findObjectById(itemId)
+        if obj is None:
+           return
+
+        objNodePath = obj[OG.OBJ_NP]
+        self.traversePandaObjects(item, objNodePath)
+
     def add(self, item, parentName = None):
         # import pdb;pdb.set_trace()
         if item is None:
@@ -54,6 +79,10 @@ class SceneGraphUI(wx.Panel):
         print "Adding as result of a drag'n'drop %s..." % repr(namestr)
         newItem = self.tree.AppendItem(self.root, namestr)
         self.tree.SetItemPyData(newItem, obj[OG.OBJ_UID])
+        
+        # adding children of PandaObj
+        self.addPandaObjectChildren(newItem)
+        self.tree.Expand(self.root)
 
     def traverse(self, parent, itemId):
         print "in traverse for itemId=%s..." %repr(itemId)
@@ -102,6 +131,8 @@ class SceneGraphUI(wx.Panel):
            # if an item had children, we need to re-parent them as well
            if self.tree.ItemHasChildren(item):
               print "in reParent item=%s has children..." %repr(self.tree.GetItemText(item))
+              
+              # recursing...
               self.reParent(item, newItem)
 
            # continue iteration to the next child
@@ -126,6 +157,8 @@ class SceneGraphUI(wx.Panel):
            print "About to AppendItem %s" %data
            newItem = self.tree.AppendItem(dragToItem, data)
            self.tree.SetItemPyData(newItem, itemId)
+           self.reParent(item, newItem)
+           self.tree.Delete(item)
 
            obj = self.editor.objectMgr.findObjectById(itemId)
            dragToItemObj = self.editor.objectMgr.findObjectById(self.tree.GetItemPyData(dragToItem))
@@ -133,9 +166,6 @@ class SceneGraphUI(wx.Panel):
            objNodePath = obj[OG.OBJ_NP]
            dragToItemObjNodePath = dragToItemObj[OG.OBJ_NP]
            objNodePath.wrtReparentTo(dragToItemObjNodePath)
-
-           self.reParent(item, newItem)
-           self.tree.Delete(item)
 
     def onSelected(self, event):
         itemId = self.tree.GetItemPyData(event.GetItem())
