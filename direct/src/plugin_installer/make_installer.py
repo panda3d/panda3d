@@ -5,6 +5,7 @@ import sys
 import shutil
 import platform
 import tempfile
+import zipfile
 from optparse import OptionParser
 import subprocess
 
@@ -27,7 +28,7 @@ parser.add_option('-v', '--version', dest = 'version',
 parser.add_option('-p', '--publisher', dest = 'publisher',
                   help = 'The name of the publisher',
                   default = 'Carnegie Mellon Entertainment Technology Center')
-parser.add_option('-i', '--install', dest = 'install_dir',
+parser.add_option('', '--install', dest = 'install_dir',
                   help = "The install directory on the user's machine (Windows only)",
                   default = '$PROGRAMFILES\\Panda3D')
 parser.add_option('-l', '--license', dest = 'license',
@@ -57,12 +58,57 @@ parser.add_option('', '--pvk', dest = 'pvk',
 parser.add_option('', '--mssdk', dest = 'mssdk',
                   help = 'The path to the MS Platform SDK directory (Windows only).  mssdk/bin should contain cabarc.exe and signcode.exe.',
                   default = None)
+parser.add_option('-i', '--plugin_root', dest = 'plugin_root',
+                  help = 'The root of a directory hierarchy in which the Firefox plugins for various platforms can be found, to build a Firefox xpi file.  This is normally the same as the staging directory populated by the -i parameter to ppackage.  This directory should contain a directory called "plugin", which contains in turn a number of directories named for the platform, by the Panda plugin convention, e.g. linux_i386, osx_ppc, and so on.  Each platform directory should contain a Firefox plugin, e.g. nppanda3d.so.')
+parser.add_option('', '--update_url', dest = 'update_url',
+                  help = "The URL for the Firefox XPI file's updateURL specification.  Optional.")
 
 (options, args) = parser.parse_args()
 
 this_dir = os.path.split(sys.argv[0])[0]
 
 assert options.version, "A version number must be supplied!"
+
+# A mapping of Panda's platform strings to Firefox's equivalent
+# strings.
+FirefoxPlatformMap = {
+    'win32' : 'WINNT_x86-msvc',
+    'win64' : 'WINNT_x86_64-msvc',
+    'linux_i386' : 'Linux_x86-gcc3',
+    'linux_amd64' : 'Linux_x86_64-gcc3',
+    'linux_ppc' : 'Linux_ppc-gcc3',
+    'osx_i386' : 'Darwin_x86-gcc3',
+    'osx_amd64' : 'Darwin_x86_64-gcc3',
+    'osx_ppc' : 'Darwin_ppc-gcc3',
+    'freebsd_i386' : 'FreeBSD_x86-gcc3',
+    'freebsd_amd64' : 'FreeBSD_x86_64-gcc3',
+    }
+
+##############################################################################
+#
+# This install.rdf file is used when building a Firefox XPI file.
+#
+##############################################################################
+
+install_rdf = """<?xml version="1.0"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>%(package_id)s</em:id>
+    <em:name>Panda3D Game Engine Plug-In</em:name>
+    <em:description>Runs 3-D games and interactive applets</em:description>
+    <em:version>%(version)s</em:version>
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>3.0</em:minVersion>
+        <em:maxVersion>3.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+    <em:homepageURL>http://www.panda3d.org/</em:homepageURL>
+    %(updateURL)s
+  </Description>
+</RDF>
+"""
 
 ##############################################################################
 #
@@ -272,6 +318,67 @@ def getDllVersion(filename):
     return ','.join(data.strip().split('.'))
     
 
+def makeXpiFile():
+    """ Creates a Firefox XPI file, based on the various platform
+    version files. """
+
+    root = options.plugin_root
+    if os.path.isdir(os.path.join(root, 'plugin')):
+        root = os.path.join(root, 'plugin')
+
+    xpi = zipfile.ZipFile('nppanda3d.xpi', 'w')
+
+    package_id = 'runtime@panda3d.org' #TODO: maybe more customizable?
+
+    updateURL = ''
+    if options.update_url:
+        updateURL = '<em:updateURL>%s</em:updateURL>' % (options.update_url)
+
+    tempFile = tempfile.mktemp('.txt', 'p3d_')
+    rdf = open(tempFile, 'w')
+    rdf.write(install_rdf % {
+        'package_id' : package_id,
+        'version' : options.version,
+        'updateURL' : updateURL,
+        })
+    rdf.close()
+    xpi.write(tempFile, 'install.rdf')
+    os.unlink(tempFile)
+
+    subdirs = os.listdir(root)
+    for subdir in subdirs:
+        platform = FirefoxPlatformMap.get(subdir, None)
+        path = os.path.join(root, subdir)
+        if subdir and os.path.isdir(path):
+            # Create the XPI directory platform/<platform name>/plugins
+            pluginsXpiDir = 'platform/%s/plugins' % (platform)
+
+            # Copy the Firefox plugin into this directory.
+            if subdir.startswith('win32'):
+                pluginFilename = 'nppanda3d.dll'
+            elif subdir.startswith('osx'):
+                pluginFilename = 'nppanda3d.plugin'
+            else:
+                pluginFilename = 'nppanda3d.so'
+
+            addZipTree(xpi, os.path.join(path, pluginFilename),
+                       pluginsXpiDir + '/' + pluginFilename)
+
+def addZipTree(zip, sourceFile, zipName):
+    """ Adds the sourceFile to the zip archive at the indicated name.
+    If it is a directory, recursively adds all nested files as
+    well. """
+
+    if os.path.isdir(sourceFile):
+        subdirs = os.listdir(sourceFile)
+        for subdir in subdirs:
+            addZipTree(zip, os.path.join(sourceFile, subdir),
+                       zipName + '/' + subdir)
+
+    else:
+        # Not a directory, just add the file.
+        zip.write(sourceFile, zipName)
+
 def makeCabFile(ocx, pluginDependencies):
     """ Creates an ActiveX CAB file.  Windows only. """
 
@@ -342,12 +449,14 @@ def makeInstaller():
         panda3d = 'panda3d'
         panda3dapp = 'Panda3D.app'
         baseFiles = [npapi, panda3d, panda3dapp]
-    else:
+    elif sys.platform == 'win32':
         ocx = 'p3dactivex.ocx'
         npapi = 'nppanda3d.dll'
         panda3d = 'panda3d.exe'
         panda3dw = 'panda3dw.exe'
         baseFiles = [ocx, npapi, panda3d, panda3dw]
+    else:
+        baseFiles = []
 
     path = []
     pathsep = ':'
@@ -477,7 +586,7 @@ def makeInstaller():
         if result:
             sys.exit(result)
         
-    else:
+    elif sys.platform == 'win32':
         # Now build the NSIS command.
         CMD = "\"" + options.nsis + "\" /V3 "
         CMD += '/DPRODUCT_NAME="' + options.long_name + '" '
@@ -525,6 +634,10 @@ def makeInstaller():
         if options.spc and options.pvk:
             # Generate a CAB file and sign it.
             makeCabFile(ocx, pluginDependencies)
+
+    if options.plugin_root:
+        # Generate a Firefox XPI file.
+        makeXpiFile()
             
 
 makeInstaller()
