@@ -67,7 +67,11 @@ class LevelEditorUI(WxAppShell):
 
         self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size ")
         self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
-        
+
+        self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "&Show Panda Objects", kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onShowPandaObjects, self.showPandaObjectsMenuItem)
+
+
     def createInterface(self):
         self.createMenu()
         
@@ -175,7 +179,10 @@ class LevelEditorUI(WxAppShell):
     def onGridSize(self, evt):
         gridSizeUI = GridSizeUI(self, -1, 'Change Grid Size', self.perspView.grid.gridSize, self.perspView.grid.gridSpacing)
         gridSizeUI.ShowModal()
-        gridSizeUI.Destroy()        
+        gridSizeUI.Destroy()
+        
+    def onShowPandaObjects(self, evt):
+        self.sceneGraphUI.showPandaObjectChildren()
 
     def onDestroy(self, evt):
         self.editor.saveSettings()

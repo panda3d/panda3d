@@ -22,11 +22,10 @@ class SceneGraphUI(wx.Panel):
         wx.Panel.__init__(self, parent)
 
         self.editor = editor
-
-        # self.palette = self.editor.objectPalette
         self.tree = wx.TreeCtrl(self)
         self.root = self.tree.AddRoot('render')
-        #self.addTreeNodes(root, self.palette.data)
+
+        self.shouldShowPandaObjChildren = False
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -66,6 +65,21 @@ class SceneGraphUI(wx.Panel):
         objNodePath = obj[OG.OBJ_NP]
         self.traversePandaObjects(item, objNodePath)
 
+    def removePandaObjectChildren(self, parent):
+        # first, find Panda Object's NodePath of the item
+        itemId = self.tree.GetItemPyData(parent)
+        obj = self.editor.objectMgr.findObjectById(itemId)
+        if obj is None:
+           self.tree.Delete(parent)
+           return
+        item, cookie = self.tree.GetFirstChild(parent)
+        while item:
+           # recurse...
+           itemToRemove = item
+           # continue iteration to the next child
+           item, cookie = self.tree.GetNextChild(parent, cookie)
+           self.removePandaObjectChildren(itemToRemove)
+
     def add(self, item, parentName = None):
         # import pdb;pdb.set_trace()
         if item is None:
@@ -81,7 +95,8 @@ class SceneGraphUI(wx.Panel):
         self.tree.SetItemPyData(newItem, obj[OG.OBJ_UID])
         
         # adding children of PandaObj
-        self.addPandaObjectChildren(newItem)
+        if self.shouldShowPandaObjChildren:
+           self.addPandaObjectChildren(newItem)
         self.tree.Expand(self.root)
 
     def traverse(self, parent, itemId):
@@ -166,6 +181,18 @@ class SceneGraphUI(wx.Panel):
            objNodePath = obj[OG.OBJ_NP]
            dragToItemObjNodePath = dragToItemObj[OG.OBJ_NP]
            objNodePath.wrtReparentTo(dragToItemObjNodePath)
+
+    def showPandaObjectChildren(self):
+        #import pdb;set_trace()
+        self.shouldShowPandaObjChildren = not self.shouldShowPandaObjChildren
+        item, cookie = self.tree.GetFirstChild(self.root)
+        while item:
+             if self.shouldShowPandaObjChildren:
+                self.addPandaObjectChildren(item)
+             else:
+                self.removePandaObjectChildren(item)
+             # continue iteration to the next child
+             item, cookie = self.tree.GetNextChild(self.root, cookie)
 
     def onSelected(self, event):
         itemId = self.tree.GetItemPyData(event.GetItem())
