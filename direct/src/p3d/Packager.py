@@ -1729,7 +1729,7 @@ class Packager:
 
         # Text files that are copied (and compressed) to the package
         # without processing.
-        self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg', 'sha' ]
+        self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg', 'sha', 'dc' ]
 
         # Binary files that are copied (and compressed) without
         # processing.
@@ -2800,6 +2800,9 @@ class Packager:
         if not newDir:
             newDir = ''
 
+        # Adding the directory to sys.path is a cheesy way to help the
+        # modulefinder find it.
+        sys.path.append(dirname.toOsSpecific())
         self.__recurseDir(dirname, newDir, unprocessed = unprocessed)
 
     def __recurseDir(self, filename, newName, unprocessed = None):
