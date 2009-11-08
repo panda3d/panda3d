@@ -22,6 +22,8 @@ class ClientRepository(ClientRepositoryBase):
     # used by this implementation.
     GameGlobalsId = 0
 
+    doNotDeallocateChannel = True
+    
     def __init__(self, dcFileNames = None, dcSuffix = ''):
         ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames, dcSuffix = dcSuffix)
         self.setHandleDatagramsInternally(False)
@@ -41,6 +43,8 @@ class ClientRepository(ClientRepositoryBase):
         self.doIdBase = di.getUint32()
         self.doIdLast = self.doIdBase + di.getUint32()
         self.doIdAllocator = UniqueIdAllocator(self.doIdBase, self.doIdLast - 1)
+
+        self.ourChannel = self.doIdBase
 
         # Now that we've got a doId range, we can safely generate new
         # distributed objects.
@@ -369,6 +373,10 @@ class ClientRepository(ClientRepositoryBase):
             # Otherwise, ignore it
             self.notify.warning(
                 "Asked to delete non-existent DistObj " + str(doId))
+
+    def stopTrackRequestDeletedDO(self, *args):
+        # No-op.  Not entirely sure what this does on the VR Studio side.
+        pass
 
     def sendUpdate(self, distObj, fieldName, args):
         """ Sends a normal update for a single field. """

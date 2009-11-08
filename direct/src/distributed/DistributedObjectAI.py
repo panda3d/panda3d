@@ -88,6 +88,12 @@ class DistributedObjectAI(DistributedObjectBase):
         if delEvent:
             messenger.send(delEvent)
 
+    def deleteOrDelay(self):
+        """ This method exists only to mirror the similar method on
+        DistributedObject.  AI objects don't have delayDelete, they
+        just get deleted immediately. """
+        self.delete()
+
     def delete(self):
         """
         Inheritors should redefine this to take appropriate action on delete
@@ -142,7 +148,7 @@ class DistributedObjectAI(DistributedObjectBase):
                 ### this delete message or to handle this message better
                 # TODO: do we still need this check?
                 if not hasattr(self, "doNotDeallocateChannel"):
-                    if self.air:
+                    if self.air and not hasattr(self.air, "doNotDeallocateChannel"):
                         if self.air.minChannel <= self.doId <= self.air.maxChannel:
                             self.air.deallocateChannel(self.doId)
                 self.air = None

@@ -221,9 +221,9 @@ class ConnectionRepository(
         """
         Reads in the dc files listed in dcFileNames, or if
         dcFileNames is None, reads in all of the dc files listed in
-        the Configrc file.
+        the Config.prc file.
         """
-        #import pdb; pdb.set_trace();
+
         dcFile = self.getDcFile()
         dcFile.clear()
         self.dclassesByName = {}
@@ -240,10 +240,13 @@ class ConnectionRepository(
             if not readResult:
                 self.notify.error("Could not read dc file.")
         else:
+            searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
-                readResult = dcFile.read(Filename(dcFileName))
+                pathname = Filename(dcFileName)
+                vfs.resolveFilename(pathname, searchPath)
+                readResult = dcFile.read(pathname)
                 if not readResult:
-                    self.notify.error("Could not read dc file: %s" % (dcFileName))
+                    self.notify.error("Could not read dc file: %s" % (pathname))
 
         #if not dcFile.allObjectsValid():
         #    names = []
