@@ -21,7 +21,7 @@
 #include "perspectiveLens.h"
 #include "lvecBase3.h"
 #include "compose_matrix.h"
-#include "config_grutil.h"
+#include "config_vision.h"
 extern "C" {
   #include "AR/ar.h"
 };
@@ -123,7 +123,7 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGBA &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGB &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGR) {
-    grutil_cat.error() <<
+    vision_cat.error() <<
       "The copy of ARToolKit that you are using is not compiled "
       "for RGB, BGR, RGBA or ARGB input.  Panda3D cannot use "
       "this copy of ARToolKit. Please modify the ARToolKit's "
@@ -132,25 +132,25 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
   }
   
   if (camera.is_empty()) {
-    grutil_cat.error() << "ARToolKit: invalid camera nodepath\n";
+    vision_cat.error() << "ARToolKit: invalid camera nodepath\n";
     return 0;
   }
   PandaNode *node = camera.node();
   if ((node == 0) || (node->get_type() != Camera::get_class_type())) {
-    grutil_cat.error() << "ARToolKit: invalid camera nodepath\n";
+    vision_cat.error() << "ARToolKit: invalid camera nodepath\n";
     return 0;
   }
   Camera *cam = DCAST(Camera, node);
   Lens *lens = cam->get_lens();
   if (lens->get_type() != PerspectiveLens::get_class_type()) {
-    grutil_cat.error() << "ARToolKit: supplied camera node must be perspective.\n";
+    vision_cat.error() << "ARToolKit: supplied camera node must be perspective.\n";
     return 0;
   }
 
   ARParam wparam;
   string fn = paramfile.to_os_specific();
   if( arParamLoad(fn.c_str(), 1, &wparam) < 0 ) {
-    grutil_cat.error() << "Cannot load ARToolKit camera config\n";
+    vision_cat.error() << "Cannot load ARToolKit camera config\n";
     return 0;
   }
   
@@ -221,7 +221,7 @@ get_pattern(const Filename &filename) {
   string fn = filename.to_os_specific();
   int id = arLoadPatt(fn.c_str());
   if (id < 0) {
-    grutil_cat.error() << "Could not load AR ToolKit Pattern: " << fn << "\n";
+    vision_cat.error() << "Could not load AR ToolKit Pattern: " << fn << "\n";
     return -1;
   }
   arDeactivatePatt(id);
@@ -275,7 +275,7 @@ analyze(Texture *tex, bool do_flip_texture) {
   nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
   
   if (tex->get_num_components() != 3 && tex->get_num_components() != 4) {
-    grutil_cat.error() << "ARToolKit can only analyze RGB and RGBA textures.\n";
+    vision_cat.error() << "ARToolKit can only analyze RGB and RGBA textures.\n";
     return;
   }
   
@@ -381,7 +381,7 @@ analyze(Texture *tex, bool do_flip_texture) {
   int marker_num;
 
   if (arDetectMarker(data, _threshold * 256, &marker_info, &marker_num) < 0) {
-    grutil_cat.error() << "ARToolKit detection error.\n";
+    vision_cat.error() << "ARToolKit detection error.\n";
     delete data;
     return;
   }
@@ -423,7 +423,7 @@ analyze(Texture *tex, bool do_flip_texture) {
       decompose_matrix(mat, scale, shear, hpr, pos);
       
       if (np.get_parent().is_empty()) {
-        grutil_cat.error() << "NodePath must have a parent.\n";
+        vision_cat.error() << "NodePath must have a parent.\n";
       } else {
         np.set_pos_hpr(_camera, pos, hpr);
       }

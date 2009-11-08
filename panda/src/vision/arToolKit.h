@@ -40,7 +40,7 @@
 //               This class is a wrapper around the ARToolKit
 //               library.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL ARToolKit {
+class EXPCL_VISION ARToolKit {
   
 PUBLISHED:
   static ARToolKit *make(NodePath camera, const Filename &paramfile, double markersize);

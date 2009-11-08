@@ -31,7 +31,7 @@
 //               with its source taken from an .avi file or from a
 //               camera input.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL OpenCVTexture : public VideoTexture {
+class EXPCL_VISION OpenCVTexture : public VideoTexture {
 PUBLISHED:
   OpenCVTexture(const string &name = string());
 protected:

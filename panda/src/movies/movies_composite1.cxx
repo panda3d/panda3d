@@ -18,9 +18,6 @@
 #include "userDataAudio.cxx"
 #include "userDataAudioCursor.cxx"
 
-#include "webcamVideo.cxx"
-#include "webcamVideoDS.cxx"
-
 #include "microphoneAudio.cxx"
 #include "microphoneAudioDS.cxx"
 

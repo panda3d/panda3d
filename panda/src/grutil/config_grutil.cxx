@@ -17,7 +17,6 @@
 #include "sceneGraphAnalyzerMeter.h"
 #include "meshDrawer.h"
 #include "geoMipTerrain.h"
-#include "openCVTexture.h"
 #include "ffmpegTexture.h"
 #include "movieTexture.h"
 #include "pandaSystem.h"
@@ -98,34 +97,20 @@ init_libgrutil() {
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
 #endif  // HAVE_AUDIO
-#ifdef HAVE_OPENCV
-  OpenCVTexture::init_type();
-  OpenCVTexture::register_with_read_factory();
-#endif
+
 #ifdef HAVE_FFMPEG
   av_register_all();
   FFMpegTexture::init_type();
   FFMpegTexture::register_with_read_factory();
 #endif
 
-#ifdef HAVE_OPENCV
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("OpenCV");
-#endif
-
+#if defined(HAVE_FFMPEG)
   TexturePool *ts = TexturePool::get_global_ptr();
   if (use_movietexture) {
-#if defined(HAVE_FFMPEG)
     ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg wmv asf flv nut ogm");
-#elif defined(HAVE_OPENCV)
-    ts->register_texture_type(OpenCVTexture::make_texture, "avi");
-#endif
   } else {
-#if defined(HAVE_FFMPEG)
     ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg wmv asf flv nut ogm");
-#elif defined(HAVE_OPENCV)
-    ts->register_texture_type(OpenCVTexture::make_texture, "avi");
-#endif
   }
+#endif
 }
 

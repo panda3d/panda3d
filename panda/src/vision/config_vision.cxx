@@ -1,5 +1,5 @@
-// Filename: config_movies.cxx
-// Created by:  jyelon (02Jul07)
+// Filename: config_vision.cxx
+// Created by:  pro-rsoft (07Nov09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,24 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_movies.h"
+#include "config_vision.h"
+#include "openCVTexture.h"
+#include "webcamVideo.h"
+
+#include "pandaSystem.h"
+#include "texturePool.h"
 #include "dconfig.h"
 
-#ifdef HAVE_FFMPEG
-extern "C" {
-  #include "libavcodec/avcodec.h"
-}
-#endif
+Configure(config_vision);
+NotifyCategoryDef(vision, "");
 
-ConfigureDef(config_movies);
-NotifyCategoryDef(movies, "");
-
-ConfigureFn(config_movies) {
-  init_libmovies();
+ConfigureFn(config_vision) {
+  init_libvision();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libmovies
+//     Function: init_libvision
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -37,29 +36,26 @@ ConfigureFn(config_movies) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libmovies() {
+init_libvision() {
   static bool initialized = false;
   if (initialized) {
     return;
   }
   initialized = true;
 
-  MovieVideo::init_type();
-  MovieVideoCursor::init_type();
-  MovieAudio::init_type();
-  MovieAudioCursor::init_type();
-  InkblotVideo::init_type();
-  InkblotVideoCursor::init_type();
-  UserDataAudio::init_type();
-  UserDataAudioCursor::init_type();
-  MicrophoneAudio::init_type();
-#ifdef HAVE_FFMPEG
-  FfmpegVideo::init_type();
-  FfmpegVideoCursor::init_type();
-  FfmpegAudio::init_type();
-  FfmpegAudioCursor::init_type();
-  av_register_all();
-  FfmpegVirtualFile::register_protocol();
+  WebcamVideo::init_type();
+
+#ifdef HAVE_OPENCV
+  OpenCVTexture::init_type();
+  OpenCVTexture::register_with_read_factory();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("OpenCV");
+
+  TexturePool *ts = TexturePool::get_global_ptr();
+#ifndef HAVE_FFMPEG
+  ts->register_texture_type(OpenCVTexture::make_texture, "avi");
+#endif
 #endif
 }
 

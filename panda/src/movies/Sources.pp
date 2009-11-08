@@ -25,7 +25,6 @@
     ffmpegVirtualFile.h ffmpegVirtualFile.I \
     userDataAudio.h userDataAudio.I \
     userDataAudioCursor.h userDataAudioCursor.I \
-    webcamVideo.h webcamVideo.I \
     microphoneAudio.h microphoneAudio.I \
     config_movies.h
     
@@ -43,8 +42,6 @@
     ffmpegVirtualFile.cxx \
     userDataAudio.cxx \
     userDataAudioCursor.cxx \
-    webcamVideo.cxx \
-    webcamVideoDS.cxx \
     microphoneAudio.cxx \
     microphoneAudioDS.cxx \
     config_movies.cxx
@@ -61,7 +58,6 @@
     ffmpegAudio.h ffmpegAudio.I \
     ffmpegAudioCursor.h ffmpegAudioCursor.I \
     ffmpegVirtualFile.h ffmpegVirtualFile.I \
-    webcamVideo.h webcamVideo.I \
     microphoneAudio.h microphoneAudio.I \
     config_movies.h
 

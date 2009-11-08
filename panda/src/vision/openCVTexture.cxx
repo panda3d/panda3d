@@ -18,7 +18,7 @@
 #include "openCVTexture.h"
 #include "clockObject.h"
 #include "config_gobj.h"
-#include "config_grutil.h"
+#include "config_vision.h"
 #include "bamReader.h"
 #include "bamCacheRecord.h"
 
@@ -156,8 +156,8 @@ do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   if (stream.is_from_file()) {
     frame_rate = cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FPS);
     num_frames = (int)cvGetCaptureProperty(stream._capture, CV_CAP_PROP_FRAME_COUNT);
-    if (grutil_cat.is_debug()) {
-      grutil_cat.debug()
+    if (vision_cat.is_debug()) {
+      vision_cat.debug()
         << "Loaded " << stream._filename << ", " << num_frames << " frames at "
         << frame_rate << " fps\n";
     }
@@ -173,8 +173,8 @@ do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
     y_size = up_to_power_2(height);
   }
 
-  if (grutil_cat.is_debug()) {
-    grutil_cat.debug()
+  if (vision_cat.is_debug()) {
+    vision_cat.debug()
       << "Video stream is " << width << " by " << height 
       << " pixels; fitting in texture " << x_size << " by "
       << y_size << " texels.\n";
@@ -188,7 +188,7 @@ do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   if (_loaded_from_image && 
       (get_video_width() != width || get_video_height() != height ||
        get_num_frames() != num_frames || get_frame_rate() != frame_rate)) {
-    grutil_cat.error()
+    vision_cat.error()
       << "Video properties have changed for texture " << get_name()
       << " level " << z << ".\n";
     return false;
@@ -238,7 +238,7 @@ update_frame(int frame) {
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
 update_frame(int frame, int z) {
-  grutil_cat.spam() << "Updating OpenCVTexture page " << z << "\n";
+  vision_cat.spam() << "Updating OpenCVTexture page " << z << "\n";
   VideoPage &page = _pages[z];
   if (page._color.is_valid() || page._alpha.is_valid()) {
     do_modify_ram_image();
@@ -332,13 +332,13 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
   VideoPage &page = modify_page(z);
   if (!page._color.read(fullpath)) {
-    grutil_cat.error()
+    vision_cat.error()
       << "OpenCV couldn't read " << fullpath << " as video.\n";
     return false;
   }
   if (!alpha_fullpath.empty()) {
     if (!page._alpha.read(alpha_fullpath)) {
-      grutil_cat.error()
+      vision_cat.error()
         << "OpenCV couldn't read " << alpha_fullpath << " as video.\n";
       page._color.clear();
       return false;
