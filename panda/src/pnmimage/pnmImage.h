@@ -203,6 +203,9 @@ PUBLISHED:
                          int xfrom = 0, int yfrom = 0,
                          int x_size = -1, int y_size = -1,
                          double pixel_scale = 1.0);
+  void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
+                    int xfrom = 0, int yfrom = 0, int cfrom = 0,
+                    int x_size = -1, int y_size = -1);
 
   void render_spot(const Colord &fg, const Colord &bg,
                    double min_radius, double max_radius);

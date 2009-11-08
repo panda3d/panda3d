@@ -901,6 +901,59 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::copy_channel
+//       Access: Published
+//  Description: Copies just a single channel from the source image
+//               into a single channel of this image, leaving the
+//               remaining channels alone.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+copy_channel(const PNMImage &copy, int xto, int yto, int cto,
+             int xfrom, int yfrom, int cfrom,
+             int x_size, int y_size) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  if (get_maxval() == copy.get_maxval()) {
+    // The simple case: no pixel value rescaling is required.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      if (cto == 3 && cfrom == 3) {
+        // To alpha channel, from alpha channel.
+        for (x = xmin; x < xmax; x++) {
+          set_alpha_val(x, y, copy.get_alpha_val(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      } else if (cto == 3 && cfrom == 0) {
+        // To alpha channel, from blue (or gray) channel.
+        for (x = xmin; x < xmax; x++) {
+          set_alpha_val(x, y, copy.get_blue_val(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      } else if (cto == 0 && cfrom == 3) {
+        // To blue (or gray) channel, from alpha channel.
+        for (x = xmin; x < xmax; x++) {
+          set_blue_val(x, y, copy.get_alpha_val(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      } else {
+        // Generic channels.
+        for (x = xmin; x < xmax; x++) {
+          set_channel_val(x, y, cto, copy.get_channel_val(x - xmin + xfrom, y - ymin + yfrom, cfrom));
+        }
+      }
+    }
+
+  } else {
+    // The harder case: rescale pixel values according to maxval.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        set_channel(x, y, cto, copy.get_channel(x - xmin + xfrom, y - ymin + yfrom, cfrom));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::render_spot
 //       Access: Published
 //  Description: Renders a solid-color circle, with a fuzzy edge, into
