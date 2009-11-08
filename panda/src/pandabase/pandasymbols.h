@@ -24,6 +24,14 @@
 
 #if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 
+#ifdef BUILDING_CFTALK
+  #define EXPCL_CFTALK __declspec(dllexport)
+  #define EXPTP_CFTALK
+#else
+  #define EXPCL_CFTALK __declspec(dllimport)
+  #define EXPTP_CFTALK extern
+#endif
+
 #ifdef BUILDING_FRAMEWORK
   #define EXPCL_FRAMEWORK __declspec(dllexport)
   #define EXPTP_FRAMEWORK
@@ -232,15 +240,18 @@
   #define EXPTP_TINYDISPLAY extern
 #endif
 
-#ifdef BUILDING_CFTALK
-  #define EXPCL_CFTALK __declspec(dllexport)
-  #define EXPTP_CFTALK
+#ifdef BUILDING_VISION
+  #define EXPCL_VISION __declspec(dllexport)
+  #define EXPTP_VISION
 #else
-  #define EXPCL_CFTALK __declspec(dllimport)
-  #define EXPTP_CFTALK extern
+  #define EXPCL_VISION __declspec(dllimport)
+  #define EXPTP_VISION extern
 #endif
 
 #else   /* !WIN32_VC */
+
+#define EXPCL_CFTALK
+#define EXPTP_CFTALK
 
 #define EXPCL_FRAMEWORK
 #define EXPTP_FRAMEWORK
@@ -321,8 +332,8 @@
 #define EXPCL_TINYDISPLAY
 #define EXPTP_TINYDISPLAY
 
-#define EXPCL_CFTALK
-#define EXPTP_CFTALK
+#define EXPCL_VISION
+#define EXPTP_VISION
 
 #endif  /* WIN32_VC */
 
