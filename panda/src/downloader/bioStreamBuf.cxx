@@ -142,7 +142,7 @@ sync() {
 
   size_t n = pptr() - pbase();
 
-  if (downloader_cat.is_spam()) {
+  if (downloader_cat.is_spam() && n != 0) {
     downloader_cat.spam()
       << "BioStreamBuf::sync, " << n << " bytes\n";
   }
@@ -262,7 +262,7 @@ write_chars(const char *start, size_t length) {
         // without a retry request
         //_write_open = BIO_should_retry(*_source);
         //_write_open = !BIO_eof(*_source);
-        _write_open = (BIO_should_write(*_source) != 0);
+        _write_open = (BIO_should_write(*_source) != 0 || BIO_should_retry(*_source) != 0);
         if (!_write_open) {
           return wrote_so_far;
         }
