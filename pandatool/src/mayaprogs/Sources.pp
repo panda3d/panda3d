@@ -9,6 +9,14 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET maya2egg_server
+  #define OTHER_LIBS \
+    dtoolbase:c dtoolutil:c dtool:m
+  #define SOURCES \
+    mayapath.cxx
+#end bin_target
+
+#begin bin_target
   #define USE_PACKAGES maya
   #define TARGET maya2egg_bin
   #define LOCAL_LIBS \
@@ -26,6 +34,48 @@
 
   #define SOURCES \
     mayaToEgg.cxx mayaToEgg.h
+
+#end bin_target
+
+#begin bin_target
+  #define USE_PACKAGES maya
+  #define TARGET maya2egg_server_bin
+  #define LOCAL_LIBS \
+    mayabase mayaegg eggbase progbase
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    pipeline:c pnmimage:c
+
+  // Irix requires this to be named explicitly.
+  #define UNIX_SYS_LIBS \
+    ExtensionLayer
+
+  #define SOURCES \
+    mayaToEgg_server.cxx mayaToEgg_server.h
+
+#end bin_target
+
+#begin bin_target
+  #define USE_PACKAGES maya
+  #define TARGET maya2egg_client
+  #define LOCAL_LIBS \
+    mayabase mayaegg eggbase progbase
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    pipeline:c pnmimage:c
+
+  // Irix requires this to be named explicitly.
+  #define UNIX_SYS_LIBS \
+    ExtensionLayer
+
+  #define SOURCES \
+    mayaToEgg_client.cxx mayaToEgg_client.h
 
 #end bin_target
 

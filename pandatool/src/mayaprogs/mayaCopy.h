@@ -69,6 +69,7 @@ private:
 
   bool _keep_ver;
   bool _omit_tex;
+  bool _omit_ref;
   int _curr_idx;
   bool _maya_ascii;
   /*

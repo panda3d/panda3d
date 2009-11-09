@@ -71,9 +71,15 @@ MayaCopy() {
 
   add_option
     ("omittex", "", 0,
-     "Character animation files do not need to copy the texures nor its references. "
-     "This option omits the textures and references of the models to be re-mayacopied",
+     "Character animation files do not need to copy the texures. "
+     "This option omits the textures of the models to be re-mayacopied",
      &CVSCopy::dispatch_none, &_omit_tex);
+
+  add_option
+    ("omitref", "", 0,
+     "Character animation files do not need to copy internal file references. "
+     "This option omits the references of the models to be re-mayacopied",
+     &CVSCopy::dispatch_none, &_omit_ref);
 
   add_option
     ("ma", "", 0,
@@ -250,33 +256,13 @@ copy_maya_file(const Filename &source, const Filename &dest,
       maya_cat.debug() << "result = " << result3.asChar() << "\n";
     }
     _exec_string.push_back("file -loadReference \"" + string(result.asChar()) + "\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";");
-    //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
-    maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
-    status  = MGlobal::executeCommand(MString(_exec_string[_curr_idx].c_str()));
-    if (status != MStatus::kSuccess) {
-      status.perror("loadReference failed");
-    }
-    /*
-    Filename filename = 
-      _path_replace->convert_path(Filename::from_os_specific(lookup));
-
-    CVSSourceTree::FilePath path =
-      _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
-    Filename new_filename = path.get_rel_from(dir);
-
-    maya_cat.info() << "lookup filename: " << filename.to_os_generic() << "\n";
-    string cmdStr = "chdir " + string(dir->get_fullpath().to_os_generic().c_str()) + ";";
-    maya_cat.info() << "new filename (relative): " << new_filename.to_os_generic() << "\n";
-    //maya_cat.info() << "new filename (absolute): " << path.get_fullpath().to_os_generic() << "\n";
-    MString loadedFilename = MFileIO::loadReference(MString(new_filename.to_os_generic().c_str()), &status);
-    //MString loadedFilename = MFileIO::loadReference(MString(path.get_fullpath().to_os_generic().c_str()), &status);
-    //MString loadedFilename = MFileIO::loadReferenceByNode(result, &status);
-    maya_cat.info() << "loaded filename: " << loadedFilename << "\n";
-
-    if (status != MStatus::kSuccess) {
-      status.perror("loadReference failed");
-    }
-    */
+    if (!_omit_ref) {
+        maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
+        status  = MGlobal::executeCommand(MString(_exec_string[_curr_idx].c_str()));
+        if (status != MStatus::kSuccess) {
+          status.perror("loadReference failed");
+        }
+     }
     _curr_idx++;
   }
 
@@ -344,11 +330,13 @@ extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
   Filename texture_filename = 
     _path_replace->convert_path(color_def._texture_filename);
   if (!texture_filename.exists()) {
-    nout << "*** Warning: texture " << texture_filename
+    nout << "*** Error: texture " << texture_filename
          << " does not exist.\n";
+    return false;
   } else if (!texture_filename.is_regular_file()) {
-    nout << "*** Warning: texture " << texture_filename
+    nout << "*** Error: texture " << texture_filename
          << " is not a regular file.\n";
+    return false;
   } else {
     ExtraData ed;
     ed._type = FT_texture;
