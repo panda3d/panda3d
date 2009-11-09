@@ -241,11 +241,11 @@ set_type(PNMFileType *type) {
 //  Description: Records the indicated color in the histogram.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::
-record_color(PNMImageHeader::Histogram &hist, 
+record_color(PNMImageHeader::HistMap &hist, 
              const PNMImageHeader::PixelSpec &color) {
   // First, try to add the color with a count of 0, in case it does
   // not already exist in the table.
-  Histogram::iterator hi = hist.insert(Histogram::value_type(color, 0)).first;
+  HistMap::iterator hi = hist.insert(HistMap::value_type(color, 0)).first;
 
   // Now that either succeeded or failed, but either way hi is now the
   // iterator to the count value in the table associated with the
@@ -255,7 +255,7 @@ record_color(PNMImageHeader::Histogram &hist,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
@@ -269,7 +269,7 @@ PixelSpec(xelval gray_value) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
@@ -283,7 +283,7 @@ PixelSpec(xelval gray_value, xelval alpha) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
@@ -297,7 +297,7 @@ PixelSpec(xelval red, xelval green, xelval blue) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
@@ -310,8 +310,36 @@ PixelSpec(xelval red, xelval green, xelval blue, xelval alpha) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(const xel &rgb) :
+  _red(PPM_GETR(rgb)),
+  _green(PPM_GETG(rgb)),
+  _blue(PPM_GETB(rgb)),
+  _alpha(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(const xel &rgb, xelval alpha) :
+  _red(PPM_GETR(rgb)),
+  _green(PPM_GETG(rgb)),
+  _blue(PPM_GETB(rgb)),
+  _alpha(alpha)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
@@ -325,7 +353,7 @@ PixelSpec(const PixelSpec &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
@@ -338,7 +366,7 @@ operator = (const PixelSpec &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Comparison Operator
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool PNMImageHeader::PixelSpec::
@@ -353,4 +381,210 @@ operator < (const PixelSpec &other) const {
     return _blue < other._blue;
   }
   return _alpha < other._alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::get_red
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::PixelSpec::
+get_red() const {
+  return _red;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::get_green
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::PixelSpec::
+get_green() const {
+  return _green;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::get_blue
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::PixelSpec::
+get_blue() const {
+  return _blue;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::get_alpha
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::PixelSpec::
+get_alpha() const {
+  return _alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::set_red
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::PixelSpec::
+set_red(xelval red) {
+  _red = red;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::set_green
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::PixelSpec::
+set_green(xelval green) {
+  _green = green;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::set_blue
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::PixelSpec::
+set_blue(xelval blue) {
+  _blue = blue;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::set_alpha
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::PixelSpec::
+set_alpha(xelval alpha) {
+  _alpha = alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::operator []
+//       Access: Published
+//  Description: Indexes numerically into the components, in the order
+//               R, G, B, A.  This also makes the PixelSpec work like
+//               a tuple in Python.
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::PixelSpec::
+operator [](int n) const {
+  nassertr(n >= 0 && n < size(), 0);
+  return (&_red)[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::size
+//       Access: Published, Static
+//  Description: Specifies the number of components in the PixelSpec;
+//               this is always 4, regardless of the type of image it
+//               was taken from.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::PixelSpec::
+size() {
+  return 4;
+}
+
+// Interrogate seems to have some problem with the syntax of this
+// method.  Whatever, we don't need it.
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpecCount::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpecCount::
+PixelSpecCount(const PNMImageHeader::PixelSpec &pixel, int count) :
+  _pixel(pixel),
+  _count(count)
+{
+}
+#endif  // CPPPARSER
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpecCount::operator <
+//       Access: Public
+//  Description: Used to sort the pixels in order from most common to
+//               least common.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::PixelSpecCount::
+operator < (const PNMImageHeader::PixelSpecCount &other) const {
+  return _count > other._count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::Histogram::
+Histogram() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::get_num_pixels
+//       Access: Published
+//  Description: Returns the number of unique pixel colors in the
+//               histogram.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::Histogram::
+get_num_pixels() const {
+  return _pixels.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::get_pixel
+//       Access: Published
+//  Description: Returns the nth unique pixel color in the histogram.
+//               These are ordered by default from most common to
+//               least common.
+////////////////////////////////////////////////////////////////////
+INLINE const PNMImageHeader::PixelSpec &PNMImageHeader::Histogram::
+get_pixel(int n) const {
+  nassertr(n >= 0 && n < _pixels.size(), _pixels[0]._pixel);
+  return _pixels[n]._pixel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::get_count
+//       Access: Published
+//  Description: Returns the number of occurrences in the image of the
+//               nth unique pixel color in the histogram.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::Histogram::
+get_count(int n) const {
+  nassertr(n >= 0 && n < _pixels.size(), 0);
+  return _pixels[n]._count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::get_count
+//       Access: Published
+//  Description: Returns the number of occurrences in the image of the
+//               indicated pixel color.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::Histogram::
+get_count(const PNMImageHeader::PixelSpec &pixel) const {
+  HistMap::const_iterator hi;
+  hi = _hist_map.find(pixel);
+  if (hi == _hist_map.end()) {
+    return 0;
+  }
+  return (*hi).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::swap
+//       Access: Public
+//  Description: Swaps the data in the Histogram with the indicated
+//               data.  This is normally used to load the Histogram
+//               data initially in PNMImage::make_histogram().
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::Histogram::
+swap(PixelCount &pixels, HistMap &hist_map) {
+  _pixels.swap(pixels);
+  _hist_map.swap(hist_map);
 }

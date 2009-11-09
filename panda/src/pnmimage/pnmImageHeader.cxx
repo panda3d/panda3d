@@ -437,6 +437,9 @@ output(ostream &out) const {
 //               class, but it is defined at this level in case it has
 //               general utilty for PNMImages.
 //
+//               Also see PNMImage::make_histogram(), which is a
+//               higher-level function.
+//
 //               The max_colors parameter, if greater than zero,
 //               limits the maximum number of colors we are interested
 //               in.  If we encounter more than this number of colors,
@@ -444,7 +447,7 @@ output(ostream &out) const {
 //               false; otherwise, it returns true.
 ////////////////////////////////////////////////////////////////////
 bool PNMImageHeader::
-compute_histogram(PNMImageHeader::Histogram &hist, 
+compute_histogram(PNMImageHeader::HistMap &hist, 
                   xel *array, xelval *alpha, int max_colors) {
   int num_pixels = _x_size * _y_size;
   int pi;
@@ -502,14 +505,14 @@ compute_histogram(PNMImageHeader::Histogram &hist,
 bool PNMImageHeader::
 compute_palette(PNMImageHeader::Palette &palette, 
                 xel *array, xelval *alpha, int max_colors) {
-  Histogram hist;
+  HistMap hist;
 
   int num_pixels = _x_size * _y_size;
 
   // In case there are already entries in the palette, preserve them.
   Palette::const_iterator pi;
   for (pi = palette.begin(); pi != palette.end(); ++pi) {
-    hist.insert(Histogram::value_type(*pi, num_pixels + 1));
+    hist.insert(HistMap::value_type(*pi, num_pixels + 1));
   }
 
   if (!compute_histogram(hist, array, alpha, max_colors)) {
@@ -519,7 +522,7 @@ compute_palette(PNMImageHeader::Palette &palette,
   // Now append the new entries discovered in the histogram onto the
   // end of the palette.
   palette.reserve(hist.size());
-  Histogram::const_iterator hi;
+  HistMap::const_iterator hi;
   for (hi = hist.begin(); hi != hist.end(); ++hi) {
     if ((*hi).second <= num_pixels) {
       palette.push_back((*hi).first);

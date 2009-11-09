@@ -616,6 +616,44 @@ set_channel_val(int x, int y, int channel, xelval value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_pixel
+//       Access: Published
+//  Description: Returns the (r, g, b, a) pixel value at the indicated
+//               pixel, using a PixelSpec object.
+////////////////////////////////////////////////////////////////////
+PNMImage::PixelSpec PNMImage::
+get_pixel(int x, int y) const {
+  switch (_num_channels) {
+  case 1:
+    return PixelSpec(get_gray_val(x, y));
+  case 2:
+    return PixelSpec(get_gray_val(x, y), get_alpha_val(x, y));
+  case 3:
+    return PixelSpec(get_xel_val(x, y));
+  case 4:
+    return PixelSpec(get_xel_val(x, y), get_alpha_val(x, y));
+  }
+
+  return PixelSpec(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_pixel
+//       Access: Published
+//  Description: Sets the (r, g, b, a) pixel value at the indicated
+//               pixel, using a PixelSpec object.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+set_pixel(int x, int y, const PixelSpec &pixel) {
+  xel p;
+  PPM_ASSIGN(p, pixel._red, pixel._green, pixel._blue);
+  set_xel_val(x, y, p);
+  if (_alpha != NULL) {
+    set_alpha_val(x, y, pixel._alpha);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::blend
 //       Access: Published
 //  Description: Smoothly blends the indicated pixel value in with
@@ -1062,6 +1100,33 @@ expand_border(int left, int right, int bottom, int top,
   new_image.copy_sub_image(*this, left, top);
 
   take_from(new_image);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::make_histogram
+//       Access: Published
+//  Description: Computes a histogram of the colors used in the
+//               image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+make_histogram(PNMImage::Histogram &histogram) {
+  HistMap hist_map;
+  PixelCount pixels;
+
+  int num_pixels = _x_size * _y_size;
+
+  compute_histogram(hist_map, _array, _alpha);
+
+  pixels.reserve(hist_map.size());
+  HistMap::const_iterator hi;
+  for (hi = hist_map.begin(); hi != hist_map.end(); ++hi) {
+    if ((*hi).second <= num_pixels) {
+      pixels.push_back(PixelSpecCount((*hi).first, (*hi).second));
+    }
+  }
+  sort(pixels.begin(), pixels.end());
+
+  histogram.swap(pixels, hist_map);
 }
 
 ////////////////////////////////////////////////////////////////////

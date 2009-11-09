@@ -103,32 +103,81 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
-public:
-  // These classes are used internally, but must be declared public
-  // for fiddly reasons.
+  // Contains a single pixel specification used in compute_histogram()
+  // and make_histogram().  Note that pixels are stored by integer
+  // value, not by floating-point scaled value.
   class PixelSpec {
-  public:
+  PUBLISHED:
     INLINE PixelSpec(xelval gray_value);
     INLINE PixelSpec(xelval gray_value, xelval alpha);
     INLINE PixelSpec(xelval red, xelval green, xelval blue);
     INLINE PixelSpec(xelval red, xelval green, xelval blue, xelval alpha);
+    INLINE PixelSpec(const xel &rgb);
+    INLINE PixelSpec(const xel &rgb, xelval alpha);
     INLINE PixelSpec(const PixelSpec &copy);
     INLINE void operator = (const PixelSpec &copy);
 
     INLINE bool operator < (const PixelSpec &other) const;
+
+    INLINE xelval get_red() const;
+    INLINE xelval get_green() const;
+    INLINE xelval get_blue() const;
+    INLINE xelval get_alpha() const;
+
+    INLINE void set_red(xelval red);
+    INLINE void set_green(xelval green);
+    INLINE void set_blue(xelval blue);
+    INLINE void set_alpha(xelval alpha);
+
+    INLINE xelval operator [](int n) const;
+    INLINE static int size();
+    
     void output(ostream &out) const;
 
+  public:
     xelval _red, _green, _blue, _alpha;
   };
-  typedef pmap<PixelSpec, int> Histogram;
+
+  // Associates a pixel specification with an appearance count, for
+  // use in Histogram, below.
+  class PixelSpecCount {
+  public:
+    INLINE PixelSpecCount(const PixelSpec &pixel, int count);
+    INLINE bool operator < (const PixelSpecCount &other) const;
+
+    PixelSpec _pixel;
+    int _count;
+  };
+
+  typedef pmap<PixelSpec, int> HistMap;
+  typedef pvector<PixelSpecCount> PixelCount;
   typedef pvector<PixelSpec> Palette;
 
+  // Used to return a pixel histogram in PNMImage::get_histogram().
+  class Histogram {
+  PUBLISHED:
+    INLINE Histogram();
+
+    INLINE int get_num_pixels() const;
+    INLINE const PixelSpec &get_pixel(int n) const;
+    INLINE int get_count(int n) const;
+    INLINE int get_count(const PixelSpec &pixel) const;
+    MAKE_SEQ(get_pixels, get_num_pixels, get_pixel);
+
+  public:
+    INLINE void swap(PixelCount &pixels, HistMap &hist_map);
+
+  private:
+    PixelCount _pixels;
+    HistMap _hist_map;
+  };    
+
 protected:
-  bool compute_histogram(Histogram &hist, xel *array, xelval *alpha,
+  bool compute_histogram(HistMap &hist, xel *array, xelval *alpha,
                          int max_colors = 0);
   bool compute_palette(Palette &palette, xel *array, xelval *alpha,
                        int max_colors = 0);
-  INLINE void record_color(Histogram &hist, const PixelSpec &color);
+  INLINE void record_color(HistMap &hist, const PixelSpec &color);
 
   int _x_size, _y_size;
   int _num_channels;

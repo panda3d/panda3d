@@ -144,6 +144,9 @@ PUBLISHED:
   xelval get_channel_val(int x, int y, int channel) const;
   void set_channel_val(int x, int y, int channel, xelval value);
 
+  PixelSpec get_pixel(int x, int y) const;
+  void set_pixel(int x, int y, const PixelSpec &pixel);
+
   // The corresponding get_xel(), set_xel(), get_red(), etc. functions
   // automatically scale their values by get_maxval() into the range
   // [0..1].
@@ -223,6 +226,8 @@ PUBLISHED:
   void gaussian_filter_from(double radius, const PNMImage &copy);
   void quick_filter_from(const PNMImage &copy,
                          int xborder = 0, int yborder = 0);
+
+  void make_histogram(Histogram &hist);
 
 private:
   INLINE void allocate_array();
