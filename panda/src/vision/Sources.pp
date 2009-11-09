@@ -4,6 +4,8 @@
 
 #define USE_PACKAGES opencv artoolkit
 
+#define BUILDING_DLL BUILDING_VISION
+
 #begin lib_target
   #define TARGET vision
   #define LOCAL_LIBS \
