@@ -584,7 +584,7 @@ write_data(xel *array, xelval *alpha_data) {
   // the resulting bitdepth should be smaller than what we would have
   // otherwise.
   Palette palette;
-  Histogram palette_lookup;
+  HistMap palette_lookup;
   png_color png_palette[png_max_palette];
   png_byte png_trans[png_max_palette];
 
