@@ -107,6 +107,25 @@ get_output() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WithOutputFile::close_output
+//       Access: Public
+//  Description: Closes the output stream previously opened by
+//               get_output().  A subsequent call to get_output() will
+//               open a new stream.
+////////////////////////////////////////////////////////////////////
+void WithOutputFile::
+close_output() {
+  if (_owns_output_ptr) {
+    delete _output_ptr;
+    _owns_output_ptr = false;
+  }
+  _output_ptr = NULL;
+  _output_stream.close();
+}
+
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: WithOutputFile::has_output_filename
 //       Access: Public
 //  Description: Returns true if the user specified an output

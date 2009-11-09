@@ -37,6 +37,7 @@ public:
   virtual ~WithOutputFile();
 
   ostream &get_output();
+  void close_output();
   bool has_output_filename() const;
   Filename get_output_filename() const;
 
