@@ -118,6 +118,9 @@ PUBLISHED:
     INLINE void operator = (const PixelSpec &copy);
 
     INLINE bool operator < (const PixelSpec &other) const;
+    INLINE bool operator == (const PixelSpec &other) const;
+    INLINE bool operator != (const PixelSpec &other) const;
+    INLINE int compare_to(const PixelSpec &other) const;
 
     INLINE xelval get_red() const;
     INLINE xelval get_green() const;

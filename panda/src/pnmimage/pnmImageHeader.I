@@ -365,22 +365,55 @@ operator = (const PixelSpec &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::PixelSpec::Comparison Operator
+//     Function: PNMImageHeader::PixelSpec::operator <
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool PNMImageHeader::PixelSpec::
 operator < (const PixelSpec &other) const {
+  return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::operator ==
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::PixelSpec::
+operator == (const PixelSpec &other) const {
+  return compare_to(other) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::operator !=
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::PixelSpec::
+operator != (const PixelSpec &other) const {
+  return compare_to(other) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::compare_to
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::PixelSpec::
+compare_to(const PixelSpec &other) const {
   if (_red != other._red) {
-    return _red < other._red;
+    return _red < other._red ? -1 : 1;
   }
   if (_green != other._green) {
-    return _green < other._green;
+    return _green < other._green ? -1 : 1;
   }
   if (_blue != other._blue) {
-    return _blue < other._blue;
+    return _blue < other._blue ? -1 : 1;
   }
-  return _alpha < other._alpha;
+  if (_alpha != other._alpha) {
+    return _alpha < other._alpha ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
