@@ -252,6 +252,15 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
     results.sort()
     return results
 
+def GetDirectorySize(dir):
+    size = 0
+    for (path, dirs, files) in os.walk(dir):
+        for file in files:
+            try:
+                size += os.path.getsize(os.path.join(path, file))
+            except: pass
+    return size
+
 ########################################################################
 ##
 ## LocateBinary
