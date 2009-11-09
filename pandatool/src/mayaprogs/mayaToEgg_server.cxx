@@ -1,5 +1,5 @@
-// Filename: mayaToEgg.cxx
-// Created by:  drose (15Feb00)
+// Filename: mayaToEgg_server.cxx
+// Adapted by: cbrunner (09Nov09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -25,12 +25,12 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Constructor
+//     Function: MayaToEggServer::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MayaToEgg::
-MayaToEgg() :
+MayaToEggServer::
+MayaToEggServer() :
   SomethingToEgg("Maya", ".mb")
 {
   add_path_replace_options();
@@ -50,14 +50,14 @@ MayaToEgg() :
      "Generate polygon output only.  Tesselate all NURBS surfaces to "
      "polygons via the built-in Maya tesselator.  The tesselation will "
      "be based on the tolerance factor given by -ptol.",
-     &MayaToEgg::dispatch_none, &_polygon_output);
+     &MayaToEggServer::dispatch_none, &_polygon_output);
 
   add_option
     ("ptol", "tolerance", 0,
      "Specify the fit tolerance for Maya polygon tesselation.  The smaller "
      "the number, the more polygons will be generated.  The default is "
      "0.01.",
-     &MayaToEgg::dispatch_double, NULL, &_polygon_tolerance);
+     &MayaToEggServer::dispatch_double, NULL, &_polygon_tolerance);
 
   add_option
     ("bface", "", 0,
@@ -68,7 +68,7 @@ MayaToEgg() :
      "off where it is not desired).  If this flag is not specified, the "
      "default is to treat all polygons as single-sided, unless an "
      "egg object type of \"double-sided\" is set.",
-     &MayaToEgg::dispatch_none, &_respect_maya_double_sided);
+     &MayaToEggServer::dispatch_none, &_respect_maya_double_sided);
 
   add_option
     ("suppress-vcolor", "", 0,
@@ -76,19 +76,19 @@ MayaToEgg() :
      "(This is the way Maya normally renders internally.)  The egg flag "
      "'vertex-color' may be applied to a particular model to override "
      "this setting locally.",
-     &MayaToEgg::dispatch_none, &_suppress_vertex_color);
+     &MayaToEggServer::dispatch_none, &_suppress_vertex_color);
 
   add_option
     ("keep-uvs", "", 0,
      "Convert all UV sets on all vertices, even those that do not appear "
      "to be referenced by any textures.",
-     &MayaToEgg::dispatch_none, &_keep_all_uvsets);
+     &MayaToEggServer::dispatch_none, &_keep_all_uvsets);
 
   add_option
     ("round-uvs", "", 0,
      "round up uv coordinates to the nearest 1/100th. i.e. -0.001 becomes"
      "0.0; 0.444 becomes 0.44; 0.778 becomes 0.78.",
-     &MayaToEgg::dispatch_none, &_round_uvs);
+     &MayaToEggServer::dispatch_none, &_round_uvs);
 
   add_option
     ("trans", "type", 0,
@@ -96,7 +96,7 @@ MayaToEgg() :
      "transforms in the egg file.  The option may be one of all, model, "
      "dcs, or none.  The default is model, which means only transforms on "
      "nodes that have the model flag or the dcs flag are preserved.",
-     &MayaToEgg::dispatch_transform_type, NULL, &_transform_type);
+     &MayaToEggServer::dispatch_transform_type, NULL, &_transform_type);
 
   add_option
     ("subroot", "name", 0,
@@ -106,7 +106,7 @@ MayaToEgg() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_subroots);
+     &MayaToEggServer::dispatch_vector_string, NULL, &_subroots);
 
   add_option
     ("subset", "name", 0,
@@ -116,7 +116,7 @@ MayaToEgg() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_subsets);
+     &MayaToEggServer::dispatch_vector_string, NULL, &_subsets);
 
   add_option
     ("exclude", "name", 0,
@@ -125,7 +125,7 @@ MayaToEgg() :
      "name matches the parameter (which may include globbing characters "
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_excludes);
+     &MayaToEggServer::dispatch_vector_string, NULL, &_excludes);
 
   add_option
     ("ignore-slider", "name", 0,
@@ -134,19 +134,19 @@ MayaToEgg() :
      "and it will not become a part of the animation.  This "
      "parameter may including globbing characters, and it may be repeated "
      "as needed.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_ignore_sliders);
+     &MayaToEggServer::dispatch_vector_string, NULL, &_ignore_sliders);
 
   add_option
     ("force-joint", "name", 0,
      "Specifies the name of a DAG node that maya2egg "
      "should treat as a joint, even if it does not appear to be a Maya joint "
      "and does not appear to be animated.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_force_joints);
+     &MayaToEggServer::dispatch_vector_string, NULL, &_force_joints);
 
   add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
-     &MayaToEgg::dispatch_count, NULL, &_verbose);
+     &MayaToEggServer::dispatch_count, NULL, &_verbose);
 
   // Unfortunately, the Maya API doesn't allow us to differentiate
   // between relative and absolute pathnames--everything comes out as
@@ -164,17 +164,17 @@ MayaToEgg() :
   dummy = new MayaToEggConverter();
   nout << "Initializing Maya...\n";
   if (!dummy->open_api()) {
-    nout << "Unable to initialize May.\n";
+    nout << "Unable to initialize Maya.\n";
     exit(1);
   }
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Destructor
+//     Function: MayaToEggServer::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MayaToEgg::
-~MayaToEgg() {
+MayaToEggServer::
+~MayaToEggServer() {
   delete qManager;
   delete qReader;
   delete qListener;
@@ -182,11 +182,11 @@ MayaToEgg::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::run
+//     Function: MayaToEggServer::run
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void MayaToEgg::
+void MayaToEggServer::
 run() {
   // Set the verbose level by using Notify.
   if (_verbose >= 3) {
@@ -291,12 +291,12 @@ run() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::dispatch_transform_type
+//     Function: MayaToEggServer::dispatch_transform_type
 //       Access: Protected, Static
 //  Description: Dispatches a parameter that expects a
 //               MayaToEggConverter::TransformType option.
 ////////////////////////////////////////////////////////////////////
-bool MayaToEgg::
+bool MayaToEggServer::
 dispatch_transform_type(const string &opt, const string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
   (*ip) = MayaToEggConverter::string_transform_type(arg);
@@ -311,13 +311,13 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::poll
+//     Function: MayaToEggServer::poll
 //       Access: Public
 //  Description: Checks for any network activity and handles it, if
 //               appropriate, and then returns.  This must be called
 //               periodically
 ////////////////////////////////////////////////////////////////////
-void MayaToEgg::
+void MayaToEggServer::
 poll() {
   // Listen for new connections
   qListener->poll();
@@ -412,7 +412,7 @@ int main(int argc, char *argv[]) {
   pystub();
 #endif
 
-  MayaToEgg prog;
+  MayaToEggServer prog;
   // Open a rendezvous port for receiving new connections from the client
   PT(Connection) rend = prog.qManager->open_TCP_server_rendezvous(4242, 50);
   if (rend.is_null()) {

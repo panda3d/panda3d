@@ -1,5 +1,5 @@
-// Filename: mayaToEgg.h
-// Created by:  drose (15Feb00)
+// Filename: mayaToEgg_server.h
+// Adapted by: cbrunner (09Nov09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MAYATOEGG_H
-#define MAYATOEGG_H
+#ifndef MAYATOEGGSERVER_H
+#define MAYATOEGGSERVER_H
 
 #include "pandatoolbase.h"
 #include "somethingToEgg.h"
@@ -23,13 +23,13 @@
 #include "queuedConnectionReader.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MayaToEgg
+//       Class : MayaToEggServer
 // Description :
 ////////////////////////////////////////////////////////////////////
-class MayaToEgg : public SomethingToEgg {
+class MayaToEggServer : public SomethingToEgg {
 public:
-  MayaToEgg();
-  ~MayaToEgg();
+  MayaToEggServer();
+  ~MayaToEggServer();
 
   void run();
   void poll();
