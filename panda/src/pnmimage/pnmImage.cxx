@@ -17,6 +17,7 @@
 #include "pnmWriter.h"
 #include "pnmBrush.h"
 #include "config_pnmimage.h"
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
@@ -1124,7 +1125,7 @@ make_histogram(PNMImage::Histogram &histogram) {
       pixels.push_back(PixelSpecCount((*hi).first, (*hi).second));
     }
   }
-  sort(pixels.begin(), pixels.end());
+  ::sort(pixels.begin(), pixels.end());
 
   histogram.swap(pixels, hist_map);
 }
