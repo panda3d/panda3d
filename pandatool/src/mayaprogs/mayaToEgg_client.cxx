@@ -27,8 +27,8 @@ MayaToEggClient() :
   SomethingToEgg("Maya", ".mb")
 {
   qManager = new QueuedConnectionManager();
-  qReader = new QueuedConnectionReader(manager, 0);
-  qWriter = new ConnectionWriter(manager, 0);
+  qReader = new QueuedConnectionReader(qManager, 0);
+  qWriter = new ConnectionWriter(qManager, 0);
   // We assume the server is local and on port 4242
   server.set_host("localhost", 4242);
 }
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
   MayaToEggClient prog;
   // Open a connection to the server process
-  PT(Connection) con = prog.manager->open_TCP_client_connection(prog.server,0);
+  PT(Connection) con = prog.qManager->open_TCP_client_connection(prog.server,0);
   if (con.is_null()) {
     nout << "port opened fail";
   }
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
   nout << "sending datagram\n";
   
   // Send it and close the connection
-  prog.writer->send(datagram, con);
-  prog.manager->close_connection(con);
+  prog.qWriter->send(datagram, con);
+  prog.qManager->close_connection(con);
   return 0;
 }
 

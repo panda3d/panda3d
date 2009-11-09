@@ -28,9 +28,9 @@ class MayaToEggClient : public SomethingToEgg {
 public:
   MayaToEggClient();
 
-  QueuedConnectionManager *manager;
-  QueuedConnectionReader *reader;
-  ConnectionWriter *writer;
+  QueuedConnectionManager *qManager;
+  QueuedConnectionReader *qReader;
+  ConnectionWriter *qWriter;
   NetAddress server;
 };
 
