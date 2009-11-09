@@ -1,5 +1,5 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c movies:m
+                   dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #define USE_PACKAGES opencv artoolkit
 
@@ -8,7 +8,7 @@
 #begin lib_target
   #define TARGET vision
   #define LOCAL_LIBS \
-    display text pgraph gobj linmath putil movies audio
+    display text pgraph gobj linmath putil audio movies
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
