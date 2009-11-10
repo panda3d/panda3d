@@ -176,6 +176,8 @@ class DirectSession(DirectObject):
         keyList.extend(map(chr, range(48, 58)))
         keyList.extend(["`", "-", "=", "[", "]", ";", "'", ",", ".", "/", "\\"])
 
+        self.specialKeys = ['escape', 'delete', 'page_up', 'page_down']
+
         def addCtrl(a):
             return "control-%s"%a
 
@@ -185,13 +187,8 @@ class DirectSession(DirectObject):
         self.keyEvents = keyList[:]
         self.keyEvents.extend(map(addCtrl, keyList))
         self.keyEvents.extend(map(addShift, keyList))        
-        self.keyEvents.extend(['escape', 'delete', 'page_up', 'page_down'])
+        self.keyEvents.extend(self.specialKeys)
 
-##         self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
-##                           '[', '{', ']', '}',
-##                           'shift-a', 'b', 'control-f',
-##                           'l', 'shift-l', 'o', 'p', 'r',
-##                           'shift-r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'shift-mouse1', 'shift-mouse1-up',
                             'control-mouse1', 'control-mouse1-up',
@@ -206,33 +203,54 @@ class DirectSession(DirectObject):
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
 
-        self.hotKeyEvents = {
-            'c': 'DIRECT-centerCamIn',
-            'f': 'DIRECT-fitOnWidget',
-            'h': 'DIRECT-homeCam',
-            'shift-v': 'DIRECT-toggleMarkerVis',
-            'm': 'DIRECT-moveToFit',
-            'n': 'DIRECT-pickNextCOA',
-            'u': 'DIRECT-orbitUprightCam',
-            'shift-u': 'DIRECT-uprightCam',
-            '1': 'DIRECT-spwanMoveToView-1',
-            '2': 'DIRECT-spwanMoveToView-2',
-            '3': 'DIRECT-spwanMoveToView-3',
-            '4': 'DIRECT-spwanMoveToView-4',
-            '5': 'DIRECT-spwanMoveToView-5',
-            '6': 'DIRECT-spwanMoveToView-6',
-            '7': 'DIRECT-spwanMoveToView-7',
-            '8': 'DIRECT-spwanMoveToView-8',
-            '9': 'DIRECT-swingCamAboutWidget-0',
-            '0': 'DIRECT-swingCamAboutWidget-1',
-            '`': 'DIRECT-removeManipulateCameraTask',
-            '=': 'DIRECT-zoomInCam',
-            '+': 'DIRECT-zoomInCam',
-            '_': 'DIRECT-zoomOutCam',
-            '-': 'DIRECT-zoomOutCam',
-            'delete': 'DIRECT-delete',
-            '.': 'DIRECT-widgetScaleUp',
-            ',': 'DIRECT-widgetScaleDown',
+        self.hotKeyMap = {
+            'c': ('Center Camera', 0, 'DIRECT-centerCamIn'),
+            'f': ('Fit on Widget', 0, 'DIRECT-fitOnWidget'),
+            'h': ('Move Camera to ', 0, 'DIRECT-homeCam'),
+            'shift-v': ('Toggle Marker', 0, 'DIRECT-toggleMarkerVis'),
+            'm': ('Move to fit', 0, 'DIRECT-moveToFit'),
+            'n': ('Pick Next COA', 0, 'DIRECT-pickNextCOA'),
+            'u': ('Orbit Upright Camera', 0, 'DIRECT-orbitUprightCam'),
+            'shift-u': ('Upright Camera', 0, 'DIRECT-uprightCam'),
+            '1': ('Move Camera to View 1', 0, 'DIRECT-spwanMoveToView-1'),
+            '2': ('Move Camera to View 2', 0, 'DIRECT-spwanMoveToView-2'),
+            '3': ('Move Camera to View 3', 0, 'DIRECT-spwanMoveToView-3'),
+            '4': ('Move Camera to View 4', 0, 'DIRECT-spwanMoveToView-4'),
+            '5': ('Move Camera to View 5', 0, 'DIRECT-spwanMoveToView-5'),
+            '6': ('Move Camera to View 6', 0, 'DIRECT-spwanMoveToView-6'),
+            '7': ('Move Camera to View 7', 0, 'DIRECT-spwanMoveToView-7'),
+            '8': ('Move Camera to View 8', 0, 'DIRECT-spwanMoveToView-8'),
+            '9': ('Rotate Camera About widget 90 degrees Counterclockwise', 0, 'DIRECT-swingCamAboutWidget-0'),
+            '0': ('Rotate Camera About widget 90 degrees Clockwise', 0, 'DIRECT-swingCamAboutWidget-1'),
+            '`': ('Remove ManipulateCameraTask', 0, 'DIRECT-removeManipulateCameraTask'),
+            '=': ('Zoom In', 0, 'DIRECT-zoomInCam'),
+            'shift-=': ('Zoom In', 0, 'DIRECT-zoomInCam'),
+            'shift-_': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
+            '-': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
+            'delete': ('Delete', 0, 'DIRECT-delete'),
+            '.': ('Scale Up Widget', 0, 'DIRECT-widgetScaleUp'),
+            ',': ('Scale Down Widget', 0, 'DIRECT-widgetScaleDown'),
+
+            'page_up': ('Up Ancestry', 'self.upAncestry()', 0),
+            'page_down': ('Down Ancestry', 'self.downAncestry()', 0),
+            'escape': ('Deselect All', 'self.deselectAll()', 0),
+            'v': ('Toggle Manipulating Widget', 'self.toggleWidgetVis()', 0),
+            'b': ('Toggle Backface', 'base.toggleBackface()', 0),
+            'control-f': ('Flash', 'self.flash(last)', 0),
+            'l': ('Toggle lights', 'self.lights.toggle()', 0),
+            'shift-l': ('Toggle COA Lock', 'self.cameraControl.toggleCOALock()', 0),
+            'o': ('Toggle OOBE', 'self.oobe()', 0),
+            'p': ('Set Active Parent', 'self.doSetActiveParent()', 0),
+            'r': ('Wrt Reparent', 'self.doWrtReparent()', 0),
+            'shift-r': ('Reparent', 'self.doReparent()', 0),
+            's': ('Select', 'self.doSelect()', 0),
+            't': ('Toggle Textures', 'base.toggleTexture()', 0),
+            'shift-a': ('Toggle Vis all', 'self.selected.toggleVisAll()', 0),
+            'w': ('Toggle Wireframe', 'base.toggleWireframe()', 0),
+            '[': ('Undo', 'self.undo()', 0),
+            'shift-[': ('Undo', 'self.undo()', 0),
+            ']': ('Redo', 'self.redo()', 0),
+            'shift-]': ('Redo', 'self.redo()', 0),
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
@@ -451,8 +469,14 @@ class DirectSession(DirectObject):
                     break
 
         # Deal with keyboard and mouse input
-        if input in self.hotKeyEvents.keys():
-            messenger.send(self.hotKeyEvents[input])
+        if input in self.hotKeyMap.keys():
+            keyDesc = self.hotKeyMap[input]
+            if len(keyDesc) == 3:
+                if keyDesc[1] == 0: # [gjeon] when we need to send a message
+                    messenger.send(keyDesc[2])
+                else:  # [gjeon] when we need to call a function
+                    eval(keyDesc[1])
+
         elif input == 'mouse1-up':
             self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
             messenger.send('DIRECT-mouse1Up')
@@ -492,55 +516,27 @@ class DirectSession(DirectObject):
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'alt-up':
             self.fAlt = 0
-        elif input == 'page_up':
-            self.upAncestry()
-        elif input == 'page_down':
-            self.downAncestry()
-        elif input == 'escape':
-            self.deselectAll()
-##         elif input == 'delete':
-##             self.removeAllSelected()
-        elif input == 'v':
-            self.toggleWidgetVis()
-        elif input == 'b':
-            base.toggleBackface()
-        elif input == 'control-f':
-            self.flash(last)
-        elif input == 'l':
-            self.lights.toggle()
-        elif input == 'shift-l':
-            self.cameraControl.toggleCOALock()
-        elif input == 'o':
-            self.oobe()
-        elif input == 'p':
-            if self.selected.last:
-                self.setActiveParent(self.selected.last)
-        elif input == 'r':
-            # Do wrt reparent
-            if self.selected.last:
-                self.reparent(self.selected.last, fWrt = 1)
-        elif input == 'shift-r':
-            # Do regular reparent
-            if self.selected.last:
-                self.reparent(self.selected.last)
-        elif input == 's':
-            if self.selected.last:
-                self.select(self.selected.last)
-        elif input == 't':
-            base.toggleTexture()
-        elif input == 'shift-a':
-            self.selected.toggleVisAll()
-        elif input == 'w':
-            base.toggleWireframe()
-        elif (input == '[') or (input == '{'):
-            self.undo()
-        elif (input == ']') or (input == '}'):
-            self.redo()
 
         #Pass along certain events if this display is a cluster client
         if self.clusterMode == 'client':
             if input in self.passThroughKeys:
                 self.cluster('messenger.send("%s")' % input, 0)
+
+    def doSetActiveParent(self):
+        if self.selected.last:
+            self.setActiveParent(self.selected.last)
+
+    def doReparent(self):
+        if self.selected.last:
+            self.reparent(self.selected.last)
+
+    def doWrtReparent(self):
+        if self.selected.last:
+            self.reparent(self.selected.last, fWrt = 1)
+
+    def doSelect(self):
+        if self.selected.last:
+            self.select(self.selected.last)
 
     def getModifiers(self, input, base):
         modifiers = DIRECT_NO_MOD
