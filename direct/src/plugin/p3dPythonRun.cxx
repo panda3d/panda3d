@@ -390,6 +390,31 @@ run_python() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::set_window_open
+//       Access: Public
+//  Description: Called from low-level Panda (via the P3DWindowHandle
+//               object) when a child window has been attached or
+//               detached from the browser window.  This triggers the
+//               "onwindowattach" and "onwindowdetach" JavaScript
+//               notifications.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+set_window_open(P3DCInstance *inst, bool is_open) {
+  TiXmlDocument doc;
+  TiXmlElement *xrequest = new TiXmlElement("request");
+  xrequest->SetAttribute("instance_id", inst->get_instance_id());
+  xrequest->SetAttribute("rtype", "notify");
+  if (is_open) {
+    xrequest->SetAttribute("message", "onwindowattach");
+  } else {
+    xrequest->SetAttribute("message", "onwindowdetach");
+  }
+  doc.LinkEndChild(xrequest);
+
+  write_xml(_pipe_write, &doc, nout);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::request_keyboard_focus
 //       Access: Public
 //  Description: Called from low-level Panda (via the P3DWindowHandle
@@ -1774,8 +1799,43 @@ P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
                 const WindowHandle &copy) :
   WindowHandle(copy),
   _p3dpython(p3dpython),
-  _inst(inst)
+  _inst(inst),
+  _child_count(0)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::P3DWindowHandle::attach_child
+//       Access: Public, Virtual
+//  Description: Called on a parent handle to indicate a child
+//               window's intention to attach itself.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::P3DWindowHandle::
+attach_child(WindowHandle *child) {
+  WindowHandle::attach_child(child);
+  ++_child_count;
+
+  if (_child_count == 1) {
+    // When the first child window is attached, we tell the plugin.
+    _p3dpython->set_window_open(_inst, true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::P3DWindowHandle::detach_child
+//       Access: Public, Virtual
+//  Description: Called on a parent handle to indicate a child
+//               window's intention to detach itself.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::P3DWindowHandle::
+detach_child(WindowHandle *child) {
+  WindowHandle::detach_child(child);
+  --_child_count;
+
+  if (_child_count == 0) {
+    // When the last child window is detached, we tell the plugin.
+    _p3dpython->set_window_open(_inst, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

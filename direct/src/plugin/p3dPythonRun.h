@@ -74,6 +74,7 @@ public:
 
   bool run_python();
 
+  void set_window_open(P3DCInstance *inst, bool is_open);
   void request_keyboard_focus(P3DCInstance *inst);
 
 private:
@@ -120,12 +121,15 @@ private:
     P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,
                     const WindowHandle &copy);
 
-  protected:
+  public:
+    virtual void attach_child(WindowHandle *child);
+    virtual void detach_child(WindowHandle *child);
     virtual void request_keyboard_focus(WindowHandle *child);
 
   private:
     P3DPythonRun *_p3dpython;
     P3DCInstance *_inst;
+    int _child_count;
 
   public:
     static TypeHandle get_class_type() {

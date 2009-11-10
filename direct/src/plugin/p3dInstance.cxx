@@ -54,7 +54,6 @@ const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
   "failed",
   "launch",
   "active",
-  "done",
   "auth_ready",
   "auth_rollover",
   "auth_click",
@@ -222,6 +221,10 @@ P3DInstance::
        << _panda_script_object->_ref_count << "\n";
   _panda_script_object->set_instance(NULL);
   P3D_OBJECT_DECREF(_panda_script_object);
+
+  for (int i = 0; i < (int)IT_num_image_types; ++i) {
+    _image_files[i].cleanup();
+  }
 
   // Tell all of the packages that we're no longer in business for
   // them.
@@ -1957,18 +1960,27 @@ handle_notify_request(const string &message) {
 
   } else if (message == "onwindowopen") {
     // The process told us that it just succesfully opened its
-    // window.  Hide the splash window.
+    // window, for the first time.  Hide the splash window.
     _instance_window_opened = true;
     if (_splash_window != NULL) {
       _splash_window->set_visible(false);
     }
 
-    // Guess we won't be using these images any more.
+    // Guess we won't be using (most of) these images any more.
     for (int i = 0; i < (int)IT_num_image_types; ++i) {
-      _image_files[i].cleanup();
+      if (i != IT_active) {
+        _image_files[i].cleanup();
+      }
     }
 
     _panda_script_object->set_string_property("status", "open");
+
+  } else if (message == "onwindowattach") {
+    // The graphics window has been attached to the browser frame
+    // (maybe initially, maybe later).  Hide the splash window.
+    if (_splash_window != NULL) {
+      _splash_window->set_visible(false);
+    }
 
 #ifdef __APPLE__
     // Start a timer to update the frame repeatedly.  This seems to be
@@ -1980,6 +1992,24 @@ handle_notify_request(const string &message) {
       (NULL, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
     CFRunLoopRef run_loop = CFRunLoopGetCurrent();
     CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
+#endif  // __APPLE__
+
+  } else if (message == "onwindowdetach") {
+    // The graphics window has been removed from the browser frame.
+    // Restore the splash window.
+    _instance_window_opened = true;
+    set_background_image(IT_active);
+    if (_splash_window != NULL) {
+      _splash_window->set_visible(true);
+    }
+
+#ifdef __APPLE__
+    // Stop the frame timer; we don't need it any more.
+    if (_frame_timer != NULL) {
+      CFRunLoopTimerInvalidate(_frame_timer);
+      CFRelease(_frame_timer);
+      _frame_timer = NULL;
+    }
 #endif  // __APPLE__
 
   } else if (message == "buttonclick") {
@@ -2164,7 +2194,7 @@ make_splash_window() {
   // Go get the required images.
   for (int i = 0; i < (int)IT_none; ++i) {
     string token_keyword = string(_image_type_names[i]) + "_img";
-    if (!_fparams.has_token(token_keyword) && i != IT_done) {
+    if (!_fparams.has_token(token_keyword)) {
       token_keyword = "splash_img";
     }
     if (!_fparams.has_token(token_keyword)) {

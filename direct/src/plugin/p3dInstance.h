@@ -145,7 +145,6 @@ private:
     IT_failed,
     IT_launch,
     IT_active,
-    IT_done,
     IT_auth_ready,
     IT_auth_rollover,
     IT_auth_click,
