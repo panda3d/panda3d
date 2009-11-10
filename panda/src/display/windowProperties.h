@@ -136,7 +136,7 @@ PUBLISHED:
   INLINE void clear_z_order();
 
   void set_parent_window(size_t parent);
-  INLINE void set_parent_window(WindowHandle *parent_window);
+  INLINE void set_parent_window(WindowHandle *parent_window = NULL);
   INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
