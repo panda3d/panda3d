@@ -154,8 +154,9 @@ class LevelEditorBase(DirectObject):
         
         try:
             f = open(self.settingsFile, 'w')
-            f.write('gridSize %f\n'%self.ui.perspView.grid.gridSize)
-            f.write('gridSpacing %f\n'%self.ui.perspView.grid.gridSpacing)
+            f.write('gridSize\n%f\n'%self.ui.perspView.grid.gridSize)
+            f.write('gridSpacing\n%f\n'%self.ui.perspView.grid.gridSpacing)
+            f.write('hotKey\n%s\n'%base.direct.hotKeyMap)
             f.close()
         except:
             pass        
@@ -171,11 +172,15 @@ class LevelEditorBase(DirectObject):
 
             gridSize = 100.0
             gridSpacing = 5.0
-            for line in configLines:
+            for i in range(0, len(configLines)):
+                line = configLines[i]
+                i = i + 1
                 if line.startswith('gridSize'):
-                    gridSize = float(line.split()[1])
+                    gridSize = float(configLines[i])
                 elif line.startswith('gridSpacing'):
-                    gridSpacing = float(line.split()[1])
+                    gridSpacing = float(configLines[i])
+                elif line.startswith('hotKey'):
+                    base.direct.hotKeyMap = eval(configLines[i])
 
             self.ui.updateGrids(gridSize, gridSpacing)
         except:

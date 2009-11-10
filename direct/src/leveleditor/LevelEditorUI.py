@@ -9,6 +9,7 @@ from ViewPort import *
 from ObjectPaletteUI import *
 from ObjectPropertyUI import *
 from SceneGraphUI import *
+from HotKeyUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
@@ -65,12 +66,12 @@ class LevelEditorUI(WxAppShell):
         self.menuOptions = wx.Menu()
         self.menuBar.Insert(2, self.menuOptions, "&Options")
 
-        self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size ")
+        self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size")
         self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
-
         self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "&Show Panda Objects", kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onShowPandaObjects, self.showPandaObjectsMenuItem)
-
+        self.hotKeysMenuItem = self.menuOptions.Append(-1, "&Hot Keys")
+        self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
 
     def createInterface(self):
         self.createMenu()
@@ -203,6 +204,11 @@ class LevelEditorUI(WxAppShell):
         self.leftView.grid.gridSize = newSize
         self.leftView.grid.gridSpacing = newSpacing
         self.leftView.grid.updateGrid()        
+
+    def onHotKeys(self, evt):
+        hotKeyUI = HotKeyUI(self, -1, 'Hot Key List')
+        hotKeyUI.ShowModal()
+        hotKeyUI.Destroy()
 
 class GridSizeUI(wx.Dialog):
     def __init__(self, parent, id, title, gridSize, gridSpacing):
