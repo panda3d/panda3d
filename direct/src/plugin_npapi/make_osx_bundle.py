@@ -37,6 +37,10 @@ def makeBundle(startDir):
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir, 'bundle')
+
+    if os.path.exists(rootFilename.toOsSpecific()):
+        shutil.rmtree(rootFilename.toOsSpecific())
+
     bundleFilename = Filename(rootFilename, 'nppanda3d.plugin')
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
@@ -71,7 +75,6 @@ def buildDmg(startDir):
         'output' : output.toOsSpecific(),
         }
     os.system(cmd)
-    shutil.rmtree(rootFilename.toOsSpecific())
 
 if __name__ == '__main__':
     try:
