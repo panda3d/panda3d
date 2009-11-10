@@ -1,7 +1,6 @@
 """ServerRepository module: contains the ServerRepository class"""
 
 from pandac.PandaModules import *
-#from TaskManagerGlobal import *
 from direct.distributed.MsgTypesCMU import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
@@ -264,7 +263,7 @@ class ServerRepository:
             retVal = self.qcl.getNewConnection(rendezvous, netAddress,
                                                newConnection)
             if not retVal:
-                return
+                return task.cont
 
             # Crazy dereferencing
             newConnection=newConnection.p()
@@ -284,13 +283,13 @@ class ServerRepository:
             self.lastConnection = newConnection
             self.sendDoIdRange(client)
             
-        return Task.cont
+        return task.cont
 
     def readerPollUntilEmpty(self, task):
         """ continuously polls for new messages on the server """
         while self.readerPollOnce():
             pass
-        return Task.cont
+        return task.cont
 
     def readerPollOnce(self):
         """ checks for available messages to the server """
@@ -652,7 +651,7 @@ class ServerRepository:
         for client in self.clientsByConnection.values():
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
-        return Task.cont
+        return task.cont
 
     def sendToZoneExcept(self, zoneId, datagram, exceptionList):
         """sends a message to everyone who has interest in the
