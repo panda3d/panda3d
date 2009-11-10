@@ -68,7 +68,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
   //   dxgsg9_cat.debug() << (void*)d3dcolor << endl;
   return d3dcolor;
 #else //!_X86_
-  return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+  return D3DCOLOR_COLORVALUE(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
 #endif //!_X86_
 }
 
