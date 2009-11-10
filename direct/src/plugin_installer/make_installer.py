@@ -353,7 +353,7 @@ def makeXpiFile():
     for subdir in subdirs:
         platform = FirefoxPlatformMap.get(subdir, None)
         path = os.path.join(root, subdir)
-        if subdir and os.path.isdir(path):
+        if platform and os.path.isdir(path):
             # Create the XPI directory platform/<platform name>/plugins
             pluginsXpiDir = 'platform/%s/plugins' % (platform)
 
