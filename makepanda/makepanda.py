@@ -41,6 +41,8 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 OSXTARGET=None
+if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+    OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
@@ -143,7 +145,10 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
-    if (OSXTARGET != None):
+    if (OSXTARGET.strip() == ""):
+        OSXTARGET = None
+    elif (OSXTARGET != None):
+        OSXTARGET = OSXTARGET.strip()
         if (len(OSXTARGET) != 4 or not OSXTARGET.startswith("10.")):
             usage("Invalid setting for OSXTARGET")
         try:
@@ -4435,6 +4440,24 @@ The Panda3D engine.
 /usr/include/panda3d
 """
 
+Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>%(package_id)s</string>
+  <key>CFBundleShortVersionString</key>
+  <string>%(version)s</string>
+  <key>IFPkgFlagRelocatable</key>
+  <false/>
+  <key>IFPkgFlagAuthorizationAction</key>
+  <string>RootAuthorization</string>
+  <key>IFPkgFlagAllowBackRev</key>
+  <true/>
+</dict>
+</plist>
+"""
+
 def MakeInstallerLinux():
     import compileall
     if RUNTIME: # No worries, it won't be used
@@ -4455,7 +4478,7 @@ def MakeInstallerLinux():
       InstallRuntime(destdir = "linuxroot", outputdir = GetOutputDir())
     else:
       InstallPanda(destdir = "linuxroot", outputdir = GetOutputDir())
-      oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
+      oscmd("chmod -R 755 linuxroot/usr/share/panda3d")
     
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
@@ -4504,63 +4527,121 @@ def MakeInstallerOSX():
         return
 
     import compileall
-    PYTHONV=SDK["PYTHONVERSION"].replace("python", "").strip()
-    if (os.path.isfile("Panda3D-tpl-rw.dmg")): oscmd("rm -f Panda3D-tpl-rw.dmg")
-    if (os.path.isdir("Panda3D-tpl-rw")):
-        oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
-        oscmd("rm -rf Panda3D-tpl-rw")
     if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
-    oscmd("hdiutil convert -format UDRW -o Panda3D-tpl-rw.dmg makepanda/Panda3D-tpl.dmg", True)
-    if (not os.path.exists("Panda3D-tpl-rw.dmg")): exit()
-    oscmd("mkdir Panda3D-tpl-rw")
-    oscmd("hdiutil attach Panda3D-tpl-rw.dmg -noautoopen -quiet -mountpoint Panda3D-tpl-rw", True)
-    if (not os.path.exists("Panda3D-tpl-rw")): exit()
-    try:
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/plugins" % VERSION)
-      oscmd("ln -s /usr/bin/python Panda3D-tpl-rw/Panda3D/%s/bin/ppython" % VERSION)
-      oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-      WriteFile("Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION, "")
-      oscmd("cp direct/src/ffi/panda3d.py Panda3D-tpl-rw/Panda3D/%s/lib/panda3d.py" % VERSION)
-      oscmd("cp %s/etc/Config.prc     Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (GetOutputDir(), VERSION))
-      oscmd("cp %s/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % (GetOutputDir(), VERSION))
-      oscmd("cp -R %s/include         Panda3D-tpl-rw/Panda3D/%s/include" % (GetOutputDir(), VERSION))
-      oscmd("cp -R direct/src/*       Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
-      oscmd("cp -R %s/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % (GetOutputDir(), VERSION))
-      oscmd("cp -R %s/models          Panda3D-tpl-rw/Panda3D/%s/models" % (GetOutputDir(), VERSION))
-      oscmd("cp -R doc/LICENSE        Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
-      oscmd("cp -R doc/ReleaseNotes   Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
-      oscmd("cp -R %s/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % (GetOutputDir(), VERSION))
-      if os.path.isdir("samples"):       oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
-      if os.path.isdir(GetOutputDir()+"/Pmw"):     oscmd("cp -R %s/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % (GetOutputDir(), VERSION))
-      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins/* Panda3D-tpl-rw/Panda3D/%s/plugins/" % (GetOutputDir(), VERSION))
-      for base in os.listdir(GetOutputDir()+"/lib"):
-          if (not base.endswith(".a")):
-              oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
-      
-      # Compile the python files
-      for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct"):
-          if ((base != "extensions") and (base != "extensions_native")):
-              compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/"+base)
-      compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
-      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
-      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
-      oscmd("chmod 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/panda3d.py")
-      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
-      if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
-      if os.path.isdir(GetOutputDir()+"/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
-    except: # Make sure the dmg gets unmounted even when error occurs
-      oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
-      oscmd("rm -f Panda3D-tpl-rw.dmg")
-      raise
-    oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
-    oscmd("hdiutil convert -format UDBZ -o Panda3D-"+VERSION+".dmg Panda3D-tpl-rw.dmg", True)
-    if (not os.path.exists("Panda3D-%s.dmg" % VERSION)): exit()
-    oscmd("rm -f Panda3D-tpl-rw.dmg")
-    oscmd("rm -rf Panda3D-tpl-rw")
+    if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
+    
+    #TODO: add postflight script
+    #oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
+    
+    oscmd("mkdir -p dstroot/base/Developer/Panda3D/lib")
+    oscmd("mkdir -p dstroot/base/Developer/Panda3D/etc")
+    oscmd("cp %s/etc/Config.prc           dstroot/base/Developer/Panda3D/etc/Config.prc" % GetOutputDir())
+    oscmd("cp %s/etc/Confauto.prc         dstroot/base/Developer/Panda3D/etc/Confauto.prc" % GetOutputDir())
+    oscmd("cp -R %s/models                dstroot/base/Developer/Panda3D/models" % GetOutputDir())
+    oscmd("cp -R doc/LICENSE              dstroot/base/Developer/Panda3D/LICENSE")
+    oscmd("cp -R doc/ReleaseNotes         dstroot/base/Developer/Panda3D/ReleaseNotes")
+    if os.path.isdir(GetOutputDir()+"/plugins"):
+        oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
+    for base in os.listdir(GetOutputDir()+"/lib"):
+        if (not base.endswith(".a")):
+            oscmd("cp "+GetOutputDir()+"/lib/"+base+" dstroot/base/Developer/Panda3D/lib/"+base)
+    
+    oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
+    oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
+    oscmd("cp -R %s/bin/*                 dstroot/tools/Developer/Tools/Panda3D/" % GetOutputDir())
+    oscmd("ln -s /Developer/Tools/Panda3D dstroot/tools/Developer/Panda3D/bin")
+    
+    if PkgSkip("PYTHON")==0:
+        oscmd("mkdir -p dstroot/pythoncode/usr/bin")
+        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/lib/direct")
+        oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/lib/pandac" % GetOutputDir())
+        oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/lib/direct")
+        oscmd("cp direct/src/ffi/panda3d.py   dstroot/pythoncode/Developer/Panda3D/lib/panda3d.py")
+        oscmd("ln -s %s                       dstroot/pythoncode/usr/bin/ppython" % SDK["PYTHONEXEC"])
+        if os.path.isdir(GetOutputDir()+"/Pmw"):
+            oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/lib/Pmw" % GetOutputDir())
+            compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/lib/Pmw")
+        WriteFile("dstroot/pythoncode/Developer/Panda3D/lib/direct/__init__.py", "")
+        for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/lib/direct"):
+            if ((base != "extensions") and (base != "extensions_native")):
+                compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/lib/direct/"+base)
+    
+    oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
+    oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
+    
+    if os.path.isdir("samples"):
+        oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
+        oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
+    
+    oscmd("chmod -R 0775 dstroot/*")
+    # We need to be root to perform a chown. Bleh. Fortunately we don't need it on 10.5 and above.
+    #oscmd("chown -R root:admin dstroot/*", True)
+    
+    oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/")
+    oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
+    
+    pkgs = ["base", "tools", "headers"]
+    if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
+    if os.path.isdir("samples"): pkgs.append("samples")
+    for pkg in pkgs:
+        plist = open("/tmp/Info_plist", "w")
+        plist.write(Info_plist % { "package_id" : "org.panda3d.panda3d.%s.pkg" % pkg, "version" : VERSION })
+        plist.close()
+        if os.path.exists("/Developer/usr/bin/packagemaker"):
+            oscmd('/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate')
+        elif os.path.exists("/Developer/Tools/packagemaker"):
+            oscmd('/Developer/usr/bin/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist')
+        else:
+            exit("PackageMaker could not be found!")
+    
+    if os.path.isfile("/tmp/Info_plist"):
+        oscmd("rm -f /tmp/Info_plist")
+    
+    dist = open("dstroot/Panda3D/Panda3D.mpkg/Contents/distribution.dist", "w")
+    print >>dist, '<?xml version="1.0" encoding="utf-8"?>'
+    print >>dist, '<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">'
+    print >>dist, '    <title>Panda3D</title>'
+    print >>dist, '    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>'
+    print >>dist, '    <license language="en" mime-type="text/plain">%s</license>' % ReadFile("doc/LICENSE")
+    print >>dist, '    <choices-outline>'
+    print >>dist, '        <line choice="base"/>'
+    print >>dist, '        <line choice="tools"/>'
+    if PkgSkip("PYTHON")==0:
+        print >>dist, '        <line choice="pythoncode"/>'
+    if os.path.isdir("samples"):
+        print >>dist, '        <line choice="samples"/>'
+    print >>dist, '        <line choice="headers"/>'
+    print >>dist, '    </choices-outline>'
+    print >>dist, '    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">'
+    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>'
+    print >>dist, '    </choice>'
+    print >>dist, '    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Tools/Panda3D/">'
+    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>'
+    print >>dist, '    </choice>'
+    if PkgSkip("PYTHON")==0:
+        print >>dist, '    <choice id="pythoncode" title="Python Code" tooltip="Code you\'ll need for Python development" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">'
+        print >>dist, '        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>'
+        print >>dist, '    </choice>'
+    if os.path.isdir("samples"):
+        print >>dist, '    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">'
+        print >>dist, '        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>'
+        print >>dist, '    </choice>'
+    print >>dist, '    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\' need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">'
+    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>'
+    print >>dist, '    </choice>'
+    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>' % (GetDirectorySize("dstroot/base") / 1024)
+    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>' % (GetDirectorySize("dstroot/tools") / 1024)
+    if PkgSkip("PYTHON")==0:
+        print >>dist, '    <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/pythoncode.pkg</pkg-ref>' % (GetDirectorySize("dstroot/pythoncode") / 1024)
+    if os.path.isdir("samples"):
+        print >>dist, '    <pkg-ref id="org.panda3d.panda3d.samples.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/samples.pkg</pkg-ref>' % (GetDirectorySize("dstroot/samples") / 1024)
+    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.headers.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/headers.pkg</pkg-ref>' % (GetDirectorySize("dstroot/headers") / 1024)
+    print >>dist, '</installer-script>'
+    dist.close()
+    
+    oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D')
+    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % VERSION)
+    oscmd('rm -f Panda3D-rw.dmg')
 
 if (INSTALLER != 0):
     ProgressOutput(100.0, "Building installer")
