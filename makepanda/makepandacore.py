@@ -1600,15 +1600,11 @@ def ParsePluginVersion(fn):
 #
 ##########################################################################################
 
-RESOURCE_FILE_TEMPLATE = """#define APSTUDIO_READONLY_SYMBOLS
-#include "winresrc.h"
-#undef APSTUDIO_READONLY_SYMBOLS
-
-VS_VERSION_INFO VERSIONINFO
+RESOURCE_FILE_TEMPLATE = """VS_VERSION_INFO VERSIONINFO
  FILEVERSION %(commaversion)s
  PRODUCTVERSION %(commaversion)s
  FILEFLAGSMASK 0x3fL
- FILEFLAGS $(debugflag)s
+ FILEFLAGS %(debugflag)s
  FILEOS 0x40004L
  FILETYPE 0x2L
  FILESUBTYPE 0x0L
@@ -1617,14 +1613,15 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "FileDescription", "%(description)s\0"
+            VALUE "FileDescription", "%(description)s\\0"
             VALUE "FileVersion", "%(dotversion)s"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "MIMEType", "%(mimetype)s\0"
-            VALUE "FileExtents", "%(extension)s\0"
-            VALUE "FileOpenName", "%(filedesc)s\0"
-            VALUE "OriginalFilename", "%(filename)s\0"
-            VALUE "ProductName", "%(name)s %(version)s\0"
+            VALUE "LegalTrademarks", "\\0"
+            VALUE "MIMEType", "%(mimetype)s\\0"
+            VALUE "FileExtents", "%(extension)s\\0"
+            VALUE "FileOpenName", "%(filedesc)s\\0"
+            VALUE "OLESelfRegister", "\\0"
+            VALUE "OriginalFilename", "%(filename)s\\0"
+            VALUE "ProductName", "%(name)s %(version)s\\0"
             VALUE "ProductVersion", "%(dotversion)s"
         END
     END
@@ -1635,7 +1632,7 @@ BEGIN
 END
 """
 
-def GenerateResourceFile(basename, **kwargs):
+def GenerateResourceFile(**kwargs):
     if "debugflag" not in kwargs:
         if GetOptimize() <= 2:
             kwargs["debugflag"] = "0x1L"
@@ -1647,15 +1644,24 @@ def GenerateResourceFile(basename, **kwargs):
     if "commaversion" not in kwargs:
         kwargs["commaversion"] = kwargs["dotversion"].replace(".", ",")
     
-    rcdata = RESOURCE_FILE_TEMPLATE % kwargs
+    rcdata = ""
+    if not "noinclude" in kwargs:
+        rcdata += "#define APSTUDIO_READONLY_SYMBOLS\n"
+        rcdata += "#include \"winresrc.h\"\n"
+        rcdata += "#undef APSTUDIO_READONLY_SYMBOLS\n"
+    rcdata += RESOURCE_FILE_TEMPLATE % kwargs
     
     if "icon" in kwargs:
         rcdata += "\nICON_FILE       ICON    \"%s\"\n" % kwargs["icon"]
     
+    return rcdata
+
+
+def WriteResourceFile(basename, **kwargs):
     if not basename.endswith(".rc"):
         basename += ".rc"
     basename = GetOutputDir() + "/include/" + basename
-    ConditionalWriteFile(basename, rcdata)
+    ConditionalWriteFile(basename, GenerateResourceFile(**kwargs))
     return basename
 
 ########################################################################
@@ -1828,12 +1834,12 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
                 if (SUFFIX_INC.count(suffix)):
                     for d in CxxCalcDependencies(fullinput, ipath, []):
                         t.deps[d] = 1
-    if (dep != 0):                
+    if (dep != 0):
         for x in dep:
             fulldep = FindLocation(x, ipath)
             t.deps[fulldep] = 1
     if (winrc != 0 and sys.platform.startswith("win")):
-        t.deps[GenerateResourceFile(target.split("/")[-1].split(".")[0], **winrc)] = 1
+        TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
     if (target.endswith(".in")):
         t.deps[FindLocation("interrogate.exe",[])] = 1
         t.deps[FindLocation("dtool_have_python.dat",[])] = 1

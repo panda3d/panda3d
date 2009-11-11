@@ -1434,6 +1434,66 @@ static int check_panda_version = panda_version_$VERSION1_$VERSION2_$VERSION3;
 # endif
 """
 
+P3DACTIVEX_RC="""#include "resource.h"
+#define APSTUDIO_READONLY_SYMBOLS
+#include "afxres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif
+#ifdef APSTUDIO_INVOKED
+1 TEXTINCLUDE
+BEGIN
+    "resource.h\\0"
+END
+2 TEXTINCLUDE
+BEGIN
+   "#include ""afxres.h""\\r\\n"
+    "\\0"
+END
+3 TEXTINCLUDE
+BEGIN
+    "1 TYPELIB ""P3DActiveX.tlb""\\r\\n"
+    "\\0"
+END
+#endif
+%s
+IDB_P3DACTIVEX          BITMAP                  "P3DActiveXCtrl.bmp"
+IDD_PROPPAGE_P3DACTIVEX DIALOG  0, 0, 250, 62
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "TODO: Place controls to manipulate properties of P3DActiveX Control on this dialog.",
+                    IDC_STATIC,7,25,229,16
+END
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_PROPPAGE_P3DACTIVEX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+END
+#endif
+STRINGTABLE
+BEGIN
+    IDS_P3DACTIVEX          "P3DActiveX Control"
+    IDS_P3DACTIVEX_PPG      "P3DActiveX Property Page"
+END
+STRINGTABLE
+BEGIN
+    IDS_P3DACTIVEX_PPG_CAPTION "General"
+END
+#endif
+#ifndef APSTUDIO_INVOKED
+1 TYPELIB "P3DActiveX.tlb"
+#endif"""
+
 def CreatePandaVersionFiles():
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
@@ -1477,6 +1537,16 @@ def CreatePandaVersionFiles():
         ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
         ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
     ConditionalWriteFile(GetOutputDir()+"/tmp/null.cxx","")
+    
+    if RUNTIME:
+        p3dactivex_rc = {"name" : "Panda3D Game Engine Plug-in",
+                         "version" : VERSION,
+                         "description" : "Runs 3-D games and interactive applets",
+                         "filename" : "p3dactivex.ocx",
+                         "mimetype" : "application/x-panda3d",
+                         "extension" : "p3d",
+                         "filedesc" : "Panda3D applet"}
+        ConditionalWriteFile(GetOutputDir()+"/include/P3DActiveX.rc", P3DACTIVEX_RC % GenerateResourceFile(**p3dactivex_rc))
 
 CreatePandaVersionFiles()
 
