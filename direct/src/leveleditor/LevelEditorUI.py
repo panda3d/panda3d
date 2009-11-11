@@ -149,6 +149,7 @@ class LevelEditorUI(WxAppShell):
 
     def onNew(self, evt):
         self.editor.reset()
+        self.sceneGraphUI.reset()
 
     def onLoad(self, evt):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)
