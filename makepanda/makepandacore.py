@@ -1203,6 +1203,8 @@ def SdkLocateDirectX():
         dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+    archStr = "x86" 
+    if (platform.architecture()[0] == "64bit"): archStr = "x64"
     if ("DX9" not in SDK) or ("DX8" not in SDK):
         uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
         for subdir in ListRegistryKeys(uninstaller):
@@ -1219,8 +1221,8 @@ def SdkLocateDirectX():
                         (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                         (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
                         (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
-                        (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
-                        (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
+                        (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3d9.lib")) and
+                        (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3dx9.lib"))):
                         SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
