@@ -145,7 +145,7 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
-    if (OSXTARGET.strip() == ""):
+    if (OSXTARGET != None and OSXTARGET.strip() == ""):
         OSXTARGET = None
     elif (OSXTARGET != None):
         OSXTARGET = OSXTARGET.strip()
@@ -1383,21 +1383,11 @@ def WriteConfigSettings():
 
 WriteConfigSettings()
 
-# Move any potentially conflicting files out of the way.
-if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h"):
-  os.rename("dtool/src/dtoolutil/pandaVersion.h", "dtool/src/dtoolutil/pandaVersion.h.moved")
-if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h"):
-  os.rename("dtool/src/dtoolutil/checkPandaVersion.h", "dtool/src/dtoolutil/checkPandaVersion.h.moved")
-if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx"):
-  os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx", "dtool/src/dtoolutil/checkPandaVersion.cxx.moved")
-if os.path.isfile("dtool/src/prc/prc_parameters.h"):
-  os.rename("dtool/src/prc/prc_parameters.h", "dtool/src/prc/prc_parameters.h.moved")
-if os.path.isfile("direct/src/plugin/p3d_plugin_config.h"):
-  os.rename("direct/src/plugin/p3d_plugin_config.h", "direct/src/plugin/p3d_plugin_config.h.moved")
+MoveAwayConflictingFiles()
 
 ##########################################################################################
 #
-# Generate pandaVersion.h, pythonversion, null.cxx
+# Generate pandaVersion.h, pythonversion, null.cxx, etc.
 #
 ##########################################################################################
 
@@ -1443,6 +1433,7 @@ extern EXPCL_DTOOL int panda_version_$VERSION1_$VERSION2_$VERSION3;
 static int check_panda_version = panda_version_$VERSION1_$VERSION2_$VERSION3;
 # endif
 """
+
 def CreatePandaVersionFiles():
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
@@ -3273,7 +3264,14 @@ if (RTDIST or RUNTIME):
 if (RUNTIME and PkgSkip("NPAPI")==0):
   OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME']
   if (sys.platform.startswith("win")):
-    TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
+    nppanda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
+                    "version" : VERSION,
+                    "description" : "Runs 3-D games and interactive applets",
+                    "filename" : "nppanda3d.dll",
+                    "mimetype" : "application/x-panda3d",
+                    "extension" : "p3d",
+                    "filedesc" : "Panda3D applet"}
+    TargetAdd('nppanda3d.res', opts=OPTS, winrc=nppanda3d_rc)
   elif (sys.platform=="darwin"):
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
   
@@ -3320,12 +3318,25 @@ if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   
+  if (sys.platform.startswith("win")):
+    panda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
+                  "version" : VERSION,
+                  "description" : "Runs 3-D games and interactive applets",
+                  "filename" : "panda3d.exe",
+                  "mimetype" : "application/x-panda3d",
+                  "extension" : "p3d",
+                  "filedesc" : "Panda3D applet",
+                  "icon" : "panda3d.ico"}
+    TargetAdd('panda3d.res', opts=OPTS, winrc=panda3d_rc)
+  
   TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
   if (sys.platform == "darwin"):
     TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
+  elif (sys.platform.startswith("win")):
+    TargetAdd('panda3d.exe', input='panda3d.res')
   TargetAdd('panda3d.exe', input='libpandaexpress.dll')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
@@ -4666,18 +4677,7 @@ if (INSTALLER != 0):
 ##########################################################################################
 
 SaveDependencyCache()
-
-# Move any files we've moved away back.
-if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h.moved"):
-  os.rename("dtool/src/dtoolutil/pandaVersion.h.moved", "dtool/src/dtoolutil/pandaVersion.h")
-if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h.moved"):
-  os.rename("dtool/src/dtoolutil/checkPandaVersion.h.moved", "dtool/src/dtoolutil/checkPandaVersion.h")
-if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
-  os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx.moved", "dtool/src/dtoolutil/checkPandaVersion.cxx")
-if os.path.isfile("dtool/src/prc/prc_parameters.h.moved"):
-  os.rename("dtool/src/prc/prc_parameters.h.moved", "dtool/src/prc/prc_parameters.h")
-if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
-  os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
+MoveBackConflictingFiles()
 
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
