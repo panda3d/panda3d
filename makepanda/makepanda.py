@@ -808,7 +808,7 @@ def CompileLink(dll, obj, opts):
             elif (x.endswith(".dat")):
                 pass
             else: cmd += ' ' + BracketNameWithQuotes(x)
-        if (GetOrigExt(dll)==".exe"):
+        if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " " + BracketNameWithQuotes(name)
@@ -3411,7 +3411,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
   TargetAdd('panda3d.exe', input='libp3pystub.dll')
-  TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  TargetAdd('panda3d.exe', opts=['NOICON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   
   if (sys.platform == "darwin"):
     TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
