@@ -963,12 +963,9 @@ set_ram_mipmap_pointer(int n, void *image, size_t page_size) {
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
   }
-  //if (page_size == 0) {
-  //  page_size = image.size();
-  //}
 
   _ram_images[n]._page_size = page_size; 
-  _ram_images[n]._image.clear();
+  //_ram_images[n]._image.clear(); wtf is going on?!
   _ram_images[n]._pointer_image = image;
   ++_image_modified;
 }
