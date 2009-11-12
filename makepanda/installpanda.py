@@ -161,7 +161,6 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/mime/packages")
     oscmd("mkdir -p "+destdir+prefix+"/share/application-registry")
     oscmd("mkdir -p "+destdir+prefix+"/share/applications")
-    oscmd("mkdir -p "+destdir+prefix+libdir+"/panda3d")
     if (os.path.exists(outputdir+"/plugins/nppanda3d.so")):
         oscmd("mkdir -p "+destdir+prefix+libdir+"/mozilla/plugins")
         oscmd("mkdir -p "+destdir+prefix+libdir+"/mozilla-firefox/plugins")
