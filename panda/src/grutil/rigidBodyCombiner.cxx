@@ -21,6 +21,7 @@
 #include "geomVertexArrayFormat.h"
 #include "geomVertexAnimationSpec.h"
 #include "sceneGraphReducer.h"
+#include "omniBoundingVolume.h"
 
 TypeHandle RigidBodyCombiner::_type_handle;
 
@@ -35,6 +36,14 @@ RigidBodyCombiner(const string &name) : PandaNode(name) {
   set_cull_callback();
 
   _internal_root = new PandaNode(name);
+
+  // We don't want to perform any additional culling once we get
+  // within the RigidBodyCombiner.  The internal Geom's bounding
+  // volume is not updated and might not be accurate.  However, the
+  // bounding volume of the RigidBodyCombiner itself should be
+  // accurate, and this is sufficient.
+  _internal_root->set_bounds(new OmniBoundingVolume);
+  _internal_root->set_final(true);
 }
 
 ////////////////////////////////////////////////////////////////////
