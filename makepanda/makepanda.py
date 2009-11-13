@@ -197,7 +197,7 @@ if (RUNTIME or RTDIST):
     if (DISTRIBUTOR.strip() == ""):
         exit("You must provide a valid distributor name when making a runtime or rtdist build!")
 
-    if (not CUSTOM_OUTPUTDIR):
+    if (not IsCustomOutputDir()):
         if (RTDIST):
             SetOutputDir("built_" + DISTRIBUTOR.strip())
         elif (RUNTIME):

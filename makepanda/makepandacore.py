@@ -790,6 +790,9 @@ def SetVC90CRTVersion(fn, ver = None):
 def GetOutputDir():
   return OUTPUTDIR
 
+def IsCustomOutputDir():
+  return CUSTOM_OUTPUTDIR
+
 def SetOutputDir(outputdir):
   global OUTPUTDIR, CUSTOM_OUTPUTDIR
   OUTPUTDIR=outputdir
