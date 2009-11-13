@@ -687,23 +687,23 @@ paint_window(HDC dc) {
   FillRect(bdc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
   // Then paint the background image on top of that.
-  paint_image(bdc, _background_image);
+  paint_image(bdc, _background_image, false);
 
   // And then, paint the button, if any, on top of *that*.
   switch (_drawn_bstate) {
   case BS_hidden:
     break;
   case BS_ready:
-    paint_image(bdc, _button_ready_image);
+    paint_image(bdc, _button_ready_image, true);
     break;
   case BS_rollover:
-    if (!paint_image(bdc, _button_rollover_image)) {
-      paint_image(bdc, _button_ready_image);
+    if (!paint_image(bdc, _button_rollover_image, true)) {
+      paint_image(bdc, _button_ready_image, true);
     }
     break;
   case BS_click:
-    if (!paint_image(bdc, _button_click_image)) {
-      paint_image(bdc, _button_ready_image);
+    if (!paint_image(bdc, _button_click_image, true)) {
+      paint_image(bdc, _button_ready_image, true);
     }
     break;
   }
@@ -729,7 +729,7 @@ paint_window(HDC dc) {
 //               is not defined.
 ////////////////////////////////////////////////////////////////////
 bool P3DWinSplashWindow::
-paint_image(HDC dc, const WinImageData &image) {
+paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
   if (image._bitmap == NULL) {
     return false;
   }
@@ -754,10 +754,15 @@ paint_image(HDC dc, const WinImageData &image) {
     // This is the top-left corner of the bitmap in window coordinates.
     int p_x = win_cx - image._width / 2;
     int p_y = win_cy - image._height / 2;
-    
-    AlphaBlend(dc, p_x, p_y, image._width, image._height,
-               mem_dc, 0, 0, image._width, image._height,
-               bf);
+
+    if (!use_alpha) {
+      BitBlt(dc, p_x, p_y, image._width, image._height,
+             mem_dc, 0, 0, SRCCOPY);
+    } else {
+      AlphaBlend(dc, p_x, p_y, image._width, image._height,
+                 mem_dc, 0, 0, image._width, image._height,
+                 bf);
+    }
     
   } else {
     // The bitmap is larger than the window; scale it down.
@@ -770,9 +775,20 @@ paint_image(HDC dc, const WinImageData &image) {
     int p_x = win_cx - sc_width / 2;
     int p_y = win_cy - sc_height / 2;
 
-    AlphaBlend(dc, p_x, p_y, sc_width, sc_height,
-               mem_dc, 0, 0, image._width, image._height, 
-               bf);
+    if (!use_alpha) {
+      StretchBlt(dc, p_x, p_y, sc_width, sc_height,
+                 mem_dc, 0, 0, image._width, image._height, SRCCOPY);
+    } else {
+      // For some reason, AlphaBlend has issues when scaling a
+      // black-and-white image to draw onto the window: it draws the
+      // image in the last fill color used on the dc, instead of
+      // black.  This only happens when the image consists only of
+      // black and white, and only when the image is being scaled.
+      // Weird.  But StretchBlt, above, doesn't have this problem.
+      AlphaBlend(dc, p_x, p_y, sc_width, sc_height,
+                 mem_dc, 0, 0, image._width, image._height, 
+                 bf);
+    }
   }
   
   SelectObject(mem_dc, NULL);

@@ -65,7 +65,7 @@ private:
   void close_window();
 
   void paint_window(HDC dc);
-  bool paint_image(HDC dc, const WinImageData &image);
+  bool paint_image(HDC dc, const WinImageData &image, bool use_alpha);
   void paint_progress_bar(HDC dc);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   static LONG WINAPI st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
