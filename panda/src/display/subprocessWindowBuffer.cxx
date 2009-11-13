@@ -157,11 +157,7 @@ destroy_buffer(int fd, size_t mmap_size, const string &filename,
   buffer->~SubprocessWindowBuffer();
   close_buffer(fd, mmap_size, filename, buffer);
 
-  // This isn't really necessary, since our child process should have
-  // unlinked it; but we do it anyway just for good measure (for
-  // instance, in case the child process never got started).  I
-  // suppose there is some risk that we will accidentally delete
-  // someone else's file this way, but the risk is small.
+  // Now we can unlink the file.
   unlink(filename.c_str());
 }
 
@@ -243,7 +239,10 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
 
   // Now that we've successfully opened and mapped the file, we can
   // safely delete it from the file system.
-  unlink(filename.c_str());
+
+  // Actually, unlinking it now prevents us from detaching and
+  // reattaching to the same file later.  Boo.
+  //  unlink(filename.c_str());
 
   SubprocessWindowBuffer *buffer = (SubprocessWindowBuffer *)shared_mem;
   assert(buffer->_mmap_size == mmap_size);
@@ -263,9 +262,6 @@ close_buffer(int fd, size_t mmap_size, const string &filename,
              SubprocessWindowBuffer *buffer) {
   munmap((void *)buffer, mmap_size);
   close(fd);
-
-  // Guess we shouldn't unlink() the file here, since we already did
-  // in open_buffer().
 }
 
 ////////////////////////////////////////////////////////////////////

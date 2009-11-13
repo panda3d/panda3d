@@ -403,9 +403,16 @@ do_resize() {
         << " " << viewRect.size.height << "\n";
     }
 
-    // ping gl
-    aglUpdateContext(aglGetCurrentContext());
-    report_agl_error("aglUpdateContext .. This is a Resize..");
+    AGLContext context = get_gsg_context();
+    if (context != (AGLContext)NULL) {
+      // ping gl
+      if (!aglSetCurrentContext(context)) {
+        report_agl_error("aglSetCurrentContext");
+      }
+      aglUpdateContext(context);
+      report_agl_error("aglUpdateContext .. This is a Resize..");
+    }
+
     if (osxdisplay_cat.is_debug()) {
       osxdisplay_cat.debug() 
         << "Resize Complete.....\n";
@@ -849,23 +856,19 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_is_fullscreen) {
     aglSetFullScreen(get_gsg_context(),0,0,0,0);
     report_agl_error ("aglSetFullScreen"); 
-    
-    if (!aglSetCurrentContext(get_gsg_context())) {
-      report_agl_error ("aglSetCurrentContext"); 
-    }
-    
+   
   } else {
     if (full_screen_window != NULL) {
       return false;
     }
     
-    if (!aglSetDrawable (get_gsg_context(), GetWindowPort (_osx_window))) {
+    if (!aglSetDrawable(get_gsg_context(), GetWindowPort (_osx_window))) {
       report_agl_error("aglSetDrawable");
     }
-    
-    if (!aglSetCurrentContext(get_gsg_context())) {
-      report_agl_error ("aglSetCurrentContext");
-    } 
+  }
+
+  if (!aglSetCurrentContext(get_gsg_context())) {
+    report_agl_error ("aglSetCurrentContext"); 
   }
  
   _gsg->reset_if_new();

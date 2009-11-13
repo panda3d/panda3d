@@ -75,6 +75,7 @@ osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 osxGraphicsStateGuardian::
 ~osxGraphicsStateGuardian() {
   if (_aglcontext != (AGLContext)NULL) {
+    aglSetCurrentContext(NULL);
     aglDestroyContext(_aglcontext);
     report_agl_error("aglDestroyContext");
     _aglcontext = (AGLContext)NULL;

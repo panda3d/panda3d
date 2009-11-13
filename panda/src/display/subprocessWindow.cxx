@@ -345,6 +345,14 @@ internal_close_window() {
     _buffer = NULL;
   }
 
+  // Tell our parent window (if any) that we're no longer its child.
+  if (_window_handle != (WindowHandle *)NULL &&
+      _parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->detach_child(_window_handle);
+  }
+
+  _window_handle = NULL;
+  _parent_window_handle = NULL;
   _is_valid = false;
 }
 
@@ -395,6 +403,7 @@ internal_open_window() {
       }
     }
   }
+  _parent_window_handle = window_handle;
 
   if (_filename.empty()) {
     _is_valid = false;
@@ -420,6 +429,14 @@ internal_open_window() {
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "SubprocessWindow reading " << _filename << "\n";
+  }
+
+  // Create a WindowHandle for ourselves
+  _window_handle = NativeWindowHandle::make_subprocess(_filename);
+
+  // And tell our parent window that we're now its child.
+  if (_parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->attach_child(_window_handle);
   }
 
   return true;
