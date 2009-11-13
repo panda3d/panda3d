@@ -127,11 +127,14 @@ void P3DOsxSplashWindow::
 set_visible(bool visible) {
   P3DSplashWindow::set_visible(visible);
 
-  if (_visible) {
-    ShowWindow(_toplevel_window);
-  } else {
-    HideWindow(_toplevel_window);
+  if (_toplevel_window != NULL) {
+    if (_visible) {
+      ShowWindow(_toplevel_window);
+    } else {
+      HideWindow(_toplevel_window);
+    }
   }
+  refresh();
 }
 
 ////////////////////////////////////////////////////////////////////

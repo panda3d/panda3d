@@ -42,6 +42,7 @@ public:
   inline const P3DWindowParams &get_wparams() const;
 
   virtual void set_visible(bool visible);
+  inline bool get_visible() const;
 
   enum ImagePlacement {
     IP_background,

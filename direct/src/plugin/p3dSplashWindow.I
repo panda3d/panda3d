@@ -34,6 +34,17 @@ get_wparams() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::get_visible
+//       Access: Public
+//  Description: Returns the current setting of the "visible" flag.
+//               If false, the splash window is hidden.
+////////////////////////////////////////////////////////////////////
+inline bool P3DSplashWindow::
+get_visible() const {
+  return _visible;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::ImageData::Constructor
 //       Access: Public
 //  Description: 

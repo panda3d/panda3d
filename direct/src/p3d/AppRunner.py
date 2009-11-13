@@ -729,6 +729,7 @@ class AppRunner(DirectObject):
             if windowType == 'embedded':
                 wp.setParentWindow(parent)
             base.win.requestProperties(wp)
+            self.windowProperties = wp
             return
 
         # If we haven't got a window already, start 'er up.  Apply the

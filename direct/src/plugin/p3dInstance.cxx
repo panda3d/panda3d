@@ -2740,6 +2740,11 @@ void P3DInstance::
 paint_window() {
 #ifdef __APPLE__
   if (_swbuffer == NULL || !_instance_window_opened) {
+    // We don't have a Panda3D window yet.
+    return;
+  }
+  if (_splash_window != NULL && _splash_window->get_visible()) {
+    // If the splash window is up, don't draw the Panda3D window.
     return;
   }
 
