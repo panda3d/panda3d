@@ -1,7 +1,7 @@
-# This is a sample dc file for some of the classes defined within the
-# direct source tree.  It is suggested that you copy this file into
-# your own project (or load it from the direct source tree) and build
-# on it with your own dc file for your own classes.
+// This is a sample dc file for some of the classes defined within the
+// direct source tree.  It is suggested that you copy this file into
+// your own project (or load it from the direct source tree) and build
+// on it with your own dc file for your own classes.
 
 keyword broadcast;
 keyword ram;
@@ -26,6 +26,7 @@ dclass DistributedObject {
   // (Actually, you probably don't care anyway.)
   setBarrierData(BarrierData data[]) broadcast ram;
   setBarrierReady(uint16 context);
+  setLocation(uint32 parentId, uint32 zoneId) broadcast ram;
 };
 
 dclass TimeManager: DistributedObject {
