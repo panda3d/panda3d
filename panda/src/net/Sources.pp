@@ -7,7 +7,7 @@
 #begin lib_target
   #define TARGET net
   #define LOCAL_LIBS \
-    express pandabase nativenet pipeline
+    express downloader pandabase nativenet pipeline
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

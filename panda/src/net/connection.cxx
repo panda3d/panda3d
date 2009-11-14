@@ -379,7 +379,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
     bool okflag = udp->SendTo(data, addr);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR && udp->Active()) {
       Thread::force_yield();
       okflag = udp->SendTo(data, addr);
     }
@@ -445,7 +445,7 @@ send_raw_datagram(const NetDatagram &datagram) {
     Socket_Address addr = datagram.get_address().get_addr();
     bool okflag = udp->SendTo(data, addr);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR && udp->Active()) {
       Thread::force_yield();
       okflag = udp->SendTo(data, addr);
     }
@@ -511,7 +511,9 @@ do_flush() {
     if (data_sent > 0) {
       total_sent += data_sent;
     }
-    while (!okflag && (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
+    double last_report = 0;
+    while (!okflag && tcp->Active() &&
+           (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
       Thread::force_yield();
       data_sent = tcp->SendData(sending_data.data() + total_sent, sending_data.size() - total_sent);
       if (data_sent > 0) {

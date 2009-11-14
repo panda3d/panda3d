@@ -16,8 +16,26 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "httpChannel.h"
+#include "config_downloader.h"
 
 #ifdef HAVE_OPENSSL
+
+////////////////////////////////////////////////////////////////////
+//     Function: SSReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+SSReader::
+SSReader(istream *stream) : _istream(stream) {
+  _data_expected = 0;
+  _tcp_header_size = tcp_header_size;
+
+#ifdef SIMULATE_NETWORK_DELAY
+  _delay_active = false;
+  _min_delay = 0.0;
+  _delay_variance = 0.0;
+#endif  // SIMULATE_NETWORK_DELAY
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SSReader::Destructor
@@ -39,9 +57,12 @@ SSReader::
 ////////////////////////////////////////////////////////////////////
 bool SSReader::
 do_receive_datagram(Datagram &dg) {
+  if (_tcp_header_size == 0) {
+    _data_expected = _data_so_far.length();
+  }
   if (_data_expected == 0) {
     // Read the first two bytes: the datagram length.
-    while (_data_so_far.length() < 2) {
+    while (_data_so_far.length() < _tcp_header_size) {
       int ch = _istream->get();
       if (_istream->eof() || _istream->fail()) {
         _istream->clear();
@@ -52,8 +73,12 @@ do_receive_datagram(Datagram &dg) {
 
     Datagram header(_data_so_far);
     DatagramIterator di(header);
-    _data_expected = di.get_uint16();
-    _data_so_far = string();
+    if (_tcp_header_size == 2) {
+      _data_expected = di.get_uint16();
+    } else if (_tcp_header_size == 4) {
+      _data_expected = di.get_uint32();
+    }
+    _data_so_far = _data_so_far.substr(_tcp_header_size);
 
     if (_data_expected == 0) {
       // Empty datagram.
@@ -187,6 +212,19 @@ get_delayed(Datagram &datagram) {
 #endif  // SIMULATE_NETWORK_DELAY
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SSWriter::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+SSWriter::
+SSWriter(ostream *stream) : _ostream(stream) {
+  _collect_tcp = collect_tcp;
+  _collect_tcp_interval = collect_tcp_interval;
+  _queued_data_start = 0.0;
+  _tcp_header_size = tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SSWriter::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -207,7 +245,11 @@ SSWriter::
 bool SSWriter::
 send_datagram(const Datagram &dg) {
   Datagram header;
-  header.add_uint16(dg.get_length());
+  if (_tcp_header_size == 2) {
+    header.add_uint16(dg.get_length());
+  } else if (_tcp_header_size == 4) {
+    header.add_uint32(dg.get_length());
+  }
 
   // These two writes don't generate two socket calls, because the
   // socket stream is always buffered.

@@ -40,7 +40,7 @@ class HTTPChannel;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS SSReader {
 public:
-  INLINE SSReader(istream *stream);
+  SSReader(istream *stream);
   virtual ~SSReader();
 
 PUBLISHED:
@@ -49,12 +49,16 @@ PUBLISHED:
   virtual bool is_closed() = 0;
   virtual void close() = 0;
 
+  INLINE void set_tcp_header_size(int tcp_header_size);
+  INLINE int get_tcp_header_size() const;
+
 private:
   bool do_receive_datagram(Datagram &dg);
 
   istream *_istream;
   size_t _data_expected;
   string _data_so_far;
+  int _tcp_header_size;
 
 #ifdef SIMULATE_NETWORK_DELAY
 PUBLISHED:
@@ -88,7 +92,7 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS SSWriter {
 public:
-  INLINE SSWriter(ostream *stream);
+  SSWriter(ostream *stream);
   virtual ~SSWriter();
 
 PUBLISHED:
@@ -102,6 +106,9 @@ PUBLISHED:
   INLINE void set_collect_tcp_interval(double interval);
   INLINE double get_collect_tcp_interval() const;
 
+  INLINE void set_tcp_header_size(int tcp_header_size);
+  INLINE int get_tcp_header_size() const;
+
   INLINE bool consider_flush();
   INLINE bool flush();
 
@@ -110,6 +117,7 @@ private:
   bool _collect_tcp;
   double _collect_tcp_interval;
   double _queued_data_start;
+  int _tcp_header_size;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -176,6 +184,9 @@ public:
 PUBLISHED:
   virtual bool is_closed() = 0;
   virtual void close() = 0;
+
+  INLINE void set_tcp_header_size(int tcp_header_size);
+  INLINE int get_tcp_header_size() const;
 
   INLINE bool flush();
 };

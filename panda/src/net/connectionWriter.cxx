@@ -19,6 +19,7 @@
 #include "socket_tcp.h"
 #include "socket_udp.h"
 #include "pnotify.h"
+#include "config_downloader.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::WriterThread::Constructor
@@ -70,7 +71,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
   }
 
   _raw_mode = false;
-  _tcp_header_size = datagram_tcp16_header_size;
+  _tcp_header_size = tcp_header_size;
   _immediate = (num_threads <= 0);
 
   int i;
@@ -353,6 +354,7 @@ thread_run(int thread_index) {
     } else {
       datagram.get_connection()->send_datagram(datagram, _tcp_header_size);
     }
+    Thread::consider_yield();
   }
 }
 

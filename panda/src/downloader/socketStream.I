@@ -14,22 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SSReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE SSReader::
-SSReader(istream *stream) : _istream(stream) {
-  _data_expected = 0;
-
-#ifdef SIMULATE_NETWORK_DELAY
-  _delay_active = false;
-  _min_delay = 0.0;
-  _delay_variance = 0.0;
-#endif  // SIMULATE_NETWORK_DELAY
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SSReader::receive_datagram
 //       Access: Published
 //  Description: Receives a datagram over the socket by expecting a
@@ -38,7 +22,7 @@ SSReader(istream *stream) : _istream(stream) {
 //               the data is not available; otherwise, returns false
 //               only if the socket closes.
 ////////////////////////////////////////////////////////////////////
-bool SSReader::
+INLINE bool SSReader::
 receive_datagram(Datagram &dg) {
 #ifdef SIMULATE_NETWORK_DELAY
   if (_delay_active) {
@@ -59,15 +43,29 @@ receive_datagram(Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SSWriter::Constructor
-//       Access: Public
-//  Description:
+//     Function: SSReader::set_tcp_header_size
+//       Access: Published
+//  Description: Sets the header size for datagrams.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
 ////////////////////////////////////////////////////////////////////
-INLINE SSWriter::
-SSWriter(ostream *stream) : _ostream(stream) {
-  _collect_tcp = collect_tcp;
-  _collect_tcp_interval = collect_tcp_interval;
-  _queued_data_start = 0.0;
+INLINE void SSReader::
+set_tcp_header_size(int tcp_header_size) {
+  nassertv(tcp_header_size == 0 || tcp_header_size == 2 || tcp_header_size == 4);
+  _tcp_header_size = tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SSReader::get_tcp_header_size
+//       Access: Published
+//  Description: Returns the header size for datagrams.  See
+//               set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+INLINE int SSReader::
+get_tcp_header_size() const {
+  return _tcp_header_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,6 +131,32 @@ set_collect_tcp_interval(double interval) {
 INLINE double SSWriter::
 get_collect_tcp_interval() const {
   return _collect_tcp_interval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SSWriter::set_tcp_header_size
+//       Access: Published
+//  Description: Sets the header size for datagrams.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
+////////////////////////////////////////////////////////////////////
+INLINE void SSWriter::
+set_tcp_header_size(int tcp_header_size) {
+  nassertv(tcp_header_size == 0 || tcp_header_size == 2 || tcp_header_size == 4);
+  _tcp_header_size = tcp_header_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SSWriter::get_tcp_header_size
+//       Access: Published
+//  Description: Returns the header size for datagrams.  See
+//               set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+INLINE int SSWriter::
+get_tcp_header_size() const {
+  return _tcp_header_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,6 +236,32 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 INLINE SocketStream::
 SocketStream(streambuf *buf) : iostream(buf), SSReader(this), SSWriter(this) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SocketStream::set_tcp_header_size
+//       Access: Published
+//  Description: Sets the header size for datagrams.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
+////////////////////////////////////////////////////////////////////
+INLINE void SocketStream::
+set_tcp_header_size(int tcp_header_size) {
+  SSReader::set_tcp_header_size(tcp_header_size);
+  SSWriter::set_tcp_header_size(tcp_header_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SocketStream::get_tcp_header_size
+//       Access: Published
+//  Description: Returns the header size for datagrams.  See
+//               set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+INLINE int SocketStream::
+get_tcp_header_size() const {
+  return SSReader::get_tcp_header_size();
 }
 
 ////////////////////////////////////////////////////////////////////

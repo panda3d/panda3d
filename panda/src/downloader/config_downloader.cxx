@@ -106,6 +106,12 @@ ConfigVariableInt http_max_connect_count
           "prevent the code from attempting runaway connections; this limit "
           "should never be reached in practice."));
 
+ConfigVariableInt tcp_header_size
+("tcp-header-size", 2,
+ PRC_DESC("Specifies the number of bytes to use to specify the datagram "
+          "length when writing a datagram on a TCP stream.  This may be "
+          "0, 2, or 4.  The server and client must agree on this value."));
+
 ConfigureFn(config_downloader) {
   init_libdownloader();
 }

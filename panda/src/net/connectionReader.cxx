@@ -25,6 +25,7 @@
 #include "lightMutexHolder.h"
 #include "pnotify.h"
 #include "atomicAdjust.h"
+#include "config_downloader.h"
 
 static const int read_buffer_size = maximum_udp_datagram + datagram_udp_header_size;
 
@@ -112,7 +113,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
   }
 
   _raw_mode = false;
-  _tcp_header_size = datagram_tcp16_header_size;
+  _tcp_header_size = tcp_header_size;
   _polling = (num_threads <= 0);
 
   _shutdown = false;
@@ -602,7 +603,8 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       socket->RecvData(buffer + header_bytes_read,
                        _tcp_header_size - header_bytes_read);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR &&
+           socket->Active()) {
       Thread::force_yield();
       bytes_read = socket->RecvData(buffer + header_bytes_read,
                                     _tcp_header_size - header_bytes_read);
@@ -645,7 +647,8 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       socket->RecvData(buffer, min(read_buffer_size,
                                    (int)(size - datagram.get_length())));
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR &&
+           socket->Active()) {
       Thread::force_yield();
       bytes_read =
         socket->RecvData(buffer, min(read_buffer_size,
@@ -779,7 +782,8 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   char buffer[read_buffer_size];
   int bytes_read = socket->RecvData(buffer, read_buffer_size);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-  while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+  while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR && 
+         socket->Active()) {
     Thread::force_yield();
     bytes_read = socket->RecvData(buffer, read_buffer_size);
   }
@@ -837,6 +841,9 @@ thread_run(int thread_index) {
       get_next_available_socket(false, thread_index);
     if (sinfo != (SocketInfo *)NULL) {
       process_incoming_data(sinfo);
+      Thread::consider_yield();
+    } else {
+      Thread::force_yield();
     }
   }
 }
