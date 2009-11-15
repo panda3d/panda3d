@@ -6,7 +6,7 @@
 #define BUILDING_DLL BUILDING_VISION
 
 #begin lib_target
-  #define TARGET vision
+  #define TARGET p3vision
   #define LOCAL_LIBS \
     display text pgraph gobj linmath putil audio movies
     
