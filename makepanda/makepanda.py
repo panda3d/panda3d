@@ -1384,6 +1384,10 @@ def WriteConfigSettings():
 WriteConfigSettings()
 
 MoveAwayConflictingFiles()
+if "libdtoolbase" in GetLibCache():
+    print "%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor())
+if "libp3dtoolconfig" in GetLibCache():
+    print "%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor())
 
 ##########################################################################################
 #
