@@ -46,8 +46,8 @@ PPInstance::FileDatas PPInstance::_file_datas;
 //               document.
 ////////////////////////////////////////////////////////////////////
 PPInstance::
-PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode, 
-           int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
+PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+           int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
   _p3d_inst = NULL;
 
   _npp_instance = instance;
@@ -198,7 +198,7 @@ set_window(NPWindow *window) {
 //               url request.
 ////////////////////////////////////////////////////////////////////
 NPError PPInstance::
-new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
+new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
   assert(find(_streams.begin(), _streams.end(), stream) == _streams.end());
 
   if (stream->notifyData == NULL) {
@@ -280,7 +280,7 @@ stop_outstanding_streams() {
 //  Description: Called by the browser to ask how much data is ready
 //               to be received for the indicated stream.
 ////////////////////////////////////////////////////////////////////
-int32 PPInstance::
+int32_t PPInstance::
 write_ready(NPStream *stream) {
   if (stream->notifyData != NULL) {
     PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);

@@ -34,8 +34,8 @@ class PPDownloadRequest;
 ////////////////////////////////////////////////////////////////////
 class PPInstance {
 public:
-  PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode, 
-             int16 argc, char *argn[], char *argv[], NPSavedData *saved);
+  PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+             int16_t argc, char *argn[], char *argv[], NPSavedData *saved);
   ~PPInstance();
 
   void begin();
@@ -45,10 +45,10 @@ public:
   inline const NPWindow *get_window() const;
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
-                     bool seekable, uint16 *stype);
+                     bool seekable, uint16_t *stype);
   void stop_outstanding_streams();
 
-  int32 write_ready(NPStream *stream);
+  int32_t write_ready(NPStream *stream);
   int write_stream(NPStream *stream, int offset, int len, void *buffer);
   NPError destroy_stream(NPStream *stream, NPReason reason);
   void url_notify(const char *url, NPReason reason, void *notifyData);

@@ -269,8 +269,8 @@ NP_Shutdown(void) {
 //               plugin.
 ////////////////////////////////////////////////////////////////////
 NPError 
-NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
-        int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
+NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+        int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
   nout << "new instance " << instance << "\n";
 
   /*
@@ -363,7 +363,7 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
-              NPBool seekable, uint16 *stype) {
+              NPBool seekable, uint16_t *stype) {
   nout << "NewStream " << type << ", " << stream->url 
        << ", " << stream->end 
        << ", notifyData = " << stream->notifyData
@@ -401,7 +401,7 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 //  Description: Called by the browser to ask how many bytes it can
 //               deliver for a stream.
 ////////////////////////////////////////////////////////////////////
-int32
+int32_t
 NPP_WriteReady(NPP instance, NPStream *stream) {
   //  nout << "WriteReady " << stream->url << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
@@ -417,9 +417,9 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 //               stream; the plugin should return the number of bytes
 //               consumed.
 ////////////////////////////////////////////////////////////////////
-int32
-NPP_Write(NPP instance, NPStream *stream, int32 offset, 
-          int32 len, void *buffer) {
+int32_t
+NPP_Write(NPP instance, NPStream *stream, int32_t offset, 
+          int32_t len, void *buffer) {
   //  nout << "Write " << stream->url << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -464,7 +464,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 //  Description: Called by the browser to inform the plugin of OS
 //               window events.
 ////////////////////////////////////////////////////////////////////
-int16
+int16_t
 NPP_HandleEvent(NPP instance, void *event) {
   //  nout << "HandleEvent\n";
   PPInstance::generic_browser_call();
