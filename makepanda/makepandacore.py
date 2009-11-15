@@ -999,6 +999,7 @@ def GetLibCache():
     global LD_CACHE
     if (LD_CACHE == None):
         LD_CACHE = []
+        print "Generating library cache..."
         if (LocateBinary("ldconfig") != None):
             handle = os.popen(LocateBinary("ldconfig") + " -NXp")
             result = handle.read().strip().split("\n")
@@ -1006,18 +1007,17 @@ def GetLibCache():
                 lib = line.strip().split(" ", 1)[0]
                 lib = lib.split(".so", 1)[0][3:]
                 LD_CACHE.append(lib)
-        else:
-            libs = glob.glob("/lib/*.so*") + glob.glob("/usr/lib/*.so*") + glob.glob("/usr/local/lib/*.so*") + glob.glob("/usr/PCBSD/local/lib/*.so*")
-            if (sys.platform == "darwin"):
-                libs += glob.glob("/lib/*.dylib*") + glob.glob("/usr/lib/*.dylib*") + glob.glob("/usr/local/lib/*.dylib*")
-                libs += glob.glob("/usr/X11/lib/*.dylib*") + glob.glob("/usr/X11R6/lib/*.dylib*")
-            for l in libs:
-                lib = os.path.basename(l).split(".so", 1)[0].split(".dylib", 1)[0][3:]
+        libs = glob.glob("/lib/*.so*") + glob.glob("/usr/lib/*.so*") + glob.glob("/usr/local/lib/*.so*") + glob.glob("/usr/PCBSD/local/lib/*.so*")
+        libs += glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a") + glob.glob("/usr/PCBSD/local/lib/*.a")
+        if (sys.platform == "darwin"):
+            libs += glob.glob("/lib/*.dylib*") + glob.glob("/usr/lib/*.dylib*") + glob.glob("/usr/local/lib/*.dylib*")
+            libs += glob.glob("/usr/X11/lib/*.dylib*") + glob.glob("/usr/X11R6/lib/*.dylib*")
+            libs += glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a")
+            libs += glob.glob("/usr/X11/lib/*.a") + glob.glob("/usr/X11R6/lib/*.a")
+        for l in libs:
+            lib = os.path.basename(l).split(".so", 1)[0].split(".a", 1)[0].split(".dylib", 1)[0][3:]
+            if lib not in LD_CACHE:
                 LD_CACHE.append(lib)
-        # Now check for static libraries - they aren't found by ldconfig.
-        for l in glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a") + glob.glob("/usr/PCBSD/local/lib/*.a"):
-            lib = os.path.basename(l).split(".a", 1)[0][3:]
-            LD_CACHE.append(lib)
     return LD_CACHE
 
 def ChooseLib(*libs):
