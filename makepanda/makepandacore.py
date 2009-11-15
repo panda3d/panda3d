@@ -1009,6 +1009,9 @@ def GetLibCache():
                 LD_CACHE.append(lib)
         libs = glob.glob("/lib/*.so*") + glob.glob("/usr/lib/*.so*") + glob.glob("/usr/local/lib/*.so*") + glob.glob("/usr/PCBSD/local/lib/*.so*")
         libs += glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a") + glob.glob("/usr/PCBSD/local/lib/*.a")
+        if platform.architecture()[0] == "64bit":
+            libs += glob.glob("/lib64/*.so*") + glob.glob("/usr/lib64/*.so*")
+            libs += glob.glob("/lib64/*.a") + glob.glob("/usr/lib64/*.a")
         if (sys.platform == "darwin"):
             libs += glob.glob("/lib/*.dylib*") + glob.glob("/usr/lib/*.dylib*") + glob.glob("/usr/local/lib/*.dylib*")
             libs += glob.glob("/usr/X11/lib/*.dylib*") + glob.glob("/usr/X11R6/lib/*.dylib*")
