@@ -64,6 +64,7 @@ class panda3d(package):
     # except for skel - this is useless in a shipped game anyways.
     excludeModule('libpandaegg')
     excludeModule('libpandaode')
+    excludeModule('libp3vision')
     excludeModule('libpandaskel')
 
     # Exclude these GUI toolkits; they're big, and many applications don't
@@ -211,6 +212,17 @@ class ode(package):
     require('panda3d')
 
     file('libpandaode.dll')
+
+class vision(package):
+    # This package contains the code for webcam support, augmented
+    # reality and computer vision. As many games will not need this
+    # functionality, it is provided as separate package to save
+    # on package download size.
+
+    config(display_name = "Panda3D Vision modules")
+    require('panda3d')
+
+    file('libp3vision.dll')
 
 class wx(package):
     config(display_name = "wxPython GUI Toolkit")
