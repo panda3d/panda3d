@@ -865,6 +865,12 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
             oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
+        
+        if dll.endswith("." + VERSION):
+            newdll = dll[:-len(VERSION)-1]
+            if (os.path.isfile(newdll)):
+                os.remove(newdll)
+            oscmd("ln -s " + BracketNameWithQuotes(os.path.basename(dll)) + " " + BracketNameWithQuotes(newdll))
 
 ##########################################################################################
 #
@@ -1068,6 +1074,9 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking executable", target)
         else:
             ProgressOutput(progress, "Linking dynamic library", target)
+        if (origsuffix==".dll" and not sys.platform.startswith("win")):
+            target = target + "." + VERSION
+            SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
         ProgressOutput(progress, "Building Interrogate database", target)
