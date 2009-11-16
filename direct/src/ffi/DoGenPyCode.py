@@ -262,14 +262,7 @@ def generateNativeWrappers():
         # the library isn't present.  This is particularly necessary
         # in the runtime (plugin) environment, where all libraries are
         # not necessarily downloaded.
-        if sys.version_info < (2, 5):
-            # In Python 2.4 and earlier, we didn't have the "except
-            # ImportError as err" syntax.
-            pandaModules.write('try:\n  from %sModules import *\nexcept ImportError:\n  print "Failed to import %s"\n\n' % (moduleName, moduleName))
-        else:
-            # Try to differentiate between missing files and other
-            # kinds of ImportErrors.
-            pandaModules.write('try:\n  from %sModules import *\nexcept ImportError as err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n  print "Failed to import %s"\n\n' % (moduleName, moduleName))
+        pandaModules.write('try:\n  from %sModules import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n  print "Failed to import %s"\n\n' % (moduleName, moduleName))
 
         moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
         moduleModules = open(moduleModulesFilename, 'w')
