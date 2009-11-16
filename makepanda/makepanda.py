@@ -2616,8 +2616,14 @@ if (not RUNTIME):
   TargetAdd('libvision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libvision.in', opts=['IMOD:p3vision', 'ILIB:libvision', 'SRCDIR:panda/src/vision'])
   TargetAdd('libvision_igate.obj', input='libvision.in', opts=["DEPENDENCYONLY"])
+  
+  TargetAdd('libp3vision_module.obj', input='libvision.in')
+  TargetAdd('libp3vision_module.obj', opts=OPTS)
+  TargetAdd('libp3vision_module.obj', opts=['IMOD:p3vision', 'ILIB:libp3vision'])
+  
   TargetAdd('libp3vision.dll', input='vision_composite1.obj')
   TargetAdd('libp3vision.dll', input='libvision_igate.obj')
+  TargetAdd('libp3vision.dll', input='libvision_module.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
 
@@ -4270,6 +4276,7 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandaphysics.dll')
   TargetAdd('PandaModules.py', input='libpandafx.dll')
   TargetAdd('PandaModules.py', input='libp3direct.dll')
+  TargetAdd('PandaModules.py', input='libp3vision.dll')
   TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("ODE")==0):
