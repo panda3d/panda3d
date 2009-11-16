@@ -2623,7 +2623,7 @@ if (not RUNTIME):
   
   TargetAdd('libp3vision.dll', input='vision_composite1.obj')
   TargetAdd('libp3vision.dll', input='libvision_igate.obj')
-  TargetAdd('libp3vision.dll', input='libvision_module.obj')
+  TargetAdd('libp3vision.dll', input='libp3vision_module.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
 
