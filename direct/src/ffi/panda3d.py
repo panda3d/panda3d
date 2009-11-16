@@ -9,6 +9,7 @@ panda3d_modules = {
     "skel"    : "libpandaskel",
     "egg"     : "libpandaegg",
     "ode"     : "libpandaode",
+    "vision"  : "libp3vision",
 }
 
 class panda3d_import_manager:
