@@ -10,7 +10,7 @@
   #define LOCAL_LIBS \
     display text pgraph gobj linmath putil audio movies
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+  #define COMBINED_SOURCES vision_composite1.cxx
 
   #define SOURCES \
     arToolKit.I arToolKit.h \
