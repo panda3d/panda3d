@@ -46,9 +46,9 @@ if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
-  "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
+  "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","GTK2","WX", "PANDATOOL"
+  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -412,47 +412,54 @@ if (COMPILER=="LINUX"):
         IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
-    ffmpeg_libs = ("libavutil", "libavcodec", "libavformat", "libswscale")
+    ffmpeg_libs = ("libavutil", "libavcodec", "libavformat")
     fcollada_libs = ("FColladaD", "FColladaSD")
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
-        PkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
-        PkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
-        PkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
-        PkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
-        PkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-        PkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        PkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
-        PkgEnable("GTK2",      "gtk+-2.0")
-        PkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
-        PkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
-        PkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        PkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
-        PkgEnable("SQUISH",    "",          ("squish"), "squish.h")
-        PkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
-        PkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
-    PkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    PkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    PkgEnable("PNG",       "libpng",    ("png"), "png.h")
-    PkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
-    PkgEnable("ZLIB",      "",          ("z"), "zlib.h")
+        PkgCheckEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
+        PkgCheckEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
+        PkgCheckEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
+        PkgCheckEnable("SWSCALE",   "libswscale", "libswscale", "libswscale")
+        PkgCheckEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
+        PkgCheckEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
+        PkgCheckEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+        PkgCheckEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        PkgCheckEnable("GTK2",      "gtk+-2.0")
+        PkgCheckEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
+        PkgCheckEnable("ODE",       "",          ("ode"), "ode/ode.h")
+        PkgCheckEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        PkgCheckEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
+        PkgCheckEnable("SQUISH",    "",          ("squish"), "squish.h")
+        PkgCheckEnable("TIFF",      "",          ("tiff"), "tiff.h")
+        PkgCheckEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
+    PkgCheckEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+    PkgCheckEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
+    PkgCheckEnable("PNG",       "libpng",    ("png"), "png.h")
+    PkgCheckEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
+    PkgCheckEnable("ZLIB",      "",          ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
-        PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+        PkgCheckEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
     elif("PYTHONVERSION" in SDK and not RUNTIME):
-        PkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+        PkgCheckEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RTDIST):
-        PkgEnable("WX",    tool = "wx-config")
+        PkgCheckEnable("WX",    tool = "wx-config")
     if (RUNTIME):
-        PkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
+        PkgCheckEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
-            PkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        PkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
+            PkgCheckEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
+        PkgCheckEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
         if (not RUNTIME):
-            PkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+            PkgCheckEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+
+    if (RUNTIME):
+        # For the runtime, all packages are required
+        for pkg in PkgListGet():
+            if (PkgSkip(pkg)==1):
+                exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -1229,6 +1236,7 @@ DTOOL_CONFIG=[
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_SWSCALE",                   'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
@@ -1280,10 +1288,6 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = 'UNDEF'
     
     dtool_config["HAVE_NET"] = '1'
-
-    # On Windows, there's still an ancient ffmpeg version in thirdparty.
-    if (PkgSkip("FFMPEG")==0 and not sys.platform.startswith("win")):
-        dtool_config["HAVE_SWSCALE"] = '1'
     
     if (PkgSkip("NVIDIACG")==0):
         dtool_config["HAVE_CG"] = '1'

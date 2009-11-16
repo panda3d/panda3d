@@ -1036,7 +1036,7 @@ def ChooseLib(*libs):
     if (len(libs) > 0):
         return libs[0]
 
-def PkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
+def PkgCheckEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
