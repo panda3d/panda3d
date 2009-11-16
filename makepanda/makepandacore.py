@@ -905,7 +905,8 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     else:
         return bool(LocateBinary(tool) != None)
     result = handle.read().strip()
-    handle.close()
+    if handle.close() != 0:
+        return False
     return bool(len(result) > 0)
 
 def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
@@ -1036,7 +1037,7 @@ def ChooseLib(*libs):
     if (len(libs) > 0):
         return libs[0]
 
-def PkgCheckEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1076,6 +1077,7 @@ def PkgCheckEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             LibName(pkg, "-l" + libname)
         for d, v in defs.values():
             DefSymbol(pkg, d, v)
+        return
     elif (sys.platform == "darwin" and framework != None):
         if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
@@ -1090,6 +1092,7 @@ def PkgCheckEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         else:
             print "%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
             exit()
+        return
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
@@ -1103,7 +1106,8 @@ def PkgCheckEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     have_all_pkgs = False
             if (have_all_pkgs):
                 return
-    elif (pkgconfig != None and libs == None):
+    
+    if (pkgconfig != None and libs == None):
         if (pkg in PkgListGet()):
             print "%sWARNING:%s Could not locate package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
             PkgDisable(pkg)

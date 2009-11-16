@@ -82,12 +82,12 @@ def usage(problem):
     print "  --lzma            (use lzma compression when building installer)"
     print "  --threads N       (use the multithreaded build system. see manual)"
     print "  --osxtarget N     (the OSX version number to build for (OSX only))"
+    print "  --override \"O=V\"  (override dtool_config/prc option value)"
     print ""
     for pkg in PkgListGet():
         p = pkg.lower()
         print "  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg)
     print ""
-    print "  --override \"O=V\"  (override dtool_config/prc option value)"
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
     print ""
@@ -417,43 +417,43 @@ if (COMPILER=="LINUX"):
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
-        PkgCheckEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
-        PkgCheckEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
-        PkgCheckEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
-        PkgCheckEnable("SWSCALE",   "libswscale", "libswscale", "libswscale")
-        PkgCheckEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
-        PkgCheckEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-        PkgCheckEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        PkgCheckEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
-        PkgCheckEnable("GTK2",      "gtk+-2.0")
-        PkgCheckEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
-        PkgCheckEnable("ODE",       "",          ("ode"), "ode/ode.h")
-        PkgCheckEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        PkgCheckEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
-        PkgCheckEnable("SQUISH",    "",          ("squish"), "squish.h")
-        PkgCheckEnable("TIFF",      "",          ("tiff"), "tiff.h")
-        PkgCheckEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
-    PkgCheckEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    PkgCheckEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    PkgCheckEnable("PNG",       "libpng",    ("png"), "png.h")
-    PkgCheckEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
-    PkgCheckEnable("ZLIB",      "",          ("z"), "zlib.h")
+        SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
+        SmartPkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
+        SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
+        SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale", "libswscale/swscale.h"))
+        SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
+        SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
+        SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+        SmartPkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("GTK2",      "gtk+-2.0")
+        SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
+        SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
+        SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        SmartPkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
+        SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
+        SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
+        SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
+    SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+    SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
+    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h")
+    SmartPkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
+    SmartPkgEnable("ZLIB",      "",          ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
-        PkgCheckEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
     elif("PYTHONVERSION" in SDK and not RUNTIME):
-        PkgCheckEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RTDIST):
-        PkgCheckEnable("WX",    tool = "wx-config")
+        SmartPkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
-        PkgCheckEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
+        SmartPkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
-            PkgCheckEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        PkgCheckEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
+            SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
+        SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
         if (not RUNTIME):
-            PkgCheckEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+            SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
     if (RUNTIME):
         # For the runtime, all packages are required
@@ -1703,6 +1703,7 @@ CopyAllHeaders('panda/src/device')
 CopyAllHeaders('panda/src/pnmtext')
 CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
+CopyAllHeaders('panda/src/vision')
 CopyAllHeaders('panda/src/tform')
 CopyAllHeaders('panda/src/collide')
 CopyAllHeaders('panda/src/parametrics')
@@ -2361,7 +2362,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG', 'DX9', 'DIRECTCAM']
+  OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG']
   TargetAdd('movies_composite1.obj', opts=OPTS, input='movies_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite.cxx"])
   TargetAdd('libmovies.in', opts=OPTS, input=IGATEFILES)
@@ -2373,10 +2374,10 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ']
+  OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA', 'FFMPEG']
   TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
-  TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite1.cxx')
-  TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite2.cxx')
+  TargetAdd('grutil_composite1.obj', opts=OPTS, input='grutil_composite1.cxx')
+  TargetAdd('grutil_composite2.obj', opts=OPTS, input='grutil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
   TargetAdd('libgrutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libgrutil.in', opts=['IMOD:panda', 'ILIB:libgrutil', 'SRCDIR:panda/src/grutil'])
@@ -2594,6 +2595,22 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', dep='dtool_have_vrpn.dat')
   TargetAdd('libpanda.dll', dep='dtool_have_freetype.dat')
   TargetAdd('libpanda.dll', opts=OPTS)
+
+#
+# DIRECTORY: panda/src/vision/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM']
+  TargetAdd('vision_composite1.obj', opts=OPTS, input='vision_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite.cxx"])
+  TargetAdd('libvision.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libvision.in', opts=['IMOD:p3vision', 'ILIB:libvision', 'SRCDIR:panda/src/vision'])
+  TargetAdd('libvision_igate.obj', input='libvision.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('libp3vision.dll', input='vision_composite1.obj')
+  TargetAdd('libp3vision.dll', input='libvision_igate.obj')
+  TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3vision.dll', opts=OPTS)
 
 #
 # DIRECTORY: panda/src/skel
