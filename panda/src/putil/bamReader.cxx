@@ -579,7 +579,8 @@ read_handle(DatagramIterator &scan) {
 
     type = TypeRegistry::ptr()->register_dynamic_type(name);
     bam_cat.warning()
-      << "Bam file contains objects of unknown type: " << type << "\n";
+      << "Bam file '" << _filename << "' contains objects of unknown type: " 
+      << type << "\n";
     new_type = true;
     _new_types.insert(type);
   }
