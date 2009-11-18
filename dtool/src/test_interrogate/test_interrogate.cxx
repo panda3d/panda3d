@@ -585,6 +585,12 @@ main(int argc, char *argv[]) {
       // Otherwise, assume it's a shared library, and try to load it.
       Filename pathname = Filename::dso_filename(argv[i]);
       cerr << "Loading " << pathname << "\n";
+
+#ifdef WIN32
+      // test_interrogate always wants to show an error dialog.
+      SetErrorMode(0);
+#endif
+
       void *dl = load_dso(DSearchPath(), pathname);
       if (dl == NULL) {
         cerr << "Unable to load: " << load_dso_error() << "\n";
