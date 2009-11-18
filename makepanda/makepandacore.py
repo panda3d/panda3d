@@ -293,6 +293,8 @@ def GetDirectorySize(dir):
 ########################################################################
 
 def LocateBinary(binary):
+    if os.path.isfile(binary):
+        return binary
     if "PATH" not in os.environ or os.environ["PATH"] == "":
         p = os.defpath
     else:
@@ -1071,6 +1073,13 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
         IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
         LibDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+        # TODO: check for a .pc file in the lib/pkg-config/ dir
+        if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool):
+            for i in PkgConfigGetLibs(pkg.lower(), tool):
+                LibName(pkg, i)
+            for i, j in PkgConfigGetDefSymbols(pkg.lower(), tool).items():
+                DefSymbol(pkg, i, j)
+            return
         for l in libs:
             libname = l
             if (l.startswith("lib")):
