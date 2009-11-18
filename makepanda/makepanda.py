@@ -867,7 +867,12 @@ def CompileLink(dll, obj, opts):
             oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
         
-        if dll.endswith("." + VERSION):
+        if dll.endswith("." + VERSION + ".dylib"):
+            newdll = dll[:-6-len(VERSION)] + "dylib"
+            if (os.path.isfile(newdll)):
+                os.remove(newdll)
+            oscmd("ln -s " + BracketNameWithQuotes(os.path.basename(dll)) + " " + BracketNameWithQuotes(newdll))
+        elif dll.endswith("." + VERSION):
             newdll = dll[:-len(VERSION)-1]
             if (os.path.isfile(newdll)):
                 os.remove(newdll)
@@ -1075,9 +1080,16 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking executable", target)
         else:
             ProgressOutput(progress, "Linking dynamic library", target)
+        
+        # Add version number to the dynamic library, on unix
         if (origsuffix==".dll" and not sys.platform.startswith("win")):
-            target = target + "." + VERSION
-            SetOrigExt(target, origsuffix)
+            if (sys.platform == "darwin"):
+                if (target.lower().endswith(".dylib")):
+                    target = target[:-5] + VERSION + ".dylib"
+                    SetOrigExt(target, origsuffix)
+            else:
+                target = target + "." + VERSION
+                SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
         ProgressOutput(progress, "Building Interrogate database", target)
