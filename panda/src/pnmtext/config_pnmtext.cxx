@@ -15,6 +15,7 @@
 #include "config_pnmtext.h"
 
 #include "dconfig.h"
+#include "freetypeFace.h"
 
 Configure(config_pnmtext);
 NotifyCategoryDef(pnmtext, "");
@@ -48,4 +49,5 @@ init_libpnmtext() {
   }
   initialized = true;
 
+  FreetypeFace::init_type();
 }
