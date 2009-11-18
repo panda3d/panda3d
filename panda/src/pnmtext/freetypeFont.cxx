@@ -42,7 +42,7 @@ FreetypeFont::
 FreetypeFont() {
   _font_loaded = false;
 
-  _face = new FreetypeFace();
+  _face = NULL;
 
   _point_size = text_point_size;
   _requested_pixels_per_unit = text_pixels_per_unit;
@@ -91,6 +91,7 @@ load_font(const Filename &font_filename, int face_index) {
                                (const FT_Byte *)_raw_font_data.data(),
                                _raw_font_data.length(),
                                face_index, &face);
+    _face = new FreetypeFace();
     _face->set_face(face);
   }
 
@@ -135,6 +136,7 @@ load_font(const char *font_data, int data_length, int face_index) {
   error = FT_New_Memory_Face(_ft_library, 
                              (const FT_Byte *)font_data, data_length,
                              face_index, &face);
+  _face = new FreetypeFace();
   _face->set_face(face);
 
   if (error == FT_Err_Unknown_File_Format) {

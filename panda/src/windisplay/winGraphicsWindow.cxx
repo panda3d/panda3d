@@ -379,12 +379,7 @@ open_window() {
   // even before it gives us a handle.  Warning: this is not thread
   // safe!
   _creating_window = this;
-  bool opened;
-  if (is_fullscreen()) {
-    opened = open_fullscreen_window();
-  } else {
-    opened = open_regular_window();
-  }
+  bool opened = open_graphic_window(is_fullscreen());
   _creating_window = (WinGraphicsWindow *)NULL;
 
   if (!opened) {
@@ -737,96 +732,12 @@ support_overlay_window(bool) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::open_fullscreen_window
+//     Function: WinGraphicsWindow::open_graphic_window
 //       Access: Private
-//  Description: Creates a fullscreen-style window.
+//  Description: Creates a regular or fullscreen window.
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
-open_fullscreen_window()
-{
-  //  from MSDN:
-  //  An OpenGL window has its own pixel format. Because of this, only
-  //  device contexts retrieved for the client area of an OpenGL
-  //  window are allowed to draw into the window. As a result, an
-  //  OpenGL window should be created with the WS_CLIPCHILDREN and
-  //  WS_CLIPSIBLINGS styles. Additionally, the window class attribute
-  //  should not include the CS_PARENTDC style.
-  DWORD window_style = 
-    WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-
-  if (!_properties.has_size()) {
-    // Just pick a stupid default size if one isn't specified.
-    _properties.set_size(640, 480);
-  }
-
-  // No parent window for a fullscreen window.
-  _parent_window_handle = NULL;
-
-  HWND hDesktopWindow = GetDesktopWindow();
-  HDC scrnDC = GetDC(hDesktopWindow);
-  DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
-  //  DWORD drvr_ver = GetDeviceCaps(scrnDC, DRIVERVERSION);
-  //  DWORD cur_scrnwidth = GetDeviceCaps(scrnDC, HORZRES);
-  //  DWORD cur_scrnheight = GetDeviceCaps(scrnDC, VERTRES);
-  ReleaseDC(hDesktopWindow, scrnDC);
-
-  DWORD dwWidth = _properties.get_x_size();
-  DWORD dwHeight = _properties.get_y_size();
-  DWORD dwFullScreenBitDepth = cur_bitdepth;
-  
-  reconsider_fullscreen_size(dwWidth, dwHeight, dwFullScreenBitDepth);
-  if (!find_acceptable_display_mode(dwWidth, dwHeight, dwFullScreenBitDepth,
-                                    _fullscreen_display_mode)) {
-    windisplay_cat.error() 
-      << "Videocard has no supported display resolutions at specified res ("
-      << dwWidth << " x " << dwHeight << " x " << dwFullScreenBitDepth <<")\n";
-    return false;
-  }
-
-  string title;
-  if (_properties.has_title()) {
-    title = _properties.get_title();
-  }
-
-  // I'd prefer to CreateWindow after DisplayChange in case it messes
-  // up GL somehow, but I need the window's black background to cover
-  // up the desktop during the mode change
-  const WindowClass &wclass = register_window_class(_properties);
-  HINSTANCE hinstance = GetModuleHandle(NULL);
-  
-  _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style,
-                       0, 0, dwWidth, dwHeight, 
-                       hDesktopWindow, NULL, hinstance, 0);
-  if (!_hWnd) {
-    windisplay_cat.error()
-      << "CreateWindow() failed!" << endl;
-    show_error_message();
-    return false;
-  }
-   
-  int chg_result = ChangeDisplaySettings(&_fullscreen_display_mode, 
-                                         CDS_FULLSCREEN);
-  if (chg_result != DISP_CHANGE_SUCCESSFUL) {
-    windisplay_cat.error()
-      << "ChangeDisplaySettings failed (error code: "
-      << chg_result << ") for specified res (" << dwWidth
-      << " x " << dwHeight << " x " << dwFullScreenBitDepth
-      << "), " << _fullscreen_display_mode.dmDisplayFrequency  << "Hz\n";
-    return false;
-  }
-
-  _properties.set_origin(0, 0);
-  _properties.set_size(dwWidth, dwHeight);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::open_regular_window
-//       Access: Private
-//  Description: Creates a non-fullscreen window, on the desktop.
-////////////////////////////////////////////////////////////////////
-bool WinGraphicsWindow::
-open_regular_window() {
+open_graphic_window(bool fullscreen) {
   //  from MSDN:
   //  An OpenGL window has its own pixel format. Because of this, only
   //  device contexts retrieved for the client area of an OpenGL
@@ -837,7 +748,9 @@ open_regular_window() {
   DWORD window_style = 
     WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (!_properties.get_undecorated()) {
+  if (fullscreen){
+    window_style |= WS_SYSMENU;
+  } else if (!_properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
     if (!_properties.get_fixed_size()) {
@@ -846,44 +759,52 @@ open_regular_window() {
       window_style |= WS_BORDER;
     }
   }
-
-  int x_origin = 0;
-  int y_origin = 0;
-  if (_properties.has_origin()) {
-    x_origin = _properties.get_x_origin();
-    y_origin = _properties.get_y_origin();
-  }
-
-  int x_size = 100;
-  int y_size = 100;
-  if (_properties.has_size()) {
-    x_size = _properties.get_x_size();
-    y_size = _properties.get_y_size();
-  }
-
-  RECT win_rect;
-  SetRect(&win_rect, x_origin, y_origin,
-          x_origin + x_size, y_origin + y_size);
   
-  // compute window size based on desired client area size
-  if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
-    windisplay_cat.error()
-      << "AdjustWindowRect failed!" << endl;
-    return false;
-  }
-
   string title;
   if (_properties.has_title()) {
     title = _properties.get_title();
   }
 
-  if (_properties.has_origin()) {
-    x_origin = win_rect.left;
-    y_origin = win_rect.top;
+  if (!_properties.has_size()) {
+    //Just pick a conservative default size if one isn't specified.
+    _properties.set_size(640, 480);
+  }
 
-  } else {
-    x_origin = CW_USEDEFAULT;
-    y_origin = CW_USEDEFAULT;
+  int x_origin = 0;
+  int y_origin = 0;
+  if (!fullscreen && _properties.has_origin()) {
+    x_origin = _properties.get_x_origin();
+    y_origin = _properties.get_y_origin();
+  }
+
+  int x_size = _properties.get_x_size();
+  int y_size = _properties.get_y_size();
+
+  int clientAreaWidth = x_size;
+  int clientAreaHeight = y_size;
+
+  if (!fullscreen){
+    RECT win_rect;
+    SetRect(&win_rect, x_origin, y_origin,
+            x_origin + x_size, y_origin + y_size);
+    
+    // compute window size based on desired client area size
+    if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
+      windisplay_cat.error()
+        << "AdjustWindowRect failed!" << endl;
+      return false;
+    }
+
+    if (_properties.has_origin()) {
+      x_origin = win_rect.left;
+      y_origin = win_rect.top;
+
+    } else {
+      x_origin = CW_USEDEFAULT;
+      y_origin = CW_USEDEFAULT;
+    }
+    clientAreaWidth = win_rect.right - win_rect.left;
+    clientAreaHeight = win_rect.bottom - win_rect.top;
   }
 
   const WindowClass &wclass = register_window_class(_properties);
@@ -891,38 +812,41 @@ open_regular_window() {
 
   _hparent = NULL;
   
-  WindowHandle *window_handle = _properties.get_parent_window();
-  if (window_handle != NULL) {
-    windisplay_cat.info()
-      << "Got parent_window " << *window_handle << "\n";
-    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
+  if (!fullscreen){
+    WindowHandle *window_handle = _properties.get_parent_window();
+    if (window_handle != NULL) {
       windisplay_cat.info()
-        << "os_handle type " << os_handle->get_type() << "\n";
-      
-      if (os_handle->is_of_type(NativeWindowHandle::WinHandle::get_class_type())) {
-        NativeWindowHandle::WinHandle *win_handle = DCAST(NativeWindowHandle::WinHandle, os_handle);
-        _hparent = win_handle->get_handle();
-        } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
-        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
-        _hparent = (HWND)int_handle->get_handle();
+        << "Got parent_window " << *window_handle << "\n";
+      WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+      if (os_handle != NULL) {
+        windisplay_cat.info()
+          << "os_handle type " << os_handle->get_type() << "\n";
+        
+        if (os_handle->is_of_type(NativeWindowHandle::WinHandle::get_class_type())) {
+          NativeWindowHandle::WinHandle *win_handle = DCAST(NativeWindowHandle::WinHandle, os_handle);
+          _hparent = win_handle->get_handle();
+          } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
+          NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
+          _hparent = (HWND)int_handle->get_handle();
+        }
       }
     }
+    _parent_window_handle = window_handle;
+  } else {
+    _parent_window_handle = NULL;
   }
-  _parent_window_handle = window_handle;
 
-  if (!_hparent) {
+  if (!_hparent) { // This can be a regular window or a fullscreen window
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
                          x_origin, y_origin,
-                         win_rect.right - win_rect.left,
-                         win_rect.bottom - win_rect.top,
+                         clientAreaWidth,
+                         clientAreaHeight,
                          NULL, NULL, hinstance, 0);
-    
-  } else {
+  } else { // This is a regular window with a parent
     x_origin = 0;
     y_origin = 0;
     
-    if (_properties.has_origin()) {
+    if (!fullscreen && _properties.has_origin()) {
       x_origin = _properties.get_x_origin();
       y_origin = _properties.get_y_origin();
     }
@@ -952,6 +876,51 @@ open_regular_window() {
       << "CreateWindow() failed!" << endl;
     show_error_message();
     return false;
+  }
+
+  // I'd prefer to CreateWindow after DisplayChange in case it messes
+  // up GL somehow, but I need the window's black background to cover
+  // up the desktop during the mode change.
+
+  if (fullscreen){
+    HWND hDesktopWindow = GetDesktopWindow();
+    HDC scrnDC = GetDC(hDesktopWindow);
+    DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
+    //  DWORD drvr_ver = GetDeviceCaps(scrnDC, DRIVERVERSION);
+    //  DWORD cur_scrnwidth = GetDeviceCaps(scrnDC, HORZRES);
+    //  DWORD cur_scrnheight = GetDeviceCaps(scrnDC, VERTRES);
+    ReleaseDC(hDesktopWindow, scrnDC);
+    
+    DWORD dwWidth = _properties.get_x_size();
+    DWORD dwHeight = _properties.get_y_size();
+    DWORD dwFullScreenBitDepth = cur_bitdepth;
+
+    DEVMODE dm;
+    reconsider_fullscreen_size(dwWidth, dwHeight, dwFullScreenBitDepth);
+    if (!find_acceptable_display_mode(dwWidth, dwHeight, dwFullScreenBitDepth, dm)) {
+      windisplay_cat.error() 
+        << "Videocard has no supported display resolutions at specified res ("
+        << dwWidth << " x " << dwHeight << " x " << dwFullScreenBitDepth <<")\n";
+      return false;
+    }
+
+    dm.dmPelsWidth = dwWidth;
+    dm.dmPelsHeight = dwHeight;
+    dm.dmBitsPerPel = dwFullScreenBitDepth;
+    int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+    if (chg_result != DISP_CHANGE_SUCCESSFUL) {
+      windisplay_cat.error()
+        << "ChangeDisplaySettings failed (error code: "
+        << chg_result << ") for specified res (" << dwWidth
+        << " x " << dwHeight << " x " << dwFullScreenBitDepth
+        << "), " << _fullscreen_display_mode.dmDisplayFrequency  << "Hz\n";
+      return false;
+    }
+
+    _properties.set_origin(0, 0);
+    _properties.set_size(dwWidth, dwHeight);
+
   }
 
   return true;
@@ -2165,7 +2134,21 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-      return true;
+          cout << "[FS FOUND] " << dwWidth << "x" << dwHeight << "@" << bpp << endl;
+      // We want to modify the current DEVMODE rather than using a fresh one in order
+      // to work around a Windows 7 bug.
+      ZeroMemory(&dm, sizeof(dm));
+      dm.dmSize = sizeof(dm);
+      if (0 != EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)){
+        dm.dmPelsWidth = dwWidth;
+        dm.dmPelsHeight = dwHeight;
+        dm.dmBitsPerPel = bpp;
+        return true;
+      } else {
+        windisplay_cat.error() 
+          << "Couldn't retrieve active device mode.\n";
+        return false;
+      }
     }
     modenum++;
   }
