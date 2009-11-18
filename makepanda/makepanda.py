@@ -785,8 +785,8 @@ def CompileLink(dll, obj, opts):
         if (platform.architecture()[0] == "64bit"):
             cmd += " /MACHINE:X64"
         if ("MFC" not in opts):
-            cmd += " /NOD:MFC90.LIB"
-        cmd += " /NOD:MFC80.LIB /NOD:LIBCI.LIB /DEBUG"
+            cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
+        cmd += " /NOD:LIBCI.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
@@ -2396,7 +2396,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA', 'FFMPEG']
+  OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA', 'FFMPEG', 'BIGOBJ']
   TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
   TargetAdd('grutil_composite1.obj', opts=OPTS, input='grutil_composite1.cxx')
   TargetAdd('grutil_composite2.obj', opts=OPTS, input='grutil_composite2.cxx')
