@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 8
+#define P3D_API_VERSION 9
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -201,7 +201,7 @@ typedef struct {
    handle types for the different platforms. */
 
 typedef enum {
-  P3D_WHT_none,
+  P3D_WHT_none = 0,
   P3D_WHT_win_hwnd,
   P3D_WHT_osx_port,
   P3D_WHT_x11_window,
