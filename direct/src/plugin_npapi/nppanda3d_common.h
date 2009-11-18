@@ -74,6 +74,19 @@ extern string global_root_dir;
   #include "npfunctions.h"
 #endif
 
+#if NP_VERSION_MAJOR == 0 && NP_VERSION_MINOR <= 19
+  #ifdef _WIN32
+    // Also somewhere in there, they started defining and using
+    // int16_t instead of int16, and so on.  They already had int32_t
+    // from earlier, but the typedef is not quite the same as int32
+    // (!), so we have to use #define to keep things compatible.
+    typedef int16 int16_t;
+    typedef uint16 uint16_t;
+//    #define int32_t int32
+//    #define uint32_t uint32
+  #endif  // _WIN32
+#endif  // NP_VERSION
+
 #include "load_plugin.h"
 
 // Mozilla's version of NPAPI has these names lowercase.  WebKit's

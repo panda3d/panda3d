@@ -29,6 +29,15 @@ string global_root_dir;
 
 NPNetscapeFuncs *browser;
 
+// These function prototypes changed slightly (but insignificantly)
+// between releases of NPAPI.  To avoid compilation errors, we use our
+// own name, and cast it to the correct type.
+static int32_t
+NPP_WriteReady_x(NPP instance, NPStream *stream);
+static int32_t
+NPP_Write_x(NPP instance, NPStream *stream, int32_t offset, 
+            int32_t len, void *buffer);
+
 // open_logfile() also assigns global_root_dir.
 static bool logfile_is_open = false;
 static void
@@ -226,15 +235,16 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   pluginFuncs->newstream = NPP_NewStream;
   pluginFuncs->destroystream = NPP_DestroyStream;
   pluginFuncs->asfile = NPP_StreamAsFile;
-  pluginFuncs->writeready = NPP_WriteReady;
 
-  // WebKit's NPAPI defines the wrong prototype for this type, so we
-  // have to cast it.  But the casting typename isn't consistent
-  // between WebKit and Mozilla's NPAPI headers.
+  // WebKit's NPAPI defines the wrong prototype for these functions,
+  // so we have to cast them.  But the casting typename isn't
+  // consistent between WebKit and Mozilla's NPAPI headers.
 #ifdef NewNPP_WriteProc
-  pluginFuncs->write = NewNPP_WriteProc(NPP_Write);
+  pluginFuncs->writeready = NewNPP_WriteReadyProc(NPP_WriteReady_x);
+  pluginFuncs->write = NewNPP_WriteProc(NPP_Write_x);
 #else
-  pluginFuncs->write = (NPP_WriteProcPtr)NPP_Write;
+  pluginFuncs->writeready = (NPP_WriteReadyProcPtr)NPP_WriteReady_x;
+  pluginFuncs->write = (NPP_WriteProcPtr)NPP_Write_x;
 #endif
 
   pluginFuncs->print = NPP_Print;
@@ -402,7 +412,7 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 //               deliver for a stream.
 ////////////////////////////////////////////////////////////////////
 int32_t
-NPP_WriteReady(NPP instance, NPStream *stream) {
+NPP_WriteReady_x(NPP instance, NPStream *stream) {
   //  nout << "WriteReady " << stream->url << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -418,8 +428,8 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 //               consumed.
 ////////////////////////////////////////////////////////////////////
 int32_t
-NPP_Write(NPP instance, NPStream *stream, int32_t offset, 
-          int32_t len, void *buffer) {
+NPP_Write_x(NPP instance, NPStream *stream, int32_t offset, 
+            int32_t len, void *buffer) {
   //  nout << "Write " << stream->url << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
