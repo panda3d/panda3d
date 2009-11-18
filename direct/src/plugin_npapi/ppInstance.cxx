@@ -1308,7 +1308,8 @@ send_window() {
 
 #elif defined(__APPLE__)
     NP_Port *port = (NP_Port *)_window.window;
-    parent_window._port = port->port;
+    parent_window._window_handle_type = P3D_WHT_osx_port;
+    parent_window._handle._osx_port._port = port->port;
     /*
     NP_CGContext *context = (NP_CGContext *)_window.window;
     parent_window._context = context->context;
@@ -1337,7 +1338,8 @@ send_window() {
 
 #elif defined(__APPLE__)
     NP_Port *port = (NP_Port *)_window.window;
-    parent_window._port = port->port;
+    parent_window._window_handle_type = P3D_WHT_osx_port;
+    parent_window._handle._osx_port._port = port->port;
     /*
     NP_CGContext *context = (NP_CGContext *)_window.window;
     parent_window._context = context->context;

@@ -207,7 +207,9 @@ handle_event(P3D_event_data event) {
   // Need to ensure we have the correct port set, in order to
   // convert the mouse coordinates successfully via
   // GlobalToLocal().
-  GrafPtr out_port = _wparams.get_parent_window()._port;
+  const P3D_window_handle &handle = _wparams.get_parent_window();
+  assert(handle._window_handle_type == P3D_WHT_osx_port);
+  GrafPtr out_port = handle._handle._osx_port._port;
   GrafPtr port_save = NULL;
   Boolean port_changed = QDSwapPort(out_port, &port_save);
   
@@ -281,7 +283,9 @@ paint_window() {
     GetPort(&out_port);
 
   } else {
-    out_port = _wparams.get_parent_window()._port;
+    const P3D_window_handle &handle = _wparams.get_parent_window();
+    assert(handle._window_handle_type == P3D_WHT_osx_port);
+    out_port = handle._handle._osx_port._port;
   }
 
   CGContextRef context;
@@ -639,9 +643,13 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
         GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL,
                           sizeof(Point), NULL, (void *)&point);
 
-        GrafPtr port = _wparams.get_parent_window()._port;
+        GrafPtr port;
         if (_toplevel_window != NULL) {
           port = GetWindowPort(_toplevel_window);
+        } else {
+          const P3D_window_handle &handle = _wparams.get_parent_window();
+          assert(handle._window_handle_type == P3D_WHT_osx_port);
+          port = handle._handle._osx_port._port;
         }
         GrafPtr port_save = NULL;
         Boolean port_changed = QDSwapPort(port, &port_save);
