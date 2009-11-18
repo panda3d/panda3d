@@ -41,7 +41,7 @@ public:
   inline int get_win_y() const;
   inline int get_win_width() const;
   inline int get_win_height() const;
-  inline P3D_window_handle get_parent_window() const;
+  inline const P3D_window_handle &get_parent_window() const;
 
   TiXmlElement *make_xml(P3DInstance *inst);
 

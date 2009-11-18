@@ -84,7 +84,7 @@ get_win_height() const {
 //  Description: Returns the parent window handle that was passed to
 //               the constructor.
 ////////////////////////////////////////////////////////////////////
-inline P3D_window_handle P3DWindowParams::
+inline const P3D_window_handle &P3DWindowParams::
 get_parent_window() const {
   return _parent_window;
 }

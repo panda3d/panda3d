@@ -805,7 +805,9 @@ make_window() {
 
   if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
-    parent = _wparams.get_parent_window()._xwindow;
+    const P3D_window_handle &handle = _wparams.get_parent_window();
+    assert(handle._window_handle_type == P3D_WHT_x11_window);
+    parent = handle._handle._x11_window._xwindow;
   } else {
     // Create a toplevel window.
     parent = XRootWindow(_display, _screen);

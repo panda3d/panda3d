@@ -197,20 +197,44 @@ typedef struct {
   /* Additional opaque data may be stored here. */
 } P3D_instance;
 
-/* This structure abstracts out the various window handle types for
-   the different platforms. */
+/* This enum and set of structures abstract out the various window
+   handle types for the different platforms. */
+
+typedef enum {
+  P3D_WHT_none,
+  P3D_WHT_win_hwnd,
+  P3D_WHT_osx_port,
+  P3D_WHT_x11_window,
+} P3D_window_handle_type;
+
 typedef struct {
 #ifdef _WIN32
   HWND _hwnd;
+#endif
+} P3D_window_handle_win_hwnd;
 
-#elif defined(__APPLE__)
-  /* As provided by Mozilla. */
+  /* As provided by Mozilla, by default.  Not compatible with Snow
+     Leopard. */
+typedef struct {
+#if defined(__APPLE__)
   GrafPtr _port;
+#endif
+} P3D_window_handle_osx_port;
 
-#elif defined(HAVE_X11)
+typedef struct {
+#if defined(HAVE_X11)
   unsigned long _xwindow;
   void *_xdisplay;
 #endif
+} P3D_window_handle_x11_window;
+
+typedef struct {
+  P3D_window_handle_type _window_handle_type;
+  union {
+    P3D_window_handle_win_hwnd _win_hwnd;
+    P3D_window_handle_osx_port _osx_port;
+    P3D_window_handle_x11_window _x11_window;
+  } _handle;
 } P3D_window_handle;
 
 /* This enum lists the different kinds of window types that may be

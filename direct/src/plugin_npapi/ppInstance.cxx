@@ -1292,6 +1292,9 @@ send_window() {
   int y = _window.y;
 
   P3D_window_handle parent_window;
+  memset(&parent_window, 0, sizeof(parent_window));
+  parent_window._window_handle_type = P3D_WHT_none;
+
   if (_window.type == NPWindowTypeWindow) {
     // We have a "windowed" plugin.  Parent our window to the one we
     // were given.  In this case, we should also reset the offset to
@@ -1314,7 +1317,8 @@ send_window() {
 #elif defined(HAVE_X11)
     // We make it an 'unsigned long' instead of 'Window'
     // to avoid nppanda3d.so getting a dependency on X11.
-    parent_window._xwindow = (unsigned long)(_window.window);
+    parent_window._window_handle_type = P3D_WHT_x11_window;
+    parent_window._handle._x11_window._xwindow = (unsigned long)(_window.window);
     x = 0;
     y = 0;
 #endif
@@ -1340,22 +1344,22 @@ send_window() {
     */
 
 #elif defined(HAVE_X11)
-    parent_window._xwindow = 0;
     unsigned long win;
     if (browser->getvalue(_npp_instance, NPNVnetscapeWindow,
                           &win) == NPERR_NO_ERROR) {
-      parent_window._xwindow = win;
+      parent_window._window_handle_type = P3D_WHT_x11_window;
+      parent_window._handle._x11_window._xwindow = win;
     }
 #endif
   }
 
 #ifdef HAVE_X11
   // In the case of X11, grab the display as well.
-  parent_window._xdisplay = 0;
-  void* disp;
+  parent_window._handle._x11_window._xdisplay = 0;
+  void *disp;
   if (browser->getvalue(_npp_instance, NPNVxDisplay,
                         &disp) == NPERR_NO_ERROR) {
-    parent_window._xdisplay = disp;
+    parent_window._handle._x11_window._xdisplay = disp;
   }
 #endif
 
