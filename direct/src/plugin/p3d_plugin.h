@@ -124,9 +124,8 @@ extern "C" {
 
    Next, trusted_environment should be set true to indicate that the
    environment and p3d file are already trusted.  If this is set, the
-   current working directory will remain unchanged, and the p3d file
-   will be run without checking its signature.  Normally, a browser
-   plugin should set this false.
+   p3d file will be run without checking its signature.  Normally, a
+   browser plugin should set this false.
 
    Finally, console_environment should be set true to indicate that we
    are running within a text-based console, and expect to preserve the
