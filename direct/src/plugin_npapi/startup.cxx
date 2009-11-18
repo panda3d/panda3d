@@ -113,7 +113,7 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
   
   switch (variable) {
     case NPPVpluginNameString:
-      *(const char **)value = "Panda3D Game Engine Plug-in";
+      *(const char **)value = "Panda3D Game Engine Plug-In";
       break;
     case NPPVpluginDescriptionString:
       *(const char **)value = "Runs 3-D games and interactive applets";

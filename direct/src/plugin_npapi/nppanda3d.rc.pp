@@ -41,7 +41,7 @@ BEGIN
             VALUE "FileExtents", "p3d\0"
             VALUE "FileOpenName", "Panda3D applet\0"
             VALUE "OriginalFilename", "nppanda3d.dll\0"
-            VALUE "ProductName", "Panda3D Game Engine Plug-in $[P3D_PLUGIN_VERSION_STR]\0"
+            VALUE "ProductName", "Panda3D Game Engine Plug-In $[P3D_PLUGIN_VERSION_STR]\0"
             VALUE "ProductVersion", "$[P3D_PLUGIN_DLL_DOT_VERSION]"
         END
     END
