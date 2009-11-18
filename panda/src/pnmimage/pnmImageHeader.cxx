@@ -542,3 +542,18 @@ output(ostream &out) const {
   out << "(" << _red << ", " << _green << ", " << _blue << ", " << _alpha << ")";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Histogram::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PNMImageHeader::Histogram::
+write(ostream &out) const {
+  out << "Histogram: {\n";
+  PixelCount::const_iterator pi;
+  for (pi = _pixels.begin(); pi != _pixels.end(); ++pi) {
+    out << "  " << (*pi)._pixel << ": " << (*pi)._count << ",\n";
+  }
+  out << "}\n";
+}
+

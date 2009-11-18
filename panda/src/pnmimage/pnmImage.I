@@ -116,9 +116,7 @@ from_val(xelval input_value) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 fill(double red, double green, double blue) {
-  fill_val((xelval)(red * get_maxval()),
-           (xelval)(green * get_maxval()),
-           (xelval)(blue * get_maxval()));
+  fill_val(to_val(red), to_val(green), to_val(blue));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +148,7 @@ fill_val(xelval gray) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 alpha_fill(double alpha) {
-  alpha_fill_val((xelval)(alpha * get_maxval()));
+  alpha_fill_val(to_val(alpha));
 }
 
 ////////////////////////////////////////////////////////////////////

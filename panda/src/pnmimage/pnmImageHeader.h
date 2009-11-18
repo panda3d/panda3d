@@ -167,6 +167,8 @@ PUBLISHED:
     INLINE int get_count(const PixelSpec &pixel) const;
     MAKE_SEQ(get_pixels, get_num_pixels, get_pixel);
 
+    void write(ostream &out) const;
+
   public:
     INLINE void swap(PixelCount &pixels, HistMap &hist_map);
 
