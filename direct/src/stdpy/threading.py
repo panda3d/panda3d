@@ -81,6 +81,12 @@ class ThreadBase:
         else:
             self.__dict__[key] = value
 
+# Copy these static methods from Panda's Thread object.  These are
+# useful if you may be running in Panda's SIMPLE_THREADS compilation
+# mode.
+ThreadBase.forceYield = pm.Thread.forceYield
+ThreadBase.considerYield = pm.Thread.considerYield
+
 class Thread(ThreadBase):
     """ This class provides a wrapper around Panda's PythonThread
     object.  The wrapper is designed to emulate Python's own

@@ -11,10 +11,16 @@ __all__ = [
     'interrupt_main',
     'exit', 'allocate_lock', 'get_ident',
     'stack_size',
+    'forceYield', 'considerYield',
     ]
 
 # Import PandaModules as pm, so we don't have any namespace collisions.
 from pandac import PandaModules as pm
+
+# These methods are defined in Panda, and are particularly useful if
+# you may be running in Panda's SIMPLE_THREADS compilation mode.
+forceYield = pm.Thread.forceYield
+considerYield = pm.Thread.considerYield
 
 class error(StandardError):
     pass
