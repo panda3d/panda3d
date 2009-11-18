@@ -227,7 +227,11 @@ init() {
 
   Init_D3DFORMAT_map();
 
-  return find_all_card_memavails();
+  if (dx_count_all_cards_memory){
+    return find_all_card_memavails();
+  }
+
+  return true;
 
  error:
   return false;

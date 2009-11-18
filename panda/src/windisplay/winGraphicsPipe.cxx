@@ -820,20 +820,24 @@ WinGraphicsPipe() {
   }
 
 #ifdef HAVE_DX9
-  DisplaySearchParameters display_search_parameters_dx9;
-  int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
+  if (request_dxdisplay_information){
+    DisplaySearchParameters display_search_parameters_dx9;
+    int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
 
-  if (state == false && dx9_display_information (display_search_parameters_dx9, _display_information)) {
-    state = true;
+    if (state == false && dx9_display_information (display_search_parameters_dx9, _display_information)) {
+      state = true;
+    }
   }
 #endif
 
 #ifdef HAVE_DX8
-  DisplaySearchParameters display_search_parameters_dx8;
-  int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
-  
-  if (state == false && dx8_display_information (display_search_parameters_dx8, _display_information)) {
-    state = true;    
+  if (request_dxdisplay_information){
+    DisplaySearchParameters display_search_parameters_dx8;
+    int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
+    
+    if (state == false && dx8_display_information (display_search_parameters_dx8, _display_information)) {
+      state = true;    
+    }
   }
 #endif
 

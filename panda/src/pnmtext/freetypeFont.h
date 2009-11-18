@@ -25,6 +25,7 @@
 #include "pmap.h"
 #include "pnmImage.h"
 #include "namable.h"
+#include "freetypeFace.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -93,7 +94,7 @@ protected:
   float _line_height;
   float _space_advance;
 
-  FT_Face _face;
+  PT(FreetypeFace) _face;
 
 protected:
   bool _font_loaded;

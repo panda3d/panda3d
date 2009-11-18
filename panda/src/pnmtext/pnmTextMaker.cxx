@@ -111,7 +111,7 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
 ////////////////////////////////////////////////////////////////////
 PNMTextGlyph *PNMTextMaker::
 get_glyph(int character) {
-  int glyph_index = FT_Get_Char_Index(_face, character);
+  int glyph_index = FT_Get_Char_Index(_face->get_face(), character);
 
   Glyphs::iterator gi;
   gi = _glyphs.find(glyph_index);
@@ -150,7 +150,7 @@ make_glyph(int glyph_index) {
     return (PNMTextGlyph *)NULL;
   }
 
-  FT_GlyphSlot slot = _face->glyph;
+  FT_GlyphSlot slot = _face->get_face()->glyph;
   FT_Bitmap &bitmap = slot->bitmap;
 
   double advance = slot->advance.x / 64.0;

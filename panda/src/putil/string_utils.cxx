@@ -176,15 +176,20 @@ extract_words(const wstring &str, pvector<wstring> &words) {
 //               vector.
 ////////////////////////////////////////////////////////////////////
 void
-tokenize(const string &str, vector_string &words, const string &delimiters) {
+tokenize(const string &str, vector_string &words, const string &delimiters,
+         bool discard_repeated_delimiters) {
   size_t p = 0;
   while (p < str.length()) {
     size_t q = str.find_first_of(delimiters, p);
     if (q == string::npos) {
-      words.push_back(str.substr(p));
+      if (q - p || !discard_repeated_delimiters){
+        words.push_back(str.substr(p));
+      }
       return;
     }
-    words.push_back(str.substr(p, q - p));
+    if (q - p || !discard_repeated_delimiters){
+        words.push_back(str.substr(p, q - p));
+    }
     p = q + 1;
   }
   words.push_back(string());
@@ -203,15 +208,20 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 //               vector.
 ////////////////////////////////////////////////////////////////////
 void
-tokenize(const wstring &str, pvector<wstring> &words, const wstring &delimiters) {
+tokenize(const wstring &str, pvector<wstring> &words, const wstring &delimiters,
+         bool discard_repeated_delimiters) {
   size_t p = 0;
   while (p < str.length()) {
     size_t q = str.find_first_of(delimiters, p);
     if (q == string::npos) {
-      words.push_back(str.substr(p));
+      if (q - p || !discard_repeated_delimiters){
+        words.push_back(str.substr(p));
+      }
       return;
     }
-    words.push_back(str.substr(p, q - p));
+    if (q - p || !discard_repeated_delimiters){
+      words.push_back(str.substr(p, q - p));
+    }
     p = q + 1;
   }
   words.push_back(wstring());

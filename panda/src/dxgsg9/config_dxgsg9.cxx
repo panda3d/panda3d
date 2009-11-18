@@ -87,6 +87,11 @@ ConfigVariableDouble dx_depth_bias_scale
           "amount by which we slide the viewport back to achieve the effect "
           "of a depth bias.  It should generally be a small number."));
 
+ConfigVariableBool dx_count_all_cards_memory
+("dx-count-all-cards-memory", true,
+ PRC_DESC("Set this to false to skip the counting of extra cards memory "
+          "via DX7 calls."));
+
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW

@@ -246,6 +246,14 @@ bool SSWriter::
 send_datagram(const Datagram &dg) {
   Datagram header;
   if (_tcp_header_size == 2) {
+    if (dg.get_length() >= 0x10000) {
+      downloader_cat.error()
+        << "Attempt to send TCP datagram of " << dg.get_length()
+        << " bytes--too long!\n";
+      nassert_raise("Datagram too long");
+      return false;
+    }
+    
     header.add_uint16(dg.get_length());
   } else if (_tcp_header_size == 4) {
     header.add_uint32(dg.get_length());

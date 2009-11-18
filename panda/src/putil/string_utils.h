@@ -39,9 +39,11 @@ EXPCL_PANDA_PUTIL int extract_words(const wstring &str, pvector<wstring> &words)
 
 // Separates the string into words according to the indicated delimiters.
 EXPCL_PANDA_PUTIL void tokenize(const string &str, vector_string &words,
-                          const string &delimiters);
+                          const string &delimiters,
+                          bool discard_repeated_delimiters = false);
 EXPCL_PANDA_PUTIL void tokenize(const wstring &str, pvector<wstring> &words,
-                          const wstring &delimiters);
+                          const wstring &delimiters,
+                          bool discard_repeated_delimiters = false);
 
 // Trims leading and/or trailing whitespace from the string.
 EXPCL_PANDA_PUTIL string trim_left(const string &str);

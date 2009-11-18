@@ -13,12 +13,14 @@
     
   #define SOURCES \
     config_pnmtext.cxx config_pnmtext.h \
+    freetypeFace.cxx freetypeFace.h freetypeFace.I \
     freetypeFont.cxx freetypeFont.h freetypeFont.I \
     pnmTextGlyph.cxx pnmTextGlyph.h pnmTextGlyph.I \
     pnmTextMaker.cxx pnmTextMaker.h pnmTextMaker.I
 
   #define INSTALL_HEADERS \
     config_pnmtext.h \
+    freetypeFace.h freetypeFace.I \
     freetypeFont.h freetypeFont.I \
     pnmTextGlyph.h pnmTextGlyph.I \
     pnmTextMaker.h pnmTextMaker.I

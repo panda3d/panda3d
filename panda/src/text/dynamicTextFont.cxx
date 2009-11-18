@@ -216,8 +216,8 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2) 
       << glyph_index;
 
-    if (FT_HAS_GLYPH_NAMES(_face)) {
-      int error = FT_Get_Glyph_Name(_face, glyph_index, 
+    if (FT_HAS_GLYPH_NAMES(_face->get_face())) {
+      int error = FT_Get_Glyph_Name(_face->get_face(), glyph_index, 
                                     glyph_name, max_glyph_name);
 
       // Some fonts, notably MS Mincho, claim to have glyph names but
@@ -249,7 +249,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
     return false;
   }
 
-  int glyph_index = FT_Get_Char_Index(_face, character);
+  int glyph_index = FT_Get_Char_Index(_face->get_face(), character);
   if (text_cat.is_spam()) {
     text_cat.spam()
       << *this << " maps " << character << " to glyph " << glyph_index << "\n";
@@ -404,7 +404,7 @@ make_glyph(int character, int glyph_index) {
     return (DynamicTextGlyph *)NULL;
   }
 
-  FT_GlyphSlot slot = _face->glyph;
+  FT_GlyphSlot slot = _face->get_face()->glyph;
   FT_Bitmap &bitmap = slot->bitmap;
 
   if ((bitmap.width == 0 || bitmap.rows == 0) && (glyph_index == 0)) {
@@ -423,7 +423,7 @@ make_glyph(int character, int glyph_index) {
     // Re-stroke the glyph to make it an outline glyph.
     /*
     FT_Stroker stroker;
-    FT_Stroker_New(_face->memory, &stroker);
+    FT_Stroker_New(_face->get_face()->memory, &stroker);
     FT_Stroker_Set(stroker, 16 * 16, FT_STROKER_LINECAP_BUTT,
                    FT_STROKER_LINEJOIN_ROUND, 0);
 

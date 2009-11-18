@@ -35,6 +35,7 @@ extern ConfigVariableBool dx_use_triangle_mipgen_filter;
 extern ConfigVariableBool dx_broken_max_index;
 extern ConfigVariableBool dx_broken_depth_bias;
 extern ConfigVariableDouble dx_depth_bias_scale;
+extern ConfigVariableBool dx_count_all_cards_memory;
 
 // debug flags we might want to use in full optimized build
 extern ConfigVariableBool dx_ignore_mipmaps;

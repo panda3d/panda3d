@@ -29,6 +29,7 @@ extern ConfigVariableBool auto_cpu_data;
 extern ConfigVariableBool ime_composition_w;
 extern ConfigVariableBool ime_aware;
 extern ConfigVariableBool ime_hide;
+extern ConfigVariableBool request_dxdisplay_information;
 
 extern EXPCL_PANDAWIN ConfigVariableBool swapbuffer_framelock;
 

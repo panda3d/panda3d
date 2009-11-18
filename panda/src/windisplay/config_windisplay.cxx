@@ -56,6 +56,12 @@ ConfigVariableBool ime_hide
 ("ime-hide", false,
  PRC_DESC("Set this true to hide ime windows."));
 
+ConfigVariableBool request_dxdisplay_information
+("request-dxdisplay-information", true,
+ PRC_DESC("Setting this to false skips some display information discovery "
+          "routines that can speed up initialization when DX support is "
+          "present."));
+
 ConfigVariableBool swapbuffer_framelock
 ("swapbuffer-framelock", false,
  PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));

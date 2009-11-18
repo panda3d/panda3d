@@ -42,6 +42,8 @@ FreetypeFont::
 FreetypeFont() {
   _font_loaded = false;
 
+  _face = new FreetypeFace();
+
   _point_size = text_point_size;
   _requested_pixels_per_unit = text_pixels_per_unit;
   _tex_pixels_per_unit = text_pixels_per_unit;
@@ -84,10 +86,12 @@ load_font(const Filename &font_filename, int face_index) {
   vfs->resolve_filename(path, get_model_path());
   exists = vfs->read_file(path, _raw_font_data, true);
   if (exists) {
+    FT_Face face;
     error = FT_New_Memory_Face(_ft_library, 
                                (const FT_Byte *)_raw_font_data.data(),
                                _raw_font_data.length(),
-                               face_index, &_face);
+                               face_index, &face);
+    _face->set_face(face);
   }
 
   if (!exists) {
@@ -127,9 +131,11 @@ load_font(const char *font_data, int data_length, int face_index) {
   unload_font();
 
   int error;
+  FT_Face face;
   error = FT_New_Memory_Face(_ft_library, 
                              (const FT_Byte *)font_data, data_length,
-                             face_index, &_face);
+                             face_index, &face);
+  _face->set_face(face);
 
   if (error == FT_Err_Unknown_File_Format) {
     pnmtext_cat.error()
@@ -153,7 +159,7 @@ load_font(const char *font_data, int data_length, int face_index) {
 void FreetypeFont::
 unload_font() {
   if (_font_loaded) {
-    FT_Done_Face(_face);
+    _face = NULL;
     _font_loaded = false;
   }
 }
@@ -178,7 +184,7 @@ load_glyph(int glyph_index, bool prerender) {
     flags = 0;
   }
 
-  int error = FT_Load_Glyph(_face, glyph_index, flags);
+  int error = FT_Load_Glyph(_face->get_face(), glyph_index, flags);
   if (error) {
     pnmtext_cat.error()
       << "Unable to render glyph " << glyph_index << "\n";
@@ -257,10 +263,10 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
 font_loaded() {
-  string name = _face->family_name;
-  if (_face->style_name != NULL) {
+  string name = _face->get_face()->family_name;
+  if (_face->get_face()->style_name != NULL) {
     name += " ";
-    name += _face->style_name;
+    name += _face->get_face()->style_name;
   }
   set_name(name);
   
@@ -271,29 +277,29 @@ font_loaded() {
 
   if (pnmtext_cat.is_debug()) {
     pnmtext_cat.debug()
-      << name << " has " << _face->num_charmaps << " charmaps:\n";
-    for (int i = 0; i < _face->num_charmaps; i++) {
-      pnmtext_cat.debug(false) << " " << (void *)_face->charmaps[i];
+      << name << " has " << _face->get_face()->num_charmaps << " charmaps:\n";
+    for (int i = 0; i < _face->get_face()->num_charmaps; i++) {
+      pnmtext_cat.debug(false) << " " << (void *)_face->get_face()->charmaps[i];
     }
     pnmtext_cat.debug(false) << "\n";
     pnmtext_cat.debug()
-      << "default charmap is " << (void *)_face->charmap << "\n";
+      << "default charmap is " << (void *)_face->get_face()->charmap << "\n";
   }
-  if (_face->charmap == NULL) {
+  if (_face->get_face()->charmap == NULL) {
     // If for some reason FreeType didn't set us up a charmap,
     // then set it up ourselves.
-    if (_face->num_charmaps == 0) {
+    if (_face->get_face()->num_charmaps == 0) {
       pnmtext_cat.warning()
         << name << " has no charmaps available.\n";
     } else {
       pnmtext_cat.warning()
         << name << " has no default Unicode charmap.\n";
-      if (_face->num_charmaps > 1) {
+      if (_face->get_face()->num_charmaps > 1) {
         pnmtext_cat.warning()
           << "Arbitrarily choosing first of " 
-          << _face->num_charmaps << " charmaps.\n";
+          << _face->get_face()->num_charmaps << " charmaps.\n";
       }
-      FT_Set_Charmap(_face, _face->charmaps[0]);
+      FT_Set_Charmap(_face->get_face(), _face->get_face()->charmaps[0]);
     }
   }
 
@@ -320,7 +326,7 @@ reset_scale() {
   int dpi = (int)(_font_pixels_per_unit * units_per_inch);
   
   _font_pixel_size = 0;
-  int error = FT_Set_Char_Size(_face,
+  int error = FT_Set_Char_Size(_face->get_face(),
                                (int)(_point_size * 64), (int)(_point_size * 64),
                                dpi, dpi);
   if (error) {
@@ -331,16 +337,16 @@ reset_scale() {
     int desired_height = (int)(_font_pixels_per_unit * _point_size / _points_per_unit + 0.5f);
     int best_size = -1;
     int largest_size = -1;
-    if (_face->num_fixed_sizes > 0) {
+    if (_face->get_face()->num_fixed_sizes > 0) {
       largest_size = 0;
       int best_diff = 0;
-      for (int i = 0; i < _face->num_fixed_sizes; i++) {
-        int diff = _face->available_sizes[i].height - desired_height;
+      for (int i = 0; i < _face->get_face()->num_fixed_sizes; i++) {
+        int diff = _face->get_face()->available_sizes[i].height - desired_height;
         if (diff > 0 && (best_size == -1 || diff < best_diff)) {
           best_size = i;
           best_diff = diff;
         }
-        if (_face->available_sizes[i].height > _face->available_sizes[largest_size].height) {
+        if (_face->get_face()->available_sizes[i].height > _face->get_face()->available_sizes[largest_size].height) {
           largest_size = i;
         }
       }
@@ -350,9 +356,9 @@ reset_scale() {
     }
 
     if (best_size >= 0) {
-      int pixel_height = _face->available_sizes[best_size].height;
-      int pixel_width = _face->available_sizes[best_size].width;
-      error = FT_Set_Pixel_Sizes(_face, pixel_width, pixel_height);
+      int pixel_height = _face->get_face()->available_sizes[best_size].height;
+      int pixel_width = _face->get_face()->available_sizes[best_size].width;
+      error = FT_Set_Pixel_Sizes(_face->get_face(), pixel_width, pixel_height);
       if (!error) {
         _font_pixels_per_unit = pixel_height * _points_per_unit / _point_size;
         _scale_factor = _font_pixels_per_unit / _tex_pixels_per_unit;
@@ -375,16 +381,16 @@ reset_scale() {
     return false;
   }
 
-  _line_height = _face->size->metrics.height / (_font_pixels_per_unit * 64.0f);
+  _line_height = _face->get_face()->size->metrics.height / (_font_pixels_per_unit * 64.0f);
 
   // Determine the correct width for a space.
-  error = FT_Load_Char(_face, ' ', FT_LOAD_DEFAULT);
+  error = FT_Load_Char(_face->get_face(), ' ', FT_LOAD_DEFAULT);
   if (error) {
     // Space isn't defined.  Oh well.
     _space_advance = 0.25f * _line_height;
 
   } else {
-    _space_advance = _face->glyph->advance.x / (_font_pixels_per_unit * 64.0f);
+    _space_advance = _face->get_face()->glyph->advance.x / (_font_pixels_per_unit * 64.0f);
   }
 
   return true;
