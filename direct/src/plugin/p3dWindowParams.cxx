@@ -78,7 +78,8 @@ make_xml(P3DInstance *inst) {
     xwparams->SetAttribute("win_width", _win_width);
     xwparams->SetAttribute("win_height", _win_height);
 #ifdef _WIN32
-    xwparams->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
+    assert(_parent_window._window_handle_type == P3D_WHT_win_hwnd);
+    xwparams->SetAttribute("parent_hwnd", (int)_parent_window._handle._win_hwnd._hwnd);
 
 #elif defined(__APPLE__)
     xwparams->SetAttribute("subprocess_window", inst->_shared_filename);

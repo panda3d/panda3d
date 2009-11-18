@@ -430,7 +430,9 @@ make_window() {
     DWORD window_style = 
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-    HWND parent_hwnd = _wparams.get_parent_window()._hwnd;
+    const P3D_window_handle &handle = _wparams.get_parent_window();
+    assert(handle._window_handle_type == P3D_WHT_win_hwnd);
+    HWND parent_hwnd = handle._handle._win_hwnd._hwnd;
 
     _hwnd = 
       CreateWindow("panda3d_splash", "Panda3D", window_style,

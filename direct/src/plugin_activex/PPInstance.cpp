@@ -493,7 +493,9 @@ int PPInstance::Start( const std::string& p3dFilename  )
     m_eventStop.ResetEvent();
 
     P3D_window_handle parent_window;
-    parent_window._hwnd = m_parentCtrl.m_hWnd;
+    memset(&parent_window, 0, sizeof(parent_window));
+    parent_window._window_handle_type = P3D_WHT_win_hwnd;
+    parent_window._handle._win_hwnd._hwnd = m_parentCtrl.m_hWnd;
 
     RECT rect;
     GetClientRect( m_parentCtrl.m_hWnd, &rect );

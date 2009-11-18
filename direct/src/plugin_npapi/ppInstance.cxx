@@ -1301,7 +1301,8 @@ send_window() {
     // (0, 0), since the window we were given is already placed in the
     // right spot.
 #ifdef _WIN32
-    parent_window._hwnd = (HWND)(_window.window);
+    parent_window._window_handle_type = P3D_WHT_win_hwnd;
+    parent_window._handle._win_hwnd._hwnd = (HWND)(_window.window);
     x = 0;
     y = 0;
 
@@ -1327,11 +1328,11 @@ send_window() {
     // We have a "windowless" plugin.  Parent our window directly to
     // the browser window.
 #ifdef _WIN32
-    parent_window._hwnd = 0;
     HWND hwnd;
     if (browser->getvalue(_npp_instance, NPNVnetscapeWindow,
                           &hwnd) == NPERR_NO_ERROR) {
-      parent_window._hwnd = hwnd;
+      parent_window._window_handle_type = P3D_WHT_win_hwnd;
+      parent_window._handle._win_hwnd._hwnd = hwnd;
     }
 
 #elif defined(__APPLE__)

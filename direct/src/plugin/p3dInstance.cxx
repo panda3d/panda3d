@@ -195,6 +195,7 @@ P3DInstance(P3D_request_ready_func *func,
       (_fparams.lookup_token_int("width") == 0 ||
        _fparams.lookup_token_int("height") == 0)) {
     P3D_window_handle dummy_handle;
+    memset(&dummy_handle, 0, sizeof(dummy_handle));
     P3DWindowParams wparams(P3D_WT_hidden, 0, 0, 0, 0, dummy_handle);
     set_wparams(wparams);
   }

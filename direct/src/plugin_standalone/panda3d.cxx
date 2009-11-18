@@ -241,8 +241,11 @@ run_command_line(int argc, char *argv[]) {
       
       // Center the child window(s) within the parent window.
 #ifdef _WIN32
+      assert(_parent_window._window_handle_type == P3D_WHT_win_hwnd);
+      HWND parent_hwnd = _parent_window._handle._win_hwnd._hwnd;
+      
       RECT rect;
-      GetClientRect(_parent_window._hwnd, &rect);
+      GetClientRect(parent_hwnd, &rect);
       
       _win_x = (int)(rect.right * 0.1);
       _win_y = (int)(rect.bottom * 0.1);
@@ -936,8 +939,10 @@ make_parent_window() {
   }
 
   ShowWindow(toplevel_window, SW_SHOWNORMAL);
-  
-  _parent_window._hwnd = toplevel_window;
+
+  memset(&_parent_window, 0, sizeof(_parent_window));
+  _parent_window._window_handle_type = P3D_WHT_win_hwnd;
+  _parent_window._handle._win_hwnd._hwnd = toplevel_window;
 }
 
 #else
