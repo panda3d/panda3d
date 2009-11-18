@@ -1074,7 +1074,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
         LibDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
         # TODO: check for a .pc file in the lib/pkg-config/ dir
-        if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool):
+        if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool)):
             for i in PkgConfigGetLibs(pkg.lower(), tool):
                 LibName(pkg, i)
             for i, j in PkgConfigGetDefSymbols(pkg.lower(), tool).items():
