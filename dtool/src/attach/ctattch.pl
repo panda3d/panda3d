@@ -138,6 +138,10 @@ sub CTAttachMod {
         &CTUDebug( "post-pending '" . $_[1] . "' to " . $_[0] .
                "\n" ) ;
         $newenv{$_[0]} = $newenv{$_[0]} . " " . $_[1] ;
+        } elsif ( $envpostpendexceptions{$_[0]}{$_[1]} ) {
+        &CTUDebug( "post-pending (by exception) '" . $_[1] . "' to '" . $_[0] .
+               "'\n" ) ;
+        $newenv{$_[0]} = $newenv{$_[0]} . " " . $_[1] ;
         } else {
         &CTUDebug( "pre-pending '" . $_[1] . "' to " . $_[0] .
                "\n" ) ;
@@ -232,6 +236,7 @@ sub CTAttachCompute {
       local( %localdo );
       local( $localdocnt ) = 0 ;
       local( %localpost );
+      local( %localpostexceptions ) = () ;
       if ( -e $init ) {
       &CTUDebug( "scanning " . $_[0] . ".init\n" ) ;
       local( @linesplit ) ;
@@ -249,19 +254,37 @@ sub CTAttachCompute {
           $linetmp = $linesplit[1] ;
           shift( @linesplit ) ;
           shift( @linesplit ) ;
+          $linesplitjoin = join( " ", @linesplit ) ;
+          if ( $linesplit[0] eq "-" ) {
+              shift( @linesplit ) ;
+              $linesplitjoin = join( " ", @linesplit ) ;
+              $localpostexceptions{$linetmp}{$linesplitjoin} = 1 ;
+              &CTUDebug( "Creating post-pend exception for '" . 
+                        $linetmp . "':'" . $linesplitjoin . "'\n" ) ;
+          }
           if ( $localmod{$linetmp} eq "" ) {
-              $localmod{$linetmp} = join( " ", @linesplit ) ;
+              $localmod{$linetmp} = $linesplitjoin ;
           } else {
               $localmod{$linetmp} = $localmod{$linetmp} . " " .
-              join( " ", @linesplit ) ;
+                  $linesplitjoin ;
           }
           } elsif ( $_ =~ /^MODREL/ ) {
           @linesplit = split ;
           $linetmp = $linesplit[1] ;
           shift( @linesplit ) ;
           shift( @linesplit ) ;
+          $postexception = 0 ;
           foreach $loop ( @linesplit ) {
+              if ( $loop eq "-" ) {
+                  $postexception = 1 ;
+                  next ;
+              }
               $looptmp = $root . "/" . &CTUShellEval($loop) ;
+              if ( $postexception ) {
+                  $localpostexceptions{$linetmp}{$looptmp} = 1 ;
+                  &CTUDebug( "Creating post-pend exception for '" . 
+                             $linetmp . "':'" . $looptmp . "'\n" ) ;
+              }
               if ( -e $looptmp ) {
               if ( $localmod{$linetmp} eq "" ) {
                   $localmod{$linetmp} = $looptmp ;
@@ -398,6 +421,7 @@ sub CTAttachCompute {
       foreach $item ( keys %localpost ) {
       $envpostpend{$item} = $localpost{$item} ;
       }
+      %envpostpendexceptions = %localpostexceptions;
       foreach $item ( keys %localmod ) {
       local( @splitthis ) = split( / +/, $localmod{$item} ) ;
       local( $thing ) ;
@@ -415,6 +439,7 @@ sub CTAttachCompute {
       $envdo{$docnt} = $localdo{$item} ;
       $docnt++ ;
       }
+      %envpostpendexceptions = () ;
    }
 
    &CTUDebug( "out of CTAttachCompute\n" ) ;
