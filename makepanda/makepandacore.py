@@ -1063,6 +1063,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         for d in olddefs:
             defs[d] = ""
     
+    if (pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h")):
+        # Let it be handled by the ffmpeg package
+        LibName(pkg, "-lswscale")
+        return
+    
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
         IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
         LibDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
