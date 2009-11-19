@@ -306,18 +306,18 @@ paint_window() {
   //  Flip the y axis so that positive Y points down
   CGContextScaleCTM(context, 1.0, -1.0);
 
-  // Clear the whole region to white before beginning.
-  static const CGFloat white_components[] = { 1, 1, 1, 1 };
+  // Clear the whole region to the background color before beginning.
+  CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
-  CGColorRef white = CGColorCreate(rgb_space, white_components);
+  CGColorRef bg = CGColorCreate(rgb_space, bg_components);
 
   CGRect region = { { 0, 0 }, { _win_width, _win_height } };
   CGContextBeginPath(context);
-  CGContextSetFillColorWithColor(context, white);
+  CGContextSetFillColorWithColor(context, bg);
   CGContextAddRect(context, region);
   CGContextFillPath(context);
 
-  CGColorRelease(white);
+  CGColorRelease(bg);
   CGColorSpaceRelease(rgb_space);
 
   // Now paint in the image(s).
@@ -480,13 +480,13 @@ void P3DOsxSplashWindow::
 paint_progress_bar(CGContextRef context) {
   // Get some colors we'll need.  We can't just use
   // CGColorGetConstantColor(), since that requires 10.5.
-  static const CGFloat black_components[] = { 0, 0, 0, 1 };
-  static const CGFloat white_components[] = { 1, 1, 1, 1 };
-  static const CGFloat blue_components[] = { 0.424, 0.647, 0.878, 1 };
+  CGFloat fg_components[] = { _fgcolor_r / 255.0f, _fgcolor_g / 255.0f, _fgcolor_b / 255.0f, 1 };
+  CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
+  CGFloat bar_components[] = { _barcolor_r / 255.0f, _barcolor_g / 255.0f, _barcolor_b / 255.0f, 1 };
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
-  CGColorRef black = CGColorCreate(rgb_space, black_components);
-  CGColorRef white = CGColorCreate(rgb_space, white_components);
-  CGColorRef blue = CGColorCreate(rgb_space, blue_components);
+  CGColorRef fg = CGColorCreate(rgb_space, fg_components);
+  CGColorRef bg = CGColorCreate(rgb_space, bg_components);
+  CGColorRef bar = CGColorCreate(rgb_space, bar_components);
 
   int bar_x, bar_y, bar_width, bar_height;
   get_bar_placement(bar_x, bar_y, bar_width, bar_height);
@@ -497,20 +497,20 @@ paint_progress_bar(CGContextRef context) {
   float bar_xf = bar_x + 0.5;
   float bar_yf = bar_y - 0.5;
 
-  CGRect bar = { { bar_xf, bar_yf }, { bar_width, bar_height } };
+  CGRect bar_rect = { { bar_xf, bar_yf }, { bar_width, bar_height } };
 
-  // Clear the entire progress bar to white.
+  // Clear the entire progress bar to white (or the background color).
   CGContextBeginPath(context);
-  CGContextSetFillColorWithColor(context, white);
-  CGContextAddRect(context, bar);
+  CGContextSetFillColorWithColor(context, bg);
+  CGContextAddRect(context, bar_rect);
   CGContextFillPath(context);
 
-  // Draw the interior of the progress bar in blue.
+  // Draw the interior of the progress bar in blue (or the bar color).
   int progress_width = (int)((bar_width - 2) * _install_progress);
   if (progress_width != 0) {
     CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
     CGContextBeginPath(context);
-    CGContextSetFillColorWithColor(context, blue);
+    CGContextSetFillColorWithColor(context, bar);
     CGContextAddRect(context, prog);
     CGContextFillPath(context);
   }
@@ -518,8 +518,8 @@ paint_progress_bar(CGContextRef context) {
   // Draw the black stroke around the progress bar.
   CGContextBeginPath(context);
   CGContextSetLineWidth(context, 1);
-  CGContextSetStrokeColorWithColor(context, black);
-  CGContextAddRect(context, bar);
+  CGContextSetStrokeColorWithColor(context, fg);
+  CGContextAddRect(context, bar_rect);
   CGContextStrokePath(context);
 
   if (!_install_label.empty()) {
@@ -541,25 +541,25 @@ paint_progress_bar(CGContextRef context) {
     int text_x = (int)(_win_width - text_width) / 2;
     int text_y = (int)(bar_y - text_height * 1.5);
 
-    // Clear the rectangle behind the text to white.
+    // Clear the rectangle behind the text to bg.
     CGRect text_rect = { { text_x - 2, text_y - 2 }, { text_width + 4, text_height + 4 } };
 
     CGContextBeginPath(context);
     CGContextAddRect(context, text_rect);
-    CGContextSetFillColorWithColor(context, white);
+    CGContextSetFillColorWithColor(context, bg);
     CGContextFillPath(context);
 
     // And finally, draw the text.
     CGContextSetTextDrawingMode(context, kCGTextFill);
-    CGContextSetFillColorWithColor(context, black);
+    CGContextSetFillColorWithColor(context, fg);
 
     CGContextShowTextAtPoint(context, text_x, text_y + text_height, 
                              _install_label.data(), _install_label.length());
   }
 
-  CGColorRelease(blue);
-  CGColorRelease(white);
-  CGColorRelease(black);
+  CGColorRelease(bar);
+  CGColorRelease(bg);
+  CGColorRelease(fg);
   CGColorSpaceRelease(rgb_space);
 }
 
