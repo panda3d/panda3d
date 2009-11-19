@@ -35,24 +35,21 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncTaskManager
 // Description : A class to manage a loose queue of isolated tasks,
-//               which can be performed by a background thread (in
-//               particular, for instance, loading a model file).
+//               which can be performed either synchronously (in the
+//               foreground thread) or asynchronously (by a background
+//               thread).
 //
-//               The AsyncTaskManager will spawn a specified number of
-//               threads (possibly 0) to serve the tasks.  If there
-//               are no threads, you must call poll() from time to
-//               time to serve the tasks in the main thread.
+//               The AsyncTaskManager is actually a collection of
+//               AsyncTaskChains, each of which maintains a list of
+//               tasks.  Each chain can be either foreground or
+//               background (it may run only in the main thread, or it
+//               may be serviced by one or more background threads).
+//               See AsyncTaskChain for more information.
 //
-//               Each task will run exactly once each epoch.  Beyond
-//               that, the tasks' sort and priority values control the
-//               order in which they are run: tasks are run in
-//               increasing order by sort value, and within the same
-//               sort value, they are run roughly in decreasing order
-//               by priority value, with some exceptions for
-//               parallelism.  Tasks with different sort values are
-//               never run in parallel together, but tasks with
-//               different priority values might be (if there is more
-//               than one thread).
+//               If you do not require background processing, it is
+//               perfectly acceptable to create only one
+//               AsyncTaskChain, which runs in the main thread.  This
+//               is a common configuration.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
