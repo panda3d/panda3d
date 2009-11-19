@@ -290,7 +290,13 @@ run() {
   
   // Clean and out
   close_output();
+  _subsets.clear();
+  _subroots.clear();
+  _excludes.clear();
+  _ignore_sliders.clear();
+  _force_joints.clear();
   _data->clear();
+
 }
 
 ////////////////////////////////////////////////////////////////////
