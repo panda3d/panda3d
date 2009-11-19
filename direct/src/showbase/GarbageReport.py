@@ -35,8 +35,6 @@ class GarbageReport(Job):
     If you just want to dump the report to the log, use GarbageLogger."""
     notify = directNotify.newCategory("GarbageReport")
 
-    NotGarbage = 'NG'
-
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
                  threaded=False, doneCallback=None, autoDestroy=False, priority=None,
                  safeMode=False, delOnly=False, collect=True):
