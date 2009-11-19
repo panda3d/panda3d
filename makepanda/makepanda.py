@@ -836,7 +836,8 @@ def CompileLink(dll, obj, opts):
                 else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+                cmd = 'g++ -shared -Wl,-soname=' + os.path.basename(dll)
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
                 base = os.path.basename(x)
