@@ -963,6 +963,8 @@
 // Define this if your version of Maya is earlier than 5.0 (e.g. Maya 4.5).
 #define MAYA_PRE_5_0
 
+#define MAYA2EGG maya2egg
+
 // In the same fashion as mayaegg converter above, set softimage to egg converter as well
 #define SOFTIMAGE_LOCATION /c/Softimage/sdk_18sp2/SDK_1.8SP2/SAAPHIRE
 #defer SOFTIMAGE_LIBS SAA.lib
