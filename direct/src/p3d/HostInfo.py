@@ -30,6 +30,10 @@ class HostInfo:
         self.hostDir = hostDir
         self.asMirror = asMirror
 
+        self.importsDir = None
+        if self.hostDir:
+            self.importsDir = Filename(self.hostDir, 'imports')
+
         # hostUrlPrefix is the host URL, but it is guaranteed to end
         # with a slash.
         self.hostUrlPrefix = hostUrl
@@ -63,12 +67,6 @@ class HostInfo:
         # This is a dictionary of packages by (name, version).  It
         # will be filled in when the contents file is read.
         self.packages = {}
-
-        if appRunner:
-            self.__determineHostDir(appRunner)
-
-        assert self.hostDir
-        self.importsDir = Filename(self.hostDir, 'imports')
 
     def downloadContentsFile(self, http, redownload = False):
         """ Downloads the contents.xml file for this particular host,
@@ -118,18 +116,22 @@ class HostInfo:
                     print "Unable to download %s" % (url)
                     rf = None
 
-        filename = Filename(self.hostDir, 'contents.xml')
+        tempFilename = Filename.temporary('', 'p3d_', '.xml')
         if rf:
-            filename.makeDir()
-            f = open(filename.toOsSpecific(), 'wb')
+            f = open(tempFilename.toOsSpecific(), 'wb')
             f.write(rf.getData())
             f.close()
 
-        if not self.readContentsFile():
-            print "Failure reading %s" % (filename)
-            return False
+            if not self.readContentsFile(tempFilename):
+                print "Failure reading %s" % (url)
+                tempFilename.unlink()
+                return False
 
-        return True
+            return True
+
+        # Couldn't download the file.  Maybe we should look for a
+        # previously-downloaded copy already on disk?
+        return False
 
     def redownloadContentsFile(self, http):
         """ Downloads a new contents.xml file in case it has changed.
@@ -141,6 +143,7 @@ class HostInfo:
         print "Redownloading %s" % (url)
 
         # Get the hash of the original file.
+        assert self.hostDir
         filename = Filename(self.hostDir, 'contents.xml')
         hv1 = HashVal()
         hv1.hashFile(filename)
@@ -161,21 +164,19 @@ class HostInfo:
             return False
 
 
-    def readContentsFile(self):
+    def readContentsFile(self, tempFilename):
         """ Reads the contents.xml file for this particular host, once
-        it has been downloaded.  Returns true on success, false if the
-        contents file is not already on disk or is unreadable. """
+        it has been downloaded into the indicated temporary file.
+        Returns true on success, false if the contents file is not
+        already on disk or is unreadable.  On success, copies the file
+        into the standard location if it's not there already. """
 
-        if self.hasContentsFile:
-            # No need to read it again.
-            return True
-
-        filename = Filename(self.hostDir, 'contents.xml')
+        assert not self.hasContentsFile
 
         if not hasattr(PandaModules, 'TiXmlDocument'):
             return False
         
-        doc = PandaModules.TiXmlDocument(filename.toOsSpecific())
+        doc = PandaModules.TiXmlDocument(tempFilename.toOsSpecific())
         if not doc.LoadFile():
             return False
         
@@ -185,6 +186,9 @@ class HostInfo:
 
         # Look for our own entry in the hosts table.
         self.__findHostXml(xcontents)
+
+        if not self.hostDir:
+            self.__determineHostDir(None)
 
         # Get the list of packages available for download and/or import.
         xpackage = xcontents.FirstChildElement('package')
@@ -211,6 +215,13 @@ class HostInfo:
             xpackage = xpackage.NextSiblingElement('package')
 
         self.hasContentsFile = True
+
+        # Now copy the contents.xml file into the standard location.
+        assert self.hostDir
+        filename = Filename(self.hostDir, 'contents.xml')
+        if filename != tempFilename:
+            filename.makeDir()
+            tempFilename.copyTo(filename)
 
         return True
 
@@ -243,6 +254,10 @@ class HostInfo:
         descriptiveName = xhost.Attribute('descriptive_name')
         if descriptiveName and not self.descriptiveName:
             self.descriptiveName = descriptiveName
+
+        hostDirBasename = xhost.Attribute('host_dir')
+        if hostDirBasename and not self.hostDir:
+            self.__determineHostDir(hostDirBasename)
 
         # Get the "download" URL, which is the source from which we
         # download everything other than the contents.xml file.
@@ -333,13 +348,19 @@ class HostInfo:
 
         return packages
 
-    def __determineHostDir(self, appRunner):
+    def __determineHostDir(self, hostDirBasename):
         """ Hashes the host URL into a (mostly) unique directory
         string, which will be the root of the host's install tree.
         Stores the resulting path, as a Filename, in self.hostDir.
 
         This code is duplicated in C++, in
         P3DHost::determine_host_dir(). """
+
+        if hostDirBasename:
+            # If the contents.xml specified a host_dir parameter, use
+            # it.
+            self.hostDir = Filename(self.appRunner.rootDir, hostDirBasename)
+            return
 
         hostDir = ''
 
@@ -389,4 +410,4 @@ class HostInfo:
         md.hashString(self.hostUrl)
         hostDir += md.asHex()[:keepHash * 2]
 
-        self.hostDir = Filename(appRunner.rootDir, hostDir)
+        self.hostDir = Filename(self.appRunner.rootDir, hostDir)

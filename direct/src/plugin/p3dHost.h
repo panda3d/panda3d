@@ -46,7 +46,6 @@ public:
   inline int get_contents_seq() const;
   inline bool check_contents_hash(const string &pathname) const;
 
-  bool read_contents_file();
   bool read_contents_file(const string &contents_filename);
 
   P3DPackage *get_package(const string &package_name, 
@@ -64,7 +63,7 @@ public:
   void add_mirror(string mirror_url);
 
 private:
-  void determine_host_dir();
+  void determine_host_dir(const string &host_dir_basename);
   void read_xhost(TiXmlElement *xhost);
 
   static string standardize_filename(const string &filename);

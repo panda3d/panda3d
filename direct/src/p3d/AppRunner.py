@@ -529,10 +529,9 @@ class AppRunner(DirectObject):
 
         host = self.getHost(hostUrl)
 
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(self.http):
-                message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
-                raise OSError, message
+        if not host.downloadContentsFile(self.http):
+            message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
+            raise OSError, message
 
         if not platform:
             platform = None

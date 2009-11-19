@@ -38,8 +38,6 @@ P3DHost(const string &host_url) :
 
   _xcontents = NULL;
   _contents_seq = 0;
-
-  determine_host_dir();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,20 +95,6 @@ get_alt_host(const string &alt_host) {
     return inst_mgr->get_host((*hi).second);
   }
   return this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::read_contents_file
-//       Access: Public
-//  Description: Reads the contents.xml file in the standard
-//               filename, if possible.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DHost::
-read_contents_file() {
-  string standard_filename = _host_dir + "/contents.xml";
-  return read_contents_file(standard_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,6 +158,11 @@ read_contents_file(const string &contents_filename) {
       }
     }
   }
+
+  if (_host_dir.empty()) {
+    determine_host_dir("");
+  }
+  assert(!_host_dir.empty());
 
   string standard_filename = _host_dir + "/contents.xml";
   if (standardize_filename(standard_filename) != 
@@ -389,10 +378,18 @@ add_mirror(string mirror_url) {
 //               HostInfo.determineHostDir().
 ////////////////////////////////////////////////////////////////////
 void P3DHost::
-determine_host_dir() {
+determine_host_dir(const string &host_dir_basename) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _host_dir = inst_mgr->get_root_dir();
   _host_dir += "/";
+
+  if (!host_dir_basename.empty()) {
+    // If the contents.xml specified a host_dir parameter, use it.
+    _host_dir += host_dir_basename;
+    return;
+  }
+
+  // If we didn't get a host_dir parameter, we have to make one up.
 
   string hostname;
 
@@ -469,6 +466,11 @@ read_xhost(TiXmlElement *xhost) {
   const char *descriptive_name = xhost->Attribute("descriptive_name");
   if (descriptive_name != NULL && _descriptive_name.empty()) {
     _descriptive_name = descriptive_name;
+  }
+
+  const char *host_dir_basename = xhost->Attribute("host_dir");
+  if (host_dir_basename != NULL && _host_dir.empty()) {
+    determine_host_dir(host_dir_basename);
   }
 
   // Get the "download" URL, which is the source from which we

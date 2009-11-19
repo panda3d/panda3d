@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DHost::
 get_host_dir() const {
+  assert(!_host_dir.empty());
   return _host_dir;
 }
 

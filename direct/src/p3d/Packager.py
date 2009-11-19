@@ -218,10 +218,12 @@ class Packager:
 
     class HostEntry:
         def __init__(self, url = None, downloadUrl = None,
-                     descriptiveName = None, mirrors = None):
+                     descriptiveName = None, hostDir = None,
+                     mirrors = None):
             self.url = url
             self.downloadUrl = downloadUrl
             self.descriptiveName = descriptiveName
+            self.hostDir = hostDir
             self.mirrors = mirrors or []
             self.altHosts = {}
 
@@ -229,6 +231,7 @@ class Packager:
             self.url = xhost.Attribute('url')
             self.downloadUrl = xhost.Attribute('download_url')
             self.descriptiveName = xhost.Attribute('descriptive_name')
+            self.hostDir = xhost.Attribute('host_dir')
             self.mirrors = []
             xmirror = xhost.FirstChildElement('mirror')
             while xmirror:
@@ -251,6 +254,8 @@ class Packager:
                 xhost.SetAttribute('download_url', self.downloadUrl)
             if self.descriptiveName:
                 xhost.SetAttribute('descriptive_name', self.descriptiveName)
+            if self.hostDir:
+                xhost.SetAttribute('host_dir', self.hostDir)
 
             for mirror in self.mirrors:
                 xmirror = TiXmlElement('mirror')
@@ -1823,16 +1828,18 @@ class Packager:
         self.contents = {}
 
     def setHost(self, host, downloadUrl = None,
-                descriptiveName = None, mirrors = None):
+                descriptiveName = None, hostDir = None,
+                mirrors = None):
         """ Specifies the URL that will ultimately host these
         contents. """
 
         self.host = host
         self.addHost(host, downloadUrl = downloadUrl,
-                     descriptiveName = descriptiveName, mirrors = mirrors)
+                     descriptiveName = descriptiveName, hostDir = hostDir,
+                     mirrors = mirrors)
 
     def addHost(self, host, downloadUrl = None, descriptiveName = None,
-                mirrors = None):
+                hostDir = None, mirrors = None):
         """ Adds a host to the list of known download hosts.  This
         information will be written into any p3d files that reference
         this host; this can be used to pre-define the possible mirrors
@@ -1853,7 +1860,7 @@ class Packager:
             # Define a new host entry
             he = self.HostEntry(host, downloadUrl = downloadUrl,
                                 descriptiveName = descriptiveName,
-                                mirrors = mirrors)
+                                hostDir = hostDir, mirrors = mirrors)
             self.hosts[host] = he
         else:
             # Update an existing host entry
@@ -1861,14 +1868,16 @@ class Packager:
                 he.downloadUrl = downloadUrl
             if descriptiveName is not None:
                 he.descriptiveName = descriptiveName
+            if hostDir is not None:
+                he.hostDir = hostDir
             if mirrors is not None:
                 he.mirrors = mirrors
 
         return he
         
     def addAltHost(self, keyword, altHost, origHost = None,
-                   downloadUrl = None,
-                   descriptiveName = None, mirrors = None):
+                   downloadUrl = None, descriptiveName = None,
+                   hostDir = None, mirrors = None):
         """ Adds an alternate host to any already-known host.  This
         defines an alternate server that may be contacted, if
         specified on the HTML page, which hosts a different version of
@@ -1880,7 +1889,8 @@ class Packager:
             origHost = self.host
 
         self.addHost(altHost, downloadUrl = downloadUrl,
-                     descriptiveName = descriptiveName, mirrors = mirrors)
+                     descriptiveName = descriptiveName, hostDir = hostDir,
+                     mirrors = mirrors)
         he = self.addHost(origHost)
         he.altHosts[keyword] = altHost
 
