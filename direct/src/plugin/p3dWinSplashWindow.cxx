@@ -34,7 +34,9 @@ P3DWinSplashWindow(P3DInstance *inst, bool make_visible) :
   _thread = NULL;
   _thread_id = 0;
   _hwnd = NULL;
-  _blue_brush = NULL;
+  _fg_brush = NULL;
+  _bg_brush = NULL;
+  _bar_brush = NULL;
   _thread_running = false;
   _install_progress = 0.0;
 
@@ -474,60 +476,10 @@ make_window() {
     ShowWindow(_hwnd, SW_HIDE);
   }
 
-  _blue_brush = CreateSolidBrush(RGB(108, 165, 224));
+  _fg_brush = CreateSolidBrush(RGB(_fgcolor_r, _fgcolor_g, _fgcolor_b));
+  _bg_brush = CreateSolidBrush(RGB(_bgcolor_r, _bgcolor_g, _bgcolor_b));
+  _bar_brush = CreateSolidBrush(RGB(_barcolor_r, _barcolor_g, _barcolor_b));
 }
-
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::update_install_label
-//       Access: Private
-//  Description: Changes the text on the install label.  Runs within
-//               the sub-thread.
-////////////////////////////////////////////////////////////////////
-void P3DWinSplashWindow::
-update_install_label(const string &install_label) {
-  assert(_progress_bar != NULL);
-
-  if (_text_label != NULL) {
-    DestroyWindow(_text_label);
-    _text_label = NULL;
-  }
-
-  if (install_label.empty()) {
-    // Trivial case.
-    return;
-  }
-
-  // Create a static text label.  What a major pain *this* is.
-
-  const char *text = install_label.c_str();
-  HFONT font = (HFONT)GetStockObject(ANSI_VAR_FONT); 
-
-  HDC dc = GetDC(_hwnd);
-  SelectObject(dc, font);
-  SIZE text_size;
-  GetTextExtentPoint32(dc, text, strlen(text), &text_size);
-  ReleaseDC(_hwnd, dc);
-
-  HINSTANCE application = GetModuleHandle(NULL);
-  DWORD window_style = 
-    SS_OWNERDRAW | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-
-  int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
-
-  int text_width = text_size.cx + 4;
-  int text_height = text_size.cy + 2;
-  int text_x = (_win_width - text_width) / 2;
-  int text_y = bar_y - text_height - 2;
-
-  _text_label = CreateWindowEx(0, "STATIC", text, window_style,
-                               text_x, text_y, text_width, text_height,
-                               _hwnd, NULL, application, 0);
-  ShowWindow(_text_label, SW_SHOWNORMAL);
-}
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::update_image
@@ -650,9 +602,17 @@ close_window() {
     _hwnd = NULL;
   }
   
-  if (_blue_brush != NULL) {
-    DeleteObject(_blue_brush);
-    _blue_brush = NULL;
+  if (_fg_brush != NULL) {
+    DeleteObject(_fg_brush);
+    _fg_brush = NULL;
+  }
+  if (_bg_brush != NULL) {
+    DeleteObject(_bg_brush);
+    _bg_brush = NULL;
+  }
+  if (_bar_brush != NULL) {
+    DeleteObject(_bar_brush);
+    _bar_brush = NULL;
   }
 
   _background_image.dump_image();
@@ -686,7 +646,7 @@ paint_window(HDC dc) {
   SelectObject(bdc, buffer);
 
   // Start by painting the background color.
-  FillRect(bdc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+  FillRect(bdc, &rect, _bg_brush);
 
   // Then paint the background image on top of that.
   paint_image(bdc, _background_image, false);
@@ -812,18 +772,18 @@ paint_progress_bar(HDC dc) {
 
   RECT bar_rect = { bar_x, bar_y, bar_x + bar_width, bar_y + bar_height };
 
-  // Clear the entire progress bar to white.
-  FillRect(dc, &bar_rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+  // Clear the entire progress bar to white (or the background color).
+  FillRect(dc, &bar_rect, _bg_brush);
 
-  // Draw the interior of the progress bar in blue.
+  // Draw the interior of the progress bar in blue (or the bar color).
   int progress_width = (int)((bar_width - 2) * _drawn_progress);
   if (progress_width != 0) {
     RECT prog_rect = { bar_x, bar_y, bar_x + progress_width, bar_y + bar_height };
-    FillRect(dc, &prog_rect, _blue_brush);
+    FillRect(dc, &prog_rect, _bar_brush);
   }
 
-  // Now draw a black border around the progress bar.
-  FrameRect(dc, &bar_rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+  // Now draw a black (or foreground) border around the progress bar.
+  FrameRect(dc, &bar_rect, _fg_brush);
 
   if (!_drawn_label.empty()) {
     // Now draw the install_label right above it.
@@ -844,10 +804,11 @@ paint_progress_bar(HDC dc) {
     // Clear the rectangle behind the text to white.
     RECT text_rect = { text_x - 2, text_y - 2, text_x + text_width + 4, text_y + text_height + 4 };
 
-    FillRect(dc, &text_rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+    FillRect(dc, &text_rect, _bg_brush);
 
     // And finally, draw the text.
-    SetBkColor(dc, 0x00ffffff);
+    SetTextColor(dc, RGB(_fgcolor_r, _fgcolor_g, _fgcolor_b));
+    SetBkColor(dc, RGB(_bgcolor_r, _bgcolor_g, _bgcolor_b));
     DrawText(dc, text, -1, &text_rect, 
              DT_VCENTER | DT_CENTER | DT_SINGLELINE);
   }
