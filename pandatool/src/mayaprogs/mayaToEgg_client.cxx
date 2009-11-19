@@ -28,7 +28,7 @@ MayaToEggClient() :
 {
   qManager = new QueuedConnectionManager();
   qReader = new QueuedConnectionReader(qManager, 0);
-  qWriter = new ConnectionWriter(qManager, 0);
+  cWriter = new ConnectionWriter(qManager, 0);
   // We assume the server is local and on port 4242
   server.set_host("localhost", 4242);
 }
@@ -72,8 +72,18 @@ int main(int argc, char *argv[]) {
   nout << "sending datagram\n";
   
   // Send it and close the connection
-  prog.qWriter->send(datagram, con);
-  prog.qManager->close_connection(con);
-  return 0;
+  prog.cWriter->send(datagram, con);
+  con->flush();
+  while (true) {
+    prog.qReader->data_available();
+    if (prog.qManager->reset_connection_available()) {
+      PT(Connection) connection;
+      if (prog.qManager->get_reset_connection(connection)) {
+        prog.qManager->close_connection(con);
+        return 0;
+      }
+    }
+    Thread::sleep(0.1);
+  }
 }
 

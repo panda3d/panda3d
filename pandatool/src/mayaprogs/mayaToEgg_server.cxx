@@ -161,7 +161,9 @@ MayaToEggServer() :
   qManager = new QueuedConnectionManager();
   qListener = new QueuedConnectionListener(qManager, 0);
   qReader = new QueuedConnectionReader(qManager, 0);
+  cWriter = new ConnectionWriter(qManager, 0);
   dummy = new MayaToEggConverter();
+  
   nout << "Initializing Maya...\n";
   if (!dummy->open_api()) {
     nout << "Unable to initialize Maya.\n";
@@ -178,6 +180,7 @@ MayaToEggServer::
   delete qManager;
   delete qReader;
   delete qListener;
+  delete cWriter;
   delete dummy;
 }
 
@@ -326,8 +329,22 @@ poll() {
   // pointer and add it to the reader list
   if (qListener->new_connection_available()) {
     PT(Connection) con;
-    if (qListener->get_new_connection(con)) {
+    PT(Connection) rv;
+    NetAddress address;
+    if (qListener->get_new_connection(rv, address, con)) {
+      nout << "Got connection from " << address << "\n";
       qReader->add_connection(con);
+      _clients.insert(con);
+    }
+  }
+
+  // Check for reset clients
+  if (qManager->reset_connection_available()) {
+    PT(Connection) connection;
+    if (qManager->get_reset_connection(connection)) {
+      nout << "Lost connection from " << connection->get_address() << "\n";
+      _clients.erase(connection);
+      qManager->close_connection(connection);
     }
   }
   
@@ -402,6 +419,12 @@ poll() {
       // Clean up the malloc'd pointer pointer
       free(cargv);
     } // qReader->get_data
+    nout << "Closing connection...\n";
+
+    Clients::iterator ci;
+    for (ci = _clients.begin(); ci != _clients.end(); ++ci) {
+      qManager->close_connection(*ci);
+    }
   } // qReader->data_available
 } // poll
 

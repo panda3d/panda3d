@@ -30,7 +30,7 @@ public:
 
   QueuedConnectionManager *qManager;
   QueuedConnectionReader *qReader;
-  ConnectionWriter *qWriter;
+  ConnectionWriter *cWriter;
   NetAddress server;
 };
 

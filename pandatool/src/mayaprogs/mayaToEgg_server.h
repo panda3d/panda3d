@@ -21,6 +21,7 @@
 #include "queuedConnectionManager.h"
 #include "queuedConnectionListener.h"
 #include "queuedConnectionReader.h"
+#include "connectionWriter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaToEggServer
@@ -39,11 +40,14 @@ public:
   QueuedConnectionManager *qManager;
   QueuedConnectionListener *qListener;
   QueuedConnectionReader *qReader;
+  ConnectionWriter *cWriter;
   MayaToEggConverter *dummy;
 
 
 protected:
   static bool dispatch_transform_type(const string &opt, const string &arg, void *var);
+  typedef pset< PT(Connection) > Clients;
+  Clients _clients;
 
   int _verbose;
   bool _polygon_output;
