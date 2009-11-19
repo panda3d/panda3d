@@ -60,7 +60,8 @@ class SocketStream;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
-  CConnectionRepository(bool has_owner_view = false);
+  CConnectionRepository(bool has_owner_view = false,
+                        bool threaded_net = false);
   ~CConnectionRepository();
 
   INLINE DCFile &get_dc_file();
@@ -75,6 +76,9 @@ PUBLISHED:
 
   INLINE void set_handle_datagrams_internally(bool handle_datagrams_internally);
   INLINE bool get_handle_datagrams_internally() const;
+
+  void set_tcp_header_size(int tcp_header_size);
+  INLINE int get_tcp_header_size() const;
 
 #ifdef HAVE_PYTHON
   INLINE void set_python_repository(PyObject *python_repository);
@@ -192,6 +196,7 @@ private:
   bool _handle_c_updates;
   bool _client_datagram;
   bool _handle_datagrams_internally;
+  int _tcp_header_size;
   bool _simulated_disconnect;
   bool _verbose;
   bool _in_quiet_zone;

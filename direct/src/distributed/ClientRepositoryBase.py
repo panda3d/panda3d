@@ -25,8 +25,11 @@ class ClientRepositoryBase(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepositoryBase")
 
-    def __init__(self, dcFileNames = None, dcSuffix = ''):
-        ConnectionRepository.__init__(self, ConnectionRepository.CM_HTTP, base.config, hasOwnerView=True)
+    def __init__(self, dcFileNames = None, dcSuffix = '',
+                 connectMethod = None, threadedNet = None):
+        if connectMethod is None:
+            connectMethod = self.CM_HTTP
+        ConnectionRepository.__init__(self, connectMethod, base.config, hasOwnerView = True, threadedNet = threadedNet)
         self.dcSuffix = dcSuffix
         if hasattr(self, 'setVerbose'):
             if self.config.GetBool('verbose-clientrepository'):

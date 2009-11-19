@@ -18,6 +18,7 @@
 #include "dcPacker.h"
 
 #include "config_distributed.h"
+#include "config_downloader.h"
 #include "httpChannel.h"
 #include "urlSpec.h"
 #include "datagramIterator.h"
@@ -44,7 +45,7 @@ PStatCollector CConnectionRepository::_update_pcollector("App:Show code:readerPo
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CConnectionRepository::
-CConnectionRepository(bool has_owner_view) :
+CConnectionRepository(bool has_owner_view, bool threaded_net) :
   _lock("CConnectionRepository::_lock"),
 #ifdef HAVE_PYTHON
   _python_repository(NULL),
@@ -54,8 +55,8 @@ CConnectionRepository(bool has_owner_view) :
   _http_conn(NULL),
 #endif
 #ifdef HAVE_NET
-  _cw(&_qcm, 0),
-  _qcr(&_qcm, 0),
+  _cw(&_qcm, threaded_net ? 1 : 0),
+  _qcr(&_qcm, threaded_net ? 1 : 0),
 #endif
 #ifdef WANT_NATIVE_NET
   _bdc(4096000,4096000,1400),
@@ -79,7 +80,7 @@ CConnectionRepository(bool has_owner_view) :
     _qcr.start_delay(min_lag, max_lag);
   }
 #endif
-
+  _tcp_header_size = tcp_header_size;
 
 #ifdef HAVE_PYTHON
   PyObject *  PyDitterator = DTool_CreatePyInstance(&_di,Dtool_DatagramIterator,false,false);
@@ -99,6 +100,31 @@ CConnectionRepository::
   disconnect();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_tcp_header_size
+//       Access: Public
+//  Description: Sets the header size of TCP packets.  At the present,
+//               legal values for this are 0, 2, or 4; this specifies
+//               the number of bytes to use encode the datagram length
+//               at the start of each TCP datagram.  Sender and
+//               receiver must independently agree on this.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+set_tcp_header_size(int tcp_header_size) {
+  _tcp_header_size = tcp_header_size;
+
+#ifdef HAVE_OPENSSL
+  if (_http_conn != (SocketStream *)NULL) {
+    _http_conn->set_tcp_header_size(tcp_header_size);
+  }
+#endif
+
+#ifdef HAVE_NET
+  _cw.set_tcp_header_size(tcp_header_size);
+  _qcr.set_tcp_header_size(tcp_header_size);
+#endif
+}
+
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_connection_http
@@ -115,6 +141,7 @@ set_connection_http(HTTPChannel *channel) {
   disconnect();
   nassertv(channel->is_connection_ready());
   _http_conn = channel->get_connection();
+  _http_conn->set_tcp_header_size(_tcp_header_size);
 #ifdef SIMULATE_NETWORK_DELAY
   if (min_lag != 0.0 || max_lag != 0.0) {
     _http_conn->start_delay(min_lag, max_lag);

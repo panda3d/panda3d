@@ -33,13 +33,18 @@ class ConnectionRepository(
     GarbageCollectTaskName = "allowGarbageCollect"
     GarbageThresholdTaskName = "adjustGarbageCollectThreshold"
 
-    def __init__(self, connectMethod, config, hasOwnerView=False):
+    def __init__(self, connectMethod, config, hasOwnerView = False,
+                 threadedNet = None):
         assert self.notify.debugCall()
+        if threadedNet is None:
+            # Default value.
+            threadedNet = config.GetBool('threaded-net', False)
+            
         # let the C connection repository know whether we're supporting
         # 'owner' views of distributed objects (i.e. 'receives ownrecv',
         # 'I own this object and have a separate view of it regardless of
         # where it currently is located')
-        CConnectionRepository.__init__(self, hasOwnerView)
+        CConnectionRepository.__init__(self, hasOwnerView, threadedNet)
         self.setWantMessageBundling(config.GetBool('want-message-bundling', 1))
         # DoInterestManager.__init__ relies on CConnectionRepository being
         # initialized

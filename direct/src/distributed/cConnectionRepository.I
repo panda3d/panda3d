@@ -111,6 +111,17 @@ get_handle_datagrams_internally() const {
   return _handle_datagrams_internally;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_tcp_header_size
+//       Access: Public
+//  Description: Returns the current setting of TCP header size.
+//               See set_tcp_header_size().
+////////////////////////////////////////////////////////////////////
+INLINE int CConnectionRepository::
+get_tcp_header_size() const {
+  return _tcp_header_size;
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_python_repository

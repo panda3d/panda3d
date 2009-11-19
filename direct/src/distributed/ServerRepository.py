@@ -78,12 +78,20 @@ class ServerRepository:
             # record its current fields.  That is left to the clients.
             
 
-    def __init__(self, tcpPort, udpPort = None, dcFileNames = None):
+    def __init__(self, tcpPort, udpPort = None, dcFileNames = None,
+                 threadedNet = None):
+        if threadedNet is None:
+            # Default value.
+            threadedNet = config.GetBool('threaded-net', False)
+        
         # Set up networking interfaces.
+        numThreads = 0
+        if threadedNet:
+            numThreads = 1
         self.qcm = QueuedConnectionManager()
-        self.qcl = QueuedConnectionListener(self.qcm, 0)
-        self.qcr = QueuedConnectionReader(self.qcm, 0)
-        self.cw = ConnectionWriter(self.qcm, 0)
+        self.qcl = QueuedConnectionListener(self.qcm, numThreads)
+        self.qcr = QueuedConnectionReader(self.qcm, numThreads)
+        self.cw = ConnectionWriter(self.qcm, numThreads)
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(tcpPort, 10)
         self.qcl.addConnection(self.tcpRendezvous)
         taskMgr.add(self.listenerPoll, "serverListenerPollTask")
@@ -136,6 +144,21 @@ class ServerRepository:
         self.needsFlush = set()
 
         return task.again
+
+    def setTcpHeaderSize(self, headerSize):
+        """Sets the header size of TCP packets.  At the present, legal
+        values for this are 0, 2, or 4; this specifies the number of
+        bytes to use encode the datagram length at the start of each
+        TCP datagram.  Sender and receiver must independently agree on
+        this."""
+        self.qcr.setTcpHeaderSize(headerSize)
+        self.cw.setTcpHeaderSize(headerSize)
+
+    def getTcpHeaderSize(self):
+        """Returns the current setting of TCP header size. See
+        setTcpHeaderSize(). """
+        return self.qcr.getTcpHeaderSize()
+        
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """ Imports the indicated moduleName and all of its symbols

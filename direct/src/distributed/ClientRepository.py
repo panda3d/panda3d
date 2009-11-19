@@ -24,8 +24,9 @@ class ClientRepository(ClientRepositoryBase):
 
     doNotDeallocateChannel = True
     
-    def __init__(self, dcFileNames = None, dcSuffix = ''):
-        ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames, dcSuffix = dcSuffix)
+    def __init__(self, dcFileNames = None, dcSuffix = '', connectMethod = None,
+                 threadedNet = None):
+        ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames, dcSuffix = dcSuffix, connectMethod = connectMethod, threadedNet = threadedNet)
         self.setHandleDatagramsInternally(False)
 
         # The doId allocator.  The CMU LAN server may choose to
