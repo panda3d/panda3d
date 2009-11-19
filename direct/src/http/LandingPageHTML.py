@@ -1,5 +1,7 @@
 # -- Text content for the landing page.  You should change these for yours! --
 
+from direct.showbase import ElementTree as ET
+
 title = "Landing Page"
 defaultTitle = title
 
@@ -258,14 +260,17 @@ stylesheet = '''
 
 header = '''
 <html>
-<head>
+%(headTag)s
 <title>%(titlestring)s</title>
 <link rel="stylesheet" type="text/css" href="/default.css">
-%(headContent)s
 </head>
 
-<body>
+%(bodyTag)s
+'''
 
+# this portion of the body is now added dynamically in order to support changes to the body tag
+# attributes
+'''
 <!-- HEADER -->
 
 <div id="header">
@@ -280,7 +285,25 @@ header = '''
 
 <div id="contents">
 <center>
+
 '''
+
+# caller must remove '</div>' from end of output string derived from what is returned
+def addBodyHeaderAndContent(bodyTag, titleString, menuTags):
+    SE = ET.SubElement
+    bodyTag.append(ET.Comment('HEADER'))
+    header = SE(bodyTag, 'div', id='header')
+    h2 = SE(header, 'h2')
+    h2.text = titleString
+    navContainer = SE(header, 'div', id='navcontainer')
+    navList = SE(navContainer, 'ul', id='navlist')
+    for menuTag in menuTags:
+        navList.append(menuTag)
+    bodyTag.append(ET.Comment('CONTENT'))
+    contents = SE(bodyTag, 'div', id='contents')
+    center = SE(contents, 'center')
+    # for ease of removal of center tag closer
+    center.append(ET.Comment(''))
 
 mainPageBody = '''
 <P>%(description)s</P>
@@ -362,6 +385,53 @@ def getTabs(menu,activeTab):
         tabNum += 1
 
     return s    
+
+def getTabTags(menu,activeTab):
+    tabList = menu.keys()
+    if "Main" in tabList:
+        tabList.remove("Main")
+    if "Services" in tabList:
+        tabList.remove("Services")
+        
+    tabList.sort()
+    
+    if "Main" in menu.keys():
+        tabList.insert(0, "Main")
+    if "Services" in menu.keys():
+        tabList.insert(1, "Services")
+
+    tabNum = 0
+
+    tags = []
+
+    for tab in tabList:
+        if tabNum == 0:
+            if tab == activeTab:
+                li = ET.Element('li', id='active')
+                li.set('class', 'first')
+                a = ET.SubElement(li, 'a', href=menu[tab], id='current')
+                a.text = tab
+                tags.append(li)
+            else:
+                li = ET.Element('li')
+                li.set('class', 'first')
+                a = ET.SubElement(li, 'a', href=menu[tab])
+                a.text = tab
+                tags.append(li)
+        else:
+            if tab == activeTab:
+                li = ET.Element('li', id='active')
+                a = ET.SubElement(li, 'a', href=menu[tab], id='current')
+                a.text = tab
+                tags.append(li)
+            else:
+                li = ET.Element('li')
+                a = ET.SubElement(li, 'a', href=menu[tab])
+                a.text = tab
+                tags.append(li)
+        tabNum += 1
+
+    return tags
 
 def getQuickStatsTable(quickStats):
     output = "\n<table>\n<caption>Quick Stats</caption>\n<thead><tr><th scope=col>Item</th><th scope=col>Value</th></tr></thead>\n"

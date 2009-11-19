@@ -13,9 +13,6 @@ class LandingPage:
         self.headerTemplate = LandingPageHTML.header
         self.footerTemplate = LandingPageHTML.footer
 
-        # allow modifications to the page head tag
-        self._headET = ET.Element('head')
-        
         self.menu = {}
 
         self.uriToTitle = {}
@@ -51,19 +48,57 @@ class LandingPage:
     def getMenu(self, activeTab):
         return LandingPageHTML.getTabs(self.menu,activeTab)
 
-    def getHeader(self, activeTab = "Main"):
-        headContent = ''
-        for child in self._headET.getchildren():
-            fileStr = StringIO()
-            ET.ElementTree(child).write(fileStr)
-            headContent += fileStr.getvalue()
-        s = self.headerTemplate % {'titlestring' : LandingPageHTML.title,
-                                   'menustring' : self.getMenu(activeTab),
-                                   'headContent' : headContent,}
-        return s
+    def getMenuTags(self, activeTab):
+        return LandingPageHTML.getTabTags(self.menu, activeTab)
 
-    def getHead(self):
-        return self._headET
+    def getHeader(self, activeTab = "Main", headTag=None, bodyTag=None):
+        if headTag is None:
+            headTag = ET.Element('head')
+        if bodyTag is None:
+            bodyTag = ET.Element('body')
+
+        # make sure each component has elements to make formatting consistent
+        headTag.append(ET.Comment(''))
+        bodyTag.append(ET.Comment(''))
+
+        fileStr = StringIO()
+        ET.ElementTree(headTag).write(fileStr)
+        headTagStr = fileStr.getvalue()
+        # remove the tag closer
+        # </head>
+        headTagStr = headTagStr[:headTagStr.rindex('<')]
+
+        # fill in the prefab body tag content
+        titleStr = LandingPageHTML.title
+        landing = ET.Element('body')
+        LandingPageHTML.addBodyHeaderAndContent(landing, titleStr, self.getMenuTags(activeTab))
+
+        fileStr = StringIO()
+        ET.ElementTree(landing).write(fileStr)
+        landingStr = fileStr.getvalue()
+        # remove <body>
+        landingStr = landingStr[landingStr.index('>')+1:]
+        # remove tag closers
+        for i in xrange(3):
+            # </body>
+            # contents </div>
+            # </center>
+            landingStr = landingStr[:landingStr.rindex('<')]
+        
+        fileStr = StringIO()
+        ET.ElementTree(bodyTag).write(fileStr)
+        bodyTagStr = fileStr.getvalue()
+        # extract <body>
+        bodyStr = bodyTagStr[bodyTagStr.index('>')+1:]
+        bodyTagStr = bodyTagStr[:bodyTagStr.index('>')+1]
+
+        bodyStr = bodyTagStr + '\n' + landingStr + '\n' + bodyStr
+
+        s = self.headerTemplate % {'titlestring': titleStr,
+                                   'headTag' : headTagStr,
+                                   'bodyTag': bodyStr,
+                                   }
+        return s
 
     def getFooter(self):
         return self.footerTemplate % {'contact' : LandingPageHTML.contactInfo}
@@ -130,9 +165,9 @@ class LandingPage:
     def getFavIcon(self):
         return self.favicon
     
-    def skin(self, body, uri):
+    def skin(self, body, uri, headTag=None, bodyTag=None):
         title = self.uriToTitle.get(uri,"Services")
-        return self.getHeader(title) + body + self.getFooter()
+        return self.getHeader(title, headTag, bodyTag) + body + self.getFooter()
 
     def addQuickStat(self,item,value,position):
         if item in self.quickStats[1]:

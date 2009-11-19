@@ -69,31 +69,23 @@ class SkinningReplyTo:
         self._dispatcher = dispatcher
         self._uri = uri
         self._doSkin = doSkin
-        self._headTags = self._dispatcher._headTags[:]
-        self._dispatcher._clearHeadTags()
+        self._headTag = ET.Element('head')
+        self._bodyTag = ET.Element('body')
 
     def respondHTTP(self,status,body):
         if self._doSkin:
-            self._addHeadTags()
-            body = self._dispatcher.landingPage.skin(body, self._uri)
-            self._removeHeadTags()
+            body = self._dispatcher.landingPage.skin(
+                body, self._uri, headTag=self._headTag, bodyTag=self._bodyTag)
         self._replyTo.respondHTTP(status, body)
 
     def respond(self, response):
         self.respondHTTP("200 OK", response)
 
-    def addTagToHead(self, tag):
-        self._headTags.append(tag)
-
-    def _addHeadTags(self):
-        head = self._dispatcher.landingPage.getHead()
-        for tag in self._headTags:
-            head.append(tag)
-
-    def _removeHeadTags(self):
-        head = self._dispatcher.landingPage.getHead()
-        for tag in self._headTags:
-            head.remove(tag)
+    # provides access to head and body tags of landing page
+    def getHeadTag(self):
+        return self._headTag
+    def getBodyTag(self):
+        return self._bodyTag
 
     def __getattr__(self, attrName):
         if attrName in self.__dict__:
@@ -142,7 +134,6 @@ class WebRequestDispatcher(object):
 
     def __init__(self, wantLandingPage = True):
         self.enableLandingPage(wantLandingPage)
-        self._headTags = []
 
     def listenOnPort(self,listenPort):
         """
@@ -160,6 +151,13 @@ class WebRequestDispatcher(object):
         resp = "<html><body>Error 404</body></html>\r\n"
         replyTo.respondHTTP("404 Not Found",resp)
         self.notify.warning("%s - %s - 404" % (replyTo.getSourceAddress(),replyTo.getURI()))
+
+    # access to head and body tags of landing page
+    # only for 'returnsResponse' mode
+    def getHeadTag(self):
+        return self._headTag
+    def getBodyTag(self):
+        return self._bodyTag
 
     def handleGET(self,req):
         """
@@ -181,26 +179,16 @@ class WebRequestDispatcher(object):
         if returnsResponse:
             result = apply(callable,(),args)
             if autoSkin:
-                req.respond(self.landingPage.skin(result,uri))
+                self._headTag = ET.Element('head')
+                self._bodyTag = ET.Element('body')
+                req.respond(self.landingPage.skin(result,uri, headTag=self._headTag, bodyTag=self._bodyTag))
+                del self._bodyTag
+                del self._headTag
             else:
                 req.respond(result)
-            self._clearHeadTags()
         else:
             args["replyTo"] = SkinningReplyTo(req, self, uri, autoSkin)
             apply(callable,(),args)
-
-    def addTagToHead(self, tag):
-        # adds a sub-tag within the head tag for the next outgoing response in returnsResponse mode
-        # for non-returnsResponse mode, use API on SkinningReplyTo
-        head = self.landingPage.getHead()
-        head.append(tag)
-        self._headTags.append(tag)
-
-    def _clearHeadTags(self):
-        head = self.landingPage.getHead()
-        for tag in self._headTags:
-            head.remove(tag)
-        self._headTags = []
 
     def poll(self):
         """
