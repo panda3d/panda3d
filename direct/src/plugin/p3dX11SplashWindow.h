@@ -118,7 +118,7 @@ private:
   bool _needs_new_composite;
 
   bool _subprocess_continue;
-  
+
   bool _own_display;
   string _install_label;
   double _install_progress;
@@ -129,7 +129,9 @@ private:
   int _screen;
   GC _graphics_context;
   GC _bar_context;
-  unsigned long _blue_pixel;
+  unsigned long _fg_pixel;
+  unsigned long _bg_pixel;
+  unsigned long _bar_pixel;
   
   Window _window;
 };

@@ -55,6 +55,15 @@ P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _wparams(inst->get_wparams())
 {
   _visible = make_visible;
+  _fgcolor_r = 0x00;
+  _fgcolor_g = 0x00;
+  _fgcolor_b = 0x00;
+  _bgcolor_r = 0xff;
+  _bgcolor_g = 0xff;
+  _bgcolor_b = 0xff;
+  _barcolor_r = 0x6c;
+  _barcolor_g = 0xa5;
+  _barcolor_b = 0xe0;
   _button_width = 0;
   _button_height = 0;
   _button_x = 0;
@@ -116,6 +125,55 @@ set_visible(bool visible) {
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_fgcolor
+//       Access: Public, Virtual
+//  Description: Specifies the color that is used to display the text
+//               above the loading bar.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_fgcolor(int r, int g, int b) {
+  nout << "fgcolor " << r << ", " << g << ", " << b << "\n";
+  _fgcolor_r = r;
+  _fgcolor_g = g;
+  _fgcolor_b = b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bgcolor
+//       Access: Public, Virtual
+//  Description: Specifies the solid color that is displayed behind
+//               the splash image, if any, or before the splash image
+//               is loaded.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bgcolor(int r, int g, int b) {
+  nout << "bgcolor " << r << ", " << g << ", " << b << "\n";
+  _bgcolor_r = r;
+  _bgcolor_g = g;
+  _bgcolor_b = b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_barcolor
+//       Access: Public, Virtual
+//  Description: Specifies the color that is used to fill the
+//               loading bar.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_barcolor(int r, int g, int b) {
+  nout << "barcolor " << r << ", " << g << ", " << b << "\n";
+  _barcolor_r = r;
+  _barcolor_g = g;
+  _barcolor_b = b;
 }
 
 ////////////////////////////////////////////////////////////////////

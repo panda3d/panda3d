@@ -2189,8 +2189,37 @@ make_splash_window() {
   }
 
   _splash_window = new SplashWindowType(this, make_visible);
+
+  // Get the splash window colors.  We must set these *before* we call
+  // set_wparams.
+  if (_fparams.has_token("fgcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, _fparams.lookup_token("fgcolor"))) {
+      _splash_window->set_fgcolor(r, g, b);
+    } else {
+      nout << "parse failure on fgcolor " << _fparams.lookup_token("fgcolor") << "\n";
+    }
+  }
+  if (_fparams.has_token("bgcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, _fparams.lookup_token("bgcolor"))) {
+      _splash_window->set_bgcolor(r, g, b);
+    } else {
+      nout << "parse failure on bgcolor " << _fparams.lookup_token("bgcolor") << "\n";
+    }
+  }
+  if (_fparams.has_token("barcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, _fparams.lookup_token("barcolor"))) {
+      _splash_window->set_barcolor(r, g, b);
+    } else {
+      nout << "parse failure on barcolor " << _fparams.lookup_token("barcolor") << "\n";
+    }
+  }
+
   _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
+  
     
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
@@ -2714,25 +2743,6 @@ set_install_label(const string &install_label) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::send_notify
-//       Access: Private
-//  Description: Generates a synthetic notify message here at the C++
-//               level.
-//
-//               Most notify messages are generated from within the
-//               Python code, and don't use this method; but a few
-//               have to be sent before Python has started, and those
-//               come through this method.
-////////////////////////////////////////////////////////////////////
-void P3DInstance::
-send_notify(const string &message) {
-  P3D_request *request = new P3D_request;
-  request->_request_type = P3D_RT_notify;
-  request->_request._notify._message = strdup(message.c_str());
-  add_baked_request(request);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::paint_window
 //       Access: Private
 //  Description: Actually paints the rendered image to the browser
@@ -2916,6 +2926,87 @@ add_modifier_flags(unsigned int &swb_flags, int modifiers) {
     swb_flags |= SubprocessWindowBuffer::EF_control_held;
   }
 #endif  // __APPLE__
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::send_notify
+//       Access: Private
+//  Description: Generates a synthetic notify message here at the C++
+//               level.
+//
+//               Most notify messages are generated from within the
+//               Python code, and don't use this method; but a few
+//               have to be sent before Python has started, and those
+//               come through this method.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+send_notify(const string &message) {
+  P3D_request *request = new P3D_request;
+  request->_request_type = P3D_RT_notify;
+  request->_request._notify._message = strdup(message.c_str());
+  add_baked_request(request);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::parse_color
+//       Access: Private, Static
+//  Description: Parses a HTML color spec of the form #rgb or #rrggbb.
+//               Returns true on success, false on failure.  On
+//               success, fills r, g, b with the color values in the
+//               range 0..255.  On failure, r, g, b are undefined.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+parse_color(int &r, int &g, int &b, const string &color) {
+  if (color.empty() || color[0] != '#') {
+    return false;
+  }
+  if (color.length() == 4) {
+    if (!parse_hexdigit(r, color[1]) || 
+        !parse_hexdigit(g, color[2]) || 
+        !parse_hexdigit(b, color[3])) {
+      return false;
+    }
+    r *= 0x11;
+    g *= 0x11;
+    b *= 0x11;
+    return true;
+  }
+  if (color.length() == 7) {
+    int rh, rl, gh, gl, bh, bl;
+    if (!parse_hexdigit(rh, color[1]) ||
+        !parse_hexdigit(rl, color[2]) ||
+        !parse_hexdigit(gh, color[3]) ||
+        !parse_hexdigit(gl, color[4]) ||
+        !parse_hexdigit(bh, color[5]) ||
+        !parse_hexdigit(bl, color[6])) {
+      return false;
+    }
+    r = (rh << 4) | rl;
+    g = (gh << 4) | gl;
+    b = (bh << 4) | bl;
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::parse_hexdigit
+//       Access: Private, Static
+//  Description: Parses a single hex digit.  Returns true on success,
+//               false on failure.  On success, fills result with the
+//               parsed value, an integer in the range 0..15.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+parse_hexdigit(int &result, char digit) {
+  if (isdigit(digit)) {
+    result = digit - '0';
+    return true;
+  } else if (isxdigit(digit)) {
+    result = tolower(digit) - 'a' + 10;
+    return true;
+  }
+  return false;
 }
 
 #ifdef __APPLE__
