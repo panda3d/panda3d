@@ -1040,10 +1040,12 @@ def ChooseLib(*libs):
     if (len(libs) > 0):
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, tool = "pkg-config"):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
+    if (target_pkg == "" or target_pkg == None):
+        target_pkg = pkg
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
@@ -1068,19 +1070,19 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     
     if (pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h")):
         # Let it be handled by the ffmpeg package
-        LibName(pkg, "-lswscale")
+        LibName(target_pkg, "-lswscale")
         return
     
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
-        IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
-        LibDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+        IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
+        LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
         # TODO: check for a .pc file in the lib/pkg-config/ dir
         if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool)):
             tool = GetThirdpartyDir() + pkg.lower() + "/bin/" + tool
-            for i in PkgConfigGetLibs(pkg.lower(), tool):
-                LibName(pkg, i)
-            for i, j in PkgConfigGetDefSymbols(pkg.lower(), tool).items():
-                DefSymbol(pkg, i, j)
+            for i in PkgConfigGetLibs(None, tool):
+                LibName(target_pkg, i)
+            for i, j in PkgConfigGetDefSymbols(None, tool).items():
+                DefSymbol(target_pkg, i, j)
             return
         for l in libs:
             libname = l
@@ -1090,18 +1092,18 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/libpanda%s.*" % libname)) > 0 and
                 len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
                 libname = "panda" + libname
-            LibName(pkg, "-l" + libname)
+            LibName(target_pkg, "-l" + libname)
         for d, v in defs.values():
-            DefSymbol(pkg, d, v)
+            DefSymbol(target_pkg, d, v)
         return
     elif (sys.platform == "darwin" and framework != None):
         if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/Developer/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/Users/%s/System/Library/Frameworks/%s.framework" % (getpass.getuser(), framework))):
-            LibName(pkg, "-framework " + framework)
+            LibName(target_pkg, "-framework " + framework)
             for d, v in defs.values():
-                DefSymbol(pkg, d, v)
+                DefSymbol(target_pkg, d, v)
         elif (pkg in PkgListGet()):
             print "%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework)
             PkgDisable(pkg)
@@ -1112,12 +1114,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
-                return PkgConfigEnable(pkg, pkgconfig, tool)
+                return PkgConfigEnable(target_pkg, pkgconfig, tool)
         else:
             have_all_pkgs = True
             for pc in pkgconfig:
                 if (PkgConfigHavePkg(pc, tool)):
-                    PkgConfigEnable(pkg, pc, tool)
+                    PkgConfigEnable(target_pkg, pc, tool)
                 else:
                     have_all_pkgs = False
             if (have_all_pkgs):
@@ -1138,7 +1140,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (l.startswith("lib")):
                 libname = l[3:]
             if (libname in GetLibCache()):
-                LibName(pkg, "-l" + libname)
+                LibName(target_pkg, "-l" + libname)
             else:
                 if (VERBOSE):
                     print GetColor("cyan") + "Couldn't find library lib" + libname + GetColor()
@@ -1164,7 +1166,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
             if (incdir != None and os.path.isdir(incdir)):
-                IncDirectory(pkg, incdir)
+                IncDirectory(target_pkg, incdir)
         
         if (not have_pkg):
             if (pkg in PkgListGet()):
