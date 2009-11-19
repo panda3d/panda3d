@@ -5,7 +5,7 @@
   #define LOCAL_LIBS converter pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    pipeline:c pstatclient:c net:c nativenet:c \
+    pipeline:c pstatclient:c downloader:c net:c nativenet:c \
     mathutil:c linmath:c putil:c event:c express:c \
     panda:m \
     pandabase:c pandaexpress:m \

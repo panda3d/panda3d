@@ -7,7 +7,7 @@
   #define OTHER_LIBS \
     pstatclient:c linmath:c putil:c pipeline:c event:c \
     pnmimage:c mathutil:c \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+    downloader:c $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     panda:m \
     pandabase:c express:c pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub

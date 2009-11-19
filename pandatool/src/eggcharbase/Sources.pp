@@ -5,7 +5,7 @@
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     event:c linmath:c mathutil:c pnmimage:c putil:c \
-    pipeline:c pstatclient:c net:c nativenet:c \
+    pipeline:c pstatclient:c downloader:c net:c nativenet:c \
     panda:m \
     pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtooolconfig:m \

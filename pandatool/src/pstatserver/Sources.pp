@@ -4,7 +4,7 @@
   #define TARGET pstatserver
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
-    pstatclient:c net:c putil:c pipeline:c \
+    pstatclient:c downloader:c net:c putil:c pipeline:c \
     panda:m \
     pandabase:c express:c pandaexpress:m \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \

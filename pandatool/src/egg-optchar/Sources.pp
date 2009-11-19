@@ -2,7 +2,7 @@
   eggcharbase converter eggbase progbase
 #define OTHER_LIBS \
   egg:c pandaegg:m \
-  event:c pipeline:c pstatclient:c net:c nativenet:c \
+  event:c pipeline:c pstatclient:c downloader:c net:c nativenet:c \
   pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
   panda:m \
   pandabase:c express:c pandaexpress:m \
