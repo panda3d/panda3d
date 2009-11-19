@@ -829,10 +829,8 @@ pack_object(PyObject *object) {
       // expecting a class parameter.  This is none of the above, an
       // error.
       ostringstream strm;
-      PyObject *str = PyObject_Str(object);
       strm << "Don't know how to pack object: "
-           << PyString_AsString(str) << "\n";
-      Py_DECREF(str);
+           << DCField::get_pystr(object);
       nassert_raise(strm.str());
       _pack_error = true;
     }

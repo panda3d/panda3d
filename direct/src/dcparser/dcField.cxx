@@ -261,9 +261,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
   packer.pack_object(sequence);
   if (!packer.had_error()) {
     /*
-    PyObject *str = PyObject_Str(sequence);
-    cerr << "pack " << get_name() << PyString_AsString(str) << "\n";
-    Py_DECREF(str);
+    cerr << "pack " << get_name() << get_pystr(sequence) << "\n";
     */
 
     return true;
@@ -276,47 +274,36 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
     if (as_parameter() != (DCParameter *)NULL) {
       // If it's a parameter-type field, the value may or may not be a
       // sequence.
-      PyObject *str = PyObject_Str(sequence);
-      nassertr(str != (PyObject *)NULL, false);
-      
       if (packer.had_pack_error()) {
         strm << "Incorrect arguments to field: " << get_name()
-             << " = " << PyString_AsString(str);
+             << " = " << get_pystr(sequence);
         exc_type = PyExc_TypeError;
       } else {
         strm << "Value out of range on field: " << get_name()
-             << " = " << PyString_AsString(str);
+             << " = " << get_pystr(sequence);
         exc_type = PyExc_ValueError;
       }
-      Py_DECREF(str);
 
     } else {
       // If it's a molecular or atomic field, the value should be a
       // sequence.
       PyObject *tuple = PySequence_Tuple(sequence);
       if (tuple == (PyObject *)NULL) {
-        PyObject *str = PyObject_Str(sequence);
-        nassertr(str != (PyObject *)NULL, false);
-
         strm << "Value for " << get_name() << " not a sequence: " \
-             << PyString_AsString(str);
+             << get_pystr(sequence);
         exc_type = PyExc_TypeError;
-        Py_DECREF(str);
 
       } else {
-        PyObject *str = PyObject_Str(tuple);
-        
         if (packer.had_pack_error()) {
           strm << "Incorrect arguments to field: " << get_name()
-               << PyString_AsString(str);
+               << get_pystr(sequence);
           exc_type = PyExc_TypeError;
         } else {
           strm << "Value out of range on field: " << get_name()
-               << PyString_AsString(str);
+               << get_pystr(sequence);
           exc_type = PyExc_ValueError;
         }
         
-        Py_DECREF(str);
         Py_DECREF(tuple);
       }
     }
@@ -350,9 +337,7 @@ unpack_args(DCPacker &packer) const {
   if (!packer.had_error()) {
     // Successfully unpacked.
     /*
-    PyObject *str = PyObject_Str(object);
-    cerr << "recv " << get_name() << PyString_AsString(str) << "\n";
-    Py_DECREF(str);
+    cerr << "recv " << get_name() << get_pystr(object) << "\n";
     */
 
     return object;
@@ -375,10 +360,8 @@ unpack_args(DCPacker &packer) const {
 
       exc_type = PyExc_RuntimeError;
     } else {
-      PyObject *str = PyObject_Str(object);
       strm << "Value outside specified range when unpacking field " 
-           << get_name() << ": " << PyString_AsString(str);
-      Py_DECREF(str);
+           << get_name() << ": " << get_pystr(object);
       exc_type = PyExc_ValueError;
     }
     
@@ -586,6 +569,46 @@ set_name(const string &name) {
     _dclass->_dc_file->mark_inherited_fields_stale();
   }
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::get_pystr
+//       Access: Public, Static
+//  Description: Returns the string representation of the indicated
+//               Python object.
+////////////////////////////////////////////////////////////////////
+string DCField::
+get_pystr(PyObject *value) {
+  if (value == NULL) {
+    return "(null)";
+  }
+
+  PyObject *str = PyObject_Str(value);
+  if (str != NULL) {
+    string result = PyString_AsString(str);
+    Py_DECREF(str);
+    return result;
+  }
+
+  PyObject *repr = PyObject_Repr(value);
+  if (repr != NULL) {
+    string result = PyString_AsString(repr);
+    Py_DECREF(repr);
+    return result;
+  }
+
+  if (value->ob_type != NULL) {
+    PyObject *typestr = PyObject_Str((PyObject *)(value->ob_type));
+    if (typestr != NULL) {
+      string result = PyString_AsString(typestr);
+      Py_DECREF(typestr);
+      return result;
+    }
+  }
+
+  return "(invalid object)";
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::refresh_default_value

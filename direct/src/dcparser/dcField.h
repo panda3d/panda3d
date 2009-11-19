@@ -103,6 +103,10 @@ public:
   INLINE void set_class(DCClass *dclass);
   INLINE void set_default_value(const string &default_value);
 
+#ifdef HAVE_PYTHON
+  static string get_pystr(PyObject *value);
+#endif
+
 protected:
   void refresh_default_value();
 
