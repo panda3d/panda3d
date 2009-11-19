@@ -108,6 +108,7 @@ set_visible(bool visible) {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
+  nout << "image_filename = " << image_filename << "\n";
   if (_subprocess_pid == -1) {
     return;
   }

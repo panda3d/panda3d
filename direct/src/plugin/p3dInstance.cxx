@@ -2211,6 +2211,7 @@ make_splash_window() {
       // download it directly.  This one won't be cached locally
       // (though the browser might be free to cache it).
       _image_files[i]._use_standard_image = false;
+      _image_files[i]._filename.clear();
       string image_url = _fparams.lookup_token(token_keyword);
       if (image_url.empty()) {
         // No splash image.  Never mind.
