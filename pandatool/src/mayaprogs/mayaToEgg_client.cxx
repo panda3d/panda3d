@@ -44,7 +44,8 @@ int main(int argc, char *argv[]) {
   // Open a connection to the server process
   PT(Connection) con = prog.qManager->open_TCP_client_connection(prog.server,0);
   if (con.is_null()) {
-    nout << "port opened fail";
+    nout << "Failed to open port to server process.\nMake sure maya2egg_server is running on localhost\n";
+    exit(1);
   }
 
   // Add this connection to the readers list
