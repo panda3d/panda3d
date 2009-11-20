@@ -16,8 +16,6 @@ from pandac.PandaModules import Filename, PandaSystem, getModelPath
 
 # Also see coreapi.pdef.
 
-packager.setHost('file:///home/drose/p3dstage', hostDir = 'droseDir')
-
 class panda3d(package):
     # The main Panda3D package.  Contains Python and most of the graphics
     # code in Panda3D.
