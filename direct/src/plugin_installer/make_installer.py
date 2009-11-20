@@ -132,6 +132,24 @@ Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 """
 
+##############################################################################
+#
+# This Description.plist file is used only for the OSX 10.4 version of packagemaker.
+#
+##############################################################################
+
+Description_plist = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IFPkgDescriptionDescription</key>
+	<string></string>
+	<key>IFPkgDescriptionTitle</key>
+	<string>%(long_name)s</string>
+</dict>
+</plist>
+"""
+
 
 ##############################################################################
 #
@@ -520,7 +538,8 @@ def makeInstaller():
 
         package_id = 'org.panda3d.pkg.runtime' #TODO: maybe more customizable?
 
-        plistFilename = None
+        infoFilename = None
+        descriptionFilename = None
         packagemaker = "/Developer/usr/bin/packagemaker"
         if os.path.exists(packagemaker):
             # PackageMaker 3.0 or better, e.g. OSX 10.5.
@@ -537,19 +556,27 @@ def makeInstaller():
         else:
             # PackageMaker 2.0, e.g. OSX 10.4.
             packagemaker = "/Developer/Tools/packagemaker"
-            plistFilename = '/tmp/Info_plist'
-            plist = open(plistFilename, 'w')
-            plist.write(Info_plist % {
+            infoFilename = '/tmp/Info_plist'
+            info = open(infoFilename, 'w')
+            info.write(Info_plist % {
                 'package_id' : package_id,
-                'version' : options.version
+                'version' : options.version,
                 })
-            plist.close()
+            info.close()
+            descriptionFilename = '/tmp/Description_plist'
+            description = open(descriptionFilename, 'w')
+            description.write(Description_plist % {
+                'long_name' : options.long_name,
+                'short_name' : options.short_name,
+                })
+            description.close()
             CMD = packagemaker
             CMD += ' -build'
             CMD += ' -f "%s"' % tmproot
             CMD += ' -r "%s"' % tmpresdir
             CMD += ' -p p3d-setup.pkg'
-            CMD += ' -i "%s"' % (plistFilename)
+            CMD += ' -i "%s"' % (infoFilename)
+            CMD += ' -d "%s"' % (descriptionFilename)
         
         print ""
         print CMD
@@ -559,8 +586,10 @@ def makeInstaller():
         subprocess.call(CMD, shell = True)
         shutil.rmtree(tmproot)
 
-        if plistFilename:
-            os.unlink(plistFilename)
+        if infoFilename:
+            os.unlink(infoFilename)
+        if descriptionFilename:
+            os.unlink(descriptionFilename)
         if os.path.exists(tmpresdir):
             shutil.rmtree(tmpresdir)
 
