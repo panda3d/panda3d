@@ -243,7 +243,7 @@ class SceneGraphUI(wx.Panel):
         itemId = self.tree.GetItemPyData(event.GetItem())
         if itemId:
             obj = self.editor.objectMgr.findObjectById(itemId);
-            self.editor.objectMgr.selectObject(obj[OG.OBJ_NP])
+            base.direct.select(obj[OG.OBJ_NP])
 
     def onBeginDrag(self, event):
         item = event.GetItem()
