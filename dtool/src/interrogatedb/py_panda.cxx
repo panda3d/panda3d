@@ -467,7 +467,7 @@ void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename)
     for(int y = 0; defs[y] != NULL; y++)
         defs[y]->_constants(module);
 
-    PyModule_AddIntConstant(module,"Dtool_PyNavtiveInterface",1);
+    PyModule_AddIntConstant(module,"Dtool_PyNativeInterface",1);
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 
@@ -594,7 +594,7 @@ int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
                 }
                 Py_DECREF(func);
                 PyErr_Clear(); // just in case the function threw an error
-                // only use if the cuntion  return an INT... hmm
+                // only use if the function  return an INT... hmm
                 if(res != NULL && PyInt_Check(res))
                 {
                     int answer = PyInt_AsLong(res);
@@ -645,7 +645,7 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         }
         Py_DECREF(func);
         PyErr_Clear(); // just in case the function threw an error
-        // only use if the cuntion  return an INT... hmm
+        // only use if the function  return an INT... hmm
         if(res != NULL && PyInt_Check(res))
         {
             int answer = PyInt_AsLong(res);
