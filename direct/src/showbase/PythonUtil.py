@@ -51,6 +51,8 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
+import ElementTree as ET
+from HTMLParser import HTMLParser
 
 from direct.directutil import Verify
 # Don't import libpandaexpressModules, which doesn't get built until
@@ -4049,6 +4051,64 @@ if __debug__:
     assert unescapeHtmlString('as+df') == 'as df'
     assert unescapeHtmlString('as%32df') == 'as2df'
     assert unescapeHtmlString('asdf%32') == 'asdf2'
+
+class HTMLStringToElements(HTMLParser):
+    def __init__(self, str, *a, **kw):
+        self._elements = []
+        self._elementStack = Stack()
+        HTMLParser.__init__(self, *a, **kw)
+        self.feed(str)
+        self.close()
+
+    def getElements(self):
+        return self._elements
+        
+    def _handleNewElement(self, element):
+        if len(self._elementStack):
+            self._elementStack.top().append(element)
+        else:
+            self._elements.append(element)
+        self._elementStack.push(element)
+
+    def handle_starttag(self, tag, attrs):
+        kwArgs = {}
+        for name, value in attrs:
+            kwArgs[name] = value
+        el = ET.Element(tag, **kwArgs)
+        self._handleNewElement(el)
+
+    def handle_data(self, data):
+        # this ignores text outside of a tag
+        if len(self._elementStack):
+            self._elementStack.top().text = data
+
+    def handle_endtag(self, tag):
+        self._elementStack.pop()
+
+    def handle_comment(self, data):
+        comment = ET.Comment(data)
+        self._handleNewElement(comment)
+
+def str2elements(str):
+    return HTMLStringToElements(str).getElements()
+
+if __debug__:
+    s = ScratchPad()
+    assert len(str2elements('')) == 0
+    s.br = str2elements('<br>')
+    assert len(s.br) == 1
+    assert s.br[0].tag == 'br'
+    s.b = str2elements('<b><br></b>')
+    assert len(s.b) == 1
+    assert len(s.b[0].getchildren()) == 1
+    s.a = str2elements('<a href=\'/\'>test</a>')
+    assert len(s.a) == 1
+    assert s.a[0].get('href') == '/'
+    assert s.a[0].text == 'test'
+    s.c = str2elements('<!--testComment-->')
+    assert len(s.c) == 1
+    assert s.c[0].text == 'testComment'
+    del s
 
 import __builtin__
 __builtin__.Functor = Functor
