@@ -528,6 +528,7 @@ def makeInstaller():
         if not os.path.exists(dst_panda3dapp): os.makedirs(os.path.dirname(dst_panda3dapp))
         shutil.copytree(pluginFiles[npapi], dst_npapi)
         shutil.copyfile(pluginFiles[panda3d], dst_panda3d)
+        os.chmod(dst_panda3d, 0755)
         shutil.copytree(pluginFiles[panda3dapp], dst_panda3dapp)
         
         tmpresdir = tempfile.mktemp('', 'p3d-resources')
