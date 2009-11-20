@@ -44,6 +44,8 @@ def makeBundle(startDir):
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir)
     bundleFilename = Filename(rootFilename, 'Panda3D.app')
+    shutil.rmtree(bundleFilename.toOsSpecific())
+                  
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
     exeFilename = Filename(bundleFilename, 'Contents/MacOS/panda3d_mac')
@@ -54,6 +56,7 @@ def makeBundle(startDir):
     # Copy in Info.plist, the icon file, and the compiled executable.
     shutil.copyfile(Filename(fstartDir, "panda3d_mac.plist").toOsSpecific(), plistFilename.toOsSpecific())
     shutil.copyfile(icons.toOsSpecific(), iconFilename.toOsSpecific())
+    print panda3d_mac, exeFilename
     shutil.copyfile(panda3d_mac.toOsSpecific(), exeFilename.toOsSpecific())
     os.chmod(exeFilename.toOsSpecific(), 0755)
 
