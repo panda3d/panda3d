@@ -344,6 +344,7 @@ def makeXpiFile():
     """ Creates a Firefox XPI file, based on the various platform
     version files. """
 
+    print "Generating xpi file"
     root = options.plugin_root
     if os.path.isdir(os.path.join(root, 'plugin')):
         root = os.path.join(root, 'plugin')
