@@ -2226,7 +2226,7 @@ make_splash_window() {
   // Go get the required images.
   for (int i = 0; i < (int)IT_none; ++i) {
     string token_keyword = string(_image_type_names[i]) + "_img";
-    if (!_fparams.has_token(token_keyword)) {
+    if (!_fparams.has_token(token_keyword) && i < (int)IT_auth_ready) {
       token_keyword = "splash_img";
     }
     if (!_fparams.has_token(token_keyword)) {
