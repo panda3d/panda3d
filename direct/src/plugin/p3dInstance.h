@@ -251,7 +251,8 @@ private:
   int _instance_id;
   string _session_key;
   string _log_basename;
-  bool _has_log_basename;
+  string _prc_name;
+  string _start_dir;
   bool _hidden;
   bool _matches_run_origin;
   bool _matches_script_origin;

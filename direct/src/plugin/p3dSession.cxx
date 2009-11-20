@@ -60,7 +60,6 @@ P3DSession(P3DInstance *inst) {
   _keep_user_env = false;
   _failed = false;
 
-  _start_dir = inst_mgr->get_root_dir() + "/start";
   _p3dpython_one_process = false;
   _p3dpython_started = false;
   _p3dpython_running = false;
@@ -703,6 +702,29 @@ start_p3dpython(P3DInstance *inst) {
     _keep_user_env = true;
   }
   if (!_keep_user_env) {
+    _start_dir = inst_mgr->get_root_dir() + "/start";
+
+    string start_dir = inst->get_fparams().lookup_token("start_dir");
+    if (start_dir.empty()) {
+      start_dir = inst->_start_dir;
+
+      if (!start_dir.empty()) {
+        // If the start_dir is taken from the p3d file (and not from the
+        // HTML tokens), then we also append the alt_host name to the
+        // start_dir, so that each alt_host variant will run in a
+        // different directory.
+        string alt_host = inst->get_fparams().lookup_token("alt_host");
+        if (!alt_host.empty()) {
+          start_dir += "_";
+          start_dir += alt_host;
+        }
+      }
+    }
+    if (!start_dir.empty()) {
+      _start_dir += "/";
+      _start_dir += start_dir;
+    }
+
     mkdir_complete(_start_dir, nout);
   }
 
@@ -745,6 +767,21 @@ start_p3dpython(P3DInstance *inst) {
   string prc_path = prc_root + sep + search_path;
 
   string prc_name = inst->get_fparams().lookup_token("prc_name");
+  if (prc_name.empty()) {
+    prc_name = inst->_prc_name;
+    
+    if (!prc_name.empty()) {
+      // If the prc_name is taken from the p3d file (and not from the
+      // HTML tokens), then we also append the alt_host name to the
+      // prc_name, so that each alt_host variant will run in a
+      // different directory.
+      string alt_host = inst->get_fparams().lookup_token("alt_host");
+      if (!alt_host.empty()) {
+        prc_name += "_";
+        prc_name += alt_host;
+      }
+    }
+  }
   if (!prc_name.empty()) {
     // Add the prc_name to the path too, even if this directory doesn't
     // actually exist.
@@ -945,17 +982,26 @@ start_p3dpython(P3DInstance *inst) {
     console_output = true;
   }
 
-  // Get the log filename from the p3d_info.xml file.
-  string log_basename = inst->_log_basename;
-  bool has_log_basename = inst->_has_log_basename;
+  // Get the log filename from the HTML tokens, or from the
+  // p3d_info.xml file.
+  string log_basename = inst->get_fparams().lookup_token("log_basename");
+  if (log_basename.empty()) {
+    log_basename = inst->_log_basename;
 
-  // But we also let it be overridden by the tokens.
-  if (inst->get_fparams().has_token("log_basename")) {
-    log_basename = inst->get_fparams().lookup_token("log_basename");
-    has_log_basename = true;
+    if (!log_basename.empty()) {
+      // If the log_basename is taken from the p3d file (and not from
+      // the HTML tokens), then we also append the alt_host name to
+      // the log_basename, so that each alt_host variant will run in a
+      // different directory.
+      string alt_host = inst->get_fparams().lookup_token("alt_host");
+      if (!alt_host.empty()) {
+        log_basename += "_";
+        log_basename += alt_host;
+      }
+    }
   }
 
-  if (!has_log_basename) {
+  if (log_basename.empty()) {
 #ifdef P3D_PLUGIN_LOG_BASENAME3
     // No log_basename specified for the app; use the compiled-in
     // default.

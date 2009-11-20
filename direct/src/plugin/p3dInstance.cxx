@@ -95,7 +95,6 @@ P3DInstance(P3D_request_ready_func *func,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
-  _has_log_basename = false;
   _hidden = (_fparams.lookup_token_int("hidden") != 0);
   _matches_run_origin = true;
   _matches_script_origin = false;
@@ -1695,13 +1694,6 @@ scan_app_desc_file(TiXmlDocument *doc) {
   assert(_xpackage == NULL);
   _xpackage = (TiXmlElement *)xpackage->Clone();
 
-  const char *log_basename = _xpackage->Attribute("log_basename");
-  _has_log_basename = false;
-  if (log_basename != NULL) {
-    _log_basename = log_basename;
-    _has_log_basename = false;
-  }
-
   TiXmlElement *xconfig = _xpackage->FirstChildElement("config");
   if (xconfig != NULL) {
     int hidden = 0;
@@ -1709,6 +1701,21 @@ scan_app_desc_file(TiXmlDocument *doc) {
       if (hidden != 0) {
         _hidden = true;
       }
+    }
+
+    const char *log_basename = xconfig->Attribute("log_basename");
+    if (log_basename != NULL) {
+      _log_basename = log_basename;
+    }
+
+    const char *prc_name = xconfig->Attribute("prc_name");
+    if (prc_name != NULL) {
+      _prc_name = prc_name;
+    }
+
+    const char *start_dir = xconfig->Attribute("start_dir");
+    if (start_dir != NULL) {
+      _start_dir = start_dir;
     }
 
     const char *run_origin = xconfig->Attribute("run_origin");
