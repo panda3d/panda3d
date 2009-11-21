@@ -191,6 +191,9 @@ MayaToEggServer::
 ////////////////////////////////////////////////////////////////////
 void MayaToEggServer::
 run() {
+  // Make sure we have good clean data to start with
+  _data = new EggData();
+
   // Set the verbose level by using Notify.
   if (_verbose >= 3) {
     maya_cat->set_severity(NS_spam);
@@ -209,9 +212,6 @@ run() {
   if (_got_output_filename) {
     _output_filename.make_absolute();
   }
-
-  // Make sure we have good clean data to start with
-  _data = new EggData();
 
   // So our relative path names come out correctly
   _path_replace->_path_directory = get_output_filename().get_dirname();
@@ -296,6 +296,9 @@ run() {
   _ignore_sliders.clear();
   _force_joints.clear();
   _data->clear();
+  _animation_convert = AC_none;
+  _character_name = "";
+  dummy->clear();
 
 }
 
