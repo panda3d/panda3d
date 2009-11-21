@@ -1158,8 +1158,8 @@ nt_thread_run() {
   // asynchronous notifications of request events.  These request
   // events were detected in the various read threads associated with
   // each session, but we can't call back into the plugin host space
-  // from the read thread, since if the host immediately response to a
-  // callback by calling back into the p3d_plugin space, now we have
+  // from the read thread, since if the host immediately responds to a
+  // callback by calling back into the p3d_plugin space, we will have
   // our read thread doing stuff in here that's not related to the
   // read thread.  Even worse, some of the things it might need to do
   // might require a separate read thread to be running!
