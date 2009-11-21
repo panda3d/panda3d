@@ -89,6 +89,8 @@ private:
   void cleanup_window();
   bool copy_file(const string &from_filename, const string &to_filename);
 
+  void set_failed();
+
   static void handle_request_loop();
   static void browser_sync_callback(void *);
 
@@ -114,6 +116,7 @@ private:
   CoreUrls _core_urls;
 
   FileSpec _core_api_dll;
+  bool _failed;
 
   bool _got_instance_url;
   string _instance_url;

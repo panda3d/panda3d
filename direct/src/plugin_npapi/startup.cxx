@@ -26,6 +26,7 @@ static ofstream logfile;
 ostream *nout_stream = &logfile;
 
 string global_root_dir;
+bool has_plugin_thread_async_call;
 
 NPNetscapeFuncs *browser;
 
@@ -186,11 +187,11 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   nout << "Plugin compiled with version "
        << expected_major << "." << expected_minor << "\n";
 
+  has_plugin_thread_async_call = false;
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
-  // We expect to find at least version NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL.
-  if (browser_major == 0 && browser_minor < NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
-    nout << "Cannot run: unsupported version of NPAPI detected.\n";
-    return NPERR_GENERIC_ERROR;
+  // Check if the browser offers this very useful call.
+  if (browser_major > 0 || browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
+    has_plugin_thread_async_call = true;
   }
 #endif
 

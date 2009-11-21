@@ -38,6 +38,7 @@ extern ostream *nout_stream;
 #define nout (*nout_stream)
 
 extern string global_root_dir;
+extern bool has_plugin_thread_async_call;
 
 #ifdef _WIN32
 

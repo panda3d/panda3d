@@ -20,6 +20,7 @@
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
+#include "nppanda3d_common.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -53,6 +54,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _npp_instance = instance;
   _npp_mode = mode;
   _script_object = NULL;
+  _failed = false;
 
   // Copy the tokens and save them within this object.
   _tokens.reserve(argc);
@@ -93,6 +95,7 @@ PPInstance::
   }
 
   assert(_streams.empty());
+  assert(_file_datas.empty());
 
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
@@ -119,7 +122,17 @@ PPInstance::
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 begin() {
-  if (!is_plugin_loaded()) {
+  // On Windows and Linux, we must insist on having this call.  OSX
+  // doesn't necessarily require it.
+#ifndef __APPLE__
+  if (!has_plugin_thread_async_call) {
+    nout << "Browser version insufficient: we require at least NPAPI version 0.19.\n";
+    set_failed();
+    return;
+  }
+#endif  // __APPLE__
+
+  if (!is_plugin_loaded() && !_failed) {
     // Go download the contents file, so we can download the core DLL.
     string url = PANDA_PACKAGE_HOST_URL;
     if (!url.empty() && url[url.length() - 1] != '/') {
@@ -149,6 +162,10 @@ begin() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 set_window(NPWindow *window) {
+  if (_failed) {
+    return;
+  }
+
   if (_got_window && 
       window->x == _window.x &&
       window->y == _window.y &&
@@ -200,6 +217,9 @@ set_window(NPWindow *window) {
 NPError PPInstance::
 new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
   assert(find(_streams.begin(), _streams.end(), stream) == _streams.end());
+  if (_failed) {
+    return NPERR_GENERIC_ERROR;
+  }
 
   if (stream->notifyData == NULL) {
     // This is an unsolicited stream.  Assume the first unsolicited
@@ -272,6 +292,14 @@ stop_outstanding_streams() {
   }
 
   assert(_streams.empty());
+
+  // Also stop any currently pending _file_datas; these are
+  // locally-implemented streams.
+  FileDatas::iterator fi;
+  for (fi = _file_datas.begin(); fi != _file_datas.end(); ++fi) {
+    delete (*fi);
+  }
+  _file_datas.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,7 +310,7 @@ stop_outstanding_streams() {
 ////////////////////////////////////////////////////////////////////
 int32_t PPInstance::
 write_ready(NPStream *stream) {
-  if (stream->notifyData != NULL) {
+  if (stream->notifyData != NULL && !_failed) {
     PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
     if (req->_rtype == PPDownloadRequest::RT_instance_data) {
       // There's a special case for the RT_instance_data stream.  This
@@ -321,6 +349,12 @@ int PPInstance::
 write_stream(NPStream *stream, int offset, int len, void *buffer) {
   if (stream->notifyData == NULL) {
     nout << "Unexpected write_stream on " << stream->url << "\n";
+    browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
+    return 0;
+  }
+
+  if (_failed) {
+    // We're done; stop this.
     browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
     return 0;
   }
@@ -411,6 +445,12 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
   }
   
   PPDownloadRequest *req = (PPDownloadRequest *)notifyData;
+  if (_failed) {
+    // We're done; ignore this.
+    delete req;
+    return;
+  }
+
   switch (req->_rtype) {
   case PPDownloadRequest::RT_user:
     if (!req->_notified_done) {
@@ -546,6 +586,9 @@ stream_as_file(NPStream *stream, const char *fname) {
 void PPInstance::
 handle_request(P3D_request *request) {
   assert(request->_instance == _p3d_inst);
+  if (_failed) {
+    return;
+  }
 
   bool handled = false;
 
@@ -609,12 +652,12 @@ handle_request(P3D_request *request) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 generic_browser_call() {
-  //#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
-  // If we can't ask Mozilla to call us back using
-  // NPN_PluginThreadAsyncCall(), then we'll do it explicitly now,
-  // since we know we're in the main thread here.
-  handle_request_loop();
-  //#endif
+  if (!has_plugin_thread_async_call) {
+    // If we can't ask Mozilla to call us back using
+    // NPN_PluginThreadAsyncCall(), then we'll do it explicitly now,
+    // since we know we're in the main thread here.
+    handle_request_loop();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -764,6 +807,33 @@ variant_to_p3dobj(const NPVariant *variant) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::output_np_variant
+//       Access: Public
+//  Description: Outputs the variant value.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+output_np_variant(ostream &out, const NPVariant &result) {
+  if (NPVARIANT_IS_NULL(result)) {
+    out << "null";
+  } else if (NPVARIANT_IS_VOID(result)) {
+    out << "void";
+  } else if (NPVARIANT_IS_BOOLEAN(result)) {
+    out << "bool " << NPVARIANT_TO_BOOLEAN(result);
+  } else if (NPVARIANT_IS_INT32(result)) {
+    out << "int " << NPVARIANT_TO_INT32(result);
+  } else if (NPVARIANT_IS_DOUBLE(result)) {
+    out << "double " << NPVARIANT_TO_DOUBLE(result);
+  } else if (NPVARIANT_IS_STRING(result)) {
+    NPString str = NPVARIANT_TO_STRING(result);
+    const UC_NPString &uc_str = *(UC_NPString *)(&str);
+    out << "string " << string(uc_str.UTF8Characters, uc_str.UTF8Length);
+  } else if (NPVARIANT_IS_OBJECT(result)) {
+    NPObject *child = NPVARIANT_TO_OBJECT(result);
+    out << "object " << child;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::find_host
 //       Access: Private
 //  Description: Scans the <contents> element for the matching <host>
@@ -891,36 +961,33 @@ request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
   assert(inst != NULL);
 
+  if (has_plugin_thread_async_call) {
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
-  // Since we are running at least Gecko 1.9, and we have this very
-  // useful function, let's use it to ask the browser to call us back
-  // in the main thread.
-  //  nout << "async: " << (void *)browser->pluginthreadasynccall << "\n";
-  if ((void *)browser->pluginthreadasynccall != (void *)NULL) {
-    browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
-  }
-#else  // HAS_PLUGIN_THREAD_ASYNC_CALL
+    // Since we are running at least Gecko 1.9, and we have this very
+    // useful function, let's use it to ask the browser to call us back
+    // in the main thread.
+    if ((void *)browser->pluginthreadasynccall != (void *)NULL) {
+      browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
+    }
+#endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
 
-  // If we're using an older version of Gecko, we have to do this some
-  // other, OS-dependent way.
+  } else {
+    // If we're using an older version of Gecko, we have to do this
+    // some other, OS-dependent way.
 
 #ifdef _WIN32
-  // Use a Windows message to forward this event to the main thread.
-
-  // Get the window handle for the window associated with this
-  // instance.
-  const NPWindow *win = inst->get_window();
-  if (win != NULL && win->type == NPWindowTypeWindow) {
-    PostMessage((HWND)(win->window), WM_USER, 0, 0);
-  }
-
-#else
-  // On Mac and Linux, we ignore this asynchronous event, and rely on
-  // detecting it within HandleEvent() and similar callbacks.
-
+    // Use a Windows message to forward this event to the main thread.
+    
+    // Get the window handle for the window associated with this
+    // instance.
+    const NPWindow *win = inst->get_window();
+    if (win != NULL && win->type == NPWindowTypeWindow) {
+      PostMessage((HWND)(win->window), WM_USER, 0, 0);
+    }
 #endif  // _WIN32
-
-#endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
+    // On Mac and Linux, we ignore this asynchronous event, and rely on
+    // detecting it within HandleEvent() and similar callbacks.
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1211,6 +1278,7 @@ do_load_plugin() {
   nout << "Attempting to load core API from " << pathname << "\n";
   if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
     nout << "Unable to launch core API in " << pathname << "\n";
+    set_failed();
     return;
   }
 
@@ -1436,29 +1504,62 @@ copy_file(const string &from_filename, const string &to_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::output_np_variant
-//       Access: Public
-//  Description: Outputs the variant value.
+//     Function: PPInstance::set_failed
+//       Access: Private
+//  Description: Called when something has gone wrong that prevents
+//               the plugin instance from running.  Specifically, this
+//               means it failed to load the core API.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-output_np_variant(ostream &out, const NPVariant &result) {
-  if (NPVARIANT_IS_NULL(result)) {
-    out << "null";
-  } else if (NPVARIANT_IS_VOID(result)) {
-    out << "void";
-  } else if (NPVARIANT_IS_BOOLEAN(result)) {
-    out << "bool " << NPVARIANT_TO_BOOLEAN(result);
-  } else if (NPVARIANT_IS_INT32(result)) {
-    out << "int " << NPVARIANT_TO_INT32(result);
-  } else if (NPVARIANT_IS_DOUBLE(result)) {
-    out << "double " << NPVARIANT_TO_DOUBLE(result);
-  } else if (NPVARIANT_IS_STRING(result)) {
-    NPString str = NPVARIANT_TO_STRING(result);
-    const UC_NPString &uc_str = *(UC_NPString *)(&str);
-    out << "string " << string(uc_str.UTF8Characters, uc_str.UTF8Length);
-  } else if (NPVARIANT_IS_OBJECT(result)) {
-    NPObject *child = NPVARIANT_TO_OBJECT(result);
-    out << "object " << child;
+set_failed() {
+  if (!_failed) {
+    _failed = true;
+
+    nout << "Plugin failed.\n";
+    stop_outstanding_streams();
+
+    string expression;
+    // Look for the "onpluginfail" token.
+    Tokens::iterator ti;
+    for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+      if ((*ti)._keyword != NULL && (*ti)._value != NULL) {
+        // Make the token lowercase, since HTML is case-insensitive but
+        // we're not.
+        string keyword;
+        for (const char *p = (*ti)._keyword; *p; ++p) {
+          keyword += tolower(*p);
+        }
+        if (keyword == "onpluginfail") {
+          expression = (*ti)._value;
+          break;
+        }
+      }
+    }
+
+    if (!expression.empty()) {
+      // Now attempt to evaluate the expression.
+      NPObject *window_object = NULL;
+      if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
+                            &window_object) == NPERR_NO_ERROR) {
+        NPString npexpr = { expression.c_str(), expression.length() };
+        NPVariant result;
+        if (browser->evaluate(_npp_instance, window_object, 
+                              &npexpr, &result)) {
+          nout << "Eval " << expression << "\n";
+          browser->releasevariantvalue(&result);
+        } else {
+          nout << "Unable to eval " << expression << "\n";
+        }
+        
+        browser->releaseobject(window_object);
+      }
+    }
+
+    if (_p3d_inst != NULL) {
+      P3D_instance_finish(_p3d_inst);
+      _p3d_inst = NULL;
+    }
+    cleanup_window();
   }
 }
 
@@ -1528,12 +1629,12 @@ browser_sync_callback(void *) {
 ////////////////////////////////////////////////////////////////////
 LONG PPInstance::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
-  // Since we're here in the main thread, call handle_request_loop()
-  // to see if there are any new requests to be serviced by the main
-  // thread.
-  handle_request_loop();
-#endif
+  if (!has_plugin_thread_async_call) {
+    // Since we're here in the main thread, call handle_request_loop()
+    // to see if there are any new requests to be serviced by the main
+    // thread.
+    handle_request_loop();
+  }
 
   switch (msg) {
   case WM_ERASEBKGND:
