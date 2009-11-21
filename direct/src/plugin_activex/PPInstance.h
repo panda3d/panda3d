@@ -80,6 +80,8 @@ protected:
     void HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
 
+    void set_failed();
+
     P3D_instance* m_p3dInstance;
     CP3DActiveXCtrl& m_parentCtrl;
     PPLogger m_logger;
@@ -92,6 +94,7 @@ protected:
     typedef std::vector<std::string> Mirrors;
     Mirrors _mirrors;
     FileSpec _core_api_dll;
+    bool _failed;
 
     std::string m_rootDir;
 };

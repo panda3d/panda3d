@@ -84,6 +84,7 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
   m_logger.Open( m_rootDir );
 
   m_pluginLoaded = false;
+  _failed = false;
 }
 
 PPInstance::~PPInstance(  )
@@ -447,6 +448,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
       nout << "Attempting to load core API from " << pathname << "\n";
       if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
+        set_failed();
         error = 1;
       } else {
 #ifdef PANDA_OFFICIAL_VERSION
@@ -680,6 +682,55 @@ void PPInstance::HandleRequest( P3D_request *request )
         }
     };
     P3D_request_finish( request, handled );
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::set_failed
+//       Access: Private
+//  Description: Called when something has gone wrong that prevents
+//               the plugin instance from running.  Specifically, this
+//               means it failed to load the core API.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+set_failed() {
+  if (!_failed) {
+    _failed = true;
+
+    nout << "Plugin failed.\n";
+
+    string expression;
+    // Look for the "onpluginfail" token.
+    
+    for (UINT i = 0; i < m_parentCtrl.m_parameters.size(); i++) {
+      std::pair<CString, CString> keyAndValue = m_parentCtrl.m_parameters[i];
+      // Make the token lowercase, since HTML is case-insensitive but
+      // we're not.
+      const CString &orig_keyword = m_parentCtrl.m_parameters[i].first;
+      string keyword;
+      for (const char *p = orig_keyword; *p; ++p) {
+        keyword += tolower(*p);
+      }
+      
+      if (keyword == "onpluginfail") {
+        expression = m_parentCtrl.m_parameters[i].second;
+        break;
+      }
+    }
+
+    if (!expression.empty()) {
+      // Now attempt to evaluate the expression.
+      COleVariant varResult;
+      CComPtr<IDispatch> pDispatch;
+
+      CString evalExpression( expression.c_str() );
+      HRESULT hr = m_parentCtrl.EvalExpression( pDispatch, evalExpression , varResult ); 
+      if (FAILED(hr)) {
+        nout << "Unable to eval " << expression << "\n";
+      } else {
+        nout << "Eval " << expression << "\n";
+      }
+    }
+  }
 }
 
 
