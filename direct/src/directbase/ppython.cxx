@@ -21,6 +21,27 @@ int main(int argc, char **argv) {
   int sts = 0;
 
   Py_SetProgramName(argv[0]);
+  
+  // On windows, we need to set pythonhome correctly. We'll try to
+  // find ppython.exe on the path and set pythonhome to its location.
+#ifdef _WIN32
+  char *path = getenv("PATH");
+  char *result = strtok(path, ";");
+  while (result != NULL) {
+    struct stat st;       
+    char *ppython = (char*) malloc(strlen(result) + 13);
+    strcpy(ppython, result);
+    strcat(ppython, "\\ppython.exe");
+    if (stat(ppython, &st) == 0) {
+        Py_SetPythonHome(result);
+        free(ppython);
+        break;
+    }                                
+    result = strtok(NULL, ";");
+    free(ppython);
+  }
+#endif
+  
   Py_Initialize();
 
   if (Py_VerboseFlag) {
@@ -38,4 +59,3 @@ int main(int argc, char **argv) {
   Py_Finalize();
   return sts;
 }
-
