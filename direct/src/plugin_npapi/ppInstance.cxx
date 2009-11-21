@@ -635,8 +635,10 @@ handle_event(void *event) {
 
 #ifdef __APPLE__
   P3D_event_data edata;
-  edata._event = (EventRecord *)event;
-  if (P3D_instance_handle_event(_p3d_inst, edata)) {
+  memset(&edata, 0, sizeof(edata));
+  edata._event_type = P3D_ET_osx_event_record;
+  edata._event._osx_event_record._event = (EventRecord *)event;
+  if (P3D_instance_handle_event(_p3d_inst, &edata)) {
     retval = true;
   }
 
