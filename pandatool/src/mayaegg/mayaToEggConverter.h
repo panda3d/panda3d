@@ -98,11 +98,12 @@ public:
 
   bool convert_maya();
 
+  void clear();
+
   bool open_api();
   void close_api();
 
 private:
-  void clear();
   bool convert_flip(double start_frame, double end_frame, 
                     double frame_inc, double output_frame_rate);
 
