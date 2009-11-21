@@ -15,6 +15,7 @@
 #include "p3dHost.h"
 #include "p3dInstanceManager.h"
 #include "p3dPackage.h"
+#include "mkdir_complete.h"
 #include "openssl/md5.h"
 
 #include <algorithm>
@@ -100,6 +101,25 @@ get_alt_host(const string &alt_host) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::read_contents_file
 //       Access: Public
+//  Description: Reads the contents.xml file in the standard
+//               filename, if possible.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DHost::
+read_contents_file() {
+  if (_host_dir.empty()) {
+    // If we haven't got a host_dir yet, we can't read the contents.
+    return false;
+  }
+
+  string standard_filename = _host_dir + "/contents.xml";
+  return read_contents_file(standard_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::read_contents_file
+//       Access: Public
 //  Description: Reads the contents.xml file in the indicated
 //               filename.  On success, copies the contents.xml file
 //               into the standard location (if it's not there
@@ -163,14 +183,61 @@ read_contents_file(const string &contents_filename) {
     determine_host_dir("");
   }
   assert(!_host_dir.empty());
+  mkdir_complete(_host_dir, nout);
 
   string standard_filename = _host_dir + "/contents.xml";
   if (standardize_filename(standard_filename) != 
       standardize_filename(contents_filename)) {
-    copy_file(contents_filename, standard_filename);
+    if (!copy_file(contents_filename, standard_filename)) {
+      nout << "Couldn't copy to " << standard_filename << "\n";
+    }
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::read_xhost
+//       Access: Public
+//  Description: Reads the host data from the <host> (or <alt_host>)
+//               entry in the contents.xml file, or from a
+//               p3d_info.xml file.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+read_xhost(TiXmlElement *xhost) {
+  const char *descriptive_name = xhost->Attribute("descriptive_name");
+  if (descriptive_name != NULL && _descriptive_name.empty()) {
+    _descriptive_name = descriptive_name;
+  }
+
+  const char *host_dir_basename = xhost->Attribute("host_dir");
+  if (host_dir_basename == NULL) {
+    host_dir_basename = "";
+  }
+  determine_host_dir(host_dir_basename);
+
+  // Get the "download" URL, which is the source from which we
+  // download everything other than the contents.xml file.
+  const char *download_url = xhost->Attribute("download_url");
+  if (download_url != NULL) {
+    _download_url_prefix = download_url;
+  }
+  if (!_download_url_prefix.empty()) {
+    if (_download_url_prefix[_download_url_prefix.size() - 1] != '/') {
+      _download_url_prefix += "/";
+    }
+  } else {
+    _download_url_prefix = _host_url_prefix;
+  }
+        
+  TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
+  while (xmirror != NULL) {
+    const char *url = xmirror->Attribute("url");
+    if (url != NULL) {
+      add_mirror(url);
+    }
+    xmirror = xmirror->NextSiblingElement("mirror");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,48 +519,6 @@ determine_host_dir(const string &host_dir_basename) {
     int low = md[i] & 0xf;
     _host_dir += P3DInstanceManager::encode_hexdigit(high);
     _host_dir += P3DInstanceManager::encode_hexdigit(low);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::read_xhost
-//       Access: Private
-//  Description: Reads the host data from the <host> (or <alt_host>)
-//               entry in the contents.xml file.
-////////////////////////////////////////////////////////////////////
-void P3DHost::
-read_xhost(TiXmlElement *xhost) {
-  const char *descriptive_name = xhost->Attribute("descriptive_name");
-  if (descriptive_name != NULL && _descriptive_name.empty()) {
-    _descriptive_name = descriptive_name;
-  }
-
-  const char *host_dir_basename = xhost->Attribute("host_dir");
-  if (host_dir_basename != NULL && _host_dir.empty()) {
-    determine_host_dir(host_dir_basename);
-  }
-
-  // Get the "download" URL, which is the source from which we
-  // download everything other than the contents.xml file.
-  const char *download_url = xhost->Attribute("download_url");
-  if (download_url != NULL) {
-    _download_url_prefix = download_url;
-  }
-  if (!_download_url_prefix.empty()) {
-    if (_download_url_prefix[_download_url_prefix.size() - 1] != '/') {
-      _download_url_prefix += "/";
-    }
-  } else {
-    _download_url_prefix = _host_url_prefix;
-  }
-        
-  TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
-  while (xmirror != NULL) {
-    const char *url = xmirror->Attribute("url");
-    if (url != NULL) {
-      add_mirror(url);
-    }
-    xmirror = xmirror->NextSiblingElement("mirror");
   }
 }
 

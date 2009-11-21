@@ -912,6 +912,12 @@ add_package(const string &name, const string &version, P3DHost *host) {
     host = inst_mgr->get_host(alt_host_url);
     alt_host.clear();
   }
+
+  if (!host->has_contents_file()) {
+    // Since we haven't downloaded this host's contents.xml file yet,
+    // get its additional host information.
+    get_host_info(host);
+  }
   
   P3DPackage *package = host->get_package(name, version, alt_host);
   add_package(package);
@@ -1820,6 +1826,35 @@ find_alt_host_url(const string &host_url, const string &alt_host) {
   }
 
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_host_info
+//       Access: Private
+//  Description: Looks in the p3d_info.xml file for the auxiliary host
+//               information for the selected host.  Some of this
+//               information is helpful to have before the host has
+//               read its own contents.xml file (particularly the
+//               host_dir specification).
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+get_host_info(P3DHost *host) {
+  // We should only call this function if we haven't already read the
+  // host's more-authoritative contents.xml file.
+  assert(!host->has_contents_file());
+
+  TiXmlElement *xhost = _xpackage->FirstChildElement("host");
+  while (xhost != NULL) {
+    const char *url = xhost->Attribute("url");
+    if (url != NULL && host->get_host_url() == url) {
+      // Found the entry for this particular host.
+      host->read_xhost(xhost);
+      return;
+    }
+    xhost = xhost->NextSiblingElement("host");
+  }
+
+  // Didn't find an entry for this host; oh well.
 }
 
 ////////////////////////////////////////////////////////////////////

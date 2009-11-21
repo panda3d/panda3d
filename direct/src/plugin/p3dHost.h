@@ -46,7 +46,9 @@ public:
   inline int get_contents_seq() const;
   inline bool check_contents_hash(const string &pathname) const;
 
+  bool read_contents_file();
   bool read_contents_file(const string &contents_filename);
+  void read_xhost(TiXmlElement *xhost);
 
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
@@ -64,7 +66,6 @@ public:
 
 private:
   void determine_host_dir(const string &host_dir_basename);
-  void read_xhost(TiXmlElement *xhost);
 
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);

@@ -164,17 +164,31 @@ class HostInfo:
             return False
 
 
-    def readContentsFile(self, tempFilename):
+    def readContentsFile(self, tempFilename = None):
         """ Reads the contents.xml file for this particular host, once
         it has been downloaded into the indicated temporary file.
         Returns true on success, false if the contents file is not
-        already on disk or is unreadable.  On success, copies the file
-        into the standard location if it's not there already. """
+        already on disk or is unreadable.
 
-        assert not self.hasContentsFile
+        If tempFilename is specified, it is the filename read, and it
+        is copied the file into the standard location if it's not
+        there already.  If tempFilename is not specified, the standard
+        filename is read if it is known. """
+
+        if self.hasContentsFile:
+            # No need to read it again.
+            return True
 
         if not hasattr(PandaModules, 'TiXmlDocument'):
             return False
+
+        if not tempFilename:
+            if not self.hostDir:
+                # If the filename is not specified, we can infer it
+                # only if we already know our hostDir.
+                return False
+            
+            tempFilename = Filename(self.hostDir, 'contents.xml')
         
         doc = PandaModules.TiXmlDocument(tempFilename.toOsSpecific())
         if not doc.LoadFile():
@@ -256,8 +270,7 @@ class HostInfo:
             self.descriptiveName = descriptiveName
 
         hostDirBasename = xhost.Attribute('host_dir')
-        if hostDirBasename and not self.hostDir:
-            self.__determineHostDir(hostDirBasename)
+        self.__determineHostDir(hostDirBasename)
 
         # Get the "download" URL, which is the source from which we
         # download everything other than the contents.xml file.

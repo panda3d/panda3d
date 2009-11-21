@@ -169,6 +169,7 @@ private:
   void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
   string find_alt_host_url(const string &host_url, const string &alt_host);
+  void get_host_info(P3DHost *host);
 
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);

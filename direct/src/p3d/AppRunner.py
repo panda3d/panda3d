@@ -521,17 +521,20 @@ class AppRunner(DirectObject):
         # The "super mirror" URL, generally used only by panda3d.exe.
         self.superMirrorUrl = superMirrorUrl
 
-    def addPackageInfo(self, name, platform, version, hostUrl):
+    def addPackageInfo(self, name, platform, version, hostUrl, hostDir = None):
         """ Called by the browser for each one of the "required"
         packages that were preloaded before starting the application.
         If for some reason the package isn't already downloaded, this
         will download it on the spot.  Raises OSError on failure. """
 
         host = self.getHost(hostUrl)
+        if hostDir and not host.hostDir:
+            host.hostDir = hostDir
 
-        if not host.downloadContentsFile(self.http):
-            message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
-            raise OSError, message
+        if not host.readContentsFile():
+            if not host.downloadContentsFile(self.http):
+                message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
+                raise OSError, message
 
         if not platform:
             platform = None
@@ -894,6 +897,8 @@ def dummyAppRunner(tokens = [], argv = None):
     
     if platform.startswith('win'):
         rootDir = Filename(Filename.getUserAppdataDirectory(), 'Panda3D')
+    elif platform.startswith('osx'):
+        rootDir = Filename(Filename.getHomeDirectory(), 'Library/Caches/Panda3D')
     else:
         rootDir = Filename(Filename.getHomeDirectory(), '.panda3d')
 

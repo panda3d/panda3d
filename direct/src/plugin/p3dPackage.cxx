@@ -225,6 +225,7 @@ make_xml() {
     xpackage->SetAttribute("version", _package_version);
   }
   xpackage->SetAttribute("host", _host->get_host_url());
+  xpackage->SetAttribute("host_dir", _host->get_host_dir());
 
   return xpackage;
 }
@@ -268,14 +269,12 @@ begin_info_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_contents_file() {
-  /*
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (!_host->has_contents_file() && !inst_mgr->get_verify_contents()) {
     // If we're allowed to read a contents file without checking the
     // server first, try it now.
     _host->read_contents_file();
   }
-  */
 
   if (_host->has_contents_file()) {
     // We've already got a contents.xml file; go straight to the
@@ -310,7 +309,8 @@ contents_file_download_finished(bool success) {
 
       // Maybe we can read an already-downloaded contents.xml file.
       string standard_filename = _host->get_host_dir() + "/contents.xml";
-      if (!_host->read_contents_file(standard_filename)) {
+      if (_host->get_host_dir().empty() || 
+          !_host->read_contents_file(standard_filename)) {
         // Couldn't even read that.  Fail.
         report_done(false);
         delete _temp_contents_file;

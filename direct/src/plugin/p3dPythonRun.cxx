@@ -1224,6 +1224,7 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   const char *platform = xpackage->Attribute("platform");
   const char *version = xpackage->Attribute("version");
   const char *host = xpackage->Attribute("host");
+  const char *host_dir = xpackage->Attribute("host_dir");
   if (name == NULL || host == NULL) {
     return;
   }
@@ -1233,10 +1234,13 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   if (platform == NULL) {
     platform = "";
   }
+  if (host_dir == NULL) {
+    host_dir = "";
+  }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"addPackageInfo", (char *)"ssss",
-     name, platform, version, host);
+    (_runner, (char *)"addPackageInfo", (char *)"sssss",
+     name, platform, version, host, host_dir);
 
   if (result == NULL) {
     PyErr_Print();
