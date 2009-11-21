@@ -4083,6 +4083,17 @@ class HTMLStringToElements(HTMLParser):
             self._elementStack.top().text = data
 
     def handle_endtag(self, tag):
+        top = self._elementStack.top()
+        if len(top.getchildren()) == 0:
+            # insert a comment to prevent ElementTree from using <... /> convention
+            # force it to create a tag closer a la </tag>
+            # prevents problems in certain browsers
+            if top.tag == 'script' and top.get('type') == 'text/javascript':
+                if top.text == None:
+                    top.text = '// force tag closer'
+            else:
+                self.handle_comment('force tag closer')
+                self._elementStack.pop()
         self._elementStack.pop()
 
     def handle_comment(self, data):
