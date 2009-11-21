@@ -1084,7 +1084,7 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking dynamic library", target)
         
         # Add version number to the dynamic library, on unix
-        if (origsuffix==".dll" and not sys.platform.startswith("win")):
+        if (origsuffix==".dll" and not sys.platform.startswith("win") and not RTDIST):
             if (sys.platform == "darwin"):
                 if (target.lower().endswith(".dylib")):
                     target = target[:-5] + VERSION + ".dylib"
@@ -1659,6 +1659,13 @@ if (PkgSkip("PANDATOOL")==0):
 if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
     CopyTree(GetOutputDir()+'/Pmw',         'thirdparty/Pmw')
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
+
+# Copy prebuilt p3d files
+for g in glob.glob("direct/src/p3d/*.p3d"):
+    base = os.path.basename(g)
+    if (sys.platform.startswith("win")):
+        base = base.split(".", 1)[0]
+    CopyFile(GetOutputDir()+"/bin/"+base, g)
 
 ########################################################################
 #
