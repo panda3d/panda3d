@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 9
+#define P3D_API_VERSION 10
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -376,7 +376,7 @@ P3D_instance_setup_window_func(P3D_instance *instance,
                                P3D_window_type window_type,
                                int win_x, int win_y,
                                int win_width, int win_height,
-                               P3D_window_handle parent_window);
+                               const P3D_window_handle *parent_window);
 
 
 /********************** SCRIPTING SUPPORT **************************/
@@ -899,30 +899,38 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   const void *this_data, 
                                   size_t this_data_size);
 
-/* This structure abstracts out the event pointer data types for the
-   different platforms, as passed to P3D_instance_handle_event(),
-   below. */
+/* This enum and set of structures abstract out the event pointer data
+   types for the different platforms, as passed to
+   P3D_instance_handle_event(), below. */
+
+typedef enum {
+  P3D_ET_none = 0,
+  P3D_ET_osx_event_record,
+} P3D_event_type;
+
 typedef struct {
-#ifdef _WIN32
-  // Not used for Win32.
-
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
   EventRecord *_event;
-
-#elif defined(HAVE_X11)
-  //  XEvent *_event; ?
 #endif
+} P3D_event_osx_event_record;
+
+typedef struct {
+  P3D_event_type _event_type;
+  union {
+    P3D_event_osx_event_record _osx_event_record;
+  } _event;
 } P3D_event_data;
 
 /* Use this function to supply a new os-specific window event to the
    plugin.  This is presently used only on OSX, where the window
-   events are needed for proper plugin handling; and possibly also on
-   X11.  On Windows, window events are handled natively by the plugin.
+   events are needed for proper plugin handling.  On Windows and X11,
+   window events are handled natively by the plugin.
 
    The return value is true if the handler has processed the event,
    false if it has been ignored. */
 typedef bool
-P3D_instance_handle_event_func(P3D_instance *instance, P3D_event_data event);
+P3D_instance_handle_event_func(P3D_instance *instance, 
+                               const P3D_event_data *event);
 
 #ifdef P3D_FUNCTION_PROTOTYPES
 

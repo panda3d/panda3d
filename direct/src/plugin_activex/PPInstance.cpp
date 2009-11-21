@@ -530,7 +530,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
     m_p3dObject = P3D_instance_get_panda_script_object( m_p3dInstance );
     P3D_OBJECT_INCREF( m_p3dObject );
     
-    P3D_instance_setup_window( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, parent_window );
+    P3D_instance_setup_window( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, &parent_window );
 
     nout << "Starting new P3D instance " << p3dFilename << "\n";
 

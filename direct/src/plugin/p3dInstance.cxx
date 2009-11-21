@@ -796,7 +796,7 @@ feed_url_stream(int unique_id,
 //               true if the event is handled, false if ignored.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
-handle_event(P3D_event_data event) {
+handle_event(const P3D_event_data &event) {
   bool retval = false;
   if (_splash_window != NULL) {
     if (_splash_window->handle_event(event)) {
@@ -804,11 +804,9 @@ handle_event(P3D_event_data event) {
     }
   }
 
-#ifdef _WIN32
-  // This function is not used in Win32 and does nothing.
-
-#elif defined(__APPLE__)
-  EventRecord *er = event._event;
+#if defined(__APPLE__)
+  assert(event._event_type == P3D_ET_osx_event_record);
+  EventRecord *er = event._event._osx_event_record._event;
 
   // Need to ensure we have the correct port set, in order to
   // convert the mouse coordinates successfully via

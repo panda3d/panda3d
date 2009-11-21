@@ -1039,7 +1039,7 @@ create_instance(const string &p3d, bool start_instance,
     }
 
     P3D_instance_setup_window
-      (inst, _window_type, _win_x, _win_y, _win_width, _win_height, _parent_window);
+      (inst, _window_type, _win_x, _win_y, _win_width, _win_height, &_parent_window);
   }
 
   return inst;

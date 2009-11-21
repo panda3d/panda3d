@@ -1378,7 +1378,7 @@ send_window() {
   P3D_instance_setup_window
     (_p3d_inst, window_type,
      x, y, _window.width, _window.height,
-     parent_window);
+     &parent_window);
 }
 
 ////////////////////////////////////////////////////////////////////

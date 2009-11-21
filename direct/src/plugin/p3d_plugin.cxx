@@ -185,10 +185,10 @@ P3D_instance_setup_window(P3D_instance *instance,
                           P3D_window_type window_type,
                           int win_x, int win_y,
                           int win_width, int win_height,
-                          P3D_window_handle parent_window) {
+                          const P3D_window_handle *parent_window) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   P3DWindowParams wparams(window_type, win_x, win_y,
-                          win_width, win_height, parent_window);
+                          win_width, win_height, *parent_window);
 
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -559,7 +559,8 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
 }
 
 bool
-P3D_instance_handle_event(P3D_instance *instance, P3D_event_data event) {
+P3D_instance_handle_event(P3D_instance *instance, 
+                          const P3D_event_data *event) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
@@ -567,7 +568,7 @@ P3D_instance_handle_event(P3D_instance *instance, P3D_event_data event) {
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
   if (inst != NULL) {
-    result = inst->handle_event(event);
+    result = inst->handle_event(*event);
   }
 
   RELEASE_LOCK(_api_lock);

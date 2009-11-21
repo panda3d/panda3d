@@ -82,7 +82,7 @@ public:
                        const unsigned char *this_data, 
                        size_t this_data_size);
 
-  bool handle_event(P3D_event_data event);
+  bool handle_event(const P3D_event_data &event);
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;

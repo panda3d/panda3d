@@ -203,7 +203,7 @@ set_install_progress(double install_progress) {
 //               if ignored.
 ////////////////////////////////////////////////////////////////////
 bool P3DSplashWindow::
-handle_event(P3D_event_data event) {
+handle_event(const P3D_event_data &event) {
   return false;
 }
 
