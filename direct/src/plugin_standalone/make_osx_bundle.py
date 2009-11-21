@@ -44,7 +44,8 @@ def makeBundle(startDir):
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir)
     bundleFilename = Filename(rootFilename, 'Panda3D.app')
-    shutil.rmtree(bundleFilename.toOsSpecific())
+    if os.path.exists(bundleFilename.toOsSpecific()):
+        shutil.rmtree(bundleFilename.toOsSpecific())
                   
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
