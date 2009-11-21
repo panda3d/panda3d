@@ -6,7 +6,6 @@ panda3d_modules = {
     "physics" : "libpandaphysics",
     "fx"      : "libpandafx",
     "direct"  : "libp3direct",
-    "skel"    : "libpandaskel",
     "egg"     : "libpandaegg",
     "ode"     : "libpandaode",
     "vision"  : "libp3vision",
