@@ -721,8 +721,7 @@ start_p3dpython(P3DInstance *inst) {
       }
     }
     if (!start_dir.empty()) {
-      _start_dir += "/";
-      _start_dir += start_dir;
+      inst_mgr->append_safe_dir(_start_dir, start_dir);
     }
 
     mkdir_complete(_start_dir, nout);
@@ -785,7 +784,9 @@ start_p3dpython(P3DInstance *inst) {
   if (!prc_name.empty()) {
     // Add the prc_name to the path too, even if this directory doesn't
     // actually exist.
-    prc_path = inst_mgr->get_root_dir() + "/prc/" + prc_name + sep + prc_path;    
+    string this_prc_dir = inst_mgr->get_root_dir() + "/prc";
+    inst_mgr->append_safe_dir(this_prc_dir, prc_name);
+    prc_path = this_prc_dir + sep + prc_path;    
   }
 
   if (keep_pythonpath) {

@@ -133,6 +133,12 @@ public:
   static bool scan_directory_recursively(const string &dirname, vector<string> &contents,
                                          const string &prefix = "");
   static bool remove_file_from_list(vector<string> &contents, const string &filename);
+
+  static void append_safe_dir(string &root, const string &basename);
+
+private:
+  static void append_safe_dir_component(string &root, const string &component);
+
 private:
   // The notify thread.  This thread runs only for the purpose of
   // generating asynchronous notifications of requests, to callers who

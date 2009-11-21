@@ -960,6 +960,34 @@ cert_to_der(X509 *cert) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_global_ptr
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DInstanceManager *P3DInstanceManager::
+get_global_ptr() {
+  if (_global_ptr == NULL) {
+    _global_ptr = new P3DInstanceManager;
+  }
+  return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::delete_global_ptr
+//       Access: Public, Static
+//  Description: This is called only at plugin shutdown time; it
+//               deletes the global instance manager pointer and
+//               clears it to NULL.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+delete_global_ptr() {
+  if (_global_ptr != NULL) {
+    delete _global_ptr;
+    _global_ptr = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::scan_directory
 //       Access: Public, Static
 //  Description: Attempts to open the named filename as if it were a
@@ -1120,31 +1148,52 @@ remove_file_from_list(vector<string> &contents, const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_global_ptr
+//     Function: P3DInstanceManager::append_safe_dir
 //       Access: Public, Static
-//  Description: 
+//  Description: Appends the indicated basename to the root directory
+//               name, which is modified in-place.  The basename is
+//               allowed to contain nested slashes, but no directory
+//               component of the basename may begin with a ".", thus
+//               precluding ".." and hidden files.
 ////////////////////////////////////////////////////////////////////
-P3DInstanceManager *P3DInstanceManager::
-get_global_ptr() {
-  if (_global_ptr == NULL) {
-    _global_ptr = new P3DInstanceManager;
+void P3DInstanceManager::
+append_safe_dir(string &root, const string &basename) {
+  if (basename.empty()) {
+    return;
   }
-  return _global_ptr;
+
+  size_t p = 0;
+  while (p < basename.length()) {
+    size_t q = basename.find('/', p);
+    if (q == string::npos) {
+      if (q != p) {
+        append_safe_dir_component(root, basename.substr(p));
+      }
+      return;
+    }
+    if (q != p) {
+      append_safe_dir_component(root, basename.substr(p, q - p));
+    }
+    p = q + 1;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::delete_global_ptr
-//       Access: Public, Static
-//  Description: This is called only at plugin shutdown time; it
-//               deletes the global instance manager pointer and
-//               clears it to NULL.
+//     Function: P3DInstanceManager::append_safe_dir_component
+//       Access: Private, Static
+//  Description: Appends a single directory component, implementing
+//               append_safe_dir(), above.
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
-delete_global_ptr() {
-  if (_global_ptr != NULL) {
-    delete _global_ptr;
-    _global_ptr = NULL;
+append_safe_dir_component(string &root, const string &component) {
+  if (component.empty()) {
+    return;
   }
+  root += '/';
+  if (component[0] == '.') {
+    root += 'x';
+  }
+  root += component;
 }
 
 ////////////////////////////////////////////////////////////////////

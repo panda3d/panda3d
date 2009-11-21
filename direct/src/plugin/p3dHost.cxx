@@ -448,16 +448,16 @@ void P3DHost::
 determine_host_dir(const string &host_dir_basename) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _host_dir = inst_mgr->get_root_dir();
-  _host_dir += "/";
+  _host_dir += "/hosts";
 
   if (!host_dir_basename.empty()) {
     // If the contents.xml specified a host_dir parameter, use it.
-    _host_dir += host_dir_basename;
+    inst_mgr->append_safe_dir(_host_dir, host_dir_basename);
     return;
   }
 
   // If we didn't get a host_dir parameter, we have to make one up.
-
+  _host_dir += "/";
   string hostname;
 
   // Look for a server name in the URL.  Including this string in the

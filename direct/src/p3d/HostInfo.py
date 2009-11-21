@@ -372,10 +372,17 @@ class HostInfo:
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
-            self.hostDir = Filename(self.appRunner.rootDir, hostDirBasename)
+            self.hostDir = self.appRunner.rootDir + '/hosts'
+            for component in hostDirBasename.split('/'):
+                if component:
+                    if component[0] == '.':
+                        # Forbid ".foo" or "..".
+                        component = 'x' + component
+                    self.hostDir += '/'
+                    self.hostDir += component
             return
 
-        hostDir = ''
+        hostDir = 'hosts/'
 
         # Look for a server name in the URL.  Including this string in the
         # directory name makes it friendlier for people browsing the
