@@ -80,7 +80,7 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "FileDescription", "Runs 3-D games and interactive applets\0"
+            VALUE "FileDescription", "Panda3D Game Engine Plug-in $[P3D_PLUGIN_VERSION_STR]\0"
             VALUE "FileVersion", "$[P3D_PLUGIN_DLL_DOT_VERSION]"
             VALUE "LegalTrademarks", "\0"
             VALUE "FileOpenName", "Panda3D applet\0"
