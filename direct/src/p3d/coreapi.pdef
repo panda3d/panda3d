@@ -19,9 +19,6 @@ from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
 
 # Also see panda3d.pdef.
 
-packager.setHost('file:///Users/drose/p3dstage',
-                 descriptiveName = 'local odysseus', hostDir = 'odysseus')
-
 class coreapi(solo):
     # The special "coreapi" package.  As a "solo", this is just a
     # single .dll (or dylib, or whatever).
