@@ -698,6 +698,9 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
       nout << "File is incorrect: " << (*ei).get_filename() << "\n";
       all_extracts_ok = false;
     }
+
+    // Make sure all extracts are still marked executable.
+    chmod((*ei).get_pathname(_package_dir).c_str(), 0555);
   }
 
   if (all_extracts_ok) {
