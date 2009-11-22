@@ -459,8 +459,8 @@ if (COMPILER=="LINUX"):
 
     if (RUNTIME):
         # For the runtime, all packages are required
-        for pkg in PkgListGet():
-            if (PkgSkip(pkg)==1):
+        for pkg in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
+            if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
     for pkg in MAYAVERSIONS:
