@@ -110,7 +110,7 @@ install_rdf = """<?xml version="1.0"?>
       </Description>
     </em:targetApplication>
     <em:homepageURL>http://www.panda3d.org/</em:homepageURL>
-    <em:updateURL>%(host_url)s/plugin/firefox/nppanda3d.rdf</em:updateURL>
+    <em:updateURL>%(host_url)s/plugin/firefox/update.rdf</em:updateURL>
   </Description>
 </RDF>
 """
@@ -133,11 +133,12 @@ update_rdf = """<?xml version="1.0"?>
             <em:version>%(version)s</em:version>
             <em:targetApplication>
               <RDF:Description>
-              <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-              <em:minVersion>3.0</em:minVersion>
-              <em:maxVersion>*</em:maxVersion>
-              <em:updateLink>%(host_url)s/plugin/firefox/nppanda3d.xpi</em:updateLink>
-              <em:updateHash>sha1:%(xpi_hash)s</em:updateHash>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.0</em:minVersion>
+                <em:maxVersion>*</em:maxVersion>
+                <em:updateLink>%(host_url)s/plugin/firefox/nppanda3d.xpi</em:updateLink>
+                <em:updateHash>sha1:%(xpi_hash)s</em:updateHash>
+              </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
         </RDF:li>
