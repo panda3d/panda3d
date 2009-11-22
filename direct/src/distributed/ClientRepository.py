@@ -40,6 +40,9 @@ class ClientRepository(ClientRepositoryBase):
         # processed.
         self.currentSenderId = None
 
+        # Explicitly-requested interest zones.
+        self.interestZones = []
+
     def handleSetDoIdrange(self, di):
         self.doIdBase = di.getUint32()
         self.doIdLast = self.doIdBase + di.getUint32()
@@ -136,6 +139,12 @@ class ClientRepository(ClientRepositoryBase):
         assert self.isLocalId(doId)
         self.doIdAllocator.free(doId)
 
+    def storeObjectLocation(self, object, parentId, zoneId):
+        # The CMU implementation doesn't use the DoCollectionManager
+        # much.
+        object.parentId = parentId
+        object.zoneId = zoneId
+
     def createDistributedObject(self, className = None, distObj = None,
                                 zoneId = 0, optionalFields = None,
                                 doId = None):
@@ -230,7 +239,7 @@ class ClientRepository(ClientRepositoryBase):
     def setInterestZones(self, interestZoneIds):
         """ Changes the set of zones that this particular client is
         interested in hearing about. """
-        
+
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_INTEREST_CMU)
@@ -240,6 +249,7 @@ class ClientRepository(ClientRepositoryBase):
 
         # send the message
         self.send(datagram)
+        self.interestZones = interestZoneIds[:]
 
     def setObjectZone(self, distObj, zoneId):
         """ Moves the object into the indicated zone. """

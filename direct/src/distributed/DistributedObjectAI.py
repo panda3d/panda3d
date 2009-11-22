@@ -88,11 +88,19 @@ class DistributedObjectAI(DistributedObjectBase):
         if delEvent:
             messenger.send(delEvent)
 
+    def getCacheable(self):
+        """ This method exists only to mirror the similar method on
+        DistributedObject.  AI objects aren't cacheable. """
+        return False
+
     def deleteOrDelay(self):
         """ This method exists only to mirror the similar method on
         DistributedObject.  AI objects don't have delayDelete, they
         just get deleted immediately. """
         self.delete()
+
+    def getDelayDeleteCount(self):
+        return 0
 
     def delete(self):
         """
