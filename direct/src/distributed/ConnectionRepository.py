@@ -103,6 +103,7 @@ class ConnectionRepository(
         self.private__di = PyDatagramIterator()
 
         self.recorder = None
+        self.readerPollTaskObj = None
 
         # This is the string that is appended to symbols read from the
         # DC file.  The AIRepository will redefine this to 'AI'.
@@ -577,11 +578,14 @@ class ConnectionRepository(
         self.stopReaderPollTask()
         self.accept(CConnectionRepository.getOverflowEventName(),
                     self.handleReaderOverflow)
-        taskMgr.add(self.readerPollUntilEmpty, self.uniqueName("readerPollTask"),
-                    priority = self.taskPriority, taskChain = self.taskChain)
+        self.readerPollTaskObj = taskMgr.add(
+            self.readerPollUntilEmpty, self.uniqueName("readerPollTask"),
+            priority = self.taskPriority, taskChain = self.taskChain)
 
     def stopReaderPollTask(self):
-        taskMgr.remove(self.uniqueName("readerPollTask"))
+        if self.readerPollTaskObj:
+            taskMgr.remove(self.readerPollTaskObj)
+            self.readerPollTaskObj = None
         self.ignore(CConnectionRepository.getOverflowEventName())
 
     def readerPollUntilEmpty(self, task):
