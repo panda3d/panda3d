@@ -35,6 +35,7 @@ GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
 CFLAGS=""
+LDFLAGS=""
 RTDIST=0
 RTDIST_VERSION="dev"
 RUNTIME=0
@@ -174,6 +175,9 @@ if ("CFLAGS" in os.environ):
 if ("RPM_OPT_FLAGS" in os.environ):
     CFLAGS += " " + os.environ["RPM_OPT_FLAGS"]
 CFLAGS = CFLAGS.strip()
+if ("LDFLAGS" in os.environ):
+    LDFLAGS = os.environ["LDFLAGS"]
+LDFLAGS = LDFLAGS.strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if (sys.platform == "darwin" and OSXTARGET != None):
@@ -863,6 +867,7 @@ def CompileLink(dll, obj, opts):
             elif (not RTDIST):
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
+        if (LDFLAGS !=""): cmd += " " + LDFLAGS
         
         oscmd(cmd)
         if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
