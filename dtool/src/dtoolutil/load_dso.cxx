@@ -119,44 +119,12 @@ get_dso_symbol(void *handle, const string &name) {
 
 /* end Win32-specific code */
 
-#elif defined(IS_OSX)
-/* begin Mac OS X code */
-
-#include <mach-o/dyld.h>
-#include <dlfcn.h>
-
-void * load_dso(const DSearchPath &path, const Filename &filename) 
-{
-  Filename abspath = resolve_dso(path, filename);
-  if (!abspath.is_regular_file()) {
-    return NULL;
-  }
-  string fname = abspath.to_os_specific();
-  void * answer = dlopen(fname.c_str(),RTLD_NOW| RTLD_LOCAL);
-  return answer;
-}
-
-bool
-unload_dso(void *dso_handle) {
-  return dlclose(dso_handle)==0;
-}
-
-string
-load_dso_error() {
-  char *message = dlerror();
-  if (message != (char *)NULL) {
-    return std::string(message);
-  }
-  return "No error.";
-}
-
-void *
-get_dso_symbol(void *handle, const string &name) {
-  return dlsym(handle, name.c_str());
-}
-
 #else
-/* begin generic code */
+/* begin Posix code */
+
+#if defined(IS_OSX)
+#include <mach-o/dyld.h>
+#endif
 
 #include <dlfcn.h>
 
