@@ -958,7 +958,7 @@ get_ram_mipmap_pointer(int n) {
 void Texture::
 set_ram_mipmap_pointer(int n, void *image, size_t page_size) {
   MutexHolder holder(_lock);
-  nassertv(_ram_image_compression != CM_off || page_size == get_expected_ram_mipmap_image_size(n));
+  nassertv(_ram_image_compression != CM_off || do_get_expected_ram_mipmap_image_size(n));
 
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
