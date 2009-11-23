@@ -50,6 +50,9 @@ class ClientRepository(ClientRepositoryBase):
 
         self.ourChannel = self.doIdBase
 
+        self.createReady()
+
+    def createReady(self):
         # Now that we've got a doId range, we can safely generate new
         # distributed objects.
         messenger.send('createReady')
