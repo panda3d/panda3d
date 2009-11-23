@@ -1275,6 +1275,8 @@ DTOOL_CONFIG=[
     ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+    ("_SECURE_SCL",                    '1',                      'UNDEF'),
+    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
