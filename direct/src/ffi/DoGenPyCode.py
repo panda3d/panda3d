@@ -262,7 +262,10 @@ def generateNativeWrappers():
         # the library isn't present.  This is particularly necessary
         # in the runtime (plugin) environment, where all libraries are
         # not necessarily downloaded.
-        pandaModules.write('try:\n  from %sModules import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n  print "Failed to import %s"\n\n' % (moduleName, moduleName))
+        pandaModules.write('try:\n  from %sModules import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (moduleName))
+        # Not sure if this message is helpful or annoying.
+        #pandaModules.write('  print "Failed to import %s"\n' % (moduleName))
+        pandaModules.write('\n')
 
         moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
         moduleModules = open(moduleModulesFilename, 'w')
