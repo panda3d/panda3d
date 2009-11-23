@@ -5,7 +5,7 @@
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
   prc:c pstatclient:c pandabase:c linmath:c putil:c \
-  pipeline:c \
+  pipeline:c downloader:c \
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
   panda:m \
   pystub
