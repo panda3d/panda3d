@@ -2261,7 +2261,7 @@ class Packager:
 
         # Now we've retrieved a PackageInfo.  Get the import desc file
         # from it.
-        filename = Filename(host.importsDir, package.importDescFile.basename)
+        filename = Filename(host.hostDir, 'imports/' + package.importDescFile.basename)
         if not appRunner.freshenFile(host, package.importDescFile, filename):
             self.notify.error("Couldn't download import file.")
             return None

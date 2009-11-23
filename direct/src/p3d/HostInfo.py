@@ -30,10 +30,6 @@ class HostInfo:
         self.hostDir = hostDir
         self.asMirror = asMirror
 
-        self.importsDir = None
-        if self.hostDir:
-            self.importsDir = Filename(self.hostDir, 'imports')
-
         # hostUrlPrefix is the host URL, but it is guaranteed to end
         # with a slash.
         self.hostUrlPrefix = hostUrl
