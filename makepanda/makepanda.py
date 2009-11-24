@@ -1376,7 +1376,7 @@ def WriteConfigSettings():
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (RTDIST or RUNTIME):
-        prc_parameters["DEFAULT_PRC_DIR"] = ""
+        prc_parameters["DEFAULT_PRC_DIR"] = '""'
         
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
