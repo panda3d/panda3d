@@ -1441,8 +1441,8 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         // within the window.  This is considered not having a mouse.
         set_no_mouse();
 
-        // This also means we should suppress button events below us.
-        _internal_suppress |= MouseWatcherRegion::SF_any_button;
+        // This also means we should suppress mouse button events below us.
+        _internal_suppress |= MouseWatcherRegion::SF_mouse_button;
 
       } else {
         // The mouse is within the display region; rescale it.
