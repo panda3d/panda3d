@@ -1275,8 +1275,6 @@ DTOOL_CONFIG=[
     ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-    ("_SECURE_SCL",                    '1',                      'UNDEF'),
-    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
@@ -1378,11 +1376,13 @@ def WriteConfigSettings():
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (RTDIST or RUNTIME):
+        prc_parameters["DEFAULT_PRC_DIR"] = ""
+        
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
-        plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = "panda3d_1"
-        plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = "panda3d_2"
-        plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = "panda3d_3"
+        plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
+        plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
+        plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
 
