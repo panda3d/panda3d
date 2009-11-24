@@ -363,7 +363,7 @@ main(int argc, char *argv[]) {
   }
 
   for (int i = 1; i < argc; i++) {
-    sign_prc(argv[1], no_comments, pkey);
+    sign_prc(Filename::from_os_specific(argv[1]), no_comments, pkey);
   }
 
   return (0);
