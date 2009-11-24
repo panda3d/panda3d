@@ -126,6 +126,9 @@ void PPLogger::Open( const std::string &rootDir )
       log_basename = P3D_PLUGIN_LOG_BASENAME1;
     }
 #endif
+    if (log_basename.empty()) {
+      log_basename = "p3dplugin";
+    }
 
     if (!log_basename.empty()) {
       std::string log_pathname = log_directory;
