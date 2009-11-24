@@ -211,10 +211,13 @@ class ServerRepository:
             if not readResult:
                 self.notify.error("Could not read dc file.")
         else:
+            searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
-                readResult = dcFile.read(Filename(dcFileName))
+                pathname = Filename(dcFileName)
+                vfs.resolveFilename(pathname, searchPath)
+                readResult = dcFile.read(pathname)
                 if not readResult:
-                    self.notify.error("Could not read dc file: %s" % (dcFileName))
+                    self.notify.error("Could not read dc file: %s" % (pathname))
 
         self.hashVal = dcFile.getHash()
 
