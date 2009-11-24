@@ -1792,7 +1792,7 @@ class Packager:
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
-            'libstdc++.6.dylib',
+            'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
             ]
 
         # As above, but with filename globbing to catch a range of
