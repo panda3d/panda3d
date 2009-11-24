@@ -327,7 +327,7 @@ class AppRunner(DirectObject):
         mapped host, which is the one we should actually download
         from, see getHostWithAlt().  """
 
-        if hostUrl is None:
+        if not hostUrl:
             hostUrl = PandaSystem.getPackageHostUrl()
 
         host = self.hosts.get(hostUrl, None)

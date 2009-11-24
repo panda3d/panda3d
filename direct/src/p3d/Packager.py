@@ -2150,19 +2150,16 @@ class Packager:
         Returns the Package object, or None if the package cannot be
         located. """
 
-        if not platform:
-            platform = self.platform
-
         # Is it a package we already have resident?
-        package = self.packages.get((packageName, platform, version, host), None)
+        package = self.packages.get((packageName, platform or self.platform, version, host), None)
         if package:
             return package
 
         # Look on the searchlist.
         for dirname in self.installSearch.getDirectories():
-            package = self.__scanPackageDir(dirname, packageName, platform, version, host, requires = requires)
+            package = self.__scanPackageDir(dirname, packageName, platform or self.platform, version, host, requires = requires)
             if not package:
-                package = self.__scanPackageDir(dirname, packageName, None, version, host, requires = requires)
+                package = self.__scanPackageDir(dirname, packageName, platform, version, host, requires = requires)
 
             if package:
                 break
@@ -2173,7 +2170,7 @@ class Packager:
 
         if package:
             package = self.packages.setdefault((package.packageName, package.platform, package.version, package.host), package)
-            self.packages[(packageName, platform, version, host)] = package
+            self.packages[(packageName, platform or self.platform, version, host)] = package
             return package
                 
         return None
@@ -2246,6 +2243,10 @@ class Packager:
             return None
 
         host = appRunner.getHost(hostUrl)
+        if not host.readContentsFile():
+            if not host.downloadContentsFile(appRunner.http):
+                return None
+        
         package = host.getPackage(packageName, version, platform = platform)
         if not package and version is None:
             # With no version specified, find the best matching version.
@@ -2403,14 +2404,14 @@ class Packager:
 
         for packageName in names:
             # A special case when requiring the "panda3d" package.  We
-            # supply the version number what we've been compiled with as a
-            # default.
+            # supply the version number which we've been compiled with
+            # as a default.
             pversion = version
             phost = host
             if packageName == 'panda3d':
-                if pversion is None:
+                if not pversion:
                     pversion = PandaSystem.getPackageVersionString()
-                if phost is None:
+                if not phost:
                     phost = PandaSystem.getPackageHostUrl()
 
             package = self.findPackage(packageName, version = pversion, host = phost,
