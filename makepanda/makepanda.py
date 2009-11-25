@@ -1275,6 +1275,7 @@ DTOOL_CONFIG=[
     ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+    ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
@@ -1377,7 +1378,6 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
-        
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
@@ -1385,6 +1385,9 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
+    
+    if (RUNTIME):
+        dtool_config["HAVE_P3D_PLUGIN"] = '1'
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
