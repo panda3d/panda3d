@@ -840,7 +840,8 @@ def CompileLink(dll, obj, opts):
                 else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared -Wl,-soname=' + os.path.basename(dll)
+                cmd = 'g++ -shared'
+                if ("MODULE" not in opts): " -Wl,-soname=' + os.path.basename(dll)"
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
@@ -1089,7 +1090,7 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking dynamic library", target)
         
         # Add version number to the dynamic library, on unix
-        if (origsuffix==".dll" and "NOVERSION" not in OPTS and not sys.platform.startswith("win") and not RTDIST):
+        if (origsuffix==".dll" and "MODULE" not in OPTS and not sys.platform.startswith("win") and not RTDIST):
             if (sys.platform == "darwin"):
                 if (target.lower().endswith(".dylib")):
                     target = target[:-5] + VERSION + ".dylib"
@@ -2743,14 +2744,14 @@ if PkgSkip("FMODEX") == 0 and not RUNTIME:
   TargetAdd('fmod_audio_fmod_audio_composite.obj', opts=OPTS, input='fmod_audio_composite.cxx')
   TargetAdd('libp3fmod_audio.dll', input='fmod_audio_fmod_audio_composite.obj')
   TargetAdd('libp3fmod_audio.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3fmod_audio.dll', opts=['NOVERSION', 'ADVAPI', 'WINUSER', 'WINMM', 'FMODEX'])
+  TargetAdd('libp3fmod_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'FMODEX'])
 
 if PkgSkip("OPENAL") == 0 and not RUNTIME:
   OPTS=['DIR:panda/src/audiotraits', 'BUILDING:OPENAL_AUDIO',  'OPENAL']
   TargetAdd('openal_audio_openal_audio_composite.obj', opts=OPTS, input='openal_audio_composite.cxx')
   TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite.obj')
   TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3openal_audio.dll', opts=['NOVERSION', 'ADVAPI', 'WINUSER', 'WINMM', 'OPENAL'])
+  TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'OPENAL'])
 
 #
 # DIRECTORY: panda/src/downloadertools/
@@ -2850,7 +2851,7 @@ if PkgSkip("DX8")==0 and not RUNTIME:
   TargetAdd('libpandadx8.dll', input='dxgsg8_composite.obj')
   TargetAdd('libpandadx8.dll', input='libp3windisplay.dll')
   TargetAdd('libpandadx8.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandadx8.dll', opts=['NOVERSION', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX8'])
+  TargetAdd('libpandadx8.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX8'])
 
 #
 # DIRECTORY: panda/metalibs/pandadx9/
@@ -2867,7 +2868,7 @@ if PkgSkip("DX9")==0 and not RUNTIME:
   TargetAdd('libpandadx9.dll', input='dxgsg9_composite.obj')
   TargetAdd('libpandadx9.dll', input='libp3windisplay.dll')
   TargetAdd('libpandadx9.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandadx9.dll', opts=['NOVERSION', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9',  'NVIDIACG', 'CGDX9'])
+  TargetAdd('libpandadx9.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9',  'NVIDIACG', 'CGDX9'])
 
 #
 # DIRECTORY: panda/src/egg/
@@ -2968,7 +2969,7 @@ if (not sys.platform.startswith("win") and not RUNTIME):
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
   TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['NOVERSION', 'GLUT'])
+  TargetAdd('libpandamesa.dll', opts=['MODULE', 'GLUT'])
 
 #
 # DIRECTORY: panda/src/x11display/
@@ -2995,7 +2996,7 @@ if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['NOVERSION', 'GLUT', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GLUT', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -3015,7 +3016,7 @@ if (sys.platform == 'darwin' and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['NOVERSION', 'GLUT', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GLUT', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
@@ -3034,7 +3035,7 @@ if (sys.platform == "win32" and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['NOVERSION', 'WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -4065,7 +4066,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='libpandatoolbase.lib')
     TargetAdd('libp3ptloader.dll', input='libpandaegg.dll')
     TargetAdd('libp3ptloader.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3ptloader.dll', opts=['NOVERSION', 'ADVAPI', 'FCOLLADA', 'WINUSER'])
+    TargetAdd('libp3ptloader.dll', opts=['MODULE', 'ADVAPI', 'FCOLLADA', 'WINUSER'])
 
 #
 # DIRECTORY: pandatool/src/miscprogs/
