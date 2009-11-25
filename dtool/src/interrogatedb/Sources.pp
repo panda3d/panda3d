@@ -17,8 +17,8 @@
     interrogateType.I interrogateType.h  \
     interrogate_datafile.I interrogate_datafile.h  \
     interrogate_interface.h interrogate_request.h \
-    py_panda.h vector_int.h \
-    $[if $[HAVE_PYTHON],interrogate_wrapped.cxx]
+    py_panda.h \
+    vector_int.h
 
  #define INCLUDED_SOURCES  \
     config_interrogatedb.cxx \
