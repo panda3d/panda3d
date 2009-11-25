@@ -1738,7 +1738,7 @@ class Packager:
 
         # Binary files that are copied (and compressed) without
         # processing.
-        self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
+        self.binaryExtensions = [ 'ttf', 'mid' ]
 
         # Files that represent an executable or shared library.
         if self.platform.startswith('win'):
@@ -1773,7 +1773,9 @@ class Packager:
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
-        self.uncompressibleExtensions = [ 'mp3', 'ogg' ]
+        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'wav' ]
+        # wav files are compressible, but p3openal_audio won't load
+        # them compressed.
 
         # Files which are not to be processed further, but which
         # should be added exactly byte-for-byte as they are.
