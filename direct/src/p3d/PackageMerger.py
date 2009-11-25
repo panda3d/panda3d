@@ -2,6 +2,7 @@ from direct.p3d.FileSpec import FileSpec
 from pandac.PandaModules import *
 import copy
 import shutil
+import os
 
 class PackageMergerError(StandardError):
     pass
@@ -138,13 +139,48 @@ class PackageMerger:
         sourceDirname = Filename(pe.sourceDir, dirname)
         targetDirname = Filename(self.installDir, dirname)
 
-        if targetDirname.exists():
-            # The target directory already exists; we have to clean it
-            # out first.
-            shutil.rmtree(targetDirname.toOsSpecific())
+        self.__rCopyTree(sourceDirname, targetDirname)
 
-        shutil.copytree(sourceDirname.toOsSpecific(), targetDirname.toOsSpecific())
-        
+    def __rCopyTree(self, sourceFilename, targetFilename):
+        """ Recursively copies the contents of sourceDirname onto
+        targetDirname.  This behaves like shutil.copytree, but it does
+        not remove pre-existing subdirectories. """
+
+        if targetFilename.exists():
+            if not targetFilename.isDirectory():
+                # Delete any regular files in the way.
+                targetFilename.unlink()
+
+            elif not sourceFilename.isDirectory():
+                # If the source file is a regular file, but the target
+                # file is a directory, completely remove the target
+                # file.
+                shutil.rmtree(targetFilename.toOsSpecific())
+
+            else:
+                # Both the source file and target file are
+                # directories.
+                
+                # We have to clean out the target directory first.
+                # Instead of using shutil.rmtree(), remove the files in
+                # this directory one at a time, so we don't inadvertently
+                # clean out subdirectories too.
+                files = os.listdir(targetFilename.toOsSpecific())
+                for file in files:
+                    f = Filename(targetFilename, file)
+                    if f.isRegularFile():
+                        f.unlink()
+
+        if sourceFilename.isDirectory():
+            # Recursively copying a directory.
+            Filename(targetFilename, '').makeDir()
+            files = os.listdir(sourceFilename.toOsSpecific())
+            for file in files:
+                self.__rCopyTree(Filename(sourceFilename, file),
+                                 Filename(targetFilename, file))
+        else:
+            # Copying a regular file.
+            sourceFilename.copyTo(targetFilename)
 
 
     def merge(self, sourceDir):
