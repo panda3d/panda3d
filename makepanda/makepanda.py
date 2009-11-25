@@ -4065,7 +4065,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='libpandatoolbase.lib')
     TargetAdd('libp3ptloader.dll', input='libpandaegg.dll')
     TargetAdd('libp3ptloader.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3ptloader.dll', opts=['ADVAPI', 'FCOLLADA', 'WINUSER'])
+    TargetAdd('libp3ptloader.dll', opts=['NOVERSION', 'ADVAPI', 'FCOLLADA', 'WINUSER'])
 
 #
 # DIRECTORY: pandatool/src/miscprogs/
