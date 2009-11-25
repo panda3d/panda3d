@@ -171,7 +171,7 @@ read_contents_file(const string &contents_filename) {
         const char *url = xalthost->Attribute("url");
         if (url != NULL && _host_url == string(url)) {
           // Yep, we're this alternate host.
-          read_xhost(xhost);
+          read_xhost(xalthost);
           break;
         }
         xalthost = xalthost->NextSiblingElement("alt_host");
