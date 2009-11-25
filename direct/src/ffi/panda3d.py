@@ -139,6 +139,10 @@ class panda3d_submodule(type(sys)):
         mod = self.__manager__.libimport(self.__library__)
         if name == "__all__":
             return dir(mod)
+        elif name == "__library__":
+            return self.__library__
+        elif name == "__libraries__":
+            return self.__libraries__
         elif name in dir(mod):
             return mod.__dict__[name]
         
@@ -160,7 +164,10 @@ class panda3d_multisubmodule(type(sys)):
         if name == "__all__":
             everything = []
             for lib in self.__libraries__:
-                everything += dir(self.__manager__.libimport(self.__libraries__))
+                everything += dir(self.__manager__.libimport(lib))
+            return everything
+        elif name == "__libraries__":
+            return self.__libraries__
 
         for lib in self.__libraries__:
             mod = self.__manager__.libimport(lib)
