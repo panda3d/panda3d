@@ -142,7 +142,11 @@ class panda3d_submodule(type(sys)):
     def __getattr__(self, name):
         mod = self.__manager__.libimport(self.__library__)
         if name == "__all__":
-            return dir(mod)
+            everything = []
+            for obj in dir(mod):
+                if not obj.startswith("__"):
+                    everything.append(obj)
+            return everything
         elif name == "__library__":
             return self.__library__
         elif name == "__libraries__":
@@ -173,7 +177,9 @@ class panda3d_multisubmodule(type(sys)):
         if name == "__all__":
             everything = []
             for lib in self.__libraries__:
-                everything += dir(self.__manager__.libimport(lib))
+                for obj in dir(self.__manager__.libimport(lib)):
+                    if not obj.startswith("__"):
+                        everything.append(obj)
             return everything
         elif name == "__libraries__":
             return self.__libraries__
