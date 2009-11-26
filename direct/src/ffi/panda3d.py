@@ -2,13 +2,14 @@
 import os, sys, imp
 
 panda3d_modules = {
-    "core"    :("libpandaexpress", "libpanda"),
-    "physics" : "libpandaphysics",
-    "fx"      : "libpandafx",
-    "direct"  : "libp3direct",
-    "egg"     : "libpandaegg",
-    "ode"     : "libpandaode",
-    "vision"  : "libp3vision",
+    "core"        :("libpandaexpress", "libpanda"),
+    "dtoolconfig" : "libp3dtoolconfig",
+    "physics"     : "libpandaphysics",
+    "fx"          : "libpandafx",
+    "direct"      : "libp3direct",
+    "egg"         : "libpandaegg",
+    "ode"         : "libpandaode",
+    "vision"      : "libp3vision",
 }
 
 class panda3d_import_manager:
@@ -61,8 +62,7 @@ class panda3d_import_manager:
                     target = dir
                     break
         if target == None:
-            message = "Cannot find %s" % (filename)
-            raise ImportError, message
+            raise ImportError, "Cannot find %s" % (filename)
         target = cls.os.path.abspath(target)
 
         # And add that directory to the system library path.
@@ -135,6 +135,10 @@ class panda3d_submodule(type(sys)):
         self.__library__ = library
         self.__libraries__ = [self.__library__]
 
+    def __load__(self):
+        """ Forces the library to be loaded right now. """
+        self.__manager__.libimport(self.__library__)
+
     def __getattr__(self, name):
         mod = self.__manager__.libimport(self.__library__)
         if name == "__all__":
@@ -160,6 +164,11 @@ class panda3d_multisubmodule(type(sys)):
         type(sys).__init__(self, "panda3d." + name)
         self.__libraries__ = libraries
 
+    def __load__(self):
+        """ Forces the libraries to be loaded right now. """
+        for lib in self.__libraries__:
+            self.__manager__.libimport(lib)
+
     def __getattr__(self, name):
         if name == "__all__":
             everything = []
@@ -182,6 +191,12 @@ class panda3d_module(type(sys)):
     
     __file__ = __file__
     modules = panda3d_modules
+    __manager__ = panda3d_import_manager
+    
+    def __load__(self):
+        """ Force all the libraries to be loaded right now. """
+        for module in self.modules:
+            self.__manager__.sys.modules["panda3d.%s" % module].__load__()
     
     def __getattr__(self, name):
         if name == "__all__":
@@ -189,7 +204,7 @@ class panda3d_module(type(sys)):
         elif name == "__file__":
             return self.__file__
         elif name in self.modules:
-            return sys.modules["panda3d.%s" % name]
+            return self.__manager__.sys.modules["panda3d.%s" % name]
 
         # Not found? Raise the error that Python would normally raise.
         raise AttributeError, "'module' object has no attribute '%s'" % name
