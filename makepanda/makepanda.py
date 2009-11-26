@@ -518,6 +518,7 @@ if (COMPILER=="LINUX"):
             if (sys.platform == "darwin"):
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
+DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
 IncDirectory("ALWAYS", GetOutputDir()+"/include")

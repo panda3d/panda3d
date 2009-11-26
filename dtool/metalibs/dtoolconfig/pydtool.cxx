@@ -2074,6 +2074,20 @@ static PyMethodDef python_simple_funcs[] = {
   { NULL, NULL }
 };
 
+// Makepanda builds the library as libp3dtoolconfig instead of libdtoolconfig.
+#ifdef MAKEPANDA
+#ifdef _WIN32
+extern "C" __declspec(dllexport) void initlibp3dtoolconfig();
+#else
+extern "C" void initlibp3dtoolconfig();
+#endif
+
+void initlibp3dtoolconfig() {
+  Py_InitModule("libp3dtoolconfig", python_simple_funcs);
+}
+
+#else  // MAKEPANDA
+
 #ifdef _WIN32
 extern "C" __declspec(dllexport) void initlibdtoolconfig();
 #else
@@ -2083,4 +2097,5 @@ extern "C" void initlibdtoolconfig();
 void initlibdtoolconfig() {
   Py_InitModule("libdtoolconfig", python_simple_funcs);
 }
+#endif  // MAKEPANDA
 
