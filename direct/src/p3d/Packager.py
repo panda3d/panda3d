@@ -414,7 +414,7 @@ class Packager:
             """ Installs the package, either as a p3d application, or
             as a true package.  Either is implemented with a
             Multifile. """
-            
+
             self.multifile = Multifile()
 
             # Write the multifile to a temporary filename until we
@@ -1641,7 +1641,9 @@ class Packager:
             if package not in self.requires:
                 self.requires.append(package)
                 for filename in package.targetFilenames.keys():
-                    self.skipFilenames[filename] = True
+                    ext = Filename(filename).getExtension()
+                    if ext not in self.packager.nonuniqueExtensions:
+                        self.skipFilenames[filename] = True
                 for moduleName, mdef in package.moduleNames.items():
                     self.skipModules[moduleName] = mdef
 
@@ -1739,6 +1741,10 @@ class Packager:
         # Binary files that are copied (and compressed) without
         # processing.
         self.binaryExtensions = [ 'ttf', 'mid' ]
+
+        # Files that can have an existence in multiple different
+        # packages simultaneously without conflict.
+        self.nonuniqueExtensions = [ 'prc' ]
 
         # Files that represent an executable or shared library.
         if self.platform.startswith('win'):
@@ -2124,7 +2130,7 @@ class Packager:
     def endPackage(self):
         """ Closes the current package specification.  This actually
         generates the package file.  Returns the finished package."""
-        
+
         if not self.currentPackage:
             raise PackagerError, 'unmatched endPackage'
 
