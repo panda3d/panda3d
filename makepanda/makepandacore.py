@@ -908,7 +908,8 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     else:
         return bool(LocateBinary(tool) != None)
     result = handle.read().strip()
-    if handle.close() != 0:
+    returnval = handle.close()
+    if returnval != None and returnval != 0:
         return False
     return bool(len(result) > 0)
 

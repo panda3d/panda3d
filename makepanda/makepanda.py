@@ -4154,7 +4154,7 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0 and (sys.platform.startswith("win") or PkgConfigHavePkg("gtk+-2.0"))):
+if (PkgSkip("PANDATOOL")==0 and (sys.platform.startswith("win") or PkgSkip("GTK2")==0)):
     if (sys.platform.startswith("win")):
       OPTS=['DIR:pandatool/src/win-stats']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
