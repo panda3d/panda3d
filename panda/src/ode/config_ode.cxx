@@ -77,6 +77,8 @@ init_libode() {
   }
   initialized = true;
   
+  dInitODE();
+  
   OdeWorld::init_type();
   OdeMass::init_type();
   OdeBody::init_type();
