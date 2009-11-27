@@ -41,7 +41,7 @@
     displaySearchParameters.h \
     displayInformation.h \
     subprocessWindow.h subprocessWindow.I \
-    $[if $[and $[OSX_PLATFORM],$[HAVE_P3D_PLUGIN]], subprocessWindowBuffer.h subprocessWindowBuffer.I subprocessWindowBuffer.cxx]
+    $[if $[OSX_PLATFORM], subprocessWindowBuffer.h subprocessWindowBuffer.I subprocessWindowBuffer.cxx]
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
