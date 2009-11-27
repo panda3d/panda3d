@@ -18,10 +18,9 @@
 #include "pandabase.h"
 
 // For now, a simple trigger whether to enable the subprocess window
-// support.  We only build it on OSX, and only when the plugin is
-// enabled; because this is (presently) the only case where it's
-// useful.
-#if defined(HAVE_P3D_PLUGIN) && defined(IS_OSX)
+// support.  We only build it on OSX, because this is (presently) the
+// only case where it's useful.
+#ifdef IS_OSX
 #define SUPPORT_SUBPROCESS_WINDOW 1
 #else
 #undef SUPPORT_SUBPROCESS_WINDOW
