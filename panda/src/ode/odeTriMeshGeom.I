@@ -14,13 +14,27 @@
 
 INLINE void OdeTriMeshGeom::
 set_data(OdeTriMeshData &data) {
+  odetrimeshdata_cat.warning()
+    << "OdeTriMeshGeom::set_data() is deprecated, use OdeTriMeshGeom::set_tri_mesh_data() instead!\n";
+  set_tri_mesh_data(data);
+}
+
+INLINE PT(OdeTriMeshData) OdeTriMeshGeom::
+get_data() const {
+  odetrimeshdata_cat.warning()
+    << "OdeTriMeshGeom::get_data() is deprecated, use OdeTriMeshGeom::get_tri_mesh_data() instead!\n";
+  return get_tri_mesh_data();
+}
+
+INLINE void OdeTriMeshGeom::
+set_tri_mesh_data(OdeTriMeshData &data) {
   nassertv(_id != 0);
   dGeomTriMeshSetData(_id, data.get_id());
   OdeTriMeshData::link_data(_id, &data);
 }
 
 INLINE PT(OdeTriMeshData) OdeTriMeshGeom::
-get_data() const {
+get_tri_mesh_data() const {
   nassertr(_id != 0 ,0);
   return OdeTriMeshData::get_data(_id);
 }
@@ -70,6 +84,13 @@ get_num_triangles() const {
 
 INLINE dTriMeshDataID OdeTriMeshGeom::
 get_data_id() const {
+  odetrimeshdata_cat.warning()
+    << "OdeTriMeshGeom::get_data_id() is deprecated, use OdeTriMeshGeom::get_tri_mesh_data_id() instead!\n";
+  return get_tri_mesh_data_id();
+}
+
+INLINE dTriMeshDataID OdeTriMeshGeom::
+get_tri_mesh_data_id() const {
   nassertr(_id != 0, 0);
   return dGeomTriMeshGetTriMeshDataID(_id);
 }

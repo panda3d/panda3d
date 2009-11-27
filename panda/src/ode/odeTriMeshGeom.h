@@ -40,6 +40,8 @@ PUBLISHED:
   virtual ~OdeTriMeshGeom();
   
   void destroy();
+  INLINE void set_tri_mesh_data(OdeTriMeshData &data);
+  INLINE PT(OdeTriMeshData) get_tri_mesh_data() const;
   INLINE void set_data(OdeTriMeshData &data);
   INLINE PT(OdeTriMeshData) get_data() const;
   INLINE void enable_TC(int geom_class, int enable);
@@ -51,6 +53,7 @@ PUBLISHED:
 
 public:
   INLINE static int get_geom_class() { return dTriMeshClass; };
+  INLINE dTriMeshDataID get_tri_mesh_data_id() const;
   INLINE dTriMeshDataID get_data_id() const;
 
 private:
