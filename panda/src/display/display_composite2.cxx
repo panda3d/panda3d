@@ -10,5 +10,8 @@
 #include "stencilRenderStates.cxx"
 #include "stereoDisplayRegion.cxx"
 #include "subprocessWindow.cxx"
+#ifdef IS_OSX
+#include "subprocessWindowBuffer.cxx"
+#endif
 #include "windowHandle.cxx"
 #include "windowProperties.cxx"
