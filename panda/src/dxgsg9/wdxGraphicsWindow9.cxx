@@ -631,28 +631,35 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   presentation_params->Windowed = !is_fullscreen();
 
-  if (dx_multisample_antialiasing_level>1) {
+  int supported_multisamples = 0;
+  if (framebuffer_multisample.get_value()){
+    supported_multisamples = multisamples.get_value();
+  }
+
+  while (supported_multisamples > 1){
     // need to check both rendertarget and zbuffer fmts
     hr = _d3d9->CheckDeviceMultiSampleType(adapter, D3DDEVTYPE_HAL, display._display_mode.Format,
-                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()), NULL);
+                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), NULL);
     if (FAILED(hr)) {
-      wdxdisplay9_cat.fatal() << "adapter #" << adapter << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(display._display_mode.Format) << endl;
-      return false;
+      supported_multisamples--;
+      continue;
     }
 
     if (display._presentation_params.EnableAutoDepthStencil) {
       hr = _d3d9->CheckDeviceMultiSampleType(adapter, D3DDEVTYPE_HAL, display._presentation_params.AutoDepthStencilFormat,
-                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()), NULL);
+                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), NULL);
       if (FAILED(hr)) {
-        wdxdisplay9_cat.fatal() << "adapter #" << adapter << " doesnt support multisample level " << dx_multisample_antialiasing_level << "surface fmt " << D3DFormatStr(display._presentation_params.AutoDepthStencilFormat) << endl;
-        return false;
+        supported_multisamples--;
+        continue;
       }
     }
 
-    presentation_params->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value());
+    presentation_params->MultiSampleType = D3DMULTISAMPLE_TYPE(supported_multisamples);
 
     if (wdxdisplay9_cat.is_info())
-      wdxdisplay9_cat.info() << "adapter #" << adapter << " using multisample antialiasing level " << dx_multisample_antialiasing_level << endl;
+      wdxdisplay9_cat.info() << "adapter #" << adapter << " using multisample antialiasing level: " << supported_multisamples <<
+        ". Requested level was: " << multisamples.get_value() << endl;
+    break;
   }
 
   presentation_params->BackBufferCount = 1;
@@ -742,7 +749,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
     presentation_params->PresentationInterval = 0;
 
-    if (dx_multisample_antialiasing_level<2) {
+    if (supported_multisamples<2) {
       if (do_sync) {
   // It turns out that COPY_VSYNC has real performance problems
   // on many nVidia cards--it syncs at some random interval,

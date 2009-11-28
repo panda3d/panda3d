@@ -30,7 +30,6 @@ extern ConfigVariableBool dx_show_cursor_watermark;
 extern ConfigVariableBool dx_full_screen_antialiasing;
 extern ConfigVariableBool dx_use_rangebased_fog;
 extern ConfigVariableBool link_tristrips;
-extern ConfigVariableInt dx_multisample_antialiasing_level;
 extern ConfigVariableBool dx_use_triangle_mipgen_filter;
 extern ConfigVariableBool dx_broken_max_index;
 extern ConfigVariableBool dx_broken_depth_bias;

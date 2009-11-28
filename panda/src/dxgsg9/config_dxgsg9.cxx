@@ -38,10 +38,6 @@ NotifyCategoryDef(wdxdisplay9, "display");
 ConfigVariableBool dx_show_transforms
 ("dx-show-transforms", false);
 
-// Set Level of MultiSampling to be used, if HW supports it.  Valid values are 2-16.
-ConfigVariableInt dx_multisample_antialiasing_level
-("dx-multisample-antialiasing-level", 0);
-
 // if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
 ConfigVariableBool dx_no_vertex_fog
 ("dx-no-vertex-fog", false);
