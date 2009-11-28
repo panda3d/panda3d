@@ -120,6 +120,10 @@ try:
   HAVE_COLORS=sys.stdout.isatty()
 except: pass
 
+def DisableColors():
+    global HAVE_COLORS
+    HAVE_COLORS = False
+
 def GetColor(color = None):
     if not HAVE_COLORS: return ""
     if color != None: color = color.lower()

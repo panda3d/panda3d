@@ -103,7 +103,7 @@ def parseopts(args):
     global VERSION,COMPRESSOR,THREADCOUNT,OSXTARGET
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
-        "optimize=","everything","nothing","installer","rtdist",
+        "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override="]
     anything = 0
     optimize = ""
@@ -125,6 +125,7 @@ def parseopts(args):
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
+            elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 VERSION=value
                 if (len(VERSION.split(".")) != 3): raise "usage"
