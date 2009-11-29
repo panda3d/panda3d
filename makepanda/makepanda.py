@@ -4701,7 +4701,8 @@ def MakeInstallerOSX():
         oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
     for base in os.listdir(GetOutputDir()+"/lib"):
         if (not base.endswith(".a")):
-            oscmd("cp -d "+GetOutputDir()+"/lib/"+base+" dstroot/base/Developer/Panda3D/lib/"+base)
+            # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
+            oscmd("cp -R "+GetOutputDir()+"/lib/"+base+" dstroot/base/Developer/Panda3D/lib/"+base)
     
     # Scripts to configure this version of Panda3D (in environment.plist)
     oscmd("mkdir -p dstroot/scripts/base/")
