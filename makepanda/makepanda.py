@@ -4655,7 +4655,7 @@ def MakeInstallerLinux():
         else:
           txt = INSTALLER_DEB_FILE[1:]
         txt = txt.replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PV)
-        oscmd("mkdir -p linuxroot/DEBIAN")
+        oscmd("mkdir --mode=0755 -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
           oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
