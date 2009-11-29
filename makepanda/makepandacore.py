@@ -1130,7 +1130,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (have_all_pkgs):
                 return
     
-    if (pkgconfig != None and libs == None):
+    if (pkgconfig != None and libs != None and len(libs) > 0):
         if (pkg in PkgListGet()):
             print "%sWARNING:%s Could not locate package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
             PkgDisable(pkg)
