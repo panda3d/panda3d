@@ -4864,11 +4864,9 @@ function have16installed() {
     print >>dist, '</installer-script>'
     dist.close()
     
-    oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D', True)
-    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % VERSION, True)
+    oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D')
+    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % VERSION)
     oscmd('rm -f Panda3D-rw.dmg')
-    if os.path.isfile("Panda3D-%s.dmg" % VERSION):
-        exit("Failed to create installer!")
 
 if (INSTALLER != 0):
     ProgressOutput(100.0, "Building installer")
