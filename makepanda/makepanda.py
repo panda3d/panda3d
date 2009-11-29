@@ -4662,8 +4662,8 @@ def MakeInstallerLinux():
           WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
         WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
-        oscmd("chmod 755 linuxroot/DEBIAN/postinst")
         oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
+        oscmd("chmod -R 755 linuxroot/DEBIAN")
         if (RUNTIME):
             oscmd("dpkg-deb -b linuxroot panda3d-runtime_"+VERSION+"_"+ARCH+".deb")
         else:
