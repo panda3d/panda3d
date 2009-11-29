@@ -55,7 +55,7 @@ get_num_geoms() const {
 //  Description: Returns the nth geom of the node.  This object should
 //               not be modified, since the same object might be
 //               shared between multiple different GeomNodes, but see
-//               get_unique_geom().
+//               modify_geom().
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(Geom) GeomNode::
 get_geom(int n) const {
