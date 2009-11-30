@@ -4493,6 +4493,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         AddToPathEnv("PATH", GetOutputDir() + "\\bin")
         AddToPathEnv("PATH", GetOutputDir() + "\\plugins")
         oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py --version %s" % VERSION)
+        shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
     
     print "Building "+fullname+" installer. This can take up to an hour."
@@ -4875,9 +4876,15 @@ if (INSTALLER != 0):
         dbg = ""
         if (GetOptimize() <= 2): dbg = "-dbg"
         if (platform.architecture()[0] == "64bit"):
-            MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            if (RUNTIME):
+                MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            else:
+                MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
         else:
-            MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            if (RUNTIME):
+                MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            else:
+                MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2"):
         MakeInstallerLinux()
     elif (sys.platform == "darwin"):
