@@ -41,7 +41,7 @@
     displaySearchParameters.h \
     displayInformation.h \
     subprocessWindow.h subprocessWindow.I \
-    $[if $[OSX_PLATFORM], subprocessWindowBuffer.h subprocessWindowBuffer.I subprocessWindowBuffer.cxx]
+    $[if $[OSX_PLATFORM], subprocessWindowBuffer.h subprocessWindowBuffer.I]
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
