@@ -839,15 +839,40 @@ update_text() {
     _current_text.set_mat(node->get_transform());
 
     if (get_overflow_mode() && _num_lines == 1){
-        float padding = (_text.get_xpos(0, _cursor_position) - _max_width);
-        if (padding < 0){
-            padding = 0;
-        }
-        _current_text.set_x(_current_text.get_x() - padding);
-        _current_text.set_scissor(NodePath(this),
-            LPoint3f(0, 0, -0.5), LPoint3f(_max_width, 0, -0.5),
-            LPoint3f(_max_width, 0, 1.5), LPoint3f(0, 0, 1.5));
-        _current_padding = padding;
+      // We determine the minimum required padding:
+      float cursor_graphic_pos = _text.get_xpos(0, _cursor_position);
+      float min_padding = (cursor_graphic_pos - _max_width);
+
+      // If the current padding would produce a caret outside the text entry,
+      // we relocate it.
+      // Here we also have to make a jump towards the center when the caret
+      // is going outside the visual area and there's enough text ahead for
+      // increased usability.
+      //
+      // The amount that the caret is moved for hinting depends on the OS,
+      // and the specific behavior under certain circunstances in different
+      // Operating Systems is very complicated (the implementation would need
+      // to "remember" the original typing starting point). For the moment we are
+      // gonna use an unconditional 50% jump, this behavior is found in some
+      // Mac dialogs, and it's the easiest to implement by far, while
+      // providing proven usability.
+      // PROS: Reduces the amount of scrolling while both writing and navigating
+      // with arrow keys, which is desirable.
+      // CONS: The user needs to remember that he/she has exceeded the boundaries,
+      // but this happens with all implementations to some degree.
+
+      if (_current_padding < min_padding || _current_padding > cursor_graphic_pos){
+        _current_padding = min_padding + (cursor_graphic_pos - min_padding) * 0.5;
+      }
+
+      if (_current_padding < 0){ // Caret virtual position doesn't exceed boundaries
+        _current_padding = 0;
+      }
+
+      _current_text.set_x(_current_text.get_x() - _current_padding);
+      _current_text.set_scissor(NodePath(this),
+        LPoint3f(0, 0, -0.5), LPoint3f(_max_width, 0, -0.5),
+        LPoint3f(_max_width, 0, 1.5), LPoint3f(0, 0, 1.5));
     }
 
     _text_geom_stale = false;
