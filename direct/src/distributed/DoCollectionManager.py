@@ -79,7 +79,17 @@ class DoCollectionManager:
             if re.search(str,`value`):
                 matches.append(value)
         return matches
-
+        
+    def doFindAllOfType(self, query):
+        """
+        Useful method for searching through the Distributed Object collection 
+        for objects of a particular type
+        """
+        matches = []
+        for value in self.doId2do.values():
+            if query in str(value.__class__):
+                matches.append(value)
+        return matches, len(matches)
 
     def _getDistanceFromLA(self, do):
         if hasattr(do, 'getPos'):
