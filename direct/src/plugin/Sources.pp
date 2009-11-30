@@ -169,7 +169,7 @@
 //
 
   #define BUILD_TARGET $[and $[PANDA_PACKAGE_HOST_URL],$[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
-  #define USE_PACKAGES tinyxml python openssl
+  #define USE_PACKAGES tinyxml python openssl cg
   #define TARGET p3dpython
 
   #define OTHER_LIBS \
@@ -263,7 +263,7 @@
 //
 
   #define BUILD_TARGET $[and $[PANDA_PACKAGE_HOST_URL],$[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
-  #define USE_PACKAGES tinyxml python openssl
+  #define USE_PACKAGES tinyxml python openssl cg
   #define TARGET libp3dpython
   #define LIB_PREFIX
 
