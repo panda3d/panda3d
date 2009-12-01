@@ -1643,6 +1643,42 @@ down_to_power_2(int value) {
   return (1 << bit);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::consider_rescale
+//       Access: Published
+//  Description: Asks the PNMImage to change its scale when it reads
+//               the image, according to the whims of the Config.prc
+//               file.
+//
+//               This method should be called after
+//               pnmimage.read_header() has been called, but before
+//               pnmimage.read().
+////////////////////////////////////////////////////////////////////
+void Texture::
+consider_rescale(PNMImage &pnmimage) {
+  consider_rescale(pnmimage, get_name());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::consider_rescale
+//       Access: Published, Static
+//  Description: Asks the PNMImage to change its scale when it reads
+//               the image, according to the whims of the Config.prc
+//               file.
+//
+//               This method should be called after
+//               pnmimage.read_header() has been called, but before
+//               pnmimage.read().
+////////////////////////////////////////////////////////////////////
+void Texture::
+consider_rescale(PNMImage &pnmimage, const string &name) {
+  int new_x_size = pnmimage.get_x_size();
+  int new_y_size = pnmimage.get_y_size();
+  if (adjust_size(new_x_size, new_y_size, name)) {
+    pnmimage.set_read_size(new_x_size, new_y_size);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::texture_uploaded
@@ -5291,26 +5327,6 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     // If this assertion fails, clear_prepared() was given a
     // prepared_objects which the texture didn't know about.
     nassertv(false);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::consider_rescale
-//       Access: Private, Static
-//  Description: Asks the PNMImage to change its scale when it reads
-//               the image, according to the whims of the Config.prc
-//               file.
-//
-//               This method should be called after
-//               pnmimage.read_header() has been called, but before
-//               pnmimage.read().
-////////////////////////////////////////////////////////////////////
-void Texture::
-consider_rescale(PNMImage &pnmimage, const string &name) {
-  int new_x_size = pnmimage.get_x_size();
-  int new_y_size = pnmimage.get_y_size();
-  if (adjust_size(new_x_size, new_y_size, name)) {
-    pnmimage.set_read_size(new_x_size, new_y_size);
   }
 }
 

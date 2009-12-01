@@ -438,6 +438,9 @@ PUBLISHED:
   static int up_to_power_2(int value);
   static int down_to_power_2(int value);
 
+  void consider_rescale(PNMImage &pnmimage);
+  static void consider_rescale(PNMImage &pnmimage, const string &name);
+
 public:
   void texture_uploaded();
   
@@ -600,7 +603,6 @@ private:
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  static void consider_rescale(PNMImage &pnmimage, const string &name);
   static void consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name);
 
   static bool compare_images(const PNMImage &a, const PNMImage &b);
