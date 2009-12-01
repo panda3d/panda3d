@@ -102,6 +102,7 @@ open_UDP_connection(int port) {
 }
 
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_server_rendezvous
 //       Access: Public
@@ -111,6 +112,10 @@ open_UDP_connection(int port) {
 //               a ConnectionListener (not to a generic
 //               ConnectionReader).
 //
+//               This variant of this method accepts a single port,
+//               and will listen to that port on all available
+//               interfaces.
+//
 //               backlog is the maximum length of the queue of pending
 //               connections.
 ////////////////////////////////////////////////////////////////////
@@ -118,18 +123,75 @@ PT(Connection) ConnectionManager::
 open_TCP_server_rendezvous(int port, int backlog) {
   NetAddress address;
   address.set_any(port);
+  return open_TCP_server_rendezvous(address, backlog);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::open_TCP_server_rendezvous
+//       Access: Public
+//  Description: Creates a socket to be used as a rendezvous socket
+//               for a server to listen for TCP connections.  The
+//               socket returned by this call should only be added to
+//               a ConnectionListener (not to a generic
+//               ConnectionReader).
+//
+//               This variant of this method accepts a "hostname",
+//               which is usually just an IP address in dotted
+//               notation, and a port number.  It will listen on the
+//               interface indicated by the IP address.  If the IP
+//               address is empty string, it will listen on all
+//               interfaces.
+//
+//               backlog is the maximum length of the queue of pending
+//               connections.
+////////////////////////////////////////////////////////////////////
+PT(Connection) ConnectionManager::
+open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
+  NetAddress address;
+  if (hostname.empty()) {
+    address.set_any(port);
+  } else {
+    address.set_host(hostname, port);
+  }
+  return open_TCP_server_rendezvous(address, backlog);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::open_TCP_server_rendezvous
+//       Access: Public
+//  Description: Creates a socket to be used as a rendezvous socket
+//               for a server to listen for TCP connections.  The
+//               socket returned by this call should only be added to
+//               a ConnectionListener (not to a generic
+//               ConnectionReader).
+//
+//               This variant of this method accepts a NetAddress,
+//               which allows you to specify a specific interface to
+//               listen to.
+//
+//               backlog is the maximum length of the queue of pending
+//               connections.
+////////////////////////////////////////////////////////////////////
+PT(Connection) ConnectionManager::
+open_TCP_server_rendezvous(const NetAddress &address, int backlog) {
+  ostringstream strm;
+  if (address.get_ip() == 0) {
+    strm << "port " << address.get_port();  
+  } else {
+    strm << address.get_ip_string() << ":" << address.get_port();
+  }
 
   Socket_TCP_Listen *socket = new Socket_TCP_Listen;
   bool okflag = socket->OpenForListen(address.get_addr(), backlog);
   if (!okflag) {
     net_cat.info()
-      << "Unable to listen to port " << port << " for TCP.\n";
+      << "Unable to listen to " << strm.str() << " for TCP.\n";
     delete socket;
     return PT(Connection)();
   }
 
   net_cat.info()
-    << "Listening for TCP connections on port " << port << "\n";
+    << "Listening for TCP connections on " << strm.str() << "\n";
 
   PT(Connection) connection = new Connection(this, socket);
   new_connection(connection);

@@ -78,7 +78,8 @@ class ServerRepository:
             # record its current fields.  That is left to the clients.
             
 
-    def __init__(self, tcpPort, udpPort = None, dcFileNames = None,
+    def __init__(self, tcpPort, serverAddress = None,
+                 udpPort = None, dcFileNames = None,
                  threadedNet = None):
         if threadedNet is None:
             # Default value.
@@ -92,7 +93,9 @@ class ServerRepository:
         self.qcl = QueuedConnectionListener(self.qcm, numThreads)
         self.qcr = QueuedConnectionReader(self.qcm, numThreads)
         self.cw = ConnectionWriter(self.qcm, numThreads)
-        self.tcpRendezvous = self.qcm.openTCPServerRendezvous(tcpPort, 10)
+
+        self.tcpRendezvous = self.qcm.openTCPServerRendezvous(
+            serverAddress or '', tcpPort, 10)
         self.qcl.addConnection(self.tcpRendezvous)
         taskMgr.add(self.listenerPoll, "serverListenerPollTask")
         taskMgr.add(self.readerPollUntilEmpty, "serverReaderPollTask")
