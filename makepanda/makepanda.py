@@ -4645,7 +4645,7 @@ def MakeInstallerLinux():
         pandasource = os.path.abspath(os.getcwd())
         txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV).replace("PV",PV)
         WriteFile("panda3d.spec", txt)
-        oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
+        oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot linuxroot -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
     
     if (os.path.exists("/usr/bin/dpkg-deb")):
