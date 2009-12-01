@@ -89,7 +89,6 @@ private:
     F_keyboard       = 0x200,
   };
   int _flags;
-  ModifierButtons _mods;
 
 public:
   static TypeHandle get_class_type() {
