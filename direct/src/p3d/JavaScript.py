@@ -2,6 +2,7 @@
 useful when writing code that integrates with JavaScript, especially
 code that runs in a browser via the web plugin. """
 
+import types
 
 class UndefinedObject:
     """ This is a special object that is returned by the browser to
