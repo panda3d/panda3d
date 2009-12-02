@@ -186,7 +186,7 @@ start_p3dcert() {
     "SYSTEMROOT", "USERPROFILE", "COMSPEC",
 #endif
 #ifdef HAVE_X11
-    "DISPLAY",
+    "DISPLAY", "XAUTHORITY",
 #endif
     NULL
   };

@@ -863,7 +863,7 @@ start_p3dpython(P3DInstance *inst) {
       "SYSTEMROOT", "USERPROFILE", "COMSPEC",
 #endif
 #ifdef HAVE_X11
-      "DISPLAY",
+      "DISPLAY", "XAUTHORITY",
 #endif
       NULL
     };
@@ -956,7 +956,7 @@ start_p3dpython(P3DInstance *inst) {
   _env += "TEMP=";
   _env += inst_mgr->get_temp_directory();
   _env += '\0';
-    
+  
   // Define each package's root directory in an environment variable
   // named after the package, for the convenience of the packages in
   // setting up their config files.
