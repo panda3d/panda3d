@@ -180,10 +180,10 @@ Description_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>IFPkgDescriptionDescription</key>
-	<string></string>
-	<key>IFPkgDescriptionTitle</key>
-	<string>%(long_name)s</string>
+  <key>IFPkgDescriptionDescription</key>
+  <string></string>
+  <key>IFPkgDescriptionTitle</key>
+  <string>%(long_name)s</string>
 </dict>
 </plist>
 """
@@ -334,6 +334,7 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
         if dfilelower not in dependentFiles:
             if dfilelower.startswith('msvc') or \
                dfilelower.startswith('mfc') or \
+               dfilelower.startswith('zlib1') or \
                (dfile.startswith('lib') and dfile == dfilelower) or \
                dfilelower.startswith('libpanda') or \
                dfilelower.startswith('libp3d') or \
