@@ -349,11 +349,20 @@ class AppRunner(DirectObject):
         assert self.http
 
         # It's stale, get a new one.
-        url = PandaModules.URLSpec(host.hostUrlPrefix + fileSpec.filename)
-        print "Freshening %s" % (url)
-        doc = self.http.getDocument(url)
-        if not doc.isValid():
-            return False
+        doc = None
+        if self.superMirrorUrl:
+            # Use the "super mirror" first.
+            url = PandaModules.URLSpec(self.superMirrorUrl + fileSpec.filename)
+            print "Freshening %s" % (url)
+            doc = self.http.getDocument(url)
+            
+        if not doc or not doc.isValid():
+            # Failing the super mirror, contact the actual host.
+            url = PandaModules.URLSpec(host.hostUrlPrefix + fileSpec.filename)
+            print "Freshening %s" % (url)
+            doc = self.http.getDocument(url)
+            if not doc.isValid():
+                return False
         
         file = Filename.temporary('', 'p3d_')
         if not doc.downloadToFile(file):
