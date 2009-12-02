@@ -281,3 +281,16 @@ class ppatcher(p3d):
     require('panda3d')
 
     mainModule('direct.p3d.ppatcher')
+
+
+class pmerge(p3d):
+    # Another handy utility to go along with ppackage.  This
+    # merges multiple directory structures as created by
+    # ppackage into a single one.
+
+    config(display_name = "Panda3D Package Merger",
+           hidden = True, platform_specific = False,
+           keep_user_env = True)
+    require('panda3d')
+
+    mainModule('direct.p3d.pmerge')
