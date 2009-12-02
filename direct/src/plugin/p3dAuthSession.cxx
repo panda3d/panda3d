@@ -40,6 +40,11 @@ P3DAuthSession(P3DInstance *inst) :
 {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
+#ifdef _WIN32
+  _p3dcert_handle = INVALID_HANDLE_VALUE;
+#else
+  _p3dcert_pid = -1;
+#endif
   _p3dcert_started = false;
   _p3dcert_running = false;
   _started_wait_thread = false;
@@ -104,7 +109,7 @@ shutdown(bool send_message) {
     _inst = NULL;
   }
 
-  if (_p3dcert_started) {
+  if (_p3dcert_running) {
     nout << "Killing p3dcert process\n";
 #ifdef _WIN32
     TerminateProcess(_p3dcert_handle, 2);
@@ -112,11 +117,21 @@ shutdown(bool send_message) {
 
 #else  // _WIN32
     kill(_p3dcert_pid, SIGKILL);
+
+    // Wait a few milliseconds for the process to exit, and then get
+    // its return status to clean up the zombie status.  If we don't
+    // wait long enough, don't sweat it.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+    select(0, NULL, NULL, NULL, &tv);
+    int status;
+    waitpid(_p3dcert_pid, &status, WNOHANG);
 #endif  // _WIN32
     
     _p3dcert_running = false;
-    _p3dcert_started = false;
   }
+  _p3dcert_started = false;
 
   // Now that the process has stopped, the thread should stop itself
   // quickly too.
@@ -266,6 +281,9 @@ wt_thread_run() {
   if (result != 0) {
     nout << "Wait for process failed: " << GetLastError() << "\n";
   }
+  CloseHandle(_p3dcert_handle);
+  _p3dcert_handle = INVALID_HANDLE_VALUE;
+  _p3dcert_running = false;
   nout << "p3dcert process has successfully stopped.\n";
 #else
   int status;
@@ -273,6 +291,8 @@ wt_thread_run() {
   if (result == -1) {
     perror("waitpid");
   }
+  _p3dcert_pid = -1;
+  _p3dcert_running = false;
       
   nout << "p3dcert process has successfully stopped.\n";
   if (WIFEXITED(status)) {

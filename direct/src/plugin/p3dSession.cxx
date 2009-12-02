@@ -60,6 +60,11 @@ P3DSession(P3DInstance *inst) {
   _keep_user_env = false;
   _failed = false;
 
+#ifdef _WIN32
+  _p3dpython_handle = INVALID_HANDLE_VALUE;
+#else
+  _p3dpython_pid = -1;
+#endif
   _p3dpython_one_process = false;
   _p3dpython_started = false;
   _p3dpython_running = false;
@@ -132,6 +137,7 @@ shutdown() {
       }
       
       CloseHandle(_p3dpython_handle);
+      _p3dpython_handle = INVALID_HANDLE_VALUE;
 
 #else  // _WIN32
       // Wait for a certain amount of time for the process to stop by
@@ -168,6 +174,7 @@ shutdown() {
         select(0, NULL, NULL, NULL, &tv);
         result = waitpid(_p3dpython_pid, &status, WNOHANG);
       }
+      _p3dpython_pid = -1;
       
       nout << "Python process has successfully stopped.\n";
       if (WIFEXITED(status)) {
