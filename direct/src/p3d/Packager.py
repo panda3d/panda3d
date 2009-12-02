@@ -743,7 +743,6 @@ class Packager:
             if file.text is None and not file.filename.exists():
                 if not file.isExcluded(self):
                     self.packager.notify.warning("No such file: %s" % (file.filename))
-                    import pdb; pdb.set_trace()
                 return None
             
             self.files.append(file)
