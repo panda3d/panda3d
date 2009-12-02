@@ -2186,7 +2186,9 @@ class Packager:
 
         if not package:
             # Query the indicated host.
-            package = self.__findPackageOnHost(packageName, platform, version, host, requires = requires)
+            package = self.__findPackageOnHost(packageName, platform or self.platform, version or None, host, requires = requires)
+            if not package:
+                package = self.__findPackageOnHost(packageName, platform, version, host, requires = requires)
 
         if package:
             package = self.packages.setdefault((package.packageName, package.platform, package.version, package.host), package)
@@ -2268,7 +2270,7 @@ class Packager:
                 return None
         
         package = host.getPackage(packageName, version, platform = platform)
-        if not package and version is None:
+        if not package and not version:
             # With no version specified, find the best matching version.
             packages = host.getPackages(packageName, platform = platform)
             self.__sortPackageInfos(packages)
