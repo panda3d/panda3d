@@ -193,6 +193,21 @@ read_contents_file(const string &contents_filename) {
     }
   }
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (_host_url == inst_mgr->get_host_url()) {
+    // If this is also the plugin host, then copy the contents.xml
+    // file into the root Panda directory as well, for the next plugin
+    // iteration.
+    string top_filename = inst_mgr->get_root_dir() + "/contents.xml";
+    if (standardize_filename(top_filename) != 
+        standardize_filename(contents_filename)) {
+      if (!copy_file(contents_filename, top_filename)) {
+        nout << "Couldn't copy to " << top_filename << "\n";
+      }
+    }
+  }
+
+
   return true;
 }
 
