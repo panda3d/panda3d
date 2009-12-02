@@ -1682,11 +1682,16 @@ class Packager:
             self.addPosixSearchPath(self.executablePath, "PATH")
             self.executablePath.appendDirectory('/lib')
             self.executablePath.appendDirectory('/usr/lib')
+            self.executablePath.appendDirectory('/usr/local/lib')
         else:
             self.addPosixSearchPath(self.executablePath, "LD_LIBRARY_PATH")
             self.addPosixSearchPath(self.executablePath, "PATH")
             self.executablePath.appendDirectory('/lib')
             self.executablePath.appendDirectory('/usr/lib')
+            self.executablePath.appendDirectory('/usr/local/lib')
+        
+        if platform.uname()[1]=="pcbsd":
+            self.executablePath.appendDirectory('/usr/PCBSD/local/lib')
 
         # Set this flag true to automatically add allow_python_dev to
         # any applications.
