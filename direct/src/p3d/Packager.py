@@ -89,7 +89,14 @@ class Packager:
 
             if self.executable:
                 # Look up the filename along the system PATH, if necessary.
-                self.filename.resolveFilename(packager.executablePath)
+                if not self.filename.resolveFilename(packager.executablePath):
+                    # If it wasn't found, try looking it up under its
+                    # basename only.  Sometimes a Mac user will copy
+                    # the library file out of a framework and put that
+                    # along the PATH, instead of the framework itself.
+                    basename = Filename(self.filename.getBasename())
+                    if basename.resolveFilename(packager.executablePath):
+                        self.filename = basename
 
             # Convert the filename to an unambiguous filename for
             # searching.
@@ -736,6 +743,7 @@ class Packager:
             if file.text is None and not file.filename.exists():
                 if not file.isExcluded(self):
                     self.packager.notify.warning("No such file: %s" % (file.filename))
+                    import pdb; pdb.set_trace()
                 return None
             
             self.files.append(file)
@@ -834,8 +842,8 @@ class Packager:
             return filenames
             
         def __locateFrameworkLibrary(self, library):
-            """ Locates the given library inside it's framework on the
-            default framework paths, and returns it's location as Filename. """
+            """ Locates the given library inside its framework on the
+            default framework paths, and returns its location as Filename. """
             
             # If it's already a full existing path, we
             # don't search for it anymore, of course.
