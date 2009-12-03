@@ -58,15 +58,13 @@ class PackageInfo:
         self.solo = solo
         self.asMirror = asMirror
 
-        self.packageDir = Filename(host.hostDir, self.packageName)
-        if self.packageVersion:
-            self.packageDir = Filename(self.packageDir, self.packageVersion)
+        # This will be active while we are in the middle of a download
+        # cycle.
+        self.http = None
 
-        if self.asMirror:
-            # The server directory contains the platform name, though
-            # the client directory doesn't.
-            if self.platform:
-                self.packageDir = Filename(self.packageDir, self.platform)
+        # This will be filled in when the host's contents.xml file is
+        # read.
+        self.packageDir = None
             
         # These will be filled in by HostInfo when the package is read
         # from contents.xml.
@@ -95,6 +93,30 @@ class PackageInfo:
         # This is set true when the package has been "installed",
         # meaning it's been added to the paths and all.
         self.installed = False
+
+    def getPackageDir(self):
+        """ Returns the directory in which this package is installed.
+        This may not be known until the host's contents.xml file has
+        been downloaded, which informs us of the host's own install
+        directory. """
+        
+        if not self.packageDir:
+            if not self.host.hasContentsFile:
+                if not self.host.readContentsFile():
+                    self.host.downloadContentsFile(self.http)
+            
+            # Derive the packageDir from the hostDir.
+            self.packageDir = Filename(self.host.hostDir, self.packageName)
+            if self.packageVersion:
+                self.packageDir = Filename(self.packageDir, self.packageVersion)
+
+            if self.asMirror:
+                # The server directory contains the platform name, though
+                # the client directory doesn't.
+                if self.platform:
+                    self.packageDir = Filename(self.packageDir, self.platform)
+
+        return self.packageDir
 
     def getDownloadEffort(self):
         """ Returns the relative amount of effort it will take to
@@ -146,8 +168,8 @@ class PackageInfo:
             return True
 
         if not self.hasDescFile:
-            filename = Filename(self.packageDir, self.descFileBasename)
-            if self.descFile.quickVerify(self.packageDir, pathname = filename):
+            filename = Filename(self.getPackageDir(), self.descFileBasename)
+            if self.descFile.quickVerify(self.getPackageDir(), pathname = filename):
                 if self.__readDescFile():
                     # Successfully read.  We don't need to call
                     # checkArchiveStatus again, since readDescFile()
@@ -192,7 +214,7 @@ class PackageInfo:
 
         assert token == self.stepComplete
 
-        filename = Filename(self.packageDir, self.descFileBasename)
+        filename = Filename(self.getPackageDir(), self.descFileBasename)
         # Now that we've written the desc file, make it read-only.
         os.chmod(filename.toOsSpecific(), 0444)
 
@@ -221,7 +243,7 @@ class PackageInfo:
             self.hasPackage = True
             return True
 
-        filename = Filename(self.packageDir, self.descFileBasename)
+        filename = Filename(self.getPackageDir(), self.descFileBasename)
 
         if not hasattr(PandaModules, 'TiXmlDocument'):
             return False
@@ -332,12 +354,12 @@ class PackageInfo:
         # If the uncompressed archive file is good, that's all we'll
         # need to do.
         self.uncompressedArchive.actualFile = None
-        if self.uncompressedArchive.quickVerify(self.packageDir):
+        if self.uncompressedArchive.quickVerify(self.getPackageDir()):
             self.installPlans = [planA]
             return
 
         # Maybe the compressed archive file is good.
-        if self.compressedArchive.quickVerify(self.packageDir):
+        if self.compressedArchive.quickVerify(self.getPackageDir()):
             uncompressSize = self.uncompressedArchive.size
             step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
             planA = [step] + planA
@@ -362,11 +384,11 @@ class PackageInfo:
         # Now look for patches.  Start with the md5 hash from the
         # uncompressedArchive file we have on disk, and see if we can
         # find a patch chain from this file to our target.
-        pathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        pathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         fileSpec = self.uncompressedArchive.actualFile
         if fileSpec is None and pathname.exists():
             fileSpec = FileSpec()
-            fileSpec.fromFile(self.packageDir, self.uncompressedArchive.filename)
+            fileSpec.fromFile(self.getPackageDir(), self.uncompressedArchive.filename)
         plan = None
         if fileSpec:
             plan = self.__findPatchChain(fileSpec)
@@ -410,7 +432,7 @@ class PackageInfo:
 
         # Get a list of all of the files in the directory, so we can
         # remove files that don't belong.
-        contents = self.__scanDirectoryRecursively(self.packageDir) 
+        contents = self.__scanDirectoryRecursively(self.getPackageDir()) 
         self.__removeFileFromList(contents, self.descFileBasename)
         self.__removeFileFromList(contents, self.compressedArchive.filename)
         if not self.asMirror:
@@ -425,25 +447,25 @@ class PackageInfo:
         # something (e.g. case insensitivity).
         for filename in contents:
             print "Removing %s" % (filename)
-            pathname = Filename(self.packageDir, filename)
+            pathname = Filename(self.getPackageDir(), filename)
             pathname.unlink()
 
         if self.asMirror:
-            return self.compressedArchive.quickVerify(self.packageDir)
+            return self.compressedArchive.quickVerify(self.getPackageDir())
             
         allExtractsOk = True
-        if not self.uncompressedArchive.quickVerify(self.packageDir):
+        if not self.uncompressedArchive.quickVerify(self.getPackageDir()):
             #print "File is incorrect: %s" % (self.uncompressedArchive.filename)
             allExtractsOk = False
 
         if allExtractsOk:
             # OK, the uncompressed archive is good; that means there
             # shouldn't be a compressed archive file here.
-            pathname = Filename(self.packageDir, self.compressedArchive.filename)
+            pathname = Filename(self.getPackageDir(), self.compressedArchive.filename)
             pathname.unlink()
             
             for file in self.extracts:
-                if not file.quickVerify(self.packageDir):
+                if not file.quickVerify(self.getPackageDir()):
                     #print "File is incorrect: %s" % (file.filename)
                     allExtractsOk = False
                     break
@@ -537,7 +559,7 @@ class PackageInfo:
 
         from direct.p3d.PatchMaker import PatchMaker
 
-        patchMaker = PatchMaker(self.packageDir)
+        patchMaker = PatchMaker(self.getPackageDir())
         patchChain = patchMaker.getPatchChainToCurrent(self.descFileBasename, fileSpec)
         if patchChain is None:
             # No path.
@@ -613,7 +635,7 @@ class PackageInfo:
 
             if not filename:
                 filename = fileSpec.filename
-            targetPathname = Filename(self.packageDir, filename)
+            targetPathname = Filename(self.getPackageDir(), filename)
             targetPathname.setBinary()
 
             channel = self.http.makeChannel(False)
@@ -661,7 +683,7 @@ class PackageInfo:
             if not channel.isValid():
                 print "Failed to download %s" % (url)
 
-            elif not fileSpec.fullVerify(self.packageDir, pathname = targetPathname):
+            elif not fileSpec.fullVerify(self.getPackageDir(), pathname = targetPathname):
                 print "After downloading, %s incorrect" % (Filename(fileSpec.filename).getBasename())
             else:
                 # Success!
@@ -687,8 +709,8 @@ class PackageInfo:
         operation.  Returns one of stepComplete, stepFailed, or
         restartDownload. """
 
-        origPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
-        patchPathname = Filename(self.packageDir, patchfile.file.filename)
+        origPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
+        patchPathname = Filename(self.getPackageDir(), patchfile.file.filename)
         result = Filename.temporary('', 'patch_')
         print "Patching %s with %s" % (origPathname, patchPathname)
 
@@ -721,8 +743,8 @@ class PackageInfo:
         archive.  Returns one of stepComplete, stepFailed, or
         restartDownload. """
 
-        sourcePathname = Filename(self.packageDir, self.compressedArchive.filename)
-        targetPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        sourcePathname = Filename(self.getPackageDir(), self.compressedArchive.filename)
+        targetPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         targetPathname.unlink()
         print "Uncompressing %s to %s" % (sourcePathname, targetPathname)
         decompressor = Decompressor()
@@ -741,7 +763,7 @@ class PackageInfo:
         step.bytesDone = totalBytes
         self.__updateStepProgress(step)
 
-        if not self.uncompressedArchive.quickVerify(self.packageDir):
+        if not self.uncompressedArchive.quickVerify(self.getPackageDir()):
             print "after uncompressing, %s still incorrect" % (
                 self.uncompressedArchive.filename)
             return self.stepFailed
@@ -763,7 +785,7 @@ class PackageInfo:
             self.hasPackage = True
             return self.stepComplete
 
-        mfPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        mfPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         print "Unpacking %s" % (mfPathname)
         mf = Multifile()
         if not mf.openRead(mfPathname):
@@ -779,14 +801,14 @@ class PackageInfo:
                 allExtractsOk = False
                 continue
 
-            targetPathname = Filename(self.packageDir, file.filename)
+            targetPathname = Filename(self.getPackageDir(), file.filename)
             targetPathname.unlink()
             if not mf.extractSubfile(i, targetPathname):
                 print "Couldn't extract: %s" % (file.filename)
                 allExtractsOk = False
                 continue
             
-            if not file.quickVerify(self.packageDir):
+            if not file.quickVerify(self.getPackageDir()):
                 print "After extracting, still incorrect: %s" % (file.filename)
                 allExtractsOk = False
                 continue
@@ -814,14 +836,14 @@ class PackageInfo:
             return True
         assert self not in appRunner.installedPackages
 
-        mfPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        mfPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         mf = Multifile()
         if not mf.openRead(mfPathname):
             print "Couldn't open %s" % (mfPathname)
             return False
 
         # We mount it under its actual location on disk.
-        root = self.packageDir.cStr()
+        root = self.getPackageDir().cStr()
 
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.mount(mf, root, vfs.MFReadOnly)
@@ -830,7 +852,7 @@ class PackageInfo:
         # there.  We have to take a bit of care to check if it's
         # already there, since there can be some ambiguity in
         # os-specific path strings.
-        osRoot = self.packageDir.toOsSpecific()
+        osRoot = self.getPackageDir().toOsSpecific()
         foundOnPath = False
         for p in sys.path:
             if osRoot == p:
@@ -849,7 +871,7 @@ class PackageInfo:
         # Put it on the model-path, too.  We do this indiscriminantly,
         # because the Panda3D runtime won't be adding things to the
         # model-path, so it shouldn't be already there.
-        getModelPath().appendDirectory(self.packageDir)
+        getModelPath().appendDirectory(self.getPackageDir())
 
         # Set the environment variable to reference the package root.
         envvar = '%s_ROOT' % (self.packageName.upper())
@@ -857,7 +879,7 @@ class PackageInfo:
 
         # Now that the environment variable is set, read all of the
         # prc files in the package.
-        appRunner.loadMultifilePrcFiles(mf, self.packageDir)
+        appRunner.loadMultifilePrcFiles(mf, self.getPackageDir())
 
         # Also, find any toplevel Python packages, and add these as
         # shared packages.  This will allow different packages
