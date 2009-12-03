@@ -509,7 +509,7 @@ class PackageInfo:
             # Try again.
             if not self.downloadDescFile(http):
                 return False
-            assert self.installPlans
+
             token = self.__followInstallPlans()
 
         if token == self.stepFailed:
@@ -522,6 +522,9 @@ class PackageInfo:
     def __followInstallPlans(self):
         """ Performs all of the steps in self.installPlans.  Returns
         one of stepComplete, stepFailed, or restartDownload. """
+
+        if not self.installPlans:
+            self.__buildInstallPlans()
 
         installPlans = self.installPlans
         self.installPlans = None
