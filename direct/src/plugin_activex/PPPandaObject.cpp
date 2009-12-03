@@ -59,6 +59,21 @@ STDMETHODIMP_(unsigned long) PPandaObject::Release()
     return m_refs;
 }
 
+STDMETHODIMP PPandaObject::QueryInterface(REFIID riid, void FAR* FAR* ppv)
+{
+    if(!IsEqualIID(riid, IID_IUnknown))
+    {
+        if(!IsEqualIID(riid, IID_IDispatch)) 
+        {
+            *ppv = NULL;      
+            return E_NOINTERFACE;
+        }
+    }
+    *ppv = this;
+    AddRef();
+    return NOERROR;
+}
+
 STDMETHODIMP PPandaObject::GetIDsOfNames(
     REFIID riid,
     OLECHAR FAR* FAR* rgszNames,
@@ -139,6 +154,8 @@ STDMETHODIMP PPandaObject::Invoke(
     unsigned int FAR* puArgErr)
 {
     UNUSED(lcid);
+    HRESULT hr( S_OK );
+
 
     if(!IsEqualIID(riid, IID_NULL))
     {
@@ -149,8 +166,12 @@ STDMETHODIMP PPandaObject::Invoke(
         return E_FAIL;
     }
 
+    if ( dispidMember >= m_idsOfNames.size( ) ) 
+    {
+        return E_FAIL;
+    }
+
     CString& name( m_idsOfNames[dispidMember] );
-    HRESULT hr( S_OK );
 
     switch ( wFlags )
     {
@@ -182,19 +203,4 @@ STDMETHODIMP PPandaObject::Invoke(
         break;
     }
     return hr;
-}
-
-STDMETHODIMP PPandaObject::QueryInterface(REFIID riid, void FAR* FAR* ppv)
-{
-    if(!IsEqualIID(riid, IID_IUnknown))
-    {
-        if(!IsEqualIID(riid, IID_IDispatch)) 
-        {
-            *ppv = NULL;      
-            return E_NOINTERFACE;
-        }
-    }
-    *ppv = this;
-    AddRef();
-    return NOERROR;
 }
