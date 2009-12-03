@@ -94,7 +94,7 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     dp.rgvarg = pArgs;
 
     // Handle special-case for property-puts!
-    if( nType & DISPATCH_PROPERTYPUT ) 
+    if( nType & DISPATCH_PROPERTYPUT  || nType & DISPATCH_PROPERTYPUTREF ) 
     {
         dp.cNamedArgs = 1;
         dp.rgdispidNamedArgs = &dispidNamed;
@@ -105,6 +105,10 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     {
         hr = pDispEx->InvokeEx(dispID, LOCALE_USER_DEFAULT, 
                         nType, &dp, pvResult, NULL, NULL);
+        if ( FAILED( hr ) )
+        {
+            pDispEx->DeleteMemberByDispID( dispID );
+        }
     }
     else
     {
@@ -201,7 +205,14 @@ HRESULT PPInterface::SetProperty( CComPtr<IDispatch>& pDispatch, CString& name, 
     }
     if ( SUCCEEDED( hr ) )
     {
-        hr = Invoke( DISPATCH_PROPERTYPUT, pDispatch, name, &varResult, 1, &varValue ); 
+        if ( varValue.vt == VT_DISPATCH )
+        {
+            hr = Invoke( DISPATCH_PROPERTYPUTREF, pDispatch, name, &varResult, 1, &varValue );
+        }
+        else
+        {
+            hr = Invoke( DISPATCH_PROPERTYPUT, pDispatch, name, &varResult, 1, &varValue );
+        }
     }
     return hr;
 }
