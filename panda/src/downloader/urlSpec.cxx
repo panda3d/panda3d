@@ -85,16 +85,44 @@ get_port() const {
   if (has_port()) {
     return _port;
   }
-  string scheme = get_scheme();
-  if (scheme == "https") {
+  return get_default_port_for_scheme(get_scheme());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::is_default_port
+//       Access: Published
+//  Description: Returns true if the port number encoded in this URL
+//               is the default port number for the scheme (or if
+//               there is no port number), or false if it is a
+//               nonstandard port.
+////////////////////////////////////////////////////////////////////
+bool URLSpec::
+is_default_port() const {
+  if (!has_port()) {
+    return true;
+  }
+  return (_port == get_default_port_for_scheme(get_scheme()));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_default_port_for_scheme
+//       Access: Published, Static
+//  Description: Returns the default port number for the indicated
+//               scheme, or 0 if there is no known default.
+////////////////////////////////////////////////////////////////////
+int URLSpec::
+get_default_port_for_scheme(const string &scheme) {
+  if (scheme == "http" || scheme.empty()) {
+    return 80;
+
+  } else if (scheme == "https") {
     return 443;
 
   } else if (scheme == "socks") {
     return 1080;
-
-  } else { // == "http"
-    return 80;
   }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

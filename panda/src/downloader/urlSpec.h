@@ -54,6 +54,8 @@ PUBLISHED:
   INLINE string get_port_str() const;
   int get_port() const;
   string get_server_and_port() const;
+  bool is_default_port() const;
+  static int get_default_port_for_scheme(const string &scheme);
   string get_path() const;
   INLINE string get_query() const;
   string get_path_and_query() const;

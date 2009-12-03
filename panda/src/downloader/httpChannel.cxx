@@ -3570,8 +3570,17 @@ make_header() {
     << _client->get_http_version_string() << "\r\n";
 
   if (_client->get_http_version() >= HTTPEnum::HV_11) {
+    
     stream 
-      << "Host: " << _request.get_url().get_server_and_port() << "\r\n";
+      << "Host: " << _request.get_url().get_server();
+    if (!_request.get_url().is_default_port()) {
+      // It appears that some servers (notably gstatic.com) might
+      // return a 404 if you include an explicit port number in with
+      // the Host: header, even if it is the default port.  So, don't
+      // include the port number unless we need to.
+      stream << ":" << _request.get_url().get_port();
+    }
+    stream << "\r\n";
     if (!get_persistent_connection()) {
       stream
         << "Connection: close\r\n";
