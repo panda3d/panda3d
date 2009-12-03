@@ -688,19 +688,26 @@ class PackageInfo:
 
             elif not fileSpec.fullVerify(self.getPackageDir(), pathname = targetPathname):
                 print "After downloading, %s incorrect" % (Filename(fileSpec.filename).getBasename())
+
+                # This attempt failed.  Maybe the original contents.xml
+                # file is stale.  Try re-downloading it now, just to be
+                # sure.
+                if self.host.redownloadContentsFile(self.http):
+                    # Yes!  Go back and start over from the beginning.
+                    return self.restartDownload
+
             else:
                 # Success!
                 return self.stepComplete
 
-            # This attempt failed.  Maybe the original contents.xml
-            # file is stale.  Try re-downloading it now, just to be
-            # sure.
-            if self.host.redownloadContentsFile(self.http):
-                # Yes!  Go back and start over from the beginning.
-                return self.restartDownload
+            # Maybe the mirror is bad.  Go back and try the next
+            # mirror.
 
-            # Well, that wasn't the problem.  Maybe the mirror is bad.
-            # Go back and try the next mirror.
+        # All attempts failed.  Maybe the original contents.xml file
+        # is stale.  Try re-downloading it now, just to be sure.
+        if self.host.redownloadContentsFile(self.http):
+            # Yes!  Go back and start over from the beginning.
+            return self.restartDownload
 
         # All mirrors failed; the server (or the internet connection)
         # must be just fubar.
