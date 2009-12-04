@@ -178,6 +178,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   float _min_dist;
   float _max_dist;
 
+  void start_playing();
   void set_volume_on_channel();
   void set_balance_on_channel();
   void set_play_rate_on_channel();
@@ -191,6 +192,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   
   bool _active;
   bool _paused;
+  float _start_time;
   
   string _finished_event;
 

@@ -41,6 +41,8 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
 
   _active = manager->get_active();
+  _paused = false;
+  _start_time = 0.0;
 
   //Local Variables that are needed.
   FMOD_RESULT result;
@@ -152,7 +154,7 @@ FmodAudioSound::
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 play() {
-  set_time(0.0);
+  start_playing();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +194,7 @@ stop() {
     }
     fmod_audio_errcheck("_channel->stop()", result);
   }
+  _start_time = 0.0;
 }
 
 
@@ -283,58 +286,17 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::set_time
 //       Access: public
-//  Description: Starts playing from the specified location.
+//  Description: Sets the time at which the next play() operation will
+//               begin.  If we are already playing, skips to that time
+//               immediatey.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_time(float start_time) {
-  FMOD_RESULT result;
+  _start_time = start_time;
 
-  if (!_active) {
-    _paused = true;
-    return;
-  }
-  
-  int startTime = (int)(start_time * 1000);
-  
-  if (_channel != 0) {
-    // try backing up current sound.
-    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
-    if (result == FMOD_ERR_INVALID_HANDLE ||
-        result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
-
-    } else {
-      fmod_audio_errcheck("_channel->setPosition()", result);
-
-      bool playing;
-      result = _channel->isPlaying(&playing);
-      fmod_audio_errcheck("_channel->isPlaying()", result);
-      if (result != FMOD_OK || !playing) {
-        _channel = 0;
-      }
-    }
-  }
-  
-  if (_channel == 0) {
-    result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
-    fmod_audio_errcheck("_system->playSound()", result);
-    result = _channel->setUserData(this);
-    fmod_audio_errcheck("_channel->setUserData()", result);
-    result = _channel->setCallback(sound_end_callback);
-    fmod_audio_errcheck("_channel->setCallback()", result);
-    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
-    fmod_audio_errcheck("_channel->setPosition()", result);
-
-    set_volume_on_channel();
-    set_play_rate_on_channel();
-    set_speaker_mix_or_balance_on_channel();
-    // add_dsp_on_channel();
-    set_3d_attributes_on_channel();
-
-    result = _channel->setPaused(false);
-    fmod_audio_errcheck("_channel->setPaused()", result);
-    
-    _self_ref = this;
+  if (status() == PLAYING) {
+    // Already playing; skip to the indicated time.
+    start_playing();
   }
 }
 
@@ -381,6 +343,64 @@ set_volume(float vol) {
 float FmodAudioSound::
 get_volume() const {
   return _volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::start_playing
+//       Access: Private
+//  Description: Starts the sound playing at _start_time.
+////////////////////////////////////////////////////////////////////
+void FmodAudioSound::
+start_playing() {
+  FMOD_RESULT result;
+
+  if (!_active) {
+    _paused = true;
+    return;
+  }
+  
+  int startTime = (int)(_start_time * 1000);
+  
+  if (_channel != 0) {
+    // try backing up current sound.
+    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    if (result == FMOD_ERR_INVALID_HANDLE ||
+        result == FMOD_ERR_CHANNEL_STOLEN) {
+      _channel = 0;
+
+    } else {
+      fmod_audio_errcheck("_channel->setPosition()", result);
+
+      bool playing;
+      result = _channel->isPlaying(&playing);
+      fmod_audio_errcheck("_channel->isPlaying()", result);
+      if (result != FMOD_OK || !playing) {
+        _channel = 0;
+      }
+    }
+  }
+  
+  if (_channel == 0) {
+    result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
+    fmod_audio_errcheck("_system->playSound()", result);
+    result = _channel->setUserData(this);
+    fmod_audio_errcheck("_channel->setUserData()", result);
+    result = _channel->setCallback(sound_end_callback);
+    fmod_audio_errcheck("_channel->setCallback()", result);
+    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    fmod_audio_errcheck("_channel->setPosition()", result);
+
+    set_volume_on_channel();
+    set_play_rate_on_channel();
+    set_speaker_mix_or_balance_on_channel();
+    // add_dsp_on_channel();
+    set_3d_attributes_on_channel();
+
+    result = _channel->setPaused(false);
+    fmod_audio_errcheck("_channel->setPaused()", result);
+    
+    _self_ref = this;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -806,6 +826,7 @@ set_active(bool active) {
         if (get_loop_count() == 0) {
           // ...we're pausing a looping sound.
           _paused = true;
+          _start_time = get_time();
         }
         stop();
       }
