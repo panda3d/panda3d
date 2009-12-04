@@ -86,6 +86,7 @@ public:
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
+  const string &get_log_pathname() const;
 
   inline P3DSession *get_session() const;
 
@@ -265,6 +266,7 @@ private:
 
   P3DSession *_session;
   P3DAuthSession *_auth_session;
+  string _log_pathname;
 
 #ifdef __APPLE__
   // On OSX, we have to get a copy of the framebuffer data back from

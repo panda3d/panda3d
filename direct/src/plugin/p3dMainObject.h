@@ -79,6 +79,7 @@ private:
   P3DInstance *_inst;
 
   bool _unauth_play;  
+  string _game_log_pathname;
 
   // This map is used to store properties and retrieve until
   // set_pyobj() is called for the firs ttime.  At that point, the

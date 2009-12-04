@@ -273,6 +273,8 @@ terminate_instance(P3DInstance *inst) {
 
   ACQUIRE_LOCK(_instances_lock);
   if (inst->_session == this) {
+    nout << "Assigning " << inst << "->log_pathname = " << _log_pathname << "\n";
+    inst->_log_pathname = _log_pathname;
     inst->_session = NULL;
     _instances.erase(inst->get_instance_id());
   }

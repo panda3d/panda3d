@@ -25,9 +25,10 @@
 ////////////////////////////////////////////////////////////////////
 P3DMainObject::
 P3DMainObject() :
-  _pyobj(NULL)
+  _pyobj(NULL),
+  _inst(NULL),
+  _unauth_play(false)
 {
-  _unauth_play = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,6 +298,12 @@ get_pyobj() const {
 ////////////////////////////////////////////////////////////////////
 void P3DMainObject::
 set_instance(P3DInstance *inst) {
+  if (_inst != NULL) {
+    // Save the game log filename of the instance just before it goes
+    // away, in case JavaScript asks for it later.
+    _game_log_pathname = _inst->get_log_pathname();
+  }
+
   _inst = inst;
 }
 
@@ -350,24 +357,22 @@ call_play(P3D_object *params[], int num_params) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
 call_read_game_log(P3D_object *params[], int num_params) {
+  if (_inst != NULL) {
+    nout << "querying " << _inst << "->_log_pathname\n";
+    string log_pathname = _inst->get_log_pathname();
+    nout << "result is " << log_pathname << "\n";
+    return read_log(log_pathname, params, num_params);
+  }
+
+  if (!_game_log_pathname.empty()) {
+    // The instance has already finished, but we saved its log
+    // filename.
+    return read_log(_game_log_pathname, params, num_params);
+  }
+
+  // No log available for us.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (_inst == NULL) {
-    return inst_mgr->new_undefined_object();
-  }
-
-  if (!_inst->get_matches_script_origin()) {
-    // If you're not allowed to be scripting us, you can't query the
-    // game log either.  (But you can query the system log.)
-    return inst_mgr->new_undefined_object();
-  }
-
-  P3DSession *session = _inst->get_session();
-  if (session == NULL) {
-    return inst_mgr->new_undefined_object();
-  }
-
-  string log_pathname = session->get_log_pathname();
-  return read_log(log_pathname, params, num_params);
+  return inst_mgr->new_undefined_object();
 }
 
 ////////////////////////////////////////////////////////////////////

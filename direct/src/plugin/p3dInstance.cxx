@@ -891,6 +891,26 @@ handle_event(const P3D_event_data &event) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_log_pathname
+//       Access: Public
+//  Description: Returns the log filename for this particular session,
+//               if the session was started and if it has a log file.
+//               Returns empty string if the session never started or
+//               if it lacks a log file.
+//
+//               This is the same value returned by
+//               P3DSession::get_log_pathname(), except that it
+//               remains valid even after the session has closed.
+////////////////////////////////////////////////////////////////////
+const string &P3DInstance::
+get_log_pathname() const {
+  if (_session != NULL) {
+    return _session->_log_pathname;
+  }
+  return _log_pathname;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::add_package
 //       Access: Public
 //  Description: Adds the package to the list of packages used by this
