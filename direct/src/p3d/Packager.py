@@ -2271,7 +2271,13 @@ class Packager:
         
         package = host.getPackage(packageName, version, platform = platform)
         if not package and not version:
-            # With no version specified, find the best matching version.
+            # No explicit version is specified, first fallback: look
+            # for the compiled-in version.
+            package = host.getPackage(packageName, PandaSystem.getPackageVersionString(), platform = platform)
+            
+        if not package and not version:
+            # No explicit version is specified, second fallback: get
+            # the highest-numbered version available.
             packages = host.getPackages(packageName, platform = platform)
             self.__sortPackageInfos(packages)
             for p in packages:
