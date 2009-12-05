@@ -43,6 +43,7 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _num_threads(0),
   _thread_priority(TP_normal),
   _frame_budget(-1.0),
+  _frame_sync(false),
   _num_busy_threads(0),
   _num_tasks(0),
   _state(S_initial),
@@ -50,7 +51,8 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _pickup_mode(false),
   _needs_cleanup(false),
   _current_frame(0),
-  _time_in_frame(0.0)
+  _time_in_frame(0.0),
+  _block_till_next_frame(false)
 {
 }
 
@@ -214,6 +216,43 @@ double AsyncTaskChain::
 get_frame_budget() const {
   MutexHolder holder(_manager->_lock);
   return _frame_budget;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::set_frame_sync
+//       Access: Published
+//  Description: Sets the frame_sync flag.  When this flag is true,
+//               this task chain will be forced to sync with the
+//               TaskManager's clock.  It will run no faster than one
+//               epoch per clock frame.
+//
+//               When this flag is false, the default, the task chain
+//               will finish all of its tasks and then immediately
+//               start from the first task again, regardless of the
+//               clock frame.  When it is true, the task chain will
+//               finish all of its tasks and then wait for the clock
+//               to tick to the next frame before resuming the first
+//               task.
+//
+//               This only makes sense for threaded task chains.
+//               Non-threaded task chains are automatically
+//               synchronous.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+set_frame_sync(bool frame_sync) {
+  MutexHolder holder(_manager->_lock);
+  _frame_sync = frame_sync;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_frame_sync
+//       Access: Published
+//  Description: Returns the frame_sync flag.  See set_frame_sync().
+////////////////////////////////////////////////////////////////////
+bool AsyncTaskChain::
+get_frame_sync() const {
+  MutexHolder holder(_manager->_lock);
+  return _frame_sync;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -924,6 +963,11 @@ finish_sort_group() {
       }
       _manager->_clock->tick();
       _manager->_frame_cvar.notify_all();
+
+    } else if (_frame_sync) {
+      // If we're a synced chain, we have to wait at the end of the
+      // epoch for someone else to tick the clock.
+      _block_till_next_frame = true;
     }
     
     // Check for any sleeping tasks that need to be woken.
@@ -1239,8 +1283,10 @@ do_poll() {
       if (_current_frame != frame) {
         _current_frame = frame;
         _time_in_frame = 0.0;
+        _block_till_next_frame = false;
       }
-      if (_frame_budget >= 0.0 && _time_in_frame >= _frame_budget) {
+      if (_block_till_next_frame ||
+          (_frame_budget >= 0.0 && _time_in_frame >= _frame_budget)) {
         // If we've exceeded our budget, stop here.  We'll resume from
         // this point at the next call to poll().
         cleanup_pickup_mode();
@@ -1479,12 +1525,15 @@ thread_main() {
       if (_chain->_current_frame != frame) {
         _chain->_current_frame = frame;
         _chain->_time_in_frame = 0.0;
+        _chain->_block_till_next_frame = false;
       }
 
       // If we've exceeded our frame budget, sleep until the next
       // frame.
-      if (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
-        while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget &&
+      if (_chain->_block_till_next_frame ||
+          (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget)) {
+        while ((_chain->_block_till_next_frame ||
+                (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget)) &&
                _chain->_state != S_shutdown && _chain->_state != S_interrupted) {
           _chain->cleanup_pickup_mode();
           _chain->_manager->_frame_cvar.wait();
@@ -1492,6 +1541,7 @@ thread_main() {
           if (_chain->_current_frame != frame) {
             _chain->_current_frame = frame;
             _chain->_time_in_frame = 0.0;
+            _chain->_block_till_next_frame = false;
           }
         }
         // Now that it's the next frame, go back to the top of the loop.

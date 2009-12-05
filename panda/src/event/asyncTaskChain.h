@@ -73,6 +73,9 @@ PUBLISHED:
   void set_frame_budget(double frame_budget);
   double get_frame_budget() const;
 
+  void set_frame_sync(bool frame_sync);
+  bool get_frame_sync() const;
+
   void set_timeslice_priority(bool timeslice_priority);
   bool get_timeslice_priority() const;
 
@@ -173,6 +176,7 @@ protected:
   ThreadPriority _thread_priority;
   Threads _threads;
   double _frame_budget;
+  bool _frame_sync;
   int _num_busy_threads;
   int _num_tasks;
   TaskHeap _active;
@@ -186,6 +190,7 @@ protected:
 
   int _current_frame;
   double _time_in_frame;
+  bool _block_till_next_frame;
   
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
