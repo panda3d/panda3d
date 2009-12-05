@@ -40,7 +40,7 @@ PUBLISHED:
   QueuedConnectionReader(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionReader();
 
-  bool data_available();
+  BLOCKING bool data_available();
   bool get_data(NetDatagram &result);
   bool get_data(Datagram &result);
 

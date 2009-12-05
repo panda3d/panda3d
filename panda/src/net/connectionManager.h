@@ -50,15 +50,15 @@ PUBLISHED:
 
   PT(Connection) open_UDP_connection(int port = 0);
 
-  PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
-  PT(Connection) open_TCP_server_rendezvous(const string &hostname, 
-                                            int port, int backlog);
-  PT(Connection) open_TCP_server_rendezvous(const NetAddress &address, 
-                                            int backlog);
-  PT(Connection) open_TCP_client_connection(const NetAddress &address,
-                                            int timeout_ms);
-  PT(Connection) open_TCP_client_connection(const string &hostname, int port,
-                                            int timeout_ms);
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(const string &hostname, 
+                                                     int port, int backlog);
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(const NetAddress &address, 
+                                                     int backlog);
+  BLOCKING PT(Connection) open_TCP_client_connection(const NetAddress &address,
+                                                     int timeout_ms);
+  BLOCKING PT(Connection) open_TCP_client_connection(const string &hostname, int port,
+                                                     int timeout_ms);
 
   bool close_connection(const PT(Connection) &connection);
 

@@ -51,7 +51,7 @@ PUBLISHED:
   QueuedConnectionListener(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionListener();
 
-  bool new_connection_available();
+  BLOCKING bool new_connection_available();
   bool get_new_connection(PT(Connection) &rendezvous,
                           NetAddress &address,
                           PT(Connection) &new_connection);
