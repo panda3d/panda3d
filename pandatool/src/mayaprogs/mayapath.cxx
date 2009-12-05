@@ -18,6 +18,8 @@
 
 #include "dtoolbase.h"
 #include "filename.h"
+#include "dSearchPath.h"
+#include "executionEnvironment.h"
 #include <stdlib.h>
 
 #if defined(_WIN32)
@@ -158,9 +160,11 @@ main(int argc, char *argv[]) {
 #ifdef _WIN32
   // Windows case.
   char *command_line = strdup(GetCommandLine());
+  cout << "command_line: " << command_line << "\n";
   STARTUPINFO startup_info;
   PROCESS_INFORMATION process_info;
   GetStartupInfo(&startup_info);
+  cout << "os_command: " << os_command.c_str() << "\n";
   BOOL result = CreateProcess(os_command.c_str(),
                               command_line, 
                               NULL, NULL, true, 0,
