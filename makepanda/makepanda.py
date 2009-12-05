@@ -3369,7 +3369,7 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
     if (sys.platform == "darwin"):
         TargetAdd('p3d_plugin.dll', input='libsubprocbuffer.ilb')
-    TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+    TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
