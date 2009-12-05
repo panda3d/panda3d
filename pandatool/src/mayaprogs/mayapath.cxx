@@ -35,6 +35,9 @@ main(int argc, char *argv[]) {
   if (!command.is_fully_qualified()) {
     DSearchPath path;
     path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
+#ifdef _WIN32
+    command.set_extension("exe");
+#endif
     command.resolve_filename(path);
   }
 
@@ -160,11 +163,9 @@ main(int argc, char *argv[]) {
 #ifdef _WIN32
   // Windows case.
   char *command_line = strdup(GetCommandLine());
-  cout << "command_line: " << command_line << "\n";
   STARTUPINFO startup_info;
   PROCESS_INFORMATION process_info;
   GetStartupInfo(&startup_info);
-  cout << "os_command: " << os_command.c_str() << "\n";
   BOOL result = CreateProcess(os_command.c_str(),
                               command_line, 
                               NULL, NULL, true, 0,
