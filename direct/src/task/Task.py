@@ -173,7 +173,7 @@ class TaskManager:
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
-                       timeslicePriority = None):
+                       frameSync = None, timeslicePriority = None):
         """Defines a new task chain.  Each task chain executes tasks
         potentially in parallel with all of the other task chains (if
         numThreads is more than zero).  When a new task is created, it
@@ -205,6 +205,16 @@ class TaskManager:
         no limit (the default).  It's not directly related to
         threadPriority.
 
+        frameSync is true to force the task chain to sync to the
+        clock.  When this flag is false, the default, the task chain
+        will finish all of its tasks and then immediately start from
+        the first task again, regardless of the clock frame.  When it
+        is true, the task chain will finish all of its tasks and then
+        wait for the clock to tick to the next frame before resuming
+        the first task.  This only makes sense for threaded tasks
+        chains; non-threaded task chains are automatically
+        synchronous.
+
         timeslicePriority is False in the default mode, in which each
         task runs exactly once each frame, round-robin style,
         regardless of the task's priority value; or True to change the
@@ -222,6 +232,8 @@ class TaskManager:
             chain.setThreadPriority(threadPriority)
         if frameBudget is not None:
             chain.setFrameBudget(frameBudget)
+        if frameSync is not None:
+            chain.setFrameSync(frameSync)
         if timeslicePriority is not None:
             chain.setTimeslicePriority(timeslicePriority)
 
