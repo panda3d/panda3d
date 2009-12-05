@@ -461,7 +461,7 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_home_directory() {
-  if (AtomicAdjust::get_ptr(_home_directory) == NULL) {
+  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_home_directory) == NULL) {
     Filename home_directory;
 
     // In all environments, check $HOME first.
@@ -522,7 +522,7 @@ get_home_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_temp_directory() {
-  if (AtomicAdjust::get_ptr(_temp_directory) == NULL) {
+  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_temp_directory) == NULL) {
     Filename temp_directory;
 
 #ifdef WIN32
@@ -571,7 +571,7 @@ get_temp_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_user_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_user_appdata_directory) == NULL) {
     Filename user_appdata_directory;
 
 #ifdef WIN32
@@ -620,7 +620,7 @@ get_user_appdata_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_common_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_common_appdata_directory) == NULL) {
     Filename common_appdata_directory;
 
 #ifdef WIN32
