@@ -52,13 +52,18 @@ class ConnectionRepository(
         DoCollectionManager.__init__(self)
         self.setPythonRepository(self)
 
-        base.finalExitCallbacks.append(self.shutdown)
-
-        self.config = config
-
         # Create a unique ID number for each ConnectionRepository in
         # the world, helpful for sending messages specific to each one.
         self.uniqueId = hash(self)
+
+        base.finalExitCallbacks.append(self.shutdown)
+
+        # Accept this hook so that we can respond to lost-connection
+        # events in the main thread, instead of within the network
+        # thread (if there is one).
+        self.accept(self.uniqueName('lostConnection'), self.lostConnection)
+        
+        self.config = config
 
         if self.config.GetBool('verbose-repository'):
             self.setVerbose(1)
@@ -510,6 +515,7 @@ class ConnectionRepository(
         else:
             print "uh oh, we aren't using one of the tri-state CM variables"
             failureCallback(0, '', *failureArgs)
+
     def disconnect(self):
         """
         Closes the previously-established connection.
@@ -518,6 +524,10 @@ class ConnectionRepository(
         self._serverAddress = ''
         CConnectionRepository.disconnect(self)
         self.stopReaderPollTask()
+
+    def shutdown(self):
+        self.ignoreAll()
+        CConnectionRepository.shutdown(self)
 
     def httpConnectCallback(self, ch, serverList, serverIndex,
                             successCallback, successArgs,
@@ -597,7 +607,6 @@ class ConnectionRepository(
     def readerPollUntilEmpty(self, task):
         while self.readerPollOnce():
             pass
-        Thread.forceYield()
         return Task.cont
 
     def readerPollOnce(self):
@@ -609,7 +618,7 @@ class ConnectionRepository(
         # Unable to receive a datagram: did we lose the connection?
         if not self.isConnected():
             self.stopReaderPollTask()
-            self.lostConnection()
+            messenger.send(self.uniqueName('lostConnection'), taskChain = 'default')
         return 0
 
     def handleReaderOverflow(self):
