@@ -65,13 +65,14 @@ PUBLISHED:
   void set_tcp_header_size(int tcp_header_size);
   int get_tcp_header_size() const;
 
+  void shutdown();
+
 protected:
   void clear_manager();
 
 private:
   void thread_run(int thread_index);
   bool send_datagram(const NetDatagram &datagram);
-  void shutdown();
 
 protected:
   ConnectionManager *_manager;
@@ -80,6 +81,7 @@ private:
   bool _raw_mode;
   int _tcp_header_size;
   DatagramQueue _queue;
+  bool _shutdown;
 
   class WriterThread : public Thread {
   public:

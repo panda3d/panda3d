@@ -86,6 +86,8 @@ PUBLISHED:
   void set_tcp_header_size(int tcp_header_size);
   int get_tcp_header_size() const;
 
+  void shutdown();
+
 protected:
   virtual void flush_read_connection(Connection *connection);
   virtual void receive_datagram(const NetDatagram &datagram)=0;
@@ -102,7 +104,6 @@ protected:
   };
   typedef pvector<SocketInfo *> Sockets;
 
-  void shutdown();
   void clear_manager();
   void finish_socket(SocketInfo *sinfo);
 

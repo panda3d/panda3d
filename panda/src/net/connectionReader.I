@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::is_polling
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the reader is a polling reader,
 //               i.e. it has no threads.
 ////////////////////////////////////////////////////////////////////
