@@ -81,7 +81,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
     _threads.push_back(thread);
   }
   for (i = 0; i < num_threads; i++) {
-    _threads[i]->start(TP_normal, true);
+    _threads[i]->start(net_thread_priority, true);
   }
 
   _manager->add_writer(this);

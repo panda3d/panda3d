@@ -109,6 +109,11 @@ ConfigVariableInt net_max_write_per_epoch
           "to minimize the impact of the networking layer on the other "
           "threads."));
 
+ConfigVariableEnum<ThreadPriority> net_thread_priority
+("net-thread-priority", TP_low,
+ PRC_DESC("The default thread priority when creating threaded readers "
+          "or writers."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libnet

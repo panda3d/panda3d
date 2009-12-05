@@ -129,7 +129,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
     _threads.push_back(thread);
   }
   for (i = 0; i < num_threads; i++) {
-    _threads[i]->start(TP_normal, true);
+    _threads[i]->start(net_thread_priority, true);
   }
 
   _manager->add_reader(this);
@@ -849,7 +849,7 @@ thread_run(int thread_index) {
 
   while (!_shutdown) {
     SocketInfo *sinfo =
-      get_next_available_socket(false, thread_index);
+      get_next_available_socket(true, thread_index);
     if (sinfo != (SocketInfo *)NULL) {
       process_incoming_data(sinfo);
       Thread::consider_yield();

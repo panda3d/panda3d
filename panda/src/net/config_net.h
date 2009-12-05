@@ -19,6 +19,8 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableInt.h"
 #include "configVariableBool.h"
+#include "configVariableEnum.h"
+#include "threadPriority.h"
 
 // Configure variables for net package.
 
@@ -31,6 +33,7 @@ extern double get_max_poll_cycle();
 
 extern ConfigVariableInt net_max_read_per_epoch;
 extern ConfigVariableInt net_max_write_per_epoch;
+extern ConfigVariableEnum<ThreadPriority> net_thread_priority;
 
 extern EXPCL_PANDA_NET void init_libnet();
 
