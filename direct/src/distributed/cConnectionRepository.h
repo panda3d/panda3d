@@ -64,6 +64,16 @@ PUBLISHED:
                         bool threaded_net = false);
   ~CConnectionRepository();
 
+  // Any methods of this class that acquire _lock (which is most of
+  // them) *must* be tagged BLOCKING, to avoid risk of a race
+  // condition in Python when running in true threaded mode.  The
+  // BLOCKING tag releases the Python GIL during the function call,
+  // and we re-acquire it when needed within these functions to call
+  // out to Python.  If any functions acquire _lock while already
+  // holding the Python GIL, there could be a deadlock between these
+  // functions and the ones that are acquiring the GIL while already
+  // holding _lock.
+
   INLINE DCFile &get_dc_file();
 
   INLINE bool has_owner_view() const;
@@ -85,25 +95,25 @@ PUBLISHED:
 #endif
 
 #ifdef HAVE_OPENSSL
-  void set_connection_http(HTTPChannel *channel);
-  SocketStream *get_stream();
+  BLOCKING void set_connection_http(HTTPChannel *channel);
+  BLOCKING SocketStream *get_stream();
 #endif
 #ifdef HAVE_NET
-  bool try_connect_net(const URLSpec &url);
-
+  BLOCKING bool try_connect_net(const URLSpec &url);
+  
   INLINE QueuedConnectionManager &get_qcm();
   INLINE ConnectionWriter &get_cw();
   INLINE QueuedConnectionReader &get_qcr();
 #endif
 
 #ifdef WANT_NATIVE_NET
-  bool connect_native(const URLSpec &url);
+  BLOCKING bool connect_native(const URLSpec &url);
   INLINE Buffered_DatagramConnection &get_bdc();
 #endif
 
 #ifdef SIMULATE_NETWORK_DELAY
-  void start_delay(double min_delay, double max_delay);
-  void stop_delay();
+  BLOCKING void start_delay(double min_delay, double max_delay);
+  BLOCKING void stop_delay();
 #endif
 
   BLOCKING bool check_datagram();
@@ -114,37 +124,37 @@ PUBLISHED:
 #endif
 #endif
     
-  INLINE void get_datagram(Datagram &dg);
-  INLINE void get_datagram_iterator(DatagramIterator &di);
-  INLINE CHANNEL_TYPE get_msg_channel(int offset = 0) const;
-  INLINE int          get_msg_channel_count() const;
-  INLINE CHANNEL_TYPE get_msg_sender() const;
+  BLOCKING INLINE void get_datagram(Datagram &dg);
+  BLOCKING INLINE void get_datagram_iterator(DatagramIterator &di);
+  BLOCKING INLINE CHANNEL_TYPE get_msg_channel(int offset = 0) const;
+  BLOCKING INLINE int          get_msg_channel_count() const;
+  BLOCKING INLINE CHANNEL_TYPE get_msg_sender() const;
 //  INLINE unsigned char get_sec_code() const;
-  INLINE unsigned int get_msg_type() const;
+  BLOCKING INLINE unsigned int get_msg_type() const;
 
   INLINE static const string &get_overflow_event_name();
 
-  bool is_connected();
+  BLOCKING bool is_connected();
 
   BLOCKING bool send_datagram(const Datagram &dg);
 
-  INLINE void set_want_message_bundling(bool flag);
-  INLINE bool get_want_message_bundling() const;
+  BLOCKING INLINE void set_want_message_bundling(bool flag);
+  BLOCKING INLINE bool get_want_message_bundling() const;
 
-  INLINE void set_in_quiet_zone(bool flag);
-  INLINE bool get_in_quiet_zone() const;
+  BLOCKING INLINE void set_in_quiet_zone(bool flag);
+  BLOCKING INLINE bool get_in_quiet_zone() const;
 
-  void start_message_bundle();
-  INLINE bool is_bundling_messages() const;
-  void send_message_bundle(unsigned int channel, unsigned int sender_channel);
-  void abandon_message_bundles();
-  void bundle_msg(const Datagram &dg);
+  BLOCKING void start_message_bundle();
+  BLOCKING INLINE bool is_bundling_messages() const;
+  BLOCKING void send_message_bundle(unsigned int channel, unsigned int sender_channel);
+  BLOCKING void abandon_message_bundles();
+  BLOCKING void bundle_msg(const Datagram &dg);
 
   BLOCKING bool consider_flush();
   BLOCKING bool flush();
 
-  void disconnect();
-  void shutdown();
+  BLOCKING void disconnect();
+  BLOCKING void shutdown();
 
   INLINE void set_simulated_disconnect(bool simulated_disconnect);
   INLINE bool get_simulated_disconnect() const;

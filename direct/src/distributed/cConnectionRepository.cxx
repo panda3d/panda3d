@@ -296,7 +296,8 @@ check_datagram() {
   if(_native)
     _bdc.Flush();
   #endif //WANT_NATIVE_NET
-  while (do_check_datagram()) { //Read a datagram
+
+  while (do_check_datagram()) {
     if (get_verbose()) {
       describe_message(nout, "RECV", _dg);
     }
@@ -319,9 +320,16 @@ check_datagram() {
       // structure, to support legacy code that expects to find it
       // there.
       if (_python_repository != (PyObject *)NULL) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+#endif
         PyObject *value = PyLong_FromUnsignedLongLong(_msg_sender);
         PyObject_SetAttrString(_python_repository, "msgSender", value);
         Py_DECREF(value);
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+        PyGILState_Release(gstate);
+#endif
       }
 #endif  // HAVE_PYTHON
     }
@@ -728,7 +736,12 @@ do_check_datagram() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 handle_update_field() {
-  #ifdef HAVE_PYTHON
+#ifdef HAVE_PYTHON
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   PStatTimer timer(_update_pcollector);
   unsigned int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) 
@@ -768,6 +781,9 @@ handle_update_field() {
         if (!cNeverDisable) {
           // in quiet zone and distobj is disable-able
           // drop update on the floor
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+          PyGILState_Release(gstate);
+#endif
           return true;
         }
       }
@@ -781,11 +797,18 @@ handle_update_field() {
       Py_DECREF(distobj);
       
       if (PyErr_Occurred()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+        PyGILState_Release(gstate);
+#endif
         return false;
       }
     }
 
   }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
   #endif  // HAVE_PYTHON  
   return true;
 }
@@ -804,7 +827,12 @@ handle_update_field() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 handle_update_field_owner() {
-  #ifdef HAVE_PYTHON
+#ifdef HAVE_PYTHON
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   PStatTimer timer(_update_pcollector);
   unsigned int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) {
@@ -855,6 +883,9 @@ handle_update_field_owner() {
         Py_DECREF(distobjOV);
       
         if (PyErr_Occurred()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+          PyGILState_Release(gstate);
+#endif
           return false;
         }
       }
@@ -891,13 +922,19 @@ handle_update_field_owner() {
         Py_DECREF(distobj);
       
         if (PyErr_Occurred()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+          PyGILState_Release(gstate);
+#endif
           return false;
         }
       }
     }
-
   }
-  #endif  // HAVE_PYTHON  
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
+#endif  // HAVE_PYTHON  
 
   return true;
 }
