@@ -30,6 +30,11 @@ main(int argc, char *argv[]) {
   // First, get the command line and append _bin, so we will actually
   // run maya2egg_bin.exe, egg2maya_bin.exe, etc.
   Filename command = Filename::from_os_specific(argv[0]);
+  if (!command.is_fully_qualified()) {
+    DSearchPath path;
+    path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
+    command.resolve_filename(path);
+  }
 
 #ifdef _WIN32
   if (command.get_extension() == "exe") {
