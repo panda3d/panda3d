@@ -806,6 +806,8 @@ def CompileLink(dll, obj, opts):
             else: cmd += " /NOD:MSVCRT.LIB /NOD:mfcs90.lib mfcs90.lib MSVCRT.lib"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+        subsystem = GetValueOption(opts, "SUBSYSTEM:")
+        if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
         if (dll.endswith(".dll")):
             cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
@@ -3388,10 +3390,10 @@ if (RTDIST or RUNTIME):
       OPTS.append("NON_CONSOLE")
       TargetAdd('p3dpythonw_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
       TargetAdd('p3dpythonw_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
-      TargetAdd('p3dpythonw.exe', input='p3dpython_p3dpython_composite1.obj')
-      TargetAdd('p3dpythonw.exe', input='p3dpython_p3dPythonMain.obj')
+      TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dpython_composite1.obj')
+      TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dPythonMain.obj')
       TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
-      TargetAdd('p3dpythonw.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+      TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'TINYXML', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
@@ -4905,3 +4907,4 @@ WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
 print GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor()
+
