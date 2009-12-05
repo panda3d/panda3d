@@ -334,7 +334,9 @@ keystroke(int keycode, double time) {
 //     Function: GraphicsWindowInputDevice::candidate
 //       Access: Public
 //  Description: Records that the indicated candidate string has been
-//               highlighted.
+//               highlighted.  This is used to implement IME support
+//               for typing in international languages, especially
+//               Chinese/Japanese/Korean.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 candidate(const wstring &candidate_string, size_t highlight_start, 
