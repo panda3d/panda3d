@@ -179,5 +179,6 @@ class TimeManager(DistributedObject.DistributedObject):
                 return
             self.notify.info("Giving up on uncertainty requirement.")
         
-        messenger.send("gotTimeSync")
+        messenger.send("gotTimeSync", taskChain = 'default')
+        messenger.send(self.cr.uniqueName("gotTimeSync"), taskChain = 'default')
 

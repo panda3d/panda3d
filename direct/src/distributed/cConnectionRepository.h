@@ -106,11 +106,11 @@ PUBLISHED:
   void stop_delay();
 #endif
 
-  bool check_datagram();
+  BLOCKING bool check_datagram();
 #ifdef HAVE_PYTHON
 #ifdef WANT_NATIVE_NET
-    bool check_datagram_ai(PyObject *PycallBackFunction);
-    bool network_based_reader_and_yielder(PyObject *PycallBackFunction,ClockObject &clock, float returnBy);
+  BLOCKING bool check_datagram_ai(PyObject *PycallBackFunction);
+  BLOCKING bool network_based_reader_and_yielder(PyObject *PycallBackFunction,ClockObject &clock, float returnBy);
 #endif
 #endif
     
@@ -126,7 +126,7 @@ PUBLISHED:
 
   bool is_connected();
 
-  bool send_datagram(const Datagram &dg);
+  BLOCKING bool send_datagram(const Datagram &dg);
 
   INLINE void set_want_message_bundling(bool flag);
   INLINE bool get_want_message_bundling() const;
@@ -140,8 +140,8 @@ PUBLISHED:
   void abandon_message_bundles();
   void bundle_msg(const Datagram &dg);
 
-  bool consider_flush();
-  bool flush();
+  BLOCKING bool consider_flush();
+  BLOCKING bool flush();
 
   void disconnect();
   void shutdown();

@@ -55,7 +55,8 @@ class ClientRepository(ClientRepositoryBase):
     def createReady(self):
         # Now that we've got a doId range, we can safely generate new
         # distributed objects.
-        messenger.send('createReady')
+        messenger.send('createReady', taskChain = 'default')
+        messenger.send(self.uniqueName('createReady'), taskChain = 'default')
 
     def handleRequestGenerates(self, di):
         # When new clients join the zone of an object, they need to hear

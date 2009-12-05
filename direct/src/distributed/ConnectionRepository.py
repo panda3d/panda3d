@@ -56,6 +56,10 @@ class ConnectionRepository(
 
         self.config = config
 
+        # Create a unique ID number for each ConnectionRepository in
+        # the world, helpful for sending messages specific to each one.
+        self.uniqueId = hash(self)
+
         if self.config.GetBool('verbose-repository'):
             self.setVerbose(1)
 
@@ -645,6 +649,9 @@ class ConnectionRepository(
         if self.networkPlugPulled():
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
             self.setSimulatedDisconnect(0)
+
+    def uniqueName(self, idString):
+        return ("%s-%s" % (idString, self.uniqueId))
 
 class GCTrigger:
     # used to trigger garbage collection

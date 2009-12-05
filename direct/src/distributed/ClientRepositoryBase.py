@@ -100,10 +100,6 @@ class ClientRepositoryBase(ConnectionRepository):
         ## self.send(datagram)
         ## # Make sure the message gets there.
         ## self.flush()
-
-    # Define uniqueName
-    def uniqueName(self, desc):
-        return desc
         
     def specialName(self, label):
         name = ("SpecialName %s %s" % (self.specialNameNumber, label))
