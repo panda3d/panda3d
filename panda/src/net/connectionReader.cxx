@@ -621,6 +621,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     }
 
     header_bytes_read += bytes_read;
+    Thread::consider_yield();
   }
 
   // Now we must decode the header to determine how big the datagram
@@ -643,15 +644,23 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   while (!_shutdown && (int)datagram.get_length() < size) {
     int bytes_read;
 
+    int read_bytes = read_buffer_size;
+#ifdef SIMPLE_THREADS
+    // In the SIMPLE_THREADS case, we want to limit the number of
+    // bytes we read in a single epoch, to minimize the impact on the
+    // other threads.
+    read_bytes = min(read_buffer_size, (int)net_max_read_per_epoch);
+#endif
+
     bytes_read =
-      socket->RecvData(buffer, min(read_buffer_size,
+      socket->RecvData(buffer, min(read_bytes,
                                    (int)(size - datagram.get_length())));
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
     while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR &&
            socket->Active()) {
       Thread::force_yield();
       bytes_read =
-        socket->RecvData(buffer, min(read_buffer_size,
+        socket->RecvData(buffer, min(read_bytes,
                                      (int)(size - datagram.get_length())));
     }
 #endif  // SIMPLE_THREADS
@@ -678,6 +687,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
         << "Discarding " << bytes_read - datagram_bytes
         << " bytes following TCP datagram.\n";
     }
+    Thread::consider_yield();
   }
 
   // Now that we've read all the data, it's time to finish the socket

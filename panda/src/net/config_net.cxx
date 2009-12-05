@@ -27,28 +27,6 @@ ConfigureFn(config_net) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libnet
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
-void
-init_libnet() {
-  static bool initialized = false;
-  if (initialized) {
-    return;
-  }
-  initialized = true;
-
-  NetDatagram::init_type();
-
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("net");
-}
-
 
 
 // The following two maximum queue sizes are totally arbitrary and
@@ -115,4 +93,41 @@ get_max_poll_cycle() {
   }
 
   return *max_poll_cycle;
+}
+
+ConfigVariableInt net_max_read_per_epoch
+("net-max-read-per-epoch", 1024,
+ PRC_DESC("The maximum number of bytes to read from the net in a single "
+          "thread epoch, when SIMPLE_THREADS is defined.  This is designed "
+          "to minimize the impact of the networking layer on the other "
+          "threads."));
+
+ConfigVariableInt net_max_write_per_epoch
+("net-max-write-per-epoch", 1024,
+ PRC_DESC("The maximum number of bytes to write to the net in a single "
+          "thread epoch, when SIMPLE_THREADS is defined.  This is designed "
+          "to minimize the impact of the networking layer on the other "
+          "threads."));
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libnet
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libnet() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  NetDatagram::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("net");
 }

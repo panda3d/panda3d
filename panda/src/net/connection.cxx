@@ -503,9 +503,10 @@ do_flush() {
   _queued_count = 0;
   _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
 
-  int data_sent = tcp->SendData(sending_data);
-  bool okflag = (data_sent == (int)sending_data.size());
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  int max_send = net_max_write_per_epoch;
+  int data_sent = tcp->SendData(sending_data.data(), min((size_t)max_send, sending_data.size()));
+  bool okflag = (data_sent == (int)sending_data.size());
   if (!okflag) {
     int total_sent = 0;
     if (data_sent > 0) {
@@ -514,14 +515,23 @@ do_flush() {
     double last_report = 0;
     while (!okflag && tcp->Active() &&
            (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
-      Thread::force_yield();
-      data_sent = tcp->SendData(sending_data.data() + total_sent, sending_data.size() - total_sent);
+      if (data_sent == 0) {
+        Thread::force_yield();
+      } else {
+        Thread::consider_yield();
+      }
+      data_sent = tcp->SendData(sending_data.data() + total_sent, min((size_t)max_send, sending_data.size() - total_sent));
       if (data_sent > 0) {
         total_sent += data_sent;
       }
       okflag = (total_sent == (int)sending_data.size());
     }
   }
+
+#else  // SIMPLE_THREADS
+  int data_sent = tcp->SendData(sending_data);
+  bool okflag = (data_sent == (int)sending_data.size());
+
 #endif  // SIMPLE_THREADS
 
   return check_send_error(okflag);
