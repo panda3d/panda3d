@@ -666,6 +666,22 @@ disconnect() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::shutdown
+//       Access: Published
+//  Description: May be called at application shutdown to ensure all
+//               threads are cleaned up.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+shutdown() {
+  disconnect();
+
+  #ifdef HAVE_NET
+  _cw.shutdown();
+  _qcr.shutdown();
+  #endif  // HAVE_NET
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::do_check_datagram
 //       Access: Private
 //  Description: The private implementation of check_datagram(), this

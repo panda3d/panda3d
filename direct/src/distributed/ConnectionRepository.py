@@ -51,7 +51,9 @@ class ConnectionRepository(
         DoInterestManager.__init__(self)
         DoCollectionManager.__init__(self)
         self.setPythonRepository(self)
-        
+
+        base.finalExitCallbacks.append(self.shutdown)
+
         self.config = config
 
         if self.config.GetBool('verbose-repository'):
@@ -591,6 +593,7 @@ class ConnectionRepository(
     def readerPollUntilEmpty(self, task):
         while self.readerPollOnce():
             pass
+        Thread.forceYield()
         return Task.cont
 
     def readerPollOnce(self):

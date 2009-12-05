@@ -429,6 +429,9 @@ class ShowBase(DirectObject.DirectObject):
 
         This function is designed to be safe to call multiple times."""
 
+        for cb in self.finalExitCallbacks:
+            cb()
+
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
             allowAccessibilityShortcutKeys(True)
@@ -457,9 +460,6 @@ class ShowBase(DirectObject.DirectObject):
 
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.unmountAll()
-
-        for cb in self.finalExitCallbacks:
-            cb()
         
 
     def exitfunc(self):

@@ -144,6 +144,7 @@ PUBLISHED:
   bool flush();
 
   void disconnect();
+  void shutdown();
 
   INLINE void set_simulated_disconnect(bool simulated_disconnect);
   INLINE bool get_simulated_disconnect() const;
