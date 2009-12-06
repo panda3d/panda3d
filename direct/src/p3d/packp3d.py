@@ -40,6 +40,20 @@ Options:
      all be combined in the first file.  If the private key is
      encrypted, the password will be required to decrypt it.
 
+  -e ext
+     Adds a new extension to be processed as a generic, compressible
+     file type.  Do not include the leading dot.  Files matching this
+     extension found within the root directory will be automatically
+     added to the p3d file, in compressed form.  This option may be
+     repeated as necessary.
+
+  -n ext
+     Adds a new extension to be processed as a noncompressible file
+     type.  Files matching this extension will be added to the p3d
+     file, in their original, uncompressed form.  You should use this
+     instead of -e for files that are uncompressible by their nature
+     (e.g. mpg files).  This option may be repeated as necessary.
+
   -c config=value
      Sets the indicated config flag in the application.  This option
      may be repeated as necessary.
@@ -79,7 +93,7 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'o:d:m:S:c:r:s:Dh')
+    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:c:r:s:Dh')
 
     packager = Packager.Packager()
 
@@ -103,6 +117,10 @@ def makePackedApp(args):
                 tokens.append('')
             certificate, chain, pkey, password = tokens[:4]
             packager.signParams.append((certificate, chain, pkey, password))
+        elif option == '-e':
+            packager.binaryExtensions.append(value)
+        elif option == '-n':
+            packager.uncompressibleExtensions.append(value)
         elif option == '-c':
             configFlags.append(value.split('=', 1))
         elif option == '-r':
