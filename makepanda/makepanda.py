@@ -845,7 +845,7 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared'
-                if ("MODULE" not in opts): " -Wl,-soname=' + os.path.basename(dll)"
+                if ("MODULE" not in opts): " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
