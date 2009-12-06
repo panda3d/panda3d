@@ -1094,7 +1094,7 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking dynamic library", target)
         
         # Add version number to the dynamic library, on unix
-        if (origsuffix==".dll" and "MODULE" not in OPTS and not sys.platform.startswith("win") and not RTDIST):
+        if (origsuffix==".dll" and "MODULE" not in opts and not sys.platform.startswith("win") and not RTDIST):
             if (sys.platform == "darwin"):
                 if (target.lower().endswith(".dylib")):
                     target = target[:-5] + VERSION + ".dylib"
