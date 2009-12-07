@@ -397,6 +397,10 @@ call_read_system_log(P3D_object *params[], int num_params) {
 P3D_object *P3DMainObject::
 read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   ifstream log(log_pathname.c_str(), ios::in);
+  if (!log) {
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    return inst_mgr->new_undefined_object();
+  }
 
   // Check the parameter, if any--if specified, it specifies the last
   // n bytes to retrieve.
@@ -408,6 +412,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   // Get the size of the file.
   log.seekg(0, ios::end);
   size_t size = (size_t)log.tellg();
+  nout << "read_log: " << log_pathname << " is " << size << " bytes\n";
 
   if (max_bytes > 0 && max_bytes < (int)size) {
     // Apply the limit.
@@ -418,6 +423,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
     log.seekg(0, ios::beg);
   }
 
+  nout << "allocating " << size << " bytes to return.\n";
   char *buffer = new char[size];
   if (buffer == NULL) {
     return NULL;
