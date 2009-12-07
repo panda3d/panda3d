@@ -4,6 +4,7 @@ for the programmer/user
 """
 from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
+from libpandaexpress import ConfigVariableBool
 import time
 import types
 import sys
@@ -16,7 +17,7 @@ class Notifier:
     # particularly useful for integrating the Python notify system
     # with the C++ notify system.
     streamWriter = None
-    showTime = 0
+    showTime = ConfigVariableBool('notify-timestamp', False)
 
     def __init__(self, name, logger=None):
         """
@@ -123,7 +124,7 @@ class Notifier:
         Exception: error
         """
         message = str(errorString)
-        if Notifier.showTime:
+        if Notifier.showTime.getValue():
             string = (self.getTime() + str(exception) + ": " + self.__name + "(error): " + message)
         else:
             string = (str(exception) + ": " + self.__name + "(error): " + message)
@@ -137,7 +138,7 @@ class Notifier:
         """
         if self.__warning:
             message = str(warningString)
-            if Notifier.showTime:
+            if Notifier.showTime.getValue():
                 string = (self.getTime() + self.__name + '(warning): ' + message)
             else:
                 string = (":" + self.__name + '(warning): ' + message)
@@ -164,7 +165,7 @@ class Notifier:
         """
         if self.__debug:
             message = str(debugString)
-            if Notifier.showTime:
+            if Notifier.showTime.getValue():
                 string = (self.getTime() + self.__name + '(debug): ' + message)
             else:
                 string = (':' + self.__name + '(debug): ' + message)
@@ -191,7 +192,7 @@ class Notifier:
         """
         if self.__info:
             message = str(infoString)
-            if Notifier.showTime:
+            if Notifier.showTime.getValue():
                 string = (self.getTime() + self.__name + ': ' + message)
             else:
                 string = (':' + self.__name + ': ' + message)
