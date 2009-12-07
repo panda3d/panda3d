@@ -56,8 +56,6 @@ class ConnectionRepository(
         # the world, helpful for sending messages specific to each one.
         self.uniqueId = hash(self)
 
-        base.finalExitCallbacks.append(self.shutdown)
-
         # Accept this hook so that we can respond to lost-connection
         # events in the main thread, instead of within the network
         # thread (if there is one).

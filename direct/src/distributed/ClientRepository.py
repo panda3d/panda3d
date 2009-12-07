@@ -29,6 +29,8 @@ class ClientRepository(ClientRepositoryBase):
         ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames, dcSuffix = dcSuffix, connectMethod = connectMethod, threadedNet = threadedNet)
         self.setHandleDatagramsInternally(False)
 
+        base.finalExitCallbacks.append(self.shutdown)
+
         # The doId allocator.  The CMU LAN server may choose to
         # send us a block of doIds.  If it chooses to do so, then we
         # may create objects, using those doIds.
