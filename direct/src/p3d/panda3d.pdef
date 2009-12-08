@@ -106,6 +106,69 @@ plugin-path $PANDA3D_ROOT
 default-model-extension .bam
 """ + auxDisplays)
 
+class morepy(package):
+    # Additional Python modules provided by the standard Python
+    # library.  Include this package to get the full suite of standard
+    # Python functionality.
+    
+    config(display_name = "Python standard library")
+    require('panda3d')
+
+    module('string', 're', 'struct', 'difflib', 'StringIO',
+           'cStringIO', 'StringIO', 'textwrap', 'codecs',
+           'unicodedata', 'stringprep', 'fpformat', 'datetime',
+           'calendar', 'collections', 'heapq', 'bisect', 'array',
+           'sets', 'sched', 'mutex', 'queue', 'weakref', 'UserDict',
+           'UserList', 'UserString', 'types', 'new', 'copy', 'pprint',
+           'repr', 'numbers', 'math', 'cmath', 'decimal', 'fractions',
+           'random', 'itertools', 'functools', 'operator', 'os.path',
+           'fileinput', 'stat', 'statvfs', 'filecmp', 'tempfile',
+           'glob', 'fnmatch', 'linecache', 'shutil', 'dircache',
+           'macpath', 'pickle', 'cPickle', 'copy_reg', 'shelve',
+           'marshal', 'anydbm', 'whichdb', 'dbm', 'gdbm', 'dbhash',
+           'bsddb', 'dumbdbm', 'sqlite3', 'zlib', 'gzip', 'bz2',
+           'zipfile', 'tarfile', 'csv', 'ConfigParser', 'robotparser',
+           'netrc', 'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5',
+           'sha', 'os', 'io', 'time', 'optparse', 'getopt', 'logging')
+    module('getpass', 'curses', 'curses.textpad', 'curses.wrapper',
+           'curses.ascii', 'curses.panel', 'platform', 'errno',
+           'ctypes', 'select', 'threading', 'thread',
+           'dummy_threading', 'dummy_thread', 'multiprocessing',
+           'mmap', 'readline', 'rlcompleter', 'subprocess', 'socket',
+           'ssl', 'signal', 'popen2', 'asyncore', 'asynchat', 'email',
+           'json', 'mailcap', 'mailbox', 'mhlib', 'mimetools',
+           'mimetypes', 'MimeWriter', 'mimify', 'multifile', 'rfc822',
+           'base64', 'binhex', 'binascii', 'quopri', 'uu',
+           'HTMLParser', 'sgmllib', 'htmllib', 'htmlentitydefs',
+           'xml.parsers.expat', 'xml.dom', 'xml.dom.minidom',
+           'xml.dom.pulldom', 'xml.sax', 'xml.sax.handler',
+           'xml.sax.saxutils', 'xml.sax.xmlreader',
+           'xml.etree.ElementTree', 'webbrowser', 'cgi', 'cgitb')
+    module('wsgiref', 'urllib', 'urllib2', 'httplib', 'ftplib',
+           'poplib', 'imaplib', 'nntplib', 'smtplib', 'smtpd',
+           'telnetlib', 'uuid', 'urlparse', 'SocketServer',
+           'BaseHTTPServer', 'SimpleHTTPServer', 'CGIHTTPServer',
+           'cookielib', 'Cookie', 'xmlrpclib', 'SimpleXMLRPCServer',
+           'DocXMLRPCServer', 'audioop', 'imageop', 'aifc', 'sunau',
+           'wave', 'chunk', 'colorsys', 'imghdr', 'sndhdr',
+           'ossaudiodev', 'gettext', 'locale', 'cmd', 'shlex',
+           'Tkinter', 'Tix', 'ScrolledText', 'turtle', 'pydoc',
+           'doctest', 'unittest', 'test', 'test.test_support', 'bdb',
+           'pdb', 'hotshot', 'timeit', 'trace', 'sys', '__builtin__')
+    module('future_builtins', 'warnings', 'contextlib', 'abc',
+           'atexit', 'traceback', '__future__', 'gc', 'inspect',
+           'site', 'user', 'fpectl', 'code', 'codeop', 'rexec',
+           'Bastion', 'imp', 'imputil', 'zipimport', 'pkgutil',
+           'modulefinder', 'runpy', 'parser', 'symtable', 'symbol',
+           'token', 'keyword', 'tokenize', 'tabnanny', 'pyclbr',
+           'py_compile', 'compileall', 'dis', 'pickletools',
+           'distutils', 'formatter', 'msilib', 'msvcrt', '_winreg',
+           'winsound', 'posix', 'pwd', 'spwd', 'grp', 'crypt', 'dl',
+           'termios', 'tty', 'pty', 'fcntl', 'pipes', 'posixfile',
+           'resource', 'nis', 'syslog', 'commands', 'ic', 'MacOS',
+           'macostools', 'findertools', 'EasyDialogs', 'FrameWork',
+           'autoGIL', 'ColorPicker')
+
 class models(package):
     # The standard models package.  This is the contents of the
     # "models" directory that ships with Panda; it includes a few
