@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "executionEnvironment.h"
+#include "pandaVersion.h"
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>  // for perror
