@@ -863,6 +863,8 @@ start_p3dpython(P3DInstance *inst) {
       "HOME", "USER", 
 #ifdef _WIN32
       "SYSTEMROOT", "USERPROFILE", "COMSPEC",
+      "SYSTEMDRIVE", "ALLUSERSPROFILE", "APPDATA", "COMMONPROGRAMFILES",
+      "PROGRAMFILES", "WINDIR", "PROGRAMDATA", "USERDOMAIN",
 #endif
 #ifdef HAVE_X11
       "DISPLAY", "XAUTHORITY",
