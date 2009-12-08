@@ -54,6 +54,13 @@ Options:
      instead of -e for files that are uncompressible by their nature
      (e.g. mpg files).  This option may be repeated as necessary.
 
+  -p python_lib_dir
+     Adds a directory to search for additional Python modules.  You
+     can use this to add your system's Python path, to allow packp3d
+     to find any system modules not included in the standard Panda3D
+     release, but your version of Python must match this one (%s).
+     This option may be repeated to add multiple directories.
+
   -c config=value
      Sets the indicated config flag in the application.  This option
      may be repeated as necessary.
@@ -93,7 +100,7 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:c:r:s:Dh')
+    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:p:c:r:s:Dh')
 
     packager = Packager.Packager()
 
@@ -121,6 +128,8 @@ def makePackedApp(args):
             packager.binaryExtensions.append(value)
         elif option == '-n':
             packager.uncompressibleExtensions.append(value)
+        elif option == '-p':
+            sys.path.append(value)
         elif option == '-c':
             configFlags.append(value.split('=', 1))
         elif option == '-r':
@@ -134,7 +143,8 @@ def makePackedApp(args):
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
-            print usageText % (os.path.split(sys.argv[0])[1])
+            print usageText % (os.path.split(sys.argv[0])[1],
+                               '%s.%s' % (sys.version_info[0], sys.version_info[1]))
             sys.exit(1)
 
     if not appFilename:

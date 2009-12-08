@@ -141,7 +141,8 @@ if len(args) > 1:
     packageNames = args[1:]
 
 if not packager.installDir:
-    packager.installDir = Filename('install')
+    print '\nYou must name the target install directory with the -i parameter.\n'
+    sys.exit(1)
 packager.installSearch.prependDirectory(packager.installDir)
 
 try:

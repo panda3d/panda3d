@@ -910,7 +910,7 @@ class Packager:
                     continue
 
                 tempFile = Filename.temporary('', 'p3d_', '.txt')
-                command = 'otool -L "%s" >"%s"' % (
+                command = '/usr/bin/otool -L "%s" >"%s"' % (
                     file.filename.toOsSpecific(),
                     tempFile.toOsSpecific())
                 try:
