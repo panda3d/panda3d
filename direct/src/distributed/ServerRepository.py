@@ -85,8 +85,6 @@ class ServerRepository:
             # Default value.
             threadedNet = config.GetBool('threaded-net', False)
 
-        base.finalExitCallbacks.append(self.shutdown)
-        
         # Set up networking interfaces.
         numThreads = 0
         if threadedNet:
