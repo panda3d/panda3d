@@ -122,10 +122,10 @@ class ShadowPlacer(DirectObject.DirectObject):
         assert self.cTrav.hasCollider(self.cRayNodePath)
         didIt = self.cTrav.removeCollider(self.cRayNodePath)
         assert didIt
-        self.cRayNodePath.detachNode()
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
         self.oneTimeCollide()
+        self.cRayNodePath.detachNode()
         self.isActive = 0
         if __debug__:
             self.activeCount -= 1
