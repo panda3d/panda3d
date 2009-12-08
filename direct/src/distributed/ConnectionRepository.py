@@ -59,7 +59,7 @@ class ConnectionRepository(
         # Accept this hook so that we can respond to lost-connection
         # events in the main thread, instead of within the network
         # thread (if there is one).
-        self.accept(self.uniqueName('lostConnection'), self.lostConnection)
+        self.accept(self._getLostConnectionEvent(), self.lostConnection)
         
         self.config = config
 
@@ -136,6 +136,9 @@ class ConnectionRepository(
                                   self._adjustGcThreshold, self.GarbageThresholdTaskName)
             
         self._gcDefaultThreshold = gc.get_threshold()
+
+    def _getLostConnectionEvent(self):
+        return self.uniqueName('lostConnection')
 
     def _garbageCollect(self, task=None):
         # allow a collect
