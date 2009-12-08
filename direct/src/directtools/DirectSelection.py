@@ -560,11 +560,13 @@ class SelectionQueue(CollisionHandlerQueue):
                   (nodePath.getName() in self.unpickable)):
                 # Skip if in unpickable list
                 pass
-            elif ((skipFlags & SKIP_WIDGET) and
+            elif base.direct and\
+                 ((skipFlags & SKIP_WIDGET) and
                 (nodePath.getTag('WidgetName') != base.direct.widget.getName())):
                 # Skip if this widget part is not belong to current widget
                 pass
-            elif ((skipFlags & SKIP_WIDGET) and base.direct.fControl and
+            elif base.direct and\
+                 ((skipFlags & SKIP_WIDGET) and base.direct.fControl and
                 (nodePath.getName()[2:] == 'ring')):
                 # Skip when ununiformly scale in ortho view
                 pass
