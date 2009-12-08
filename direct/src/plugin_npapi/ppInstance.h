@@ -117,6 +117,7 @@ private:
 
   FileSpec _core_api_dll;
   bool _failed;
+  bool _started;
 
   bool _got_instance_url;
   string _instance_url;

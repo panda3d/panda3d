@@ -55,6 +55,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _npp_mode = mode;
   _script_object = NULL;
   _failed = false;
+  _started = false;
 
   // Copy the tokens and save them within this object.
   _tokens.reserve(argc);
@@ -287,7 +288,7 @@ stop_outstanding_streams() {
   streams.swap(_streams);
   for (si = streams.begin(); si != streams.end(); ++si) {
     NPStream *stream = (*si);
-    nout << "Stopping stream " << stream->url << "\n";
+    nout << "Stopping stream " << (void *)stream << "\n";
     browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
   }
 
@@ -1303,7 +1304,7 @@ do_load_plugin() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 create_instance() {
-  if (_p3d_inst != NULL) {
+  if (_started) {
     // Already created.
     return;
   }
@@ -1317,6 +1318,7 @@ create_instance() {
   if (!_tokens.empty()) {
     tokens = &_tokens[0];
   }
+  _started = true;
   _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), 
                                0, NULL, this);
 
