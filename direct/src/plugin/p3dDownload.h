@@ -38,10 +38,12 @@ public:
   inline const string &get_url() const;
 
   inline double get_download_progress() const;
+  inline bool is_download_progress_known() const;
   inline bool get_download_finished() const;
   inline bool get_download_success() const;
   inline bool get_download_terminated() const;
   inline size_t get_total_data() const;
+  inline void set_total_expected_data(size_t expected_data);
 
   void cancel();
   void clear();
@@ -70,6 +72,7 @@ protected:
   size_t _total_data;
   size_t _total_expected_data;
   time_t _last_reported_time;
+  bool _progress_known;
 
 private:
   bool _canceled;

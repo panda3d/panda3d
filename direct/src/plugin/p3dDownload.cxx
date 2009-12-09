@@ -26,6 +26,7 @@ P3DDownload() {
   _total_data = 0;
   _total_expected_data = 0;
   _last_reported_time = 0;
+  _progress_known = false;
   
   _canceled = false;
   _download_id = 0;
@@ -39,7 +40,8 @@ P3DDownload() {
 P3DDownload::
 P3DDownload(const P3DDownload &copy) :
   _url(copy._url),
-  _total_expected_data(copy._total_expected_data)
+  _total_expected_data(copy._total_expected_data),
+  _progress_known(copy._progress_known)
 {
   _status = P3D_RC_in_progress;
   _http_status_code = 0;
@@ -132,12 +134,27 @@ feed_url_stream(P3D_result_code result_code,
     _total_data += this_data_size;
   }
 
-  _total_expected_data = max(total_expected_data, _total_data);
+  total_expected_data = max(total_expected_data, _total_data);
+  if (total_expected_data > _total_expected_data) {
+    // If the expected data grows during the download, we don't really
+    // know how much we're getting.
+    _progress_known = false;
+    _total_expected_data = total_expected_data;
+  }
+  if (_total_expected_data > 0 && 
+      (double)_total_data / (double)_total_expected_data < 0.9) {
+    // But if we're not close to our target yet, let's say we do know
+    // (at least until we get there and the target moves again).
+    _progress_known = true;
+  }
 
   download_progress();
 
   if (_status != P3D_RC_in_progress) {
     // We're done.
+    if (get_download_success()) {
+      _progress_known = true;
+    }
     download_finished(get_download_success());
   }
 
@@ -167,9 +184,13 @@ download_progress() {
   time_t now = time(NULL);
   if (now - _last_reported_time > 10) {
     _last_reported_time = now;
-    nout << "Downloading " << get_url() << ": " 
-         << int(get_download_progress() * 1000.0) / 10.0 
-         << ", " << this << "\n";
+    nout << "Downloading " << get_url() << ": ";
+    if (_progress_known) {
+      nout << int(get_download_progress() * 1000.0) / 10.0 << "%";
+    } else {
+      nout << int((double)get_total_data() / 104857.6) / 10.0 << "M";
+    }
+    nout << ", " << this << "\n";
   }
 }
 
@@ -183,7 +204,11 @@ download_progress() {
 ////////////////////////////////////////////////////////////////////
 void P3DDownload::
 download_finished(bool success) {
-  nout << "Downloaded " << get_url() << ": " 
-       << int(get_download_progress() * 1000.0) / 10.0 
-       << ", " << this << ", success = " << success << "\n";
+  nout << "Downloaded " << get_url() << ": ";
+  if (_progress_known) {
+    nout << int(get_download_progress() * 1000.0) / 10.0 << "%";
+  } else {
+    nout << int((double)get_total_data() / 104857.6) / 10.0 << "M";
+  }
+  nout << ", " << this << ", success = " << success << "\n";
 }

@@ -42,7 +42,8 @@ public:
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
-  virtual void set_install_progress(double install_progress);
+  virtual void set_install_progress(double install_progress,
+                                    bool is_progress_known, size_t received_data);
 
   virtual void set_button_active(bool flag);
 

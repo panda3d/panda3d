@@ -39,7 +39,9 @@ METHODDEF(void) my_error_exit (j_common_ptr cinfo) {
   longjmp(myerr->setjmp_buffer, 1);
 }
 
-
+// The number of pixels to move the block per byte downloaded, when we
+// don't know the actual file size we're downloading.
+const double P3DSplashWindow::_unknown_progress_rate = 1.0 / 4096;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::Constructor
@@ -192,7 +194,8 @@ set_install_label(const string &install_label) {
 //  Description: Moves the install progress bar from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
-set_install_progress(double install_progress) {
+set_install_progress(double install_progress,
+                     bool is_progress_known, size_t received_data) {
 }
 
 ////////////////////////////////////////////////////////////////////

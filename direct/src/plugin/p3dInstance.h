@@ -187,9 +187,10 @@ private:
   void start_next_download();
   void mark_download_complete();
   void ready_to_start();
-  void report_instance_progress(double progress);
+  void report_instance_progress(double progress, bool is_progress_known,
+                                size_t received_data);
   void report_package_progress(P3DPackage *package, double progress);
-  void report_package_done(P3DPackage *package, bool progress);
+  void report_package_done(P3DPackage *package, bool success);
   void set_install_label(const string &install_label);
 
   void paint_window();

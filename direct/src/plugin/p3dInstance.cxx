@@ -332,6 +332,9 @@ set_p3d_url(const string &p3d_url) {
   InstanceDownload *download = new InstanceDownload(this);
   download->set_url(p3d_url);
   download->set_filename(_temp_p3d_filename->get_filename());
+  if (_fparams.has_token("p3d_size")) {
+    download->set_total_expected_data(_fparams.lookup_token_int("p3d_size"));
+  }
 
   _panda_script_object->set_string_property("status", "downloading_instance");
   start_download(download);
@@ -371,6 +374,9 @@ make_p3d_stream(const string &p3d_url) {
   InstanceDownload *download = new InstanceDownload(this);
   download->set_url(p3d_url);
   download->set_filename(_temp_p3d_filename->get_filename());
+  if (_fparams.has_token("p3d_size")) {
+    download->set_total_expected_data(_fparams.lookup_token_int("p3d_size"));
+  }
 
   _panda_script_object->set_string_property("status", "downloading_instance");
   return start_download(download, false);
@@ -2438,7 +2444,7 @@ report_package_info_ready(P3DPackage *package) {
       // put up a progress bar.
       make_splash_window();
       if (_splash_window != NULL) {
-        _splash_window->set_install_progress(0.0);
+        _splash_window->set_install_progress(0.0, true, 0);
         if (package == _certlist_package) {
           _splash_window->set_install_label("Getting Certificates");
         } else {          
@@ -2493,7 +2499,7 @@ report_package_info_ready(P3DPackage *package) {
       }
       
       if (_splash_window != NULL) {
-        _splash_window->set_install_progress(0.0);
+        _splash_window->set_install_progress(0.0, true, 0);
       }
       _panda_script_object->set_string_property("status", "downloading");
       _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
@@ -2573,7 +2579,7 @@ mark_download_complete() {
   
   // Take down the download progress bar.
   if (_splash_window != NULL) {
-    _splash_window->set_install_progress(0.0);
+    _splash_window->set_install_progress(0.0, true, 0);
     _splash_window->set_install_label("");
   }
 
@@ -2616,7 +2622,8 @@ ready_to_start() {
 //  Description: Notified as the instance file is downloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-report_instance_progress(double progress) {
+report_instance_progress(double progress, bool is_progress_known,
+                         size_t received_data) {
   if (!_show_dl_instance_progress) {
     // If we haven't yet set the download label, set it after a full
     // second has elapsed.  We don't want to set it too soon, because
@@ -2642,7 +2649,7 @@ report_instance_progress(double progress) {
   }
 
   if (_splash_window != NULL && _show_dl_instance_progress) {
-    _splash_window->set_install_progress(progress);
+    _splash_window->set_install_progress(progress, is_progress_known, received_data);
   }
   _panda_script_object->set_float_property("instanceDownloadProgress", progress);
 }
@@ -2662,7 +2669,7 @@ report_package_progress(P3DPackage *package, double progress) {
   if (package == _certlist_package || package == _p3dcert_package) {
     // This gets its own progress bar.
     if (_splash_window != NULL) {
-      _splash_window->set_install_progress(progress);
+      _splash_window->set_install_progress(progress, true, 0);
     }
     return;
   }
@@ -2679,7 +2686,7 @@ report_package_progress(P3DPackage *package, double progress) {
   progress = min(progress, 1.0);
 
   if (_splash_window != NULL) {
-    _splash_window->set_install_progress(progress);
+    _splash_window->set_install_progress(progress, true, 0);
   }
   _panda_script_object->set_float_property("downloadProgress", progress);
 
@@ -2754,7 +2761,7 @@ report_package_done(P3DPackage *package, bool success) {
 
     // Take down the download progress.
     if (_splash_window != NULL) {
-      _splash_window->set_install_progress(0.0);
+      _splash_window->set_install_progress(0.0, true, 0);
       _splash_window->set_install_label("");
     }
 
@@ -2770,7 +2777,7 @@ report_package_done(P3DPackage *package, bool success) {
 
     // Take down the download progress.
     if (_splash_window != NULL) {
-      _splash_window->set_install_progress(0.0);
+      _splash_window->set_install_progress(0.0, true, 0);
       _splash_window->set_install_label("");
     }
 
@@ -3143,7 +3150,7 @@ InstanceDownload(P3DInstance *inst) :
 void P3DInstance::InstanceDownload::
 download_progress() {
   P3DFileDownload::download_progress();
-  _inst->report_instance_progress(get_download_progress());
+  _inst->report_instance_progress(get_download_progress(), is_download_progress_known(), get_total_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3159,6 +3166,7 @@ download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   if (success) {
     // We've successfully downloaded the instance data.
+    _inst->report_instance_progress(1.0, true, 0);
     _inst->priv_set_p3d_filename(get_filename());
   } else {
     // Oops, no joy on the instance data.

@@ -176,7 +176,8 @@ set_install_label(const string &install_label) {
 //  Description: Moves the install progress bar from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-set_install_progress(double install_progress) {
+set_install_progress(double install_progress,
+                     bool is_progress_known, size_t received_data) {
   ACQUIRE_LOCK(_install_lock);
   _install_progress = install_progress;
   RELEASE_LOCK(_install_lock);
@@ -776,7 +777,7 @@ paint_progress_bar(HDC dc) {
   FillRect(dc, &bar_rect, _bg_brush);
 
   // Draw the interior of the progress bar in blue (or the bar color).
-  int progress_width = (int)((bar_width - 2) * _drawn_progress);
+  int progress_width = (int)((bar_width - 2) * _drawn_progress + 0.5);
   if (progress_width != 0) {
     RECT prog_rect = { bar_x, bar_y, bar_x + progress_width, bar_y + bar_height };
     FillRect(dc, &prog_rect, _bar_brush);

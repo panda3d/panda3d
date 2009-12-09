@@ -434,7 +434,7 @@ NPP_WriteReady_x(NPP instance, NPStream *stream) {
 int32_t
 NPP_Write_x(NPP instance, NPStream *stream, int32_t offset, 
             int32_t len, void *buffer) {
-  //  nout << "Write " << stream->url << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
+  //  nout << "Write " << stream->url << ", " << offset << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);

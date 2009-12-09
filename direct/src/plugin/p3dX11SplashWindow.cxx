@@ -156,7 +156,8 @@ set_install_label(const string &install_label) {
 //  Description: Moves the install progress bar from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-set_install_progress(double install_progress) {
+set_install_progress(double install_progress,
+                     bool is_progress_known, size_t received_data) {
   if (_subprocess_pid == -1) {
     return;
   }
@@ -611,7 +612,7 @@ subprocess_run() {
       }
       
       if (needs_update_progress) {
-        int progress_width = (int)((bar_width - 2) * _install_progress);
+        int progress_width = (int)((bar_width - 2) * _install_progress + 0.5);
         XFillRectangle(_display, _window, _bar_context, 
                        bar_x + 1, bar_y + 1,
                        progress_width + 1, bar_height - 1);

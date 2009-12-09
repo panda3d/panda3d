@@ -58,7 +58,8 @@ public:
   virtual void set_bgcolor(int r, int g, int b);
   virtual void set_barcolor(int r, int g, int b);
   virtual void set_install_label(const string &install_label);
-  virtual void set_install_progress(double install_progress);
+  virtual void set_install_progress(double install_progress,
+                                    bool is_progress_known, size_t received_data);
 
   virtual bool handle_event(const P3D_event_data &event);
 
@@ -120,6 +121,8 @@ protected:
   bool _mouse_down;
   bool _button_depressed;
   ButtonState _bstate;
+
+  static const double _unknown_progress_rate;
 };
 
 #include "p3dSplashWindow.I"

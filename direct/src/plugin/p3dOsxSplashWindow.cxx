@@ -185,12 +185,25 @@ set_install_label(const string &install_label) {
 //  Description: Moves the install progress bar from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
-set_install_progress(double install_progress) {
-  if ((int)(install_progress * 500.0) != (int)(_install_progress * 500.0)) {
-    // Only request a refresh if we're changing substantially.
+set_install_progress(double install_progress,
+                     bool is_progress_known, size_t received_data) {
+  // Only request a refresh if we're changing substantially.
+  if (is_progress_known != _progress_known) {
     refresh();
+  } else if (_progress_known) {
+    if ((int)(install_progress * 500.0) != (int)(_install_progress * 500.0)) {
+      refresh();
+    }
+  } else {
+    if ((int)(received_data * _unknown_progress_rate) != 
+        (int)(_received_data * _unknown_progress_rate)) {
+      refresh();
+    }
   }
+
   _install_progress = install_progress;
+  _progress_known = is_progress_known;
+  _received_data = received_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,8 +356,14 @@ paint_window() {
 
   // Draw the progress bar.  We don't draw this bar at all unless we
   // have nonzero progress.
-  if (_install_progress != 0.0) {
-    paint_progress_bar(context);
+  if (_progress_known) {
+    if (_install_progress != 0.0) {
+      paint_progress_bar(context);
+    }
+  } else {
+    if (_received_data != 0) {
+      paint_progress_bar(context);
+    }
   }
 
   CGContextSynchronize(context);
@@ -507,15 +526,33 @@ paint_progress_bar(CGContextRef context) {
   CGContextFillPath(context);
 
   // Draw the interior of the progress bar in blue (or the bar color).
-  int progress_width = (int)((bar_width - 2) * _install_progress);
-  if (progress_width != 0) {
-    CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
+  if (_progress_known) {
+    int progress_width = (int)(bar_width * _install_progress + 0.5);
+    if (progress_width != 0) {
+      CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
+      CGContextBeginPath(context);
+      CGContextSetFillColorWithColor(context, bar);
+      CGContextAddRect(context, prog);
+      CGContextFillPath(context);
+    }
+  } else {
+    // Progress is unknown.  Draw a moving block, not a progress bar
+    // filling up.
+    int block_width = (int)(bar_width * 0.1 + 0.5);
+    int block_travel = bar_width - block_width;
+    int progress = (int)(_received_data * _unknown_progress_rate);
+    progress = progress % (block_travel * 2);
+    if (progress > block_travel) {
+      progress = block_travel * 2 - progress;
+    }
+
+    CGRect prog = { { bar_xf + progress, bar_yf }, { block_width, bar_height } };
     CGContextBeginPath(context);
     CGContextSetFillColorWithColor(context, bar);
     CGContextAddRect(context, prog);
     CGContextFillPath(context);
   }
-
+    
   // Draw the black stroke around the progress bar.
   CGContextBeginPath(context);
   CGContextSetLineWidth(context, 1);

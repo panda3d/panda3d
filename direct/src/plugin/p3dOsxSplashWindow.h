@@ -38,7 +38,8 @@ public:
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
-  virtual void set_install_progress(double install_progress);
+  virtual void set_install_progress(double install_progress,
+                                    bool is_progress_known, size_t received_data);
 
   virtual bool handle_event(const P3D_event_data &event);
 
@@ -81,6 +82,8 @@ private:
 
   string _install_label;
   double _install_progress;
+  bool _progress_known;
+  size_t _received_data;
 
   // Used to track the mouse within the window in the embedded case.
   bool _mouse_active;
