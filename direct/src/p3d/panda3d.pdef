@@ -169,6 +169,9 @@ class morepy(package):
            'macostools', 'findertools', 'EasyDialogs', 'FrameWork',
            'autoGIL', 'ColorPicker')
 
+    # To add the multitude of standard Python string encodings.
+    module('encodings', 'encodings.*')
+
 class models(package):
     # The standard models package.  This is the contents of the
     # "models" directory that ships with Panda; it includes a few
