@@ -32,7 +32,7 @@
 //               support arbitrary seeks.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ISubStream : public istream {
-public:
+PUBLISHED:
   INLINE ISubStream();
   INLINE ISubStream(IStreamWrapper *source, streampos start, streampos end);
 
