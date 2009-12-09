@@ -91,11 +91,15 @@ private:
   bool _got_install;
   string _install_label;
   double _install_progress;
+  bool _progress_known;
+  size_t _received_data;
   LOCK _install_lock;
 
   ButtonState _drawn_bstate;
   string _drawn_label;
   double _drawn_progress;
+  bool _drawn_progress_known;
+  size_t _drawn_received_data;
   int _focus_seq;
 
   int _request_focus_tick;
