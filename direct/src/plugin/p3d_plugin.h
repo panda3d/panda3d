@@ -342,7 +342,7 @@ P3D_new_instance_func(P3D_request_ready_func *func,
    The return value is true on success, false on failure. */
 typedef bool
 P3D_instance_start_func(P3D_instance *instance, bool is_local,
-                        const char *p3d_filename);
+                        const char *p3d_filename, const int p3d_offset = 0);
 
 /* This function is an alternative to P3D_instance_start(); it
    indicates an intention to feed the p3d file data to the instance as

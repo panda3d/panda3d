@@ -211,7 +211,7 @@ P3DInstance::
 
   if (_auth_session != NULL) {
     _auth_session->shutdown(false);
-    unref_delete(_auth_session);
+    p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
 
@@ -389,9 +389,9 @@ make_p3d_stream(const string &p3d_url) {
 //               Normally this is only called once.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-set_p3d_filename(const string &p3d_filename) {
+set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   determine_p3d_basename(p3d_filename);
-  priv_set_p3d_filename(p3d_filename);
+  priv_set_p3d_filename(p3d_filename, p3d_offset);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -789,7 +789,7 @@ feed_url_stream(int unique_id,
   if (!download_ok || download->get_download_finished()) {
     // All done.
     _downloads.erase(di);
-    unref_delete(download);
+    p3d_unref_delete(download);
   }
 
   return download_ok;
@@ -1239,7 +1239,7 @@ auth_button_clicked() {
   // Delete the previous session and create a new one.
   if (_auth_session != NULL) {
     _auth_session->shutdown(false);
-    unref_delete(_auth_session);
+    p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
   
@@ -1311,7 +1311,7 @@ auth_finished_main_thread() {
 //               internally, and might be passed a temporary filename.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-priv_set_p3d_filename(const string &p3d_filename) {
+priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   if (!_fparams.get_p3d_filename().empty()) {
     nout << "p3d_filename already set to: " << _fparams.get_p3d_filename()
          << ", trying to set to " << p3d_filename << "\n";
@@ -1319,6 +1319,10 @@ priv_set_p3d_filename(const string &p3d_filename) {
   }
 
   _fparams.set_p3d_filename(p3d_filename);
+  // The default for p3d_offset is -1, which means not to change it.
+  if (p3d_offset >= 0) {
+	_fparams.set_p3d_offset(p3d_offset);
+  }
   _got_fparams = true;
 
   _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
@@ -1328,8 +1332,13 @@ priv_set_p3d_filename(const string &p3d_filename) {
   // if Python has not yet started).
   send_notify("onpluginload");
 
-  if (!_mf_reader.open_read(_fparams.get_p3d_filename())) {
-    nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
+  if (!_mf_reader.open_read(_fparams.get_p3d_filename(), _fparams.get_p3d_offset())) {
+	if (_fparams.get_p3d_offset() == 0) {
+      nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
+    } else {
+	  nout << "Couldn't read " << _fparams.get_p3d_filename()
+	       << " at offset " << _fparams.get_p3d_offset() << "\n";
+	}
     set_failed();
     return;
   }

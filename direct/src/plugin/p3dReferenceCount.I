@@ -47,7 +47,7 @@ ref() const {
 //     Function: P3DReferenceCount::unref
 //       Access: Public
 //  Description: Explicitly decrements the reference count.  Usually,
-//               you should call unref_delete() instead.
+//               you should call p3d_unref_delete() instead.
 //
 //               The return value is true if the new reference count
 //               is nonzero, false if it is zero.
@@ -68,14 +68,14 @@ get_ref_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: unref_delete
+//     Function: p3d_unref_delete
 //  Description: This global helper function will unref the given
 //               P3DReferenceCount object, and if the reference count
 //               reaches zero, automatically delete it.
 ////////////////////////////////////////////////////////////////////
 template<class RefCountType>
 inline void
-unref_delete(RefCountType *ptr) {
+p3d_unref_delete(RefCountType *ptr) {
   if (!ptr->unref()) {
     delete ptr;
   } 

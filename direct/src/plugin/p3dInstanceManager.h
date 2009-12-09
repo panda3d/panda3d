@@ -93,7 +93,7 @@ public:
                   int argc, const char *argv[], void *user_data);
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
-                        const string &p3d_filename);
+                        const string &p3d_filename, const int &p3d_offset);
   int make_p3d_stream(P3DInstance *inst, const string &p3d_url);
   bool start_instance(P3DInstance *inst);
   void finish_instance(P3DInstance *inst);

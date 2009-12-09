@@ -429,7 +429,7 @@ contents_file_redownload_finished(bool success) {
       
     } else {
       download->resume_download_finished(false);
-      unref_delete(download);
+      p3d_unref_delete(download);
     }
   }
 }
@@ -1108,7 +1108,7 @@ void P3DPackage::
 set_active_download(Download *download) {
   if (_active_download != download) {
     if (_active_download != NULL) {
-      unref_delete(_active_download);
+      p3d_unref_delete(_active_download);
     }
     _active_download = download;
     if (_active_download != NULL) {
@@ -1127,7 +1127,7 @@ void P3DPackage::
 set_saved_download(Download *download) {
   if (_saved_download != download) {
     if (_saved_download != NULL) {
-      unref_delete(_saved_download);
+      p3d_unref_delete(_saved_download);
     }
     _saved_download = download;
     if (_saved_download != NULL) {
@@ -1350,7 +1350,7 @@ InstallStepDownloadFile(P3DPackage *package, const FileSpec &file) :
 P3DPackage::InstallStepDownloadFile::
 ~InstallStepDownloadFile() {
   if (_download != NULL) {
-    unref_delete(_download);
+    p3d_unref_delete(_download);
   }
 }
 
@@ -1577,6 +1577,7 @@ P3DPackage::InstallToken P3DPackage::InstallStepUnpackArchive::
 do_step(bool download_finished) {
   string source_pathname = _package->get_archive_file_pathname();
   P3DMultifileReader reader;
+
   if (!reader.open_read(source_pathname)) {
     nout << "Couldn't read " << source_pathname << "\n";
     return IT_step_failed;

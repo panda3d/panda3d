@@ -38,7 +38,7 @@ P3DPythonObject::
   // child process that we no longer need the corresponding PyObject
   // to be kept around.
   _session->drop_pyobj(_object_id);
-  unref_delete(_session);
+  p3d_unref_delete(_session);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,6 +39,7 @@ const int P3DMultifileReader::_current_minor_ver = 1;
 P3DMultifileReader::
 P3DMultifileReader() {
   _is_open = false;
+  _read_offset = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,10 +49,12 @@ P3DMultifileReader() {
 //               on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-open_read(const string &pathname) {
+open_read(const string &pathname, const int &offset) {
   if (_is_open) {
     close();
   }
+ 
+  _read_offset = offset;
   if (!read_header(pathname)) {
     return false;
   }
@@ -220,7 +223,7 @@ read_header(const string &pathname) {
   }
 
   char this_header[_header_size];
-  _in.seekg(0);
+  _in.seekg(_read_offset);
 
   // Here's a special case: if the multifile begins with a hash
   // character, then we continue reading and discarding lines of ASCII
@@ -296,7 +299,7 @@ read_index() {
   }
   while (next_entry != 0) {
     Subfile s;
-    s._index_start = (size_t)_in.tellg();
+    s._index_start = (size_t)_in.tellg() - _read_offset;
     s._index_length = 0;
     s._data_start = read_uint32();
     s._data_length = read_uint32();
@@ -319,7 +322,7 @@ read_index() {
     s._filename = string(buffer, name_length);
     delete[] buffer;
 
-    s._index_length = (size_t)_in.tellg() - s._index_start;
+    s._index_length = (size_t)_in.tellg() - s._index_start - _read_offset;
 
     if (flags & SF_signature) {
       // A subfile with this bit set is a signature.
@@ -334,7 +337,7 @@ read_index() {
       }
     }
 
-    _in.seekg(next_entry);
+    _in.seekg(next_entry + _read_offset);
     next_entry = read_uint32();
     if (!_in) {
       return false;
@@ -353,7 +356,7 @@ read_index() {
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
 extract_subfile(ostream &out, const Subfile &s) {
-  _in.seekg(s._data_start);
+  _in.seekg(s._data_start + _read_offset);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -397,7 +400,7 @@ check_signatures() {
     Subfile *subfile = &(*pi);
 
     // Extract the signature data and certificate separately.
-    _in.seekg(subfile->_data_start);
+    _in.seekg(subfile->_data_start + _read_offset);
     size_t sig_size = read_uint32();
     char *sig = new char[sig_size];
     _in.read(sig, sig_size);
@@ -410,7 +413,7 @@ check_signatures() {
     size_t num_certs = read_uint32();
 
     // Read the remaining buffer of certificate data.
-    size_t bytes_read = (size_t)_in.tellg() - subfile->_data_start;
+    size_t bytes_read = (size_t)_in.tellg() - subfile->_data_start - _read_offset;
     size_t buffer_size = subfile->_data_length - bytes_read;
     char *buffer = new char[buffer_size];
     _in.read(buffer, buffer_size);
@@ -463,7 +466,7 @@ check_signatures() {
 
       // Read and hash the multifile contents, but only up till
       // _last_data_byte.
-      _in.seekg(0);
+      _in.seekg(_read_offset);
       streampos bytes_remaining = (streampos)_last_data_byte;
       static const size_t buffer_size = 4096;
       char buffer[buffer_size];

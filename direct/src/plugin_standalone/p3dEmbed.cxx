@@ -1,5 +1,5 @@
-// Filename: panda3d.I
-// Created by:  drose (30Jun09)
+// Filename: p3dEmbed.cxx
+// Created by:  rdb (07Dec09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -11,3 +11,15 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+#include "p3d_plugin_composite1.cxx"
+#include "panda3dBase.cxx"
+#include <stdint.h>
+
+const uint32_t p3d_offset = 0xFF3D3D00;
+
+int
+main(int argc, char *argv[]) {
+  Panda3DBase program(true);
+  return program.run_embedded(p3d_offset, argc, argv);
+}

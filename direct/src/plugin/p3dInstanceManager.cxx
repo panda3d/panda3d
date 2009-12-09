@@ -129,7 +129,7 @@ P3DInstanceManager::
   assert(_sessions.empty());
 
   if (_auth_session != NULL) {
-    unref_delete(_auth_session);
+    p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
 
@@ -424,13 +424,13 @@ create_instance(P3D_request_ready_func *func,
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 set_p3d_filename(P3DInstance *inst, bool is_local,
-                 const string &p3d_filename) {
+                 const string &p3d_filename, const int &p3d_offset) {
   if (inst->is_started()) {
     nout << "Instance started twice: " << inst << "\n";
     return false;
   }
   if (is_local) {
-    inst->set_p3d_filename(p3d_filename);
+    inst->set_p3d_filename(p3d_filename, p3d_offset);
   } else {
     inst->set_p3d_url(p3d_filename);
   }
@@ -513,11 +513,11 @@ finish_instance(P3DInstance *inst) {
     if (session->get_num_instances() == 0) {
       _sessions.erase(session->get_session_key());
       session->shutdown();
-      unref_delete(session);
+      p3d_unref_delete(session);
     }
   }
 
-  unref_delete(inst);
+  p3d_unref_delete(inst);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -534,7 +534,7 @@ authorize_instance(P3DInstance *inst) {
     // We only want one auth_session window open at a time, to
     // minimize user confusion, so close any previous window.
     _auth_session->shutdown(true);
-    unref_delete(_auth_session);
+    p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
 

@@ -279,7 +279,7 @@ terminate_instance(P3DInstance *inst) {
     _instances.erase(inst->get_instance_id());
   }
   RELEASE_LOCK(_instances_lock);
-  unref_delete(inst);
+  p3d_unref_delete(inst);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-// Filename: p3dFileParams.I
-// Created by:  drose (23Jun09)
+// Filename: panda3dBase.I
+// Created by:  pro-rsoft (07Dec09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,23 +14,24 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFileParams::get_p3d_filename
+//     Function: Panda3DBase::time_to_exit
 //       Access: Public
-//  Description: Returns the p3d filename that was passed to the
-//               constructor.
+//  Description: Returns true if it is time to exit because the last
+//               instance has exited, or false if we should continue
+//               running.
 ////////////////////////////////////////////////////////////////////
-inline const string &P3DFileParams::
-get_p3d_filename() const {
-  return _p3d_filename;
+bool Panda3DBase::
+time_to_exit() {
+  return _instances.empty() && _exit_with_last_instance;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFileParams::get_p3d_offset
+//     Function: Panda3DBase::URLGetter::get_instance
 //       Access: Public
-//  Description: Returns the p3d file offset, the location
-//               in the file where the p3d data starts.
+//  Description: Returns the P3D_instance associated with this
+//               URLGetter.
 ////////////////////////////////////////////////////////////////////
-inline const int &P3DFileParams::
-get_p3d_offset() const {
-  return _p3d_offset;
+P3D_instance *Panda3DBase::URLGetter::
+get_instance() {
+  return _instance;
 }

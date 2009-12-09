@@ -38,7 +38,7 @@ private:
 };
 
 template<class RefCountType>
-inline void unref_delete(RefCountType *ptr);
+inline void p3d_unref_delete(RefCountType *ptr);
 
 #include "p3dReferenceCount.I"
 

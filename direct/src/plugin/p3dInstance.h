@@ -58,7 +58,7 @@ public:
   ~P3DInstance();
 
   void set_p3d_url(const string &p3d_url);
-  void set_p3d_filename(const string &p3d_filename);
+  void set_p3d_filename(const string &p3d_filename, const int &p3d_offset = 0);
   int make_p3d_stream(const string &p3d_url);
   inline const P3DFileParams &get_fparams() const;
 
@@ -156,7 +156,7 @@ private:
     IT_num_image_types,     // Not a real value
   };
 
-  void priv_set_p3d_filename(const string &p3d_filename);
+  void priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset = -1);
   void determine_p3d_basename(const string &p3d_url);
 
   bool check_matches_origin(const string &origin_match);

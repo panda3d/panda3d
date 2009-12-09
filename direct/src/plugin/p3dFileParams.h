@@ -31,10 +31,12 @@ public:
   void operator = (const P3DFileParams &other);
 
   void set_p3d_filename(const string &p3d_filename);
+  void set_p3d_offset(const int &p3d_offset);
   void set_tokens(const P3D_token tokens[], size_t num_tokens);
   void set_args(int argc, const char *argv[]);
 
   inline const string &get_p3d_filename() const;
+  inline const int &get_p3d_offset() const;
   string lookup_token(const string &keyword) const;
   int lookup_token_int(const string &keyword) const;
   bool has_token(const string &keyword) const;
@@ -51,6 +53,7 @@ private:
   typedef vector<string> Args;
 
   string _p3d_filename;
+  int _p3d_offset;
   Tokens _tokens;
   Args _args;
 };

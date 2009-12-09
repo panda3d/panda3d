@@ -30,7 +30,7 @@
 class P3DMultifileReader {
 public:
   P3DMultifileReader();
-  bool open_read(const string &pathname);
+  bool open_read(const string &pathname, const int &offset = 0);
   inline bool is_open() const;
   void close();
 
@@ -82,6 +82,7 @@ private:
 
   ifstream _in;
   bool _is_open;
+  int _read_offset;
 
   typedef vector<Subfile> Subfiles;
   Subfiles _subfiles;
