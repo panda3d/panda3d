@@ -39,7 +39,7 @@ P3D_initialize(int api_version, const char *contents_filename,
                const char *platform,
                const char *log_directory, const char *log_basename,
                bool trusted_environment, bool console_environment) {
-  if (api_version != P3D_API_VERSION) {
+  if (api_version < 10 || api_version > P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
   }
@@ -71,7 +71,7 @@ P3D_initialize(int api_version, const char *contents_filename,
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize(contents_filename, host_url,
+  bool result = inst_mgr->initialize(api_version, contents_filename, host_url,
                                      verify_contents, platform,
                                      log_directory, log_basename,
                                      trusted_environment, console_environment);
@@ -132,13 +132,19 @@ P3D_new_instance(P3D_request_ready_func *func,
 
 bool
 P3D_instance_start(P3D_instance *instance, bool is_local, 
-                   const char *p3d_filename, const int p3d_offset) {
+                   const char *p3d_filename, int p3d_offset) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
     p3d_filename = "";
   }
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (inst_mgr->get_api_version() < 11) {
+    // Prior to version 11, there was no p3d_offset parameter.  So, we
+    // default it to 0.
+    p3d_offset = 0;
+  }
+
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
   if (inst != NULL) {

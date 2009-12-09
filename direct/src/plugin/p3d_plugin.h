@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 10
+#define P3D_API_VERSION 11
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -339,10 +339,15 @@ P3D_new_instance_func(P3D_request_ready_func *func,
    should be downloaded to retrieve the p3d file.  Also see
    P3D_instance_start_stream(), below.
 
+   p3d_offset is the offset within p3d_filename at which the p3d data
+   actually begins.  It is normally 0 for an ordinary p3d file, but it
+   may be nonzero to indicate a p3d file embedded within another file
+   (such as is created by pdeploy).
+
    The return value is true on success, false on failure. */
 typedef bool
 P3D_instance_start_func(P3D_instance *instance, bool is_local,
-                        const char *p3d_filename, const int p3d_offset = 0);
+                        const char *p3d_filename, int p3d_offset);
 
 /* This function is an alternative to P3D_instance_start(); it
    indicates an intention to feed the p3d file data to the instance as

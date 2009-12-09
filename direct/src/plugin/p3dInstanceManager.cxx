@@ -58,6 +58,7 @@ P3DInstanceManager() {
   init_xml();
 
   _is_initialized = false;
+  _api_version = 0;
   _next_temp_filename_counter = 1;
   _unique_id = 0;
   _trusted_environment = false;
@@ -180,11 +181,12 @@ P3DInstanceManager::
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-initialize(const string &contents_filename, const string &host_url,
-           bool verify_contents,
+initialize(int api_version, const string &contents_filename, 
+           const string &host_url, bool verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
            bool console_environment) {
+  _api_version = api_version;
   _trusted_environment = trusted_environment;
   _console_environment = console_environment;
   _verify_contents = verify_contents;

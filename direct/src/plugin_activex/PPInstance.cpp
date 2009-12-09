@@ -536,7 +536,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
 
     nout << "Starting new P3D instance " << p3dFilename << "\n";
 
-    if ( !P3D_instance_start( m_p3dInstance, false, p3dFilename.c_str() ) )
+    if ( !P3D_instance_start( m_p3dInstance, false, p3dFilename.c_str(), 0 ) )
     {
         nout << "Error starting P3D instance: " << GetLastError() << "\n";
         return 1;

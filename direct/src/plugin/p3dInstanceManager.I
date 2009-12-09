@@ -52,6 +52,20 @@ reset_verify_contents() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_api_version
+//       Access: Public
+//  Description: Returns the api_version number which was passed to
+//               P3D_initialize().  Client code may use this to
+//               determine how to interpret parameters to various
+//               functions whose interface may have changed over
+//               different versions.
+////////////////////////////////////////////////////////////////////
+inline int P3DInstanceManager::
+get_api_version() const {
+  return _api_version;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_host_url
 //       Access: Public
 //  Description: Returns the standard host_url which the instances

@@ -50,7 +50,7 @@ private:
   ~P3DInstanceManager();
 
 public:
-  bool initialize(const string &contents_filename,
+  bool initialize(int api_version, const string &contents_filename,
                   const string &host_url,
                   bool verify_contents,
                   const string &platform,
@@ -63,6 +63,7 @@ public:
   inline bool get_verify_contents() const;
   inline void reset_verify_contents();
 
+  inline int get_api_version() const;
   inline const string &get_host_url() const;
   inline const string &get_root_dir() const;
   inline const string &get_platform() const;
@@ -148,6 +149,7 @@ private:
 
 private:
   bool _is_initialized;
+  int _api_version;
   string _host_url;
   string _root_dir;
   string _certs_dir;
