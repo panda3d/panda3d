@@ -28,7 +28,7 @@
 // Description : A standalone program that invokes the Panda3D plugin
 //               to launch .p3d files.
 ////////////////////////////////////////////////////////////////////
-class Panda3D : private Panda3DBase {
+class Panda3D : public Panda3DBase {
 public:
   Panda3D(bool console_environment);
 

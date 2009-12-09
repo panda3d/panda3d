@@ -577,7 +577,7 @@ report_download_complete(P3D_instance *instance) {
 ////////////////////////////////////////////////////////////////////
 pascal void Panda3DBase::
 st_timer_callback(EventLoopTimerRef timer, void *user_data) {
-  ((Panda3D *)user_data)->timer_callback(timer);
+  ((Panda3DBase *)user_data)->timer_callback(timer);
 }
 #endif  // __APPLE__
 
