@@ -37,6 +37,8 @@ P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
   _install_progress = 0;
+  _progress_known = true;
+  _received_data = 0;
   _got_wparams = false;
   // We have to start with _mouse_active true; firefox doesn't send
   // activate events.
@@ -356,14 +358,8 @@ paint_window() {
 
   // Draw the progress bar.  We don't draw this bar at all unless we
   // have nonzero progress.
-  if (_progress_known) {
-    if (_install_progress != 0.0) {
-      paint_progress_bar(context);
-    }
-  } else {
-    if (_received_data != 0) {
-      paint_progress_bar(context);
-    }
+  if (!_progress_known || _install_progress != 0.0) {
+    paint_progress_bar(context);
   }
 
   CGContextSynchronize(context);

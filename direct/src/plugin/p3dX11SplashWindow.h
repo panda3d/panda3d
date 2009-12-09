@@ -123,6 +123,8 @@ private:
   bool _own_display;
   string _install_label;
   double _install_progress;
+  bool _progress_known;
+  size_t _received_data;
   
   string _label_text;
 

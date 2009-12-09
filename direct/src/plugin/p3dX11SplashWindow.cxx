@@ -57,6 +57,8 @@ P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   _bar_pixel = -1;
   _own_display = false;
   _install_progress = 0.0;
+  _progress_known = true;
+  _received_data = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,8 +168,12 @@ set_install_progress(double install_progress,
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_install_progress");
   xcommand->SetDoubleAttribute("install_progress", install_progress);
+  xcommand->SetAttribute("progress_known", (int)is_progress_known);
+  xcommand->SetAttribute("received_data", (int)received_data);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
+
+  write_xml(nout, &doc, nout);
 
   check_stopped();
 }
@@ -495,6 +501,8 @@ subprocess_run() {
   ButtonState prev_bstate = BS_hidden;
   string prev_label;
   double prev_progress = 0.0;
+  bool prev_progress_known = true;
+  size_t prev_received_data = 0;
 
   bool needs_redraw = true;
   bool needs_draw_label = false;
@@ -561,11 +569,29 @@ subprocess_run() {
       prev_label = _install_label;
     }
     
-    if (_install_progress != prev_progress) {
+    if (_progress_known != prev_progress_known) {
       needs_update_progress = true;
-      prev_progress = _install_progress;
+      needs_redraw_progress = true;
+    } else if (_progress_known) {
+      if (_install_progress != prev_progress) {
+        needs_update_progress = true;
+        if (_install_progress < prev_progress) {
+          needs_redraw_progress = true;
+        }
+      }
+    } else {
+      if (_received_data != prev_received_data) {
+        needs_update_progress = true;
+        needs_redraw_progress = true;
+      }
+    }
 
-      if (_install_progress == 0.0) {
+    if (needs_update_progress) {
+      prev_progress = _install_progress;
+      prev_progress_known = _progress_known;
+      prev_received_data = _received_data;
+
+      if (_progress_known && _install_progress == 0.0) {
         // If the progress bar drops to zero, repaint the screen to
         // take the progress bar away.
         needs_redraw = true;
@@ -583,7 +609,7 @@ subprocess_run() {
 
     // Don't draw an install label or a progress bar unless we have
     // some nonzero progress.
-    if (_install_progress != 0.0) {
+    if (!_progress_known || _install_progress != 0.0) {
       int bar_x, bar_y, bar_width, bar_height;
       get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
@@ -612,10 +638,26 @@ subprocess_run() {
       }
       
       if (needs_update_progress) {
-        int progress_width = (int)((bar_width - 2) * _install_progress + 0.5);
-        XFillRectangle(_display, _window, _bar_context, 
-                       bar_x + 1, bar_y + 1,
-                       progress_width + 1, bar_height - 1);
+        if (_progress_known) {
+          int progress_width = (int)((bar_width - 2) * _install_progress + 0.5);
+          XFillRectangle(_display, _window, _bar_context, 
+                         bar_x + 1, bar_y + 1,
+                         progress_width + 1, bar_height - 1);
+        } else {
+          // Progress is unknown.  Draw a moving block, not a progress bar
+          // filling up.
+          int block_width = (int)(bar_width * 0.1 + 0.5);
+          int block_travel = (bar_width - 2) - block_width;
+          int progress = (int)(_received_data * _unknown_progress_rate);
+          progress = progress % (block_travel * 2);
+          if (progress > block_travel) {
+            progress = block_travel * 2 - progress;
+          }
+
+          XFillRectangle(_display, _window, _bar_context, 
+                         bar_x + 1 + progress, bar_y + 1,
+                         block_width + 1, bar_height - 1);
+        }
         needs_update_progress = false;
       }
     }
@@ -727,9 +769,15 @@ receive_command() {
 
       } else if (strcmp(cmd, "set_install_progress") == 0) {
         double install_progress = 0.0;
+        int progress_known = 1;
+        int received_data = 0;
         xcommand->Attribute("install_progress", &install_progress);
+        xcommand->Attribute("progress_known", &progress_known);
+        xcommand->Attribute("received_data", &received_data);
 
         _install_progress = install_progress;
+        _progress_known = (progress_known != 0);
+        _received_data = (size_t)received_data;
 
       } else if (strcmp(cmd, "set_button_active") == 0) {
         int button_active = 0;
