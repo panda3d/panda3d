@@ -41,7 +41,7 @@ private:
   void operator = (const Multifile &copy);
 
 PUBLISHED:
-  BLOCKING bool open_read(const Filename &multifile_name);
+  BLOCKING bool open_read(const Filename &multifile_name, const streampos &offset = 0);
   BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_write(const Filename &multifile_name);
   BLOCKING bool open_write(ostream *multifile_stream, bool owns_pointer = false);
@@ -227,6 +227,7 @@ private:
   Certificates _signatures;
 #endif
 
+  streampos _offset;
   IStreamWrapper *_read;
   ostream *_write;
   bool _owns_stream;

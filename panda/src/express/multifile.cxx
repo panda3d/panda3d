@@ -115,6 +115,7 @@ Multifile() :
   
   _read = (IStreamWrapper *)NULL;
   _write = (ostream *)NULL;
+  _offset = 0;
   _owns_stream = false;
   _next_index = 0;
   _last_index = 0;
@@ -184,8 +185,9 @@ operator = (const Multifile &copy) {
 //               istream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read(const Filename &multifile_name) {
+open_read(const Filename &multifile_name, const streampos &offset) {
   close();
+  _offset = offset;
   Filename fname = multifile_name;
   fname.set_binary();
   if (!fname.open_read(_read_file)) {
@@ -379,6 +381,7 @@ close() {
 
   _read = (IStreamWrapper *)NULL;
   _write = (ostream *)NULL;
+  _offset = 0;
   _owns_stream = false;
   _next_index = 0;
   _last_index = 0;
@@ -2086,8 +2089,8 @@ open_read_subfile(Subfile *subfile) {
   // Multifile istream.
   nassertr(subfile->_data_start != (streampos)0, NULL);
   istream *stream = 
-    new ISubStream(_read, subfile->_data_start,
-                   subfile->_data_start + (streampos)subfile->_data_length); 
+    new ISubStream(_read, _offset + subfile->_data_start,
+                   _offset + subfile->_data_start + (streampos)subfile->_data_length); 
   
   if ((subfile->_flags & SF_encrypted) != 0) {
 #ifndef HAVE_OPENSSL
@@ -2241,7 +2244,7 @@ read_index() {
   istream *read = _read->get_istream();
 
   char this_header[_header_size];
-  read->seekg(0);
+  read->seekg(_offset);
 
   // Here's a special case: if the multifile begins with a hash
   // character, then we continue reading and discarding lines of ASCII
@@ -2327,9 +2330,9 @@ read_index() {
   }
 
   // Now read the index out.
-  _next_index = read->tellg();
+  _next_index = read->tellg() - _offset;
   _next_index = normalize_streampos(_next_index);  
-  read->seekg(_next_index);
+  read->seekg(_next_index + _offset);
   _last_index = 0;
   _last_data_byte = 0;
   streampos index_forward;
@@ -2367,9 +2370,9 @@ read_index() {
       }
       _last_data_byte = max(_last_data_byte, subfile->get_last_byte_pos());
     }
-    streampos curr_pos = normalize_streampos(read->tellg());
+    streampos curr_pos = normalize_streampos(read->tellg() - _offset);
     bytes_skipped = index_forward - curr_pos;
-    read->seekg(index_forward);
+    read->seekg(index_forward + _offset);
     _next_index = index_forward;
     subfile = new Subfile;
     index_forward = subfile->read_index(*read, _next_index, this);
@@ -2529,7 +2532,7 @@ check_signatures() {
       
       // Read and hash the multifile contents, but only up till
       // _last_data_byte.
-      read->seekg(0);
+      read->seekg(_offset);
       streampos bytes_remaining = _last_data_byte;
       static const size_t buffer_size = 4096;
       char buffer[buffer_size];
@@ -2575,7 +2578,7 @@ check_signatures() {
 ////////////////////////////////////////////////////////////////////
 streampos Multifile::Subfile::
 read_index(istream &read, streampos fpos, Multifile *multifile) {
-  nassertr(read.tellg() == fpos, fpos);
+  nassertr(read.tellg() - multifile->_offset == fpos, fpos);
 
   // First, get the next stream position.  We do this separately,
   // because if it is zero, we don't get anything else.
@@ -2633,7 +2636,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
     return 0;
   }
 
-  _index_length = read.tellg() - fpos;
+  _index_length = read.tellg() - fpos - multifile->_offset;
   return next_index;
 }
 
@@ -2651,7 +2654,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 streampos Multifile::Subfile::
 write_index(ostream &write, streampos fpos, Multifile *multifile) {
-  nassertr(write.tellp() == fpos, fpos);
+  nassertr(write.tellp() - multifile->_offset == fpos, fpos);
 
   _index_start = fpos;
   _index_length = 0;
@@ -2689,7 +2692,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   write.write((const char *)idg.get_data(), idg.get_length());
   write.write((const char *)dg.get_data(), dg.get_length());
 
-  _index_length = write.tellp() - fpos;
+  _index_length = write.tellp() - fpos - multifile->_offset;
   return next_index;
 }
 
@@ -2716,7 +2719,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
 streampos Multifile::Subfile::
 write_data(ostream &write, istream *read, streampos fpos,
            Multifile *multifile) {
-  nassertr(write.tellp() == fpos, fpos);
+  nassertr(write.tellp() - multifile->_offset == fpos, fpos);
 
   istream *source = _source;
   pifstream source_file;
@@ -2744,7 +2747,7 @@ write_data(ostream &write, istream *read, streampos fpos,
       _flags |= SF_data_invalid;
     } else {
       // Read the data from the original Multifile.
-      read->seekg(_data_start);
+      read->seekg(_data_start + multifile->_offset);
       for (size_t p = 0; p < _data_length; p++) {
         int byte = read->get();
         if (read->eof() || read->fail()) {
@@ -2828,7 +2831,7 @@ write_data(ostream &write, istream *read, streampos fpos,
       // Read and hash the multifile contents, but only up till
       // _last_data_byte.
       nassertr(multifile->_last_data_byte < fpos, fpos);
-      read->seekg(0);
+      read->seekg(multifile->_offset);
       streampos bytes_remaining = multifile->_last_data_byte;
       static const size_t buffer_size = 4096;
       char buffer[buffer_size];
@@ -2885,7 +2888,7 @@ write_data(ostream &write, istream *read, streampos fpos,
       delete putter;
     }
 
-    streampos write_end = write.tellp();
+    streampos write_end = write.tellp() - multifile->_offset;
     _data_length = (size_t)(write_end - write_start);
   }
 
@@ -2923,7 +2926,7 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
 
   static const size_t data_start_offset = 4;
   size_t data_start_pos = _index_start + (streampos)data_start_offset;
-  write.seekp(data_start_pos);
+  write.seekp(data_start_pos + multifile->_offset);
   nassertv(!write.fail());
 
   StreamWriter writer(write);
