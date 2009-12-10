@@ -480,7 +480,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
         string contents_filename = _root_dir + "/contents.xml";
         if (!read_contents_file(contents_filename)) {
           nout << "Unable to read contents file " << contents_filename << "\n";
-          // TODO: fail
+          set_failed();
         }
       }
     }
@@ -1107,7 +1107,7 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
       string contents_filename = _root_dir + "/contents.xml";
       if (!read_contents_file(contents_filename)) {
         nout << "Unable to read contents file " << contents_filename << "\n";
-        // TODO: fail
+        set_failed();
       }
     }
     break;
@@ -1231,7 +1231,7 @@ downloaded_plugin(const string &filename) {
       return;
     }
 
-    // TODO: fail
+    set_failed();
     return;
   }
 
@@ -1239,12 +1239,13 @@ downloaded_plugin(const string &filename) {
   string pathname = _core_api_dll.get_pathname(_root_dir);
   if (!copy_file(filename, pathname)) {
     nout << "Couldn't copy " << pathname << "\n";
+    set_failed();
     return;
   }
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
     nout << "After copying, " << pathname << " is no good.\n";
-    // TODO: fail
+    set_failed();
     return;
   }
 

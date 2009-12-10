@@ -417,7 +417,10 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
         }
       }
     }
-    
+
+    if (error) {
+      set_failed();
+    }
     return error;
 }
 
@@ -448,7 +451,6 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
       nout << "Attempting to load core API from " << pathname << "\n";
       if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
-        set_failed();
         error = 1;
       } else {
 #ifdef PANDA_OFFICIAL_VERSION
@@ -464,6 +466,9 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
       }
     }
 
+    if (error) {
+      set_failed();
+    }
     return error ;
 }
 
