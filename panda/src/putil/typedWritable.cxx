@@ -354,7 +354,7 @@ find_global_decode(PyObject *this_class, const char *func_name) {
       // borrowed reference
       PyObject *module = PyDict_GetItem(sys_modules, module_name);
       if (module != NULL){ 
-        PyObject *func = PyObject_GetAttrString(module, func_name);
+        PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
         if (func != NULL) {
           Py_DECREF(module_name);
           return func;
