@@ -297,6 +297,16 @@ make_wrapper_entry(FunctionIndex function_index) {
     assert(!iwrapper._parameters.empty());
     iwrapper._parameters.front()._parameter_flags |=
       InterrogateFunctionWrapper::PF_is_this;
+
+    if (_parameters.size() >= 2 && _parameters[1]._name == "self" &&
+        TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type())) {
+      // Here's a special case.  If the first parameter of a nonstatic
+      // method is a PyObject * called "self", then we will
+      // automatically fill it in from the this pointer, and remove it
+      // from the generated parameter list.
+      _parameters.erase(_parameters.begin() + 1);
+      _flags |= F_explicit_self;
+    }
   }
 
   if (!_void_return) {
@@ -382,6 +392,14 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     call << "(";
+    if (_flags & F_explicit_self) {
+      // Pass on the PyObject * that we stripped off above.
+      call << "self";
+      if (_first_true_parameter < (int)_parameters.size()) {
+        call << ", ";
+      }
+    }
+
     int pn = _first_true_parameter;
     if (pn < (int)_parameters.size()) {
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
@@ -629,6 +647,23 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
           TypeManager::is_integer(_return_type->get_new_type())) {
         // It receives no parameters, and returns an integer.
         _flags |= F_size;
+      }
+
+    } else if (fname == "make_copy" ) {
+      if (_has_this && _parameters.size() == 1 &&
+          TypeManager::is_pointer(_return_type->get_new_type())) {
+        // It receives no parameters, and returns a pointer.
+        _flags |= F_make_copy;
+      }
+    }
+
+  } else if (_type == T_constructor) {
+    if (!_has_this && _parameters.size() == 1) {
+      if (TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) == 
+          TypeManager::unwrap(_return_type->get_orig_type())) {
+        // If this is the only parameter, and it's the same as the
+        // "this" type, this is a copy constructor.
+        _flags |= F_copy_constructor;
       }
     }
   }

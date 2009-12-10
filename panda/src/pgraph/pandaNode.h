@@ -84,7 +84,6 @@ private:
 
 public:
   virtual ReferenceCount *as_reference_count();
-  virtual PandaNode *make_copy() const;
   virtual PandaNode *dupe_for_flatten() const;
 
   virtual bool safe_to_flatten() const;
@@ -116,7 +115,13 @@ public:
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
+  virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
+
+#ifdef HAVE_PYTHON
+  PT(PandaNode) __copy__() const;
+  PyObject *__deepcopy__(PyObject *self, PyObject *memo) const;
+#endif
 
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
@@ -299,6 +304,10 @@ PUBLISHED:
     FB_cull_callback        = 0x0040,
   };
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
+
+
+PUBLISHED:
+  static PT(PandaNode) decode_from_bam_stream(const string &data);
 
 protected:
   class BoundsData;

@@ -65,6 +65,10 @@ PUBLISHED:
     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix3));
 
+#ifdef HAVE_PYTHON
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(
     FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,

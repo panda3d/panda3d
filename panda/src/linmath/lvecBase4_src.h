@@ -38,6 +38,10 @@ PUBLISHED:
 
   INLINE_LINMATH ~FLOATNAME(LVecBase4)();
 
+#ifdef HAVE_PYTHON
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
 #ifdef HAVE_PYTHON

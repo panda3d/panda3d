@@ -51,6 +51,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyGen_Type(...);
   EXPCL_DTOOLCONFIG int PyGILState_Ensure(...);
   EXPCL_DTOOLCONFIG int PyGILState_Release(...);
+  EXPCL_DTOOLCONFIG int PyImport_GetModuleDict(...);
   EXPCL_DTOOLCONFIG int PyInt_AsLong(...);
   EXPCL_DTOOLCONFIG int PyInt_AsSsize_t(...);
   EXPCL_DTOOLCONFIG int PyInt_FromLong(...);
@@ -74,6 +75,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
+  EXPCL_DTOOLCONFIG int PyObject_CallFunction(...);
   EXPCL_DTOOLCONFIG int PyObject_CallMethod(...);
   EXPCL_DTOOLCONFIG int PyObject_CallMethodObjArgs(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
@@ -88,6 +90,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyObject_Repr(...);
   EXPCL_DTOOLCONFIG int PyObject_SetAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_Str(...);
+  EXPCL_DTOOLCONFIG int PyObject_Type(...);
   EXPCL_DTOOLCONFIG int PySequence_Check(...);
   EXPCL_DTOOLCONFIG int PySequence_GetItem(...);
   EXPCL_DTOOLCONFIG int PySequence_Size(...);
@@ -180,6 +183,7 @@ int PyGen_Check(...) { return 0; }
 int PyGen_Type(...) { return 0; }
 int PyGILState_Ensure(...) { return 0; }
 int PyGILState_Release(...) { return 0; }
+int PyImport_GetModuleDict(...) { return 0; }
 int PyInt_AsLong(...) { return 0; }
 int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
@@ -203,6 +207,7 @@ int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyNumber_Long(...) { return 0; }
 int PyObject_Call(...) { return 0; }
+int PyObject_CallFunction(...) { return 0; }
 int PyObject_CallMethod(...) { return 0; }
 int PyObject_CallMethodObjArgs(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
@@ -217,6 +222,7 @@ int PyObject_IsTrue(...) { return 0; }
 int PyObject_Repr(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
+int PyObject_Type(...) { return 0; }
 int PySequence_Check(...) { return 0; }
 int PySequence_GetItem(...) { return 0; }
 int PySequence_Size(...) { return 0; }

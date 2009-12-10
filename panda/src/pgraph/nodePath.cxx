@@ -66,6 +66,7 @@
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 #include "modelNode.h"
+#include "py_panda.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -126,6 +127,128 @@ static ConfigVariableEnum<EmptyNodePathType> empty_node_path
 
 // ***End temporary transition code for operator bool
 
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::__copy__
+//       Access: Published
+//  Description: A special Python method that is invoked by
+//               copy.copy(node).  Unlike the NodePath copy
+//               constructor, this makes a duplicate copy of the
+//               underlying PandaNode (but shares children, instead of
+//               copying them or omitting them).
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+__copy__() const {
+  if (is_empty()) {
+    // Invoke the copy constructor if we have no node.
+    return *this;
+  }
+
+  // If we do have a node, duplicate it, and wrap it in a new
+  // NodePath.
+  return NodePath(node()->__copy__());
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::__deepcopy__
+//       Access: Published
+//  Description: A special Python method that is invoked by
+//               copy.deepcopy(np).  This calls copy_to() unless the
+//               NodePath is already present in the provided
+//               dictionary.
+////////////////////////////////////////////////////////////////////
+PyObject *NodePath::
+__deepcopy__(PyObject *self, PyObject *memo) const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_NodePath;
+
+  // Borrowed reference.
+  PyObject *dupe = PyDict_GetItem(memo, self);
+  if (dupe != NULL) {
+    // Already in the memo dictionary.
+    Py_INCREF(dupe);
+    return dupe;
+  }
+
+  NodePath *np_dupe;
+  if (is_empty()) {
+    np_dupe = new NodePath(*this);
+  } else {
+    np_dupe = new NodePath(copy_to(NodePath()));
+  }
+
+  dupe = DTool_CreatePyInstance((void *)np_dupe, Dtool_NodePath,
+                                true, false);
+  if (PyDict_SetItem(memo, self, dupe) != 0) {
+    Py_DECREF(dupe);
+    return NULL;
+  }
+
+  return dupe;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *NodePath::
+__reduce__(PyObject *self) const {
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+
+  if (is_empty()) {
+    // Reconstruct an empty NodePath.  Not a 100% reconstruction,
+    // because we lose the specific error status, but I don't think
+    // that matters much.
+    PyObject *this_class = PyObject_Type(self);
+    if (this_class == NULL) {
+      return NULL;
+    }
+    
+    PyObject *result = Py_BuildValue("(O())", this_class);
+    Py_DECREF(this_class);
+    return result;
+  }
+
+  // We have a non-empty NodePath.  We need to streamify the
+  // underlying node.
+
+  string bam_stream;
+  if (!node()->encode_to_bam_stream(bam_stream)) {
+    ostringstream stream;
+    stream << "Could not bamify object of type " << node()->get_type() << "\n";
+    string message = stream.str();
+    PyErr_SetString(PyExc_TypeError, message.c_str());
+    return NULL;
+  }
+
+  // Start by getting this class object.
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStream");
+  if (func == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStream()");
+    Py_DECREF(this_class);
+    return NULL;
+  }
+  Py_DECREF(this_class);
+
+  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), bam_stream.size());
+  Py_DECREF(func);
+  return result;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::operator bool
@@ -7292,3 +7415,23 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
     r_find_all_materials(child, next_state, materials);
   }
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: py_decode_NodePath_from_bam_stream
+//       Access: Published
+//  Description: This wrapper is defined as a global function to suit
+//               pickle's needs.
+////////////////////////////////////////////////////////////////////
+NodePath
+py_decode_NodePath_from_bam_stream(const string &data) {
+  PT(PandaNode) node = PandaNode::decode_from_bam_stream(data);
+  if (node == (PandaNode *)NULL) {
+    PyErr_SetString(PyExc_ValueError, "Could not unpack bam stream");
+    return NodePath();
+  }    
+
+  return NodePath(node);
+}
+#endif  // HAVE_PYTHON
+

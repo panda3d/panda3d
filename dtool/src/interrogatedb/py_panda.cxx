@@ -709,6 +709,42 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: copy_from_make_copy
+//  Description: This is a support function for a synthesized
+//               __copy__() method from a C++ make_copy() method.
+////////////////////////////////////////////////////////////////////
+PyObject *copy_from_make_copy(PyObject *self) {
+  return PyObject_CallMethod(self, (char *)"makeCopy", (char *)"()");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: copy_from_make_copy
+//  Description: This is a support function for a synthesized
+//               __copy__() method from a C++ copy constructor.
+////////////////////////////////////////////////////////////////////
+PyObject *copy_from_copy_constructor(PyObject *self) {
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *result = PyObject_CallFunction(this_class, (char *)"(O)", self);
+  Py_DECREF(this_class);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: copy_from_make_copy
+//  Description: This is a support function for a synthesized
+//               __deepcopy__() method for any class that has a
+//               __copy__() method.  The sythethic method simply
+//               invokes __copy__().
+////////////////////////////////////////////////////////////////////
+PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
+  return PyObject_CallMethod(self, (char *)"__copy__", (char *)"()");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PyLongOrInt_FromUnsignedLong
 //  Description: Similar to PyLong_FromUnsignedLong(), but returns
 //               either a regular integer or a long integer, according

@@ -302,6 +302,30 @@ Filename(const Filename &dirname, const Filename &basename) {
   }
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *Filename::
+__reduce__(PyObject *self) const {
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *result = Py_BuildValue("(O(s))", this_class, c_str());
+  Py_DECREF(this_class);
+  return result;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::from_os_specific
 //       Access: Published, Static

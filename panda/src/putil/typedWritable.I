@@ -66,3 +66,28 @@ INLINE UpdateSeq TypedWritable::
 get_bam_modified() const {
   return _bam_modified;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::encode_to_bam_stream
+//       Access: Published
+//  Description: Converts the TypedWritable object into a single
+//               stream of data using a BamWriter, and returns that
+//               data as a string string.  Returns empty string on
+//               failure.
+//
+//               This is a convenience method particularly useful for
+//               cases when you are only serializing a single object.
+//               If you have many objects to process, it is more
+//               efficient to use the same BamWriter to serialize all
+//               of them together.
+////////////////////////////////////////////////////////////////////
+string TypedWritable::
+encode_to_bam_stream() const {
+  string data;
+  if (!encode_to_bam_stream(data)) {
+    return string();
+  }
+  return data;
+}
+

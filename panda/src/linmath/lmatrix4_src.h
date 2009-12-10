@@ -60,6 +60,10 @@ PUBLISHED:
                                      FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
+#ifdef HAVE_PYTHON
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3);

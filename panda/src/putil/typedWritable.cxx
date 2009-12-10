@@ -14,7 +14,11 @@
 
 #include "typedWritable.h"
 #include "bamWriter.h"
+#include "bamReader.h"
+#include "datagramOutputFile.h"
+#include "datagramInputFile.h"
 #include "lightMutexHolder.h"
+#include "bam.h"
 
 LightMutex TypedWritable::_bam_writers_lock;
 
@@ -144,3 +148,276 @@ ReferenceCount *TypedWritable::
 as_reference_count() {
   return NULL;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *TypedWritable::
+__reduce__(PyObject *self) const {
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+
+  // Check that we have a decodeFromBamStream python method.  If not,
+  // we can't use this interface.
+  PyObject *method = PyObject_GetAttrString(self, "decodeFromBamStream");
+  if (method == NULL) {
+    ostringstream stream;
+    stream << "Cannot pickle objects of type " << get_type() << "\n";
+    string message = stream.str();
+    PyErr_SetString(PyExc_TypeError, message.c_str());
+    return NULL;
+  }
+  Py_DECREF(method);
+
+  // First, streamify the object, if possible.
+  string bam_stream;
+  if (!encode_to_bam_stream(bam_stream)) {
+    ostringstream stream;
+    stream << "Could not bamify object of type " << get_type() << "\n";
+    string message = stream.str();
+    PyErr_SetString(PyExc_TypeError, message.c_str());
+    return NULL;
+  }
+
+  // Start by getting this class object.
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStream");
+  if (func == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStream()");
+    Py_DECREF(this_class);
+    return NULL;
+  }
+
+  PyObject *result = Py_BuildValue("(O(Os#))", func, this_class, bam_stream.data(), bam_stream.size());
+  Py_DECREF(func);
+  Py_DECREF(this_class);
+  return result;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::encode_to_bam_stream
+//       Access: Published
+//  Description: Converts the TypedWritable object into a single
+//               stream of data using a BamWriter, and stores that
+//               data in the indicated string.  Returns true on
+//               success, false on failure.
+//
+//               This is a convenience method particularly useful for
+//               cases when you are only serializing a single object.
+//               If you have many objects to process, it is more
+//               efficient to use the same BamWriter to serialize all
+//               of them together.
+////////////////////////////////////////////////////////////////////
+bool TypedWritable::
+encode_to_bam_stream(string &data) const {
+  data.clear();
+  ostringstream stream;
+
+  // We use nested scoping to ensure the destructors get called in the
+  // right order.
+  {
+    DatagramOutputFile dout;
+    if (!dout.open(stream)) {
+      return false;
+    }
+    
+    if (!dout.write_header(_bam_header)) {
+      return false;
+    }
+    
+    {
+      BamWriter writer(&dout, "bam_stream");
+      if (!writer.init()) {
+        return false;
+      }
+      
+      if (!writer.write_object(this)) {
+        return false;
+      }
+    }
+  }
+
+  data = stream.str();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::decode_raw_from_bam_stream
+//       Access: Published, Static
+//  Description: Reads the string created by a previous call to
+//               encode_to_bam_stream(), and extracts the single
+//               object on that string.  Returns true on success,
+//               false on on error.
+//
+//               This variant sets the TypedWritable and
+//               ReferenceCount pointers separately; both are pointers
+//               to the same object.  The reference count is not
+//               incremented; it is the caller's responsibility to
+//               manage the reference count.
+//
+//               Note that this method cannot be used to retrieve
+//               objects that do not inherit from ReferenceCount,
+//               because these objects cannot persist beyond the
+//               lifetime of the BamReader that reads them.  To
+//               retrieve these objects from a bam stream, you must
+//               construct a BamReader directly.
+//
+//               If you happen to know that the particular object in
+//               question inherits from TypedWritableReferenceCount or
+//               PandaNode, consider calling the variant of
+//               decode_from_bam_stream() defined for those methods,
+//               which presents a simpler interface.
+////////////////////////////////////////////////////////////////////
+bool TypedWritable::
+decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
+                           const string &data) {
+  istringstream stream(data);
+
+  DatagramInputFile din;
+  if (!din.open(stream)) {
+    return false;
+  }
+  
+  string head;
+  if (!din.read_header(head, _bam_header.size())) {
+    return false;
+  }
+  
+  if (head != _bam_header) {
+    return false;
+  }
+
+  // We scope this so we can control when the BamReader destructs.
+  {
+    BamReader reader(&din, "bam_stream");
+    if (!reader.init()) {
+      return false;
+    }
+    
+    if (!reader.read_object(ptr, ref_ptr)) {
+      return false;
+    }
+    
+    if (!reader.resolve()) {
+      return false;
+    }
+    
+    if (ref_ptr == NULL) {
+      // Can't support non-reference-counted objects.
+      return false;
+    }
+
+    // Protect the pointer from accidental deletion when the BamReader
+    // goes away.
+    ref_ptr->ref();
+  }
+
+  // Now decrement the ref count, without deleting the object.  This
+  // may reduce the reference count to zero, but that's OK--we trust
+  // the caller to manage the reference count from this point on.
+  ref_ptr->unref();
+  return true;
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::find_global_decode
+//       Access: Public, Static
+//  Description: This is a support function for __reduce__().  It
+//               searches for the global function
+//               pyDecodeTypedWritableFromBamStream() in this class's
+//               module, or in the module for any base class.  (It's
+//               really looking for the libpanda module, but we can't
+//               be sure what name that module was loaded under, so we
+//               search upwards this way.)
+//
+//               Returns: new reference on success, or NULL on failure.
+////////////////////////////////////////////////////////////////////
+PyObject *TypedWritable::
+find_global_decode(PyObject *this_class, const char *func_name) {
+  PyObject *module_name = PyObject_GetAttrString(this_class, "__module__");
+  if (module_name != NULL) {
+    // borrowed reference
+    PyObject *sys_modules = PyImport_GetModuleDict();
+    if (sys_modules != NULL) {
+      // borrowed reference
+      PyObject *module = PyDict_GetItem(sys_modules, module_name);
+      if (module != NULL){ 
+        PyObject *func = PyObject_GetAttrString(module, func_name);
+        if (func != NULL) {
+          Py_DECREF(module_name);
+          return func;
+        }
+      }
+    }
+  }
+  Py_DECREF(module_name);
+
+  PyObject *bases = PyObject_GetAttrString(this_class, "__bases__");
+  if (bases != NULL) {
+    if (PySequence_Check(bases)) {
+      Py_ssize_t size = PySequence_Size(bases);
+      for (Py_ssize_t i = 0; i < size; ++i) {
+        PyObject *base = PySequence_GetItem(bases, i);
+        if (base != NULL) {
+          PyObject *func = find_global_decode(base, func_name);
+          Py_DECREF(base);
+          if (func != NULL) {
+            Py_DECREF(bases);
+            return func;
+          }
+        }
+      }
+    }
+    Py_DECREF(bases);
+  }
+
+  return NULL;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: py_decode_TypedWritable_from_bam_stream
+//       Access: Published
+//  Description: This wrapper is defined as a global function to suit
+//               pickle's needs.
+////////////////////////////////////////////////////////////////////
+PyObject *
+py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data) {
+  // We need the function TypedWritable::decode_from_bam_stream, which
+  // invokes the BamReader to reconstruct this object.  Since we use
+  // the specific object's class as the pointer, we get the particular
+  // instance of decode_from_bam_stream appropriate to this class.
+
+  PyObject *func = PyObject_GetAttrString(this_class, "decodeFromBamStream");
+  if (func == NULL) {
+    return NULL;
+  }
+
+  PyObject *result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), data.size());
+  if (result == NULL) {
+    return NULL;
+  }
+
+  if (result == Py_None) {
+    Py_DECREF(result);
+    PyErr_SetString(PyExc_ValueError, "Could not unpack bam stream");
+    return NULL;
+  }    
+
+  return result;
+}
+#endif  // HAVE_PYTHON
+

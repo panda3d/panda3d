@@ -28,6 +28,7 @@
 #include "config_mathutil.h"
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
+#include "py_panda.h"
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
@@ -209,20 +210,6 @@ operator = (const PandaNode &copy) {
 ReferenceCount *PandaNode::
 as_reference_count() {
   return this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated PandaNode that is a shallow
-//               copy of this one.  It will be a different pointer,
-//               but its internal data may or may not be shared with
-//               that of the original PandaNode.  No children will be
-//               copied.
-////////////////////////////////////////////////////////////////////
-PandaNode *PandaNode::
-make_copy() const {
-  return new PandaNode(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -609,6 +596,20 @@ add_for_draw(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::make_copy
+//       Access: Published, Virtual
+//  Description: Returns a newly-allocated PandaNode that is a shallow
+//               copy of this one.  It will be a different pointer,
+//               but its internal data may or may not be shared with
+//               that of the original PandaNode.  No children will be
+//               copied.
+////////////////////////////////////////////////////////////////////
+PandaNode *PandaNode::
+make_copy() const {
+  return new PandaNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::copy_subgraph
 //       Access: Published
 //  Description: Allocates and returns a complete copy of this
@@ -618,11 +619,78 @@ add_for_draw(CullTraverser *, CullTraverserData &) {
 //               will impede normal use of the PandaNode.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PandaNode::
-copy_subgraph(Thread *current_thread) const 
-{
+copy_subgraph(Thread *current_thread) const {
   InstanceMap inst_map;
   return r_copy_subgraph(inst_map, current_thread);
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::__copy__
+//       Access: Published
+//  Description: A special Python method that is invoked by
+//               copy.copy(node).  Unlike the PandaNode copy
+//               constructor, which creates a new node without
+//               children, this shares child pointers (essentially
+//               making every child an instance).  This is intended to
+//               simulate the behavior of copy.copy() for other
+//               objects.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PandaNode::
+__copy__() const {
+  Thread *current_thread = Thread::get_current_thread();
+
+  PT(PandaNode) node_dupe = make_copy();
+
+  Children children = get_children(current_thread);
+  int num_children = children.get_num_children();
+
+  for (int i = 0; i < num_children; ++i) {
+    PandaNode *child = children.get_child(i);
+    node_dupe->add_child(children.get_child(i), children.get_child_sort(i));
+  }
+
+  return node_dupe;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::__deepcopy__
+//       Access: Published
+//  Description: A special Python method that is invoked by
+//               copy.deepcopy(node).  This calls copy_subgraph()
+//               unless the node is already present in the provided
+//               dictionary.
+////////////////////////////////////////////////////////////////////
+PyObject *PandaNode::
+__deepcopy__(PyObject *self, PyObject *memo) const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_PandaNode;
+
+  // Borrowed reference.
+  PyObject *dupe = PyDict_GetItem(memo, self);
+  if (dupe != NULL) {
+    // Already in the memo dictionary.
+    Py_INCREF(dupe);
+    return dupe;
+  }
+
+  PT(PandaNode) node_dupe = copy_subgraph();
+
+  // DTool_CreatePyInstanceTyped() steals a C++ reference.
+  node_dupe->ref();
+  dupe = DTool_CreatePyInstanceTyped
+    ((void *)node_dupe.p(), Dtool_PandaNode, true, false, 
+     node_dupe->get_type_index());
+
+  if (PyDict_SetItem(memo, self, dupe) != 0) {
+    Py_DECREF(dupe);
+    return NULL;
+  }
+
+  return dupe;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::count_num_descendants
@@ -2595,6 +2663,32 @@ as_light() {
 bool PandaNode::
 is_ambient_light() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::decode_from_bam_stream
+//       Access: Published, Static
+//  Description: Reads the string created by a previous call to
+//               encode_to_bam_stream(), and extracts and returns the
+//               single object on that string.  Returns NULL on error.
+//
+//               This method is intended to replace
+//               decode_raw_from_bam_stream() when you know the stream
+//               in question returns an object of type PandaNode,
+//               allowing for easier reference count management.  Note
+//               that the caller is still responsible for maintaining
+//               the reference count on the return value.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PandaNode::
+decode_from_bam_stream(const string &data) {
+  TypedWritable *object;
+  ReferenceCount *ref_ptr;
+
+  if (!TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, data)) {
+    return NULL;
+  }
+
+  return DCAST(PandaNode, object);
 }
 
 ////////////////////////////////////////////////////////////////////

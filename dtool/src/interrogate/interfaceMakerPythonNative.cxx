@@ -97,7 +97,10 @@ RenameSet methodRenameDictionary[] = {
     { "operator <<="  , "__ilshift__",          1 },
     { "operator >>="  , "__irshift__",          1 },
     { "operator typecast bool", "__nonzero__",  0 },
-    { "__nonzero__"   , "__nonzero__",          0 },
+    { "__nonzero__"   , "__nonzero__",          0 }, 
+    { "__reduce__"    , "__reduce__",           0 },
+    { "__copy__"      , "__copy__",             0 },
+    { "__deepcopy__"  , "__deepcopy__",         0 },
     { "print"         , "Cprint",               0 },
     { "CInterval.set_t", "_priv__cSetT",        0 },
     { NULL, NULL, -1 }
@@ -159,34 +162,36 @@ RenameSet classRenameDictionary[] = {
 ///////////////////////////////////////////////////////////////////////////////////////
 const char * pythonKeywords[] = {
     "and",
-        "del",
-        "for",
-        "is",
-        "raise",
-        "assert",
-        "elif",
-        "from",
-        "lambda",
-        "return",
-        "break",
-        "else",
-        "global",
-        "not",
-        "try",
-        "class",
-        "except",
-        "if",
-        "or",
-        "while",
-        "continue",
-        "exec",
-        "import",
-        "pass",
-        "def",
-        "finally",
-        "in",
-        "print",
-        NULL};
+    "del",
+    "for",
+    "is",
+    "raise",
+    "assert",
+    "elif",
+    "from",
+    "lambda",
+    "return",
+    "break",
+    "else",
+    "global",
+    "not",
+    "try",
+    "class",
+    "except",
+    "if",
+    "or",
+    "while",
+    "continue",
+    "exec",
+    "import",
+    "pass",
+    "def",
+    "finally",
+    "in",
+    "print",
+    NULL
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////
 std::string  checkKeyword(std::string & cppName)
 {
@@ -813,69 +818,69 @@ void InterfaceMakerPythonNative::write_prototypes_class(ostream &out_code,ostrea
 void InterfaceMakerPythonNative::write_functions(ostream &out) 
 {
   inside_python_native = true;
-
-    out << "//********************************************************************\n";
-    out << "//*** Functions for .. Global \n" ;
-    out << "//********************************************************************\n";
-        Functions::iterator fi;
-        for (fi = _functions.begin(); fi != _functions.end(); ++fi) 
-        {
-            Function *func = (*fi);
-            if(!func->_itype.is_global() && isFunctionLegal(func))
-                write_function_for_top(out, NULL, func,"");
-        }
-
-        Objects::iterator oi;
-        for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
-        {
-            Object *object = (*oi).second;
-            if(object->_itype.is_class() ||object->_itype.is_struct())
-            {
-                if(isCppTypeLegal(object->_itype._cpptype))
-                  if(isExportThisRun(object->_itype._cpptype))
-                        write_ClasseDetails(out,object);
-            }
-        }
-
-//    Objects::iterator oi;
-    for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
+  
+  out << "//********************************************************************\n";
+  out << "//*** Functions for .. Global \n" ;
+  out << "//********************************************************************\n";
+  Functions::iterator fi;
+  for (fi = _functions.begin(); fi != _functions.end(); ++fi) 
     {
-        Object *object = (*oi).second;
-        if(!object->_itype.get_outer_class())
+      Function *func = (*fi);
+      if(!func->_itype.is_global() && isFunctionLegal(func))
+        write_function_for_top(out, NULL, func,"");
+    }
+  
+  Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
+    {
+      Object *object = (*oi).second;
+      if(object->_itype.is_class() ||object->_itype.is_struct())
         {
-            if(object->_itype.is_class() ||object->_itype.is_struct())
-              if(isCppTypeLegal(object->_itype._cpptype))
-                  if(isExportThisRun(object->_itype._cpptype))
-                        write_module_class(out,object);
+          if(isCppTypeLegal(object->_itype._cpptype))
+            if(isExportThisRun(object->_itype._cpptype))
+              write_ClasseDetails(out,object);
+        }
+    }
+  
+  //    Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
+    {
+      Object *object = (*oi).second;
+      if(!object->_itype.get_outer_class())
+        {
+          if(object->_itype.is_class() ||object->_itype.is_struct())
+            if(isCppTypeLegal(object->_itype._cpptype))
+              if(isExportThisRun(object->_itype._cpptype))
+                write_module_class(out,object);
         }
     }
   inside_python_native = true;
-
 }
+
 ////////////////////////////////////////////////////////////
 //  Function : write_ClasseDetails
 ////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj) 
 {
-    Functions::iterator fi;
-
-    //std::string cClassName = obj->_itype.get_scoped_name();
-    std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
-    std::string cClassName =  obj->_itype.get_true_name();
-    std::string export_class_name = classNameFromCppName(obj->_itype.get_name());
-
-    out << "//********************************************************************\n";
-    out << "//*** Functions for .. "<< cClassName <<" \n" ;
-    out << "//********************************************************************\n";
-
-    for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) 
+  Functions::iterator fi;
+  
+  //std::string cClassName = obj->_itype.get_scoped_name();
+  std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
+  std::string cClassName =  obj->_itype.get_true_name();
+  std::string export_class_name = classNameFromCppName(obj->_itype.get_name());
+  
+  out << "//********************************************************************\n";
+  out << "//*** Functions for .. "<< cClassName <<" \n" ;
+  out << "//********************************************************************\n";
+  
+  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) 
     {
-        Function *func = (*fi);
-        if( (func))
+      Function *func = (*fi);
+      if( (func))
         {
           SlottedFunctionDef def;
           get_slotted_function_def(obj, func, def);
-
+          
           ostringstream GetThis;
           GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
           GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
@@ -887,7 +892,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             // likes to call on the wrong-type objects.
             GetThis << "       Py_INCREF(Py_NotImplemented);\n";
             GetThis << "       return Py_NotImplemented;\n";
-
+            
           } else {
             // Other functions should raise an exception if the this
             // pointer isn't set or is the wrong type.
@@ -898,100 +903,100 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
           write_function_for_top(out, obj, func,GetThis.str());
         }
     }
-
-//    bool AnyLeganConstructors;
-
-    if(obj->_constructors.size() == 0)
+  
+  //    bool AnyLeganConstructors;
+  
+  if(obj->_constructors.size() == 0)
     {
-        std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
-        out << fname << "\n";
-        out << "{\n";
-        out << "       PyErr_SetString(PyExc_TypeError, \"Error Can Not Init Constant Class (" << cClassName << ")\");\n";
-        out << "       return -1;\n" ;
-        out << "}\n";
-
+      std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
+      out << fname << "\n";
+      out << "{\n";
+      out << "       PyErr_SetString(PyExc_TypeError, \"Error Can Not Init Constant Class (" << cClassName << ")\");\n";
+      out << "       return -1;\n" ;
+      out << "}\n";
+      
     }
-    else
+  else
     {
-        for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
+      for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) 
         {
-            Function *func = (*fi);
-            std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
-
-            write_function_for_name(out, obj, func,fname,"",ClassName);
+          Function *func = (*fi);
+          std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
+          
+          write_function_for_name(out, obj, func,fname,"",ClassName);
         }
     }
-
-    MakeSeqs::iterator msi;
-    for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-      write_make_seq(out, obj, ClassName, *msi);
+  
+  MakeSeqs::iterator msi;
+  for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
+    write_make_seq(out, obj, ClassName, *msi);
+  }
+  
+  CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
+  std::map< string ,CastDetails > details;
+  std::map< string ,CastDetails >::iterator di;
+  builder.get_type(TypeManager::unwrap(cpptype),false);
+  GetValideChildClasses(details, cpptype->as_struct_type());
+  for(di = details.begin(); di != details.end(); di++)
+    {
+      //InterrogateType ptype =idb->get_type(di->first);
+      if(di->second._is_legal_py_class && !isExportThisRun(di->second._structType))
+        _external_imports.insert(make_safe_name(di->second._to_class_name));
+      //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(di->second._to_class_name) <<";\n";
     }
+  
+  
+  
+  { // the Cast Converter
+    
+    out << "inline void  * Dtool_UpcastInterface_"<< ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type)\n";
+    out << "{\n";
+    out << "    Dtool_PyTypedObject *SelfType = ((Dtool_PyInstDef *)self)->_My_Type;\n";
+    out << "    if(SelfType != &Dtool_" << ClassName <<")\n";
+    out << "    {\n";
+    out << "        printf(\""<<ClassName<<" ** Bad Source Type-- Requesting Conversion from %s to %s\\n\",((Dtool_PyInstDef *)self)->_My_Type->_name,requested_type->_name);fflush(NULL);\n";;
+    out << "        return NULL;\n";
+    out << "    }\n";
+    out << " \n";
+    out << "    "<<cClassName<<" * local_this = (" << cClassName<<" *)((Dtool_PyInstDef *)self)->_ptr_to_object;\n"; 
+    out << "    if(requested_type == &Dtool_"<<ClassName<<")\n";
+    out << "        return local_this;\n";
 
-    CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
-    std::map< string ,CastDetails > details;
-    std::map< string ,CastDetails >::iterator di;
-    builder.get_type(TypeManager::unwrap(cpptype),false);
-    GetValideChildClasses(details, cpptype->as_struct_type());
     for(di = details.begin(); di != details.end(); di++)
       {
-        //InterrogateType ptype =idb->get_type(di->first);
-        if(di->second._is_legal_py_class && !isExportThisRun(di->second._structType))
-          _external_imports.insert(make_safe_name(di->second._to_class_name));
-        //out << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(di->second._to_class_name) <<";\n";
+        if(di->second._is_legal_py_class)
+          {
+            out << "    if(requested_type == &Dtool_"<<make_safe_name(di->second._to_class_name)<<")\n";
+            out << "        return "<< di->second._up_cast_string << " local_this;\n";
+          }
       }
-    
 
+    out << "    return NULL;\n";
+    out << "}\n";
 
-    { // the Cast Converter
+    out << "inline void  * Dtool_DowncastInterface_"<< ClassName << "(void *from_this, Dtool_PyTypedObject *from_type)\n";
+    out << "{\n";
+    out << "    if(from_this == NULL || from_type == NULL)\n";
+    out << "        return NULL;\n";
+    out << "    if(from_type == &Dtool_" << ClassName<<")\n";
+    out << "        return from_this;\n";
+    for(di = details.begin(); di != details.end(); di++)
+      {
+        if(di->second._can_downcast && di->second._is_legal_py_class)
+          {
+            out << "    if(from_type == &Dtool_"<<make_safe_name(di->second._to_class_name)<<")\n";
+            out << "    {\n";
+            out << "          "<< di->second._to_class_name << "* other_this = ("<< di->second._to_class_name <<  "*)from_this;\n" ;
+            out << "          return ("<< cClassName << "*)other_this;\n";
+            out << "    }\n";
+          }
+      }
+    out << "    return (void *) NULL;\n";
+    out << "}\n";
 
-        out << "inline void  * Dtool_UpcastInterface_"<< ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type)\n";
-        out << "{\n";
-        out << "    Dtool_PyTypedObject *SelfType = ((Dtool_PyInstDef *)self)->_My_Type;\n";
-        out << "    if(SelfType != &Dtool_" << ClassName <<")\n";
-        out << "    {\n";
-        out << "        printf(\""<<ClassName<<" ** Bad Source Type-- Requesting Conversion from %s to %s\\n\",((Dtool_PyInstDef *)self)->_My_Type->_name,requested_type->_name);fflush(NULL);\n";;
-        out << "        return NULL;\n";
-        out << "    }\n";
-        out << " \n";
-        out << "    "<<cClassName<<" * local_this = (" << cClassName<<" *)((Dtool_PyInstDef *)self)->_ptr_to_object;\n"; 
-        out << "    if(requested_type == &Dtool_"<<ClassName<<")\n";
-        out << "        return local_this;\n";
-
-        for(di = details.begin(); di != details.end(); di++)
-        {
-            if(di->second._is_legal_py_class)
-            {
-                    out << "    if(requested_type == &Dtool_"<<make_safe_name(di->second._to_class_name)<<")\n";
-                    out << "        return "<< di->second._up_cast_string << " local_this;\n";
-            }
-        }
-
-        out << "    return NULL;\n";
-        out << "}\n";
-
-        out << "inline void  * Dtool_DowncastInterface_"<< ClassName << "(void *from_this, Dtool_PyTypedObject *from_type)\n";
-        out << "{\n";
-        out << "    if(from_this == NULL || from_type == NULL)\n";
-        out << "        return NULL;\n";
-        out << "    if(from_type == &Dtool_" << ClassName<<")\n";
-        out << "        return from_this;\n";
-        for(di = details.begin(); di != details.end(); di++)
-        {
-            if(di->second._can_downcast && di->second._is_legal_py_class)
-            {
-                out << "    if(from_type == &Dtool_"<<make_safe_name(di->second._to_class_name)<<")\n";
-                out << "    {\n";
-                out << "          "<< di->second._to_class_name << "* other_this = ("<< di->second._to_class_name <<  "*)from_this;\n" ;
-                out << "          return ("<< cClassName << "*)other_this;\n";
-                out << "    }\n";
-            }
-        }
-        out << "    return (void *) NULL;\n";
-        out << "}\n";
-
-    }
-
+  }
 }
+
 ////////////////////////////////////////////////////////////
 /// Function : write_ClasseDeclarations
 //
@@ -1215,9 +1220,18 @@ write_module_class(ostream &out,  Object *obj) {
   std::map<Function *, std::string >       normal_Operator_functions;
   std::map<Function *, SlottedFunctionDef> wraped_Operator_functions;
   // function Table
+  bool got_copy = false;
+  bool got_deepcopy = false;
+
   int x;
   for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) {
     Function *func = (*fi);
+    if (func->_name == "__copy__") {
+      got_copy = true;
+    } else if (func->_name == "__deepcopy__") {
+      got_deepcopy = true;
+    }
+
     SlottedFunctionDef slotted_def;
     if (!get_slotted_function_def(obj, func, slotted_def)) {
       out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
@@ -1248,6 +1262,22 @@ write_module_class(ostream &out,  Object *obj) {
     }
   }
 
+  if (obj->_protocol_types & Object::PT_make_copy) {
+    if (!got_copy) {
+      out << "  { \"__copy__\", (PyCFunction)&copy_from_make_copy, METH_NOARGS, NULL},\n";
+      got_copy = true;
+    }
+  } else if (obj->_protocol_types & Object::PT_copy_constructor) {
+    if (!got_copy) {
+      out << "  { \"__copy__\", (PyCFunction)&copy_from_copy_constructor, METH_NOARGS, NULL},\n";
+      got_copy = true;
+    }
+  }
+
+  if (got_copy && !got_deepcopy) {
+    out << "  { \"__deepcopy__\", (PyCFunction)&map_deepcopy_to_copy, METH_VARARGS, NULL},\n";
+  }
+  
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
     out << "  { \""

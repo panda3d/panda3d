@@ -40,18 +40,17 @@ public:
 
   virtual ReferenceCount *as_reference_count();
 
+PUBLISHED:
+  static PT(TypedWritableReferenceCount) decode_from_bam_stream(const string &data);
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-
-public:
   static void init_type() {
     TypedWritable::init_type();
     ReferenceCount::init_type();

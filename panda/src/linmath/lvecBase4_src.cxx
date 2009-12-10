@@ -25,6 +25,31 @@ const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_z =
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_w =
   FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 1.0f);
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *FLOATNAME(LVecBase4)::
+__reduce__(PyObject *self) const {
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  PyObject *result = Py_BuildValue("(O(ffff))", this_class, 
+                                   (*this)[0], (*this)[1], (*this)[2], (*this)[3]);
+  Py_DECREF(this_class);
+  return result;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::init_type
 //       Access: Public, Static

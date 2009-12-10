@@ -110,8 +110,10 @@ public:
     MakeSeqs _make_seqs;
 
     enum ProtocolTypes {
-      PT_sequence =   0x0001,
-      PT_mapping =    0x0002,
+      PT_sequence         = 0x0001,
+      PT_mapping          = 0x0002,
+      PT_make_copy        = 0x0004,
+      PT_copy_constructor = 0x0008,
     };
     int _protocol_types;
   };

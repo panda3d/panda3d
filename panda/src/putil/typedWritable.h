@@ -60,6 +60,21 @@ PUBLISHED:
   INLINE void mark_bam_modified();
   INLINE UpdateSeq get_bam_modified() const;
 
+#ifdef HAVE_PYTHON
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
+  INLINE string encode_to_bam_stream() const;
+  bool encode_to_bam_stream(string &data) const;
+  static bool decode_raw_from_bam_stream(TypedWritable *&ptr, 
+                                         ReferenceCount *&ref_ptr,
+                                         const string &data);
+
+public:
+#ifdef HAVE_PYTHON
+  static PyObject *find_global_decode(PyObject *this_class, const char *func_name);
+#endif
+
 private:
   // We may need to store a list of the BamWriter(s) that have a
   // reference to this object, so that we can remove the object from
@@ -70,12 +85,10 @@ private:
 
   UpdateSeq _bam_modified;
 
-PUBLISHED:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-
-public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "TypedWritable",
@@ -95,6 +108,12 @@ private:
 
   friend class BamWriter;
 };
+
+#ifdef HAVE_PYTHON
+BEGIN_PUBLISH
+PyObject *py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data);
+END_PUBLISH
+#endif
 
 #include "typedWritable.I"
 

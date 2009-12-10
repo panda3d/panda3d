@@ -123,6 +123,10 @@ check_protocols() {
   int flags = 0;
 
   Functions::const_iterator fi;
+  for (fi = _constructors.begin(); fi != _constructors.end(); ++fi) {
+    Function *func = (*fi);
+    flags |= func->_flags;
+  }
   for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
     Function *func = (*fi);
     flags |= func->_flags;
@@ -138,6 +142,16 @@ check_protocols() {
   } else if (flags & FunctionRemap::F_getitem) {
     // If we have any getitem, then we implement the mapping protocol.
     _protocol_types |= PT_mapping;
+  }
+
+  if (flags & FunctionRemap::F_make_copy) {
+    // It's not exactly a protocol, but if we have a make_copy()
+    // method, we can use it to synthesize a __copy__ and __deepcopy__
+    // Python method to support the copy module.
+    _protocol_types |= PT_make_copy;
+  } else if (flags & FunctionRemap::F_copy_constructor) {
+    // Ditto for the copy constructor.
+    _protocol_types |= PT_copy_constructor;
   }
 
   // Now are there any make_seq requests within this class?

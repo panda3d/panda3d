@@ -66,6 +66,10 @@ PUBLISHED:
   Filename(const Filename &dirname, const Filename &basename);
   INLINE ~Filename();
 
+#ifdef HAVE_PYTHON
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
   // Static constructors to explicitly create a filename that refers
   // to a text or binary file.  This is in lieu of calling set_text()
   // or set_binary() or set_type().
