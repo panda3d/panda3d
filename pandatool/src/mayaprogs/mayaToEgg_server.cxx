@@ -341,7 +341,6 @@ poll() {
     PT(Connection) rv;
     NetAddress address;
     if (qListener->get_new_connection(rv, address, con)) {
-      nout << "Got connection from " << address << "\n";
       qReader->add_connection(con);
       _clients.insert(con);
     }
@@ -351,7 +350,6 @@ poll() {
   if (qManager->reset_connection_available()) {
     PT(Connection) connection;
     if (qManager->get_reset_connection(connection)) {
-      nout << "Lost connection from " << connection->get_address() << "\n";
       _clients.erase(connection);
       qManager->close_connection(connection);
     }
@@ -364,7 +362,6 @@ poll() {
     NetDatagram datagram;
     if (qReader->get_data(datagram)) {
       DatagramIterator data(datagram);
-      nout << "receiving data\n";
       // First data should be the "argc" (argument count) from the client
       int argc = data.get_uint8();
 
@@ -428,7 +425,6 @@ poll() {
       // Clean up the malloc'd pointer pointer
       free(cargv);
     } // qReader->get_data
-    nout << "Closing connection...\n";
 
     Clients::iterator ci;
     for (ci = _clients.begin(); ci != _clients.end(); ++ci) {

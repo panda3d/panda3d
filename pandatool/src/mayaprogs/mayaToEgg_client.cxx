@@ -54,9 +54,6 @@ int main(int argc, char *argv[]) {
   // Get the current working directory and make sure it's a string
   Filename cwd = ExecutionEnvironment::get_cwd();
   string s_cwd = (string)cwd.to_os_specific();
-  nout << "CWD: " << s_cwd << "\n";
-
-  nout << "building datagram\n";
   NetDatagram datagram;
   
   // First part of the datagram is the argc
@@ -70,7 +67,6 @@ int main(int argc, char *argv[]) {
 
   // Lastly, add the current working dir as a string to the datagram
   datagram.add_string(s_cwd);
-  nout << "sending datagram\n";
   
   // Send it and close the connection
   prog.cWriter->send(datagram, con);
