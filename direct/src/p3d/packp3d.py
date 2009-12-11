@@ -139,7 +139,7 @@ def makePackedApp(args):
             name, version, host = tokens[:3]
             requires.append((name, version, host))
         elif option == '-s':
-            packager.installSearch.appendDirectory(Filename.fromOsSpecific(value))
+            packager.installSearch.append(Filename.fromOsSpecific(value))
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
