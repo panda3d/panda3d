@@ -32,12 +32,13 @@ class GravityWalker(DirectObject.DirectObject):
 
     # special methods
     def __init__(self, gravity = 64.348, standableGround=0.707,
-            hardLandingForce=16.0):
+            hardLandingForce=16.0, legacyLifter=False):
         assert self.notify.debugStateCall(self)
         DirectObject.DirectObject.__init__(self)
         self.__gravity=gravity
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
+        self._legacyLifter = legacyLifter
 
         self.mayJump = 1
         self.jumpDelayTask = None
@@ -187,6 +188,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up floor collision mechanism
         self.lifter = CollisionHandlerGravity()
+        #self.lifter = CollisionHandlerHighestEvent()
+        self.lifter.setLegacyMode(self._legacyLifter)
         self.lifter.setGravity(self.__gravity)
         self.lifter.addInPattern("enter%in")
         self.lifter.addAgainPattern("again%in")
