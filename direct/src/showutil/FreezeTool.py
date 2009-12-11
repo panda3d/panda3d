@@ -46,7 +46,9 @@ class CompilationEnvironment:
     can create a custom instance of this class (or simply set the
     compile strings directly) to customize the build environment. """
 
-    def __init__(self):
+    def __init__(self, platform):
+        self.platform = platform
+        
         # The command to compile a c to an object file.  Replace %(basename)s
         # with the basename of the source file, and an implicit .c extension.
         self.compileObj = 'error'
@@ -82,7 +84,7 @@ class CompilationEnvironment:
         self.determineStandardSetup()
 
     def determineStandardSetup(self):
-        if sys.platform == 'win32':
+        if self.platform == 'win32':
             self.Python = PREFIX
 
             if ('VCINSTALLDIR' in os.environ):
@@ -123,10 +125,9 @@ class CompilationEnvironment:
                 self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
-        elif sys.platform == 'darwin':
+        elif self.platform.startswith('osx_'):
             # OSX
-            plat = PandaSystem.getPlatform()
-            proc = plat.split('_', 1)[1]
+            proc = self.platform.split('_', 1)[1]
             if proc == 'i386':
                 self.arch = '-arch i386'
             elif proc == 'ppc':
@@ -535,10 +536,11 @@ class Freezer:
                 args.append('allowChildren = True')
             return 'ModuleDef(%s)' % (', '.join(args))
 
-    def __init__(self, previous = None, debugLevel = 0):
+    def __init__(self, previous = None, debugLevel = 0,
+                 platform = None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
-        self.platform = sys.platform
+        self.platform = platform or PandaSystem.getPlatform()
 
         # This is the compilation environment.  Fill in your own
         # object here if you have custom needs (for instance, for a
@@ -1216,7 +1218,7 @@ class Freezer:
             dllimport = '__declspec(dllimport) '
 
         if not self.cenv:
-            self.cenv = CompilationEnvironment()
+            self.cenv = CompilationEnvironment(platform = self.platform)
             
         if compileToExe:
             code = self.frozenMainCode

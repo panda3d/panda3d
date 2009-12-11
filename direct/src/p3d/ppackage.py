@@ -79,10 +79,23 @@ Options:
      initially, but should not be set on an application intended for
      deployment.
 
+  -u
+     On the Mac OSX platform, this means that Panda was built with
+     universal binaries, and the package should be built that way as
+     well (that is, a version of the the package should be created for
+     each supported architecture).  On other platforms, this option
+     does nothing.  This is therefore safe to apply in all cases, if
+     you wish to take advantage of universal binaries.  This is
+     equivalent to "-P osx_ppc -P osx_i386" on Mac platforms.
+
   -P platform
      Specify the platform to masquerade as.  The default is whatever
-     platform Panda has been built for.  It is probably unwise to set
-     this, unless you know what you are doing.
+     platform Panda has been built for.  You can use this on Mac OSX
+     in order to build packages for an alternate architecture if you
+     have built Panda with universal binaries; you may repeat this
+     option for each architecture you wish to support.  For other
+     platforms, it is probably a mistake to set this.  However, see
+     the option -u.
 
   -h
      Display this help
@@ -100,31 +113,38 @@ def usage(code, msg = ''):
     print >> sys.stderr, msg
     sys.exit(code)
 
-packager = Packager.Packager()
+installDir = None
 buildPatches = False
+installSearch = []
+signParams = []
+allowPythonDev = False
+universalBinaries = False
+platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DP:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:h')
 except getopt.error, msg:
     usage(1, msg)
 
 for opt, arg in opts:
     if opt == '-i':
-        packager.installDir = Filename.fromOsSpecific(arg)
+        installDir = Filename.fromOsSpecific(arg)
     elif opt == '-p':
         buildPatches = True
     elif opt == '-s':
-        packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
+        installSearch.appendDirectory(Filename.fromOsSpecific(arg))
     elif opt == '-S':
         tokens = arg.split(',')
         while len(tokens) < 4:
             tokens.append('')
         certificate, chain, pkey, password = tokens[:4]
-        packager.signParams.append((certificate, chain, pkey, password))
+        signParams.append((certificate, chain, pkey, password))
     elif opt == '-D':
-        packager.allowPythonDev = True
+        allowPythonDev = True
+    elif opt == '-u':
+        universalBinaries = True
     elif opt == '-P':
-        packager.platform = arg
+        platforms.append(arg)
         
     elif opt == '-h':
         usage(0)
@@ -140,24 +160,41 @@ packageNames = None
 if len(args) > 1:
     packageNames = args[1:]
 
-if not packager.installDir:
+if not installDir:
     print '\nYou must name the target install directory with the -i parameter.\n'
     sys.exit(1)
-packager.installSearch.prependDirectory(packager.installDir)
 
-try:
-    packager.setup()
-    packages = packager.readPackageDef(packageDef, packageNames = packageNames)
-    packager.close()
-    if buildPatches:
-        packager.buildPatches(packages)
-        
-except Packager.PackagerError:
-    # Just print the error message and exit gracefully.
-    inst = sys.exc_info()[1]
-    print inst.args[0]
-    #raise
-    sys.exit(1)
+if universalBinaries:
+    if platforms:
+        print '\nYou may not specify both -u and -P.\n'
+        sys.exit(1)
+    if PandaSystem.getPlatform().startswith('osx_'):
+        # Maybe soon we'll add osx_x86_64 to this default list.
+        platforms = ['osx_i386', 'osx_ppc']
+
+if not platforms:
+    platforms = [PandaSystem.getPlatform()]
+
+for platform in platforms:
+    packager = Packager.Packager(platform = platform)
+    packager.installDir = installDir
+    packager.installSearch = [installDir] + installSearch + packager.installSearch
+    packager.signParams = signParams
+    packager.allowPythonDev = allowPythonDev
+
+    try:
+        packager.setup()
+        packages = packager.readPackageDef(packageDef, packageNames = packageNames)
+        packager.close()
+        if buildPatches:
+            packager.buildPatches(packages)
+
+    except Packager.PackagerError:
+        # Just print the error message and exit gracefully.
+        inst = sys.exc_info()[1]
+        print inst.args[0]
+        #raise
+        sys.exit(1)
 
 # An explicit call to exit() is required to exit the program, when
 # this module is packaged in a p3d file.

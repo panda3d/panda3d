@@ -141,16 +141,17 @@ class Packager:
             return False
                 
     class ExcludeFilename:
-        def __init__(self, filename, caseSensitive):
+        def __init__(self, packager, filename, caseSensitive):
+            self.packager = packager
             self.localOnly = (not filename.getDirname())
             if not self.localOnly:
                 filename = Filename(filename)
                 filename.makeCanonical()
             self.glob = GlobPattern(filename.cStr())
 
-            if PandaSystem.getPlatform().startswith('win'):
+            if self.packager.platform.startswith('win'):
                 self.glob.setCaseSensitive(False)
-            elif PandaSystem.getPlatform().startswith('osx'):
+            elif self.packager.platform.startswith('osx'):
                 self.glob.setCaseSensitive(False)
 
         def matches(self, filename):
@@ -293,8 +294,15 @@ class Packager:
             self.packageName = packageName
             self.packager = packager
             self.notify = packager.notify
-            
+
+            # The platform is initially None until we know the file is
+            # platform-specific.
             self.platform = None
+
+            # The arch string, though, is pre-loaded from the system
+            # arch string, so we can sensibly call otool.
+            self.arch = self.packager.arch
+
             self.version = None
             self.host = None
             self.p3dApplication = False
@@ -326,7 +334,7 @@ class Packager:
 
             # This records the current list of modules we have added so
             # far.
-            self.freezer = FreezeTool.Freezer()
+            self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
 
         def close(self):
             """ Writes out the contents of the current package. """
@@ -414,7 +422,11 @@ class Packager:
 
             if platformSpecific and self.platformSpecificConfig is not False:
                 if not self.platform:
-                    self.platform = PandaSystem.getPlatform()
+                    self.platform = self.packager.platform
+
+            if self.platform and self.platform.startswith('osx_'):
+                # Get the OSX "arch" specification.
+                self.arch = self.platform[4:]
             
 
         def installMultifile(self):
@@ -518,9 +530,9 @@ class Packager:
                 self.components.append(('m', newName.lower(), xmodule))
 
             # Now look for implicit shared-library dependencies.
-            if PandaSystem.getPlatform().startswith('win'):
+            if self.packager.platform.startswith('win'):
                 self.__addImplicitDependenciesWindows()
-            elif PandaSystem.getPlatform().startswith('osx'):
+            elif self.packager.platform.startswith('osx'):
                 self.__addImplicitDependenciesOSX()
             else:
                 self.__addImplicitDependenciesPosix()
@@ -752,7 +764,7 @@ class Packager:
         def excludeFile(self, filename):
             """ Excludes the named file (or glob pattern) from the
             package. """
-            xfile = Packager.ExcludeFilename(filename, self.packager.caseSensitive)
+            xfile = Packager.ExcludeFilename(self.packager, filename, self.packager.caseSensitive)
             self.excludedFilenames.append(xfile)
 
         def __addImplicitDependenciesWindows(self):
@@ -910,13 +922,17 @@ class Packager:
                     continue
 
                 tempFile = Filename.temporary('', 'p3d_', '.txt')
-                command = '/usr/bin/otool -L "%s" >"%s"' % (
+                command = '/usr/bin/otool -arch all -L "%s" >"%s"' % (
                     file.filename.toOsSpecific(),
                     tempFile.toOsSpecific())
-                try:
-                    os.system(command)
-                except:
-                    pass
+                if self.arch:
+                    command = '/usr/bin/otool -arch %s -L "%s" >"%s"' % (
+                        self.arch,
+                        file.filename.toOsSpecific(),
+                        tempFile.toOsSpecific())
+                exitStatus = os.system(command)
+                if exitStatus != 0:
+                    self.notify.warning('Command failed: %s' % (command))
                 filenames = None
 
                 if tempFile.exists():
@@ -1619,7 +1635,13 @@ class Packager:
                 stream = StringStream(file.text)
                 self.multifile.addSubfile(file.newName, stream, compressionLevel)
                 self.multifile.flush()
+
+            elif file.executable and self.arch:
+                if not self.__addOsxExecutable(file):
+                    return
+
             else:
+                # Copy an ordinary file into the multifile.
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
             if file.extract:
                 if file.text:
@@ -1639,6 +1661,72 @@ class Packager:
             xcomponent.SetAttribute('filename', file.newName)
             self.components.append(('c', file.newName.lower(), xcomponent))
 
+        def __addOsxExecutable(self, file):
+            """ Adds an executable or shared library to the multifile,
+            with respect to OSX's fat-binary features.  Returns true
+            on success, false on failure. """
+
+            compressionLevel = 0
+            if file.compress:
+                compressionLevel = self.compressionLevel
+
+            # If we're on OSX and adding only files for a
+            # particular architecture, use lipo to strip out the
+            # part of the file for that architecture.
+
+            # First, we need to verify that it is in fact a
+            # universal binary.
+            tfile = Filename.temporary('', 'p3d_')
+            command = '/usr/bin/lipo -info "%s" >"%s"' % (
+                file.filename.toOsSpecific(),
+                tfile.toOsSpecific())
+            exitStatus = os.system(command)
+            if exitStatus != 0:
+                self.notify.warning("Not an executable file: %s" % (file.filename))
+                # Just add it anyway.
+                self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
+                return True
+
+            # The lipo command succeeded, so it really is an
+            # executable file.  Parse the lipo output to figure out
+            # which architectures the file supports.
+            arches = []
+            lipoData = open(tfile.toOsSpecific(), 'r').read()
+            tfile.unlink()
+            if ':' in lipoData:
+                arches = lipoData.rsplit(':', 1)[1]
+                arches = arches.split()
+
+            if arches == [self.arch]:
+                # The file only contains the one architecture that
+                # we want anyway.
+                self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
+                return True
+            
+            if self.arch not in arches:
+                # The file doesn't support the architecture that we
+                # want at all.  Omit the file.
+                self.notify.warning("%s doesn't support architecture %s" % (
+                    file.filename, self.arch))
+                return False
+
+
+            # The file contains multiple architectures.  Get
+            # out just the one we want.
+            command = '/usr/bin/lipo -thin %s -output "%s" "%s"' % (
+                self.arch, tfile.toOsSpecific(),
+                file.filename.toOsSpecific())
+            exitStatus = os.system(command)
+            if exitStatus != 0:
+                self.notify.error('Command failed: %s' % (command))
+            self.multifile.addSubfile(file.newName, tfile, compressionLevel)
+            if file.deleteTemp:
+                file.filename.unlink()
+            file.filename = tfile
+            file.deleteTemp = True
+            return True
+            
+
         def requirePackage(self, package):
             """ Indicates a dependency on the given package.  This
             also implicitly requires all of the package's requirements
@@ -1655,10 +1743,13 @@ class Packager:
                     self.skipModules[moduleName] = mdef
 
     # Packager constructor
-    def __init__(self):
+    def __init__(self, platform = None):
 
         # The following are config settings that the caller may adjust
         # before calling any of the command methods.
+
+        # The platform string.
+        self.setPlatform(platform)
 
         # This should be set to a Filename.
         self.installDir = None
@@ -1670,13 +1761,13 @@ class Packager:
         self.addHost(self.host)
 
         # A search list for previously-built local packages.
-        self.installSearch = ConfigVariableSearchPath('pdef-path')
+        self.installSearch = list(ConfigVariableSearchPath('pdef-path').getDirectories())
 
         # The system PATH, for searching dll's and exe's.
         self.executablePath = DSearchPath()
-        if PandaSystem.getPlatform().startswith('win'):
+        if self.platform.startswith('win'):
             self.addWindowsSearchPath(self.executablePath, "PATH")
-        elif PandaSystem.getPlatform().startswith('osx'):
+        elif self.platform.startswith('osx'):
             self.addPosixSearchPath(self.executablePath, "DYLD_LIBRARY_PATH")
             self.addPosixSearchPath(self.executablePath, "LD_LIBRARY_PATH")
             self.addPosixSearchPath(self.executablePath, "PATH")
@@ -1690,6 +1781,7 @@ class Packager:
             self.executablePath.appendDirectory('/usr/lib')
             self.executablePath.appendDirectory('/usr/local/lib')
         
+        import platform
         if platform.uname()[1]=="pcbsd":
             self.executablePath.appendDirectory('/usr/PCBSD/local/lib')
 
@@ -1701,9 +1793,6 @@ class Packager:
         # password) tuples to automatically sign each p3d file
         # generated.
         self.signParams = []
-
-        # The platform string.
-        self.platform = PandaSystem.getPlatform()
 
         # Optional signing and encrypting features.
         self.encryptionKey = None
@@ -1729,9 +1818,9 @@ class Packager:
 
         # Is this file system case-sensitive?
         self.caseSensitive = True
-        if PandaSystem.getPlatform().startswith('win'):
+        if self.platform.startswith('win'):
             self.caseSensitive = False
-        elif PandaSystem.getPlatform().startswith('osx'):
+        elif self.platform.startswith('osx'):
             self.caseSensitive = False
 
         # Get the list of filename extensions that are recognized as
@@ -1846,6 +1935,24 @@ class Packager:
         # A list of PackageEntry objects read from the contents.xml
         # file.
         self.contents = {}
+
+    def setPlatform(self, platform = None):
+        """ Sets the platform that this Packager will compute for.  On
+        OSX, this can be used to specify the particular architecture
+        we are building; on other platforms, it is probably a mistake
+        to set this.
+
+        You should call this before doing anything else with the
+        Packager.  It's even better to pass the platform string to the
+        constructor.  """
+
+        self.platform = platform or PandaSystem.getPlatform()
+
+        # OSX uses this "arch" string for the otool and lipo commands.
+        self.arch = None
+        if self.platform.startswith('osx_'):
+            self.arch = self.platform[4:]
+        
 
     def setHost(self, host, downloadUrl = None,
                 descriptiveName = None, hostDir = None,
@@ -1989,7 +2096,7 @@ class Packager:
         globals = {}
         globals['__name__'] = packageDef.getBasenameWoExtension()
 
-        globals['platform'] = PandaSystem.getPlatform()
+        globals['platform'] = self.platform
         globals['packager'] = self
 
         # We'll stuff all of the predefined functions, and the
@@ -2176,7 +2283,7 @@ class Packager:
             return package
 
         # Look on the searchlist.
-        for dirname in self.installSearch.getDirectories():
+        for dirname in self.installSearch:
             package = self.__scanPackageDir(dirname, packageName, platform or self.platform, version, host, requires = requires)
             if not package:
                 package = self.__scanPackageDir(dirname, packageName, platform, version, host, requires = requires)
@@ -2590,7 +2697,7 @@ class Packager:
             self.do_file('p3dcert.exe')
 
         self.do_file('p3dpython.exe')
-        if PandaSystem.getPlatform().startswith('win'):
+        if self.platform.startswith('win'):
             self.do_file('p3dpythonw.exe')
         self.do_file('libp3dpython.dll')
 
@@ -2640,7 +2747,7 @@ class Packager:
                         deleteTemp = True, explicit = True, extract = True)
         package.addExtensionModules()
         if not package.platform:
-            package.platform = PandaSystem.getPlatform()
+            package.platform = self.platform
 
         # Reset the freezer for more Python files.
         freezer.reset()
