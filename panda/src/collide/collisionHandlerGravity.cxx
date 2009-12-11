@@ -36,6 +36,7 @@ CollisionHandlerGravity() {
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
   _contact_normal = LVector3f::zero();
+  _legacy_mode = false;
 }
 
 ////////////////////////////////////////////////////////////////////
