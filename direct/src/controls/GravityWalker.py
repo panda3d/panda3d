@@ -189,7 +189,7 @@ class GravityWalker(DirectObject.DirectObject):
         # set up floor collision mechanism
         self.lifter = CollisionHandlerGravity()
         #self.lifter = CollisionHandlerHighestEvent()
-        self.lifter.setLegacyMode(self._legacyLifter)
+        #self.lifter.setLegacyMode(self._legacyLifter)
         self.lifter.setGravity(self.__gravity)
         self.lifter.addInPattern("enter%in")
         self.lifter.addAgainPattern("again%in")
