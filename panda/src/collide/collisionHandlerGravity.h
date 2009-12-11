@@ -54,6 +54,9 @@ PUBLISHED:
   INLINE void set_max_velocity(float max_vel);
   INLINE float get_max_velocity() const;
 
+  INLINE void set_legacy_mode(bool legacy_mode);
+  INLINE bool get_legacy_mode() const;
+
 protected:
   float set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();
@@ -68,6 +71,7 @@ private:
   float _current_velocity;
   float _max_velocity;
   LVector3f _contact_normal;
+  bool _legacy_mode;
 
 
 public:

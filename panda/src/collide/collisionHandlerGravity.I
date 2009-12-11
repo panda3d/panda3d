@@ -200,3 +200,27 @@ INLINE float CollisionHandlerGravity::
 get_max_velocity() const {
   return _max_velocity;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::set_legacy_mode
+//       Access: Public
+//  Description: Enables old behavior required by Toontown
+//               (Sellbot Factory lava room is good test case,
+//               lava and conveyor belt specifically). Behavior
+//               is to throw enter/exit events only for floor
+//               that the toon is in contact with
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerGravity::
+set_legacy_mode(bool legacy_mode) {
+  _legacy_mode = legacy_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::get_legacy_mode
+//       Access: Public
+//  Description: returns true if legacy mode is enabled
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionHandlerGravity::
+get_legacy_mode() const {
+  return _legacy_mode;
+}

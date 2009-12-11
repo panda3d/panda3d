@@ -100,11 +100,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     cout<<endl;
   #endif
 
-  // We only collide with things we are impacting with.
-  // Remove the collisions:
-  //_current_colliding.clear();
-  // Add only the one that we're impacting with:
-  // add_entry(highest);
+  if (_legacy_mode) {
+    // We only collide with things we are impacting with.
+    // Remove the collisions:
+    _current_colliding.clear();
+    // Add only the one that we're impacting with:
+    add_entry(highest);
+  }
   
   return max_height;
 }
@@ -177,8 +179,12 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // We only collide with things we are impacting with.
   // Remove the collisions:
   _current_colliding.clear();
-  // Add only the one that we're impacting with:
-  _current_colliding.insert(valid_entries.begin(), valid_entries.end());
+  if (_legacy_mode) {
+    // Add only the one that we're impacting with:
+    add_entry(highest);
+  } else {
+    _current_colliding.insert(valid_entries.begin(), valid_entries.end());
+  }
 
   
   // Set the contact normal so that other code can make use of the
@@ -275,14 +281,10 @@ handle_entries() {
           _impact_velocity = _current_velocity;
           // These values are used by is_on_ground().
           _current_velocity = _airborne_height = 0.0f;
-        }
-/*      //ZAC - Commented out, until someone can give me a good reason why we
-        //need such wierd behaviour
-        } else {
+        } else if (_legacy_mode) {
           // ...we're airborne.
           _current_colliding.clear();
         }
-*/
 
         CPT(TransformState) trans = def._target.get_transform();
         LVecBase3f pos = trans->get_pos();
