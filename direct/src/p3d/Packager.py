@@ -1761,7 +1761,15 @@ class Packager:
         self.addHost(self.host)
 
         # A search list for previously-built local packages.
-        self.installSearch = list(ConfigVariableSearchPath('pdef-path').getDirectories())
+
+        # We use a bit of caution to read the Filenames out of the
+        # config variable.  Since cvar.getDirectories() returns a list
+        # of references to Filename objects stored within the config
+        # variable itself, we have to make a copy of each Filename
+        # returned, so they will persist beyond the lifespan of the
+        # config variable.
+        cvar = ConfigVariableSearchPath('pdef-path')
+        self.installSearch = map(Filename, cvar.getDirectories())
 
         # The system PATH, for searching dll's and exe's.
         self.executablePath = DSearchPath()
