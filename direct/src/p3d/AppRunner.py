@@ -570,7 +570,7 @@ class AppRunner(DirectObject):
             initAppForGui()
 
     def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
-                       interactiveConsole):
+                       interactiveConsole, p3dOffset = 0):
         """ Called by the browser to specify the p3d file that
         contains the application itself, along with the web tokens
         and/or command-line arguments.  Once this method has been
@@ -612,8 +612,12 @@ class AppRunner(DirectObject):
 
         fname.makeAbsolute()
         mf = Multifile()
-        if not mf.openRead(fname):
-            raise ArgumentError, "Not a Panda3D application: %s" % (p3dFilename)
+        if p3dOffset == 0:
+            if not mf.openRead(fname):
+                raise ArgumentError, "Not a Panda3D application: %s" % (p3dFilename)
+        else:
+            if not mf.openRead(fname, p3dOffset):
+                raise ArgumentError, "Not a Panda3D application: %s at offset: %s" % (p3dFilename, p3dOffset)
 
         # Now load the p3dInfo file.
         self.p3dInfo = None
