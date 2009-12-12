@@ -2304,7 +2304,9 @@ make_splash_window() {
     if (!_fparams.has_token(token_keyword) && i < (int)IT_auth_ready) {
       token_keyword = "splash_img";
     }
-    if (!_fparams.has_token(token_keyword)) {
+
+    string image_url = _fparams.lookup_token(token_keyword);
+    if (image_url.empty()) {
       // No specific image for this type is specified; get the default
       // image.  We do this via the P3DPackage interface, so we can
       // use the cached version on disk if it's good.
@@ -2316,11 +2318,6 @@ make_splash_window() {
       // (though the browser might be free to cache it).
       _image_files[i]._use_standard_image = false;
       _image_files[i]._filename.clear();
-      string image_url = _fparams.lookup_token(token_keyword);
-      if (image_url.empty()) {
-        // No splash image.  Never mind.
-        return;
-      }
       
       // Make a temporary file to receive the splash image.
       assert(_image_files[i]._temp_filename == NULL);
