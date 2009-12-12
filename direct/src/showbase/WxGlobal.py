@@ -8,8 +8,10 @@ def wxLoop(self):
     return Task.cont
 
 def spawnWxLoop():
-    if hasattr(base, 'wxApp') and base.wxApp:
-        base.wxApp.Exit()
-    base.wxApp = wx.App(False)
+    if not getattr(base, 'wxApp', None):
+        # Create a new base.wxApp, but only if it's not already
+        # created.
+        base.wxApp = wx.App(False)
+
     # Spawn this task
     taskMgr.add(wxLoop, "wxLoop")

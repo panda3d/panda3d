@@ -51,6 +51,10 @@ EXPCL_DIRECT bool query_fullscreen_testresult(int xsize, int ysize);
 EXPCL_DIRECT void store_accessibility_shortcut_keys();
 EXPCL_DIRECT void allow_accessibility_shortcut_keys(bool allowKeys);
 
+#ifdef IS_OSX
+void activate_osx_application();
+#endif
+
 END_PUBLISH
 
 

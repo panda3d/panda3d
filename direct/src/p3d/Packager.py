@@ -2694,11 +2694,22 @@ class Packager:
             # includes specifications in the plist file to avoid
             # creating a dock icon and stuff.
 
+            resources = []
+
             # Find p3dpython.plist in the direct source tree.
             import direct
             plist = Filename(direct.__path__[0], 'plugin/p3dpython.plist')
+
+##             # Find panda3d.icns in the models tree.
+##             filename = Filename('plugin_images/panda3d.icns')
+##             found = filename.resolveFilename(getModelPath().getValue())
+##             if not found:
+##                 found = filename.resolveFilename("models")
+##             if found:
+##                 resources.append(filename)
+            
             self.do_makeBundle('P3DPython.app', plist, executable = 'p3dpython',
-                               dependencyDir = '')
+                               resources = resources, dependencyDir = '')
 
         else:
             # Anywhere else, we just ship the executable file p3dcert.exe.

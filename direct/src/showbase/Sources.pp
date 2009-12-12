@@ -16,7 +16,8 @@
     User32.lib
 
   #define SOURCES \
-    showBase.cxx showBase.h
+    showBase.cxx showBase.h \
+    $[if $[IS_OSX],showBase_assist.mm]
 
   #define IGATESCAN all
 #end lib_target

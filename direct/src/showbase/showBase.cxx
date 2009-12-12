@@ -11,6 +11,15 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+         
+#ifdef __APPLE__
+// We have to include this before we include any Panda libraries,
+// because one of the things we pick up in Panda defines a macro for
+// TCP_NODELAY and friends, causing heartaches for the header files
+// picked up here.
+#include <Carbon/Carbon.h>
+extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
+#endif
 
 #include "showBase.h"
 
@@ -59,8 +68,17 @@ get_config_showbase() {
 // At the moment, this is a no-op except on Mac.
 void
 init_app_for_gui() {
-  // Actually, this may not be necessary after all.  Let's assume the
-  // user will always be running from a bundle or from pythonw.
+#ifdef IS_OSX
+  // Rudely bring the application to the foreground.  This is
+  // particularly important when running wx via the plugin, since the
+  // plugin app is seen as separate from the browser app, even though
+  // the user sees them as the same thing.  We need to bring the
+  // plugin app to the foreground to make its wx windows visible.
+  activate_osx_application();
+#endif
+
+  // We don't appear need to do the following, however, if we launch
+  // the plugin correctly from its own bundle.
   /*
   static bool initted_for_gui = false;
   if (!initted_for_gui) {
