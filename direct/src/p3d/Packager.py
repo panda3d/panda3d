@@ -871,6 +871,14 @@ class Packager:
                 fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
             ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
             ffilename = Filename(ffilename, library.split('.framework/', 1)[-1])
+            
+            # Look under the system root first, if supplied.
+            if self.packager.systemRoot:
+                for i in fpath:
+                    fw = Filename(self.packager.systemRoot, i)
+                    if Filename(fw, ffilename).exists():
+                        return Filename(fw, ffilename)
+            
             for i in fpath:
                 if Filename(i, ffilename).exists():
                     return Filename(i, ffilename)
