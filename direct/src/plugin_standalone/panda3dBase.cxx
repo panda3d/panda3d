@@ -68,12 +68,70 @@ Panda3DBase(bool console_environment) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3DBase::run_embedded
 //       Access: Public
-//  Description: Gets lost in the application main loop, waiting for
-//               system events and notifications from the open
-//               instance(s).
+//  Description: Runs with the data embedded in the current
+//               executable, at the specified offset.
 ////////////////////////////////////////////////////////////////////
 int Panda3DBase::
 run_embedded(int read_offset, int argc, char *argv[]) {
+  // Read out some parameters from the binary
+  pifstream read;
+  Filename f = ExecutionEnvironment::get_binary_name();
+  f.set_binary();
+  if (!f.open_read(read)) {
+	  cerr << "Failed to read from stream. Maybe the binary is corrupt?\n";
+	  return 1;
+  }
+  read.seekg(read_offset);
+  char curchr = 1;
+  string curstr;
+  bool havenull = false;
+  P3D_token token;
+  token._keyword = NULL;
+  token._value = NULL;
+  string keyword;
+  string value;
+  while (true) {
+    curchr = read.get();
+    if (curchr == 0) {
+      // Two null bytes in a row means we've reached the end of the data.
+      if (havenull) {
+        break;
+      }
+      
+      // This means we haven't seen an '=' character yet.
+      if (keyword == "") {
+        if (curstr != "") {
+          cerr << "Ignoring token '" << curstr << "' without value\n";
+        }
+      } else {
+        value.assign(curstr);
+        P3D_token token;
+        token._keyword = keyword.c_str();
+        token._value = value.c_str();
+        _tokens.push_back(token);
+        
+        // Read out the width and height token
+        if (keyword == "width") {
+          _win_width = atoi(value.c_str());
+        } else if (keyword == "height") {
+          _win_height = atoi(value.c_str());
+        }
+        cerr << _win_width << "-" << _win_height << "\n";
+      }
+      curstr = "";
+      havenull = true;
+    } else if (curchr == '=') {
+      keyword.assign(curstr);
+      curstr = "";
+      havenull = false;
+    } else {
+      curstr += curchr;
+      havenull = false;
+    }
+  }
+  read.close();
+  
+  // Initialize the plugin
   if (!P3D_initialize(P3D_API_VERSION, NULL,
                       _host_url.c_str(), _verify_contents, _this_platform.c_str(),
                       _log_dirname.c_str(), _log_basename.c_str(),
@@ -83,11 +141,11 @@ run_embedded(int read_offset, int argc, char *argv[]) {
     return 1;
   }
   
-  // Invoke the Core API and run the program
+  // Create a plugin instance and run the program
   P3D_instance *inst = create_instance
     (ExecutionEnvironment::get_binary_name(), true, 
      _win_x, _win_y, _win_width, _win_height,
-     argv, argc, read_offset);
+     argv, argc, read.tellg());
   _instances.insert(inst);
   
   run_main_loop();
@@ -417,7 +475,7 @@ create_instance(const string &p3d, bool start_instance,
     }
 
     P3D_instance_setup_window
-      (inst, _window_type, _win_x, _win_y, _win_width, _win_height, &_parent_window);
+      (inst, _window_type, win_x, win_y, win_width, win_height, &_parent_window);
   }
 
   return inst;
