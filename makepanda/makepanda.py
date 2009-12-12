@@ -3531,7 +3531,7 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='libp3dtool.dll')
   TargetAdd('p3dembed.exe', input='libp3pystub.dll')
   if (sys.platform == "darwin"):
-      TargetAdd('p3dembed.cxx', input='libsubprocbuffer.ilb')
+      TargetAdd('p3dembed.exe', input='libsubprocbuffer.ilb')
   TargetAdd('p3dembed.exe', opts=['NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
 #
