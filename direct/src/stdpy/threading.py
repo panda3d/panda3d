@@ -244,7 +244,7 @@ class Condition(pm.ConditionVarFull):
             pm.ConditionVarFull.wait(self, timeout)
 
     def notifyAll(self):
-        self.__cvar.notifyAll()
+        pm.ConditionVarFull.notifyAll(self)
 
     notify_all = notifyAll
     
