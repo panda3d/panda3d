@@ -947,6 +947,11 @@ should_include(const string &filename) const {
     return false;
   }
 
+  // Ignore Objective-C files too.
+  if (filename.length() > 3 && filename.substr(filename.length() - 3) == ".mm") {
+    return false;
+  }
+
   // Otherwise, no problem.
   return true;
 }
