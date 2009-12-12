@@ -621,9 +621,9 @@ def CompileCxx(obj,src,opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
+            if int(platform.mac_ver()[0][3]) >= 6:
                 cmd += " -arch x86_64 -arch i386"
-            elif (not RTDIST):
+            else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
@@ -867,9 +867,9 @@ def CompileLink(dll, obj, opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if (not RTDIST and int(platform.mac_ver()[0][3]) >= 6):
+            if int(platform.mac_ver()[0][3]) >= 6:
                 cmd += " -arch x86_64 -arch i386"
-            elif (not RTDIST):
+            else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         if (LDFLAGS !=""): cmd += " " + LDFLAGS
@@ -993,7 +993,7 @@ def Package(target, inputs, opts):
     command = SDK["PYTHONEXEC"]
     if (GetOptimizeOption(opts) >= 4):
         command += " -OO"
-    command += " direct/src/p3d/ppackage.py"
+    command += " direct/src/p3d/ppackage.py -u"
     command += " -i \"" + GetOutputDir() + "/stage\""
     command += " " + inputs[0]
     oscmd(command)
@@ -3505,14 +3505,31 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', opts=['NOSTRIP', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   elif (sys.platform.startswith("win")):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
-    TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
+    TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
     TargetAdd('panda3dw.exe', input='plugin_common.obj')
     TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
     TargetAdd('panda3dw.exe', input='libp3dtool.dll')
     TargetAdd('panda3dw.exe', input='libp3pystub.dll')
     TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+
+if (RTDIST):
+  TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS+["DIR:direct/src/plugin"], input='p3dEmbed.cxx')
+  TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbed.obj')
+  TargetAdd('p3dembed.exe', input='plugin_mkdir_complete.obj')
+  TargetAdd('p3dembed.exe', input='plugin_find_root_dir.obj')
+  if (sys.platform == "darwin"):
+    TargetAdd('p3dembed.exe', input='plugin_find_root_dir_assist.obj')
+  TargetAdd('p3dembed.exe', input='plugin_fileSpec.obj')
+  TargetAdd('p3dembed.exe', input='plugin_binaryXml.obj')
+  TargetAdd('p3dembed.exe', input='plugin_handleStream.obj')
+  TargetAdd('p3dembed.exe', input='plugin_handleStreamBuf.obj')
+  TargetAdd('p3dembed.exe', input='libpandaexpress.dll')
+  TargetAdd('p3dembed.exe', input='libp3dtoolconfig.dll')
+  TargetAdd('p3dembed.exe', input='libp3dtool.dll')
+  TargetAdd('p3dembed.exe', input='libp3pystub.dll')
+  TargetAdd('p3dembed.exe', opts=['NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
