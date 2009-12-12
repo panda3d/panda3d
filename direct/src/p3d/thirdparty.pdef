@@ -58,7 +58,31 @@ class pil(package):
     config(display_name = "Python Imaging Library")
     require('panda3d')
 
-    module('PIL', 'PIL.*')
+    module('PIL', 'PIL.*', 'ArgImagePlugin', 'BdfFontFile',
+           'BmpImagePlugin', 'BufrStubImagePlugin', 'ContainerIO',
+           'CurImagePlugin', 'DcxImagePlugin', 'EpsImagePlugin',
+           'ExifTags', 'FitsStubImagePlugin', 'FliImagePlugin',
+           'FontFile', 'FpxImagePlugin', 'GbrImagePlugin', 'GdImageFile',
+           'GifImagePlugin', 'GimpGradientFile', 'GimpPaletteFile',
+           'GribStubImagePlugin', 'Hdf5StubImagePlugin',
+           'IcnsImagePlugin', 'IcoImagePlugin', 'ImImagePlugin',
+           'Image', 'ImageChops', 'ImageCms', 'ImageColor', 'ImageDraw',
+           'ImageDraw2', 'ImageEnhance', 'ImageFile', 'ImageFileIO',
+           'ImageFilter', 'ImageFont', 'ImageGL', 'ImageGrab',
+           'ImageMath', 'ImageMode', 'ImageOps', 'ImagePalette',
+           'ImagePath', 'ImageQt', 'ImageSequence', 'ImageShow',
+           'ImageStat', 'ImageTk', 'ImageTransform', 'ImageWin',
+           'ImtImagePlugin', 'IptcImagePlugin', 'JpegImagePlugin',
+           'McIdasImagePlugin', 'MicImagePlugin', 'MpegImagePlugin',
+           'MspImagePlugin', 'OleFileIO', 'PSDraw', 'PaletteFile',
+           'PalmImagePlugin', 'PcdImagePlugin', 'PcfFontFile',
+           'PcxImagePlugin', 'PdfImagePlugin', 'PixarImagePlugin',
+           'PngImagePlugin', 'PpmImagePlugin', 'PsdImagePlugin',
+           'SgiImagePlugin', 'SpiderImagePlugin', 'SunImagePlugin',
+           'TarIO', 'TgaImagePlugin', 'TiffImagePlugin', 'TiffTags',
+           'WalImageFile', 'WmfImagePlugin', 'XVThumbImagePlugin',
+           'XbmImagePlugin', 'XpmImagePlugin', '_imaging',
+           '_imagingmath', '_imagingtk', )
 
 class pyopengl(package):
     config(display_name = "PyOpenGL")
