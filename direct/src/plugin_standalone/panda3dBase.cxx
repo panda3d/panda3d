@@ -116,7 +116,6 @@ run_embedded(int read_offset, int argc, char *argv[]) {
         } else if (keyword == "height") {
           _win_height = atoi(value.c_str());
         }
-        cerr << _win_width << "-" << _win_height << "\n";
       }
       curstr = "";
       havenull = true;
@@ -129,6 +128,9 @@ run_embedded(int read_offset, int argc, char *argv[]) {
       havenull = false;
     }
   }
+  // Update the offset to the current read pointer.
+  // This is where the multifile really starts.
+  read_offset = read.tellg();
   read.close();
   
   // Initialize the plugin
@@ -145,7 +147,7 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   P3D_instance *inst = create_instance
     (ExecutionEnvironment::get_binary_name(), true, 
      _win_x, _win_y, _win_width, _win_height,
-     argv, argc, read.tellg());
+     argv, argc, read_offset);
   _instances.insert(inst);
   
   run_main_loop();
