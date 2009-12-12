@@ -3515,7 +3515,8 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS+["DIR:direct/src/plugin"], input='p3dEmbed.cxx')
+  OPTS=['DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'RUNTIME', 'TINYXML', 'OPENSSL']
+  TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS, input='p3dEmbed.cxx')
   TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbed.obj')
   TargetAdd('p3dembed.exe', input='plugin_mkdir_complete.obj')
   TargetAdd('p3dembed.exe', input='plugin_find_root_dir.obj')
@@ -4388,8 +4389,9 @@ if (not RUNTIME):
 
 if (RTDIST):
   OPTS=['DIR:direct/src/p3d']
-  TargetAdd('panda3d', opts=OPTS, input='panda3d.pdef')
-  TargetAdd('coreapi', opts=OPTS, input='coreapi.pdef')
+  TargetAdd('_panda3d', opts=OPTS, input='panda3d.pdef')
+  TargetAdd('_coreapi', opts=OPTS, input='coreapi.pdef')
+  TargetAdd('_thirdparty', opts=OPTS, input='thirdparty.pdef')
 
 ##########################################################################################
 #
