@@ -97,6 +97,15 @@ Options:
      platforms, it is probably a mistake to set this.  However, see
      the option -u.
 
+  -R sysroot
+     Specify the sysroot that these files were compiled against.  This
+     will shadow the system shared libraries, so that alternate
+     versions are used instead of the system versions.  If any program
+     references a library, say /usr/lib/libfoo.so, and
+     /sysroot/usr/lib/libfoo.so exists instead, that file will be used
+     instead of the system library.  This is particularly useful for
+     cross-compilation.  At the moment, this is supported only on OSX.
+
   -h
      Display this help
 """
@@ -119,10 +128,11 @@ installSearch = []
 signParams = []
 allowPythonDev = False
 universalBinaries = False
+systemRoot = None
 platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -145,6 +155,8 @@ for opt, arg in opts:
         universalBinaries = True
     elif opt == '-P':
         platforms.append(arg)
+    elif opt == '-R':
+        systemRoot = arg
         
     elif opt == '-h':
         usage(0)
@@ -181,6 +193,7 @@ for platform in platforms:
     packager.installSearch = [installDir] + installSearch + packager.installSearch
     packager.signParams = signParams
     packager.allowPythonDev = allowPythonDev
+    packager.systemRoot = systemRoot
 
     try:
         packager.setup()

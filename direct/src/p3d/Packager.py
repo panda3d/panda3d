@@ -966,7 +966,15 @@ class Packager:
                     else:
                         # It's just a normal library - find it on the path.
                         filename = Filename.fromOsSpecific(filename)
-                        filename.resolveFilename(path)
+                        if filename.isLocal():
+                            filename.resolveFilename(path)
+                        else:
+                            # It's a fully-specified filename; look
+                            # for it under the system root first.
+                            if self.packager.systemRoot:
+                                f2 = Filename(self.packager.systemRoot + filename.cStr())
+                                if f2.exists():
+                                    filename = f2
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
@@ -1753,6 +1761,11 @@ class Packager:
 
         # This should be set to a Filename.
         self.installDir = None
+
+        # If specified, this is a directory to search first for any
+        # library references, before searching the system.
+        # Particularly useful on OSX to reference the universal SDK.
+        self.systemRoot = None
 
         # The download URL at which these packages will eventually be
         # hosted.
