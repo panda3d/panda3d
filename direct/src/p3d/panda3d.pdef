@@ -126,7 +126,7 @@ class morepy(package):
            'glob', 'fnmatch', 'linecache', 'shutil', 'dircache',
            'macpath', 'pickle', 'cPickle', 'copy_reg', 'shelve',
            'marshal', 'anydbm', 'whichdb', 'dbm', 'gdbm', 'dbhash',
-           'bsddb', 'dumbdbm', 'sqlite3', 'zlib', 'gzip', 'bz2',
+           'bsddb', 'dumbdbm', 'zlib', 'gzip', 'bz2',
            'zipfile', 'tarfile', 'csv', 'ConfigParser', 'robotparser',
            'netrc', 'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5',
            'sha', 'os', 'io', 'time', 'optparse', 'getopt', 'logging')
@@ -262,28 +262,11 @@ class vision(package):
     # functionality, it is provided as separate package to save
     # on package download size.
 
-    config(display_name = "Panda3D Vision modules")
+    config(display_name = "Panda3D vision modules")
     require('panda3d')
 
     file('libp3vision.dll')
 
-class wx(package):
-    config(display_name = "wxPython GUI Toolkit")
-    config(gui_app = True)
-    require('panda3d')
-
-    module('direct.showbase.WxGlobal', 'wx', 'wx.*')
-
-
-class tk(package):
-    config(display_name = "Tk GUI Toolkit")
-    config(gui_app = True)
-    require('panda3d')
-
-    module('Tkinter',
-           'direct.showbase.TkGlobal',
-           'direct.tkpanels',
-           'direct.tkwidgets')
 
 class packp3d(p3d):
     # This application is a command-line convenience for building a p3d

@@ -97,3 +97,11 @@ class p3dcert(package):
     else:
         # Anywhere else, we just ship the executable file p3dcert.exe.
         file('p3dcert.exe')
+
+
+class p3dembed(solo):
+    # This contains the p3dembed executable, that is used by
+    # pdeploy to generate a self-extracting .p3d executable.
+
+    config(platform_specific = True)
+    file('p3dembed.exe')

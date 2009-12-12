@@ -1,0 +1,85 @@
+# This file defines a number of standard "packages" that correspond to
+# a Panda3D distribution.  These packages are built by passing this
+# file to the ppackage utility, either as a packaged application, or
+# as the module direct.p3d.ppackage.
+
+# The packages in this file define the thirdparty
+# packages that could be used by a .p3d archive.
+
+# When needed, these packages are downloaded by the core API, from the
+# host URL specified in a given p3d file, and not from any hardcoded
+# URL.  Thus, any custom version of Panda3D may be hosted on any
+# server in the world, and any version of the plugin can download it.
+
+# Also see panda3d.pdef.
+
+class wx(package):
+    config(display_name = "wxPython GUI Toolkit")
+    config(gui_app = True)
+    require('panda3d')
+
+    module('direct.showbase.WxGlobal', 'wx', 'wx.*')
+
+class tk(package):
+    config(display_name = "Tk GUI Toolkit")
+    config(gui_app = True)
+    require('panda3d')
+
+    module('Tkinter',
+           'direct.showbase.TkGlobal',
+           'direct.tkpanels',
+           'direct.tkwidgets')
+
+class sqlite(package):
+    config(display_name = "SQLite Interface")
+    require('panda3d')
+
+    module('sqlite', 'sqlite3')
+
+class numpy(package):
+    config(display_name = "NumPy")
+    require('panda3d')
+
+    module('numpy')
+
+class pygame(package):
+    config(display_name = "PyGame")
+    require('panda3d', 'numpy')
+
+    module('pygame')
+
+class twisted(package):
+    config(display_name = "Twisted")
+    require('panda3d')
+
+    module('twisted', 'twisted.*')
+
+class pil(package):
+    config(display_name = "Python Imaging Library")
+    require('panda3d')
+
+    module('PIL', 'PIL.*')
+
+class pyopengl(package):
+    config(display_name = "PyOpenGL")
+    require('panda3d', 'numpy')
+
+    module('OpenGL', 'OpenGL.*')
+
+class pyopencl(package):
+    config(display_name = "PyOpenCL")
+    require('panda3d', 'numpy')
+
+    module('pyopencl')
+
+class httplib2(package):
+    config(display_name = "httplib2")
+    require('panda3d')
+
+    module('httplib2')
+
+class pycurl(package):
+    config(display_name = "PyCURL")
+    require('panda3d')
+
+    module('pycurl')
