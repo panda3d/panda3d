@@ -994,6 +994,8 @@ def Package(target, inputs, opts):
     if (GetOptimizeOption(opts) >= 4):
         command += " -OO"
     command += " direct/src/p3d/ppackage.py -u"
+    if (sys.platform == "darwin" and "MACOSX" in SDK and SDK["MACOSX"] != None and len(SDK["MACOSX"]) > 1):
+        command += " -R \"%s\"" % SDK["MACOSX"]
     command += " -i \"" + GetOutputDir() + "/stage\""
     command += " " + inputs[0]
     oscmd(command)
