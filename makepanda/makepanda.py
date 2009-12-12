@@ -3255,6 +3255,8 @@ if (PkgSkip("PYTHON")==0):
 if (PkgSkip("PYTHON")==0):
   OPTS=['DIR:direct/src/showbase', 'BUILDING:DIRECT']
   TargetAdd('showbase_showBase.obj', opts=OPTS, input='showBase.cxx')
+  if (sys.platform == "darwin"):
+    TargetAdd('showbase_showBase_assist.obj', opts=OPTS, input='showBase_assist.mm')
   IGATEFILES=GetDirectoryContents('direct/src/showbase', ["*.h", "showBase.cxx"])
   TargetAdd('libshowbase.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libshowbase.in', opts=['IMOD:p3direct', 'ILIB:libshowbase', 'SRCDIR:direct/src/showbase'])
@@ -3298,6 +3300,7 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3direct.dll', input='dcparser_dcLexer.obj')
   TargetAdd('libp3direct.dll', input='libdcparser_igate.obj')
   TargetAdd('libp3direct.dll', input='showbase_showBase.obj')
+  TargetAdd('libp3direct.dll', input='showbase_showBase_assist.obj')
   TargetAdd('libp3direct.dll', input='libshowbase_igate.obj')
   TargetAdd('libp3direct.dll', input='deadrec_composite.obj')
   TargetAdd('libp3direct.dll', input='libdeadrec_igate.obj')
