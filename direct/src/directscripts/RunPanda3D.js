@@ -87,7 +87,11 @@ function P3D_GetArgs(args, classid, mimeType){
         break;
 
     case "splash_img":
-        ret.imageAttrs["src"] = ret.embedAttrs[args[i]] = ret.params[args[i]] = args[i+1];
+        ret.embedAttrs[args[i]] = ret.params[args[i]] = args[i+1];
+        if (!ret.imageAttrs["src"]) {
+          ret.imageAttrs["src"] = args[i+1];
+        }
+        break;
 
     case "width":
     case "height":
