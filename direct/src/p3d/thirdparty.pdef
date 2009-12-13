@@ -15,14 +15,14 @@
 
 class wx(package):
     config(display_name = "wxPython GUI Toolkit")
-    config(gui_app = True)
+    #config(gui_app = True)
     require('panda3d')
 
     module('direct.showbase.WxGlobal', 'wx', 'wx.*')
 
 class tk(package):
     config(display_name = "Tk GUI Toolkit")
-    config(gui_app = True)
+    #config(gui_app = True)
     require('panda3d')
 
     module('Tkinter',
