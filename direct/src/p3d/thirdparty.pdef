@@ -90,12 +90,6 @@ class pyopengl(package):
 
     module('OpenGL', 'OpenGL.*')
 
-class pyopencl(package):
-    config(display_name = "PyOpenCL")
-    require('panda3d', 'numpy')
-
-    module('pyopencl')
-
 class httplib2(package):
     config(display_name = "httplib2")
     require('panda3d')
