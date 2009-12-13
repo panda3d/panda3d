@@ -66,6 +66,8 @@ PUBLISHED:
                            PNMImage &dest_image, int x, int y);
   int generate_into(const wstring &text,
                     PNMImage &dest_image, int x, int y);
+  INLINE int calc_width(const string &text);
+  int calc_width(const wstring &text);
 
   PNMTextGlyph *get_glyph(int character);
 

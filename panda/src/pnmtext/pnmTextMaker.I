@@ -137,3 +137,16 @@ generate_into(const string &text, PNMImage &dest_image, int x, int y) {
   encoder.set_text(text);
   return generate_into(encoder.get_wtext(), dest_image, x, y);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::calc_width
+//       Access: Public
+//  Description: Returns the width in pixels of the indicated line of
+//               text.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMTextMaker::
+calc_width(const string &text) {
+  TextEncoder encoder;
+  encoder.set_text(text);
+  return calc_width(encoder.get_wtext());
+}
