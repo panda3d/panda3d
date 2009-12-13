@@ -1870,7 +1870,7 @@ class Packager:
 
         # Binary files that are copied (and compressed) without
         # processing.
-        self.binaryExtensions = [ 'ttf', 'mid' ]
+        self.binaryExtensions = [ 'ttf', 'TTF', 'mid' ]
 
         # Files that can have an existence in multiple different
         # packages simultaneously without conflict.
