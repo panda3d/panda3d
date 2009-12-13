@@ -700,6 +700,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Widget's frame characteristics
             ('relief',         DGG.FLAT,     self.setRelief),
             ('borderWidth',    (.1, .1),     self.setBorderWidth),
+            ('borderUvWidth',  (.1, .1),     self.setBorderUvWidth),
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8, .8, .8, 1), self.setFrameColor),
             ('frameTexture',   None,         self.setFrameTexture),
@@ -1026,6 +1027,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         width = self['borderWidth']
         for i in range(self['numStates']):
             self.frameStyle[i].setWidth(width[0], width[1])
+        self.updateFrameStyle()
+
+    def setBorderUvWidth(self):
+        uvWidth = self['borderUvWidth']
+        for i in range(self['numStates']):
+            self.frameStyle[i].setUvWidth(uvWidth[0], uvWidth[1])
         self.updateFrameStyle()
 
     def destroy(self):

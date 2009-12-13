@@ -23,6 +23,7 @@ PGFrameStyle() {
   _type = T_none;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _width.set(0.1f, 0.1f);
+  _uv_width.set(0.1f, 0.1f);
   _visible_scale.set(1.0f, 1.0f);
 }
 
@@ -37,6 +38,7 @@ PGFrameStyle(const PGFrameStyle &copy) :
   _color(copy._color),
   _texture(copy._texture),
   _width(copy._width),
+  _uv_width(copy._uv_width),
   _visible_scale(copy._visible_scale)
 {
 }
@@ -52,6 +54,7 @@ operator = (const PGFrameStyle &copy) {
   _color = copy._color;
   _texture = copy._texture;
   _width = copy._width;
+  _uv_width = copy._uv_width;
   _visible_scale = copy._visible_scale;
 }
 
@@ -194,6 +197,42 @@ set_width(const LVecBase2f &width) {
 INLINE const LVecBase2f &PGFrameStyle::
 get_width() const {
   return _width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_uv_width
+//       Access: Published
+//  Description: Sets the uv_width parameter, which indicates the
+//               amount of the texture that is consumed by the inner
+//               bevel--the width in texture space of the amount
+//               indicated by set_width.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_uv_width(float u, float v) {
+  set_uv_width(LVecBase2f(u, v));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_uv_width
+//       Access: Published
+//  Description: Sets the uv_width parameter, which indicates the
+//               amount of the texture that is consumed by the inner
+//               bevel--the width in texture space of the amount
+//               indicated by set_width.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_uv_width(const LVecBase2f &uv_width) {
+  _uv_width = uv_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_uv_width
+//       Access: Published
+//  Description: See set_uv_width().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2f &PGFrameStyle::
+get_uv_width() const {
+  return _uv_width;
 }
 
 ////////////////////////////////////////////////////////////////////

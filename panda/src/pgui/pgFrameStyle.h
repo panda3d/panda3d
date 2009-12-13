@@ -42,7 +42,8 @@ PUBLISHED:
     T_bevel_out,
     T_bevel_in,
     T_groove,
-    T_ridge
+    T_ridge,
+    T_texture_border
   };
 
   INLINE void set_type(Type type);
@@ -61,6 +62,10 @@ PUBLISHED:
   INLINE void set_width(const LVecBase2f &width);
   INLINE const LVecBase2f &get_width() const;
 
+  INLINE void set_uv_width(float u, float v);
+  INLINE void set_uv_width(const LVecBase2f &uv_width);
+  INLINE const LVecBase2f &get_uv_width() const;
+
   INLINE void set_visible_scale(float x, float y);
   INLINE void set_visible_scale(const LVecBase2f &visible_scale);
   INLINE const LVecBase2f &get_visible_scale() const;
@@ -76,7 +81,7 @@ public:
 
 private:
   PT(PandaNode) generate_flat_geom(const LVecBase4f &frame);
-  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in);
+  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in, bool flat_color);
   PT(PandaNode) generate_groove_geom(const LVecBase4f &frame, bool in);
 
 private:
@@ -84,6 +89,7 @@ private:
   Colorf _color;
   PT(Texture) _texture;
   LVecBase2f _width;
+  LVecBase2f _uv_width;
   LVecBase2f _visible_scale;
 };
 

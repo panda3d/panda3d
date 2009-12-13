@@ -52,6 +52,9 @@ operator << (ostream &out, PGFrameStyle::Type type) {
 
   case PGFrameStyle::T_ridge:
     return out << "ridge";
+
+  case PGFrameStyle::T_texture_border:
+    return out << "texture_border";
   }
 
   return out << "**unknown(" << (int)type << ")**";
@@ -138,6 +141,7 @@ xform(const LMatrix4f &mat) {
   case T_bevel_in:
   case T_groove:
   case T_ridge:
+  case T_texture_border:
     return true;
   }
 
@@ -177,11 +181,11 @@ generate_into(const NodePath &parent, const LVecBase4f &frame,
     break;
 
   case T_bevel_out:
-    new_node = generate_bevel_geom(scaled_frame, false);
+    new_node = generate_bevel_geom(scaled_frame, false, false);
     break;
 
   case T_bevel_in:
-    new_node = generate_bevel_geom(scaled_frame, true);
+    new_node = generate_bevel_geom(scaled_frame, true, false);
     break;
 
   case T_groove:
@@ -190,6 +194,10 @@ generate_into(const NodePath &parent, const LVecBase4f &frame,
 
   case T_ridge:
     new_node = generate_groove_geom(scaled_frame, false);
+    break;
+
+  case T_texture_border:
+    new_node = generate_bevel_geom(scaled_frame, false, true);
     break;
 
   default:
@@ -271,11 +279,11 @@ generate_flat_geom(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_bevel_geom
 //       Access: Private
-//  Description: Generates the GeomNode appropriate to a T_bevel_in or
-//               T_bevel_out frame.
+//  Description: Generates the GeomNode appropriate to a T_bevel_in,
+//               T_bevel_out, or T_texture_border frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-generate_bevel_geom(const LVecBase4f &frame, bool in) {
+generate_bevel_geom(const LVecBase4f &frame, bool in, bool flat_color) {
   //
   // Colors:
   //
@@ -356,6 +364,12 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
     top_color_scale = 0.7;
     bottom_color_scale = 1.3;
   }
+  if (flat_color) {
+    left_color_scale = 1.0;
+    right_color_scale = 1.0;
+    bottom_color_scale = 1.0;
+    top_color_scale = 1.0;
+  }
 
   // Clamp all colors at white, and don't scale the alpha.
   Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
@@ -378,7 +392,13 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
               min(_color[2] * top_color_scale, 1.0f),
               _color[3]);
 
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format;
+  if (has_texture()) {
+    format = GeomVertexFormat::get_v3cpt2();
+  } else {
+    format = GeomVertexFormat::get_v3cp();
+  }
+
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
   
@@ -423,17 +443,54 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   
   strip->add_next_vertices(6);
   strip->close_primitive();
-  strip->set_shade_model(Geom::SM_flat_last_vertex);
-  
+
+  if (!flat_color) {
+    strip->set_shade_model(Geom::SM_flat_last_vertex);
+  }
+
+  if (has_texture()) {
+    // Generate UV's.
+    float left = uv_range[0];
+    float right = uv_range[1];
+    float bottom = uv_range[2];
+    float top = uv_range[3];
+    float inner_left = left + _uv_width[0];
+    float inner_right = right - _uv_width[0];
+    float inner_bottom = bottom + _uv_width[1];
+    float inner_top = top - _uv_width[1];
+
+    GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2f(inner_right, inner_bottom);
+    texcoord.add_data2f(left, bottom);
+    texcoord.add_data2f(inner_left, inner_bottom);
+    texcoord.add_data2f(left, top);
+    texcoord.add_data2f(inner_left, inner_top);
+    texcoord.add_data2f(right, top);
+    texcoord.add_data2f(inner_right, inner_top);
+
+    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2f(right, top);
+    texcoord.add_data2f(inner_right, inner_bottom);
+    texcoord.add_data2f(inner_right, inner_top);
+    texcoord.add_data2f(inner_left, inner_bottom);
+    texcoord.add_data2f(inner_left, inner_top);
+  }
+  vdata->write(cerr);
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
-  CPT(RenderState) state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
-                                             ColorAttrib::make_vertex());
+  CPT(RenderState) state;
+  if (flat_color) {
+    state = RenderState::make(ColorAttrib::make_flat(_color));
+  } else {
+    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
+                              ColorAttrib::make_vertex());
+  }
+  if (has_texture()) {
+    state = state->set_attrib(TextureAttrib::make(get_texture()));
+  }
   gnode->add_geom(geom, state);
-  
-  // For now, beveled and grooved geoms don't support textures.  Easy
-  // to add if anyone really wants this.
   
   return gnode.p();
 }
