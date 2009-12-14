@@ -1262,15 +1262,13 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
 void P3DPythonRun::
 set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   string p3d_filename;
-  int p3d_offset;
   const char *p3d_filename_c = xfparams->Attribute("p3d_filename");
   if (p3d_filename_c != NULL) {
     p3d_filename = p3d_filename_c;
   }
-  const char *p3d_offset_c = xfparams->Attribute("p3d_offset");
-  if (p3d_offset_c != NULL) {
-    p3d_offset = atoi(p3d_offset_c);
-  }
+
+  int p3d_offset = 0;
+  xfparams->Attribute("p3d_offset", &p3d_offset);
 
   PyObject *token_list = PyList_New(0);
   TiXmlElement *xtoken = xfparams->FirstChildElement("token");
