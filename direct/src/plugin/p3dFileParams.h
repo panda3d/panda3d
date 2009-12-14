@@ -36,10 +36,14 @@ public:
   void set_args(int argc, const char *argv[]);
 
   inline const string &get_p3d_filename() const;
-  inline const int &get_p3d_offset() const;
+  inline int get_p3d_offset() const;
   string lookup_token(const string &keyword) const;
   int lookup_token_int(const string &keyword) const;
   bool has_token(const string &keyword) const;
+
+  inline int get_num_tokens() const;
+  inline const string &get_token_keyword(int n) const;
+  inline const string &get_token_value(int n) const;
 
   TiXmlElement *make_xml();
 

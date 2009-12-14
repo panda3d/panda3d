@@ -30,7 +30,39 @@ get_p3d_filename() const {
 //  Description: Returns the p3d file offset, the location
 //               in the file where the p3d data starts.
 ////////////////////////////////////////////////////////////////////
-inline const int &P3DFileParams::
+inline int P3DFileParams::
 get_p3d_offset() const {
   return _p3d_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::get_num_tokens
+//       Access: Public
+//  Description: Returns the number of tokens in the params.
+////////////////////////////////////////////////////////////////////
+inline int P3DFileParams::
+get_num_tokens() const {
+  return _tokens.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::get_token_keyword
+//       Access: Public
+//  Description: Returns the keyword of the nth token.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DFileParams::
+get_token_keyword(int n) const {
+  assert(n >= 0 && n < (int)_tokens.size());
+  return _tokens[n]._keyword;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::get_token_value
+//       Access: Public
+//  Description: Returns the value of the nth token.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DFileParams::
+get_token_value(int n) const {
+  assert(n >= 0 && n < (int)_tokens.size());
+  return _tokens[n]._value;
 }

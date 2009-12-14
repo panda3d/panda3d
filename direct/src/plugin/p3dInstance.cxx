@@ -93,6 +93,13 @@ P3DInstance(P3D_request_ready_func *func,
   _fparams.set_tokens(tokens, num_tokens);
   _fparams.set_args(argc, argv);
 
+  nout << "Creating P3DInstance " << this << ": ";
+  for (int i = 0; i < _fparams.get_num_tokens(); ++i) {
+    nout << " " << _fparams.get_token_keyword(i)
+         << "=\"" << _fparams.get_token_value(i) << "\"";
+  }
+  nout << "\n";
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
   _hidden = (_fparams.lookup_token_int("hidden") != 0);
@@ -307,6 +314,12 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_url(const string &p3d_url) {
+  if (p3d_url.empty()) {
+    nout << "No p3d URL specified.  Cannot run.\n";
+    set_failed();
+    return;
+  }
+
   // Save the last part of the URL as the p3d_basename, for reporting
   // purposes or whatever.
   determine_p3d_basename(p3d_url);
@@ -1321,7 +1334,7 @@ priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   _fparams.set_p3d_filename(p3d_filename);
   // The default for p3d_offset is -1, which means not to change it.
   if (p3d_offset >= 0) {
-	_fparams.set_p3d_offset(p3d_offset);
+    _fparams.set_p3d_offset(p3d_offset);
   }
   _got_fparams = true;
 
@@ -1333,12 +1346,12 @@ priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   send_notify("onpluginload");
 
   if (!_mf_reader.open_read(_fparams.get_p3d_filename(), _fparams.get_p3d_offset())) {
-	if (_fparams.get_p3d_offset() == 0) {
+    if (_fparams.get_p3d_offset() == 0) {
       nout << "Couldn't read " << _fparams.get_p3d_filename() << "\n";
     } else {
-	  nout << "Couldn't read " << _fparams.get_p3d_filename()
-	       << " at offset " << _fparams.get_p3d_offset() << "\n";
-	}
+      nout << "Couldn't read " << _fparams.get_p3d_filename()
+           << " at offset " << _fparams.get_p3d_offset() << "\n";
+    }
     set_failed();
     return;
   }
