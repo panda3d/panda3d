@@ -4811,6 +4811,7 @@ def MakeInstallerOSX():
     print >>preflight, "bpfile = open(bash_profile, 'w')"
     print >>preflight, "bpfile.write(newbpdata)"
     print >>preflight, "bpfile.close()"
+    preflight.close()
     oscmd("chmod +x dstroot/scripts/uninstall16/preflight")
     
     oscmd("chmod -R 0775 dstroot/*")
