@@ -81,8 +81,9 @@ public:
 
 private:
   PT(PandaNode) generate_flat_geom(const LVecBase4f &frame);
-  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in, bool flat_color);
+  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in);
   PT(PandaNode) generate_groove_geom(const LVecBase4f &frame, bool in);
+  PT(PandaNode) generate_texture_border_geom(const LVecBase4f &frame);
 
 private:
   Type _type;
