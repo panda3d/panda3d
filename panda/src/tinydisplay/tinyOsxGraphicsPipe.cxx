@@ -33,6 +33,9 @@ TypeHandle TinyOsxGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TinyOsxGraphicsPipe::
 TinyOsxGraphicsPipe() {
+  CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
+  _display_width = CGRectGetWidth(display_bounds);
+  _display_height = CGRectGetHeight(display_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////
