@@ -27,6 +27,9 @@ TypeHandle osxGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 osxGraphicsPipe::
 osxGraphicsPipe() {
+  CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
+  _display_width = CGRectGetWidth(display_bounds);
+  _display_height = CGRectGetHeight(display_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////
