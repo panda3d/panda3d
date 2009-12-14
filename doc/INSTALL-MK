@@ -7,6 +7,9 @@
 
 Panda3D Install --- using the 'makepanda' system.
 
+NOTE: As the makepanda build system changes more frequently
+than this document, some of the information is outdated.
+
 MAKE SURE YOU HAVE ALL OF THE SOURCE CODE
 
 The easiest way to download the source for panda is to download the
@@ -18,7 +21,7 @@ Alternately, it is possible to download the source in pieces. There
 are three pieces:
 
     1. Source code from Sourceforge.
-    2. Third-party tools.
+    2. Third-party tools (not strictly necessary for Unix)
     3. Sample programs.
 
 You will need all three to use makepanda.  You can download all three
@@ -48,6 +51,9 @@ directory will contain the following subdirectories:
 If you have all of these, you're ready to go.  If not, then you
 must have missed a piece.
 
+Linux/FreeBSD users may omit the "thirdparty" tree, but this means
+they will need to have the thirdparty software installed on the system.
+
 INVOKING MAKEPANDA
 
 Makepanda is a script that builds panda, all the way through. To
@@ -75,76 +81,29 @@ The easy way to build panda is to type:
 This will compile panda with all the features.  It can take several
 hours, depending on the speed of your machine.
 
+You may wish to add the --verbose option to the makepanda
+command to get more verbose output information. This is
+especially useful when you run into a compiler error.
+
 The resulting copy of panda will be found in a subdirectory 'built'
-inside the source tree.
-
-
-TESTING THE COMPILED PANDA
-
-After building panda, you should test it before installing it.
-
-The first step is to add the built/bin directory to your PATH.  This
-is not strictly necessary, you can run the panda programs by typing
-their paths explicitly, but it is much more convenient to set the
-PATH.
-
-Second, add the built/lib directory to your LD_LIBRARY_PATH.  This is
-only necessary under Linux - Windows takes care of this automatically.
-It is also possible to use the system ld.so.conf configuration file to
-achieve the same effect, but LD_LIBRARY_PATH is more convenient for
-quick-and-dirty testing.
-
-Finally, change directory to one of the sample programs, and run the
-sample program using 'ppython'.  For example,
-
-  cd samples/Feature-Tutorials--Actors
-  ppython Tut-Actors.py
-
-If this doesn't work, something is wrong, and there's no reason
-to continue with the installation process.
+inside the source tree.  (Given that you did not override this
+with the --outputdir option)
 
 
 INSTALLING PANDA
 
-If you are using Windows, OSX or Linux distribution that supports DEB or
+If you are using Windows, OSX or a Linux distribution that supports DEB or
 RPM packages, the recommended way to install Panda3D is to run makepanda
 with the --installer option and then install the resulting .exe, .deb, .rpm
 or .dmg package. This is a safe solution that makes sure all the files are
 installed in the correct places and all the paths are configured correctly.
 More information can be found below.
 
-If you want to install Panda3D manually, however, the first step is to
-copy 'samples' into the built subdirectory, and 'direct/src' into
-'built/direct/src'.  Then, move the built directory anywhere you like
-on your system.  For example, Linux users might want to do this:
+Linux and FreeBSD users can install Panda3D manually, however, using the
+following sequence of commands (execute as root):
 
-  cp --recursive samples built/samples
-  cp --recursive direct/src built/direct/src
-  mv built /usr/local/panda3d
-
-Windows users might want to do this:
-
-  xcopy /IE samples built\samples
-  xcopy /IE direct\src built\direct\src
-  move built c:\Panda3D
-
-Then, add the panda bin directory to your PATH.  Under Linux, it is
-also necessary to add the panda lib directory to the system library
-path.  It is usually possible to do so by editing the
-file /etc/ld.so.conf.
-
-
-INSTALLATION AND THE UNIX STANDARD FILESYSTEM LAYOUT
-
-The installation instructions above will produce a fully-functional
-installation of panda with a minimum number of steps.  However, the
-installation will not conform to the Unix standards for filesystem
-layout.
-
-If you want a conformant installation, the most sensible approach is
-to build a redhat RPM, debian DEB or MacOSX DMG, and then install
-the package. The installation process will distribute the files
-properly. Instructions for building a package can be found below.
+  python makepanda/installpanda.py --prefix /usr/local
+  ldconfig
 
 
 MAKEPANDA COMMAND-LINE OPTIONS
@@ -159,11 +118,14 @@ command-line options to makepanda.  If you invoke:
 it will show you the available command-line options:
 
   --help            (print the help message you're reading now)
-  --optimize X      (optimization level can be 1,2,3,4)
+  --verbose         (print out more information)
   --installer       (build an installer)
+  --optimize X      (optimization level can be 1,2,3,4)
   --version         (set the panda version number)
   --lzma            (use lzma compression when building installer)
   --threads N       (use the multithreaded build system. see manual)
+  --osxtarget N     (the OSX version number to build for (OSX only))
+  --override "O=V"  (override dtool_config/prc option value)
 
   --use-maya6       --no-maya6     (enable/disable use of MAYA6)
   --use-maya65      --no-maya65    (enable/disable use of MAYA65)
@@ -171,11 +133,14 @@ it will show you the available command-line options:
   --use-maya8       --no-maya8     (enable/disable use of MAYA8)
   --use-maya85      --no-maya85    (enable/disable use of MAYA85)
   --use-maya2008    --no-maya2008  (enable/disable use of MAYA2008)
+  --use-maya2009    --no-maya2009  (enable/disable use of MAYA2009)
+  --use-maya2010    --no-maya2010  (enable/disable use of MAYA2010)
   --use-max6        --no-max6      (enable/disable use of MAX6)
   --use-max7        --no-max7      (enable/disable use of MAX7)
   --use-max8        --no-max8      (enable/disable use of MAX8)
   --use-max9        --no-max9      (enable/disable use of MAX9)
   --use-max2009     --no-max2009   (enable/disable use of MAX2009)
+  --use-max2010     --no-max2010   (enable/disable use of MAX2010)
   --use-dx8         --no-dx8       (enable/disable use of DX8)
   --use-dx9         --no-dx9       (enable/disable use of DX9)
   --use-python      --no-python    (enable/disable use of PYTHON)
@@ -184,18 +149,24 @@ it will show you the available command-line options:
   --use-jpeg        --no-jpeg      (enable/disable use of JPEG)
   --use-tiff        --no-tiff      (enable/disable use of TIFF)
   --use-vrpn        --no-vrpn      (enable/disable use of VRPN)
-  --use-fmod        --no-fmod      (enable/disable use of FMOD)
+  --use-tinyxml     --no-tinyxml   (enable/disable use of TINYXML)
   --use-fmodex      --no-fmodex    (enable/disable use of FMODEX)
   --use-openal      --no-openal    (enable/disable use of OPENAL)
   --use-nvidiacg    --no-nvidiacg  (enable/disable use of NVIDIACG)
   --use-openssl     --no-openssl   (enable/disable use of OPENSSL)
   --use-freetype    --no-freetype  (enable/disable use of FREETYPE)
+  --use-wx          --no-wx        (enable/disable use of WX)
   --use-fftw        --no-fftw      (enable/disable use of FFTW)
   --use-artoolkit   --no-artoolkit (enable/disable use of ARTOOLKIT)
+  --use-squish      --no-squish    (enable/disable use of SQUISH)
   --use-ode         --no-ode       (enable/disable use of ODE)
   --use-directcam   --no-directcam (enable/disable use of DIRECTCAM)
+  --use-npapi       --no-npapi     (enable/disable use of NPAPI)
   --use-opencv      --no-opencv    (enable/disable use of OPENCV)
   --use-ffmpeg      --no-ffmpeg    (enable/disable use of FFMPEG)
+  --use-swscale     --no-swscale   (enable/disable use of SWSCALE)
+  --use-fcollada    --no-fcollada  (enable/disable use of FCOLLADA)
+  --use-gtk2        --no-gtk2      (enable/disable use of GTK2)
   --use-pandatool   --no-pandatool (enable/disable use of PANDATOOL)
 
   --nothing         (disable every third-party lib)
@@ -231,11 +202,13 @@ For example, you can say:
     makepanda --everything --no-helix --no-openssl
     makepanda --nothing --use-zlib --use-png
 
-Note that 'makepanda' is a new tool.  The panda3d team has not had
-time to test every combination of options.  It is likely that most
-combinations do not work.  The only combination we can vouch for at
-this time is '--everything'.  In the next release, we hope to be able
-to vouch for a large number of different combinations.
+If a certain package could not be found, it is automatically
+omitted and a warning message is shown when running makepanda.
+
+Please note that if you abort makepanda, and invoke it again, it
+will continue where it left off the last time you ran it. However,
+if you change the combination of selected features, the compilation
+process may start from scratch the next time you invoke makepanda.
 
 
 USING YOUR OWN LIBRARIES
