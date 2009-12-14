@@ -276,8 +276,8 @@ generate_flat_geom(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_bevel_geom
 //       Access: Private
-//  Description: Generates the GeomNode appropriate to a T_bevel_in,
-//               T_bevel_out, or T_texture_border frame.
+//  Description: Generates the GeomNode appropriate to a T_bevel_in
+//               or T_bevel_out frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
 generate_bevel_geom(const LVecBase4f &frame, bool in) {
