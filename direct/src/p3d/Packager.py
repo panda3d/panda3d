@@ -2733,12 +2733,11 @@ class Packager:
                                resources = resources, dependencyDir = '')
 
         else:
-            # Anywhere else, we just ship the executable file p3dcert.exe.
-            self.do_file('p3dcert.exe')
-
-        self.do_file('p3dpython.exe')
-        if self.platform.startswith('win'):
-            self.do_file('p3dpythonw.exe')
+            # Anywhere else, we just ship the executable file p3dpython.exe.
+            self.do_file('p3dpython.exe')
+            if self.platform.startswith('win'):
+                self.do_file('p3dpythonw.exe')
+                
         self.do_file('libp3dpython.dll')
 
     def do_freeze(self, filename, compileToExe = False):
