@@ -2348,10 +2348,6 @@ make_splash_window() {
   if (_current_background_image != IT_none) {
     _splash_window->set_image_filename(_image_files[_current_background_image]._filename, P3DSplashWindow::IP_background);
   }
-  
-  // Update the splash window.
-  if (_splash_window != NULL) {
-  }
 
   if (_current_button_image != IT_none) {
     _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
