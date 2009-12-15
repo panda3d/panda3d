@@ -70,6 +70,7 @@ class TimeManager(DistributedObject.DistributedObject):
 
     def announceGenerate(self):
         DistributedObject.DistributedObject.announceGenerate(self)
+        self.cr.timeManager = self
         self.synchronize("TimeManager.announceGenerate")
 
     def disable(self):
@@ -80,6 +81,8 @@ class TimeManager(DistributedObject.DistributedObject):
         self.ignore('clock_error')
         self.stopTask()
         taskMgr.remove('frameRateMonitor')
+        if self.cr.timeManager is self:
+            self.cr.timeManager = None
         DistributedObject.DistributedObject.disable(self)
 
     def delete(self):

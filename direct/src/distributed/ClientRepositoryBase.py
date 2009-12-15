@@ -63,6 +63,9 @@ class ClientRepositoryBase(ConnectionRepository):
         # other.
         self.relatedObjectMgr = RelatedObjectMgr.RelatedObjectMgr(self)
 
+        # This will be filled in when a TimeManager is created.
+        self.timeManager = None
+
         # Keep track of how recently we last sent a heartbeat message.
         # We want to keep these coming at heartbeatInterval seconds.
         self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
