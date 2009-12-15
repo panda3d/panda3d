@@ -471,7 +471,6 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
     texcoord.add_data2f(inner_left, inner_bottom);
     texcoord.add_data2f(inner_left, inner_top);
   }
-  vdata->write(cerr);
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
