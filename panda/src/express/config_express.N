@@ -22,6 +22,10 @@ renametype FileStream FileStream
 forcetype IDecryptStream
 forcetype OEncryptStream
 
+forcetype ofstream
+forcetype ifstream
+forcetype fstream
+
 forcetype DConfig
 forcetype ConfigFlags
 forcetype ConfigPage

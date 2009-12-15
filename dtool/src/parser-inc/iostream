@@ -69,10 +69,22 @@ __published:
   void flush();
 };
 
+class ofstream : public ostream {
+__published:
+  ofstream();
+  void close();
+};
+class ifstream : public istream {
+__published:
+  ifstream();
+  void close();
+};
+class fstream : public iostream {
+__published:
+  fstream();
+  void close();
+};
 
-class ofstream : public ostream {};
-class ifstream : public istream {};
-class fstream : public iostream {};
 class ostringstream : public ostream {};
 class istringstream : public istream {};
 class stringstream : public iostream {};
