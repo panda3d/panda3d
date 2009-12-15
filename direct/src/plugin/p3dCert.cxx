@@ -202,6 +202,7 @@ view_cert_clicked(wxCommandEvent &event) {
   if (_view_cert_dialog != NULL) {
     _view_cert_dialog->Destroy();
   }
+  Hide();
   _view_cert_dialog = new ViewCertDialog(this, _cert);
   _view_cert_dialog->Show();
 }
@@ -563,6 +564,9 @@ run_clicked(wxCommandEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void ViewCertDialog::
 cancel_clicked(wxCommandEvent &event) {
+  if (_auth_dialog != NULL){ 
+    _auth_dialog->Destroy();
+  }
   Destroy();
 }
 

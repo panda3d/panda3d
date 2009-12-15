@@ -173,8 +173,6 @@ set_install_progress(double install_progress,
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
-  write_xml(nout, &doc, nout);
-
   check_stopped();
 }
 
