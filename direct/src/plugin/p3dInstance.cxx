@@ -2464,11 +2464,11 @@ report_package_info_ready(P3DPackage *package) {
       make_splash_window();
       if (_splash_window != NULL) {
         _splash_window->set_install_progress(0.0, true, 0);
-        if (package == _certlist_package) {
-          _splash_window->set_install_label("Getting Certificates");
-        } else {          
-          _splash_window->set_install_label("Getting Authorization Dialog");
-        }
+      }
+      if (package == _certlist_package) {
+        set_install_label("Getting Certificates");
+      } else {          
+        set_install_label("Getting Authorization Dialog");
       }
     }
 
@@ -2599,8 +2599,8 @@ mark_download_complete() {
   // Take down the download progress bar.
   if (_splash_window != NULL) {
     _splash_window->set_install_progress(0.0, true, 0);
-    _splash_window->set_install_label("");
   }
+  set_install_label("");
 
   if (_got_wparams && _p3d_trusted) {
     ready_to_start();
@@ -2664,6 +2664,11 @@ report_instance_progress(double progress, bool is_progress_known,
     if ((elapsed > 2.0 && progress < 0.7) ||
         (elapsed > 5.0)) {
       _show_dl_instance_progress = true;
+      if (_fparams.has_token("p3d_install_label")) {
+        set_install_label(_fparams.lookup_token("p3d_install_label"));
+      } else {
+        set_install_label("Getting " + _p3d_basename);
+      }
     }
   }
 
@@ -2781,8 +2786,8 @@ report_package_done(P3DPackage *package, bool success) {
     // Take down the download progress.
     if (_splash_window != NULL) {
       _splash_window->set_install_progress(0.0, true, 0);
-      _splash_window->set_install_label("");
     }
+    set_install_label("");
 
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->read_certlist(package);
@@ -2797,9 +2802,9 @@ report_package_done(P3DPackage *package, bool success) {
     // Take down the download progress.
     if (_splash_window != NULL) {
       _splash_window->set_install_progress(0.0, true, 0);
-      _splash_window->set_install_label("");
     }
-
+    set_install_label("");
+  
     if (success) {
       mark_p3d_untrusted();
     }
