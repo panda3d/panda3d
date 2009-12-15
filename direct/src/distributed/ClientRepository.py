@@ -153,7 +153,7 @@ class ClientRepository(ClientRepositoryBase):
 
     def createDistributedObject(self, className = None, distObj = None,
                                 zoneId = 0, optionalFields = None,
-                                doId = None):
+                                doId = None, reserveDoId = False):
 
         """ To create a DistributedObject, you must pass in either the
         name of the object's class, or an already-created instance of
@@ -180,10 +180,11 @@ class ClientRepository(ClientRepositoryBase):
 
         Normally, doId is None, to mean allocate a new doId for the
         object.  If you wish to use a particular doId, pass it in
-        here.  It will be reserved from the allocation pool using
-        self.reserveDoId().  You are responsible for ensuring this
-        doId falls within the client's allowable doId range and has
-        not already been assigned to another object.  """
+        here.  If you also pass reserveDoId = True, this doId will be
+        reserved from the allocation pool using self.reserveDoId().
+        You are responsible for ensuring this doId falls within the
+        client's allowable doId range and has not already been
+        assigned to another object.  """
 
         if not className:
             if not distObj:
@@ -192,7 +193,7 @@ class ClientRepository(ClientRepositoryBase):
 
         if doId is None:
             doId = self.allocateDoId()
-        else:
+        elif reserveDoId:
             self.reserveDoId(doId)
             
         dclass = self.dclassesByName.get(className)
