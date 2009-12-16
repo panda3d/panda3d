@@ -1557,11 +1557,11 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
     if (x_origin == -2) {
       x_origin = 0.5 * (_pipe->get_display_width() - x_size);
     }
-    if (r.top == -1) {
-      r.top = 50;
+    if (y_origin == -1) {
+      y_origin = 50;
     }
-    if (r.left == -1) {
-      r.left = 10;
+    if (x_origin == -1) {
+      x_origin = 10;
     }
     _properties.set_origin(x_origin, y_origin);
     system_changed_properties(_properties);
