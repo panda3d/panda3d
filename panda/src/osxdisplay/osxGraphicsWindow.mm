@@ -1142,8 +1142,34 @@ os_open_window(WindowProperties &req_properties) {
   } else {
     Rect r;
     if (req_properties.has_origin()) { 
-      r.top = req_properties.get_y_origin();
-      r.left =req_properties.get_x_origin();
+      r.top  = req_properties.get_y_origin();
+      r.left = req_properties.get_x_origin();
+      
+      // A coordinate of -2 means to center the window on screen.
+      if (r.top == -2 || r.left == -2) {
+        if (req_properties.has_size()) {
+          if (r.top == -2) {
+            r.top = 0.5 * (_pipe->get_display_height() - req_properties.get_y_size());
+          }
+          if (r.left == -2) {
+            r.left = 0.5 * (_pipe->get_display_width() - req_properties.get_x_size());
+          }
+        } else {
+          if (r.top == -2) {
+            r.top = 0.5 * (_pipe->get_display_height() - req_properties.get_y_size());
+          }
+          if (r.left == -2) {
+            r.left = 0.5 * (_pipe->get_display_width() - req_properties.get_x_size());
+          }
+        }
+        _properties.set_origin(r.left, r.top);
+      }
+      if (r.top == -1) {
+        r.top = 50;
+      }
+      if (r.left == -1) {
+        r.left = 10;
+      }
     } else {
       r.top = 50;
       r.left = 10;
@@ -1789,6 +1815,24 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
 
   if (_properties.get_fullscreen()) {
     return false;
+  }
+
+  // A coordinate of -2 means to center the window on screen.
+  if (x_origin == -2 || y_origin == -2) {
+    if (y_origin == -2) {
+      y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+    }
+    if (x_origin == -2) {
+      x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+    }
+    if (r.top == -1) {
+      r.top = 50;
+    }
+    if (r.left == -1) {
+      r.left = 10;
+    }
+    _properties.set_origin(x_origin, y_origin);
+    system_changed_properties(_properties);
   }
 
   /*      
