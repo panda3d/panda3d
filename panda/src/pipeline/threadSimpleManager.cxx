@@ -45,6 +45,11 @@ ThreadSimpleManager() :
    PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
             "in seconds, for which a task that voluntarily yields should "
             "be delayed.")),
+  _simple_thread_yield_sleep
+  ("simple-thread-yield-sleep", 0.001,
+   PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
+            "in seconds, for which the process should be put to sleep when "
+            "yielding the timeslice to the system.")),
   _simple_thread_window
   ("simple-thread-window", 1.0,
    PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
@@ -396,13 +401,22 @@ remove_thread(ThreadSimpleImpl *thread) {
 void ThreadSimpleManager::
 system_sleep(double seconds) {
 #ifdef WIN32
-  Sleep((int)(seconds * 1000));
+  Sleep((int)(seconds * 1000 + 0.5));
 
 #else
+  /*
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
-  rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
+  rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0 + 0.5);
   nanosleep(&rqtp, NULL);
+  */
+  
+  // We use select() as the only way that seems to actually yield the
+  // timeslice.  sleep() and nanosleep() don't appear to do the trick.
+  struct timeval tv;
+  tv.tv_sec = time_t(seconds);
+  tv.tv_usec = long((seconds - (double)tv.tv_sec) * 1000000.0 + 0.5);
+  select(0, NULL, NULL, NULL, &tv);
 #endif  // WIN32
 }
 
@@ -468,26 +482,24 @@ write_status(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 system_yield() {
+  if (!_pointers_initialized) {
+    // Ignore this call before we construct the global ThreadSimpleManager.
+    return;
+  }
+
   if (thread_cat->is_debug()) {
     thread_cat.debug()
       << "system_yield\n";
   }
 
-#ifdef WIN32
-  // 1 ms is the smallest effective time we can request on Windows;
-  // Sleep(0) doesn't seem to actually yield?  Or at least it doesn't
-  // yield enough.
-  Sleep(1);
-
-#else
-  // We use select() as the only way that seems to actually yield the
-  // timeslice.  sleep() and nanosleep() don't appear to do the trick.
-  struct timeval tv;
-  tv.tv_sec = 0;
-  tv.tv_usec = 1;
-  select(0, NULL, NULL, NULL, &tv);
-
-#endif  // WIN32
+  // There seem to be some issues with modern operating systems not
+  // wanting to actually yield the timeslice in response to sleep(0).
+  // In particular, Windows and OSX both seemed to do nothing in that
+  // call.  Whatever.  We'll force the point by explicitly sleeping
+  // for 1 ms in both cases.  This is user-configurable in case 1 ms
+  // is too much (though on Windows that's all the resolution you
+  // have).
+  system_sleep(_global_ptr->_simple_thread_yield_sleep);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -628,7 +640,7 @@ choose_next_context() {
           break;
         }
 
-        // No threads are ready to rull, but we're not explicitly
+        // No threads are ready to run, but we're not explicitly
         // shutting down.  This is an error condition, an
         // unintentional deadlock.
         if (!_blocked.empty()) {
