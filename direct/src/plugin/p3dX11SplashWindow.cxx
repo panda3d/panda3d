@@ -25,9 +25,6 @@
 #include <signal.h>
 #include <stdint.h>
 
-// Clamps a value to two boundaries.
-#define clamp(x, lb, hb) (x < lb ? lb : (x > hb ? hb : x))
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
@@ -830,9 +827,6 @@ redraw() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 make_window() {
-  int x = _wparams.get_win_x();
-  int y = _wparams.get_win_y();
-  
   _win_width = 320;
   _win_height = 240;
   if (_wparams.get_win_width() != 0 && _wparams.get_win_height() != 0) {
@@ -853,7 +847,15 @@ make_window() {
     _display = XOpenDisplay(NULL);
     _own_display = true;
   //}
+  assert(_display != NULL);
   _screen = DefaultScreen(_display);
+
+  int x = _wparams.get_win_x();
+  int y = _wparams.get_win_y();
+  if (x == -1) x = 0;
+  if (y == -1) y = 0;
+  if (x == -2) x = 0.5 * (DisplayWidth(_display, _screen) - _win_width);
+  if (y == -2) y = 0.5 * (DisplayHeight(_display, _screen) - _win_height);
 
   if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
@@ -865,7 +867,6 @@ make_window() {
     parent = XRootWindow(_display, _screen);
   }
   
-  assert(_display != NULL);
   assert(parent != None);
 
   int depth = DefaultDepth(_display, _screen);
@@ -912,6 +913,23 @@ make_window() {
   _window = XCreateWindow
     (_display, parent, x, y, _win_width, _win_height,
      0, depth, InputOutput, dvisual, attrib_mask, &wa);
+
+  // Now hint the window manager about the window origin and size.
+  // This is necessary because window managers are free to ignore
+  // the window origin specified in the XCreateWindow call.
+  XSizeHints *size_hints_p = XAllocSizeHints();
+  if (_wparams.get_win_x() != -1 || _wparams.get_win_y() != -1) {
+    // If the user requested (-1, -1), the default position, we let
+    // the window manager choose a position by omitting the pos hint.
+    size_hints_p->x = x;
+    size_hints_p->y = y;
+    size_hints_p->flags |= USPosition;
+  }
+  size_hints_p->width = _win_width;
+  size_hints_p->height = _win_height;
+  size_hints_p->flags |= USSize;
+  XSetWMNormalHints(_display, _window, size_hints_p);
+  XFree(size_hints_p);
 
   if (_visible) {
     XMapWindow(_display, _window);

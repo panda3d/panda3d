@@ -742,7 +742,9 @@ usage() {
 
     << "  -o x,y\n"
     << "    Specify the position (origin) of the graphic window on the\n"
-    << "    screen, or on the parent window.\n\n"
+    << "    screen, or on the parent window.  If you specify -1,-1\n"
+    << "    the default position will be used, and a value of -2,-2\n"
+    << "    means that the window will be centered on the screen.\n\n"
 
     << "  -l log_dirname\n"
     << "    Specify the full path to the directory in which log files are\n"

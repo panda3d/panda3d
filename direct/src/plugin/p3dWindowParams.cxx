@@ -22,7 +22,7 @@
 P3DWindowParams::
 P3DWindowParams() :
   _window_type(P3D_WT_hidden),
-  _win_x(0), _win_y(0),
+  _win_x(-1), _win_y(-1),
   _win_width(0), _win_height(0)
 {
 }

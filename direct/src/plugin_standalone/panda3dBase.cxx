@@ -50,8 +50,8 @@ Panda3DBase(bool console_environment) {
 
   _window_type = P3D_WT_toplevel;
 
-  _win_x = 0;
-  _win_y = 0;
+  _win_x = -1;
+  _win_y = -1;
   _win_width = 640;
   _win_height = 480;
 
@@ -73,6 +73,10 @@ Panda3DBase(bool console_environment) {
 ////////////////////////////////////////////////////////////////////
 int Panda3DBase::
 run_embedded(int read_offset, int argc, char *argv[]) {
+  // Make sure the splash window will be put in the center of the screen
+  _win_x = -2;
+  _win_y = -2;
+  
   // Read out some parameters from the binary
   pifstream read;
   Filename f = ExecutionEnvironment::get_binary_name();
