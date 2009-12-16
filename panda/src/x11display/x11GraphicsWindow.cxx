@@ -434,6 +434,26 @@ set_properties_now(WindowProperties &properties) {
 
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
+  
+  // A coordinate of -2 means to center the window on screen.
+  if (properties.has_origin() and (properties.get_x_origin() == -2
+                                or properties.get_y_origin() == -2)) {
+    int x_origin = properties.get_x_origin();
+    int y_origin = properties.get_y_origin();
+    if (false and properties.has_size()) {
+      if (x_origin == -2) {
+        x_origin = 0.5 * (x11_pipe->get_display_width() - properties.get_x_size());
+      }
+      if (y_origin == -2) {
+        y_origin = 0.5 * (x11_pipe->get_display_height() - properties.get_y_size());
+      }
+      properties.set_origin(x_origin, y_origin);
+    } else {
+      // I'm not sure what to do in this case, when no size is specified.
+      // Using XGetGeometry results for me in a BadDrawable here.
+      // I guess we can just ignore this case (when no size is specified).
+    }
+  }
 
   // Fullscreen mode is implemented with a hint to the window manager.
   // However, we also implicitly set the origin to (0, 0) and the size
@@ -483,7 +503,8 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
-    value_mask |= (CWX | CWY);
+    if (changes.x != -1) value_mask |= CWX;
+    if (changes.y != -1) value_mask |= CWY;
     properties.clear_origin();
   }
   if (properties.has_size()) {
