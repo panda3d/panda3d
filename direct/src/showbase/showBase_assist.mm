@@ -1,9 +1,11 @@
 #ifndef CPPPARSER
-#include "showBase.h"
+#include "directbase.h"
 
 #ifdef IS_OSX
 
+// We have to include AppKit before showBase.h to avoid a namespace collision.
 #include <AppKit/AppKit.h>
+#include "showBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: activate_osx_application
