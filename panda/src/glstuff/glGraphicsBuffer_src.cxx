@@ -38,6 +38,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   // Initialize these.
   _fbo = 0;
   _fbo_multisample = 0;
+  _initial_clear = true;
   DCAST_INTO_V(glgsg, _gsg);
 
   if (glgsg->get_supports_framebuffer_multisample() && glgsg->get_supports_framebuffer_blit()) {
@@ -176,29 +177,30 @@ check_fbo() {
 
   GLenum status = glgsg->_glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-    GLCAT.error() << "EXT_framebuffer_object reports non-framebuffer-completeness.\n";
+    GLCAT.error() << "EXT_framebuffer_object reports non-framebuffer-completeness:\n";
     switch(status) {
     case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-      GLCAT.error() << "FRAMEBUFFER_UNSUPPORTED_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_UNSUPPORTED_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_FORMATS_EXT"; break;
 #ifndef OPENGLES
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT"; break;
     case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
-      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT\n"; break;
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT"; break;
 #endif
     default:
-      GLCAT.error() << "OTHER PROBLEM\n"; break;
+      GLCAT.error() << "UNKNOWN PROBLEM " << status; break;
     }
+    GLCAT.error() << " for " << get_name() << "\n";
     
     glgsg->bind_fbo(0);
     report_my_gl_errors();
@@ -431,6 +433,13 @@ rebuild_bitplanes() {
     glgsg->bind_fbo(_cubemap_fbo [0]);
   }
 
+  // Clear if the fbo was just created, regardless of the clear settings per frame.
+  if (_initial_clear) {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	  _initial_clear = false;
+  }
+
 #ifndef OPENGLES
   if ((_fb_properties.get_rgb_color() > 0) ||
       (_fb_properties.get_aux_hrgba() > 0)) {
@@ -502,6 +511,10 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       glgsg->update_texture(tc, true);
+#ifndef OPENGLES
+	    GLclampf priority = 1.0f;
+	    glPrioritizeTextures(1, &gtc->_index, &priority);
+#endif
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                        GL_TEXTURE_2D, gtc->_index, 0);
@@ -534,6 +547,10 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+#ifndef OPENGLES
+	    GLclampf priority = 1.0f;
+	    glPrioritizeTextures(1, &gtc->_index, &priority);
+#endif
       glgsg->update_texture(tc, true);
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
