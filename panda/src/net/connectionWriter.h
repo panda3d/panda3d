@@ -37,7 +37,8 @@ class NetAddress;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_NET ConnectionWriter {
 PUBLISHED:
-  ConnectionWriter(ConnectionManager *manager, int num_threads);
+  ConnectionWriter(ConnectionManager *manager, int num_threads,
+                   const string &thread_name = string());
   ~ConnectionWriter();
 
   void set_max_queue_size(int max_size);
@@ -85,7 +86,8 @@ private:
 
   class WriterThread : public Thread {
   public:
-    WriterThread(ConnectionWriter *writer, int thread_index);
+    WriterThread(ConnectionWriter *writer, const string &thread_name,
+                 int thread_index);
     virtual void thread_main();
 
     ConnectionWriter *_writer;

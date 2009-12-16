@@ -95,6 +95,16 @@ get_max_poll_cycle() {
   return *max_poll_cycle;
 }
 
+// This function is used in the ReaderThread and WriterThread
+// constructors to make a simple name for each thread.
+string
+make_thread_name(const string &thread_name, int thread_index) {
+  ostringstream stream;
+  stream << thread_name << "_" << thread_index;
+  return stream.str();
+}
+
+
 ConfigVariableInt net_max_read_per_epoch
 ("net-max-read-per-epoch", 1024,
  PRC_DESC("The maximum number of bytes to read from the net in a single "

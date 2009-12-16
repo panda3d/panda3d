@@ -34,7 +34,8 @@ class NetAddress;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_NET ConnectionListener : public ConnectionReader {
 PUBLISHED:
-  ConnectionListener(ConnectionManager *manager, int num_threads);
+  ConnectionListener(ConnectionManager *manager, int num_threads,
+                     const string &thread_name = string());
 
 protected:
   virtual void receive_datagram(const NetDatagram &datagram);

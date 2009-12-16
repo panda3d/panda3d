@@ -19,14 +19,23 @@
 #include "config_net.h"
 #include "socket_tcp_listen.h"
 
+static string 
+listener_thread_name(const string &thread_name) {
+  if (!thread_name.empty()) {
+    return thread_name;
+  }
+  return "ListenerThread";
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionListener::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionListener::
-ConnectionListener(ConnectionManager *manager, int num_threads) :
-  ConnectionReader(manager, num_threads)
+ConnectionListener(ConnectionManager *manager, int num_threads,
+                   const string &thread_name) :
+  ConnectionReader(manager, num_threads, listener_thread_name(thread_name))
 {
 }
 

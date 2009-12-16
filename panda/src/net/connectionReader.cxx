@@ -70,8 +70,10 @@ get_socket() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::ReaderThread::
-ReaderThread(ConnectionReader *reader, int thread_index) :
-  Thread("ReaderThread", "ReaderThread"),
+ReaderThread(ConnectionReader *reader, const string &thread_name, 
+             int thread_index) :
+  Thread(make_thread_name(thread_name, thread_index), 
+         make_thread_name(thread_name, thread_index)),
   _reader(reader),
   _thread_index(thread_index)
 {
@@ -97,7 +99,8 @@ thread_main() {
 //               (QueuedConnectionReader will do this automatically.)
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::
-ConnectionReader(ConnectionManager *manager, int num_threads) :
+ConnectionReader(ConnectionManager *manager, int num_threads,
+                 const string &thread_name) :
   _manager(manager)
 {
   if (!Thread::is_threading_supported()) {
@@ -123,9 +126,13 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
 
   _currently_polling_thread = -1;
 
+  string reader_thread_name = thread_name;
+  if (thread_name.empty()) {
+    reader_thread_name = "ReaderThread";
+  }
   int i;
   for (i = 0; i < num_threads; i++) {
-    PT(ReaderThread) thread = new ReaderThread(this, i);
+    PT(ReaderThread) thread = new ReaderThread(this, reader_thread_name, i);
     _threads.push_back(thread);
   }
   for (i = 0; i < num_threads; i++) {

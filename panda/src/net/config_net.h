@@ -30,6 +30,7 @@ extern int get_net_max_write_queue();
 extern int get_net_max_response_queue();
 extern bool get_net_error_abort();
 extern double get_max_poll_cycle();
+extern string make_thread_name(const string &thread_name, int thread_index);
 
 extern ConfigVariableInt net_max_read_per_epoch;
 extern ConfigVariableInt net_max_write_per_epoch;
