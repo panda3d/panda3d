@@ -57,7 +57,7 @@ class ParticleEffect(NodePath):
     def enable(self):
         # band-aid added for client crash - grw
         if self.__isValid():
-            if (self.renderParent != None):
+            if self.renderParent:
                 for p in self.particlesDict.values():
                     p.setRenderParent(self.renderParent.node())
             for f in self.forceGroupDict.values():
