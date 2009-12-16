@@ -600,6 +600,20 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
       x_origin = view_rect.left;
       y_origin = view_rect.top;
       
+      // A coordinate of -2 means to center the window in its client area.
+      if (x_origin == -2) {
+        x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+      }
+      if (y_origin == -2) {
+        y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+      }
+      _properties.set_origin(x_origin, y_origin);
+      if (x_origin = -1) {
+        x_origin = CW_USEDEFAULT;
+      }
+      if (y_origin = -1) {
+        y_origin = CW_USEDEFAULT;
+      }
     } else {
       x_origin = CW_USEDEFAULT;
       y_origin = CW_USEDEFAULT;
@@ -788,23 +802,38 @@ open_graphic_window(bool fullscreen) {
     SetRect(&win_rect, x_origin, y_origin,
             x_origin + x_size, y_origin + y_size);
     
-    // compute window size based on desired client area size
+    // Compute window size based on desired client area size
     if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
       windisplay_cat.error()
         << "AdjustWindowRect failed!" << endl;
       return false;
     }
+    clientAreaWidth = win_rect.right - win_rect.left;
+    clientAreaHeight = win_rect.bottom - win_rect.top;
 
     if (_properties.has_origin()) {
       x_origin = win_rect.left;
       y_origin = win_rect.top;
+      
+      // A coordinate of -2 means to center the window on the screen.
+      if (x_origin == -2) {
+        x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+      }
+      if (y_origin == -2) {
+        y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+      }
+      _properties.set_origin(x_origin, y_origin);
+      if (x_origin = -1) {
+        x_origin = CW_USEDEFAULT;
+      }
+      if (y_origin = -1) {
+        y_origin = CW_USEDEFAULT;
+      }
 
     } else {
       x_origin = CW_USEDEFAULT;
       y_origin = CW_USEDEFAULT;
     }
-    clientAreaWidth = win_rect.right - win_rect.left;
-    clientAreaHeight = win_rect.bottom - win_rect.top;
   }
 
   const WindowClass &wclass = register_window_class(_properties);
@@ -853,7 +882,7 @@ open_graphic_window(bool fullscreen) {
 
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
-                         x_origin,y_origin,
+                         x_origin, y_origin,
                          x_size, y_size,
                          _hparent, NULL, hinstance, 0);
     
