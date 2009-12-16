@@ -120,12 +120,11 @@ TinyOsxGraphicsWindow* TinyOsxGraphicsWindow::GetCurrentOSxWindow(WindowRef wind
             window    =    FrontNonFloatingWindow();
     }
 
-    if (window  && checkmywindow(window))
-    //if (window ) {
-        return (TinyOsxGraphicsWindow *)GetWRefCon (window);
+    if (window  && checkmywindow(window)) {
+      return (TinyOsxGraphicsWindow *)GetWRefCon (window);
+    } else {
+      return NULL;
     }
-    else
-        return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1307,7 +1306,6 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
       break;
     }
     //result = noErr;
-  }
 
    return result;
  }
