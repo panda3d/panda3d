@@ -447,13 +447,6 @@ make_window() {
   if (y == -1) y = CW_USEDEFAULT;
   if (x == -2) x = 0.5 * (GetSystemMetrics(SM_CXBORDER) - width);
   if (y == -2) y = 0.5 * (GetSystemMetrics(SM_CYBORDER) - height);
-  GetSystemMetrics(SM_CXBORDER);
-  int x = CW_USEDEFAULT;
-  int y = CW_USEDEFAULT;
-  if (_wparams.get_win_x() != 0 && _wparams.get_win_y() != 0) {
-    x = _wparams.get_win_x();
-    y = _wparams.get_win_y();
-  }
   
   if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
