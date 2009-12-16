@@ -27,6 +27,7 @@
 PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
+static const size_t alignment_size = 4096;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFileStreamBuf::Constructor
@@ -657,11 +658,17 @@ read_chars_raw(char *start, size_t length) {
   
   DWORD bytes_read = 0;
   BOOL success = ReadFile(_handle, start, length, &bytes_read, &overlapped);
+  int pass = 0;
   while (!success) {
     DWORD error = GetLastError();
     if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
-      // Wait for more later.
-      thread_yield();
+      // Wait for more later, but don't actually yield until we have
+      // made the first call to GetOverlappedResult().  (Apparently,
+      // Vista and Windows 7 *always* return ERROR_IO_INCOMPLETE after
+      // the first call to ReadFile.)
+      if (pass > 0) {
+        thread_yield();
+      }
     } else if (error == ERROR_HANDLE_EOF || error == ERROR_BROKEN_PIPE) {
       // End-of-file, normal result.
       break;
@@ -672,6 +679,7 @@ read_chars_raw(char *start, size_t length) {
         << error << dec << ".\n";
       return 0;
     }
+    ++pass;
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
 
@@ -732,11 +740,17 @@ write_chars_raw(const char *start, size_t length) {
   
   DWORD bytes_written = 0;
   BOOL success = WriteFile(_handle, start, length, &bytes_written, &overlapped);
+  int pass = 0;
   while (!success) {
     DWORD error = GetLastError();
     if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
-      // Wait for more later.
-      thread_yield();
+      // Wait for more later, but don't actually yield until we have
+      // made the first call to GetOverlappedResult().  (Apparently,
+      // Vista and Windows 7 *always* return ERROR_IO_INCOMPLETE after
+      // the first call to WriteFile.)
+      if (pass > 0) {
+        thread_yield();
+      }
     } else if (error == ERROR_BROKEN_PIPE) {
       // Broken pipe, we're done.
       cerr << "Pipe closed on " << _filename << "\n";
@@ -748,6 +762,7 @@ write_chars_raw(const char *start, size_t length) {
         << error << dec << ".  Disk full?\n";
       return bytes_written;
     }
+    ++pass;
     success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
   }
   assert(bytes_written == length);
