@@ -943,61 +943,90 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
 //     Function: PNMImage::threshold
 //       Access: Published
 //  Description: Selectively copies each pixel from either one source
-//               or another source, depending on the alpha channel of
-//               alpha_image.
+//               or another source, depending on the pixel value of
+//               the indicated channel of select_image.
 //
-//               For each pixel (x, y), assigns the corresponding
-//               pixel (x, y) in this image to:
+//               For each pixel (x, y):
 //
-//               lt.get_xel(x, y) if alpha_image(x, y).get_alpha() <=
-//               threshold, or
+//               s = select_image.get_channel(x, y). Set this image's
+//               (x, y) to:
 //
-//               ge.get_xel(x, y) if alpha_image(x, y).get_alpha() >
-//               threshold
+//               lt.get_xel(x, y) if s <= threshold, or
 //
-//               Any of alpha_image, lt, or ge may be the same PNMImge
-//               object as this image, or the same as each other; or
-//               they may all be different.
+//               ge.get_xel(x, y) if s > threshold
 //
-//               All images must be the same size.
+//               Any of select_image, lt, or ge may be the same
+//               PNMImge object as this image, or the same as each
+//               other; or they may all be different. All images must
+//               be the same size.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-threshold(const PNMImage &alpha_image,
-          const PNMImage &lt, const PNMImage &ge,
-          double threshold) {
-  nassertv(get_x_size() <= alpha_image.get_x_size() && get_y_size() <= alpha_image.get_y_size());
+threshold(const PNMImage &select_image, int channel, double threshold,
+          const PNMImage &lt, const PNMImage &ge) {
+  nassertv(get_x_size() <= select_image.get_x_size() && get_y_size() <= select_image.get_y_size());
   nassertv(get_x_size() <= lt.get_x_size() && get_y_size() <= lt.get_y_size());
   nassertv(get_x_size() <= ge.get_x_size() && get_y_size() <= ge.get_y_size());
-  nassertv(alpha_image.has_alpha());
+  nassertv(channel >= 0 && channel < select_image.get_num_channels());
 
-  xelval threshold_val = (xelval)(alpha_image.get_maxval() * threshold + 0.5);
+  xelval threshold_val = (xelval)(select_image.get_maxval() * threshold + 0.5);
 
   if (get_maxval() == lt.get_maxval() && get_maxval() == ge.get_maxval()) {
     // Simple case: the maxvals are all equal.  Copy by integer value.
     int x, y;
 
-    if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
-      // Copy alpha channel too.
-      for (y = 0; y < get_y_size(); y++) {
-        for (x = 0; x < get_x_size(); x++) {
-          if (alpha_image.get_alpha_val(x, y) < threshold_val) {
-            set_xel_val(x, y, lt.get_xel_val(x, y));
-            set_alpha_val(x, y, lt.get_alpha_val(x, y));
-          } else {
-            set_xel_val(x, y, ge.get_xel_val(x, y));
-            set_alpha_val(x, y, ge.get_alpha_val(x, y));
+    if (channel == 3) {
+      // Further special case: the alpha channel.
+      if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
+        // Copy alpha channel too.
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_alpha_val(x, y) < threshold_val) {
+              set_xel_val(x, y, lt.get_xel_val(x, y));
+              set_alpha_val(x, y, lt.get_alpha_val(x, y));
+            } else {
+              set_xel_val(x, y, ge.get_xel_val(x, y));
+              set_alpha_val(x, y, ge.get_alpha_val(x, y));
+            }
+          }
+        }
+        
+      } else {
+        // Don't copy alpha channel.
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_alpha_val(x, y) < threshold_val) {
+              set_xel_val(x, y, lt.get_xel_val(x, y));
+            } else {
+              set_xel_val(x, y, ge.get_xel_val(x, y));
+            }
           }
         }
       }
-
     } else {
-      // Don't copy alpha channel.
-      for (y = 0; y < get_y_size(); y++) {
-        for (x = 0; x < get_x_size(); x++) {
-          if (alpha_image.get_alpha_val(x, y) < threshold_val) {
-            set_xel_val(x, y, lt.get_xel_val(x, y));
-          } else {
-            set_xel_val(x, y, ge.get_xel_val(x, y));
+      // Any generic channel.
+      if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
+        // Copy alpha channel too.
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+              set_xel_val(x, y, lt.get_xel_val(x, y));
+              set_alpha_val(x, y, lt.get_alpha_val(x, y));
+            } else {
+              set_xel_val(x, y, ge.get_xel_val(x, y));
+              set_alpha_val(x, y, ge.get_alpha_val(x, y));
+            }
+          }
+        }
+        
+      } else {
+        // Don't copy alpha channel.
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+              set_xel_val(x, y, lt.get_xel_val(x, y));
+            } else {
+              set_xel_val(x, y, ge.get_xel_val(x, y));
+            }
           }
         }
       }
@@ -1010,7 +1039,7 @@ threshold(const PNMImage &alpha_image,
     if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
       for (y = 0; y < get_y_size(); y++) {
         for (x = 0; x < get_x_size(); x++) {
-          if (alpha_image.get_alpha_val(x, y) < threshold_val) {
+          if (select_image.get_channel_val(x, y, channel) < threshold_val) {
             set_xel(x, y, lt.get_xel(x, y));
             set_alpha(x, y, lt.get_alpha(x, y));
           } else {
@@ -1022,7 +1051,7 @@ threshold(const PNMImage &alpha_image,
     } else {
       for (y = 0; y < get_y_size(); y++) {
         for (x = 0; x < get_x_size(); x++) {
-          if (alpha_image.get_alpha_val(x, y) < threshold_val) {
+          if (select_image.get_channel_val(x, y, channel) < threshold_val) {
             set_xel(x, y, lt.get_xel(x, y));
           } else {
             set_xel(x, y, ge.get_xel(x, y));

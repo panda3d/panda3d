@@ -206,9 +206,8 @@ PUBLISHED:
                          int xfrom = 0, int yfrom = 0,
                          int x_size = -1, int y_size = -1,
                          double pixel_scale = 1.0);
-  void threshold(const PNMImage &alpha_image,
-                 const PNMImage &lt, const PNMImage &ge,
-                 double threshold);
+  void threshold(const PNMImage &select_image, int channel, double threshold,
+                 const PNMImage &lt, const PNMImage &ge);
   
   void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
                     int xfrom = 0, int yfrom = 0, int cfrom = 0,
