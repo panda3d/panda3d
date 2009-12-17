@@ -1301,7 +1301,7 @@ def SdkLocateMax():
 
 def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
-        if (sys.platform == "win32"):
+        if (sys.platform == "win32" and not RTDIST):
             SDK["PYTHON"] = "thirdparty/win-python"
             if (GetOptimize() <= 2):
                 SDK["PYTHON"] += "-dbg"
