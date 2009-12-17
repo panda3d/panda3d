@@ -3521,7 +3521,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  OPTS=['DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
+  OPTS=['DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
   TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS, input='p3dEmbed.cxx')
@@ -3534,6 +3534,7 @@ if (RTDIST):
   if (sys.platform == 'darwin'):
       TargetAdd('plugin_standalone_dtoolutil_filename_assist.obj', opts=OPTS, input='filename_assist.mm')
   TargetAdd('plugin_standalone_prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
+  TargetAdd('plugin_standalone_dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
   TargetAdd('plugin_standalone_express_composite.obj', opts=OPTS, input='express_composite.cxx')
   TargetAdd('plugin_standalone_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
   TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbed.obj')
@@ -3546,6 +3547,7 @@ if (RTDIST):
   if (sys.platform == 'darwin'):
       TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolutil_filename_assist.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_prc_composite.obj')
+  TargetAdd('p3dembed.exe', input='plugin_standalone_dconfig_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_express_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_downloader_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_mkdir_complete.obj')
