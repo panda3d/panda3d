@@ -254,7 +254,7 @@ SdkLocateDirectX()
 SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
-SdkLocatePython()
+SdkLocatePython(RTDIST)
 SdkLocateVisualStudio()
 SdkLocateMSPlatform()
 
