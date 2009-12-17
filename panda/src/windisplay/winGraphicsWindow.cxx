@@ -585,21 +585,7 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
       << ", " << has_origin << ", " << x_size << ", " << y_size << ")\n";
   }
   if (!is_fullscreen()) {
-    // Compute the appropriate size and placement for the window,
-    // including decorations.
-    RECT view_rect;
-    SetRect(&view_rect, x_origin, y_origin,
-            x_origin + x_size, y_origin + y_size);
-    WINDOWINFO wi;
-    GetWindowInfo(_hWnd, &wi);
-    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
-
-    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING;
-
     if (has_origin) {
-      x_origin = view_rect.left;
-      y_origin = view_rect.top;
-      
       // A coordinate of -2 means to center the window in its client area.
       if (x_origin == -2) {
         x_origin = 0.5 * (_pipe->get_display_width() - x_size);
@@ -614,6 +600,22 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
       if (y_origin = -1) {
         y_origin = CW_USEDEFAULT;
       }
+    }
+    
+    // Compute the appropriate size and placement for the window,
+    // including decorations.
+    RECT view_rect;
+    SetRect(&view_rect, x_origin, y_origin,
+            x_origin + x_size, y_origin + y_size);
+    WINDOWINFO wi;
+    GetWindowInfo(_hWnd, &wi);
+    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+
+    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING;
+
+    if (has_origin) {
+      x_origin = view_rect.left;
+      y_origin = view_rect.top;
     } else {
       x_origin = CW_USEDEFAULT;
       y_origin = CW_USEDEFAULT;
@@ -789,6 +791,21 @@ open_graphic_window(bool fullscreen) {
   if (!fullscreen && _properties.has_origin()) {
     x_origin = _properties.get_x_origin();
     y_origin = _properties.get_y_origin();
+    
+    // A coordinate of -2 means to center the window in its client area.
+    if (x_origin == -2) {
+      x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+    }
+    if (y_origin == -2) {
+      y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+    }
+    _properties.set_origin(x_origin, y_origin);
+    if (x_origin = -1) {
+      x_origin = CW_USEDEFAULT;
+    }
+    if (y_origin = -1) {
+      y_origin = CW_USEDEFAULT;
+    }
   }
 
   int x_size = _properties.get_x_size();
@@ -808,32 +825,16 @@ open_graphic_window(bool fullscreen) {
         << "AdjustWindowRect failed!" << endl;
       return false;
     }
-    clientAreaWidth = win_rect.right - win_rect.left;
-    clientAreaHeight = win_rect.bottom - win_rect.top;
 
     if (_properties.has_origin()) {
       x_origin = win_rect.left;
       y_origin = win_rect.top;
-      
-      // A coordinate of -2 means to center the window on the screen.
-      if (x_origin == -2) {
-        x_origin = 0.5 * (_pipe->get_display_width() - x_size);
-      }
-      if (y_origin == -2) {
-        y_origin = 0.5 * (_pipe->get_display_height() - y_size);
-      }
-      _properties.set_origin(x_origin, y_origin);
-      if (x_origin = -1) {
-        x_origin = CW_USEDEFAULT;
-      }
-      if (y_origin = -1) {
-        y_origin = CW_USEDEFAULT;
-      }
-
     } else {
       x_origin = CW_USEDEFAULT;
       y_origin = CW_USEDEFAULT;
     }
+    clientAreaWidth = win_rect.right - win_rect.left;
+    clientAreaHeight = win_rect.bottom - win_rect.top;
   }
 
   const WindowClass &wclass = register_window_class(_properties);
