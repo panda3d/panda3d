@@ -786,6 +786,9 @@ open_graphic_window(bool fullscreen) {
     _properties.set_size(640, 480);
   }
 
+  int x_size = _properties.get_x_size();
+  int y_size = _properties.get_y_size();
+
   int x_origin = 0;
   int y_origin = 0;
   if (!fullscreen && _properties.has_origin()) {
@@ -807,9 +810,6 @@ open_graphic_window(bool fullscreen) {
       y_origin = CW_USEDEFAULT;
     }
   }
-
-  int x_size = _properties.get_x_size();
-  int y_size = _properties.get_y_size();
 
   int clientAreaWidth = x_size;
   int clientAreaHeight = y_size;
