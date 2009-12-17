@@ -3531,6 +3531,8 @@ if (RTDIST):
   TargetAdd('plugin_standalone_lookup3.obj', opts=OPTS, input='lookup3.c')
   TargetAdd('plugin_standalone_indent.obj', opts=OPTS, input='indent.cxx')
   TargetAdd('plugin_standalone_dtoolutil_composite.obj', opts=OPTS, input='dtoolutil_composite.cxx')
+  if (sys.platform == 'darwin'):
+      TargetAdd('plugin_standalone_dtoolutil_filename_assist.obj', opts=OPTS, input='filename_assist.mm')
   TargetAdd('plugin_standalone_prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
   TargetAdd('plugin_standalone_express_composite.obj', opts=OPTS, input='express_composite.cxx')
   TargetAdd('plugin_standalone_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
@@ -3541,6 +3543,8 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='plugin_standalone_lookup3.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_indent.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolutil_composite.obj')
+  if (sys.platform == 'darwin'):
+      TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolutil_filename_assist.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_prc_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_express_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_downloader_composite.obj')
