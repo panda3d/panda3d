@@ -1322,6 +1322,10 @@ def SdkLocatePython(force_use_sys_executable = False):
             pv = pv[7:10]
             SDK["PYTHONVERSION"]="python"+pv
 
+        elif (sys.platform == "win32"):
+            SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
+            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+            SDK["PYTHONEXEC"] = sys.executable
         else:
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
