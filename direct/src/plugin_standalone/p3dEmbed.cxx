@@ -14,12 +14,17 @@
 
 #include "p3d_plugin_composite1.cxx"
 #include "panda3dBase.cxx"
-#include <stdint.h>
 
+#ifdef _WIN32
+const unsigned long p3d_offset = 0xFF3D3D00;
+#else
+#include <stdint.h>
 const uint32_t p3d_offset = 0xFF3D3D00;
+#endif
 
 int
 main(int argc, char *argv[]) {
   Panda3DBase program(true);
   return program.run_embedded(p3d_offset, argc, argv);
 }
+
