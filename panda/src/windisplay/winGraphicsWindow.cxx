@@ -594,10 +594,10 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
         y_origin = 0.5 * (_pipe->get_display_height() - y_size);
       }
       _properties.set_origin(x_origin, y_origin);
-      if (x_origin = -1) {
+      if (x_origin == -1) {
         x_origin = CW_USEDEFAULT;
       }
-      if (y_origin = -1) {
+      if (y_origin == -1) {
         y_origin = CW_USEDEFAULT;
       }
     }
@@ -803,10 +803,10 @@ open_graphic_window(bool fullscreen) {
       y_origin = 0.5 * (_pipe->get_display_height() - y_size);
     }
     _properties.set_origin(x_origin, y_origin);
-    if (x_origin = -1) {
+    if (x_origin == -1) {
       x_origin = CW_USEDEFAULT;
     }
-    if (y_origin = -1) {
+    if (y_origin == -1) {
       y_origin = CW_USEDEFAULT;
     }
   }
