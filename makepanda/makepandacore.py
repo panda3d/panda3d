@@ -1300,8 +1300,8 @@ def SdkLocateMax():
                             SDK[version+"CS"] = top + subdir
 
 def SdkLocatePython(force_use_sys_executable = False):
-    if (PkgSkip("PYTHON")==0 and not force_use_sys_executable):
-        if (sys.platform == "win32"):
+    if (PkgSkip("PYTHON")==0):
+        if (sys.platform == "win32" and not force_use_sys_executable):
             SDK["PYTHON"] = "thirdparty/win-python"
             if (GetOptimize() <= 2):
                 SDK["PYTHON"] += "-dbg"
