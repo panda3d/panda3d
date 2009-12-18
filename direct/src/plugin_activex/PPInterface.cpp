@@ -369,13 +369,19 @@ void PPInterface::p3dobj_to_variant(VARIANT* result, P3D_object* object)
     case P3D_OT_string:
         {
             int size = P3D_OBJECT_GET_STRING(object, NULL, 0);
-            char *buffer = new char[ size ];
+            char *buffer = new char[size];
             P3D_OBJECT_GET_STRING(object, buffer, size);
-            CString tmp( buffer, size );
-            result->vt = VT_BSTR;
-            result->bstrVal = tmp.AllocSysString();
 
-            delete [] buffer;
+            int wsize = MultiByteToWideChar(CP_UTF8, 0, buffer, size, NULL, 0);
+            WCHAR *wbuffer = new WCHAR[wsize + 1];
+            MultiByteToWideChar(CP_UTF8, 0, buffer, size, wbuffer, wsize);
+            wbuffer[wsize] = 0;
+
+            result->vt = VT_BSTR;
+            result->bstrVal = SysAllocString(wbuffer);
+
+            delete[] buffer;
+            delete[] wbuffer;
             break;
         }
     case P3D_OT_object:
@@ -446,8 +452,18 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
         }
     case VT_BSTR:
         {
-            CString str( *variant );
-            return P3D_new_string_object( str.GetBuffer(), str.GetLength() );
+            BSTR bstr = variant->bstrVal;
+            UINT blen = SysStringLen(bstr);
+
+            int slen = WideCharToMultiByte(CP_UTF8, 0, bstr, blen,
+                                           0, 0, NULL, NULL);
+            char *sbuffer = new char[slen];
+            WideCharToMultiByte(CP_UTF8, 0, bstr, blen,
+                                sbuffer, slen, NULL, NULL);
+
+            P3D_object *object = P3D_new_string_object(sbuffer, slen);
+            delete[] sbuffer;
+            return object;
             break;
         }
     case VT_DISPATCH:
