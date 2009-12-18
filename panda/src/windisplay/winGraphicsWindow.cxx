@@ -594,11 +594,11 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
         y_origin = 0.5 * (_pipe->get_display_height() - y_size);
       }
       _properties.set_origin(x_origin, y_origin);
-      if (x_origin == -1) {
-        x_origin = CW_USEDEFAULT;
-      }
-      if (y_origin == -1) {
-        y_origin = CW_USEDEFAULT;
+
+      if (x_origin == -1 && y_origin == -1) {
+        x_origin = 0;
+        y_origin = 0;
+        has_origin = false;
       }
     }
     
@@ -791,7 +791,8 @@ open_graphic_window(bool fullscreen) {
 
   int x_origin = 0;
   int y_origin = 0;
-  if (!fullscreen && _properties.has_origin()) {
+  bool has_origin = _properties.has_origin();
+  if (!fullscreen && has_origin) {
     x_origin = _properties.get_x_origin();
     y_origin = _properties.get_y_origin();
     
@@ -803,11 +804,11 @@ open_graphic_window(bool fullscreen) {
       y_origin = 0.5 * (_pipe->get_display_height() - y_size);
     }
     _properties.set_origin(x_origin, y_origin);
-    if (x_origin == -1) {
-      x_origin = CW_USEDEFAULT;
-    }
-    if (y_origin == -1) {
-      y_origin = CW_USEDEFAULT;
+
+    if (x_origin == -1 && y_origin == -1) {
+      x_origin = 0;
+      y_origin = 0;
+      has_origin = false;
     }
   }
 
@@ -826,7 +827,7 @@ open_graphic_window(bool fullscreen) {
       return false;
     }
 
-    if (_properties.has_origin()) {
+    if (has_origin) {
       x_origin = win_rect.left;
       y_origin = win_rect.top;
     } else {
@@ -876,7 +877,7 @@ open_graphic_window(bool fullscreen) {
     x_origin = 0;
     y_origin = 0;
     
-    if (!fullscreen && _properties.has_origin()) {
+    if (!fullscreen && has_origin) {
       x_origin = _properties.get_x_origin();
       y_origin = _properties.get_y_origin();
     }
