@@ -69,6 +69,8 @@ public:
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);
 
+  void uninstall();
+
   TiXmlElement *make_xml();
 
 private:
@@ -192,7 +194,7 @@ private:
   void contents_file_download_finished(bool success);
   void redownload_contents_file(Download *download);
   void contents_file_redownload_finished(bool success);
-  void host_got_contents_file();
+  void host_got_contents_file(bool continue_download = true);
 
   void download_desc_file();
   void desc_file_download_finished(bool success);

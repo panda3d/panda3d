@@ -1531,14 +1531,26 @@ pyobj_to_xml(PyObject *value) {
     }
 
   } else if (PyString_Check(value)) {
-    // A string value.
+    // A string value.  Insist that it is utf-8 encoded, by decoding
+    // it first using the standard encoding, then re-encoding it.
     xvalue->SetAttribute("type", "string");
 
-    char *buffer;
-    Py_ssize_t length;
-    if (PyString_AsStringAndSize(value, &buffer, &length) != -1) {
-      string str(buffer, length);
-      xvalue->SetAttribute("value", str);
+    PyObject *ustr = PyUnicode_FromEncodedObject(value, NULL, NULL);
+    if (ustr == NULL) {
+      PyErr_Print();
+      return xvalue;
+    } else {
+      PyObject *as_str = PyUnicode_AsUTF8String(ustr);
+      if (as_str != NULL) {
+        char *buffer;
+        Py_ssize_t length;
+        if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+          string str(buffer, length);
+          xvalue->SetAttribute("value", str);
+        }
+        Py_DECREF(as_str);
+      }
+      Py_DECREF(ustr);
     }
 
   } else if (PyTuple_Check(value)) {
@@ -1685,7 +1697,7 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     // don't get tripped up on embedded null characters.
     const string *value = xvalue->Attribute(string("value"));
     if (value != NULL) {
-      return PyString_FromStringAndSize(value->data(), value->length());
+      return PyUnicode_DecodeUTF8(value->data(), value->length(), NULL);
     }
 
   } else if (strcmp(type, "undefined") == 0) {

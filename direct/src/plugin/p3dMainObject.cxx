@@ -191,6 +191,8 @@ has_method(const string &method_name) {
     return true;
   } else if (method_name == "read_system_log") {
     return true;
+  } else if (method_name == "uninstall") {
+    return true;
   }
 
   if (_pyobj == NULL) {
@@ -225,6 +227,8 @@ call(const string &method_name, bool needs_response,
     return call_read_game_log(params, num_params);
   } else if (method_name == "read_system_log") {
     return call_read_system_log(params, num_params);
+  } else if (method_name == "uninstall") {
+    return call_uninstall(params, num_params);
   }
 
   if (_pyobj == NULL) {
@@ -434,4 +438,25 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   delete[] buffer;
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::call_uninstall
+//       Access: Private
+//  Description: Implements the uninstall() plugin method, which
+//               removes all Panda installed files for a particular
+//               host, or referenced by a particular p3d file.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+call_uninstall(P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  if (_inst != NULL) {
+    nout << "uninstall for " << _inst << "\n";
+    _inst->uninstall();
+    return inst_mgr->new_bool_object(true);
+  }
+
+  nout << "couldn't uninstall; no instance.\n";
+  return inst_mgr->new_bool_object(false);
 }

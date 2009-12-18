@@ -116,6 +116,8 @@ public:
   void auth_finished_sub_thread();
   void auth_finished_main_thread();
 
+  void uninstall();
+
 private:
   class ImageDownload : public P3DFileDownload {
   public:

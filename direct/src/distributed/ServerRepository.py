@@ -340,7 +340,7 @@ class ServerRepository:
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository received datagram from %s:" % (client.doIdBase))
-            datagram.dumpHex(ostream)
+            #datagram.dumpHex(ostream)
 
         if not client:
             # This shouldn't be possible.
@@ -689,7 +689,7 @@ class ServerRepository:
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository sending to all in zone %s except %s:" % (zoneId, map(lambda c: c.doIdBase, exceptionList)))
-            datagram.dumpHex(ostream)
+            #datagram.dumpHex(ostream)
 
         for client in self.zonesToClients.get(zoneId, []):
             if client not in exceptionList:
@@ -706,7 +706,7 @@ class ServerRepository:
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository sending to all except %s:" % (map(lambda c: c.doIdBase, exceptionList),))
-            datagram.dumpHex(ostream)
+            #datagram.dumpHex(ostream)
 
         for client in self.clientsByConnection.values():
             if client not in exceptionList:

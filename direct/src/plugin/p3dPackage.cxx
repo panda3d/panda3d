@@ -207,6 +207,78 @@ remove_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::uninstall
+//       Access: Public
+//  Description: Removes the package directory and all its contents
+//               from the user's hard disk.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+uninstall() {
+  if (_package_dir.empty()) {
+    nout << "Cannot uninstall " << _package_name << ": package directory not yet known.\n";
+    return;
+  }
+
+  nout << "Uninstalling package " << _package_name << " from " << _package_dir << "\n";
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  vector<string> contents, dirname_contents;
+  inst_mgr->scan_directory_recursively(_package_dir, contents,
+                                       dirname_contents);
+
+  vector<string>::iterator ci;
+  for (ci = contents.begin(); ci != contents.end(); ++ci) {
+    string filename = (*ci);
+    string pathname = _package_dir + "/" + filename;
+
+#ifdef _WIN32
+    // Windows can't delete a file if it's read-only.
+    chmod(pathname.c_str(), 0644);
+#endif
+    int result = unlink(pathname.c_str());
+    if (result == 0) {
+      nout << "  Deleted " << filename << "\n";
+    } else {
+      nout << "  Could not delete " << filename << "\n";
+    }
+  }
+
+  // Now delete all of the directories too.  Go in reverse order so we
+  // remove deeper directories first.
+  vector<string>::reverse_iterator rci;
+  for (rci = dirname_contents.rbegin(); rci != dirname_contents.rend(); ++rci) {
+    string filename = (*rci);
+    string pathname = _package_dir + "/" + filename;
+
+#ifdef _WIN32
+    chmod(pathname.c_str(), 0755);
+#endif
+    int result = rmdir(pathname.c_str());
+    if (result == 0) {
+      nout << "  Removed directory " << filename << "\n";
+    } else {
+      nout << "  Could not remove directory " << filename << "\n";
+    }
+  }
+
+  // Finally, delete the package directory itself.
+  string pathname = _package_dir;
+#ifdef _WIN32
+  chmod(pathname.c_str(), 0755);
+#endif
+  int result = rmdir(pathname.c_str());
+  if (result == 0) {
+    nout << "Removed directory " << _package_dir << "\n";
+  } else {
+    nout << "Could not remove directory " << _package_dir << "\n";
+  }
+
+  _info_ready = false;
+  _ready = false;
+  _failed = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::make_xml
 //       Access: Public
 //  Description: Returns a newly-allocated XML structure that
@@ -442,7 +514,7 @@ contents_file_redownload_finished(bool success) {
 //               rest of the download process.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-host_got_contents_file() {
+host_got_contents_file(bool continue_download) {
   if (!_alt_host.empty()) {
     // If we have an alt host specification, maybe we need to change
     // the host now.
@@ -476,10 +548,12 @@ host_got_contents_file() {
     _package_dir += string("/") + _package_version;
   }
 
-  // Ensure the package directory exists; create it if it does not.
-  mkdir_complete(_package_dir, nout);
-
-  download_desc_file();
+  if (continue_download) {
+    // Ensure the package directory exists; create it if it does not.
+    mkdir_complete(_package_dir, nout);
+    
+    download_desc_file();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -658,8 +732,8 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
 
   // Get a list of all of the files in the directory, so we can remove
   // files that don't belong.
-  vector<string> contents;
-  inst_mgr->scan_directory_recursively(_package_dir, contents);
+  vector<string> contents, dirname_contents;
+  inst_mgr->scan_directory_recursively(_package_dir, contents, dirname_contents);
 
   inst_mgr->remove_file_from_list(contents, _desc_file_basename);
   inst_mgr->remove_file_from_list(contents, _uncompressed_archive.get_filename());

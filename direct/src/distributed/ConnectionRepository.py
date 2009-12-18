@@ -641,9 +641,9 @@ class ConnectionRepository(
         # Zero-length datagrams might freak out the server.  No point
         # in sending them, anyway.
         if datagram.getLength() > 0:
-            if self.notify.getDebug():
-                print "ConnectionRepository sending datagram:"
-                datagram.dumpHex(ostream)
+##             if self.notify.getDebug():
+##                 print "ConnectionRepository sending datagram:"
+##                 datagram.dumpHex(ostream)
 
             self.sendDatagram(datagram)
 

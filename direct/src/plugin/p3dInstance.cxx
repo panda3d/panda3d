@@ -1316,6 +1316,27 @@ auth_finished_main_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::uninstall
+//       Access: Public
+//  Description: Stops the instance (if it is running) and deletes any
+//               packages referenced by the instance.  This is
+//               normally called by JavaScript, via
+//               P3DMainObject::call_uninstall().
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+uninstall() {
+  if (_session != NULL) {
+    _session->shutdown();
+  }
+
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    P3DPackage *package = (*pi);
+    package->uninstall();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::priv_set_p3d_filename
 //       Access: Private
 //  Description: The private implementation of set_p3d_filename(),

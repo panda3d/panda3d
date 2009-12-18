@@ -131,7 +131,9 @@ public:
 
   static inline char encode_hexdigit(int c);
   static bool scan_directory(const string &dirname, vector<string> &contents);
-  static bool scan_directory_recursively(const string &dirname, vector<string> &contents,
+  static bool scan_directory_recursively(const string &dirname, 
+                                         vector<string> &filename_contents,
+                                         vector<string> &dirname_contents,
                                          const string &prefix = "");
   static bool remove_file_from_list(vector<string> &contents, const string &filename);
 

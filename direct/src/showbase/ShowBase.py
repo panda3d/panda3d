@@ -861,6 +861,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def sleepCycleTask(self, task):
         Thread.sleep(self.clientSleep)
+        #time.sleep(self.clientSleep)
         return Task.cont
 
     def setFrameRateMeter(self, flag):

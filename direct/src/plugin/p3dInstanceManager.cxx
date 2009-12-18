@@ -1067,10 +1067,11 @@ scan_directory(const string &dirname, vector<string> &contents) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::scan_directory_recursively
 //       Access: Public, Static
-//  Description: Fills up the indicated vector with the list of all
-//               files (but not directories) rooted at the indicated
-//               dirname and below.  The filenames generated are
-//               relative to the root of the dirname, with slashes
+//  Description: Fills up filename_contents with the list of all
+//               files (but not directories), and dirname_contents
+//               with the list of all directories, rooted at the
+//               indicated dirname and below.  The filenames generated
+//               are relative to the root of the dirname, with slashes
 //               (not backslashes) as the directory separator
 //               character.
 //
@@ -1078,7 +1079,9 @@ scan_directory(const string &dirname, vector<string> &contents) {
 //               dirname wasn't a directory or something like that.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-scan_directory_recursively(const string &dirname, vector<string> &contents,
+scan_directory_recursively(const string &dirname, 
+                           vector<string> &filename_contents,
+                           vector<string> &dirname_contents,
                            const string &prefix) {
   vector<string> dir_contents;
   if (!scan_directory(dirname, dir_contents)) {
@@ -1093,14 +1096,16 @@ scan_directory_recursively(const string &dirname, vector<string> &contents,
     // directory, or is it a regular file?
     string pathname = dirname + "/" + (*si);
     string rel_filename = prefix + (*si);
-    if (scan_directory_recursively(pathname, contents, rel_filename + "/")) {
+    if (scan_directory_recursively(pathname, filename_contents, 
+                                   dirname_contents, rel_filename + "/")) {
       // It's a directory, and it's just added its results to the
       // contents.
+      dirname_contents.push_back(rel_filename);
 
     } else {
       // It's not a directory, so assume it's an ordinary file, and
       // add it to the contents.
-      contents.push_back(rel_filename);
+      filename_contents.push_back(rel_filename);
     }
   }
 

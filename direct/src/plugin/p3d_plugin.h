@@ -470,8 +470,9 @@ P3D_object_get_float_method(P3D_object *object);
    return value is larger than buffer_size, the string has been
    truncated.  If it is equal, there is no null character written to
    the buffer (like strncpy).  You may call this method first with
-   buffer = NULL and buffer_size = 0 to return just the required
-   size of the buffer. */
+   buffer = NULL and buffer_size = 0 to return just the required size
+   of the buffer.  Note that P3D_object string data is internally
+   encoded using utf-8, by convention. */
 typedef int
 P3D_object_get_string_method(P3D_object *object, 
                              char *buffer, int buffer_size);
@@ -676,7 +677,8 @@ typedef P3D_object *
 P3D_new_float_object_func(double value);
 
 /* Returns a new-reference P3D_object of type string.  The supplied
-   string is copied into the object and stored internally. */
+   string should be already encoded in utf-8.  It is copied into the
+   object and stored internally. */
 typedef P3D_object *
 P3D_new_string_object_func(const char *string, int length);
 
