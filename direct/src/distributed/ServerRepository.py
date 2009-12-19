@@ -94,6 +94,11 @@ class ServerRepository:
         self.qcr = QueuedConnectionReader(self.qcm, numThreads)
         self.cw = ConnectionWriter(self.qcm, numThreads)
 
+        taskMgr.setupTaskChain('flushTask')
+        if threadedNet:
+            taskMgr.setupTaskChain('flushTask', numThreads = 1,
+                                   threadPriority = TPLow, frameSync = True)
+
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(
             serverAddress or '', tcpPort, 10)
         self.qcl.addConnection(self.tcpRendezvous)
@@ -106,7 +111,8 @@ class ServerRepository:
         self.needsFlush = set()
 
         collectTcpInterval = ConfigVariableDouble('collect-tcp-interval').getValue()
-        taskMgr.doMethodLater(collectTcpInterval, self.flushTask, 'flushTask')
+        taskMgr.doMethodLater(collectTcpInterval, self.flushTask, 'flushTask',
+                              taskChain = 'flushTask')
 
         # A dictionary of connection -> Client object, tracking all of
         # the clients we currently have connected.
@@ -142,9 +148,10 @@ class ServerRepository:
         collect-tcp is set true (if this is false, messages are sent
         immediately and do not require periodic flushing). """
 
-        for client in self.needsFlush:
-            client.connection.flush()
+        flush = self.needsFlush
         self.needsFlush = set()
+        for client in flush:
+            client.connection.flush()
 
         return task.again
 
