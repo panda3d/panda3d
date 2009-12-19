@@ -1042,7 +1042,8 @@ def ChooseLib(*libs):
         if (libname in GetLibCache()):
             return libname
     if (len(libs) > 0):
-        print GetColor("cyan") + "Couldn't find any of the libraries " + ", ".join(libs) + GetColor()
+        if (VERBOSE):
+            print GetColor("cyan") + "Couldn't find any of the libraries " + ", ".join(libs) + GetColor()
         return libs[0]
 
 def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
