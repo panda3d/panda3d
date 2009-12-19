@@ -11,9 +11,13 @@
 # panda3d.
 #
 ########################################################################
-
-import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
-if (sys.platform == "darwin"): import plistlib
+try:
+    import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
+    if (sys.platform == "darwin"): import plistlib
+except:
+    print "You are either using an incomplete or an old version of Python!"
+    print "Please install the development package of Python 2.x and try again."
+    exit(1)
 
 from makepandacore import *
 from installpanda import *
@@ -49,7 +53,8 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","PANDATOOL"
+  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","PANDATOOL",
+  "OPENGL","X11","XF86DGA",
 ])
 
 CheckPandaSourceTree()
@@ -341,8 +346,8 @@ if (COMPILER=="MSVC"):
     LibName("WINSHELL", "shell32.lib")
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
-    LibName("GLUT", "opengl32.lib")
-    LibName("GLUT", "glu32.lib")
+    LibName("OPENGL", "opengl32.lib")
+    LibName("OPENGL", "glu32.lib")
     LibName("MSIMG", "msimg32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "strmiids.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
@@ -408,7 +413,7 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
           IncDirectory("FREETYPE", "/usr/X11/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
-        IncDirectory("GLUT", "/usr/X11R6/include")
+        IncDirectory("OPENGL", "/usr/X11R6/include")
 
     if (platform.uname()[1]=="pcbsd"):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
@@ -431,7 +436,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        SmartPkgEnable("GLUT",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("OPENGL",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
         SmartPkgEnable("GTK2",      "gtk+-2.0")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
@@ -468,6 +473,11 @@ if (COMPILER=="LINUX"):
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
+    if (not LocateBinary("bison")):
+        exit("Could not locate bison!")
+    if (not LocateBinary("flex")):
+        exit("Could not locate flex!")
+
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             # On OSX, the dir *can* be named 'MacOS' instead of 'lib'.
@@ -486,9 +496,7 @@ if (COMPILER=="LINUX"):
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX:
-        LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-    else:
-        LibName("GLUT", "-lGLU")
+        LibName("OPENGL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
     
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -1142,6 +1150,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         elif (infile.endswith(".rc") or infile.endswith(".r")):
             ProgressOutput(progress, "Building resource object", target)
             return CompileResource(target, infile, opts)
+    if (len(inputs) == 1):
+        ProgressOutput(progress, "Copying file", target)
+        return CopyFile(target, infile)
     exit("Don't know how to compile: "+target)
 
 ##########################################################################################
@@ -2927,13 +2938,13 @@ if (not RUNTIME):
   TargetAdd('libp3glstuff.dll', input='glstuff_glpure.obj')
   TargetAdd('libp3glstuff.dll', input='libpandafx.dll')
   TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'GLUT',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'OPENGL',  'NVIDIACG', 'CGGL'])
 
 #
 # DIRECTORY: panda/src/glgsg/
 #
 
-if (not RUNTIME):
+if (not RUNTIME and PkgSkip("OPENGL")==0):
   OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'DIR:panda/src/gobj', 'BUILDING:PANDAGL',  'NVIDIACG']
   TargetAdd('glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
@@ -2967,21 +2978,21 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/mesadisplay/
 #
 
-if (not sys.platform.startswith("win") and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
+if (not sys.platform.startswith("win") and PkgSkip("OPENGL")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL']
   TargetAdd('libpandamesa.dll', input='mesadisplay_composite.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
   TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['MODULE', 'GLUT'])
+  TargetAdd('libpandamesa.dll', opts=['MODULE', 'OPENGL'])
 
 #
 # DIRECTORY: panda/src/x11display/
 #
 
-if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
+if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("X11")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11', 'X11']
   TargetAdd('x11display_composite.obj', opts=OPTS, input='x11display_composite.cxx')
 
@@ -2989,10 +3000,10 @@ if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
-  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("OPENGL")==0 and PkgSkip("X11")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
   TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='x11display_composite.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -3002,17 +3013,17 @@ if (sys.platform != "win32" and sys.platform != "darwin" and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GLUT', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
 #
 
-if (sys.platform == 'darwin' and not RUNTIME):
-  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+if (sys.platform == 'darwin' and PkgSkip("OPENGL")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
   TargetAdd('osxdisplay_composite1.obj', opts=OPTS, input='osxdisplay_composite1.cxx')
   TargetAdd('osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')
@@ -3022,13 +3033,13 @@ if (sys.platform == 'darwin' and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GLUT', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
 #
 
-if (sys.platform == "win32" and not RUNTIME):
+if (sys.platform == "win32" and PkgSkip("OPENGL")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/wgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
   TargetAdd('wgldisplay_composite.obj', opts=OPTS, input='wgldisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
@@ -3041,7 +3052,7 @@ if (sys.platform == "win32" and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'OPENGL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -3147,7 +3158,7 @@ if (not RTDIST and not RUNTIME):
 # DIRECTORY: panda/src/tinydisplay/
 #
 
-if (not RUNTIME):
+if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgSkip("X11")==0)):
   OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
   TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
   TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
@@ -4379,26 +4390,17 @@ if (not RUNTIME):
   for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
       if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      if os.path.basename(newname) == os.path.basename(model):
-          CopyFile(GetOutputDir()+"/models/misc/"+newname, "dmodels/src/misc/"+model)
-      else:
-          TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
+      TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
 
   for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
       if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      if os.path.basename(newname) == os.path.basename(model):
-          CopyFile(GetOutputDir()+"/models/gui/"+newname, "dmodels/src/gui/"+model)
-      else:
-          TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
+      TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
 
   for model in GetDirectoryContents("models", model_extensions):
       if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
       else: newname = model[:-4] + ".egg"
-      if os.path.basename(newname) == os.path.basename(model):
-          CopyFile(GetOutputDir()+"/models/"+newname, "models/"+model)
-      else:
-          TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
+      TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
 
   CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
   CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
