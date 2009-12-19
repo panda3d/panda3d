@@ -25,6 +25,17 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextFont::operator bool
+//       Access: Published
+//  Description: Returns true if the font is valid and ready to use,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE TextFont::
+operator bool () const {
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextFont::get_line_height
 //       Access: Published
 //  Description: Returns the number of units high each line of text

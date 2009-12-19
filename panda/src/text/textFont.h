@@ -70,6 +70,7 @@ PUBLISHED:
 
 
   INLINE bool is_valid() const;
+  INLINE operator bool () const;
   INLINE float get_line_height() const;
   INLINE void set_line_height(float line_height);
 
