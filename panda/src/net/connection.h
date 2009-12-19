@@ -44,8 +44,8 @@ PUBLISHED:
   void set_collect_tcp_interval(double interval);
   double get_collect_tcp_interval() const;
 
-  bool consider_flush();
-  bool flush();
+  BLOCKING bool consider_flush();
+  BLOCKING bool flush();
 
   // Socket options.
   //  void set_nonblock(bool flag);
