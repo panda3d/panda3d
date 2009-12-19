@@ -302,8 +302,7 @@ class ServerRepository:
                 return task.cont
 
             # Crazy dereferencing
-            newConnection=newConnection.p()
-            self.qcr.addConnection(newConnection)
+            newConnection = newConnection.p()
 
             #  Add clients information to dictionary
             id = self.idAllocator.allocate()
@@ -315,6 +314,9 @@ class ServerRepository:
             client = self.Client(newConnection, netAddress, doIdBase)
             self.clientsByConnection[client.connection] = client
             self.clientsByDoIdBase[client.doIdBase] = client
+
+            # Now we can start listening to that new connection.
+            self.qcr.addConnection(newConnection)
             
             self.lastConnection = newConnection
             self.sendDoIdRange(client)
