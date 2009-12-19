@@ -39,6 +39,7 @@ from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import AppRunnerGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.p3d.HostInfo import HostInfo
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
@@ -63,6 +64,8 @@ class AppRunner(DirectObject):
     It does not usually exist while running Python directly, but you
     can use dummyAppRunner() to create one at startup for testing or
     development purposes.  """
+
+    notify = directNotify.newCategory("AppRunner")
     
     def __init__(self):
         DirectObject.__init__(self)
@@ -171,7 +174,7 @@ class AppRunner(DirectObject):
             if args[1] == 'notify':
                 # Quietly ignore notifies.
                 return
-            print "Ignoring request: %s" % (args,)
+            self.notify.info("Ignoring request: %s" % (args,))
         self.requestFunc = defaultRequestFunc
 
         # This will be filled in with the default WindowProperties for
@@ -245,8 +248,8 @@ class AppRunner(DirectObject):
         # All right, get the package info now.
         package = host.getPackage(packageName, version)
         if not package:
-            print "Package %s %s not known on %s" % (
-                packageName, version, hostUrl)
+            self.notify.warning("Package %s %s not known on %s" % (
+                packageName, version, hostUrl))
             return False
 
         return self.__rInstallPackage(package, [])
@@ -266,7 +269,7 @@ class AppRunner(DirectObject):
             if host.downloadContentsFile(self.http):
                 p2 = host.getPackage(packageName, version)
                 if not p2:
-                    print "Couldn't find %s %s on %s" % (packageName, version, host.hostUrl)
+                    self.notify.warning("Couldn't find %s %s on %s" % (packageName, version, host.hostUrl))
                 else:
                     if p2 not in nested:
                         self.__rInstallPackage(p2, nested)
@@ -279,8 +282,8 @@ class AppRunner(DirectObject):
         if not package.installPackage(self):
             return False
 
-        print "Package %s %s installed." % (
-            package.packageName, package.packageVersion)
+        self.notify.info("Package %s %s installed." % (
+            package.packageName, package.packageVersion))
         return True
 
     def getHostWithAlt(self, hostUrl):
@@ -353,13 +356,13 @@ class AppRunner(DirectObject):
         if self.superMirrorUrl:
             # Use the "super mirror" first.
             url = PandaModules.URLSpec(self.superMirrorUrl + fileSpec.filename)
-            print "Freshening %s" % (url)
+            self.notify.info("Freshening %s" % (url))
             doc = self.http.getDocument(url)
             
         if not doc or not doc.isValid():
             # Failing the super mirror, contact the actual host.
             url = PandaModules.URLSpec(host.hostUrlPrefix + fileSpec.filename)
-            print "Freshening %s" % (url)
+            self.notify.info("Freshening %s" % (url))
             doc = self.http.getDocument(url)
             if not doc.isValid():
                 return False
@@ -379,7 +382,7 @@ class AppRunner(DirectObject):
 
         if not fileSpec.fullVerify(pathname = localPathname):
             # No good after download.
-            print "%s is still no good after downloading." % (url)
+            self.notify.info("%s is still no good after downloading." % (url))
             return False
 
         return True

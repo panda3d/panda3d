@@ -4,6 +4,7 @@ from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.p3d.PackageInfo import PackageInfo
 from pandac.PandaModules import TPLow
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class PackageInstaller(DirectObject):
 
@@ -26,6 +27,8 @@ class PackageInstaller(DirectObject):
     be downloaded in parallel, and the calls to packageStarted()
     .. packageFinished() may therefore overlap.
     """
+
+    notify = directNotify.newCategory("PackageInstaller")
 
     globalLock = Lock()
     nextUniqueId = 1
@@ -101,8 +104,8 @@ class PackageInstaller(DirectObject):
             # All right, get the package info now.
             package = self.host.getPackage(self.packageName, self.version)
             if not package:
-                print "Package %s %s not known on %s" % (
-                    self.packageName, self.version, self.host.hostUrl)
+                self.notify.warning("Package %s %s not known on %s" % (
+                    self.packageName, self.version, self.host.hostUrl))
                 return False
 
             self.package = package
@@ -126,8 +129,8 @@ class PackageInstaller(DirectObject):
             # All right, get the package info now.
             package = self.host.getPackage(self.packageName, self.version)
             if not package:
-                print "Package %s %s not known on %s" % (
-                    self.packageName, self.version, self.host.hostUrl)
+                self.notify.warning("Package %s %s not known on %s" % (
+                    self.packageName, self.version, self.host.hostUrl))
                 return False
 
             self.package = package
@@ -251,30 +254,15 @@ class PackageInstaller(DirectObject):
             return
         
         self.packages.append(pp)
-        if not pp.checkDescFile():
-            # Still need to download the desc file.
-            self.needsDescFile.append(pp)
-            if not self.descFileTask:
-                self.descFileTask = taskMgr.add(
-                    self.__getDescFileTask, 'getDescFile',
-                    taskChain = self.taskChain)
 
-        else:
-            # The desc file is ready, which means so are the requirements.
-            for packageName, version, host in pp.package.requires:
-                pp2 = self.PendingPackage(packageName, version, host)
-                self.__internalAddPackage(pp2)
-
-            # Now that we've added the required packages, add the
-            # package itself.
-            if not pp.package.hasPackage:
-                # The desc file is good, but the package itself needs
-                # to be downloaded.
-                self.needsDownload.append(pp)
-
-            else:
-                # The package is already fully downloaded.
-                self.earlyDone.append(pp)
+        # We always add the package to needsDescFile, even if we
+        # already have its desc file; this guarantees that packages
+        # are downloaded in the order they are added.
+        self.needsDescFile.append(pp)
+        if not self.descFileTask:
+            self.descFileTask = taskMgr.add(
+                self.__getDescFileTask, 'getDescFile',
+                taskChain = self.taskChain)
 
     def donePackages(self):
         """ After calling addPackage() for each package to be
@@ -314,27 +302,31 @@ class PackageInstaller(DirectObject):
         is called; at the time of this callback, the total download
         size is known, and we can sensibly report progress through the
         whole. """
-        pass
+
+        self.notify.info("downloadStarted")
 
     def packageStarted(self, package):
         """ This callback is made for each package between
         downloadStarted() and downloadFinished() to indicate the start
         of a new package. """
-        pass
+
+        self.notify.debug("packageStarted: %s" % (package.packageName))
 
     def packageProgress(self, package, progress):
         """ This callback is made repeatedly between packageStarted()
         and packageFinished() to update the current progress on the
         indicated package only.  The progress value ranges from 0
         (beginning) to 1 (complete). """
-        pass
+
+        self.notify.debug("packageProgress: %s %s" % (package.packageName, progress))
         
     def downloadProgress(self, overallProgress):
         """ This callback is made repeatedly between downloadStarted()
         and downloadFinished() to update the current progress through
         all packages.  The progress value ranges from 0 (beginning) to
         1 (complete). """
-        pass
+
+        self.notify.debug("downloadProgress: %s" % (overallProgress))
 
     def packageFinished(self, package, success):
         """ This callback is made for each package between
@@ -346,7 +338,8 @@ class PackageInstaller(DirectObject):
         already downloaded), this callback will be made immediately,
         *without* a corresponding call to packageStarted(), and may
         even be made before downloadStarted(). """
-        pass
+
+        self.notify.info("packageFinished: %s %s" % (package.packageName, success))
 
     def downloadFinished(self, success):
         """ This callback is made when all of the packages have been
@@ -356,7 +349,8 @@ class PackageInstaller(DirectObject):
         If there were no packages that required downloading, this
         callback will be made immediately, *without* a corresponding
         call to downloadStarted(). """
-        pass
+
+        self.notify.info("downloadFinished: %s" % (success))
 
     def __prepareToStart(self):
         """ This is called internally when transitioning from S_ready
@@ -401,14 +395,14 @@ class PackageInstaller(DirectObject):
     def __packageStarted(self, pp):
         """ This method is called when a single package is beginning
         to download. """
-        print "Downloading package %s" % (pp.packageName)
+
         self.__callDownloadStarted()
         self.__callPackageStarted(pp)
 
     def __packageDone(self, pp):
         """ This method is called when a single package has been
         downloaded and installed, or has failed. """
-        print "Downloaded %s: %s" % (pp.packageName, pp.success)
+
         self.__callPackageFinished(pp, pp.success)
         pp.notified = True
 
@@ -507,16 +501,15 @@ class PackageInstaller(DirectObject):
             self.packageLock.release()
 
         # Now serve this one package.
-        if not pp.getDescFile(self.appRunner.http):
-            self.__donePackage(pp, False)
-            return task.cont
+        if not pp.checkDescFile():
+            if not pp.getDescFile(self.appRunner.http):
+                self.__donePackage(pp, False)
+                return task.cont
 
-        if pp.package.hasPackage:
-            # This package is already downloaded.
-            self.__donePackage(pp, True)
-            return task.cont
-
-        # This package is now ready to be downloaded.
+        # This package is now ready to be downloaded.  We always add
+        # it to needsDownload, even if it's already downloaded, to
+        # guarantee ordering of packages.
+        
         self.packageLock.acquire()
         try:
             # Also add any packages required by this one.
@@ -552,9 +545,10 @@ class PackageInstaller(DirectObject):
         messenger.send('PackageInstaller-%s-packageStarted' % self.uniqueId,
                        [pp], taskChain = 'default')
 
-        if not pp.package.downloadPackage(self.appRunner.http):
-            self.__donePackage(pp, False)
-            return task.cont
+        if not pp.package.hasPackage:
+            if not pp.package.downloadPackage(self.appRunner.http):
+                self.__donePackage(pp, False)
+                return task.cont
 
         # Successfully downloaded and installed.
         self.__donePackage(pp, True)
