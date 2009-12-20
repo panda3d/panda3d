@@ -171,6 +171,7 @@ private:
   void mark_p3d_untrusted();
   void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
+  void add_packages();
   string find_alt_host_url(const string &host_url, const string &alt_host);
   void get_host_info(P3DHost *host);
 
@@ -186,6 +187,7 @@ private:
   void set_background_image(ImageType image_type);
   void set_button_image(ImageType image_type);
   void report_package_info_ready(P3DPackage *package);
+  void ready_to_install();
   void start_next_download();
   void mark_download_complete();
   void ready_to_start();
@@ -263,6 +265,7 @@ private:
   bool _matches_script_origin;
   bool _allow_python_dev;
   bool _keep_user_env;
+  bool _auto_install;
   bool _auto_start;
   bool _auth_button_clicked;
   bool _failed;
@@ -306,6 +309,7 @@ private:
   size_t _total_download_size;
   size_t _total_downloaded;
   time_t _download_begin;
+  bool _download_started;
   bool _download_complete;
 
   // We keep the _panda3d pointer separately because it's so

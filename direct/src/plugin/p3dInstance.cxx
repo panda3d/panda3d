@@ -108,6 +108,10 @@ P3DInstance(P3D_request_ready_func *func,
   _allow_python_dev = false;
   _keep_user_env = (_fparams.lookup_token_int("keep_user_env") != 0);
   _auto_start = (_fparams.lookup_token_int("auto_start") != 0);
+  _auto_install = true;
+  if (_fparams.has_token("auto_install")) {
+    _auto_install = (_fparams.lookup_token_int("auto_install") != 0);
+  }
   _auth_button_clicked = false;
   _failed = false;
   _session = NULL;
@@ -119,6 +123,7 @@ P3DInstance(P3D_request_ready_func *func,
   _download_package_index = 0;
   _total_download_size = 0;
   _total_downloaded = 0;
+  _download_started = false;
   _download_complete = false;
   
   INIT_LOCK(_request_lock);
@@ -486,7 +491,7 @@ set_wparams(const P3DWindowParams &wparams) {
     _session->send_command(doc);
   }
 
-  if (get_packages_ready() && _p3d_trusted) {
+  if (_p3d_trusted && get_packages_ready()) {
     ready_to_start();
   }
 }
@@ -1272,9 +1277,17 @@ void P3DInstance::
 play_button_clicked() {
   if (_session == NULL && _p3d_trusted) {
     set_button_image(IT_none);
-    set_background_image(IT_launch);
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-    inst_mgr->start_instance(this);
+    if (!_download_started) {
+      // Now we initiate the download.
+      _auto_install = true;
+      _auto_start = true;
+      ready_to_install();
+
+    } else {
+      set_background_image(IT_launch);
+      P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+      inst_mgr->start_instance(this);
+    }
   }
 }
 
@@ -1326,6 +1339,7 @@ auth_finished_main_thread() {
 void P3DInstance::
 uninstall() {
   if (_session != NULL) {
+    _session->set_failed();
     _session->shutdown();
   }
 
@@ -1333,7 +1347,13 @@ uninstall() {
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
     package->uninstall();
+    package->remove_instance(this);
   }
+  _packages.clear();
+
+  _auto_install = false;
+  _instance_window_opened = false;
+  set_failed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1706,6 +1726,8 @@ mark_p3d_trusted() {
   // Only call this once.
   assert(!_p3d_trusted);
 
+  _p3d_trusted = true;
+
   // Extract the application desc file from the p3d file.
   stringstream sstream;
   if (!_mf_reader.extract_one(sstream, "p3d_info.xml")) {
@@ -1717,8 +1739,6 @@ mark_p3d_trusted() {
     TiXmlDocument doc;
     sstream >> doc;
 
-    // This also starts required packages downloading.  When all
-    // packages have been installed, we will start the instance.
     scan_app_desc_file(&doc);
   }
 
@@ -1732,19 +1752,14 @@ mark_p3d_trusted() {
   strm << inst_mgr->get_unique_id();
   _session_key = strm.str();
 
-  // Until we've done all of the above processing, we haven't fully
-  // committed to setting the trusted flag.  (Setting this flag down
-  // here instead of a few lines above avoids starting the instance in
-  // scan_app_desc_file(), before we've had a chance to finish
-  // processing this method.)
-  _p3d_trusted = true;
-
   // Notify JS that we've accepted the trust of the p3d file.
   _panda_script_object->set_bool_property("trusted", true);
   send_notify("onauth");
 
-  // Now that we're all set up, start the instance if we're already
+  // Now that we're all set up, start downloading the required
+  // packages, and then start the instance itself if we're already
   // fully downloaded.
+  add_packages();
   if (get_packages_ready()) {
     mark_download_complete();
   }
@@ -1815,6 +1830,11 @@ scan_app_desc_file(TiXmlDocument *doc) {
     if (xconfig->QueryIntAttribute("auto_start", &auto_start) == TIXML_SUCCESS) {
       _auto_start = (auto_start != 0);
     }
+
+    int auto_install = 0;
+    if (xconfig->QueryIntAttribute("auto_install", &auto_install) == TIXML_SUCCESS) {
+      _auto_install = (auto_install != 0);
+    }
   }
 
   nout << "_matches_run_origin = " << _matches_run_origin << "\n";
@@ -1831,14 +1851,35 @@ scan_app_desc_file(TiXmlDocument *doc) {
     // But finally, if the user has already clicked through the red
     // "auth" button, no need to present him/her with another green
     // "play" button as well.
+    _auto_install = true;
     _auto_start = true;
   }
 
-  nout << "_auto_start = " << _auto_start << "\n";
+  nout << "_auto_install = " << _auto_install 
+       << ", _auto_start = " << _auto_start << "\n";
 
   if (_hidden && _got_wparams) {
     _wparams.set_window_type(P3D_WT_hidden);
   }
+
+  if (!_matches_run_origin) {
+    nout << "Cannot run " << _p3d_basename << " from origin " 
+         << _origin_protocol << "//" << _origin_hostname
+         << ":" << _origin_port << "\n";
+    set_failed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_packages
+//       Access: Private
+//  Description: Adds the set of packages required by this p3d file to
+//               the _packages member.  If _auto_install is true, this
+//               will also start downloading them.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_packages() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
@@ -1855,14 +1896,8 @@ scan_app_desc_file(TiXmlDocument *doc) {
 
     xrequires = xrequires->NextSiblingElement("requires");
   }
-
-  if (!_matches_run_origin) {
-    nout << "Cannot run " << _p3d_basename << " from origin " 
-         << _origin_protocol << "//" << _origin_hostname
-         << ":" << _origin_port << "\n";
-    set_failed();
-  }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::find_alt_host_url
@@ -2270,7 +2305,7 @@ make_splash_window() {
   }
 
   if (_wparams.get_window_type() != P3D_WT_embedded && 
-      !_stuff_to_download && _auto_start && _p3d_trusted) {
+      !_stuff_to_download && _auto_install && _auto_start && _p3d_trusted) {
     // If it's a toplevel or fullscreen window, then we don't want a
     // splash window unless we have stuff to download, or a button to
     // display.
@@ -2514,41 +2549,59 @@ report_package_info_ready(P3DPackage *package) {
         _total_download_size += package->get_download_size();
       }
     }
-    if (_downloading_packages.empty() && _download_complete) {
-      // We have already been here.  Ignore it.
-
-    } else {
-      _download_complete = false;
-      _download_package_index = 0;
-      _total_downloaded = 0;
-      _download_begin = time(NULL);
-      
-      nout << "Beginning install of " << _downloading_packages.size()
-           << " packages, total " << _total_download_size
-           << " bytes required.\n";
-      
-      if (_downloading_packages.size() > 0) {
-        _stuff_to_download = true;
-        
-        // Maybe it's time to open a splash window now.
-        make_splash_window();
-      }
-      
-      if (_splash_window != NULL) {
-        _splash_window->set_install_progress(0.0, true, 0);
-      }
-      _panda_script_object->set_string_property("status", "downloading");
-      _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
-      _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
-      _panda_script_object->set_int_property("downloadElapsedSeconds", 0);
-      _panda_script_object->set_undefined_property("downloadRemainingSeconds");
-      send_notify("ondownloadbegin");
-      
-      start_next_download();
-    }
+    ready_to_install();
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::ready_to_install
+//       Access: Private
+//  Description: Called when it's time to start the package download
+//               process.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+ready_to_install() {
+  if (_downloading_packages.empty() && _download_complete) {
+    // We have already been here.  Ignore it.
+    
+  } else if (!_auto_install && !_download_started) {
+    // Not authorized to download yet.  We're waiting for the user
+    // to acknowledge the download.
+    set_background_image(IT_ready);
+    set_button_image(IT_play_ready);
+    
+  } else {
+    _download_started = true;
+    _download_complete = false;
+    _download_package_index = 0;
+    _total_downloaded = 0;
+    _download_begin = time(NULL);
+    
+    nout << "Beginning install of " << _downloading_packages.size()
+         << " packages, total " << _total_download_size
+         << " bytes required.\n";
+    
+    if (_downloading_packages.size() > 0) {
+      _stuff_to_download = true;
+      
+      // Maybe it's time to open a splash window now.
+      make_splash_window();
+    }
+    
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(0.0, true, 0);
+    }
+    _panda_script_object->set_string_property("status", "downloading");
+    _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
+    _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
+    _panda_script_object->set_int_property("downloadElapsedSeconds", 0);
+    _panda_script_object->set_undefined_property("downloadRemainingSeconds");
+    send_notify("ondownloadbegin");
+    
+    start_next_download();
+  }
+}
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::start_next_download
 //       Access: Private
@@ -2645,7 +2698,7 @@ ready_to_start() {
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->start_instance(this);
 
-  } else if (_splash_window != NULL) {
+  } else {
     // We're fully downloaded, and waiting for the user to click play.
     set_background_image(IT_ready);
     set_button_image(IT_play_ready);

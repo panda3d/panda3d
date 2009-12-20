@@ -116,10 +116,6 @@ P3DPackage::
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 activate_download() {
-  if (_allow_data_download) {
-    // Already activated.
-  }
-
   _allow_data_download = true;
 
   if (_ready) {
@@ -243,11 +239,10 @@ uninstall() {
     }
   }
 
-  // Now delete all of the directories too.  Go in reverse order so we
-  // remove deeper directories first.
-  vector<string>::reverse_iterator rci;
-  for (rci = dirname_contents.rbegin(); rci != dirname_contents.rend(); ++rci) {
-    string filename = (*rci);
+  // Now delete all of the directories too.  They're already in
+  // reverse order, so we remove deeper directories first.
+  for (ci = dirname_contents.begin(); ci != dirname_contents.end(); ++ci) {
+    string filename = (*ci);
     string pathname = _package_dir + "/" + filename;
 
 #ifdef _WIN32
@@ -276,6 +271,7 @@ uninstall() {
   _info_ready = false;
   _ready = false;
   _failed = false;
+  _allow_data_download = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,7 +510,7 @@ contents_file_redownload_finished(bool success) {
 //               rest of the download process.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-host_got_contents_file(bool continue_download) {
+host_got_contents_file() {
   if (!_alt_host.empty()) {
     // If we have an alt host specification, maybe we need to change
     // the host now.
@@ -548,23 +544,22 @@ host_got_contents_file(bool continue_download) {
     _package_dir += string("/") + _package_version;
   }
 
-  if (continue_download) {
-    // Ensure the package directory exists; create it if it does not.
-    mkdir_complete(_package_dir, nout);
-    
-    download_desc_file();
-  }
+  // Ensure the package directory exists; create it if it does not.
+  mkdir_complete(_package_dir, nout);
+  download_desc_file();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::download_desc_file
 //       Access: Private
 //  Description: Starts downloading the desc file for the package, if
-//               it's needed; or read to local version if it's fresh
+//               it's needed; or read the local version if it's fresh
 //               enough.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_desc_file() {
+  assert(!_package_dir.empty());
+
   // Attempt to check the desc file for freshness.  If it already
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
