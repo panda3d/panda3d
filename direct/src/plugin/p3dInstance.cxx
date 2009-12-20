@@ -1356,7 +1356,10 @@ uninstall_packages() {
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
-    package->uninstall();
+    if (package != _image_package && package != _certlist_package &&
+        package != _p3dcert_package) {
+      package->uninstall();
+    }
   }
 }
 
@@ -1372,12 +1375,17 @@ uninstall_packages() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 uninstall_host() {
+  uninstall_packages();
+
   set<P3DHost *> hosts;
 
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
-    hosts.insert(package->get_host());
+    if (package != _image_package && package != _certlist_package &&
+        package != _p3dcert_package) {
+      hosts.insert(package->get_host());
+    }
   }
 
   set<P3DHost *>::iterator hi;
