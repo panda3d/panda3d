@@ -421,6 +421,10 @@ set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
+  if (is_failed()) {
+    return;
+  }
+
   _got_wparams = true;
   _wparams = wparams;
 
@@ -1080,6 +1084,12 @@ start_download(P3DDownload *download, bool add_request) {
   assert(download->get_download_id() == 0);
   assert(!download->get_url().empty());
 
+  if (is_failed()) {
+    // Can't download anything more after failure.
+    download->cancel();
+    return 0;
+  }
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   int download_id = inst_mgr->get_unique_id();
@@ -1239,6 +1249,11 @@ splash_button_clicked_sub_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 splash_button_clicked_main_thread() {
+  if (is_failed()) {
+    // Can't click the button after we've failed.
+    return;
+  }
+
   if (!_p3d_trusted) {
     auth_button_clicked();
   } else if (_session == NULL) {
@@ -1329,7 +1344,7 @@ auth_finished_main_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::uninstall
+//     Function: P3DInstance::uninstall_packages
 //       Access: Public
 //  Description: Stops the instance (if it is running) and deletes any
 //               packages referenced by the instance.  This is
@@ -1337,23 +1352,39 @@ auth_finished_main_thread() {
 //               P3DMainObject::call_uninstall().
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-uninstall() {
-  if (_session != NULL) {
-    _session->set_failed();
-    _session->shutdown();
-  }
-
+uninstall_packages() {
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
     package->uninstall();
-    package->remove_instance(this);
   }
-  _packages.clear();
+}
 
-  _auto_install = false;
-  _instance_window_opened = false;
-  set_failed();
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::uninstall_host
+//       Access: Public
+//  Description: Stops the instance (if it is running) and deletes all
+//               packages downloaded from any of the host(s)
+//               referenced by the instance.  This is a more
+//               aggressive uninstall than uninstall_packages().  This
+//               is normally called by JavaScript, via
+//               P3DMainObject::call_uninstall().
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+uninstall_host() {
+  set<P3DHost *> hosts;
+
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    P3DPackage *package = (*pi);
+    hosts.insert(package->get_host());
+  }
+
+  set<P3DHost *>::iterator hi;
+  for (hi = hosts.begin(); hi != hosts.end(); ++hi) {
+    P3DHost *host = (*hi);
+    host->uninstall();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2283,9 +2314,9 @@ handle_script_request(const string &operation, P3D_object *object,
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_failed() {
-  _failed = true;
   set_button_image(IT_none);
   set_background_image(IT_failed);
+  _failed = true;
   make_splash_window();
 }
 
@@ -2312,7 +2343,7 @@ make_splash_window() {
     make_visible = false;
   }
 
-  if (_failed) {
+  if (is_failed()) {
     // But, if we've failed to launch somehow, we need to let the user
     // know.
     make_visible = true;
@@ -2423,6 +2454,11 @@ make_splash_window() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_background_image(ImageType image_type) {
+  if (is_failed()) {
+    // Can't change the background again after we've failed.
+    return;
+  }
+
   if (image_type != _current_background_image) {
     nout << "setting background to " << _image_type_names[image_type]
          << ", splash_window = " << _splash_window << "\n";
@@ -2455,6 +2491,11 @@ set_background_image(ImageType image_type) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_button_image(ImageType image_type) {
+  if (is_failed()) {
+    // Can't set the button again after we've failed.
+    return;
+  }
+
   if (image_type != _current_button_image) {
     nout << "setting button to " << _image_type_names[image_type] << "\n";
     // Remove the previous image.
@@ -2659,6 +2700,10 @@ start_next_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 mark_download_complete() {
+  if (_failed) {
+    return;
+  }
+
   if (!_download_complete) {
     _download_complete = true;
     _panda_script_object->set_bool_property("downloadComplete", true);

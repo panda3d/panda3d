@@ -96,6 +96,8 @@ P3DSession::
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 shutdown() {
+  set_failed();
+
   if (_p3dpython_started) {
     // Tell the process we're going away.
     TiXmlDocument doc;

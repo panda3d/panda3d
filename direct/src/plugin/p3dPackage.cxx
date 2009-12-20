@@ -217,56 +217,23 @@ uninstall() {
 
   nout << "Uninstalling package " << _package_name << " from " << _package_dir << "\n";
 
+  // First, make sure that all instances that are sharing this package
+  // are stopped, so there will be no access conflicts preventing us
+  // from removing the files.  This is particularly important on
+  // Windows.
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    P3DInstance *inst = (*ii);
+    P3DSession *session = inst->get_session();
+    if (session != NULL) {
+      nout << "Stopping session " << session << "\n";
+      session->shutdown();
+    }
+    inst->set_failed();
+  }
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  vector<string> contents, dirname_contents;
-  inst_mgr->scan_directory_recursively(_package_dir, contents,
-                                       dirname_contents);
-
-  vector<string>::iterator ci;
-  for (ci = contents.begin(); ci != contents.end(); ++ci) {
-    string filename = (*ci);
-    string pathname = _package_dir + "/" + filename;
-
-#ifdef _WIN32
-    // Windows can't delete a file if it's read-only.
-    chmod(pathname.c_str(), 0644);
-#endif
-    int result = unlink(pathname.c_str());
-    if (result == 0) {
-      nout << "  Deleted " << filename << "\n";
-    } else {
-      nout << "  Could not delete " << filename << "\n";
-    }
-  }
-
-  // Now delete all of the directories too.  They're already in
-  // reverse order, so we remove deeper directories first.
-  for (ci = dirname_contents.begin(); ci != dirname_contents.end(); ++ci) {
-    string filename = (*ci);
-    string pathname = _package_dir + "/" + filename;
-
-#ifdef _WIN32
-    chmod(pathname.c_str(), 0755);
-#endif
-    int result = rmdir(pathname.c_str());
-    if (result == 0) {
-      nout << "  Removed directory " << filename << "\n";
-    } else {
-      nout << "  Could not remove directory " << filename << "\n";
-    }
-  }
-
-  // Finally, delete the package directory itself.
-  string pathname = _package_dir;
-#ifdef _WIN32
-  chmod(pathname.c_str(), 0755);
-#endif
-  int result = rmdir(pathname.c_str());
-  if (result == 0) {
-    nout << "Removed directory " << _package_dir << "\n";
-  } else {
-    nout << "Could not remove directory " << _package_dir << "\n";
-  }
+  inst_mgr->delete_directory_recursively(_package_dir);
 
   _info_ready = false;
   _ready = false;

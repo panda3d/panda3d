@@ -64,6 +64,8 @@ public:
   void choose_random_mirrors(vector<string> &result, int num_mirrors);
   void add_mirror(string mirror_url);
 
+  void uninstall();
+
 private:
   void determine_host_dir(const string &host_dir_basename);
 

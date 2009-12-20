@@ -60,6 +60,7 @@ public:
                   bool console_environment);
 
   inline bool is_initialized() const;
+  inline void reconsider_runtime_environment();
   inline bool get_verify_contents() const;
   inline void reset_verify_contents();
 
@@ -126,6 +127,8 @@ public:
   string get_cert_dir(X509 *cert);
   static string cert_to_der(X509 *cert);
 
+  void uninstall_all();
+  
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
@@ -135,11 +138,13 @@ public:
                                          vector<string> &filename_contents,
                                          vector<string> &dirname_contents,
                                          const string &prefix = "");
+  static void delete_directory_recursively(const string &root_dir);
   static bool remove_file_from_list(vector<string> &contents, const string &filename);
 
   static void append_safe_dir(string &root, const string &basename);
 
 private:
+  void create_runtime_environment();
   static void append_safe_dir_component(string &root, const string &component);
 
 private:
@@ -151,6 +156,7 @@ private:
 
 private:
   bool _is_initialized;
+  bool _created_runtime_environment;
   int _api_version;
   string _host_url;
   string _root_dir;

@@ -451,9 +451,29 @@ P3D_object *P3DMainObject::
 call_uninstall(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
+  // Get the first parameter, the uninstall mode.
+  string mode;
+  if (num_params > 0) {
+    int size = P3D_OBJECT_GET_STRING(params[0], NULL, 0);
+    char *buffer = new char[size];
+    P3D_OBJECT_GET_STRING(params[0], buffer, size);
+    mode = string(buffer, size);
+    delete[] buffer;
+  }
+
+  if (mode == "all") {
+    nout << "uninstall all\n";
+    inst_mgr->uninstall_all();
+    return inst_mgr->new_bool_object(true);
+  }
+
   if (_inst != NULL) {
-    nout << "uninstall for " << _inst << "\n";
-    _inst->uninstall();
+    nout << "uninstall " << mode << " for " << _inst << "\n";
+    if (mode == "host") {
+      _inst->uninstall_host();
+    } else {
+      _inst->uninstall_packages();
+    }
     return inst_mgr->new_bool_object(true);
   }
 

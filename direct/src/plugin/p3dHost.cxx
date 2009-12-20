@@ -37,6 +37,8 @@ P3DHost(const string &host_url) :
   }
   _download_url_prefix = _host_url_prefix;
 
+  _descriptive_name = _host_url;
+
   _xcontents = NULL;
   _contents_seq = 0;
 }
@@ -447,6 +449,37 @@ add_mirror(string mirror_url) {
   if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
     _mirrors.push_back(mirror_url);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::uninstall
+//       Access: Public
+//  Description: Removes the host directory and all its contents
+//               from the user's hard disk.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+uninstall() {
+  if (_host_dir.empty()) {
+    nout << "Cannot uninstall " << _descriptive_name << ": host directory not yet known.\n";
+    return;
+  }
+
+  // First, explicitly uninstall each of our packages.
+  Packages::iterator mi;
+  for (mi = _packages.begin(); mi != _packages.end(); ++mi) {
+    PackageMap &package_map = (*mi).second;
+    PackageMap::iterator pi;
+    for (pi = package_map.begin(); pi != package_map.end(); ++pi) {
+      P3DPackage *package = (*pi).second;
+      package->uninstall();
+    }
+  }
+
+  // Then, uninstall the host itself.
+  nout << "Uninstalling " << _descriptive_name << " from " << _host_dir << "\n";
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  inst_mgr->delete_directory_recursively(_host_dir);
 }
 
 ////////////////////////////////////////////////////////////////////

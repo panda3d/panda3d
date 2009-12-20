@@ -25,6 +25,21 @@ is_initialized() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::reconsider_runtime_environment
+//       Access: Public
+//  Description: Recreates the runtime environment if a previous call
+//               to uninstall_all() removed it.  Does nothing if the
+//               runtime environment is already correctly set up.
+////////////////////////////////////////////////////////////////////
+inline void P3DInstanceManager::
+reconsider_runtime_environment() {
+  assert(_is_initialized);
+  if (!_created_runtime_environment) {
+    create_runtime_environment();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::verify_contents
 //       Access: Public
 //  Description: Returns the verify_contents flag.  When this is set

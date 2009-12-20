@@ -58,6 +58,7 @@ P3DInstanceManager() {
   init_xml();
 
   _is_initialized = false;
+  _created_runtime_environment = false;
   _api_version = 0;
   _next_temp_filename_counter = 1;
   _unique_id = 0;
@@ -187,36 +188,51 @@ initialize(int api_version, const string &contents_filename,
            const string &log_basename, bool trusted_environment,
            bool console_environment) {
   _api_version = api_version;
-  _trusted_environment = trusted_environment;
-  _console_environment = console_environment;
+  _host_url = host_url;
   _verify_contents = verify_contents;
   _platform = platform;
-  if (_platform.empty()) {
-    _platform = DTOOL_PLATFORM;
-  }
+  _log_directory = log_directory;
+  _log_basename = log_basename;
+  _trusted_environment = trusted_environment;
+  _console_environment = console_environment;
 
-  _host_url = host_url;
   if (_host_url.empty()) {
     _host_url = PANDA_PACKAGE_HOST_URL;
   }
 
-  _root_dir = find_root_dir();
+  if (_platform.empty()) {
+    _platform = DTOOL_PLATFORM;
+  }
 
-  // Allow the caller (e.g. panda3d.exe) to specify a log directory.
-  _log_directory = log_directory;
-
-  // Or, allow the developer to compile one in.
 #ifdef P3D_PLUGIN_LOG_DIRECTORY
   if (_log_directory.empty()) {
     _log_directory = P3D_PLUGIN_LOG_DIRECTORY;
   }
 #endif
+
+#ifdef P3D_PLUGIN_LOG_BASENAME2
+  if (_log_basename.empty()) {
+    _log_basename = P3D_PLUGIN_LOG_BASENAME2;
+  }
+#endif
+  if (_log_basename.empty()) {
+    _log_basename = "p3dcore";
+  }
+
+  _root_dir = find_root_dir();
+
+  if (_root_dir.empty()) {
+    cerr << "Could not find root directory.\n";
+    return false;
+  }
+
+  // Allow the caller (e.g. panda3d.exe) to specify a log directory.
+  // Or, allow the developer to compile one in.
   
   // Failing that, we write logfiles to Panda3D/log.
   if (_log_directory.empty()) {
     _log_directory = _root_dir + "/log";
   }
-  mkdir_complete(_log_directory, cerr);
 
   // Ensure that the log directory ends with a slash.
   if (!_log_directory.empty() && _log_directory[_log_directory.size() - 1] != '/') {
@@ -227,126 +243,11 @@ initialize(int api_version, const string &contents_filename,
   }
 
   // Construct the logfile pathname.
-  _log_basename = log_basename;
-#ifdef P3D_PLUGIN_LOG_BASENAME2
-  if (_log_basename.empty()) {
-    _log_basename = P3D_PLUGIN_LOG_BASENAME2;
-  }
-#endif
-  if (_log_basename.empty()) {
-    _log_basename = "p3dcore";
-  }
   _log_pathname = _log_directory;
   _log_pathname += _log_basename;
   _log_pathname += ".log";
 
-  logfile.close();
-  logfile.clear();
-  logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
-  if (logfile) {
-    logfile.setf(ios::unitbuf);
-    nout_stream = &logfile;
-  }
-
-  // Determine the temporary directory.
-#ifdef _WIN32
-  char buffer_1[MAX_PATH];
-
-  // Figuring out the correct path for temporary files is a real mess
-  // on Windows.  We should be able to use GetTempPath(), but that
-  // relies on $TMP or $TEMP being defined, and it appears that
-  // Mozilla clears these environment variables for the plugin, which
-  // forces GetTempPath() into $USERPROFILE instead.  This is really
-  // an inappropriate place for temporary files, so, GetTempPath()
-  // isn't a great choice.
-
-  // We could use SHGetSpecialFolderPath() instead to get us the path
-  // to "Temporary Internet Files", which is acceptable.  The trouble
-  // is, if we happen to be running in "Protected Mode" on Vista, this
-  // folder isn't actually writable by us!  On Vista, we're supposed
-  // to use IEGetWriteableFolderPath() instead, but *this* function
-  // doesn't exist on XP and below.  Good Lord.
-
-  // We could go through a bunch of LoadLibrary() calls to try to find
-  // the right path, like we do in find_root_dir(), but I'm just tired
-  // of doing all that nonsense.  We'll use a two-stage trick instead.
-  // We'll check for $TEMP or $TMP being defined specifically, and if
-  // they are, we'll use GetTempPath(); otherwise, we'll fall back to
-  // SHGetSpecialFolderPath().
-
-  if (getenv("TEMP") != NULL || getenv("TMP") != NULL) {
-    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
-      _temp_directory = buffer_1;
-    }
-  }
-  if (_temp_directory.empty()) {
-    if (SHGetSpecialFolderPath(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
-      _temp_directory = buffer_1;
-
-      // That just *might* return a non-writable folder, if we're in
-      // Protected Mode.  We'll test this with GetTempFileName().
-      char temp_buffer[MAX_PATH];
-      if (!GetTempFileName(_temp_directory.c_str(), "p3d", 0, temp_buffer)) {
-        nout << "GetTempFileName failed on " << _temp_directory
-             << ", switching to GetTempPath\n";
-        _temp_directory.clear();
-      } else {
-        DeleteFile(temp_buffer);
-      }
-    }
-  }
-
-  // If both of the above failed, we'll fall back to GetTempPath()
-  // once again as a last resort, which is supposed to return
-  // *something* that works, even if $TEMP and $TMP are undefined.
-  if (_temp_directory.empty()) {
-    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
-      _temp_directory = buffer_1;
-    }
-  }
-
-  // Also insist that the temp directory is fully specified.
-  size_t needs_size_2 = GetFullPathName(_temp_directory.c_str(), 0, NULL, NULL);
-  char *buffer_2 = new char[needs_size_2];
-  if (GetFullPathName(_temp_directory.c_str(), needs_size_2, buffer_2, NULL) != 0) {
-    _temp_directory = buffer_2;
-  }
-  delete[] buffer_2;
-
-  // And make sure the directory actually exists.
-  mkdir_complete(_temp_directory, nout);
-
-#else
-  _temp_directory = "/tmp/";
-#endif  // _WIN32
-
-  // Ensure that the temp directory ends with a slash.
-  if (!_temp_directory.empty() && _temp_directory[_temp_directory.size() - 1] != '/') {
-#ifdef _WIN32
-    if (_temp_directory[_temp_directory.size() - 1] != '\\')
-#endif
-      _temp_directory += "/";
-  }
-
-  nout << "_root_dir = " << _root_dir
-       << ", _temp_directory = " << _temp_directory
-       << ", platform = " << _platform
-       << ", contents_filename = " << contents_filename
-       << ", host_url = " << host_url
-       << ", verify_contents = " << verify_contents
-       << "\n";
-
-  if (_root_dir.empty()) {
-    nout << "Could not find root directory.\n";
-    return false;
-  }
-
-  // Make the certificate directory.
-  _certs_dir = _root_dir + "/certs";
-  if (!mkdir_complete(_certs_dir, nout)) {
-    nout << "Couldn't mkdir " << _certs_dir << "\n";
-  }
-
+  create_runtime_environment();
   _is_initialized = true;
 
   if (!_verify_contents &&
@@ -373,6 +274,7 @@ set_plugin_version(int major, int minor, int sequence,
                    bool official, const string &distributor,
                    const string &coreapi_host_url,
                    time_t coreapi_timestamp) {
+  reconsider_runtime_environment();
   _plugin_major_version = major;
   _plugin_minor_version = minor;
   _plugin_sequence_version = sequence;
@@ -389,6 +291,7 @@ set_plugin_version(int major, int minor, int sequence,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 set_super_mirror(const string &super_mirror_url) {
+  reconsider_runtime_environment();
   if (!super_mirror_url.empty()) {
     nout << "super_mirror = " << super_mirror_url << "\n";
   }
@@ -410,6 +313,7 @@ P3DInstance *P3DInstanceManager::
 create_instance(P3D_request_ready_func *func, 
                 const P3D_token tokens[], size_t num_tokens, 
                 int argc, const char *argv[], void *user_data) {
+  reconsider_runtime_environment();
   P3DInstance *inst = new P3DInstance(func, tokens, num_tokens, argc, argv,
                                       user_data);
   inst->ref();
@@ -962,6 +866,43 @@ cert_to_der(X509 *cert) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::uninstall_all
+//       Access: Public
+//  Description: Stops all active instances and removes *all*
+//               downloaded files from all hosts, and empties the
+//               current user's Panda3D directory as much as possible.
+//
+//               This cannot remove the coreapi dll or directory on
+//               Windows.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+uninstall_all() {
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    P3DInstance *inst = (*ii);
+    inst->uninstall_host();
+  }
+
+  Hosts::iterator hi;
+  for (hi = _hosts.begin(); hi != _hosts.end(); ++hi) {
+    P3DHost *host = (*hi).second;
+    host->uninstall();
+  }
+
+  // Close the logfile so we can remove that too.
+  logfile.close();
+
+  if (!_root_dir.empty()) {
+    // This won't be able to delete the coreapi directory on Windows,
+    // because we're running that DLL right now.  But it will delete
+    // everything else.
+    delete_directory_recursively(_root_dir);
+  }
+
+  _created_runtime_environment = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_global_ptr
 //       Access: Public, Static
 //  Description: 
@@ -1113,6 +1054,82 @@ scan_directory_recursively(const string &dirname,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::delete_directory_recursively
+//       Access: Public, Static
+//  Description: Deletes all of the files and directories in the named
+//               directory and below, like rm -rf.  Use with extreme
+//               caution.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+delete_directory_recursively(const string &root_dir) {
+  vector<string> contents, dirname_contents;
+  if (!scan_directory_recursively(root_dir, contents, dirname_contents)) {
+    // Maybe it's just a single file, not a directory.  Delete it.
+#ifdef _WIN32
+    // Windows can't delete a file if it's read-only.
+    chmod(root_dir.c_str(), 0644);
+#endif
+    int result = unlink(root_dir.c_str());
+    if (result == 0) {
+      nout << "Deleted " << root_dir << "\n";
+    } else {
+      if (access(root_dir.c_str(), F_OK) == 0) {
+        nout << "Could not delete " << root_dir << "\n";
+      }
+    }
+    return;
+  }
+
+  vector<string>::iterator ci;
+  for (ci = contents.begin(); ci != contents.end(); ++ci) {
+    string filename = (*ci);
+    string pathname = root_dir + "/" + filename;
+
+#ifdef _WIN32
+    // Windows can't delete a file if it's read-only.
+    chmod(pathname.c_str(), 0644);
+#endif
+    int result = unlink(pathname.c_str());
+    if (result == 0) {
+      nout << "  Deleted " << filename << "\n";
+    } else {
+      nout << "  Could not delete " << filename << "\n";
+    }
+  }
+
+  // Now delete all of the directories too.  They're already in
+  // reverse order, so we remove deeper directories first.
+  for (ci = dirname_contents.begin(); ci != dirname_contents.end(); ++ci) {
+    string filename = (*ci);
+    string pathname = root_dir + "/" + filename;
+
+#ifdef _WIN32
+    chmod(pathname.c_str(), 0755);
+#endif
+    int result = rmdir(pathname.c_str());
+    if (result == 0) {
+      nout << "  Removed directory " << filename << "\n";
+    } else {
+      nout << "  Could not remove directory " << filename << "\n";
+    }
+  }
+
+  // Finally, delete the root directory itself.
+  string pathname = root_dir;
+#ifdef _WIN32
+  chmod(pathname.c_str(), 0755);
+#endif
+  int result = rmdir(pathname.c_str());
+  if (result == 0) {
+    nout << "Removed directory " << root_dir << "\n";
+  } else {
+    if (access(pathname.c_str(), F_OK) == 0) {
+      nout << "Could not remove directory " << root_dir << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::remove_file_from_list
 //       Access: Public, Static
 //  Description: Removes the first instance of the indicated file
@@ -1183,6 +1200,121 @@ append_safe_dir(string &root, const string &basename) {
     }
     p = q + 1;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::create_runtime_environment
+//       Access: Private
+//  Description: Called during initialize, or after a previous call to
+//               uninstall_all(), to make sure all needed
+//               directories exist and the logfile is open.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+create_runtime_environment() {
+  mkdir_complete(_log_directory, cerr);
+
+  logfile.close();
+  logfile.clear();
+  logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+  if (logfile) {
+    logfile.setf(ios::unitbuf);
+    nout_stream = &logfile;
+  }
+
+  // Determine the temporary directory.
+#ifdef _WIN32
+  char buffer_1[MAX_PATH];
+
+  // Figuring out the correct path for temporary files is a real mess
+  // on Windows.  We should be able to use GetTempPath(), but that
+  // relies on $TMP or $TEMP being defined, and it appears that
+  // Mozilla clears these environment variables for the plugin, which
+  // forces GetTempPath() into $USERPROFILE instead.  This is really
+  // an inappropriate place for temporary files, so, GetTempPath()
+  // isn't a great choice.
+
+  // We could use SHGetSpecialFolderPath() instead to get us the path
+  // to "Temporary Internet Files", which is acceptable.  The trouble
+  // is, if we happen to be running in "Protected Mode" on Vista, this
+  // folder isn't actually writable by us!  On Vista, we're supposed
+  // to use IEGetWriteableFolderPath() instead, but *this* function
+  // doesn't exist on XP and below.  Good Lord.
+
+  // We could go through a bunch of LoadLibrary() calls to try to find
+  // the right path, like we do in find_root_dir(), but I'm just tired
+  // of doing all that nonsense.  We'll use a two-stage trick instead.
+  // We'll check for $TEMP or $TMP being defined specifically, and if
+  // they are, we'll use GetTempPath(); otherwise, we'll fall back to
+  // SHGetSpecialFolderPath().
+
+  if (getenv("TEMP") != NULL || getenv("TMP") != NULL) {
+    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
+      _temp_directory = buffer_1;
+    }
+  }
+  if (_temp_directory.empty()) {
+    if (SHGetSpecialFolderPath(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
+      _temp_directory = buffer_1;
+
+      // That just *might* return a non-writable folder, if we're in
+      // Protected Mode.  We'll test this with GetTempFileName().
+      char temp_buffer[MAX_PATH];
+      if (!GetTempFileName(_temp_directory.c_str(), "p3d", 0, temp_buffer)) {
+        nout << "GetTempFileName failed on " << _temp_directory
+             << ", switching to GetTempPath\n";
+        _temp_directory.clear();
+      } else {
+        DeleteFile(temp_buffer);
+      }
+    }
+  }
+
+  // If both of the above failed, we'll fall back to GetTempPath()
+  // once again as a last resort, which is supposed to return
+  // *something* that works, even if $TEMP and $TMP are undefined.
+  if (_temp_directory.empty()) {
+    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
+      _temp_directory = buffer_1;
+    }
+  }
+
+  // Also insist that the temp directory is fully specified.
+  size_t needs_size_2 = GetFullPathName(_temp_directory.c_str(), 0, NULL, NULL);
+  char *buffer_2 = new char[needs_size_2];
+  if (GetFullPathName(_temp_directory.c_str(), needs_size_2, buffer_2, NULL) != 0) {
+    _temp_directory = buffer_2;
+  }
+  delete[] buffer_2;
+
+  // And make sure the directory actually exists.
+  mkdir_complete(_temp_directory, nout);
+
+#else
+  _temp_directory = "/tmp/";
+#endif  // _WIN32
+
+  // Ensure that the temp directory ends with a slash.
+  if (!_temp_directory.empty() && _temp_directory[_temp_directory.size() - 1] != '/') {
+#ifdef _WIN32
+    if (_temp_directory[_temp_directory.size() - 1] != '\\')
+#endif
+      _temp_directory += "/";
+  }
+
+  nout << "_root_dir = " << _root_dir
+       << ", _temp_directory = " << _temp_directory
+       << ", platform = " << _platform
+       << ", host_url = " << _host_url
+       << ", verify_contents = " << _verify_contents
+       << "\n";
+
+  // Make the certificate directory.
+  _certs_dir = _root_dir + "/certs";
+  if (!mkdir_complete(_certs_dir, nout)) {
+    nout << "Couldn't mkdir " << _certs_dir << "\n";
+  }
+
+  _created_runtime_environment = true;
 }
 
 ////////////////////////////////////////////////////////////////////

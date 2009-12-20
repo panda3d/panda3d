@@ -70,7 +70,8 @@ get_download_url_prefix() const {
 //     Function: P3DHost::get_descriptive_name
 //       Access: Public
 //  Description: Returns the descriptive name provided for this host,
-//               if any.  This will be available after
+//               if any.  Returns the url if no descriptive name is
+//               provided.  This will be available after
 //               read_contents_file() has been called.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DHost::
