@@ -1361,6 +1361,15 @@ uninstall_packages() {
       package->uninstall();
     }
   }
+
+  // Also clean up the start directory, if we have a custom start dir.
+  string start_dir_suffix = get_start_dir_suffix();
+  if (!start_dir_suffix.empty()) {
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    string start_dir = inst_mgr->get_root_dir() + "/start" + start_dir_suffix;
+    nout << "Cleaning up start directory " << start_dir << "\n";
+    inst_mgr->delete_directory_recursively(start_dir);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1998,6 +2007,46 @@ get_host_info(P3DHost *host) {
   }
 
   // Didn't find an entry for this host; oh well.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_start_dir_suffix
+//       Access: Public
+//  Description: Determines the local path to the appropriate start
+//               directory for this instance, within the generic
+//               "start" directory.  Returns empty string if this
+//               instance doesn't specify a custom start directory.
+//
+//               If this is nonempty, it will begin with a slash--the
+//               intention is to append this to the end of the generic
+//               start_dir path.
+////////////////////////////////////////////////////////////////////
+string P3DInstance::
+get_start_dir_suffix() const {
+  string start_dir_suffix;
+
+  string start_dir = get_fparams().lookup_token("start_dir");
+  if (start_dir.empty()) {
+    start_dir = _start_dir;
+
+    if (!start_dir.empty()) {
+      // If the start_dir is taken from the p3d file (and not from the
+      // HTML tokens), then we also append the alt_host name to the
+      // start_dir, so that each alt_host variant will run in a
+      // different directory.
+      string alt_host = get_fparams().lookup_token("alt_host");
+      if (!alt_host.empty()) {
+        start_dir += "_";
+        start_dir += alt_host;
+      }
+    }
+  }
+  if (!start_dir.empty()) {
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    inst_mgr->append_safe_dir(start_dir_suffix, start_dir);
+  }
+
+  return start_dir_suffix;
 }
 
 ////////////////////////////////////////////////////////////////////

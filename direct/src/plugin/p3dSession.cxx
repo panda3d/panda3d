@@ -132,7 +132,7 @@ shutdown() {
 #ifdef _WIN32
       // Wait for a certain amount of time for the process to stop by
       // itself.
-      if (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
+      while (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
         // It didn't shut down cleanly, so kill it the hard way.
         nout << "Force-killing python process.\n";
         TerminateProcess(_p3dpython_handle, 2);
@@ -713,28 +713,7 @@ start_p3dpython(P3DInstance *inst) {
     _keep_user_env = true;
   }
   if (!_keep_user_env) {
-    _start_dir = inst_mgr->get_root_dir() + "/start";
-
-    string start_dir = inst->get_fparams().lookup_token("start_dir");
-    if (start_dir.empty()) {
-      start_dir = inst->_start_dir;
-
-      if (!start_dir.empty()) {
-        // If the start_dir is taken from the p3d file (and not from the
-        // HTML tokens), then we also append the alt_host name to the
-        // start_dir, so that each alt_host variant will run in a
-        // different directory.
-        string alt_host = inst->get_fparams().lookup_token("alt_host");
-        if (!alt_host.empty()) {
-          start_dir += "_";
-          start_dir += alt_host;
-        }
-      }
-    }
-    if (!start_dir.empty()) {
-      inst_mgr->append_safe_dir(_start_dir, start_dir);
-    }
-
+    _start_dir = inst_mgr->get_root_dir() + "/start" + inst->get_start_dir_suffix();
     mkdir_complete(_start_dir, nout);
   }
 

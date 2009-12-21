@@ -175,6 +175,7 @@ private:
   void add_packages();
   string find_alt_host_url(const string &host_url, const string &alt_host);
   void get_host_info(P3DHost *host);
+  string get_start_dir_suffix() const;
 
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);

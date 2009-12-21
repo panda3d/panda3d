@@ -445,8 +445,8 @@ make_window() {
   int y = _wparams.get_win_y();
   if (x == -1) x = CW_USEDEFAULT;
   if (y == -1) y = CW_USEDEFAULT;
-  if (x == -2) x = 0.5 * (GetSystemMetrics(SM_CXBORDER) - width);
-  if (y == -2) y = 0.5 * (GetSystemMetrics(SM_CYBORDER) - height);
+  if (x == -2) x = (int)(0.5 * (GetSystemMetrics(SM_CXBORDER) - width));
+  if (y == -2) y = (int)(0.5 * (GetSystemMetrics(SM_CYBORDER) - height));
   
   if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
