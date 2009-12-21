@@ -324,7 +324,9 @@ load_plugin(const string &p3d_plugin_filename,
                       log_directory.c_str(), log_basename.c_str(),
                       trusted_environment, console_environment)) {
     // Oops, failure to initialize.
-    logfile << "Failed to initialize plugin (wrong API version?)\n";
+    logfile
+      << "Failed to initialize plugin (passed API version " 
+      << P3D_API_VERSION << ")\n";
     unload_plugin();
     return false;
   }
