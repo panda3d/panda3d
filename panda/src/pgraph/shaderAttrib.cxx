@@ -30,7 +30,6 @@ int ShaderAttrib::_attrib_slot;
 //               the use of shaders (it does not clear out all shader
 //               data, however.)
 ////////////////////////////////////////////////////////////////////
-
 CPT(RenderAttrib) ShaderAttrib::
 make_off() {
   static CPT(RenderAttrib) _off_attrib;
@@ -260,6 +259,21 @@ set_shader_input(const string &id, double n1, double n2, double n3, double n4, i
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::set_instance_count
+//       Access: Published
+//  Description: Sets the geometry instance count. Do not confuse
+//               this with instanceTo, which is used for animation
+//               instancing, and has nothing to do with this.
+//               A value of 0 means not to use instancing at all.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+set_instance_count(int instance_count) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  result->_instance_count = instance_count;
+  return return_new(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::clear_shader_input
 //       Access: Published
 //  Description: 
@@ -456,6 +470,9 @@ compare_to_impl(const RenderAttrib *other) const {
   if (this->_has_flags != that->_has_flags) {
     return (this->_has_flags < that->_has_flags) ? -1 : 1;
   }
+  if (this->_instance_count != that->_instance_count) {
+    return (this->_instance_count < that->_instance_count) ? -1 : 1;
+  }
   
   Inputs::const_iterator i1 = this->_inputs.begin();
   Inputs::const_iterator i2 = that->_inputs.begin();
@@ -511,6 +528,8 @@ compose_impl(const RenderAttrib *other) const {
       }
     }
   }
+  // Just copy the instance count.
+  attr->_instance_count = over->_instance_count;
   // Update the flags.
   attr->_flags &= ~(over->_has_flags);
   attr->_flags |= over->_flags;

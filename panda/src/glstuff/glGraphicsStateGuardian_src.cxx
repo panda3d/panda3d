@@ -1454,6 +1454,26 @@ reset() {
     _glActiveStencilFaceEXT = 0;
   }
 
+#ifndef OPENGLES
+  // Some drivers expose one, some expose the other. ARB seems to be the newer one.
+  if (has_extension("GL_ARB_draw_instanced")) {
+    _glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawArraysInstancedARB");
+    _glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawElementsInstancedARB");
+    _supports_geometry_instancing = true;
+  } else if (has_extension("GL_EXT_draw_instanced")) {
+    _glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawArraysInstancedEXT");
+    _glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawElementsInstancedEXT");
+    _supports_geometry_instancing = true;
+  } else {
+    _glDrawElementsInstanced = 0;
+    _glDrawArraysInstanced = 0;
+  }
+#endif
+
   _auto_rescale_normal = false;
 
   // Ensure the initial state is what we say it should be (in some
@@ -2728,16 +2748,34 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 
-      _glDrawRangeElements(GL_TRIANGLES,
-                           reader->get_min_vertex(),
-                           reader->get_max_vertex(),
-                           num_vertices,
-                           get_numeric_type(reader->get_index_type()),
-                           client_pointer);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_TRIANGLES, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else
+#endif
+      {
+        _glDrawRangeElements(GL_TRIANGLES,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
     } else {
-      GLP(DrawArrays)(GL_TRIANGLES,
-                      reader->get_first_vertex(),
-                      num_vertices);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_TRIANGLES,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else
+#endif
+      {
+        GLP(DrawArrays)(GL_TRIANGLES,
+                        reader->get_first_vertex(),
+                        num_vertices);
+      }
     }
   }
 
@@ -2780,16 +2818,34 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         if (!setup_primitive(client_pointer, reader, force)) {
           return false;
         }
-        _glDrawRangeElements(GL_TRIANGLE_STRIP,
-                             reader->get_min_vertex(),
-                             reader->get_max_vertex(),
-                             num_vertices,
-                             get_numeric_type(reader->get_index_type()),
-                             client_pointer);
+#ifndef OPENGLES
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawElementsInstanced(GL_TRIANGLE_STRIP, num_vertices,
+                                   get_numeric_type(reader->get_index_type()),
+                                   client_pointer, _instance_count);
+        } else
+#endif
+        {
+          _glDrawRangeElements(GL_TRIANGLE_STRIP,
+                               reader->get_min_vertex(),
+                               reader->get_max_vertex(),
+                               num_vertices,
+                               get_numeric_type(reader->get_index_type()),
+                               client_pointer);
+        }
       } else {
-        GLP(DrawArrays)(GL_TRIANGLE_STRIP,
-                        reader->get_first_vertex(),
-                        num_vertices);
+#ifndef OPENGLES
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawArraysInstanced(GL_TRIANGLE_STRIP,
+                                 reader->get_first_vertex(),
+                                 num_vertices, _instance_count);
+        } else
+#endif
+        {
+          GLP(DrawArrays)(GL_TRIANGLE_STRIP,
+                          reader->get_first_vertex(),
+                          num_vertices);
+        }
       }
 
     } else {
@@ -2812,11 +2868,21 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          _glDrawRangeElements(GL_TRIANGLE_STRIP,
-                               mins.get_data1i(), maxs.get_data1i(),
-                               ends[i] - start,
-                               get_numeric_type(reader->get_index_type()),
-                               client_pointer + start * index_stride);
+#ifndef OPENGLES
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_TRIANGLE_STRIP, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else
+#endif
+          {
+            _glDrawRangeElements(GL_TRIANGLE_STRIP,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
           start = ends[i] + 2;
         }
       } else {
@@ -2824,8 +2890,16 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start,
-                          ends[i] - start);
+#ifndef OPENGLES
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_TRIANGLE_STRIP, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else
+#endif
+          {
+            GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start,
+                            ends[i] - start);
+          }
           start = ends[i] + 2;
         }
       }
@@ -2875,10 +2949,20 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-        _glDrawRangeElements(GL_TRIANGLE_FAN,
-                             mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
-                             get_numeric_type(reader->get_index_type()),
-                             client_pointer + start * index_stride);
+#ifndef OPENGLES
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawElementsInstanced(GL_TRIANGLE_FAN, ends[i] - start,
+                                   get_numeric_type(reader->get_index_type()),
+                                   client_pointer + start * index_stride,
+                                   _instance_count);
+        } else
+#endif
+        {
+          _glDrawRangeElements(GL_TRIANGLE_FAN,
+                               mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
+                               get_numeric_type(reader->get_index_type()),
+                               client_pointer + start * index_stride);
+        }
         start = ends[i];
       }
     } else {
@@ -2886,8 +2970,16 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       int first_vertex = reader->get_first_vertex();
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-        GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
-                        ends[i] - start);
+#ifndef OPENGLES
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawArraysInstanced(GL_TRIANGLE_FAN, first_vertex + start,
+                                 ends[i] - start, _instance_count);
+        } else
+#endif
+        {
+          GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
+                          ends[i] - start);
+        }
         start = ends[i];
       }
     }
@@ -2926,16 +3018,34 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      _glDrawRangeElements(GL_LINES,
-                           reader->get_min_vertex(),
-                           reader->get_max_vertex(),
-                           num_vertices,
-                           get_numeric_type(reader->get_index_type()),
-                           client_pointer);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINES, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else
+#endif
+      {
+        _glDrawRangeElements(GL_LINES,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
     } else {
-      GLP(DrawArrays)(GL_LINES,
-                      reader->get_first_vertex(),
-                      num_vertices);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_LINES,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else
+#endif
+      {
+        GLP(DrawArrays)(GL_LINES,
+                        reader->get_first_vertex(),
+                        num_vertices);
+      }
     }
   }
 
@@ -2982,16 +3092,34 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      _glDrawRangeElements(GL_POINTS,
-                           reader->get_min_vertex(),
-                           reader->get_max_vertex(),
-                           num_vertices,
-                           get_numeric_type(reader->get_index_type()),
-                           client_pointer);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_POINTS, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else
+#endif
+      {
+        _glDrawRangeElements(GL_POINTS,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
     } else {
-      GLP(DrawArrays)(GL_POINTS,
-                      reader->get_first_vertex(),
-                      num_vertices);
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_POINTS,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else
+#endif
+      {
+        GLP(DrawArrays)(GL_POINTS,
+                        reader->get_first_vertex(),
+                        num_vertices);
+      }
     }
   }
 
@@ -6795,6 +6923,9 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
   _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+#ifndef OPENGLES
+  _instance_count = _target_shader->get_instance_count();
+#endif
 #ifndef OPENGLES_1
   if (_target_shader->auto_shader()) {
     // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.

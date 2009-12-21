@@ -45,6 +45,7 @@ PUBLISHED:
   INLINE bool               has_shader() const;
   INLINE bool               auto_shader() const;
   INLINE int                get_shader_priority() const;
+  INLINE int                get_instance_count() const;
   
   CPT(RenderAttrib) set_shader(const Shader *s, int priority=0) const;
   CPT(RenderAttrib) set_shader_off(int priority=0) const;
@@ -61,6 +62,8 @@ PUBLISHED:
   CPT(RenderAttrib) set_shader_input(const string &id, const LVector4f &v, int priority=0) const;
   CPT(RenderAttrib) set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1,
                                      int priority=0) const;
+
+  CPT(RenderAttrib) set_instance_count(int instance_count) const;
 
   CPT(RenderAttrib) set_flag(int flag, bool value) const;
   CPT(RenderAttrib) clear_flag(int flag) const;
@@ -96,6 +99,7 @@ private:
   bool        _has_shader;
   int         _flags;
   int         _has_flags;
+  int         _instance_count;
   typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
   Inputs _inputs;
 

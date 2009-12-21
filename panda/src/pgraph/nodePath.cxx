@@ -3710,6 +3710,24 @@ get_shader_input(InternalName *id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_instance_count
+//       Access: Published
+//  Description: Returns the geometry instance count, or 0 if
+//               disabled. See set_instance_count.
+////////////////////////////////////////////////////////////////////
+const int NodePath::
+get_instance_count() const {
+  nassertr_always(!is_empty(), NULL);
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_slot());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    return sa->get_instance_count();
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_shader_input
 //       Access: Published
 //  Description: 
@@ -3824,6 +3842,30 @@ get_shader_input(const string &id) const {
 void NodePath::
 clear_shader_input(const string &id) {
   clear_shader_input(InternalName::make(id));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_instance_count
+//       Access: Published
+//  Description: Sets the geometry instance count, or 0 if
+//               geometry instancing should be disabled. Do not
+//               confuse with instanceTo which only applies to
+//               animation instancing.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_instance_count(int instance_count) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_slot());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->set_instance_count(instance_count));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    node()->set_attrib(sa->set_instance_count(instance_count));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

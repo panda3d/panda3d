@@ -652,6 +652,19 @@ get_supports_two_sided_stencil() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_geometry_instancing
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               hardware geometry instancing: the ability to render
+//               multiple copies of a model. In OpenGL, this is
+//               done using the EXT_draw_instanced extension.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_geometry_instancing() const {
+  return _supports_geometry_instancing;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_maximum_simultaneous_render_targets
 //       Access: Published
 //  Description: Returns the maximum simultaneous render targets 

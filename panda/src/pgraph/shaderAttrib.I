@@ -25,7 +25,8 @@ ShaderAttrib() :
   _auto_shader(false),
   _has_shader(false),
   _flags(0),
-  _has_flags(0)
+  _has_flags(0),
+  _instance_count(0)
 {
 }
 
@@ -42,6 +43,7 @@ ShaderAttrib(const ShaderAttrib &copy) :
   _has_shader(copy._has_shader),
   _flags(copy._flags),
   _has_flags(copy._has_flags),
+  _instance_count(copy._instance_count),
   _inputs(copy._inputs)
 {
 }
@@ -77,6 +79,17 @@ auto_shader() const {
 INLINE int ShaderAttrib::
 get_shader_priority() const {
   return _shader_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_instance_count
+//       Access: Published
+//  Description: Returns the number of geometry instances. A value
+//               of 0 means not to use instancing at all.
+////////////////////////////////////////////////////////////////////
+INLINE int ShaderAttrib::
+get_instance_count() const {
+  return _instance_count;
 }
 
 ////////////////////////////////////////////////////////////////////

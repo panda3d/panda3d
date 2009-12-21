@@ -210,6 +210,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_stencil = false;
   _supports_stencil_wrap = false;
   _supports_two_sided_stencil = false;
+  _supports_geometry_instancing = false;
 
   _maximum_simultaneous_render_targets = 1;
 

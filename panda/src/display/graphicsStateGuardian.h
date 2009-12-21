@@ -143,6 +143,7 @@ PUBLISHED:
   INLINE bool get_supports_glsl() const;
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
+  INLINE bool get_supports_geometry_instancing() const;
 
   INLINE int get_maximum_simultaneous_render_targets() const;
 
@@ -467,6 +468,7 @@ protected:
   bool _supports_stencil;
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
+  bool _supports_geometry_instancing;
 
   int _maximum_simultaneous_render_targets;
 
