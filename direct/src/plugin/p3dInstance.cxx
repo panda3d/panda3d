@@ -2979,6 +2979,10 @@ report_package_done(P3DPackage *package, bool success) {
   
     if (success) {
       mark_p3d_untrusted();
+    } else if (!_p3d_trusted) {
+      // Oops, too bad.  Couldn't get the p3dcert package, which means
+      // we can't approve the instance.
+      set_failed();
     }
     return;
   }
