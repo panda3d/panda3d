@@ -126,11 +126,15 @@ make_output(const string &name,
     }
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
+    int _fbo_multisample = 0;
+    if (!ConfigVariableBool("framebuffer-object-multisample", false, PRC_DESC("Enabled Multisample."))) {
+        _fbo_multisample = 16;
+    }
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_indexed_color() > 0)||
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > 0)) {
+          (fb_prop.get_multisamples() > _fbo_multisample)) {
         return NULL;
       }
     }
