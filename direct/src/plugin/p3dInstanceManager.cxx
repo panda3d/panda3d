@@ -35,6 +35,8 @@
 
 #ifdef _WIN32
 #include <shlobj.h>
+#include <io.h>      // chmod()
+#include <direct.h>  // rmdir()
 #else
 #include <sys/stat.h>
 #include <signal.h>
@@ -1073,7 +1075,7 @@ delete_directory_recursively(const string &root_dir) {
     if (result == 0) {
       nout << "Deleted " << root_dir << "\n";
     } else {
-      if (access(root_dir.c_str(), F_OK) == 0) {
+      if (access(root_dir.c_str(), 0) == 0) {
         nout << "Could not delete " << root_dir << "\n";
       }
     }
@@ -1123,7 +1125,7 @@ delete_directory_recursively(const string &root_dir) {
   if (result == 0) {
     nout << "Removed directory " << root_dir << "\n";
   } else {
-    if (access(pathname.c_str(), F_OK) == 0) {
+    if (access(pathname.c_str(), 0) == 0) {
       nout << "Could not remove directory " << root_dir << "\n";
     }
   }
