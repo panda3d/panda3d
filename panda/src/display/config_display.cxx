@@ -270,7 +270,9 @@ ConfigVariableInt win_size
 ConfigVariableInt win_origin
 ("win-origin", "",
  PRC_DESC("This is the default position at which to open a new window.  This "
-          "replaces the deprecated win-origin-x and win-origin-y variables."));
+          "replaces the deprecated win-origin-x and win-origin-y variables. "
+          "A window coordinate of -1 means to choose a default value, "
+          "whereas -2 means to center the window on the screen."));
 
 ConfigVariableBool fullscreen
 ("fullscreen", false);
