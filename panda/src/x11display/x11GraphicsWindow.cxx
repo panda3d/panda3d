@@ -436,11 +436,11 @@ set_properties_now(WindowProperties &properties) {
   DCAST_INTO_V(x11_pipe, _pipe);
   
   // A coordinate of -2 means to center the window on screen.
-  if (properties.has_origin() and (properties.get_x_origin() == -2
-                                or properties.get_y_origin() == -2)) {
+  if (properties.has_origin() && (properties.get_x_origin() == -2
+                              || properties.get_y_origin() == -2)) {
     int x_origin = properties.get_x_origin();
     int y_origin = properties.get_y_origin();
-    if (false and properties.has_size()) {
+    if (properties.has_size()) {
       if (x_origin == -2) {
         x_origin = 0.5 * (x11_pipe->get_display_width() - properties.get_x_size());
       }
