@@ -50,6 +50,9 @@ public:
     int LoadPlugin( const std::string& dllFilename );
     int UnloadPlugin( void );
 
+    static void ref_plugin();
+    static void unref_plugin();
+
     int Start( const std::string& p3dFileName );
 
     std::string GetHostUrl( );

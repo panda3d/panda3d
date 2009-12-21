@@ -14,6 +14,7 @@
 
 #include "stdafx.h"
 #include "PPPandaObject.h"
+#include "PPInstance.h"
 #include "load_plugin.h"
 
 PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) : 
@@ -24,6 +25,7 @@ PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) :
         P3D_OBJECT_INCREF( m_p3dObject );
     }
     AddRef();
+    PPInstance::ref_plugin();
 }
 
 PPandaObject::~PPandaObject()
@@ -35,10 +37,12 @@ PPandaObject::~PPandaObject()
 
     // Clean up the p3d_object, but only if we haven't already
     // unloaded the plugin.
-    if ( m_p3dObject && is_plugin_loaded() )
+    if ( m_p3dObject )
     {
         P3D_OBJECT_DECREF( m_p3dObject );
     }
+
+    PPInstance::unref_plugin();
 }
 
 // Dispatch Methods

@@ -428,7 +428,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 {
     if ( !m_pluginLoaded )
     { 
-        s_instanceCount += 1;
+        ref_plugin();
         m_pluginLoaded = true;
     }
 
@@ -479,20 +479,35 @@ int PPInstance::UnloadPlugin()
     if ( m_pluginLoaded )
     { 
         m_pluginLoaded = false;
-        assert( s_instanceCount > 0 );
-        s_instanceCount -= 1;
-
-        if ( s_instanceCount == 0 && is_plugin_loaded() ) 
-        {
-            unload_plugin();
-            m_isInit = false;
-            
-            // This pointer is no longer valid and must be reset for next
-            // time.
-            PPBrowserObject::clear_class_definition();
-        }
+        m_isInit = false;
+        unref_plugin();
     }
     return error;
+}
+
+// Increments the reference count on the "plugin" library (i.e. the
+// core API).  Call unref_plugin() later to decrement this count.
+void PPInstance::
+ref_plugin() {
+  s_instanceCount += 1;
+}
+
+// Decrements the reference count on the "plugin" library.  This must
+// correspond to an earlier call to ref_plugin().  When the last
+// reference is removed, the plugin will be unloaded.
+void PPInstance::
+unref_plugin() {
+  assert( s_instanceCount > 0 );
+  s_instanceCount -= 1;
+  
+  if ( s_instanceCount == 0 && is_plugin_loaded() ) {
+    nout << "Unloading core API\n";
+    unload_plugin();
+    
+    // This pointer is no longer valid and must be reset for next
+    // time.
+    PPBrowserObject::clear_class_definition();
+  }
 }
 
 int PPInstance::Start( const std::string& p3dFilename  )
