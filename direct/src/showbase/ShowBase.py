@@ -1495,6 +1495,9 @@ class ShowBase(DirectObject.DirectObject):
             self.musicManager.setActive(bEnableMusic)
         self.musicActive = bEnableMusic
         if bEnableMusic:
+            # This is useful when we want to play different music
+            # from what the manager has queued
+            messenger.send("MusicEnabled")
             self.notify.debug("Enabling music")
         else:
             self.notify.debug("Disabling music")
@@ -1597,7 +1600,7 @@ class ShowBase(DirectObject.DirectObject):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.shadowTrav:
-            self.shadowTrav.traverse(self.render)
+           self.shadowTrav.traverse(self.render)
         return Task.cont
 
     def __collisionLoop(self, state):
@@ -1608,7 +1611,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.appTrav:
             self.appTrav.traverse(self.render)
         if self.shadowTrav:
-            self.shadowTrav.traverse(self.render)
+           self.shadowTrav.traverse(self.render)
         messenger.send("collisionLoopFinished")
         return Task.cont
 
