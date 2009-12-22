@@ -1743,6 +1743,12 @@ mark_p3d_untrusted() {
     return;
   }
 
+  if (_p3dcert_package->get_failed()) {
+    // Oh, too bad for us.  We're dependent on this package which we
+    // weren't able to download for some reason.
+    set_failed();
+  }
+
   if (!_p3dcert_package->get_ready()) {
     // Wait for it to finish downloading.
     return;
@@ -2982,14 +2988,7 @@ report_package_done(P3DPackage *package, bool success) {
       _splash_window->set_install_progress(0.0, true, 0);
     }
     set_install_label("");
-  
-    if (success) {
-      mark_p3d_untrusted();
-    } else if (!_p3d_trusted) {
-      // Oops, too bad.  Couldn't get the p3dcert package, which means
-      // we can't approve the instance.
-      set_failed();
-    }
+    mark_p3d_untrusted();
     return;
   }
 
