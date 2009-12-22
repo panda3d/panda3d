@@ -249,20 +249,50 @@ P3DInstance(P3D_request_ready_func *func,
 P3DInstance::
 ~P3DInstance() {
   assert(_session == NULL);
+  cleanup();
 
+  if (_browser_script_object != NULL) {
+    P3D_OBJECT_DECREF(_browser_script_object);
+    _browser_script_object = NULL;
+  }
+
+  if (_panda_script_object != NULL) {
+    nout << "panda_script_object ref = "
+         << _panda_script_object->_ref_count << "\n";
+    _panda_script_object->set_instance(NULL);
+    P3D_OBJECT_DECREF(_panda_script_object);
+    _panda_script_object = NULL;
+  }
+
+  nout << "Deleting downloads\n";
+  Downloads::iterator di;
+  for (di = _downloads.begin(); di != _downloads.end(); ++di) {
+    P3DDownload *download = (*di).second;
+    p3d_unref_delete(download);
+  }
+  _downloads.clear();
+  nout << "done deleting downloads\n";
+
+  DESTROY_LOCK(_request_lock);
+
+  // TODO: Is it possible for someone to delete an instance while a
+  // download is still running?  Who will crash when this happens?
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::cleanup
+//       Access: Public
+//  Description: Invalidates the instance and removes any structures
+//               prior to deleting.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+cleanup() {
   if (_auth_session != NULL) {
     _auth_session->shutdown(false);
     p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
-
-  P3D_OBJECT_XDECREF(_browser_script_object);
-
-  nout << "panda_script_object ref = "
-       << _panda_script_object->_ref_count << "\n";
-  _panda_script_object->set_instance(NULL);
-  P3D_OBJECT_DECREF(_panda_script_object);
-
+    
   for (int i = 0; i < (int)IT_num_image_types; ++i) {
     _image_files[i].cleanup();
   }
@@ -308,18 +338,40 @@ P3DInstance::
   if (_frame_timer != NULL) {
     CFRunLoopTimerInvalidate(_frame_timer);
     CFRelease(_frame_timer);
+    _frame_timer = NULL;
   }
 
   free_swbuffer();
 #endif    
 
-  DESTROY_LOCK(_request_lock);
+  TiXmlDocument *doc = NULL;
+  ACQUIRE_LOCK(_request_lock);
+  RawRequests::iterator ri;
+  for (ri = _raw_requests.begin(); ri != _raw_requests.end(); ++ri) {
+    doc = (*ri);
+    delete doc;
+  }
+  _raw_requests.clear();
+  RELEASE_LOCK(_request_lock);
 
-  // TODO: empty _raw_requests and _baked_requests queues, and
-  // _downloads map.
+  nout << this << " cleanup baked_requests\n";
+  BakedRequests::iterator bi;
+  for (bi = _baked_requests.begin(); bi != _baked_requests.end(); ++bi) {
+    P3D_request *request = (*bi);
+    nout << this << " cleanup in request " << request << " with " << request->_instance
+         << "\n";
+    finish_request(request, false);
+  }
+  _baked_requests.clear();
+  nout << this << " done cleanup baked_requests\n";
 
-  // TODO: Is it possible for someone to delete an instance while a
-  // download is still running?  Who will crash when this happens?
+  Downloads::iterator di;
+  for (di = _downloads.begin(); di != _downloads.end(); ++di) {
+    P3DDownload *download = (*di).second;
+    download->cancel();
+  }
+
+  _failed = true;
 }
 
 
@@ -750,7 +802,9 @@ add_raw_request(TiXmlDocument *doc) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_baked_request(P3D_request *request) {
+  assert(request->_instance == NULL);
   request->_instance = this;
+  ref();
 
   _baked_requests.push_back(request);
   _request_pending = true;
@@ -762,7 +816,7 @@ add_baked_request(P3D_request *request) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::finish_request
-//       Access: Public
+//       Access: Public, Static
 //  Description: Deallocates a previously-returned request from
 //               get_request().  If handled is true, the request has
 //               been handled by the host; otherwise, it has been
@@ -771,6 +825,13 @@ add_baked_request(P3D_request *request) {
 void P3DInstance::
 finish_request(P3D_request *request, bool handled) {
   assert(request != NULL);
+  if (request->_instance == NULL) {
+    nout << "Ignoring empty request " << request << "\n";
+    return;
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  assert(inst_mgr->validate_instance(request->_instance) != NULL);
 
   switch (request->_request_type) {
   case P3D_RT_stop:
@@ -778,13 +839,17 @@ finish_request(P3D_request *request, bool handled) {
 
   case P3D_RT_get_url:
     free((char *)request->_request._get_url._url);
+    request->_request._get_url._url = NULL;
     break;
 
   case P3D_RT_notify:
     free((char *)request->_request._notify._message);
+    request->_request._notify._message = NULL;
     break;
   }
 
+  p3d_unref_delete(((P3DInstance *)request->_instance));
+  request->_instance = NULL;
   delete request;
 }
 
@@ -932,6 +997,37 @@ add_package(P3DPackage *package) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::remove_package
+//       Access: Public
+//  Description: Indicates that the given package is destructing and
+//               this instance should no longer retain a pointer to
+//               it.  This is normally called only by the P3DPackage
+//               destructor, and it invalidates the instance.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+remove_package(P3DPackage *package) {
+  Packages::iterator pi = find(_packages.begin(), _packages.end(), package);
+  if (pi != _packages.end()) {
+    _packages.erase(pi);
+  }
+  pi = find(_downloading_packages.begin(), _downloading_packages.end(), package);
+  if (pi != _downloading_packages.end()) {
+    _downloading_packages.erase(pi);
+  }
+  if (package == _image_package) {
+    _image_package = NULL;
+  }
+  if (package == _certlist_package) {
+    _certlist_package = NULL;
+  }
+  if (package == _p3dcert_package) {
+    _p3dcert_package = NULL;
+  }
+
+  set_failed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_packages_info_ready
 //       Access: Public
 //  Description: Returns true if all of the packages required by the
@@ -1037,6 +1133,7 @@ start_download(P3DDownload *download, bool add_request) {
   // add_request is true in order to ask the plugin for the stream.
   if (add_request) {
     P3D_request *request = new P3D_request;
+    request->_instance = NULL;
     request->_request_type = P3D_RT_get_url;
     request->_request._get_url._url = strdup(download->get_url().c_str());
     request->_request._get_url._unique_id = download_id;
@@ -1098,6 +1195,7 @@ request_stop_main_thread() {
   if (add_request) {
     _requested_stop = true;
     P3D_request *request = new P3D_request;
+    request->_instance = NULL;
     request->_request_type = P3D_RT_stop;
     add_baked_request(request);
   }
@@ -1113,6 +1211,7 @@ request_stop_main_thread() {
 void P3DInstance::
 request_refresh() {
   P3D_request *request = new P3D_request;
+  request->_instance = NULL;
   request->_request_type = P3D_RT_refresh;
   add_baked_request(request);
 }
@@ -2032,6 +2131,7 @@ make_p3d_request(TiXmlElement *xrequest) {
       if (message != NULL) {
         // A notify message from Python code.
         request = new P3D_request;
+        request->_instance = NULL;
         request->_request_type = P3D_RT_notify;
         request->_request._notify._message = strdup(message);
         handle_notify_request(message);
@@ -2080,6 +2180,7 @@ make_p3d_request(TiXmlElement *xrequest) {
     } else if (strcmp(rtype, "stop") == 0) {
       // A stop request from Python code.  This is kind of weird, but OK.
       request = new P3D_request;
+      request->_instance = NULL;
       request->_request_type = P3D_RT_stop;
 
     } else {
@@ -2088,7 +2189,9 @@ make_p3d_request(TiXmlElement *xrequest) {
   }
 
   if (request != NULL) {
+    assert(request->_instance == NULL);
     request->_instance = this;
+    ref();
   }
   return request;
 }
@@ -2164,13 +2267,15 @@ handle_notify_request(const string &message) {
 #ifdef __APPLE__
     // Start a timer to update the frame repeatedly.  This seems to be
     // steadier than waiting for nullEvent.
-    CFRunLoopTimerContext timer_context;
-    memset(&timer_context, 0, sizeof(timer_context));
-    timer_context.info = this;
-    _frame_timer = CFRunLoopTimerCreate
-      (NULL, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
-    CFRunLoopRef run_loop = CFRunLoopGetCurrent();
-    CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
+    if (_frame_timer == NULL) {
+      CFRunLoopTimerContext timer_context;
+      memset(&timer_context, 0, sizeof(timer_context));
+      timer_context.info = this;
+      _frame_timer = CFRunLoopTimerCreate
+        (NULL, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
+      CFRunLoopRef run_loop = CFRunLoopGetCurrent();
+      CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
+    }
 #endif  // __APPLE__
 
   } else if (message == "onwindowdetach") {
@@ -3400,6 +3505,7 @@ add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers) {
 void P3DInstance::
 send_notify(const string &message) {
   P3D_request *request = new P3D_request;
+  request->_instance = NULL;
   request->_request_type = P3D_RT_notify;
   request->_request._notify._message = strdup(message.c_str());
   add_baked_request(request);

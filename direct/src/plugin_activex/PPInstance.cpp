@@ -591,7 +591,7 @@ std::string PPInstance::GetP3DFilename( )
 
 void PPInstance::HandleRequestLoop() 
 {
-    P3D_instance *p3d_inst = P3D_check_request(false);
+    P3D_instance *p3d_inst = P3D_check_request(0.0);
     while ( p3d_inst != NULL ) 
     {
         P3D_request *request = P3D_instance_get_request(p3d_inst);
@@ -607,7 +607,7 @@ void PPInstance::HandleRequestLoop()
                 nout << "Error handling P3D request. Instance's user data is not a Control \n";
             }
         }
-        p3d_inst = P3D_check_request( false );
+        p3d_inst = P3D_check_request(0.0);
     }
 }
 

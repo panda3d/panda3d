@@ -83,6 +83,13 @@ P3DPackage::
   // Tell any pending callbacks that we're no good any more.
   report_done(false);
 
+  // Ditto the outstanding instances.
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    (*ii)->remove_package(this);
+  }
+  _instances.clear();
+
   if (_xconfig != NULL) {
     delete _xconfig;
     _xconfig = NULL;
@@ -102,8 +109,6 @@ P3DPackage::
     delete _temp_contents_file;
     _temp_contents_file = NULL;
   }
-
-  assert(_instances.empty());
 }
 
 ////////////////////////////////////////////////////////////////////

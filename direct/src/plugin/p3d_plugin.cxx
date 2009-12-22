@@ -532,11 +532,7 @@ P3D_request_finish(P3D_request *request, bool handled) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   if (request != (P3D_request *)NULL) {
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-    P3DInstance *inst = inst_mgr->validate_instance(request->_instance);
-    if (inst != NULL) {
-      inst->finish_request(request, handled);
-    }
+    P3DInstance::finish_request(request, handled);
   }
   RELEASE_LOCK(_api_lock);
 }

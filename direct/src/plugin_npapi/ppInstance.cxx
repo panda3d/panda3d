@@ -603,10 +603,10 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 handle_request(P3D_request *request) {
-  assert(request->_instance == _p3d_inst);
-  if (_failed) {
+  if (_p3d_inst == NULL || _failed) {
     return;
   }
+  assert(request->_instance == _p3d_inst);
 
   bool handled = false;
 
@@ -991,11 +991,6 @@ void PPInstance::
 request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
   assert(inst != NULL);
-
-  {
-    static int n = 0;
-    nout << "request_ready " << ++n << "\n";
-  }
 
   if (has_plugin_thread_async_call) {
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
@@ -1639,15 +1634,20 @@ handle_request_loop() {
     return;
   }
 
-  P3D_instance *p3d_inst = P3D_check_request(false);
+  P3D_instance *p3d_inst = P3D_check_request(0.0);
   while (p3d_inst != (P3D_instance *)NULL) {
     P3D_request *request = P3D_instance_get_request(p3d_inst);
     if (request != (P3D_request *)NULL) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
       assert(inst != NULL);
       inst->handle_request(request);
+      if (!is_plugin_loaded()) {
+        // Oops, we may have unloaded the plugin as an indirect effect
+        // of handling the request.  If so, get out of here.
+        return;
+      }
     }
-    p3d_inst = P3D_check_request(false);
+    p3d_inst = P3D_check_request(0.0);
   }
 
   // Also check to see if we have any file_data objects that have

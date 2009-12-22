@@ -418,6 +418,7 @@ start_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
+  nout << "finish_instance\n";
   Instances::iterator ii;
   ii = _instances.find(inst);
   assert(ii != _instances.end());
@@ -437,7 +438,10 @@ finish_instance(P3DInstance *inst) {
     }
   }
 
+  inst->cleanup();
+  nout << "done cleanup, calling delete\n";
   p3d_unref_delete(inst);
+  nout << "done finish_instance\n";
 }
 
 ////////////////////////////////////////////////////////////////////

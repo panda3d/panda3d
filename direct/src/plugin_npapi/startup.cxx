@@ -372,7 +372,7 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
-  nout << "destroy instance " << instance << ", " 
+  nout << "destroy instance " << instance << ", "
        << (PPInstance *)instance->pdata << "\n";
   nout << "save = " << (void *)save << "\n";
   //  (*save) = NULL;

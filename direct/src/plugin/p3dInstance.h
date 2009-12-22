@@ -56,6 +56,7 @@ public:
               const P3D_token tokens[], size_t num_tokens, 
               int argc, const char *argv[], void *user_data);
   ~P3DInstance();
+  void cleanup();
 
   void set_p3d_url(const string &p3d_url);
   void set_p3d_filename(const string &p3d_filename, const int &p3d_offset = 0);
@@ -73,7 +74,7 @@ public:
   void bake_requests();
   void add_raw_request(TiXmlDocument *doc);
   void add_baked_request(P3D_request *request);
-  void finish_request(P3D_request *request, bool handled);
+  static void finish_request(P3D_request *request, bool handled);
 
   bool feed_url_stream(int unique_id,
                        P3D_result_code result_code,
@@ -94,6 +95,7 @@ public:
 
   void add_package(const string &name, const string &version, P3DHost *host);
   void add_package(P3DPackage *package);
+  void remove_package(P3DPackage *package);
   bool get_packages_info_ready() const;
   bool get_packages_ready() const;
   bool get_packages_failed() const;
