@@ -85,6 +85,11 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _python_window_open = false;
 
 #ifdef __APPLE__
+  // Get the run loop in the browser thread.  (CFRunLoopGetMain() is
+  // only 10.5 or higher.  Plus, the browser thread is not necessarily
+  // the "main" thread.)
+  _run_loop_main = CFRunLoopGetCurrent();
+  CFRetain(_run_loop_main);
   _request_timer = NULL;
 #endif  // __APPLE__
 }
@@ -99,11 +104,12 @@ PPInstance::
   cleanup_window();
 
 #ifdef __APPLE__
-    if (_request_timer != NULL) {
-      CFRunLoopTimerInvalidate(_request_timer);
-      CFRelease(_request_timer);
-      _request_timer = NULL;
-    }
+  if (_request_timer != NULL) {
+    CFRunLoopTimerInvalidate(_request_timer);
+    CFRelease(_request_timer);
+  }
+  _run_loop_main = CFRunLoopGetCurrent();
+  CFRelease(_run_loop_main);
 #endif  // __APPLE__
 
   if (_p3d_inst != NULL) {
@@ -1032,8 +1038,7 @@ request_ready(P3D_instance *instance) {
     timer_context.info = inst;
     inst->_request_timer = CFRunLoopTimerCreate
       (NULL, 0, 0, 0, 0, timer_callback, &timer_context);
-    CFRunLoopRef run_loop = CFRunLoopGetMain();
-    CFRunLoopAddTimer(run_loop, inst->_request_timer, kCFRunLoopCommonModes);
+    CFRunLoopAddTimer(inst->_run_loop_main, inst->_request_timer, kCFRunLoopCommonModes);
 #endif  // __APPLE__
 
     // Doesn't appear to be a reliable way to simulate this in Linux.

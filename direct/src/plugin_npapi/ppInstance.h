@@ -187,6 +187,7 @@ private:
 #endif  // _WIN32
 
 #ifdef __APPLE__
+  CFRunLoopRef _run_loop_main;
   CFRunLoopTimerRef _request_timer;
 #endif  // __APPLE__
 
