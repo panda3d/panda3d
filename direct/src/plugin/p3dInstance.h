@@ -204,7 +204,8 @@ private:
   void paint_window();
 
 #ifdef __APPLE__
-  bool get_framebuffer();
+  bool get_framebuffer_osx_port();
+  bool get_framebuffer_osx_cgcontext();
   void paint_window_osx_port();
   void paint_window_osx_cgcontext(CGContextRef context);
 #endif  //  __APPLE__

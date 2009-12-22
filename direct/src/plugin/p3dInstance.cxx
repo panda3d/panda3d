@@ -3075,15 +3075,16 @@ paint_window() {
 
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_framebuffer
+//     Function: P3DInstance::get_framebuffer_osx_port
 //       Access: Private
 //  Description: Fills _reversed_buffer with the pixels from the
-//               current frame.  Returns true on success, or false if
-//               there is no Panda3D window visible.  Only needed on
-//               OSX.
+//               current frame, suitable for rendering via the old
+//               QuickDraw interface.  Returns true on success, or
+//               false if there is no Panda3D window visible.  Only
+//               needed on OSX.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
-get_framebuffer() {
+get_framebuffer_osx_port() {
   if (_swbuffer == NULL || !_instance_window_opened) {
     // We don't have a Panda3D window yet.
     return false;
@@ -3152,6 +3153,47 @@ get_framebuffer() {
 
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_framebuffer_osx_cgcontext
+//       Access: Private
+//  Description: Fills _reversed_buffer with the pixels from the
+//               current frame, suitable for rendering via the new
+//               CoreGraphics interface.  Returns true on success, or
+//               false if there is no Panda3D window visible.  Only
+//               needed on OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+get_framebuffer_osx_cgcontext() {
+  if (_swbuffer == NULL || !_instance_window_opened) {
+    // We don't have a Panda3D window yet.
+    return false;
+  }
+  if (_splash_window != NULL && _splash_window->get_visible()) {
+    // If the splash window is up, don't draw the Panda3D window.
+    return false;
+  }
+
+  // blit rendered framebuffer into window backing store
+  int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
+  int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
+  size_t rowsize = _swbuffer->get_row_size();
+
+  if (_swbuffer->ready_for_read()) {
+    // Copy the new framebuffer image from the child process.
+    const void *framebuffer = _swbuffer->open_read_framebuffer();
+    memcpy(_reversed_buffer, framebuffer, y_size * rowsize);
+    _swbuffer->close_read_framebuffer();
+
+  } else {
+    // No frame ready.  Just re-paint the frame we had saved last
+    // time.
+  }
+
+  return true;
+}
+#endif  // __APPLE__
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::paint_window_osx_port
 //       Access: Private
 //  Description: Actually paints the rendered image to the browser
@@ -3160,7 +3202,7 @@ get_framebuffer() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 paint_window_osx_port() {
-  if (!get_framebuffer()) {
+  if (!get_framebuffer_osx_port()) {
     // No Panda3D window is showing.
     return;
   }
@@ -3215,16 +3257,13 @@ paint_window_osx_port() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 paint_window_osx_cgcontext(CGContextRef context) {
-  if (!get_framebuffer()) {
+  if (!get_framebuffer_osx_cgcontext()) {
     // No Panda3D window is showing.
     return;
   }
 
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
-
-  CGContextTranslateCTM(context, 0, y_size);
-  CGContextScaleCTM(context, 1.0, -1.0);
 
   if (_buffer_image != NULL) {
     CGRect region = { { 0, 0 }, { x_size, y_size } };
@@ -3589,6 +3628,7 @@ alloc_swbuffer() {
     (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
   if (_swbuffer != NULL) {
     _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+    memset(_reversed_buffer, 0, _swbuffer->get_row_size());
     size_t rowsize = _swbuffer->get_row_size();
     
     _buffer_data = CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
