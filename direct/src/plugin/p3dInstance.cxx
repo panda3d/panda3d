@@ -264,14 +264,12 @@ P3DInstance::
     _panda_script_object = NULL;
   }
 
-  nout << "Deleting downloads\n";
   Downloads::iterator di;
   for (di = _downloads.begin(); di != _downloads.end(); ++di) {
     P3DDownload *download = (*di).second;
     p3d_unref_delete(download);
   }
   _downloads.clear();
-  nout << "done deleting downloads\n";
 
   DESTROY_LOCK(_request_lock);
 
@@ -354,16 +352,12 @@ cleanup() {
   _raw_requests.clear();
   RELEASE_LOCK(_request_lock);
 
-  nout << this << " cleanup baked_requests\n";
   BakedRequests::iterator bi;
   for (bi = _baked_requests.begin(); bi != _baked_requests.end(); ++bi) {
     P3D_request *request = (*bi);
-    nout << this << " cleanup in request " << request << " with " << request->_instance
-         << "\n";
     finish_request(request, false);
   }
   _baked_requests.clear();
-  nout << this << " done cleanup baked_requests\n";
 
   Downloads::iterator di;
   for (di = _downloads.begin(); di != _downloads.end(); ++di) {
@@ -831,7 +825,10 @@ finish_request(P3D_request *request, bool handled) {
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  assert(inst_mgr->validate_instance(request->_instance) != NULL);
+  if (inst_mgr->validate_instance(request->_instance) == NULL) {
+    nout << "Ignoring unknown request " << request << "\n";
+    return;
+  }
 
   switch (request->_request_type) {
   case P3D_RT_stop:
