@@ -34,12 +34,12 @@ class LayerEditorUI(wx.Panel):
         self.opRename    = "Rename Layer"
 
         self.menuItems = list()
+        self.menuItems.append(self.opAdd)
+        self.menuItems.append(self.opDelete)
         self.menuItems.append(self.opAddObj)
         self.menuItems.append(self.opRemoveObj)
         self.menuItems.append(self.opShow)
-        self.menuItems.append(self.opAdd)
-        self.menuItems.append(self.opDelete)
-        self.menuItems.append(self.opRename)
+        #self.menuItems.append(self.opRename)
 
         self.popupmenu = wx.Menu()
         for item in self.menuItems:
