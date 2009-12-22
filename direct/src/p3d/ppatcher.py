@@ -80,7 +80,7 @@ for opt, arg in opts:
     elif opt == '-h':
         usage(0)
     else:
-        print 'illegal option: ' + flag
+        print 'illegal option: ' + arg
         sys.exit(1)
 
 packageNames = args
