@@ -303,6 +303,8 @@ else:
 ########################################################################
 
 if (COMPILER=="MSVC"):
+    PkgDisable("X11")
+    PkgDisable("XF86DGA")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
