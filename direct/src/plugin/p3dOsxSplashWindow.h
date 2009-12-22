@@ -48,6 +48,9 @@ protected:
 
 private:
   void paint_window();
+  void paint_window_osx_cgcontext(CGContextRef context);
+  bool handle_event_osx_event_record(const P3D_event_data &event);
+  bool handle_event_osx_cocoa(const P3D_event_data &event);
   class OsxImageData;
 
   void load_image(OsxImageData &image, const string &image_filename);

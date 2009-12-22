@@ -33,6 +33,20 @@
 #ifdef __APPLE__
 #include <sys/mman.h>
 #include <ApplicationServices/ApplicationServices.h>
+
+// Lifted from NSEvent.h (which is Objective-C).
+enum {
+   NSAlphaShiftKeyMask = 1 << 16,
+   NSShiftKeyMask      = 1 << 17,
+   NSControlKeyMask    = 1 << 18,
+   NSAlternateKeyMask  = 1 << 19,
+   NSCommandKeyMask    = 1 << 20,
+   NSNumericPadKeyMask = 1 << 21,
+   NSHelpKeyMask       = 1 << 22,
+   NSFunctionKeyMask   = 1 << 23,
+   NSDeviceIndependentModifierFlagsMask = 0xffff0000U
+};
+
 #endif  // __APPLE__
 
 #ifdef _WIN32
@@ -62,6 +76,15 @@ const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
   "play_click",
   "none",  // Not really used.
 };
+
+static void
+write_str(ostream &out, const wchar_t *str) {
+  const wchar_t *p = str;
+  while (*p != 0) {
+    out << (int)*p << ' ';
+    ++p;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::Constructor
@@ -137,6 +160,7 @@ P3DInstance(P3D_request_ready_func *func,
   // We have to start with _mouse_active true; firefox doesn't send
   // activate events.
   _mouse_active = true;
+  _modifiers = 0;
   _frame_timer = NULL;
 #endif  // __APPLE__
 
@@ -833,88 +857,15 @@ handle_event(const P3D_event_data &event) {
   }
 
 #if defined(__APPLE__)
-  assert(event._event_type == P3D_ET_osx_event_record);
-  EventRecord *er = event._event._osx_event_record._event;
-
-  // Need to ensure we have the correct port set, in order to
-  // convert the mouse coordinates successfully via
-  // GlobalToLocal().
-  const P3D_window_handle &handle = _wparams.get_parent_window();
-  assert(handle._window_handle_type == P3D_WHT_osx_port);
-  GrafPtr out_port = handle._handle._osx_port._port;
-  GrafPtr port_save = NULL;
-  Boolean port_changed = QDSwapPort(out_port, &port_save);
-  
-  Point pt = er->where;
-  GlobalToLocal(&pt);
-
-  if (port_changed) {
-    QDSwapPort(port_save, NULL);
+  if (event._event_type == P3D_ET_osx_event_record) {
+    retval = handle_event_osx_event_record(event);
+  } else if (event._event_type == P3D_ET_osx_cocoa) {
+    retval = handle_event_osx_cocoa(event);
+  } else {
+    assert(false);
   }
+#endif  // __APPLE__
 
-  SubprocessWindowBuffer::Event swb_event;
-  swb_event._source = SubprocessWindowBuffer::ES_none;
-  swb_event._type = SubprocessWindowBuffer::ET_none;
-  swb_event._code = 0;
-  swb_event._flags = 0;
-  add_modifier_flags(swb_event._flags, er->modifiers);
-
-  switch (er->what) {
-  case mouseDown:
-  case mouseUp:
-    {
-      P3D_window_handle window = _wparams.get_parent_window();
-      swb_event._source = SubprocessWindowBuffer::ES_mouse;
-      if (er->what == mouseUp) {
-        swb_event._type = SubprocessWindowBuffer::ET_button_up;
-      } else {
-        swb_event._type = SubprocessWindowBuffer::ET_button_down;
-      }
-      retval = true;
-    }
-    break;
-
-  case keyDown:
-  case keyUp:
-  case autoKey:
-    if (_swbuffer != NULL) {
-      swb_event._source = SubprocessWindowBuffer::ES_keyboard;
-      swb_event._code = er->message;
-      if (er->what == keyUp) {
-        swb_event._type = SubprocessWindowBuffer::ET_button_up;
-      } else if (er->what == keyDown) {
-        swb_event._type = SubprocessWindowBuffer::ET_button_down;
-      } else {
-        swb_event._type = SubprocessWindowBuffer::ET_button_again;
-      }
-      retval = true;
-    }
-    break;
-
-  case updateEvt:
-    paint_window();
-    retval = true;
-    break;
-
-  case activateEvt:
-    _mouse_active = ((er->modifiers & 1) != 0);
-    break;
-
-  default:
-    break;
-  }
-
-  if (_mouse_active) {
-    swb_event._x = pt.h;
-    swb_event._y = pt.v;
-    swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position | SubprocessWindowBuffer::EF_has_mouse;
-  }
-
-  if (_swbuffer != NULL) {
-    _swbuffer->add_event(swb_event);
-  }
-
-#endif
   return retval;
 }
 
@@ -3018,28 +2969,47 @@ set_install_label(const string &install_label) {
 //     Function: P3DInstance::paint_window
 //       Access: Private
 //  Description: Actually paints the rendered image to the browser
-//               window.  This is only implemented (and needed) for
-//               OSX, where the child process isn't allowed to do it
-//               directly.
+//               window.  This is only needed for OSX, where the child
+//               process isn't allowed to do it directly.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 paint_window() {
+  const P3D_window_handle &handle = _wparams.get_parent_window();
+  if (handle._window_handle_type == P3D_WHT_osx_port) {
+    paint_window_osx_port();
+
+  } else if (handle._window_handle_type == P3D_WHT_osx_cgcontext) {
+    const P3D_window_handle &handle = _wparams.get_parent_window();
+    assert(handle._window_handle_type == P3D_WHT_osx_cgcontext);
+    CGContextRef context = handle._handle._osx_cgcontext._context;
+
+    paint_window_osx_cgcontext(context);
+  }
+}
+
 #ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_framebuffer
+//       Access: Private
+//  Description: Fills _reversed_buffer with the pixels from the
+//               current frame.  Returns true on success, or false if
+//               there is no Panda3D window visible.  Only needed on
+//               OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+get_framebuffer() {
   if (_swbuffer == NULL || !_instance_window_opened) {
     // We don't have a Panda3D window yet.
-    return;
+    return false;
   }
   if (_splash_window != NULL && _splash_window->get_visible()) {
     // If the splash window is up, don't draw the Panda3D window.
-    return;
+    return false;
   }
-
-  QDErr err;
 
   // blit rendered framebuffer into window backing store
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
-
   size_t rowsize = _swbuffer->get_row_size();
 
   if (_swbuffer->ready_for_read()) {
@@ -3089,60 +3059,33 @@ paint_window() {
     // time.
   }
 
-  /*
-  // This is an attempt to paint the frame using the less-deprecated
-  // Quartz interfaces.  Sure does seem like a lot of layers to go
-  // through just to paint a bitmap.
-  CFDataRef data =
-    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
-                                y_size * rowsize, kCFAllocatorNull);
+  return true;
+}
+#endif  // __APPLE__
 
-  CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
-  CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-
-  CGImageRef image =
-    CGImageCreate(x_size, y_size, 8, 32, rowsize, color_space,
-                  kCGImageAlphaFirst | kCGBitmapByteOrder32Little, provider,
-                  NULL, false, kCGRenderingIntentDefault);
-
-  CGrafPtr port = _wparams.get_parent_window()._port;
-  CGContextRef context;
-  err = QDBeginCGContext(port, &context);
-  if (err != noErr) {
-    nout << "Error: QDBeginCGContext\n";
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::paint_window_osx_port
+//       Access: Private
+//  Description: Actually paints the rendered image to the browser
+//               window, using the OSX deprecated QuickDraw
+//               interfaces.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+paint_window_osx_port() {
+  if (!get_framebuffer()) {
+    // No Panda3D window is showing.
     return;
   }
 
-  //  CGContextTranslateCTM(context, 0.0, win_height);
-  //  CGContextScaleCTM(context, 1.0, -1.0);
+  int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
+  int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
+  size_t rowsize = _swbuffer->get_row_size();
 
-  // We have to rely on the clipping rectangle having been set up
-  // correctly in order to get the proper location to draw the image.
-  // This isn't completely right, because if the image is slightly
-  // offscreen, the top left of the clipping rectangle will no longer
-  // correspond to the top left of the original image.
-  CGRect rect = CGContextGetClipBoundingBox(context);
-  nout << "rect: " << rect.origin.x << " " << rect.origin.y
-       << " " << rect.size.width << " " << rect.size.height << "\n";
-  rect.size.width = x_size;
-  rect.size.height = y_size;
-
-  CGContextDrawImage(context, rect, image);
-  
-  //CGContextSynchronize(context);
-  CGContextFlush(context);
-  QDEndCGContext(port, &context);
-
-  CGImageRelease(image);
-  CGColorSpaceRelease(color_space);
-  CGDataProviderRelease(provider);
-
-  CFRelease(data);
-  */
-
-  // Painting the frame using the deprecated QuickDraw interfaces.
   Rect src_rect = {0, 0, y_size, x_size};
   Rect ddrc_rect = {0, 0, y_size, x_size};
+
+  QDErr err;
 
   GWorldPtr pGWorld;
   err = NewGWorldFromPtr(&pGWorld, k32BGRAPixelFormat, &src_rect, 0, 0, 0, 
@@ -3172,18 +3115,269 @@ paint_window() {
   }
   
   DisposeGWorld(pGWorld);
+}
 #endif  // __APPLE__  
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::paint_window_osx_cgcontext
+//       Access: Private
+//  Description: Actually paints the rendered image to the browser
+//               window.  This is the newer CoreGraphics
+//               implementation on OSX.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+paint_window_osx_cgcontext(CGContextRef context) {
+  if (!get_framebuffer()) {
+    // No Panda3D window is showing.
+    return;
+  }
+
+  int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
+  int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
+  size_t rowsize = _swbuffer->get_row_size();
+
+  CGContextTranslateCTM(context, 0, y_size);
+  CGContextScaleCTM(context, 1.0, -1.0);
+
+  CFDataRef data =
+    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
+                                y_size * rowsize, kCFAllocatorNull);
+
+  CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
+  //CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+
+  CGImageRef image =
+    CGImageCreate(x_size, y_size, 8, 32, rowsize, color_space,
+                  kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little, 
+                  provider, NULL, false, kCGRenderingIntentDefault);
+
+  CGRect region = { { 0, 0 }, { x_size, y_size } };
+  CGContextDrawImage(context, region, image);
+
+  CGImageRelease(image);
+  CGColorSpaceRelease(color_space);
+  CGDataProviderRelease(provider);
+
+  CFRelease(data);
+}
+#endif  // __APPLE__
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::handle_event_osx_event_record
+//       Access: Private
+//  Description: Responds to the deprecated Carbon event types in Mac
+//               OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+handle_event_osx_event_record(const P3D_event_data &event) {
+  bool retval = false;
+
+#ifdef __APPLE__
+  assert(event._event_type == P3D_ET_osx_event_record);
+  EventRecord *er = event._event._osx_event_record._event;
+
+  Point pt = er->where;
+
+  // Need to ensure we have the correct port set, in order to
+  // convert the mouse coordinates successfully via
+  // GlobalToLocal().
+  const P3D_window_handle &handle = _wparams.get_parent_window();
+  if (handle._window_handle_type == P3D_WHT_osx_port) {
+    GrafPtr out_port = handle._handle._osx_port._port;
+    GrafPtr port_save = NULL;
+    Boolean port_changed = QDSwapPort(out_port, &port_save);
+    
+    GlobalToLocal(&pt);
+    
+    if (port_changed) {
+      QDSwapPort(port_save, NULL);
+    }
+  } else {
+    // First, convert the coordinates from screen coordinates to
+    // browser window coordinates.
+    WindowRef window = handle._handle._osx_cgcontext._window;
+    CGPoint cgpt = { pt.h, pt.v };
+    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
+                   kHICoordSpaceWindow, window);
+
+    // Then convert to plugin coordinates.
+    pt.h = cgpt.x - _wparams.get_win_x();
+    pt.v = cgpt.y - _wparams.get_win_y();
+  }
+
+  SubprocessWindowBuffer::Event swb_event;
+  swb_event._source = SubprocessWindowBuffer::ES_none;
+  swb_event._type = SubprocessWindowBuffer::ET_none;
+  swb_event._code = 0;
+  swb_event._flags = 0;
+  add_carbon_modifier_flags(swb_event._flags, er->modifiers);
+
+  switch (er->what) {
+  case mouseDown:
+    swb_event._source = SubprocessWindowBuffer::ES_mouse;
+    swb_event._type = SubprocessWindowBuffer::ET_button_down;
+    retval = true;
+    break;
+
+  case mouseUp:
+    swb_event._source = SubprocessWindowBuffer::ES_mouse;
+    swb_event._type = SubprocessWindowBuffer::ET_button_up;
+    retval = true;
+    break;
+
+  case keyDown:
+  case keyUp:
+  case autoKey:
+    if (_swbuffer != NULL) {
+      swb_event._source = SubprocessWindowBuffer::ES_keyboard;
+      swb_event._code = er->message;
+      if (er->what == keyUp) {
+        swb_event._type = SubprocessWindowBuffer::ET_button_up;
+      } else if (er->what == keyDown) {
+        swb_event._type = SubprocessWindowBuffer::ET_button_down;
+      } else {
+        swb_event._type = SubprocessWindowBuffer::ET_button_again;
+      }
+      retval = true;
+    }
+    break;
+
+  case updateEvt:
+    paint_window();
+    retval = true;
+    break;
+
+  case activateEvt:
+    _mouse_active = ((er->modifiers & 1) != 0);
+    break;
+
+  default:
+    break;
+  }
+
+  if (_mouse_active) {
+    swb_event._x = pt.h;
+    swb_event._y = pt.v;
+    swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position | SubprocessWindowBuffer::EF_has_mouse;
+  }
+
+  if (_swbuffer != NULL) {
+    _swbuffer->add_event(swb_event);
+  }
+#endif  // __APPLE__
+
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_modifier_flags
+//     Function: P3DInstance::handle_event_osx_cocoa
+//       Access: Private
+//  Description: Responds to the new Cocoa event types in Mac
+//               OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+handle_event_osx_cocoa(const P3D_event_data &event) {
+  bool retval = false;
+
+#ifdef __APPLE__
+  assert(event._event_type == P3D_ET_osx_cocoa);
+  const P3DCocoaEvent &ce = event._event._osx_cocoa._event;
+
+  SubprocessWindowBuffer::Event swb_event;
+  swb_event._source = SubprocessWindowBuffer::ES_none;
+  swb_event._type = SubprocessWindowBuffer::ET_none;
+  swb_event._code = 0;
+  swb_event._flags = 0;
+
+  switch (ce.type) {
+  case P3DCocoaEventDrawRect:
+    {
+      CGContextRef context = ce.data.draw.context;
+      paint_window_osx_cgcontext(context);
+      retval = true;
+    }
+    break;
+
+  case P3DCocoaEventMouseDown:
+    swb_event._source = SubprocessWindowBuffer::ES_mouse;
+    swb_event._type = SubprocessWindowBuffer::ET_button_down;
+    retval = true;
+    break;
+
+  case P3DCocoaEventMouseUp:
+    swb_event._source = SubprocessWindowBuffer::ES_mouse;
+    swb_event._type = SubprocessWindowBuffer::ET_button_up;
+    retval = true;
+    break;
+
+  case P3DCocoaEventKeyDown:
+    swb_event._source = SubprocessWindowBuffer::ES_keyboard;
+    swb_event._code = ce.data.key.keyCode << 8;
+    if (ce.data.key.isARepeat) {
+      swb_event._type = SubprocessWindowBuffer::ET_button_again;
+    } else {
+      swb_event._type = SubprocessWindowBuffer::ET_button_down;
+      if (ce.data.key.characters[0] > 0 & ce.data.key.characters[0] < 0x100) {
+        swb_event._code |= ce.data.key.characters[0];
+      }
+    }
+    _modifiers = ce.data.key.modifierFlags;
+    retval = true;
+    break;
+
+  case P3DCocoaEventKeyUp:
+    swb_event._source = SubprocessWindowBuffer::ES_keyboard;
+    swb_event._type = SubprocessWindowBuffer::ET_button_up;
+    swb_event._code = ce.data.key.keyCode << 8;
+    _modifiers = ce.data.key.modifierFlags;
+    retval = true;
+    break;
+
+  case P3DCocoaEventFlagsChanged:
+    _modifiers = ce.data.key.modifierFlags;
+    retval = true;
+    break;
+
+  case P3DCocoaEventFocusChanged:
+    _mouse_active = (ce.data.focus.hasFocus != 0);
+    retval = true;
+    break;
+  }
+
+  add_cocoa_modifier_flags(swb_event._flags, _modifiers);
+
+  switch (ce.type) {
+  case P3DCocoaEventMouseDown:
+  case P3DCocoaEventMouseMoved:
+  case P3DCocoaEventMouseDragged:
+    swb_event._x = ce.data.mouse.pluginX;
+    swb_event._y = ce.data.mouse.pluginY;
+    swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position;
+  }
+
+  if (_mouse_active) {
+    swb_event._flags |= SubprocessWindowBuffer::EF_has_mouse;
+  }
+
+  if (_swbuffer != NULL) {
+    _swbuffer->add_event(swb_event);
+  }
+#endif  // __APPLE__
+
+  return retval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_carbon_modifier_flags
 //       Access: Private
 //  Description: OSX only: adds the appropriate bits to the Event flag
 //               bitmask to correspond to the modifier buttons held in
 //               the MacOS-style EventRecord::modifiers mask.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-add_modifier_flags(unsigned int &swb_flags, int modifiers) {
+add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers) {
 #ifdef __APPLE__
   if (modifiers & cmdKey) {
     swb_flags |= SubprocessWindowBuffer::EF_meta_held;
@@ -3195,6 +3389,31 @@ add_modifier_flags(unsigned int &swb_flags, int modifiers) {
     swb_flags |= SubprocessWindowBuffer::EF_alt_held;
   }
   if (modifiers & controlKey) {
+    swb_flags |= SubprocessWindowBuffer::EF_control_held;
+  }
+#endif  // __APPLE__
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_cocoa_modifier_flags
+//       Access: Private
+//  Description: OSX only: adds the appropriate bits to the Event flag
+//               bitmask to correspond to the modifier buttons held in
+//               the P3DCocoaEvent modifierFlags mask.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers) {
+#ifdef __APPLE__
+  if (modifiers & NSCommandKeyMask) {
+    swb_flags |= SubprocessWindowBuffer::EF_meta_held;
+  }
+  if (modifiers & NSShiftKeyMask) {
+    swb_flags |= SubprocessWindowBuffer::EF_shift_held;
+  }
+  if (modifiers & NSAlternateKeyMask) {
+    swb_flags |= SubprocessWindowBuffer::EF_alt_held;
+  }
+  if (modifiers & NSControlKeyMask) {
     swb_flags |= SubprocessWindowBuffer::EF_control_held;
   }
 #endif  // __APPLE__
@@ -3284,7 +3503,7 @@ parse_hexdigit(int &result, char digit) {
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::timer_callback
-//       Access: Private
+//       Access: Private, Static
 //  Description: OSX only: this callback is associated with a
 //               CFRunLoopTimer, to be called periodically for
 //               updating the frame.
@@ -3293,7 +3512,6 @@ void P3DInstance::
 timer_callback(CFRunLoopTimerRef timer, void *info) {
   P3DInstance *self = (P3DInstance *)info;
   self->request_refresh();
-  //self->paint_window();
 }
 #endif  // __APPLE__
 

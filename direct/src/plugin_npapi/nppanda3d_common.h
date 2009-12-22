@@ -107,6 +107,18 @@ struct UC_NPString {
 #define HAS_PLUGIN_THREAD_ASYNC_CALL 1
 #endif
 
+// We also need to know whether we have Apple's new Cocoa-based
+// drawing and event callbacks.
+#if defined(NPVERS_MACOSX_HAS_EVENT_MODELS) && NP_VERSION_MINOR >= NPVERS_MACOSX_HAS_EVENT_MODELS
+#define MACOSX_HAS_EVENT_MODELS 1
+#endif
+
+// No one defined a symbol for the introduction of the Cocoa drawing,
+// but it appears to have been version 19.
+#if NP_VERSION_MINOR >= 19
+#define MACOSX_HAS_COREGRAPHICS_DRAWING_MODEL 1
+#endif
+
 // Appears in startup.cxx.
 extern NPNetscapeFuncs *browser;
 

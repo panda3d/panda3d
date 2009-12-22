@@ -200,7 +200,17 @@ private:
   void set_install_label(const string &install_label);
 
   void paint_window();
-  void add_modifier_flags(unsigned int &swb_flags, int modifiers);
+
+#ifdef __APPLE__
+  bool get_framebuffer();
+  void paint_window_osx_port();
+  void paint_window_osx_cgcontext(CGContextRef context);
+#endif  //  __APPLE__
+
+  bool handle_event_osx_event_record(const P3D_event_data &event);
+  bool handle_event_osx_cocoa(const P3D_event_data &event);
+  void add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers);
+  void add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers);
 
   void send_notify(const string &message);
 
@@ -286,6 +296,7 @@ private:
   SubprocessWindowBuffer *_swbuffer;
   char *_reversed_buffer;
   bool _mouse_active;
+  unsigned int _modifiers;
 
   CFRunLoopTimerRef _frame_timer;
 #endif  // __APPLE__

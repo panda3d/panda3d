@@ -35,7 +35,9 @@ class PPDownloadRequest;
 class PPInstance {
 public:
   PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
-             int16_t argc, char *argn[], char *argv[], NPSavedData *saved);
+             int16_t argc, char *argn[], char *argv[], NPSavedData *saved,
+             P3D_window_handle_type window_handle_type,
+             P3D_event_type event_type);
   ~PPInstance();
 
   void begin();
@@ -99,9 +101,28 @@ private:
   window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif  // _WIN32
 
+  class EventAuxData {
+  public:
+    wstring _characters;
+    wstring _characters_im;
+    wstring _text;
+  };
+#ifdef MACOSX_HAS_EVENT_MODELS
+  static void copy_cocoa_event(P3DCocoaEvent *p3d_event, 
+                               NPCocoaEvent *np_event,
+                               EventAuxData &aux_data);
+  static const wchar_t *make_ansi_string(wstring &result, NPNSString *ns_string);
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef __APPLE__
+  static void timer_callback(CFRunLoopTimerRef timer, void *info);
+#endif  // __APPLE__
+
 private:
   NPP _npp_instance;
   unsigned int _npp_mode;
+  P3D_window_handle_type _window_handle_type;
+  P3D_event_type _event_type;
   typedef vector<P3D_token> Tokens;
   Tokens _tokens;
 
@@ -164,6 +185,10 @@ private:
 #ifdef _WIN32
   LONG_PTR _orig_window_proc;
 #endif  // _WIN32
+
+#ifdef __APPLE__
+  CFRunLoopTimerRef _request_timer;
+#endif  // __APPLE__
 
   bool _python_window_open;
 

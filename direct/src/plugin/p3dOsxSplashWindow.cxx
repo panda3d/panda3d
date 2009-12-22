@@ -220,51 +220,17 @@ set_install_progress(double install_progress,
 ////////////////////////////////////////////////////////////////////
 bool P3DOsxSplashWindow::
 handle_event(const P3D_event_data &event) {
-  assert(event._event_type == P3D_ET_osx_event_record);
-  EventRecord *er = event._event._osx_event_record._event;
+  bool retval = false;
 
-  // Need to ensure we have the correct port set, in order to
-  // convert the mouse coordinates successfully via
-  // GlobalToLocal().
-  const P3D_window_handle &handle = _wparams.get_parent_window();
-  assert(handle._window_handle_type == P3D_WHT_osx_port);
-  GrafPtr out_port = handle._handle._osx_port._port;
-  GrafPtr port_save = NULL;
-  Boolean port_changed = QDSwapPort(out_port, &port_save);
-  
-  Point pt = er->where;
-  GlobalToLocal(&pt);
-
-  if (port_changed) {
-    QDSwapPort(port_save, NULL);
-  }
-  
-  switch (er->what) {
-  case updateEvt:
-    paint_window();
-    break;
-
-  case mouseDown:
-    set_mouse_data(_mouse_x, _mouse_y, true);
-    break;
-
-  case mouseUp:
-    set_mouse_data(_mouse_x, _mouse_y, false);
-    break;
-
-  case activateEvt:
-    _mouse_active = ((er->modifiers & 1) != 0);
-    break;
-
-  default:
-    break;
+  if (event._event_type == P3D_ET_osx_event_record) {
+    retval = handle_event_osx_event_record(event);
+  } else if (event._event_type == P3D_ET_osx_cocoa) {
+    retval = handle_event_osx_cocoa(event);
+  } else {
+    assert(false);
   }
 
-  if (_mouse_active) {
-    set_mouse_data(pt.h, pt.v, _mouse_down);
-  }
-
-  return false;
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,34 +263,65 @@ paint_window() {
     return;
   }
 
-  GrafPtr out_port = NULL;
-  if (_toplevel_window != NULL) {
-    GetPort(&out_port);
+  if (_toplevel_window != NULL || 
+      _wparams.get_parent_window()._window_handle_type == P3D_WHT_osx_port) {
 
+    // The old QuickDraw-style window handle.  We use
+    // CreateCGContextForPort() to map this to the new
+    // CoreGraphics-style.
+    GrafPtr out_port = NULL;
+    if (_toplevel_window != NULL) {
+      GetPort(&out_port);
+      
+    } else {
+      const P3D_window_handle &handle = _wparams.get_parent_window();
+      assert(handle._window_handle_type == P3D_WHT_osx_port);
+      out_port = handle._handle._osx_port._port;
+    }
+    
+    CGContextRef context;
+    OSStatus err = CreateCGContextForPort(out_port, &context);
+    if (err != noErr) {
+      nout << "Couldn't create CG context\n";
+      return;
+    }
+    
+    //  Adjust for any SetOrigin calls on out_port
+    SyncCGContextOriginWithPort(context, out_port);
+    
+    //  Move the CG origin to the upper left of the port
+    Rect port_rect;
+    GetPortBounds(out_port, &port_rect);
+    CGContextTranslateCTM(context, 0, (float)(port_rect.bottom - port_rect.top));
+    
+    //  Flip the y axis so that positive Y points down
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    paint_window_osx_cgcontext(context);
+
+    // CGContextSynchronize(context);
+    CGContextRelease(context);
+    
   } else {
+    // The new CoreGraphics-style window handle.  We can draw to this
+    // directly.
+
     const P3D_window_handle &handle = _wparams.get_parent_window();
-    assert(handle._window_handle_type == P3D_WHT_osx_port);
-    out_port = handle._handle._osx_port._port;
+    assert(handle._window_handle_type == P3D_WHT_osx_cgcontext);
+    CGContextRef context = handle._handle._osx_cgcontext._context;
+
+    paint_window_osx_cgcontext(context);
   }
+}
 
-  CGContextRef context;
-  OSStatus err = CreateCGContextForPort(out_port, &context);
-  if (err != noErr) {
-    nout << "Couldn't create CG context\n";
-    return;
-  }
-
-  //  Adjust for any SetOrigin calls on out_port
-  SyncCGContextOriginWithPort(context, out_port);
-  
-  //  Move the CG origin to the upper left of the port
-  Rect port_rect;
-  GetPortBounds(out_port, &port_rect);
-  CGContextTranslateCTM(context, 0, (float)(port_rect.bottom - port_rect.top));
-  
-  //  Flip the y axis so that positive Y points down
-  CGContextScaleCTM(context, 1.0, -1.0);
-
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::paint_window_osx_cgcontext
+//       Access: Private
+//  Description: Redraws the current splash window, using the new
+//               CoreGraphics interface.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+paint_window_osx_cgcontext(CGContextRef context) {
   // Clear the whole region to the background color before beginning.
   CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
@@ -364,9 +361,122 @@ paint_window() {
   if (!_progress_known || _install_progress != 0.0) {
     paint_progress_bar(context);
   }
+}
 
-  CGContextSynchronize(context);
-  CGContextRelease(context);
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::handle_event_osx_event_record
+//       Access: Private
+//  Description: Responds to the deprecated Carbon event types in Mac
+//               OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DOsxSplashWindow::
+handle_event_osx_event_record(const P3D_event_data &event) {
+  assert(event._event_type == P3D_ET_osx_event_record);
+  EventRecord *er = event._event._osx_event_record._event;
+
+  Point pt = er->where;
+
+  // Need to ensure we have the correct port set, in order to
+  // convert the mouse coordinates successfully via
+  // GlobalToLocal().
+  const P3D_window_handle &handle = _wparams.get_parent_window();
+  if (handle._window_handle_type == P3D_WHT_osx_port) {
+    GrafPtr out_port = handle._handle._osx_port._port;
+    GrafPtr port_save = NULL;
+    Boolean port_changed = QDSwapPort(out_port, &port_save);
+  
+    GlobalToLocal(&pt);
+
+    if (port_changed) {
+      QDSwapPort(port_save, NULL);
+    }
+
+  } else if (handle._window_handle_type == P3D_WHT_osx_cgcontext) {
+    // First, convert the coordinates from screen coordinates to
+    // browser window coordinates.
+    WindowRef window = handle._handle._osx_cgcontext._window;
+    CGPoint cgpt = { pt.h, pt.v };
+    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
+                   kHICoordSpaceWindow, window);
+
+    // Then convert to plugin coordinates.
+    pt.h = cgpt.x - _wparams.get_win_x();
+    pt.v = cgpt.y - _wparams.get_win_y();
+  }
+  
+  switch (er->what) {
+  case updateEvt:
+    paint_window();
+    break;
+
+  case mouseDown:
+    set_mouse_data(_mouse_x, _mouse_y, true);
+    break;
+
+  case mouseUp:
+    set_mouse_data(_mouse_x, _mouse_y, false);
+    break;
+
+  case activateEvt:
+    _mouse_active = ((er->modifiers & 1) != 0);
+    break;
+
+  default:
+    break;
+  }
+
+  if (_mouse_active) {
+    set_mouse_data(pt.h, pt.v, _mouse_down);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::handle_event_osx_cocoa
+//       Access: Private
+//  Description: Responds to the new Cocoa event types in Mac
+//               OSX.
+////////////////////////////////////////////////////////////////////
+bool P3DOsxSplashWindow::
+handle_event_osx_cocoa(const P3D_event_data &event) {
+  bool retval = false;
+
+  assert(event._event_type == P3D_ET_osx_cocoa);
+  const P3DCocoaEvent &ce = event._event._osx_cocoa._event;
+
+  switch (ce.type) {
+  case P3DCocoaEventDrawRect:
+    if (_visible) {
+      CGContextRef context = ce.data.draw.context;
+      paint_window_osx_cgcontext(context);
+      retval = true;
+    }
+    break;
+
+  case P3DCocoaEventMouseDown:
+    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, true);
+    retval = true;
+    break;
+
+  case P3DCocoaEventMouseUp:
+    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, false);
+    retval = true;
+    break;
+
+  case P3DCocoaEventMouseMoved:
+  case P3DCocoaEventMouseDragged:
+    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, _mouse_down);
+    retval = true;
+    break;
+
+  case P3DCocoaEventFocusChanged:
+    _mouse_active = (ce.data.focus.hasFocus != 0);
+    retval = true;
+    break;
+  }
+
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -681,13 +791,8 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
                           sizeof(Point), NULL, (void *)&point);
 
         GrafPtr port;
-        if (_toplevel_window != NULL) {
-          port = GetWindowPort(_toplevel_window);
-        } else {
-          const P3D_window_handle &handle = _wparams.get_parent_window();
-          assert(handle._window_handle_type == P3D_WHT_osx_port);
-          port = handle._handle._osx_port._port;
-        }
+        assert(_toplevel_window != NULL);
+        port = GetWindowPort(_toplevel_window);
         GrafPtr port_save = NULL;
         Boolean port_changed = QDSwapPort(port, &port_save);
         GlobalToLocal(&point);

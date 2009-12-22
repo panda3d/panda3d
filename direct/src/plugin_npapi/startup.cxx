@@ -194,7 +194,12 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
   // Check if the browser offers this very useful call.
   if (browser_major > 0 || browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
-    has_plugin_thread_async_call = true;
+    if ((void *)browser->pluginthreadasynccall == (void *)NULL) {
+      nout << "Browser should have PLUGIN_THREAD_ASYNC_CALL, but the pointer is NULL.\n";
+      has_plugin_thread_async_call = false;
+    } else {
+      has_plugin_thread_async_call = true;
+    }
   }
 #endif
 
@@ -287,30 +292,65 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
         int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
   nout << "new instance " << instance << "\n";
 
-  /*
+  P3D_window_handle_type window_handle_type = P3D_WHT_none;
+  P3D_event_type event_type = P3D_ET_none;
+
 #ifdef __APPLE__
-  // We have to request the "core graphics" drawing model to be
+  // The default drawing model for Apple is via the deprecated
+  // QuickDraw GrafPtr, and the default event model is via the
+  // deprecated Carbon EventRecord.
+  window_handle_type = P3D_WHT_osx_port;
+  event_type = P3D_ET_osx_event_record;
+
+  // But we have to request the CoreGraphics drawing model to be
   // compatible with Snow Leopard.
-  NPBool supportsCoreGraphics = false;
+  NPBool supports_core_graphics = false;
+#ifdef MACOSX_HAS_COREGRAPHICS_DRAWING_MODEL
   NPError err = browser->getvalue(instance,
                                   NPNVsupportsCoreGraphicsBool,
-                                  &supportsCoreGraphics);
-  if (err != NPERR_NO_ERROR || !supportsCoreGraphics) {
-    return NPERR_INCOMPATIBLE_VERSION_ERROR;
-  }
-  
-  // Set the drawing model
-  err = browser->setvalue(instance,
-                          (NPPVariable)NPNVpluginDrawingModel,
-                          (void *)NPDrawingModelCoreGraphics);
+                                  &supports_core_graphics);
   if (err != NPERR_NO_ERROR) {
-    return NPERR_INCOMPATIBLE_VERSION_ERROR;
+    supports_core_graphics = false;
   }
-#endif
-  */
+
+  if (supports_core_graphics) {
+    // Set the drawing model
+    err = browser->setvalue(instance,
+                            (NPPVariable)NPNVpluginDrawingModel,
+                            (void *)NPDrawingModelCoreGraphics);
+    if (err == NPERR_NO_ERROR) {
+      window_handle_type = P3D_WHT_osx_cgcontext;
+    }
+  }
+#endif  // MACOSX_HAS_COREGRAPHICS_DRAWING_MODEL
+  nout << "supports_core_graphics = " << (bool)supports_core_graphics
+       << " window_handle_type = " << window_handle_type << "\n";
+
+  // And Snow Leopard also wants the new Cocoa event model.
+  NPBool supports_cocoa = false;
+#ifdef MACOSX_HAS_EVENT_MODELS
+  err = browser->getvalue(instance, NPNVsupportsCocoaBool, &supports_cocoa);
+  if (err != NPERR_NO_ERROR) {
+    supports_cocoa = false;
+  }
+
+  if (supports_cocoa) {
+    // Set the event model
+    err = browser->setvalue(instance,
+                            (NPPVariable)NPPVpluginEventModel,
+                            (void *)NPEventModelCocoa);
+    if (err == NPERR_NO_ERROR) {
+      event_type = P3D_ET_osx_cocoa;
+    }
+  }
+#endif  // MACOSX_HAS_EVENT_MODELS
+  nout << "supports_cocoa = " << (bool)supports_cocoa
+       << " event_type = " << event_type << "\n";
+#endif  // __APPLE__
 
   PPInstance *inst = new PPInstance(pluginType, instance, mode,
-                                    argc, argn, argv, saved);
+                                    argc, argn, argv, saved,
+                                    window_handle_type, event_type);
   instance->pdata = inst;
   nout << "new instance->pdata = " << inst << "\n";
 

@@ -48,11 +48,15 @@ PPInstance::FileDatas PPInstance::_file_datas;
 ////////////////////////////////////////////////////////////////////
 PPInstance::
 PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
-           int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
+           int16_t argc, char *argn[], char *argv[], NPSavedData *saved,
+           P3D_window_handle_type window_handle_type,
+           P3D_event_type event_type) {
   _p3d_inst = NULL;
 
   _npp_instance = instance;
   _npp_mode = mode;
+  _window_handle_type = window_handle_type;
+  _event_type = event_type;
   _script_object = NULL;
   _failed = false;
   _started = false;
@@ -79,6 +83,10 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _got_instance_url = false;
   _got_window = false;
   _python_window_open = false;
+
+#ifdef __APPLE__
+  _request_timer = NULL;
+#endif  // __APPLE__
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,6 +97,14 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
 PPInstance::
 ~PPInstance() {
   cleanup_window();
+
+#ifdef __APPLE__
+    if (_request_timer != NULL) {
+      CFRunLoopTimerInvalidate(_request_timer);
+      CFRelease(_request_timer);
+      _request_timer = NULL;
+    }
+#endif  // __APPLE__
 
   if (_p3d_inst != NULL) {
     P3D_instance_finish(_p3d_inst);
@@ -124,7 +140,8 @@ PPInstance::
 void PPInstance::
 begin() {
   // On Windows and Linux, we must insist on having this call.  OSX
-  // doesn't necessarily require it.
+  // doesn't necessarily require it (which is lucky, since it appears
+  // that Safari doesn't necessarily provide it!)
 #ifndef __APPLE__
   if (!has_plugin_thread_async_call) {
     nout << "Browser version insufficient: we require at least NPAPI version 0.19.\n";
@@ -677,16 +694,29 @@ handle_event(void *event) {
     return retval;
   }
 
-#ifdef __APPLE__
   P3D_event_data edata;
   memset(&edata, 0, sizeof(edata));
-  edata._event_type = P3D_ET_osx_event_record;
-  edata._event._osx_event_record._event = (EventRecord *)event;
+  edata._event_type = _event_type;
+  EventAuxData aux_data;
+  if (_event_type == P3D_ET_osx_event_record) {
+#ifdef __APPLE__
+    edata._event._osx_event_record._event = (EventRecord *)event;
+#endif  // __APPLE__
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+  } else if (_event_type == P3D_ET_osx_cocoa) {
+    // Copy the NPCocoaEvent structure componentwise into a
+    // P3DCocoaEvent structure.
+    NPCocoaEvent *np_event = (NPCocoaEvent *)event;
+    P3DCocoaEvent *p3d_event = &edata._event._osx_cocoa._event;
+    copy_cocoa_event(p3d_event, np_event, aux_data);
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+  }
+
   if (P3D_instance_handle_event(_p3d_inst, &edata)) {
     retval = true;
   }
-
-#endif  // __APPLE__
 
   return retval;
 }
@@ -962,14 +992,18 @@ request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
   assert(inst != NULL);
 
+  {
+    static int n = 0;
+    nout << "request_ready " << ++n << "\n";
+  }
+
   if (has_plugin_thread_async_call) {
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
     // Since we are running at least Gecko 1.9, and we have this very
     // useful function, let's use it to ask the browser to call us back
     // in the main thread.
-    if ((void *)browser->pluginthreadasynccall != (void *)NULL) {
-      browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
-    }
+    assert((void *)browser->pluginthreadasynccall != (void *)NULL);
+    browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
 #endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
 
   } else {
@@ -986,8 +1020,28 @@ request_ready(P3D_instance *instance) {
       PostMessage((HWND)(win->window), WM_USER, 0, 0);
     }
 #endif  // _WIN32
-    // On Mac and Linux, we ignore this asynchronous event, and rely on
-    // detecting it within HandleEvent() and similar callbacks.
+
+#ifdef __APPLE__
+    // Use an OSX timer to forward this event to the main thread.
+
+    // Stop any previously-started timer--we don't need more than one.
+    if (inst->_request_timer != NULL) {
+      CFRunLoopTimerInvalidate(inst->_request_timer);
+      CFRelease(inst->_request_timer);
+      inst->_request_timer = NULL;
+    }
+
+    // And start a new one.
+    CFRunLoopTimerContext timer_context;
+    memset(&timer_context, 0, sizeof(timer_context));
+    timer_context.info = inst;
+    inst->_request_timer = CFRunLoopTimerCreate
+      (NULL, 0, 0, 0, 0, timer_callback, &timer_context);
+    CFRunLoopRef run_loop = CFRunLoopGetMain();
+    CFRunLoopAddTimer(run_loop, inst->_request_timer, kCFRunLoopCommonModes);
+#endif  // __APPLE__
+
+    // Doesn't appear to be a reliable way to simulate this in Linux.
   }
 }
 
@@ -1380,14 +1434,17 @@ send_window() {
     y = 0;
 
 #elif defined(__APPLE__)
-    NP_Port *port = (NP_Port *)_window.window;
-    parent_window._window_handle_type = P3D_WHT_osx_port;
-    parent_window._handle._osx_port._port = port->port;
-    /*
-    NP_CGContext *context = (NP_CGContext *)_window.window;
-    parent_window._context = context->context;
-    parent_window._window = (WindowRef)context->window;
-    */
+    parent_window._window_handle_type = _window_handle_type;
+    if (_window_handle_type == P3D_WHT_osx_port) {
+      NP_Port *port = (NP_Port *)_window.window;
+      parent_window._handle._osx_port._port = port->port;
+    } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
+      NP_CGContext *context = (NP_CGContext *)_window.window;
+      if (context != NULL) {
+        parent_window._handle._osx_cgcontext._context = context->context;
+        parent_window._handle._osx_cgcontext._window = (WindowRef)context->window;
+      }
+    }
 
 #elif defined(HAVE_X11)
     // We make it an 'unsigned long' instead of 'Window'
@@ -1410,14 +1467,17 @@ send_window() {
     }
 
 #elif defined(__APPLE__)
-    NP_Port *port = (NP_Port *)_window.window;
-    parent_window._window_handle_type = P3D_WHT_osx_port;
-    parent_window._handle._osx_port._port = port->port;
-    /*
-    NP_CGContext *context = (NP_CGContext *)_window.window;
-    parent_window._context = context->context;
-    parent_window._window = (WindowRef)context->window;
-    */
+    parent_window._window_handle_type = _window_handle_type;
+    if (_window_handle_type == P3D_WHT_osx_port) {
+      NP_Port *port = (NP_Port *)_window.window;
+      parent_window._handle._osx_port._port = port->port;
+    } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
+      NP_CGContext *context = (NP_CGContext *)_window.window;
+      if (context != NULL) {
+        parent_window._handle._osx_cgcontext._context = context->context;
+        parent_window._handle._osx_cgcontext._window = (WindowRef)context->window;
+      }
+    }
 
 #elif defined(HAVE_X11)
     unsigned long win;
@@ -1440,7 +1500,7 @@ send_window() {
 #endif
 
   P3D_window_type window_type = P3D_WT_embedded;
-  if (_window.window == NULL) {
+  if (_window.window == NULL && _event_type != P3D_ET_osx_cocoa) {
     // No parent window: it must be a hidden window.
     window_type = P3D_WT_hidden;
   } else if (_window.width == 0 || _window.height == 0) {
@@ -1653,6 +1713,156 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 #endif  // _WIN32
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::copy_cocoa_event
+//       Access: Private, Static
+//  Description: Copies the NPCocoaEvent structure componentwise into
+//               a P3DCocoaEvent structure, for passing into the core
+//               API.
+//
+//               The aux_data object is used to manage temporary
+//               storage on the strings created for the event.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
+                 EventAuxData &aux_data) {
+  p3d_event->version = np_event->version;
+
+  switch (np_event->type) {
+  case NPCocoaEventDrawRect:
+    p3d_event->type = P3DCocoaEventDrawRect;
+    break;
+  case NPCocoaEventMouseDown:
+    p3d_event->type = P3DCocoaEventMouseDown;
+    break;
+  case NPCocoaEventMouseUp:
+    p3d_event->type = P3DCocoaEventMouseUp;
+    break;
+  case NPCocoaEventMouseMoved:
+    p3d_event->type = P3DCocoaEventMouseMoved;
+    break;
+  case NPCocoaEventMouseEntered:
+    p3d_event->type = P3DCocoaEventMouseEntered;
+    break;
+  case NPCocoaEventMouseExited:
+    p3d_event->type = P3DCocoaEventMouseExited;
+    break;
+  case NPCocoaEventMouseDragged:
+    p3d_event->type = P3DCocoaEventMouseDragged;
+    break;
+  case NPCocoaEventKeyDown:
+    p3d_event->type = P3DCocoaEventKeyDown;
+    break;
+  case NPCocoaEventKeyUp:
+    p3d_event->type = P3DCocoaEventKeyUp;
+    break;
+  case NPCocoaEventFlagsChanged:
+    p3d_event->type = P3DCocoaEventFlagsChanged;
+    break;
+  case NPCocoaEventFocusChanged:
+    p3d_event->type = P3DCocoaEventFocusChanged;
+    break;
+  case NPCocoaEventWindowFocusChanged:
+    p3d_event->type = P3DCocoaEventWindowFocusChanged;
+    break;
+  case NPCocoaEventScrollWheel:
+    p3d_event->type = P3DCocoaEventScrollWheel;
+    break;
+  case NPCocoaEventTextInput:
+    p3d_event->type = P3DCocoaEventTextInput;
+    break;
+  }
+
+  switch (np_event->type) {
+  case NPCocoaEventDrawRect:
+    p3d_event->data.draw.context = np_event->data.draw.context;
+    p3d_event->data.draw.x = np_event->data.draw.x;
+    p3d_event->data.draw.y = np_event->data.draw.y;
+    p3d_event->data.draw.width = np_event->data.draw.width;
+    p3d_event->data.draw.height = np_event->data.draw.height;
+    break;
+
+  case NPCocoaEventMouseDown:
+  case NPCocoaEventMouseUp:
+  case NPCocoaEventMouseMoved:
+  case NPCocoaEventMouseEntered:
+  case NPCocoaEventMouseExited:
+  case NPCocoaEventMouseDragged:
+  case NPCocoaEventScrollWheel:
+    p3d_event->data.mouse.modifierFlags = np_event->data.mouse.modifierFlags;
+    p3d_event->data.mouse.pluginX = np_event->data.mouse.pluginX;
+    p3d_event->data.mouse.pluginY = np_event->data.mouse.pluginY;
+    p3d_event->data.mouse.buttonNumber = np_event->data.mouse.buttonNumber;
+    p3d_event->data.mouse.clickCount = np_event->data.mouse.clickCount;
+    p3d_event->data.mouse.deltaX = np_event->data.mouse.deltaX;
+    p3d_event->data.mouse.deltaY = np_event->data.mouse.deltaY;
+    p3d_event->data.mouse.deltaZ = np_event->data.mouse.deltaZ;
+    break;
+
+  case NPCocoaEventKeyDown:
+  case NPCocoaEventKeyUp:
+  case NPCocoaEventFlagsChanged:
+    p3d_event->data.key.modifierFlags = np_event->data.key.modifierFlags;
+    p3d_event->data.key.characters = 
+      make_ansi_string(aux_data._characters, np_event->data.key.characters);
+    p3d_event->data.key.charactersIgnoringModifiers = 
+      make_ansi_string(aux_data._characters_im, np_event->data.key.charactersIgnoringModifiers);
+    p3d_event->data.key.isARepeat = np_event->data.key.isARepeat;
+    p3d_event->data.key.keyCode = np_event->data.key.keyCode;
+    break;
+
+  case NPCocoaEventFocusChanged:
+  case NPCocoaEventWindowFocusChanged:
+    p3d_event->data.focus.hasFocus = np_event->data.focus.hasFocus;
+    break;
+
+  case NPCocoaEventTextInput:
+    p3d_event->data.text.text = 
+      make_ansi_string(aux_data._text, np_event->data.text.text);
+    break;
+  }
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::make_ansi_string
+//       Access: Private, Static
+//  Description: OSX only: Fills result with the unicode characters in
+//               the NPNSString.  Also returns result.c_str().
+////////////////////////////////////////////////////////////////////
+const wchar_t *PPInstance::
+make_ansi_string(wstring &result, NPNSString *ns_string) {
+  // An NPNSString is really just an NSString, which is itself just a
+  // CFString.
+  CFStringRef cfstr = (CFStringRef)ns_string;
+  CFIndex length = CFStringGetLength(cfstr);
+
+  result.clear();
+  for (CFIndex i = 0; i < length; ++i) {
+    result += (wchar_t)CFStringGetCharacterAtIndex(cfstr, i);
+  }
+
+  return result.c_str();
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::timer_callback
+//       Access: Private, Static
+//  Description: OSX only: this callback is associated with a
+//               CFRunLoopTimer; it's used to forward request messages
+//               to the main thread.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+timer_callback(CFRunLoopTimerRef timer, void *info) {
+  PPInstance *self = (PPInstance *)info;
+  self->handle_request_loop();
+}
+#endif  // __APPLE__
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::StreamingFileData::Constructor
