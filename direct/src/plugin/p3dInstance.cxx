@@ -157,6 +157,11 @@ P3DInstance(P3D_request_ready_func *func,
   _shared_mmap_size = 0;
   _swbuffer = NULL;
   _reversed_buffer = NULL;
+  _buffer_data = NULL;
+  _data_provider = NULL;
+  _buffer_color_space = NULL;
+  _buffer_image = NULL;
+
   // We have to start with _mouse_active true; firefox doesn't send
   // activate events.
   _mouse_active = true;
@@ -305,16 +310,7 @@ P3DInstance::
     CFRelease(_frame_timer);
   }
 
-  if (_swbuffer != NULL) {
-    SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
-                                           _shared_filename, _swbuffer);
-    _swbuffer = NULL;
-  }
-
-  if (_reversed_buffer != NULL) {
-    delete[] _reversed_buffer;
-    _reversed_buffer = NULL;
-  }
+  free_swbuffer();
 #endif    
 
   DESTROY_LOCK(_request_lock);
@@ -481,21 +477,7 @@ set_wparams(const P3DWindowParams &wparams) {
       if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
           _swbuffer->get_y_size() != y_size) {
         // We need to open a new shared buffer.
-        if (_swbuffer != NULL) {
-          SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
-                                                 _shared_filename, _swbuffer);
-          _swbuffer = NULL;
-        }
-        if (_reversed_buffer != NULL) {
-          delete[] _reversed_buffer;
-          _reversed_buffer = NULL;
-        }
-        
-        _swbuffer = SubprocessWindowBuffer::new_buffer
-          (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
-        if (_swbuffer != NULL) {
-          _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
-        }
+        alloc_swbuffer();
       }
       
       if (_swbuffer == NULL) {
@@ -3022,7 +3004,8 @@ get_framebuffer() {
     // conventions between Panda and Mac).
     for (int yi = 0; yi < y_size; ++yi) {
 #ifndef __BIG_ENDIAN__
-      // On a little-endian machine, we only have to reverse the order of the rows.
+      // On a little-endian machine, we only have to reverse the order
+      // of the rows.
       memcpy(_reversed_buffer + (y_size - 1 - yi) * rowsize,
              (char *)framebuffer + yi * rowsize,
              rowsize);
@@ -3137,32 +3120,14 @@ paint_window_osx_cgcontext(CGContextRef context) {
 
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
-  size_t rowsize = _swbuffer->get_row_size();
 
   CGContextTranslateCTM(context, 0, y_size);
   CGContextScaleCTM(context, 1.0, -1.0);
 
-  CFDataRef data =
-    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
-                                y_size * rowsize, kCFAllocatorNull);
-
-  CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
-  //CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-
-  CGImageRef image =
-    CGImageCreate(x_size, y_size, 8, 32, rowsize, color_space,
-                  kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little, 
-                  provider, NULL, false, kCGRenderingIntentDefault);
-
-  CGRect region = { { 0, 0 }, { x_size, y_size } };
-  CGContextDrawImage(context, region, image);
-
-  CGImageRelease(image);
-  CGColorSpaceRelease(color_space);
-  CGDataProviderRelease(provider);
-
-  CFRelease(data);
+  if (_buffer_image != NULL) {
+    CGRect region = { { 0, 0 }, { x_size, y_size } };
+    CGContextDrawImage(context, region, _buffer_image);
+  }
 }
 #endif  // __APPLE__
 
@@ -3504,6 +3469,76 @@ parse_hexdigit(int &result, char digit) {
 
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::alloc_swbuffer
+//       Access: Private
+//  Description: OSX only: allocates the _swbuffer and associated
+//               support objects.  If it was already allocated,
+//               deallocates the previous one first.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+alloc_swbuffer() {
+  free_swbuffer();
+
+  int x_size = _wparams.get_win_width();
+  int y_size = _wparams.get_win_height();
+
+  _swbuffer = SubprocessWindowBuffer::new_buffer
+    (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
+  if (_swbuffer != NULL) {
+    _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+    size_t rowsize = _swbuffer->get_row_size();
+    
+    _buffer_data = CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
+                                               y_size * rowsize, kCFAllocatorNull);
+    
+    _data_provider = CGDataProviderCreateWithCFData(_buffer_data);
+    _buffer_color_space = CGColorSpaceCreateDeviceRGB();
+    
+    _buffer_image = CGImageCreate(x_size, y_size, 8, 32, rowsize, _buffer_color_space,
+                                  kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little, 
+                                  _data_provider, NULL, false, kCGRenderingIntentDefault);
+    
+  }
+}
+#endif  // __APPLE__
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::free_swbuffer
+//       Access: Private
+//  Description: OSX only: releases the _swbuffer and associated
+//               support objects previously allocated by
+//               alloc_swbuffer().
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+free_swbuffer() {
+  if (_swbuffer != NULL) {
+    SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
+                                           _shared_filename, _swbuffer);
+    _swbuffer = NULL;
+  }
+  if (_reversed_buffer != NULL) {
+    delete[] _reversed_buffer;
+    _reversed_buffer = NULL;
+  }
+
+  if (_buffer_image != NULL) {
+    CGImageRelease(_buffer_image);
+    CGColorSpaceRelease(_buffer_color_space);
+    CGDataProviderRelease(_data_provider);
+    CFRelease(_buffer_data);
+
+    _buffer_data = NULL;
+    _data_provider = NULL;
+    _buffer_color_space = NULL;
+    _buffer_image = NULL;
+  }
+}
+#endif  // __APPLE__
+  
+
+#ifdef __APPLE__
+  ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::timer_callback
 //       Access: Private, Static
 //  Description: OSX only: this callback is associated with a

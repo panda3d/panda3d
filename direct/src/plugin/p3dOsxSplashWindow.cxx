@@ -537,7 +537,7 @@ load_image(OsxImageData &image, const string &image_filename) {
     CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data, 
                                 image._height * new_row_stride, kCFAllocatorNull);
   image._provider = CGDataProviderCreateWithCFData(image._data);
-  image._color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  image._color_space = CGColorSpaceCreateDeviceRGB();
 
   image._image =
     CGImageCreate(image._width, image._height, 8, 32, 

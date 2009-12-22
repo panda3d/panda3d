@@ -218,6 +218,8 @@ private:
   static bool parse_hexdigit(int &result, char digit);
 
 #ifdef __APPLE__
+  void alloc_swbuffer();
+  void free_swbuffer();
   static void timer_callback(CFRunLoopTimerRef timer, void *info);
 #endif  // __APPLE__
 
@@ -295,6 +297,11 @@ private:
   string _shared_filename;
   SubprocessWindowBuffer *_swbuffer;
   char *_reversed_buffer;
+  CFDataRef _buffer_data;
+  CGDataProviderRef _data_provider;
+  CGColorSpaceRef _buffer_color_space;
+  CGImageRef _buffer_image;
+
   bool _mouse_active;
   unsigned int _modifiers;
 
