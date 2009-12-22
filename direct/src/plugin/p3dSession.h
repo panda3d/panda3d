@@ -88,6 +88,8 @@ private:
   THREAD_CALLBACK_DECLARATION(P3DSession, p3dpython_thread_run);
   void p3dpython_thread_run();
 
+  void write_env() const;
+
 private:
   int _session_id;
   string _session_key;

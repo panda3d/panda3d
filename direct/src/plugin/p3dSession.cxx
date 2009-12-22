@@ -1080,6 +1080,9 @@ start_p3dpython(P3DInstance *inst) {
     return;
   }
 
+  nout << "Setting environment:\n";
+  write_env();
+
   // Get the filename of the Panda3D multifile.  We need to pass this
   // to p3dpython.
   _mf_filename = inst->_panda3d->get_archive_file_pathname();
@@ -1637,3 +1640,25 @@ p3dpython_thread_run() {
     nout << "Failure on startup.\n";
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::write_env
+//       Access: Private
+//  Description: Writes _env, which is formatted as a string
+//               containing zero-byte-terminated environment
+//               defintions, to the nout stream, one definition per
+//               line.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+write_env() const {
+  size_t p = 0;
+  size_t zero = _env.find('\0', p);
+  while (zero != string::npos) {
+    nout << "  ";
+    nout.write(_env.data() + p, zero - p);
+    nout << "\n";
+    p = zero + 1;
+    zero = _env.find('\0', p);
+  }
+}
+

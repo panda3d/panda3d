@@ -1774,8 +1774,6 @@ mark_p3d_trusted() {
   // Only call this once.
   assert(!_p3d_trusted);
 
-  _p3d_trusted = true;
-
   // Extract the application desc file from the p3d file.
   stringstream sstream;
   if (!_mf_reader.extract_one(sstream, "p3d_info.xml")) {
@@ -1805,9 +1803,16 @@ mark_p3d_trusted() {
   send_notify("onauth");
 
   // Now that we're all set up, start downloading the required
-  // packages, and then start the instance itself if we're already
-  // fully downloaded.
+  // packages.
   add_packages();
+
+  // Until we've done all of the above processing, we haven't fully
+  // committed to setting the trusted flag.  (Setting this flag down
+  // here instead of a few lines above avoids starting the instance in
+  // add_packages(), before we've had a chance to finish processing
+  // this method.)
+  _p3d_trusted = true;
+
   if (get_packages_ready()) {
     mark_download_complete();
   }
@@ -2604,6 +2609,7 @@ set_button_image(ImageType image_type) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
+  nout << "report_package_info_ready: " << package->get_package_name() << "\n";
   if (package == _image_package || package == _certlist_package ||
       package == _p3dcert_package) {
     // A special case: these packages get immediately downloaded,
@@ -2674,7 +2680,7 @@ ready_to_install() {
     _download_package_index = 0;
     _total_downloaded = 0;
     _download_begin = time(NULL);
-    
+
     nout << "Beginning install of " << _downloading_packages.size()
          << " packages, total " << _total_download_size
          << " bytes required.\n";

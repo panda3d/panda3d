@@ -284,6 +284,18 @@ set_plugin_version(int major, int minor, int sequence,
   _plugin_distributor = distributor;
   _coreapi_host_url = coreapi_host_url;
   _coreapi_timestamp = coreapi_timestamp;
+
+  nout << "Plugin version: "
+       << _plugin_major_version << "."
+       << _plugin_minor_version << "."
+       << _plugin_sequence_version;
+  if (!_plugin_official_version) {
+    nout << "c";
+  }
+  nout << "\n";
+  nout << "Plugin distributor: " << _plugin_distributor << "\n";
+  nout << "Core API host URL: " <<  _coreapi_host_url << "\n";
+  nout << "Core API date: " << ctime(&_coreapi_timestamp) << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1303,7 +1315,7 @@ create_runtime_environment() {
       _temp_directory += "/";
   }
 
-  nout << "_root_dir = " << _root_dir
+  nout << "\n_root_dir = " << _root_dir
        << ", _temp_directory = " << _temp_directory
        << ", platform = " << _platform
        << ", host_url = " << _host_url
