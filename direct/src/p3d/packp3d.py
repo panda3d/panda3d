@@ -191,6 +191,13 @@ def makePackedApp(args):
     try:
         packager.setup()
         packager.beginPackage(appBase, p3dApplication = True)
+
+        # Pre-require panda3d, to give a less-confusing error message
+        # if one of our requirements pulls in a wrong version of
+        # panda3d.
+        if 'panda3d' not in map(lambda t: t[0], requires):
+            packager.do_require('panda3d')
+        
         for name, version, host in requires:
             packager.do_require(name, version = version, host = host)
 

@@ -2310,12 +2310,16 @@ class Packager:
         package = self.packages.get((packageName, platform or self.platform, version, host), None)
         if package:
             return package
-
+        
         # Look on the searchlist.
         for dirname in self.installSearch:
             package = self.__scanPackageDir(dirname, packageName, platform or self.platform, version, host, requires = requires)
             if not package:
                 package = self.__scanPackageDir(dirname, packageName, platform, version, host, requires = requires)
+
+            if package and host and package.host != host:
+                # Wrong host.
+                package = None
 
             if package:
                 break
@@ -2385,7 +2389,7 @@ class Packager:
 
         self.__sortImportPackages(packages)
         for package in packages:
-            if package and self.__packageIsValid(package, requires):
+            if package and self.__packageIsValid(package, requires, platform):
                 return package
 
         return None
@@ -2404,38 +2408,45 @@ class Packager:
         if not host.readContentsFile():
             if not host.downloadContentsFile(appRunner.http):
                 return None
-        
-        package = host.getPackage(packageName, version, platform = platform)
-        if not package and not version:
+
+        packageInfos = []
+        packageInfo = host.getPackage(packageName, version, platform = platform)
+        if not packageInfo and not version:
             # No explicit version is specified, first fallback: look
             # for the compiled-in version.
-            package = host.getPackage(packageName, PandaSystem.getPackageVersionString(), platform = platform)
+            packageInfo = host.getPackage(packageName, PandaSystem.getPackageVersionString(), platform = platform)
             
-        if not package and not version:
+        if not packageInfo and not version:
             # No explicit version is specified, second fallback: get
             # the highest-numbered version available.
-            packages = host.getPackages(packageName, platform = platform)
-            self.__sortPackageInfos(packages)
-            for p in packages:
-                if p and self.__packageIsValid(p, requires):
-                    package = p
-                    break
-            
-        if not package or not package.importDescFile:
-            return None
+            packageInfos = host.getPackages(packageName, platform = platform)
+            self.__sortPackageInfos(packageInfos)
 
-        # Now we've retrieved a PackageInfo.  Get the import desc file
-        # from it.
-        filename = Filename(host.hostDir, 'imports/' + package.importDescFile.basename)
-        if not appRunner.freshenFile(host, package.importDescFile, filename):
-            self.notify.error("Couldn't download import file.")
-            return None
+        if packageInfo and not packageInfos:
+            packageInfos = [packageInfo]
 
-        # Now that we have the import desc file, use it to load one of
-        # our Package objects.
-        package = self.Package('', self)
-        if package.readImportDescFile(filename):
-            return package
+        for packageInfo in packageInfos:
+            if not packageInfo or not packageInfo.importDescFile:
+                continue
+
+            # Now we've retrieved a PackageInfo.  Get the import desc file
+            # from it.
+            filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
+            if not appRunner.freshenFile(host, packageInfo.importDescFile, filename):
+                self.notify.error("Couldn't download import file.")
+                continue
+
+            # Now that we have the import desc file, use it to load one of
+            # our Package objects.
+            package = self.Package('', self)
+            if not package.readImportDescFile(filename):
+                continue
+
+            if self.__packageIsValid(package, requires, platform):
+                return package
+
+        # Couldn't find a suitable package.
+        return None
 
     def __sortImportPackages(self, packages):
         """ Given a list of Packages read from *.import.xml filenames,
@@ -2491,20 +2502,25 @@ class Packager:
 
         return tuple(words)
 
-    def __packageIsValid(self, package, requires):
+    def __packageIsValid(self, package, requires, platform):
         """ Returns true if the package is valid, meaning it can be
         imported without conflicts with existing packages already
         required (such as different versions of panda3d). """
 
+        if package.platform and package.platform != platform:
+            # Incorrect platform.
+            return False
+
         if not requires:
+            # No other restrictions.
             return True
 
         # Really, we only check the panda3d package.  The other
         # packages will list this as a dependency, and this is all
         # that matters.
 
-        panda1 = self.__findPackageInList('panda3d', [package] + package.requires)
-        panda2 = self.__findPackageInList('panda3d', requires)
+        panda1 = self.__findPackageInRequires('panda3d', [package] + package.requires)
+        panda2 = self.__findPackageInRequires('panda3d', requires)
 
         if not panda1 or not panda2:
             return True
@@ -2512,13 +2528,22 @@ class Packager:
         if panda1.version == panda2.version:
             return True
 
+        print 'Rejecting package %s, version "%s": depends on %s, version "%s" instead of version "%s"' % (
+            package.packageName, package.version,
+            panda1.packageName, panda1.version, panda2.version)
         return False
 
-    def __findPackageInList(self, packageName, list):
-        """ Returns the first package with the indicated name in the list. """
+    def __findPackageInRequires(self, packageName, list):
+        """ Returns the first package with the indicated name in the
+        list of packages, or in the list of packages required by the
+        packages in the list. """
+        
         for package in list:
             if package.packageName == packageName:
                 return package
+            p2 = self.__findPackageInRequires(packageName, package.requires)
+            if p2:
+                return p2
 
         return None
 

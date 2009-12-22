@@ -351,9 +351,15 @@ class HostInfo:
             if name and pn != name:
                 continue
 
-            package = self.getPackage(pn, version, platform = platform)
-            if package:
-                packages.append(package)
+            if platform is None:
+                for p2 in platforms:
+                    package = self.getPackage(pn, version, platform = p2)
+                    if package:
+                        packages.append(package)
+            else:
+                package = self.getPackage(pn, version, platform = platform)
+                if package:
+                    packages.append(package)
 
         return packages
 
