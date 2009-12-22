@@ -975,7 +975,9 @@ typedef struct {
       unsigned short keyCode;
     } key;
     struct {
+#ifdef __APPLE__
       CGContextRef context;
+#endif  // __APPLE__
       double x;
       double y;
       double width;

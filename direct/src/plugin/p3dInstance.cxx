@@ -2974,6 +2974,7 @@ set_install_label(const string &install_label) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 paint_window() {
+#ifdef __APPLE__
   const P3D_window_handle &handle = _wparams.get_parent_window();
   if (handle._window_handle_type == P3D_WHT_osx_port) {
     paint_window_osx_port();
@@ -2985,6 +2986,7 @@ paint_window() {
 
     paint_window_osx_cgcontext(context);
   }
+#endif  // __APPLE__
 }
 
 #ifdef __APPLE__
