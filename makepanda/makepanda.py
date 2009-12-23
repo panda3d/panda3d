@@ -3573,7 +3573,7 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='plugin_handleStreamBuf.obj')
   if (sys.platform == "darwin"):
       TargetAdd('p3dembed.exe', input='libsubprocbuffer.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
