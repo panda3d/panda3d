@@ -94,7 +94,7 @@ DEPLOY_MODES = ["standalone", "installer", "html"]
 import sys
 import os
 import getopt
-from direct.p3d.DeploymentTools import Standalone, Installer
+from DeploymentTools import Standalone, Installer
 from pandac.PandaModules import Filename, PandaSystem
 
 def usage(code, msg = ''):
@@ -194,10 +194,24 @@ if deploy_mode == 'standalone':
                 s.build(Filename(outputDir, platform + "/" + shortname), platform)
 
 elif deploy_mode == 'installer':
-    i = Installer(shortname, fullname, appFilename, version)
+    i = Installer(shortname, fullname, appFilename, version, tokens = tokens)
     i.licensename = licensename
     i.licensefile = licensefile
-    i.build()
+    
+    if currentPlatform:
+        platform = PandaSystem.getPlatform()
+        if platform.startswith("win"):
+            i.build(outputDir, platform)
+        else:
+            i.build(outputDir, platform)
+    elif len(platforms) == 0:
+        i.buildAll(outputDir)
+    else:
+        for platform in platforms:
+            if platform.startswith("win"):
+                i.build(Filename(outputDir, platform + "/"), platform)
+            else:
+                i.build(Filename(outputDir, platform + "/"), platform)
 elif deploy_mode == 'html':
     print "Creating %s.html..." % shortname
     html = open(shortname + ".html", "w")

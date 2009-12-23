@@ -22,10 +22,7 @@ class Standalone:
     notify = directNotify.newCategory("Standalone")
     
     def __init__(self, p3dfile, tokens = {}):
-        if isinstance(p3dfile, Filename):
-            self.p3dfile = p3dfile
-        else:
-            self.p3dfile = Filename(p3dfile)
+        self.p3dfile = Filename(p3dfile)
         self.basename = self.p3dfile.getBasenameWoExtension()
         self.tokens = tokens
         
@@ -60,7 +57,7 @@ class Standalone:
     def build(self, output, platform = None):
         """ Builds a standalone executable and stores it into the path
         indicated by the 'output' argument. You can specify to build for
-        other platforms by altering the 'platform' argument. """
+        a different platform by altering the 'platform' argument. """
         
         if platform == None:
             platform = PandaSystem.getPlatform()
@@ -130,7 +127,7 @@ class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
     notify = directNotify.newCategory("Installer")
 
-    def __init__(self, shortname, fullname, p3dfile, version):
+    def __init__(self, shortname, fullname, p3dfile, version, tokens = {}):
         self.shortname = shortname
         self.fullname = fullname
         self.version = str(version)
@@ -138,58 +135,57 @@ class Installer:
         self.authorid = "org.panda3d"
         self.authorname = ""
         self.licensefile = Filename()
-        self.builder = StandaloneBuilder(p3dfile)
+        self.standalone = Standalone(p3dfile, tokens)
 
-    def buildAll(self):
+    def buildAll(self, outputDir = "."):
         """ Creates a (graphical) installer for every known platform.
         Call this after you have set the desired parameters. """
         
-        # Download the 'p3dembed' package
-        tempdir = Filename.temporary("", self.shortname + "_p3d_", "") + "/"
-        tempdir.makeDir()
-        host = HostInfo("http://runtime.panda3d.org", hostDir = tempdir, asMirror = True)
-        tempdir = tempdir.toOsSpecific()
-        http = HTTPClient.getGlobalPtr()
-        if not host.downloadContentsFile(http):
-            Installer.notify.error("couldn't read host")
-            return False
-
-        for package in host.getPackages(name = "p3dembed"):
-            print package.packageName, package.packageVersion, package.platform
-            if not package.downloadDescFile(http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            if not package.downloadPackage(http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            
-            if package.platform.startswith("linux_"):
-                plugin_standalone = os.path.join(tempdir, "plugin_standalone", package.platform, "panda3d")
-                assert os.path.isfile(plugin_standalone)
-                self.__buildDEB(plugin_standalone, arch = package.platform.replace("linux_", ""))
-            elif package.platform.startswith("win"):
-                plugin_standalone = os.path.join(tempdir, "plugin_standalone", package.platform, "panda3d.exe")
-                assert os.path.isfile(plugin_standalone)
-                self.__buildNSIS(plugin_standalone)
-            elif package.platform == "darwin":
-                plugin_standalone = os.path.join(tempdir, "plugin_standalone", package.platform, "panda3d_mac")
-                assert os.path.isfile(plugin_standalone)
-                self.__buildAPP(plugin_standalone)
-            else:
-                Installer.notify.info("Ignoring unknown platform " + package.platform)
+        platforms = set()
+        for package in self.host.getPackages(name = "p3dembed"):
+            platforms.add(package.platform)
+        if len(platforms) == 0:
+            Installer.notify.error("No platforms found to build for!")
         
-        #shutil.rmtree(tempdir)
-        return True
+        outputDir = Filename(outputDir)
+        assert outputDir.isDirectory()
+        for platform in platforms:
+            self.build(outputDir, platform)
+    
+    def build(self, output, platform = None):
+        """ Builds a (graphical) installer and stores it into the path
+        indicated by the 'output' argument. You can specify to build for
+        a different platform by altering the 'platform' argument.
+        If 'output' is a directory, the installer will be stored in it. """
+        
+        if platform == None:
+            platform = PandaSystem.getPlatform()
+        
+        if platform == "win32":
+            return self.buildNSIS()
+        elif "_" in platform:
+            os, arch = platform.rsplit("_", 1)
+            if os == "linux":
+                return self.buildDEB(output, arch)
+            elif os == "osx":
+                return self.buildDMG(output, arch)
+        Installer.notify.info("Ignoring unknown platform " + platform)
 
-    def __buildDEB(self, plugin_standalone, arch = "all"):
-        debfn = "%s_%s_all.deb" % (self.shortname.lower(), self.version)
-        Installer.notify.info("Creating %s..." % debfn)
+    def buildDEB(self, output, arch):
+        """ Builds a .deb archive and stores it in the path indicated
+        by the 'output' argument. It will be built for the architecture
+        specified by the 'arch' argument.
+        If 'output' is a directory, the deb file will be stored in it. """
+        
+        output = Filename(output)
+        if output.isDirectory():
+            output = Filename(output, "%s_%s_%s.deb" % (self.shortname.lower(), self.version, arch))
+        Installer.notify.info("Creating %s..." % output)
 
         # Create a temporary directory and write the control file + launcher to it
         tempdir = Filename.temporary("", self.shortname.lower() + "_deb_", "") + "/"
         tempdir.makeDir()
-        tempdir = tempdir.toOsSpecific()
-        controlfile = open(os.path.join(tempdir, "control"), "w")
+        controlfile = open(Filename(tempdir, "control").toOsSpecific(), "w")
         controlfile.write("Package: %s\n" % self.shortname.lower())
         controlfile.write("Version: %s\n" % self.version)
         controlfile.write("Section: games\n")
@@ -197,40 +193,32 @@ class Installer:
         controlfile.write("Architecture: %s\n" % arch)
         controlfile.write("Description: %s\n" % self.fullname)
         controlfile.close()
-        os.makedirs(os.path.join(tempdir, "usr", "bin"))
-        os.makedirs(os.path.join(tempdir, "usr", "share", "games", self.shortname.lower()))
-        os.makedirs(os.path.join(tempdir, "usr", "libexec", self.shortname.lower()))
+        Filename(tempdir, "usr/bin/").makeDir()
+        self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), "linux_" + arch)
         if not self.licensefile.empty():
-            os.makedirs(os.path.join(tempdir, "usr", "share", "doc", self.shortname.lower()))
-        launcherfile = open(os.path.join(tempdir, "usr", "bin", self.shortname.lower()), "w")
-        launcherfile.write("#!/bin/sh\n")
-        launcherfile.write("/usr/libexec/%s/panda3d /usr/share/games/%s/%s.p3d\n" % ((self.shortname.lower(),) * 3))
-        launcherfile.close()
-        os.chmod(os.path.join(tempdir, "usr", "bin", self.shortname.lower()), 0755)
-        shutil.copyfile(self.p3dfile.toOsSpecific(), os.path.join(tempdir, "usr", "share", "games", self.shortname.lower(), self.shortname.lower() + ".p3d"))
-        shutil.copyfile(plugin_standalone, os.path.join(tempdir, "usr", "libexec", self.shortname.lower(), "panda3d"))
-        if not self.licensefile.empty():
-            shutil.copyfile(self.licensefile.toOsSpecific(), os.path.join(tempdir, "usr", "share", "doc", self.shortname.lower(), "copyright"))
+            Filename(tempdir, "usr/share/doc/%s/" % self.shortname.lower()).makeDir()
+            shutil.copyfile(self.licensefile.toOsSpecific(), Filename(tempdir, "usr/share/doc/%s/copyright" % self.shortname.lower()).toOsSpecific())
 
         # Create a control.tar.gz file in memory
+        controlfile = Filename(tempdir, "control")
         controltargz = CachedFile()
         controltarfile = tarfile.TarFile.gzopen("control.tar.gz", "w", controltargz, 9)
-        controltarfile.add(os.path.join(tempdir, "control"), "control")
+        controltarfile.add(controlfile.toOsSpecific(), "control")
         controltarfile.close()
-        os.remove(os.path.join(tempdir, "control"))
+        controlfile.unlink()
 
         # Create the data.tar.gz file in the temporary directory
         datatargz = CachedFile()
         datatarfile = tarfile.TarFile.gzopen("data.tar.gz", "w", datatargz, 9)
-        datatarfile.add(tempdir + "/usr", "/usr")
+        datatarfile.add(Filename(tempdir, "usr").toOsSpecific(), "/usr")
         datatarfile.close()
 
         # Open the deb file and write to it. It's actually
         # just an AR file, which is very easy to make.
         modtime = int(time.time())
-        if os.path.isfile(debfn):
-            os.remove(debfn)
-        debfile = open(debfn, "wb")
+        if output.exists():
+            output.unlink()
+        debfile = open(output.toOsSpecific(), "wb")
         debfile.write("!<arch>\x0A")
         debfile.write("debian-binary   %-12lu0     0     100644  %-10ld\x60\x0A" % (modtime, 4))
         debfile.write("2.0\x0A")
@@ -241,7 +229,7 @@ class Installer:
         debfile.write(datatargz.str)
         if (len(datatargz.str) & 1): debfile.write("\x0A")
         debfile.close()
-        shutil.rmtree(tempdir)
+        shutil.rmtree(tempdir.toOsSpecific())
 
     def __buildAPP(self, plugin_standalone):
         pkgfn = "%s %s.pkg" % (self.shortname, self.version)
@@ -302,7 +290,7 @@ class Installer:
         print >>plist, '</plist>'
         plist.close()
 
-    def __buildNSIS(self):
+    def buildNSIS(self):
         # Check if we have makensis first
         makensis = None
         if (sys.platform.startswith("win")):
