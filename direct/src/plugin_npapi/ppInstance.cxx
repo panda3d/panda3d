@@ -81,6 +81,12 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _root_dir = global_root_dir;
 
   _got_instance_url = false;
+  _opened_p3d_temp_file = false;
+  _finished_p3d_temp_file = false;
+  _p3d_temp_file_current_size = 0;
+  _p3d_temp_file_total_size = 0;
+  _p3d_instance_id = 0;
+
   _got_window = false;
   _python_window_open = false;
 
@@ -91,6 +97,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _run_loop_main = CFRunLoopGetCurrent();
   CFRetain(_run_loop_main);
   _request_timer = NULL;
+  INIT_LOCK(_timer_lock);
 #endif  // __APPLE__
 }
 
@@ -107,9 +114,11 @@ PPInstance::
   if (_request_timer != NULL) {
     CFRunLoopTimerInvalidate(_request_timer);
     CFRelease(_request_timer);
+    _request_timer = NULL;
   }
   _run_loop_main = CFRunLoopGetCurrent();
   CFRelease(_run_loop_main);
+  DESTROY_LOCK(_timer_lock);
 #endif  // __APPLE__
 
   if (_p3d_inst != NULL) {
@@ -122,6 +131,12 @@ PPInstance::
 
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
+  }
+
+  if (!_p3d_temp_filename.empty()) {
+    _p3d_temp_file.close();
+    unlink(_p3d_temp_filename.c_str());
+    _p3d_temp_filename.clear();
   }
 
   // Free the tokens we allocated.
@@ -254,6 +269,14 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
       _got_instance_url = true;
       _instance_url = stream->url;
       stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
+
+      if (_p3d_inst != NULL) {
+        // If we already have an instance by the time we get this
+        // stream, start sending the data to the instance (instead of
+        // having to mess around with a temporary file).
+        _p3d_instance_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+        nout << "p3d instance to stream " << _p3d_instance_id << "\n";
+      }
       
       *stype = NP_NORMAL;
       _streams.push_back(stream);
@@ -334,29 +357,6 @@ stop_outstanding_streams() {
 ////////////////////////////////////////////////////////////////////
 int32_t PPInstance::
 write_ready(NPStream *stream) {
-  if (stream->notifyData != NULL && !_failed) {
-    PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
-    if (req->_rtype == PPDownloadRequest::RT_instance_data) {
-      // There's a special case for the RT_instance_data stream.  This
-      // is the first, unsolicited stream that indicates the p3d
-      // instance data.  We have to send this stream into the
-      // instance, but we can only do this once the instance itself
-      // has been created.
-      if (_p3d_inst == NULL) {
-        // The instance hasn't yet been created.  We're not ready for
-        // data yet.
-        return 0;
-      }
-      // The instance has been created.  Redirect the stream into the
-      // instance.
-      assert(_got_instance_url);
-      int user_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
-      nout << "Got p3d instance to stream " << user_id << "\n";
-      req->_rtype = PPDownloadRequest::RT_user;
-      req->_user_id = user_id;
-    }
-  }
-
   // We're supposed to return the maximum amount of data the plugin is
   // prepared to handle.  Gee, I don't know.  As much as you can give
   // me, I guess.
@@ -390,6 +390,46 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
                                  P3D_RC_in_progress, 0,
                                  stream->end, buffer, len);
     return len;
+
+  case PPDownloadRequest::RT_instance_data:
+    // There's a special case for the RT_instance_data stream.  This
+    // is the first, unsolicited stream that indicates the p3d
+    // instance data.  We have to send this stream into the instance,
+    // but we can only do this once the instance itself has been
+    // created.
+
+    // We used to get away with returning 0 in write_ready until the
+    // instance was ready, but that turns out to fail under Safari
+    // Snow Leopard, which it seems will hold up every other download
+    // until the p3d file has been retrieved.  Sigh.  So we must start
+    // accepting the data even before the instance has been created,
+    // or we'll never get our contents.xml or any other important bits
+    // of data.
+
+    // Nowadays we solve this problem by writing the data to a
+    // temporary file until the instance is ready for it.
+    if (_p3d_inst == NULL) {
+      // The instance isn't ready, so stuff it in a temporary file.
+      if (!_opened_p3d_temp_file) {
+        open_p3d_temp_file();
+      }
+      _p3d_temp_file.write((const char *)buffer, len);
+      _p3d_temp_file_current_size += len;
+      _p3d_temp_file_total_size = stream->end;
+      return len;
+
+    } else {
+      // The instance has been created.  Redirect the stream into the
+      // instance.
+      assert(!_opened_p3d_temp_file);
+      req->_rtype = PPDownloadRequest::RT_user;
+      req->_user_id = _p3d_instance_id;
+      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+                                   P3D_RC_in_progress, 0,
+                                   stream->end, buffer, len);
+      return len;
+    }
+    break;
     
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";
@@ -422,22 +462,44 @@ destroy_stream(NPStream *stream, NPReason reason) {
   }
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
+
+  P3D_result_code result_code = P3D_RC_done;
+  if (reason != NPRES_DONE) {
+    if (reason == NPRES_USER_BREAK) {
+      result_code = P3D_RC_shutdown;
+    } else {
+      result_code = P3D_RC_generic_error;
+    }
+  }
+
   switch (req->_rtype) {
   case PPDownloadRequest::RT_user:
     {
-      P3D_result_code result_code = P3D_RC_done;
-      if (reason != NPRES_DONE) {
-        if (reason == NPRES_USER_BREAK) {
-          result_code = P3D_RC_shutdown;
-        } else {
-          result_code = P3D_RC_generic_error;
-        }
-      }
       assert(!req->_notified_done);
       P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
                                    result_code, 0, stream->end, NULL, 0);
       req->_notified_done = true;
     }
+    break;
+
+  case PPDownloadRequest::RT_instance_data:
+    if (_p3d_inst == NULL) {
+      // The instance still isn't ready; just mark the data done.
+      // We'll send the entire file to the instance when it is ready.
+      _finished_p3d_temp_file = true;
+      _p3d_temp_file_total_size = _p3d_temp_file_current_size;
+      if (result_code != P3D_RC_done) {
+        set_failed();
+      }
+
+    } else {
+      // The instance has (only just) been created.  Tell it we've
+      // sent it all the data it will get.
+      P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+                                   result_code, 0, stream->end, NULL, 0);
+    }
+    assert(!req->_notified_done);
+    req->_notified_done = true;
     break;
 
   case PPDownloadRequest::RT_core_dll:
@@ -676,12 +738,14 @@ handle_request(P3D_request *request) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 generic_browser_call() {
+  /*
   if (!has_plugin_thread_async_call) {
     // If we can't ask Mozilla to call us back using
     // NPN_PluginThreadAsyncCall(), then we'll do it explicitly now,
     // since we know we're in the main thread here.
     handle_request_loop();
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1025,20 +1089,17 @@ request_ready(P3D_instance *instance) {
 #ifdef __APPLE__
     // Use an OSX timer to forward this event to the main thread.
 
-    // Stop any previously-started timer--we don't need more than one.
-    if (inst->_request_timer != NULL) {
-      CFRunLoopTimerInvalidate(inst->_request_timer);
-      CFRelease(inst->_request_timer);
-      inst->_request_timer = NULL;
+    // Only set a new timer if we don't have one already started.
+    ACQUIRE_LOCK(inst->_timer_lock);
+    if (inst->_request_timer == NULL) {
+      CFRunLoopTimerContext timer_context;
+      memset(&timer_context, 0, sizeof(timer_context));
+      timer_context.info = inst;
+      inst->_request_timer = CFRunLoopTimerCreate
+        (NULL, 0, 0, 0, 0, timer_callback, &timer_context);
+      CFRunLoopAddTimer(inst->_run_loop_main, inst->_request_timer, kCFRunLoopCommonModes);
     }
-
-    // And start a new one.
-    CFRunLoopTimerContext timer_context;
-    memset(&timer_context, 0, sizeof(timer_context));
-    timer_context.info = inst;
-    inst->_request_timer = CFRunLoopTimerCreate
-      (NULL, 0, 0, 0, 0, timer_callback, &timer_context);
-    CFRunLoopAddTimer(inst->_run_loop_main, inst->_request_timer, kCFRunLoopCommonModes);
+    RELEASE_LOCK(inst->_timer_lock);
 #endif  // __APPLE__
 
     // Doesn't appear to be a reliable way to simulate this in Linux.
@@ -1195,6 +1256,83 @@ void PPInstance::
 feed_file(PPDownloadRequest *req, const string &filename) {
   StreamingFileData *file_data = new StreamingFileData(req, filename, _p3d_inst);
   _file_datas.push_back(file_data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::open_p3d_temp_file
+//       Access: Private
+//  Description: Creates a temporary file into which the p3d file data
+//               is stored before the instance has been created.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+open_p3d_temp_file() {
+  assert(!_opened_p3d_temp_file);
+  _opened_p3d_temp_file = true;
+  _finished_p3d_temp_file = false;
+  _p3d_temp_file_current_size = 0;
+  _p3d_temp_file_total_size = 0;
+
+  char *name = tempnam(NULL, "p3d_");
+  _p3d_temp_filename = name;
+  free(name);
+
+  _p3d_temp_file.clear();
+  _p3d_temp_file.open(_p3d_temp_filename.c_str(), ios::binary);
+  if (!_p3d_temp_file) {
+    nout << "Unable to open temp file " << _p3d_temp_filename << "\n";
+    set_failed();
+  } else {
+    nout << "Opening " << _p3d_temp_filename
+         << " for storing preliminary p3d data\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::send_p3d_temp_file_data
+//       Access: Private
+//  Description: Once the instance has been created, sends it all of
+//               the data we have saved up for it while we were
+//               waiting.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+send_p3d_temp_file_data() {
+  assert(_opened_p3d_temp_file);
+
+  nout << "Sending " << _p3d_temp_file_current_size
+       << " preliminary bytes of " << _p3d_temp_file_total_size
+       << " total p3d data\n";
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+
+  _p3d_temp_file.close();
+
+  ifstream in(_p3d_temp_filename.c_str(), ios::binary);
+  in.read(buffer, buffer_size);
+  size_t total = 0;
+  size_t count = in.gcount();
+  while (count != 0) {
+    P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+                                 P3D_RC_in_progress, 0,
+                                 _p3d_temp_file_total_size, buffer, count);
+    total += count;
+
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+  nout << "sent " << count << " bytes.\n";
+
+  in.close();
+  _opened_p3d_temp_file = false;
+  unlink(_p3d_temp_filename.c_str());
+  _p3d_temp_filename.clear();
+
+  if (_finished_p3d_temp_file) {
+    // If we'd already finished the stream earlier, tell the plugin.
+    P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+                                 P3D_RC_done, 0, _p3d_temp_file_total_size,
+                                 NULL, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1376,31 +1514,45 @@ create_instance() {
   _started = true;
   _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), 
                                0, NULL, this);
+  if (_p3d_inst == NULL) {
+    set_failed();
+    return;
+  }
 
-  if (_p3d_inst != NULL) {
-    // Now get the browser's toplevel DOM object (called the "window"
-    // object in JavaScript), to pass to the plugin.
-    NPObject *window_object = NULL;
-    if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
-                          &window_object) == NPERR_NO_ERROR) {
-      PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
-      P3D_instance_set_browser_script_object(_p3d_inst, pobj);
-      browser->releaseobject(window_object);
-    } else {
-      nout << "Couldn't get window_object\n";
-    }
+  // Now get the browser's toplevel DOM object (called the "window"
+  // object in JavaScript), to pass to the plugin.
+  NPObject *window_object = NULL;
+  if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
+                        &window_object) == NPERR_NO_ERROR) {
+    PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
+    P3D_instance_set_browser_script_object(_p3d_inst, pobj);
+    browser->releaseobject(window_object);
+  } else {
+    nout << "Couldn't get window_object\n";
+  }
+  
+  if (_script_object != NULL) {
+    // Now that we have a true instance, initialize our
+    // script_object with the proper P3D_object pointer.
+    P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
+    nout << "new instance, setting main = " << main << "\n";
+    _script_object->set_main(main);
+  }
 
-    if (_script_object != NULL) {
-      // Now that we have a true instance, initialize our
-      // script_object with the proper P3D_object pointer.
-      P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
-      nout << "new instance, setting main = " << main << "\n";
-      _script_object->set_main(main);
-    }
+  if (_got_instance_url) {
+    // Create the user_id for streaming the p3d data into the instance.
+    _p3d_instance_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+    nout << "p3d instance to stream " << _p3d_instance_id << "\n";
 
-    if (_got_window) {
-      send_window();
+    // If we have already started to receive any instance data, send it
+    // to the plugin now.
+    if (_opened_p3d_temp_file) {
+      send_p3d_temp_file_data();
     }
+  }
+  
+  if (_got_window) {
+    send_window();
   }
 }
 
@@ -1865,6 +2017,14 @@ make_ansi_string(wstring &result, NPNSString *ns_string) {
 void PPInstance::
 timer_callback(CFRunLoopTimerRef timer, void *info) {
   PPInstance *self = (PPInstance *)info;
+  ACQUIRE_LOCK(self->_timer_lock);
+  if (self->_request_timer != NULL) {
+    CFRunLoopTimerInvalidate(self->_request_timer);
+    CFRelease(self->_request_timer);
+    self->_request_timer = NULL;
+  }
+  RELEASE_LOCK(self->_timer_lock);
+
   self->handle_request_loop();
 }
 #endif  // __APPLE__

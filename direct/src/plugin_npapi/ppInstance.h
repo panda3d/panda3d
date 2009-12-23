@@ -81,6 +81,9 @@ private:
   static string get_filename_from_url(const string &url);
   void feed_file(PPDownloadRequest *req, const string &filename);
 
+  void open_p3d_temp_file();
+  void send_p3d_temp_file_data();
+
   bool read_contents_file(const string &contents_filename);
   void get_core_api(TiXmlElement *xpackage);
   void downloaded_plugin(const string &filename);
@@ -142,6 +145,13 @@ private:
 
   bool _got_instance_url;
   string _instance_url;
+  bool _opened_p3d_temp_file;
+  bool _finished_p3d_temp_file;
+  size_t _p3d_temp_file_current_size;
+  size_t _p3d_temp_file_total_size;
+  ofstream _p3d_temp_file;
+  string _p3d_temp_filename;
+  int _p3d_instance_id;
  
   // We need to keep a list of the NPStream objects that the instance
   // owns, because Safari (at least) won't automatically delete all of
@@ -189,6 +199,7 @@ private:
 #ifdef __APPLE__
   CFRunLoopRef _run_loop_main;
   CFRunLoopTimerRef _request_timer;
+  LOCK _timer_lock;
 #endif  // __APPLE__
 
   bool _python_window_open;
