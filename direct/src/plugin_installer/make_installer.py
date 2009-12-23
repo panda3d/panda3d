@@ -76,12 +76,17 @@ assert options.version, "A version number must be supplied!"
 
 # A mapping of Panda's platform strings to Firefox's equivalent
 # strings.
+
+# I'm leaving out the Linux platforms for now.  I think there is too
+# much variance between distro's for this to be reliable; we'll make
+# each Linux user install their distro-specific plugin instead of
+# going through this mechanism.
 FirefoxPlatformMap = {
     'win32' : 'WINNT_x86-msvc',
     'win64' : 'WINNT_x86_64-msvc',
-    'linux_i386' : 'Linux_x86-gcc3',
-    'linux_amd64' : 'Linux_x86_64-gcc3',
-    'linux_ppc' : 'Linux_ppc-gcc3',
+#    'linux_i386' : 'Linux_x86-gcc3',
+#    'linux_amd64' : 'Linux_x86_64-gcc3',
+#    'linux_ppc' : 'Linux_ppc-gcc3',
     'osx_i386' : 'Darwin_x86-gcc3',
     'osx_amd64' : 'Darwin_x86_64-gcc3',
     'osx_ppc' : 'Darwin_ppc-gcc3',
