@@ -628,6 +628,7 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin"):
+            cmd += " -Wno-deprecated-declarations"
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
