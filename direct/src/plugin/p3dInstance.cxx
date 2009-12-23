@@ -3334,8 +3334,8 @@ handle_event_osx_event_record(const P3D_event_data &event) {
                    kHICoordSpaceWindow, window);
 
     // Then convert to plugin coordinates.
-    pt.h = cgpt.x - _wparams.get_win_x();
-    pt.v = cgpt.y - _wparams.get_win_y();
+    pt.h = (short)(cgpt.x - _wparams.get_win_x());
+    pt.v = (short)(cgpt.y - _wparams.get_win_y());
   }
 
   SubprocessWindowBuffer::Event swb_event;
@@ -3483,8 +3483,8 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
   case P3DCocoaEventMouseDown:
   case P3DCocoaEventMouseMoved:
   case P3DCocoaEventMouseDragged:
-    swb_event._x = ce.data.mouse.pluginX;
-    swb_event._y = ce.data.mouse.pluginY;
+    swb_event._x = (int)ce.data.mouse.pluginX;
+    swb_event._y = (int)ce.data.mouse.pluginY;
     swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position;
   }
 

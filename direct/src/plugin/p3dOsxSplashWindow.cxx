@@ -86,8 +86,12 @@ set_wparams(const P3DWindowParams &wparams) {
       if (r.top == -1) r.top = 50;
       // A coordinate of -2 means to center the window on the screen.
       CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
-      if (r.left == -2) r.left = 0.5 * (CGRectGetWidth(display_bounds) - _win_width);
-      if (r.top == -2) r.top = 0.5 * (CGRectGetHeight(display_bounds) - _win_height);
+      if (r.left == -2) {
+        r.left = (short)(0.5 * (CGRectGetWidth(display_bounds) - _win_width));
+      }
+      if (r.top == -2) {
+        r.top = (short)(0.5 * (CGRectGetHeight(display_bounds) - _win_height));
+      }
 
       r.right = r.left + _win_width;
       r.bottom = r.top + _win_height;
@@ -299,7 +303,8 @@ paint_window() {
     
     paint_window_osx_cgcontext(context);
 
-    // CGContextSynchronize(context);
+    // We need to synchronize, or we don't see the update every frame.
+    CGContextSynchronize(context);
     CGContextRelease(context);
     
   } else {
@@ -400,8 +405,8 @@ handle_event_osx_event_record(const P3D_event_data &event) {
                    kHICoordSpaceWindow, window);
 
     // Then convert to plugin coordinates.
-    pt.h = cgpt.x - _wparams.get_win_x();
-    pt.v = cgpt.y - _wparams.get_win_y();
+    pt.h = (short)(cgpt.x - _wparams.get_win_x());
+    pt.v = (short)(cgpt.y - _wparams.get_win_y());
   }
   
   switch (er->what) {
@@ -455,18 +460,18 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
     break;
 
   case P3DCocoaEventMouseDown:
-    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, true);
+    set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, true);
     retval = true;
     break;
 
   case P3DCocoaEventMouseUp:
-    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, false);
+    set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, false);
     retval = true;
     break;
 
   case P3DCocoaEventMouseMoved:
   case P3DCocoaEventMouseDragged:
-    set_mouse_data(ce.data.mouse.pluginX, ce.data.mouse.pluginY, _mouse_down);
+    set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, _mouse_down);
     retval = true;
     break;
 

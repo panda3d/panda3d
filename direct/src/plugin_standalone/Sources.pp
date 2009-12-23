@@ -13,7 +13,7 @@
   #define OTHER_LIBS \
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    downloader:c express:c pandaexpress:m \
+    pandabase:c downloader:c express:c pandaexpress:m \
     pystub
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
@@ -40,7 +40,7 @@
   #define OTHER_LIBS \
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    express:c downloader:c pandaexpress:m \
+    pandabase:c downloader:c express:c pandaexpress:m \
     pystub
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
@@ -68,7 +68,7 @@
   #define OTHER_LIBS \
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    downloader:c express:c pandaexpress:m \
+    pandabase:c downloader:c express:c pandaexpress:m \
     pystub
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
