@@ -9,6 +9,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem
 from direct.p3d.HostInfo import HostInfo
 from direct.showbase.AppRunnerGlobal import appRunner
+import glob
 
 class CachedFile:
     def __init__(self): self.str = ""
@@ -48,6 +49,8 @@ class Standalone:
         if len(platforms) == 0:
             Standalone.notify.error("No platforms found to build for!")
         
+        outputDir = Filename(outputDir + "/")
+        outputDir.makeDir()
         for platform in platforms:
             if platform.startswith("win"):
                 self.build(Filename(outputDir, platform + "/" + self.basename + ".exe"), platform)
@@ -82,8 +85,7 @@ class Standalone:
                 Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             
-            self.embed(output, p3dembed)
-            return
+            return self.embed(output, p3dembed)
         
         Standalone.notify.error("Failed to build standalone for platform %s" % platform)
     
@@ -123,6 +125,28 @@ class Standalone:
         
         os.chmod(output.toOsSpecific(), 0755)
 
+    def getExtraFiles(self, platform):
+        """ Returns a list of extra files that will need to be included
+        with the standalone executable in order for it to run, such as
+        dependent libraries. The returned paths will be absolute. """
+        
+        for package in self.host.getPackages(name = "p3dembed", platform = platform):
+            if not package.downloadDescFile(self.http):
+                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+            if not package.downloadPackage(self.http):
+                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+            
+            directory = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
+            directory.makeAbsolute()
+            filelist = []
+            for f in glob.glob(os.path.join(directory.toOsSpecific(), "*")):
+                if not f.endswith("p3dembed") and not f.endswith("p3dembed.exe"):
+                    filelist.append(Filename.fromOsSpecific(f))
+            return filelist
+        return []
+
 class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
     notify = directNotify.newCategory("Installer")
@@ -142,15 +166,17 @@ class Installer:
         Call this after you have set the desired parameters. """
         
         platforms = set()
-        for package in self.host.getPackages(name = "p3dembed"):
+        for package in self.standalone.host.getPackages(name = "p3dembed"):
             platforms.add(package.platform)
         if len(platforms) == 0:
             Installer.notify.error("No platforms found to build for!")
         
-        outputDir = Filename(outputDir)
-        assert outputDir.isDirectory()
+        outputDir = Filename(outputDir + "/")
+        outputDir.makeDir()
         for platform in platforms:
-            self.build(outputDir, platform)
+            output = Filename(outputDir, platform + "/")
+            output.makeDir()
+            self.build(output, platform)
     
     def build(self, output, platform = None):
         """ Builds a (graphical) installer and stores it into the path
@@ -162,21 +188,24 @@ class Installer:
             platform = PandaSystem.getPlatform()
         
         if platform == "win32":
-            return self.buildNSIS()
+            return self.buildNSIS(output, platform)
         elif "_" in platform:
-            os, arch = platform.rsplit("_", 1)
+            os, arch = platform.split("_", 1)
             if os == "linux":
-                return self.buildDEB(output, arch)
+                return self.buildDEB(output, platform)
             elif os == "osx":
-                return self.buildDMG(output, arch)
+                return self.buildPKG(output, platform)
+            elif os == "freebsd":
+                return self.buildDEB(output, platform)
         Installer.notify.info("Ignoring unknown platform " + platform)
 
-    def buildDEB(self, output, arch):
+    def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
         by the 'output' argument. It will be built for the architecture
         specified by the 'arch' argument.
         If 'output' is a directory, the deb file will be stored in it. """
         
+        arch = platform.rsplit("_", 1)[-1]
         output = Filename(output)
         if output.isDirectory():
             output = Filename(output, "%s_%s_%s.deb" % (self.shortname.lower(), self.version, arch))
@@ -194,7 +223,7 @@ class Installer:
         controlfile.write("Description: %s\n" % self.fullname)
         controlfile.close()
         Filename(tempdir, "usr/bin/").makeDir()
-        self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), "linux_" + arch)
+        self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), platform)
         if not self.licensefile.empty():
             Filename(tempdir, "usr/share/doc/%s/" % self.shortname.lower()).makeDir()
             shutil.copyfile(self.licensefile.toOsSpecific(), Filename(tempdir, "usr/share/doc/%s/copyright" % self.shortname.lower()).toOsSpecific())
@@ -231,33 +260,22 @@ class Installer:
         debfile.close()
         shutil.rmtree(tempdir.toOsSpecific())
 
-    def __buildAPP(self, plugin_standalone):
-        pkgfn = "%s %s.pkg" % (self.shortname, self.version)
-        appname = "/Applications/%s.app" % self.longname
-        Installer.notify.info("Creating %s..." % pkgfn)
+    def buildAPP(self, output, platform):
         
-        # Create a temporary directory to hold the application in
-        tempdir = Filename.temporary("", self.shortname.lower() + "_app_", "") + "/"
-        tempdir = tempdir.toOsSpecific()
-        if os.path.exists(tempdir):
-            shutil.rmtree(tempdir)
-        os.makedirs(tempdir)
-        contents = os.path.join(tempdir, appname.lstrip("/"), "Contents")
-        os.makedirs(os.path.join(contents, "MacOS"))
-        os.makedirs(os.path.join(contents, "Resources"))
+        output = Filename(output)
+        if output.isDirectory() and output.getExtension() != 'app':
+            output = Filename(output, "%s.app" % self.fullname)
+        Installer.notify.info("Creating %s..." % output)
         
-        # Create the "launch" script used to run the game.
-        launch = open(os.path.join(contents, "MacOS", "launch"), "w")
-        print >>launch, '#!/bin/sh'
-        print >>launch, 'panda3d_mac ../Resources/%s' % self.p3dfile.getBasename()
-        launch.close()
-        shutil.copyfile(self.p3dfile.toOsSpecific(), os.path.join(contents, "Resources", self.p3dfile.getBasename()))
-        shutil.copyfile(target, os.path.join(contents, "MacOS", "panda3d_mac"))
+        # Create the executable for the application bundle
+        exefile = Filename(output, "Contents/MacOS/" + self.shortname)
+        exefile.makeDir()
+        self.standalone.build(exefile, platform)
         
         # Create the application plist file.
         # Although it might make more sense to use Python's plistlib module here,
         # it is not available on non-OSX systems before Python 2.6.
-        plist = open(os.path.join(tempdir, appname.lstrip("/"), "Contents", "Info.plist"), "w")
+        plist = open(Filename(output, "Contents/Info.plist").toOsSpecific(), "w")
         print >>plist, '<?xml version="1.0" encoding="UTF-8"?>'
         print >>plist, '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
         print >>plist, '<plist version="1.0">'
@@ -267,7 +285,7 @@ class Installer:
         print >>plist, '\t<key>CFBundleDisplayName</key>'
         print >>plist, '\t<string>%s</string>' % self.fullname
         print >>plist, '\t<key>CFBundleExecutable</key>'
-        print >>plist, '\t<string>launch</string>'
+        print >>plist, '\t<string>%s</string>' % exefile.getBasename()
         print >>plist, '\t<key>CFBundleIdentifier</key>'
         print >>plist, '\t<string>%s.%s</string>' % (self.authorid, self.shortname)
         print >>plist, '\t<key>CFBundleInfoDictionaryVersion</key>'
@@ -290,7 +308,15 @@ class Installer:
         print >>plist, '</plist>'
         plist.close()
 
-    def buildNSIS(self):
+    def buildPKG(self, output, platform):
+        output = Filename(output)
+        #if output.isDirectory():
+        #    output = Filename(output, "%s %s.pkg" % (self.fullname, self.version))
+        
+        self.buildAPP(output, platform)
+        return
+
+    def buildNSIS(self, output, platform):
         # Check if we have makensis first
         makensis = None
         if (sys.platform.startswith("win")):
@@ -308,16 +334,26 @@ class Installer:
                     makensis = os.path.join(p, "makensis")
         
         if makensis == None:
-            Installer.notify.warning("Makensis utility not found, no Windows installer will be built!")
+            Installer.notify.error("Makensis utility not found, no Windows installer will be built!")
             return
-        Installer.notify.info("Creating %s.exe..." % self.shortname)
+        
+        output = Filename(output)
+        if output.isDirectory():
+            output = Filename(output, "%s %s.exe" % (self.fullname, self.version))
+        Installer.notify.info("Creating %s..." % output)
+        output.makeAbsolute()
 
-        tempfile = self.shortname + ".nsi"
-        nsi = open(tempfile, "w")
+        exefile = Filename(Filename.getTempDirectory(), self.shortname + ".exe")
+        exefile.unlink()
+        self.standalone.build(exefile, platform)
+
+        nsifile = Filename(Filename.getTempDirectory(), self.shortname + ".nsi")
+        nsifile.unlink()
+        nsi = open(nsifile.toOsSpecific(), "w")
 
         # Some global info
         nsi.write('Name "%s"\n' % self.fullname)
-        nsi.write('OutFile "%s.exe"\n' % self.shortname)
+        nsi.write('OutFile "%s"\n' % output.toOsSpecific())
         nsi.write('InstallDir "$PROGRAMFILES\%s"\n' % self.fullname)
         nsi.write('SetCompress auto\n')
         nsi.write('SetCompressor lzma\n')
@@ -329,7 +365,7 @@ class Installer:
         nsi.write('RequestExecutionLevel admin\n')
         nsi.write('\n')
         nsi.write('Function launch\n')
-        nsi.write('  ExecShell "open" "$INSTDIR\%s.bat"\n' % self.shortname)
+        nsi.write('  ExecShell "open" "$INSTDIR\%s.exe"\n' % self.shortname)
         nsi.write('FunctionEnd\n')
         nsi.write('\n')
         nsi.write('!include "MUI2.nsh"\n')
@@ -353,8 +389,11 @@ class Installer:
         nsi.write('!insertmacro MUI_LANGUAGE "English"\n')
 
         # This section defines the installer.
-        nsi.write('Section "Install"\n')
+        nsi.write('Section "" SecCore\n')
         nsi.write('  SetOutPath "$INSTDIR"\n')
+        nsi.write('  File "%s"\n' % exefile.toOsSpecific())
+        for f in self.standalone.getExtraFiles(platform):
+            nsi.write('  File "%s"\n' % f.toOsSpecific())
         nsi.write('  WriteUninstaller "$INSTDIR\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')
         nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
@@ -364,7 +403,10 @@ class Installer:
         nsi.write('SectionEnd\n')
 
         # This section defines the uninstaller.
-        nsi.write('Section "Uninstall"\n')
+        nsi.write('Section Uninstall\n')
+        nsi.write('  Delete "$INSTDIR\%s.exe"\n' % self.shortname)
+        for f in self.standalone.getExtraFiles(platform):
+            nsi.write('  Delete "%s"\n' % f.getBasename())
         nsi.write('  Delete "$INSTDIR\Uninstall.exe"\n')
         nsi.write('  RMDir "$INSTDIR"\n')
         nsi.write('  ; Start menu items\n')
@@ -381,7 +423,7 @@ class Installer:
                 cmd += " /" + o
             else:
                 cmd += " -" + o
-        cmd += " " + tempfile
+        cmd += " " + nsifile.toOsSpecific()
         os.system(cmd)
 
-        os.remove(tempfile)
+        nsifile.unlink()

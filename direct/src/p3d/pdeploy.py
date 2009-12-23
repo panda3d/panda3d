@@ -31,7 +31,7 @@ Modes:
 Options:
 
   -n your_app
-     Short, lowercase name of the application or game. Can only
+     Short, lowercase name of the application or game. May only
      contain alphanumeric characters, underscore or dash. This
      name will also define the output file(s) of the process.
      If omitted, the basename of the p3d file is used.
@@ -94,7 +94,7 @@ DEPLOY_MODES = ["standalone", "installer", "html"]
 import sys
 import os
 import getopt
-from DeploymentTools import Standalone, Installer
+from direct.p3d.DeploymentTools import Standalone, Installer
 from pandac.PandaModules import Filename, PandaSystem
 
 def usage(code, msg = ''):
@@ -208,10 +208,10 @@ elif deploy_mode == 'installer':
         i.buildAll(outputDir)
     else:
         for platform in platforms:
-            if platform.startswith("win"):
-                i.build(Filename(outputDir, platform + "/"), platform)
-            else:
-                i.build(Filename(outputDir, platform + "/"), platform)
+            output = Filename(outputDir, platform + "/")
+            output.makeDir()
+            i.build(output, platform)
+
 elif deploy_mode == 'html':
     print "Creating %s.html..." % shortname
     html = open(shortname + ".html", "w")
