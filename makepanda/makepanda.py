@@ -475,9 +475,9 @@ if (COMPILER=="LINUX"):
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
-    if (not LocateBinary("bison")):
+    if (not RUNTIME and not LocateBinary("bison")):
         exit("Could not locate bison!")
-    if (not LocateBinary("flex")):
+    if (not RUNTIME and not LocateBinary("flex")):
         exit("Could not locate flex!")
 
     for pkg in MAYAVERSIONS:
