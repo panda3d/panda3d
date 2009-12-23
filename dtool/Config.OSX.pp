@@ -30,7 +30,7 @@
 // Configure for universal binaries on OSX.
 #defer ARCH_FLAGS $[if $[UNIVERSAL_BINARIES],-arch i386 -arch ppc,]
 #define OSX_CDEFS
-#define OSX_CFLAGS
+#define OSX_CFLAGS -Wno-deprecated-declarations
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
