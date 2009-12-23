@@ -320,3 +320,15 @@ class pmerge(p3d):
     require('panda3d')
 
     mainModule('direct.p3d.pmerge')
+
+
+class pdeploy(p3d):
+    # This utility can distribute a game in the form of
+    # a standalone executable or a graphical installer.
+
+    config(display_name = "Panda3D Deployment Tool",
+           hidden = True, platform_specific = False,
+           keep_user_env = True)
+    require('panda3d')
+
+    mainModule('direct.p3d.pdeploy')
