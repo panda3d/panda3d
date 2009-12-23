@@ -314,6 +314,7 @@ private:
   P3DSplashWindow *_splash_window;
   string _install_label;
   bool _instance_window_opened;
+  bool _instance_window_attached;
   bool _stuff_to_download;
 
   // Members for deciding whether and when to display the progress bar
@@ -334,6 +335,7 @@ private:
   time_t _download_begin;
   bool _download_started;
   bool _download_complete;
+  bool _instance_started;
 
   // We keep the _panda3d pointer separately because it's so
   // important, but it's in the above vector also.

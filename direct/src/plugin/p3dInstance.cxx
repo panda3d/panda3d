@@ -142,12 +142,14 @@ P3DInstance(P3D_request_ready_func *func,
   _panda3d = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
+  _instance_window_attached = false;
   _stuff_to_download = false;
   _download_package_index = 0;
   _total_download_size = 0;
   _total_downloaded = 0;
   _download_started = false;
   _download_complete = false;
+  _instance_started = false;
   
   INIT_LOCK(_request_lock);
   _requested_stop = false;
@@ -491,6 +493,7 @@ set_wparams(const P3DWindowParams &wparams) {
     return;
   }
 
+  bool prev_got_wparams = _got_wparams;
   _got_wparams = true;
   _wparams = wparams;
 
@@ -547,8 +550,11 @@ set_wparams(const P3DWindowParams &wparams) {
     _session->send_command(doc);
   }
 
-  if (_p3d_trusted && get_packages_ready()) {
-    ready_to_start();
+  if (!prev_got_wparams) {
+    // If this was the first set_wparams call, try to start the app.
+    if (_p3d_trusted && get_packages_ready()) {
+      ready_to_start();
+    }
   }
 }
 
@@ -704,7 +710,9 @@ get_request() {
       _panda_script_object->set_pyobj(NULL);
       _panda_script_object->set_string_property("status", "stopped");
 
-      string expression = _fparams.lookup_token("onpythonstop");
+      string message = "onpythonstop";
+      string expression = _fparams.lookup_token(message);
+      nout << "notify: " << message << " " << expression << "\n";
       if (!expression.empty() && _browser_script_object != NULL) {
         P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
         P3D_OBJECT_XDECREF(result);
@@ -2263,6 +2271,7 @@ handle_notify_request(const string &message) {
     // the first frame, avoiding an empty frame in that little period
     // of time between the window opening and the first frame being
     // drawn.
+    _instance_window_attached = true;
 #ifndef __APPLE__
     if (_splash_window != NULL) {
       _splash_window->set_visible(false);
@@ -2287,6 +2296,7 @@ handle_notify_request(const string &message) {
     // The graphics window has been removed from the browser frame.
     // Restore the splash window.
     _instance_window_opened = true;
+    _instance_window_attached = false;
     set_background_image(IT_active);
     if (_splash_window != NULL) {
       _splash_window->set_visible(true);
@@ -2843,7 +2853,8 @@ mark_download_complete() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
-  if (is_started() || is_failed()) {
+  nout << "_instance_started = " << _instance_started << "\n";
+  if (_instance_started || is_failed()) {
     // Already started--or never mind.
     return;
   }
@@ -3093,7 +3104,7 @@ paint_window() {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 get_framebuffer_osx_port() {
-  if (_swbuffer == NULL || !_instance_window_opened) {
+  if (_swbuffer == NULL || !_instance_window_attached) {
     // We don't have a Panda3D window yet.
     return false;
   }
@@ -3173,7 +3184,7 @@ get_framebuffer_osx_port() {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 get_framebuffer_osx_cgcontext() {
-  if (_swbuffer == NULL || !_instance_window_opened) {
+  if (_swbuffer == NULL || !_instance_window_attached) {
     // We don't have a Panda3D window yet.
     return false;
   }

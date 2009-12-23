@@ -233,6 +233,7 @@ start_instance(P3DInstance *inst) {
   inst->ref();
   ACQUIRE_LOCK(_instances_lock);
   inst->_session = this;
+  inst->_instance_started = true;
   bool inserted = _instances.insert(Instances::value_type(inst->get_instance_id(), inst)).second;
   RELEASE_LOCK(_instances_lock);
   assert(inserted);
