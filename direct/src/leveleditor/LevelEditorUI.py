@@ -9,6 +9,7 @@ from ViewPort import *
 from ObjectPaletteUI import *
 from ObjectPropertyUI import *
 from SceneGraphUI import *
+from LayerEditorUI import *
 from HotKeyUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
@@ -117,6 +118,7 @@ class LevelEditorUI(WxAppShell):
         self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane, self.editor)
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
         self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane, self.editor)
+        self.layerEditorUI = LayerEditorUI(self.rightBarDownPane, self.editor)
 
     def onSetFocus(self):
         print 'wx got focus'
@@ -150,6 +152,7 @@ class LevelEditorUI(WxAppShell):
     def onNew(self, evt):
         self.editor.reset()
         self.sceneGraphUI.reset()
+        self.layerEditorUI.reset()
 
     def onLoad(self, evt):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)

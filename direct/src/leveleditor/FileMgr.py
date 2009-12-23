@@ -14,10 +14,16 @@ class FileMgr:
             f = open(fileName, 'w')
             f.write("from pandac.PandaModules import *\n")
             f.write("\nobjectMgr = base.le.objectMgr\n")
+            f.write('ui = base.le.ui\n')
+            f.write('\nui.sceneGraphUI.reset()\n\n')
             f.write("# temporary place holder for nodepath\n")
             f.write("objects = {}\n")
             saveData = self.editor.objectMgr.getSaveData()
             for data in saveData:
+                f.write(data)
+                f.write('\n')
+            saveDataLayers = self.editor.ui.layerEditorUI.getSaveData()
+            for data in saveDataLayers:
                 f.write(data)
                 f.write('\n')
             f.close()
