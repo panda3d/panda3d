@@ -2257,9 +2257,17 @@ handle_notify_request(const string &message) {
   } else if (message == "onwindowattach") {
     // The graphics window has been attached to the browser frame
     // (maybe initially, maybe later).  Hide the splash window.
+
+    // We don't actually hide the splash window immediately on OSX,
+    // because on that platform, we can hide it as soon as we render
+    // the first frame, avoiding an empty frame in that little period
+    // of time between the window opening and the first frame being
+    // drawn.
+#ifndef __APPLE__
     if (_splash_window != NULL) {
       _splash_window->set_visible(false);
     }
+#endif  // __APPLE__
 
 #ifdef __APPLE__
     // Start a timer to update the frame repeatedly.  This seems to be
@@ -3089,10 +3097,6 @@ get_framebuffer_osx_port() {
     // We don't have a Panda3D window yet.
     return false;
   }
-  if (_splash_window != NULL && _splash_window->get_visible()) {
-    // If the splash window is up, don't draw the Panda3D window.
-    return false;
-  }
 
   // blit rendered framebuffer into window backing store
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
@@ -3142,6 +3146,12 @@ get_framebuffer_osx_port() {
     
     _swbuffer->close_read_framebuffer();
 
+    if (_splash_window != NULL && _splash_window->get_visible()) {
+      // If the splash window is up, time to hide it.  We've just
+      // rendered a real frame.
+      _splash_window->set_visible(false);
+    }
+
   } else {
     // No frame ready.  Just re-paint the frame we had saved last
     // time.
@@ -3167,10 +3177,6 @@ get_framebuffer_osx_cgcontext() {
     // We don't have a Panda3D window yet.
     return false;
   }
-  if (_splash_window != NULL && _splash_window->get_visible()) {
-    // If the splash window is up, don't draw the Panda3D window.
-    return false;
-  }
 
   // blit rendered framebuffer into window backing store
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
@@ -3182,6 +3188,12 @@ get_framebuffer_osx_cgcontext() {
     const void *framebuffer = _swbuffer->open_read_framebuffer();
     memcpy(_reversed_buffer, framebuffer, y_size * rowsize);
     _swbuffer->close_read_framebuffer();
+
+    if (_splash_window != NULL && _splash_window->get_visible()) {
+      // If the splash window is up, time to hide it.  We've just
+      // rendered a real frame.
+      _splash_window->set_visible(false);
+    }
 
   } else {
     // No frame ready.  Just re-paint the frame we had saved last
