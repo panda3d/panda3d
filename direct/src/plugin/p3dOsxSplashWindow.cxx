@@ -82,12 +82,12 @@ set_wparams(const P3DWindowParams &wparams) {
       r.left = _wparams.get_win_x();
       
       // These are the same defaults used by Panda's osxGraphicsWindow.
-      if (r.left == -1) r.left == 10;
-      if (r.top == -1) r.top == 50;
+      if (r.left == -1) r.left = 10;
+      if (r.top == -1) r.top = 50;
       // A coordinate of -2 means to center the window on the screen.
       CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
-      if (r.left == -2) r.left == 0.5 * (CGRectGetWidth(display_bounds) - _win_width);
-      if (r.top == -2) r.top == 0.5 * (CGRectGetHeight(display_bounds) - _win_height);
+      if (r.left == -2) r.left = 0.5 * (CGRectGetWidth(display_bounds) - _win_width);
+      if (r.top == -2) r.top = 0.5 * (CGRectGetHeight(display_bounds) - _win_height);
 
       r.right = r.left + _win_width;
       r.bottom = r.top + _win_height;
