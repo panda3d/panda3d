@@ -110,9 +110,11 @@ class PackageInfo:
             if self.packageVersion:
                 self.packageDir = Filename(self.packageDir, self.packageVersion)
 
-            if self.asMirror:
-                # The server directory contains the platform name, though
-                # the client directory doesn't.
+            if self.host.perPlatform:
+                # The server directory contains the platform name,
+                # though the client directory normally doesn't (unless
+                # perPlatform is set true).
+                
                 if self.platform:
                     self.packageDir = Filename(self.packageDir, self.platform)
 

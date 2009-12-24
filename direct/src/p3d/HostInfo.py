@@ -10,7 +10,7 @@ class HostInfo:
     class in the core API. """
 
     def __init__(self, hostUrl, appRunner = None, hostDir = None,
-                 asMirror = False):
+                 asMirror = False, perPlatform = None):
 
         """ You must specify either an appRunner or a hostDir to the
         HostInfo constructor.
@@ -21,7 +21,15 @@ class HostInfo:
         This means when you use this HostInfo to download packages, it
         will only download the compressed archive file and leave it
         there.  At the moment, mirror folders do not download old
-        patch files from the server. """
+        patch files from the server.
+
+        If you pass perPlatform = True, then files are unpacked into a
+        platform-specific directory, which is appropriate when you
+        might be downloading multiple platforms.  The default is
+        perPlatform = False, which means all files are unpacked into
+        the host directory directly, without an intervening
+        platform-specific directory name.  If asMirror is True, then
+        the default is perPlatform = True. """
         
         assert appRunner or hostDir
         
@@ -29,6 +37,9 @@ class HostInfo:
         self.appRunner = appRunner
         self.hostDir = hostDir
         self.asMirror = asMirror
+        self.perPlatform = perPlatform
+        if perPlatform is None:
+            self.perPlatform = asMirror
 
         # hostUrlPrefix is the host URL, but it is guaranteed to end
         # with a slash.
