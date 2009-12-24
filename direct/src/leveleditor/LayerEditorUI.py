@@ -30,36 +30,54 @@ class LayerEditorUI(wx.Panel):
 
         self.opAdd       = "Add Layer"
         self.opDelete    = "Delete Layer"
+        self.opRename    = "Rename Layer"
         self.opAddObj    = "Add Selected Object"
         self.opRemoveObj = "Remove Selected Object"
-        self.opShow      = "Show Members"
-        self.opRename    = "Rename Layer"
+        self.opShowObj   = "Show Layer Objects"
+        self.opHideObj   = "Hide Layer Objects"
 
-        self.menuItems = list()
-        self.menuItems.append(self.opAdd)
-        self.menuItems.append(self.opDelete)
-        self.menuItems.append(self.opAddObj)
-        self.menuItems.append(self.opRemoveObj)
-        self.menuItems.append(self.opShow)
+        self.menuItemsGen = list()
+        self.menuItemsGen.append(self.opAdd)
         #self.menuItems.append(self.opRename)
 
+        self.menuItemsObj = list()
+        self.menuItemsObj.append(self.opAddObj)
+        self.menuItemsObj.append(self.opRemoveObj)
+        self.menuItemsObj.append(self.opShowObj)
+        self.menuItemsObj.append(self.opHideObj)
+        self.menuItemsObj.append(self.opDelete)
+
         self.popupmenu = wx.Menu()
-        for item in self.menuItems:
+        for item in self.menuItemsGen:
             menuItem = self.popupmenu.Append(-1, item)
             self.Bind(wx.EVT_MENU, self.onPopupItemSelected, menuItem)
 
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
         self.llist.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onShowMembers)
 
-    def reset(self):
-        #import pdb;set_trace()
-        self.layersDataDict.clear()
-        self.layersDataDictNextKey = 0
-        self.llist.DeleteAllItems()
+    def menuAppendGenItems(self):
+        for item in self.menuItemsGen:
+            menuItem = self.popupmenu.Append(-1, item)
+            self.Bind(wx.EVT_MENU, self.onPopupItemSelected, menuItem)
+
+    def menuAppendObjItems(self):
+        for item in self.menuItemsObj:
+            menuItem = self.popupmenu.Append(-1, item)
+            self.Bind(wx.EVT_MENU, self.onPopupItemSelected, menuItem)
 
     def onShowPopup(self, event):
         pos = event.GetPosition()
         pos = self.ScreenToClient(pos)
+
+        for menuItem in self.popupmenu.GetMenuItems():
+            self.popupmenu.RemoveItem(menuItem)
+
+        #import pdb;set_trace()
+        hitItem, flags = self.llist.HitTest(pos)
+        if hitItem == -1:
+           self.menuAppendGenItems()
+        else:
+           self.menuAppendObjItems()
         self.PopupMenu(self.popupmenu, pos)
 
     def onPopupItemSelected(self, event):
@@ -69,8 +87,10 @@ class LayerEditorUI(wx.Panel):
            self.addObj()
         elif text == self.opRemoveObj:
            self.removeObj()
-        elif text == self.opShow:
-           self.onShowMembers()
+        elif text == self.opShowObj:
+           self.HideObj(False)
+        elif text == self.opHideObj:
+           self.HideObj(True)
         elif text == self.opAdd:
            self.addLayer()
         elif text == self.opDelete:
@@ -79,6 +99,12 @@ class LayerEditorUI(wx.Panel):
            self.renameLayer()
         else:
            wx.MessageBox("You selected item '%s'" % text)
+
+    def reset(self):
+        #import pdb;set_trace()
+        self.layersDataDict.clear()
+        self.layersDataDictNextKey = 0
+        self.llist.DeleteAllItems()
 
     def findLabel(self, text):
         found = False
@@ -185,7 +211,32 @@ class LayerEditorUI(wx.Panel):
            #do something here
            dialog.GetStringSelection()
         dialog.Destroy()
-        
+
+    def HideObj(self, hide):
+        index = self.llist.GetFirstSelected()
+        if index == -1:
+           wx.MessageBox("No layer was selected.", self.editorTxt,  wx.OK|wx.ICON_EXCLAMATION)
+           return
+
+        key = self.llist.GetItemData(index)
+        layerData = self.layersDataDict[key]
+        if len(layerData) == 0:
+           return
+        for i in range(len(layerData)):
+            obj = self.editor.objectMgr.findObjectById(layerData[i])
+            if hide:
+               obj[OG.OBJ_NP].hide()
+            else:
+               obj[OG.OBJ_NP].show()
+
+        font = wx.Font
+        font = self.llist.GetItemFont(index)
+        if hide:
+           font.SetWeight(wx.FONTWEIGHT_BOLD)
+        else:
+           font.SetWeight(wx.FONTWEIGHT_NORMAL)
+        self.llist.SetItemFont(index, font)
+
     def traverse(self):
         self.saveData.append("ui.layerEditorUI.reset()")
         for index in range(self.llist.GetItemCount()):
