@@ -15,7 +15,9 @@
 #include "config_awesomium.h"
 #include "awWebCore.h"
 #include "awWebView.h"
+#include "awWebViewListener.h"
 #include "dconfig.h"
+
 
 Configure(config_awesomium);
 NotifyCategoryDef(awesomium, "");
@@ -43,5 +45,6 @@ init_libawesomium() {
   
   AwWebCore::init_type();
   AwWebView::init_type();
+  AwWebViewListener::init_type();
 
 }

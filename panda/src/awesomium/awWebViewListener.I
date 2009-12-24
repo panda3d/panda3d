@@ -1,5 +1,5 @@
-// Filename: awesomium_includes.h
-// Created by:  rurbino (08Oct10)
+// Filename: awWebViewListener.I
+// Created by:  rurbino (12Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -11,12 +11,3 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
-
-#ifndef _AWESOMIUM_INCLUDES_H_
-#define _AWESOMIUM_INCLUDES_H_
-
-#include "WebCore.h"
-#include "WebView.h"
-#include "WebViewListener.h"
-
-#endif

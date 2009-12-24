@@ -17,18 +17,20 @@
   #define SOURCES \
     awesomium_includes.h config_awesomium.h \
     awWebCore.I awWebCore.h \
-    awWebView.I awWebView.h
+    awWebView.I awWebView.h \
+    awWebViewListener.I awWebViewListener.h
 
   #define INCLUDED_SOURCES \
     config_awesomium.cxx \
     awWebCore.cxx \
-    awWebView.cxx
-
+    awWebView.cxx \
+    awWebViewListener.cxx
 
   #define INSTALL_HEADERS \
     awesomium_includes.h config_awesomium.h \
     awWebCore.h awWebCore.I \
-    awWebView.h awWebView.I
+    awWebView.h awWebView.I \
+    awWebViewListener.I awWebViewListener.h    
 
   #define IGATESCAN all
 
