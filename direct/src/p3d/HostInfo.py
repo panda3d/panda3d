@@ -10,7 +10,7 @@ class HostInfo:
     class in the core API. """
 
     def __init__(self, hostUrl, appRunner = None, hostDir = None,
-                 asMirror = False, perPlatform = None):
+                 asMirror = False, perPlatform = False):
 
         """ You must specify either an appRunner or a hostDir to the
         HostInfo constructor.
