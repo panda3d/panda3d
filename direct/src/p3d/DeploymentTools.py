@@ -32,12 +32,13 @@ class Standalone:
         else:
             hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
             hostDir.makeDir()
-            self.host = HostInfo("http://runtime.panda3d.org", hostDir = hostDir, asMirror = True)
+            self.host = HostInfo("http://runtime.panda3d.org", hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
-        if not self.host.downloadContentsFile(self.http):
-            Standalone.notify.error("couldn't read host")
-            return False
+        if not self.host.readContentsFile():
+            if not self.host.downloadContentsFile(self.http):
+                Standalone.notify.error("couldn't read host")
+                return False
     
     def buildAll(self, outputDir = "."):
         """ Builds standalone executables for every known platform,
@@ -47,7 +48,7 @@ class Standalone:
         for package in self.host.getPackages(name = "p3dembed"):
             platforms.add(package.platform)
         if len(platforms) == 0:
-            Standalone.notify.error("No platforms found to build for!")
+            Standalone.notify.warning("No platforms found to build for!")
         
         outputDir = Filename(outputDir + "/")
         outputDir.makeDir()
@@ -66,10 +67,10 @@ class Standalone:
             platform = PandaSystem.getPlatform()
         for package in self.host.getPackages(name = "p3dembed", platform = platform):
             if not package.downloadDescFile(self.http):
-                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             if not package.downloadPackage(self.http):
-                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             
             # Figure out where p3dembed might be now.
@@ -78,11 +79,8 @@ class Standalone:
             else:
                 p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed" % package.platform)
             
-            # We allow p3dembed to be pzipped.
-            if Filename(p3dembed + ".pz").exists():
-                p3dembed = Filename(p3dembed + ".pz")
             if not p3dembed.exists():
-                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             
             return self.embed(output, p3dembed)
@@ -128,24 +126,28 @@ class Standalone:
     def getExtraFiles(self, platform):
         """ Returns a list of extra files that will need to be included
         with the standalone executable in order for it to run, such as
-        dependent libraries. The returned paths will be absolute. """
+        dependent libraries. The returned paths are full absolute paths. """
         
-        for package in self.host.getPackages(name = "p3dembed", platform = platform):
-            if not package.downloadDescFile(self.http):
-                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            if not package.downloadPackage(self.http):
-                Standalone.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            
-            directory = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
-            directory.makeAbsolute()
-            filelist = []
-            for f in glob.glob(os.path.join(directory.toOsSpecific(), "*")):
-                if not f.endswith("p3dembed") and not f.endswith("p3dembed.exe"):
-                    filelist.append(Filename.fromOsSpecific(f))
-            return filelist
-        return []
+        package = self.host.getPackages(name = "p3dembed", platform = platform)[0]
+        
+        if not package.downloadDescFile(self.http):
+            Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return []
+        if not package.downloadPackage(self.http):
+            Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return []
+        
+        filenames = []
+        for e in package.extracts:
+            if e.basename not in ["p3dembed", "p3dembed.exe"]:
+                filename = Filename(package.getPackageDir(), e.filename)
+                filename.makeAbsolute()
+                if filename.exists():
+                    filenames.append(filename)
+                else:
+                    Standalone.notify.error("%s mentioned in xml, but does not exist" % e.filename)
+        
+        return filenames
 
 class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
@@ -169,7 +171,7 @@ class Installer:
         for package in self.standalone.host.getPackages(name = "p3dembed"):
             platforms.add(package.platform)
         if len(platforms) == 0:
-            Installer.notify.error("No platforms found to build for!")
+            Installer.notify.warning("No platforms found to build for!")
         
         outputDir = Filename(outputDir + "/")
         outputDir.makeDir()
@@ -335,7 +337,7 @@ class Installer:
                     makensis = os.path.join(p, "makensis")
         
         if makensis == None:
-            Installer.notify.error("Makensis utility not found, no Windows installer will be built!")
+            Installer.notify.warning("Makensis utility not found, no Windows installer will be built!")
             return
         
         output = Filename(output)
@@ -343,6 +345,7 @@ class Installer:
             output = Filename(output, "%s %s.exe" % (self.fullname, self.version))
         Installer.notify.info("Creating %s..." % output)
         output.makeAbsolute()
+        extrafiles = self.standalone.getExtraFiles(platform)
 
         exefile = Filename(Filename.getTempDirectory(), self.shortname + ".exe")
         exefile.unlink()
@@ -393,7 +396,7 @@ class Installer:
         nsi.write('Section "" SecCore\n')
         nsi.write('  SetOutPath "$INSTDIR"\n')
         nsi.write('  File "%s"\n' % exefile.toOsSpecific())
-        for f in self.standalone.getExtraFiles(platform):
+        for f in extrafiles:
             nsi.write('  File "%s"\n' % f.toOsSpecific())
         nsi.write('  WriteUninstaller "$INSTDIR\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')
@@ -406,7 +409,7 @@ class Installer:
         # This section defines the uninstaller.
         nsi.write('Section Uninstall\n')
         nsi.write('  Delete "$INSTDIR\%s.exe"\n' % self.shortname)
-        for f in self.standalone.getExtraFiles(platform):
+        for f in extrafiles:
             nsi.write('  Delete "%s"\n' % f.getBasename())
         nsi.write('  Delete "$INSTDIR\Uninstall.exe"\n')
         nsi.write('  RMDir "$INSTDIR"\n')
