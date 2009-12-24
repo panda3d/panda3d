@@ -867,13 +867,7 @@ def CompileLink(dll, obj, opts):
                     cmd += ' -l' + base[3:-2]
                 else:
                     cmd += ' ' + x
-        for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opt in opts): cmd += ' -L' + BracketNameWithQuotes(dir)
-        for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + BracketNameWithQuotes(name)
-        cmd += " -lpthread"
-        if (not sys.platform.startswith("freebsd")):
-            cmd += " -ldl"
+        
         if (sys.platform == "darwin"):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
@@ -884,6 +878,14 @@ def CompileLink(dll, obj, opts):
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         if (LDFLAGS !=""): cmd += " " + LDFLAGS
+        
+        for (opt, dir) in LIBDIRECTORIES:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -L' + BracketNameWithQuotes(dir)
+        for (opt, name) in LIBNAMES:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + BracketNameWithQuotes(name)
+        cmd += " -lpthread"
+        if (not sys.platform.startswith("freebsd")):
+            cmd += " -ldl"
         
         oscmd(cmd)
         if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
