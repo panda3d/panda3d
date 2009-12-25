@@ -770,8 +770,8 @@ class Packager:
         def __addImplicitDependenciesWindows(self):
             """ Walks through the list of files, looking for dll's and
             exe's that might include implicit dependencies on other
-            dll's.  Tries to determine those dependencies, and adds
-            them back into the filelist. """
+            dll's and assembly manifests.  Tries to determine those
+            dependencies, and adds them back into the filelist. """
 
             # We walk through the list as we modify it.  That's OK,
             # because we want to follow the transitive closure of
@@ -784,22 +784,53 @@ class Packager:
                     # Skip this file.
                     continue
 
-                tempFile = Filename.temporary('', 'p3d_', '.txt')
-                command = 'dumpbin /dependents "%s" >"%s"' % (
-                    file.filename.toOsSpecific(),
-                    tempFile.toOsSpecific())
-                try:
-                    os.system(command)
-                except:
-                    pass
-                filenames = None
+                if file.filename.getExtension().lower() == "manifest":
+                    filenames = self.__parseManifest(file.filename)
+                    print file.filename, filenames
+                    if filenames is None:
+                        self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
+                        continue
+                
+                else:
+                    tempFile = Filename.temporary('', 'p3d_', '.txt')
+                    command = 'dumpbin /dependents "%s" >"%s"' % (
+                        file.filename.toOsSpecific(),
+                        tempFile.toOsSpecific())
+                    try:
+                        os.system(command)
+                    except:
+                        pass
+                    filenames = None
 
-                if tempFile.exists():
-                    filenames = self.__parseDependenciesWindows(tempFile)
-                    tempFile.unlink()
-                if filenames is None:
-                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
-                    continue
+                    if tempFile.exists():
+                        filenames = self.__parseDependenciesWindows(tempFile)
+                        tempFile.unlink()
+                    if filenames is None:
+                        self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
+                        continue
+
+                    # Extract the manifest file so we can figure out the dependent assemblies.
+                    tempFile = Filename.temporary('', 'p3d_', '.manifest')
+                    resindex = 2
+                    if file.filename.getExtension().lower() == "exe":
+                        resindex = 1
+                    command = 'mt -inputresource:"%s";#%d -out:"%s" > nul' % (
+                        file.filename.toOsSpecific(),
+                        resindex, tempFile.toOsSpecific())
+                    try:
+                        out = os.system(command)
+                    except:
+                        pass
+                    afilenames = None
+
+                    if tempFile.exists():
+                        afilenames = self.__parseManifest(tempFile)
+                        tempFile.unlink()
+                    if afilenames is None and out != 31:
+                        self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
+                        continue
+                    if afilenames is not None:
+                        filenames += afilenames
 
                 # Attempt to resolve the dependent filename relative
                 # to the original filename, before we resolve it along
@@ -851,7 +882,41 @@ class Packager:
 
             # At least we got some data.
             return filenames
+        
+        def __parseManifest(self, tempFile):
+            """ Reads the indicated application manifest file, to
+            determine the list of dependent assemblies this
+            executable file depends on. """
+
+            doc = TiXmlDocument(tempFile.toOsSpecific())
+            if not doc.LoadFile():
+                return None
             
+            assembly = doc.FirstChildElement("assembly")
+            if not assembly:
+                return None
+            
+            # Pick up assemblies that it depends on
+            filenames = []
+            dependency = assembly.FirstChildElement("dependency")
+            while dependency:
+                ident = dependency.FirstChildElement("dependentAssembly").FirstChildElement("assemblyIdentity")
+                if ident:
+                    name = ident.Attribute("name")
+                    if name:
+                        filenames.append(name + ".manifest")
+                dependency = dependency.NextSiblingElement("dependency")
+            
+            # Pick up direct dll dependencies that it lists
+            dfile = assembly.FirstChildElement("file")
+            while dfile:
+                name = dfile.Attribute("name")
+                if name:
+                    filenames.append(name)
+                dfile = dfile.NextSiblingElement("file")
+            
+            return filenames
+        
         def __locateFrameworkLibrary(self, library):
             """ Locates the given library inside its framework on the
             default framework paths, and returns its location as Filename. """
