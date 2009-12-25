@@ -757,10 +757,16 @@ def GetThirdpartyDir():
 ########################################################################
 ##
 ## Visual Studio Manifest Manipulation.
+## These functions exist to make sure we are referencing the same
+## version of the VC runtime in the manifests that we are shipping
+## with Panda3D, to avoid side-by-side configuration errors. Also,
+## it also removes any dependency the VC80 CRT (as we only want to
+## depend on the VC90 CRT).
 ##
 ########################################################################
 
 VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
+VC80CRTASSEMBLYRE=re.compile("<dependency>[\t \n]*<dependentAssembly>[\t \n]*<assemblyIdentity[\t \na-zA-Z0-9.'\"=]*name=['\"]Microsoft[.]VC80[.]CRT['\"][\t \na-zA-Z0-9.'\"=/]*>[\t \n]*(</assemblyIdentity>)?[\t \n]*</dependentAssembly>[\t \n]*</dependency>[\t \n]*")
 VC90CRTVERSION=None
 
 def GetVC90CRTVersion(fn = None):
@@ -784,6 +790,7 @@ def SetVC90CRTVersion(fn, ver = None):
     manifest = ReadFile(fn)
     subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
     manifest = VC90CRTVERSIONRE.sub(subst, manifest)
+    manifest = VC80CRTASSEMBLYRE.sub("", manifest)
     WriteFile(fn, manifest)
 
 ########################################################################
