@@ -4,12 +4,11 @@ to build for as many platforms as possible. """
 
 __all__ = ["Standalone", "Installer"]
 
-import os, sys, subprocess, tarfile, shutil, time
+import os, sys, subprocess, tarfile, shutil, time, zipfile
 from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem
 from direct.p3d.HostInfo import HostInfo
 from direct.showbase.AppRunnerGlobal import appRunner
-import glob
 
 class CachedFile:
     def __init__(self): self.str = ""
@@ -414,6 +413,19 @@ class Installer:
             archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz")
         archive.add(appfn.toOsSpecific(), appname)
         archive.close()
+        
+        # Put the .pkg into a zipfile
+        archive = Filename(output.getDirname(), "%s %s.zip" % (self.fullname, self.version))
+        dir = Filename(output.getDirname())
+        dir.makeAbsolute()
+        zip = zipfile.ZipFile(archive.toOsSpecific(), 'w')
+        for root, dirs, files in os.walk(output.toOsSpecific()):
+            for name in files:
+                file = Filename.fromOsSpecific(os.path.join(root, name))
+                file.makeAbsolute()
+                file.makeRelativeTo(dir)
+                zip.write(os.path.join(root, name), str(file))
+        zip.close()
         
         return output
 

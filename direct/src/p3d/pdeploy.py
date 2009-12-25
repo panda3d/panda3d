@@ -84,6 +84,14 @@ Options:
      is licensed under.
      Only relevant when generating a graphical installer.
 
+  -a com.your_company
+     Short identifier of the author of the application. The default
+     is "org.panda3d", but you will most likely want to change
+     it to your own name or that of your organization or company.
+
+  -A "Your Company"
+     Full name of the author of the application.
+
   -h
      Display this help
 
@@ -111,6 +119,8 @@ platforms = []
 currentPlatform = False
 licensename = ""
 licensefile = Filename()
+authorid = ""
+authorname = ""
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:cl:L:h')
@@ -137,6 +147,10 @@ for opt, arg in opts:
         licensename = arg.strip()
     elif opt == '-L':
         licensefile = Filename.fromOsSpecific(arg)
+    elif opt == '-a':
+        authorid = arg.strip()
+    elif opt == '-A':
+        authorname = arg.strip()
         
     elif opt == '-h':
         usage(0)
@@ -197,6 +211,8 @@ elif deploy_mode == 'installer':
     i = Installer(shortname, fullname, appFilename, version, tokens = tokens)
     i.licensename = licensename
     i.licensefile = licensefile
+    i.authorid = authorid
+    i.authorname = authorname
     
     if currentPlatform:
         platform = PandaSystem.getPlatform()
