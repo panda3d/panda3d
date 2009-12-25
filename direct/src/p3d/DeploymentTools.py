@@ -310,14 +310,112 @@ class Installer:
         print >>plist, '</dict>'
         print >>plist, '</plist>'
         plist.close()
+        
+        return output
 
     def buildPKG(self, output, platform):
+        appfn = self.buildAPP(output, platform)
+        appname = "/Applications/" + appfn.getBasename()
         output = Filename(output)
-        #if output.isDirectory():
-        #    output = Filename(output, "%s %s.pkg" % (self.fullname, self.version))
+        if output.isDirectory():
+            output = Filename(output, "%s %s.pkg" % (self.fullname, self.version))
+        Installer.notify.info("Creating %s..." % output)
         
-        self.buildAPP(output, platform)
-        return
+        Filename(output, "Contents/Resources/en.lproj/").makeDir()
+        if self.licensefile:
+            shutil.copyfile(self.licensefile.toOsSpecific(), Filename(output, "Contents/Resources/License.txt").toOsSpecific())
+        pkginfo = open(Filename(output, "Contents/PkgInfo").toOsSpecific(), "w")
+        pkginfo.write("pkmkrpkg1")
+        pkginfo.close()
+        pkginfo = open(Filename(output, "Contents/Resources/package_version").toOsSpecific(), "w")
+        pkginfo.write("major: 1\nminor: 9")
+        pkginfo.close()
+        
+        # Although it might make more sense to use Python's plistlib here,
+        # it is not available on non-OSX systems before Python 2.6.
+        plist = open(Filename(output, "Contents/Info.plist").toOsSpecific(), "w")
+        plist.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        plist.write('<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+        plist.write('<plist version="1.0">\n')
+        plist.write('<dict>\n')
+        plist.write('\t<key>CFBundleIdentifier</key>\n')
+        plist.write('\t<string>%s.pkg.%s</string>\n' % (self.authorid, self.shortname))
+        plist.write('\t<key>CFBundleShortVersionString</key>\n')
+        plist.write('\t<string>%s</string>\n' % self.version)
+        plist.write('\t<key>IFMajorVersion</key>\n')
+        plist.write('\t<integer>1</integer>\n')
+        plist.write('\t<key>IFMinorVersion</key>\n')
+        plist.write('\t<integer>9</integer>\n')
+        plist.write('\t<key>IFPkgFlagAllowBackRev</key>\n')
+        plist.write('\t<false/>\n')
+        plist.write('\t<key>IFPkgFlagAuthorizationAction</key>\n')
+        plist.write('\t<string>RootAuthorization</string>\n')
+        plist.write('\t<key>IFPkgFlagDefaultLocation</key>\n')
+        plist.write('\t<string>/</string>\n')
+        plist.write('\t<key>IFPkgFlagFollowLinks</key>\n')
+        plist.write('\t<true/>\n')
+        plist.write('\t<key>IFPkgFlagIsRequired</key>\n')
+        plist.write('\t<false/>\n')
+        plist.write('\t<key>IFPkgFlagOverwritePermissions</key>\n')
+        plist.write('\t<false/>\n')
+        plist.write('\t<key>IFPkgFlagRelocatable</key>\n')
+        plist.write('\t<false/>\n')
+        plist.write('\t<key>IFPkgFlagRestartAction</key>\n')
+        plist.write('\t<string>None</string>\n')
+        plist.write('\t<key>IFPkgFlagRootVolumeOnly</key>\n')
+        plist.write('\t<true/>\n')
+        plist.write('\t<key>IFPkgFlagUpdateInstalledLanguages</key>\n')
+        plist.write('\t<false/>\n')
+        plist.write('\t<key>IFPkgFormatVersion</key>\n')
+        plist.write('\t<real>0.10000000149011612</real>\n')
+        plist.write('\t<key>IFPkgPathMappings</key>\n')
+        plist.write('\t<dict>\n')
+        plist.write('\t\t<key>%s</key>\n' % appname)
+        plist.write('\t\t<string>{pkmk-token-2}</string>\n')
+        plist.write('\t</dict>\n')
+        plist.write('</dict>\n')
+        plist.write('</plist>\n')
+        plist.close()
+        
+        plist = open(Filename(output, "Contents/Resources/TokenDefinitions.plist").toOsSpecific(), "w")
+        plist.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        plist.write('<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+        plist.write('<plist version="1.0">\n')
+        plist.write('<dict>\n')
+        plist.write('\t<key>pkmk-token-2</key>\n')
+        plist.write('\t<array>\n')
+        plist.write('\t\t<dict>\n')
+        plist.write('\t\t\t<key>identifier</key>\n')
+        plist.write('\t\t\t<string>%s.%s</string>\n' % (self.authorid, self.shortname))
+        plist.write('\t\t\t<key>path</key>\n')
+        plist.write('\t\t\t<string>%s</string>\n' % appname)
+        plist.write('\t\t\t<key>searchPlugin</key>\n')
+        plist.write('\t\t\t<string>CommonAppSearch</string>\n')
+        plist.write('\t\t</dict>\n')
+        plist.write('\t</array>\n')
+        plist.write('</dict>\n')
+        plist.write('</plist>\n')
+        
+        plist = open(Filename(output, "Contents/Resources/en.lproj/Description.plist").toOsSpecific(), "w")
+        plist.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        plist.write('<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+        plist.write('<plist version="1.0">\n')
+        plist.write('<dict>\n')
+        plist.write('\t<key>IFPkgDescriptionDescription</key>\n')
+        plist.write('\t<string></string>\n')
+        plist.write('\t<key>IFPkgDescriptionTitle</key>\n')
+        plist.write('\t<string>%s</string>\n' % self.fullname)
+        plist.write('</dict>\n')
+        plist.write('</plist>\n')
+        
+        if hasattr(tarfile, "PAX_FORMAT"):
+            archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz", format = tarfile.PAX_FORMAT)
+        else:
+            archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz")
+        archive.add(appfn.toOsSpecific(), appname)
+        archive.close()
+        
+        return output
 
     def buildNSIS(self, output, platform):
         # Check if we have makensis first
@@ -431,3 +529,4 @@ class Installer:
         os.system(cmd)
 
         nsifile.unlink()
+        return output
