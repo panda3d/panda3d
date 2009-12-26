@@ -322,7 +322,7 @@ load_plugin(const string &p3d_plugin_filename,
   if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str(),
                       host_url.c_str(), verify_contents, platform.c_str(),
                       log_directory.c_str(), log_basename.c_str(),
-                      trusted_environment, console_environment)) {
+                      trusted_environment, console_environment, NULL)) {
     // Oops, failure to initialize.
     logfile
       << "Failed to initialize plugin (passed API version " 

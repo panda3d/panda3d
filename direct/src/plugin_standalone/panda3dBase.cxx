@@ -138,42 +138,41 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   read_offset = read.tellg();
   read.close();
   
-  // Initialize the plugin
-  if (!P3D_initialize(P3D_API_VERSION, NULL,
-                      _host_url.c_str(), _verify_contents, _this_platform.c_str(),
-                      _log_dirname.c_str(), _log_basename.c_str(),
-                      !_enable_security, _console_environment)) {
-    // Oops, failure to initialize.
-    cerr << "Failed to initialize plugin (wrong API version?)\n";
-    return 1;
-  }
-  
-  // Set the super-mirror URL
-  Filename super_mirror (f);
-  super_mirror = Filename(super_mirror.get_dirname());
+  // Find the root directory
+  Filename root_dir (f);
+  root_dir = Filename(root_dir.get_dirname());
 #ifdef __APPLE__
-  super_mirror = Filename(super_mirror.get_dirname(), "Resources");
+  root_dir = Filename(root_dir.get_dirname(), "Resources");
 #endif
-  if (Filename(super_mirror, "contents.xml").exists()) {
-    string path = super_mirror.to_os_generic();
+  if (Filename(root_dir, "contents.xml").exists()) {
+    string path = root_dir.to_os_generic();
     if (!path.empty() && path[0] != '/') {
       // On Windows, a leading drive letter must be preceded by an
       // additional slash.
       path = "/" + path;
     }
     path = "file://" + path;
-    P3D_set_super_mirror(path.c_str());
   }
 #if !defined(_WIN32) && !defined(__APPLE__)
   else { // On Unix, we should try to find it in the share directory under the prefix.
-    super_mirror = Filename(super_mirror.get_dirname(), "share/" + f.get_basename());
-    if (Filename(super_mirror, "contents.xml").exists()) {
-      string path = super_mirror.to_os_generic();
+    root_dir = Filename(root_dir.get_dirname(), "share/" + f.get_basename());
+    if (Filename(root_dir, "contents.xml").exists()) {
+      string path = root_dir.to_os_generic();
       path = "file://" + path;
-      P3D_set_super_mirror(path.c_str());
     }
   }
 #endif
+  
+  // Initialize the plugin
+  if (!P3D_initialize(P3D_API_VERSION, NULL,
+                      _host_url.c_str(), _verify_contents, _this_platform.c_str(),
+                      _log_dirname.c_str(), _log_basename.c_str(),
+                      !_enable_security, _console_environment,
+                      root_dir.c_str())) {
+    // Oops, failure to initialize.
+    cerr << "Failed to initialize plugin (wrong API version?)\n";
+    return 1;
+  }
   
   // Create a plugin instance and run the program
   P3D_instance *inst = create_instance

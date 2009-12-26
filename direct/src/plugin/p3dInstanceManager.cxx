@@ -188,7 +188,7 @@ initialize(int api_version, const string &contents_filename,
            const string &host_url, bool verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
-           bool console_environment) {
+           bool console_environment, const string &root_dir) {
   _api_version = api_version;
   _host_url = host_url;
   _verify_contents = verify_contents;
@@ -221,11 +221,14 @@ initialize(int api_version, const string &contents_filename,
     _log_basename = "p3dcore";
   }
 
-  _root_dir = find_root_dir();
-
-  if (_root_dir.empty()) {
-    cerr << "Could not find root directory.\n";
-    return false;
+  if (root_dir.empty()) {
+    _root_dir = find_root_dir();
+    if (_root_dir.empty()) {
+      cerr << "Could not find root directory.\n";
+      return false;
+    }
+  } else {
+    _root_dir = root_dir;
   }
 
   // Allow the caller (e.g. panda3d.exe) to specify a log directory.
