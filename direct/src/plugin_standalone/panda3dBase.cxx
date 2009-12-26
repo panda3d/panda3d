@@ -80,6 +80,7 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   // Read out some parameters from the binary
   pifstream read;
   Filename f = ExecutionEnvironment::get_binary_name();
+  f.make_absolute();
   f.set_binary();
   if (!f.open_read(read)) {
 	  cerr << "Failed to read from stream. Maybe the binary is corrupt?\n";
@@ -147,10 +148,36 @@ run_embedded(int read_offset, int argc, char *argv[]) {
     return 1;
   }
   
+  // Set the super-mirror URL
+  Filename super_mirror (f);
+  super_mirror = Filename(super_mirror.get_dirname());
+#ifdef __APPLE__
+  super_mirror = Filename(super_mirror.get_dirname(), "Resources");
+#endif
+  if (Filename(super_mirror, "contents.xml").exists()) {
+    string path = super_mirror.to_os_generic();
+    if (!path.empty() && path[0] != '/') {
+      // On Windows, a leading drive letter must be preceded by an
+      // additional slash.
+      path = "/" + path;
+    }
+    path = "file://" + path;
+    P3D_set_super_mirror(path.c_str());
+  }
+#if !defined(_WIN32) && !defined(__APPLE__)
+  else { // On Unix, we should try to find it in the share directory under the prefix.
+    super_mirror = Filename(super_mirror.get_dirname(), "share/" + f.get_basename());
+    if (Filename(super_mirror, "contents.xml").exists()) {
+      string path = super_mirror.to_os_generic();
+      path = "file://" + path;
+      P3D_set_super_mirror(path.c_str());
+    }
+  }
+#endif
+  
   // Create a plugin instance and run the program
   P3D_instance *inst = create_instance
-    (ExecutionEnvironment::get_binary_name(), true, 
-     _win_x, _win_y, _win_width, _win_height,
+    (f, true, _win_x, _win_y, _win_width, _win_height,
      argv, argc, read_offset);
   _instances.insert(inst);
   
