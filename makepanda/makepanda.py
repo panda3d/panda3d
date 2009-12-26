@@ -465,7 +465,7 @@ if (COMPILER=="LINUX"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
             SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        SmartPkgEnable("X11",   ("x11", "xcb", "xau"), ("X11", "xcb", "Xau"), ("X11", "X11/Xlib.h"))
+        SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
         if (not RUNTIME):
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
