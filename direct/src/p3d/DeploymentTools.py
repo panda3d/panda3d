@@ -222,7 +222,7 @@ class Installer:
         controlfile.write("Priority: optional\n")
         controlfile.write("Architecture: %s\n" % arch)
         controlfile.write("Description: %s\n" % self.fullname)
-        controlfile.write("Depends: libc6 libgcc1 libstdc++6\n")
+        controlfile.write("Depends: libc6 libgcc1 libstdc++6 libx11-6\n")
         controlfile.close()
         Filename(tempdir, "usr/bin/").makeDir()
         self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), platform)
