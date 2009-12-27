@@ -141,12 +141,16 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   read_offset = read.tellg();
   read.close();
   
+  // Make the root directory absolute
+  Filename root_dir_f (root_dir);
+  root_dir_f.make_absolute(f.get_dirname());
+  
   // Initialize the plugin
   if (!P3D_initialize(P3D_API_VERSION, NULL,
                       _host_url.c_str(), _verify_contents, _this_platform.c_str(),
                       _log_dirname.c_str(), _log_basename.c_str(),
                       !_enable_security, _console_environment,
-                      root_dir.c_str())) {
+                      root_dir_f.c_str())) {
     // Oops, failure to initialize.
     cerr << "Failed to initialize plugin (wrong API version?)\n";
     return 1;
