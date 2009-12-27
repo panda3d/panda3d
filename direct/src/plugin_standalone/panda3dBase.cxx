@@ -95,6 +95,7 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   token._value = NULL;
   string keyword;
   string value;
+  string root_dir;
   while (true) {
     curchr = read.get();
     if (curchr == 0) {
@@ -115,11 +116,13 @@ run_embedded(int read_offset, int argc, char *argv[]) {
         token._value = value.c_str();
         _tokens.push_back(token);
         
-        // Read out the width and height token
+        // Read out the tokens that may interest us
         if (keyword == "width") {
           _win_width = atoi(value.c_str());
         } else if (keyword == "height") {
           _win_height = atoi(value.c_str());
+        } else if (keyword == "root_dir") {
+          root_dir = value;
         }
       }
       curstr = "";
@@ -137,31 +140,6 @@ run_embedded(int read_offset, int argc, char *argv[]) {
   // This is where the multifile really starts.
   read_offset = read.tellg();
   read.close();
-  
-  // Find the root directory
-  Filename root_dir (f);
-  root_dir = Filename(root_dir.get_dirname());
-#ifdef __APPLE__
-  root_dir = Filename(root_dir.get_dirname(), "Resources");
-#endif
-  if (Filename(root_dir, "contents.xml").exists()) {
-    string path = root_dir.to_os_generic();
-    if (!path.empty() && path[0] != '/') {
-      // On Windows, a leading drive letter must be preceded by an
-      // additional slash.
-      path = "/" + path;
-    }
-    path = "file://" + path;
-  }
-#if !defined(_WIN32) && !defined(__APPLE__)
-  else { // On Unix, we should try to find it in the share directory under the prefix.
-    root_dir = Filename(root_dir.get_dirname(), "share/" + f.get_basename());
-    if (Filename(root_dir, "contents.xml").exists()) {
-      string path = root_dir.to_os_generic();
-      path = "file://" + path;
-    }
-  }
-#endif
   
   // Initialize the plugin
   if (!P3D_initialize(P3D_API_VERSION, NULL,
