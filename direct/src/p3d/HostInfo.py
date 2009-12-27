@@ -10,7 +10,7 @@ class HostInfo:
     class in the core API. """
 
     def __init__(self, hostUrl, appRunner = None, hostDir = None,
-                 asMirror = False, perPlatform = None):
+                 rootDir = None, asMirror = False, perPlatform = None):
 
         """ You must specify either an appRunner or a hostDir to the
         HostInfo constructor.
@@ -31,10 +31,14 @@ class HostInfo:
         platform-specific directory name.  If asMirror is True, then
         the default is perPlatform = True. """
         
-        assert appRunner or hostDir
+        assert appRunner or rootDir or hostDir
         
         self.hostUrl = hostUrl
         self.appRunner = appRunner
+        self.rootDir = rootDir
+        if rootDir is None and appRunner:
+            self.rootDir = appRunner.rootDir
+        
         self.hostDir = hostDir
         self.asMirror = asMirror
         self.perPlatform = perPlatform
@@ -385,7 +389,7 @@ class HostInfo:
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
-            self.hostDir = self.appRunner.rootDir + '/hosts'
+            self.hostDir = self.rootDir + '/hosts'
             for component in hostDirBasename.split('/'):
                 if component:
                     if component[0] == '.':
@@ -443,4 +447,4 @@ class HostInfo:
         md.hashString(self.hostUrl)
         hostDir += md.asHex()[:keepHash * 2]
 
-        self.hostDir = Filename(self.appRunner.rootDir, hostDir)
+        self.hostDir = Filename(self.rootDir, hostDir)
