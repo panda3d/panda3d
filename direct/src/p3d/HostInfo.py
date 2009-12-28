@@ -2,12 +2,15 @@ from pandac.PandaModules import HashVal, Filename, PandaSystem, DocumentSpec, Ra
 from pandac import PandaModules
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
+from direct.directnotify.DirectNotifyGlobal import directNotify
 import time
 
 class HostInfo:
     """ This class represents a particular download host serving up
     Panda3D packages.  It is the Python equivalent of the P3DHost
     class in the core API. """
+
+    notify = directNotify.newCategory("HostInfo")
 
     def __init__(self, hostUrl, appRunner = None, hostDir = None,
                  rootDir = None, asMirror = False, perPlatform = None):
@@ -94,13 +97,13 @@ class HostInfo:
                 # We start with the "super mirror", if it's defined.
                 url = self.appRunner.superMirrorUrl + 'contents.xml'
                 request = DocumentSpec(url)
-                print "Downloading contents file %s" % (request)
+                self.notify.info("Downloading contents file %s" % (request))
 
                 rf = Ramfile()
                 channel = http.makeChannel(False)
                 channel.getDocument(request)
                 if not channel.downloadToRam(rf):
-                    print "Unable to download %s" % (url)
+                    self.notify.warning("Unable to download %s" % (url))
                     rf = None
 
             if not rf:
@@ -118,13 +121,13 @@ class HostInfo:
                 request = DocumentSpec(url)
                 request.setCacheControl(DocumentSpec.CCNoCache)
 
-                print "Downloading contents file %s" % (request)
+                self.notify.info("Downloading contents file %s" % (request))
 
                 rf = Ramfile()
                 channel = http.makeChannel(False)
                 channel.getDocument(request)
                 if not channel.downloadToRam(rf):
-                    print "Unable to download %s" % (url)
+                    self.notify.warning("Unable to download %s" % (url))
                     rf = None
 
         tempFilename = Filename.temporary('', 'p3d_', '.xml')
@@ -134,7 +137,7 @@ class HostInfo:
             f.close()
 
             if not self.readContentsFile(tempFilename):
-                print "Failure reading %s" % (url)
+                self.notify.warning("Failure reading %s" % (url))
                 tempFilename.unlink()
                 return False
 
@@ -151,7 +154,7 @@ class HostInfo:
         assert self.hasContentsFile
 
         url = self.hostUrlPrefix + 'contents.xml'
-        print "Redownloading %s" % (url)
+        self.notify.info("Redownloading %s" % (url))
 
         # Get the hash of the original file.
         assert self.hostDir
@@ -168,10 +171,10 @@ class HostInfo:
         hv2.hashFile(filename)
 
         if hv1 != hv2:
-            print "%s has changed." % (url)
+            self.notify.info("%s has changed." % (url))
             return True
         else:
-            print "%s has not changed." % (url)
+            self.notify.info("%s has not changed." % (url))
             return False
 
 

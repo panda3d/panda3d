@@ -77,7 +77,8 @@ class FileSpec:
         if self.hash:
             xelement.SetAttribute('hash', self.hash)
             
-    def quickVerify(self, packageDir = None, pathname = None):
+    def quickVerify(self, packageDir = None, pathname = None,
+                    notify = None):
         """ Performs a quick test to ensure the file has not been
         modified.  This test is vulnerable to people maliciously
         attempting to fool the program (by setting datestamps etc.).
@@ -91,30 +92,37 @@ class FileSpec:
             st = os.stat(pathname.toOsSpecific())
         except OSError:
             # If the file is missing, the file fails.
-            #print "file not found: %s" % (pathname)
+            if notify:
+                notify.debug("file not found: %s" % (pathname))
             return False
 
         if st.st_size != self.size:
             # If the size is wrong, the file fails.
-            #print "size wrong: %s" % (pathname)
+            if notify:
+                notify.debug("size wrong: %s" % (pathname))
             return False
 
         if st.st_mtime == self.timestamp:
             # If the size is right and the timestamp is right, the
             # file passes.
-            #print "file ok: %s" % (pathname)
+            if notify:
+                notify.debug("file ok: %s" % (pathname))
             return True
 
-        #print "modification time wrong: %s" % (pathname)
+        if notify:
+            notify.debug("modification time wrong: %s" % (pathname))
 
         # If the size is right but the timestamp is wrong, the file
         # soft-fails.  We follow this up with a hash check.
         if not self.checkHash(packageDir, pathname, st):
             # Hard fail, the hash is wrong.
-            #print "hash check wrong: %s" % (pathname)
+            if notify:
+                notify.debug("hash check wrong: %s" % (pathname))
+                notify.debug("  found %s, expected %s" % (self.actualFile.hash, self.hash))
             return False
 
-        #print "hash check ok: %s" % (pathname)
+        if notify:
+            notify.debug("hash check ok: %s" % (pathname))
 
         # The hash is OK after all.  Change the file's timestamp back
         # to what we expect it to be, so we can quick-verify it
@@ -124,7 +132,7 @@ class FileSpec:
         return True
         
             
-    def fullVerify(self, packageDir = None, pathname = None):
+    def fullVerify(self, packageDir = None, pathname = None, notify = None):
         """ Performs a more thorough test to ensure the file has not
         been modified.  This test is less vulnerable to malicious
         attacks, since it reads and verifies the entire file.
@@ -138,20 +146,25 @@ class FileSpec:
             st = os.stat(pathname.toOsSpecific())
         except OSError:
             # If the file is missing, the file fails.
-            #print "file not found: %s" % (pathname)
+            if notify:
+                notify.debug("file not found: %s" % (pathname))
             return False
 
         if st.st_size != self.size:
             # If the size is wrong, the file fails;
-            #print "size wrong: %s" % (pathname)
+            if notify:
+                notify.debug("size wrong: %s" % (pathname))
             return False
 
         if not self.checkHash(packageDir, pathname, st):
             # Hard fail, the hash is wrong.
-            #print "hash check wrong: %s" % (pathname)
+            if notify:
+                notify.debug("hash check wrong: %s" % (pathname))
+                notify.debug("  found %s, expected %s" % (self.actualFile.hash, self.hash))
             return False
 
-        #print "hash check ok: %s" % (pathname)
+        if notify:
+            notify.debug("hash check ok: %s" % (pathname))
 
         # The hash is OK.  If the timestamp is wrong, change it back
         # to what we expect it to be, so we can quick-verify it

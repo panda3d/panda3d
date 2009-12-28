@@ -335,7 +335,7 @@ class AppRunner(DirectObject):
 
         host = self.hosts.get(hostUrl, None)
         if not host:
-            host = HostInfo(hostUrl, self)
+            host = HostInfo(hostUrl, appRunner = self)
             self.hosts[hostUrl] = host
         return host
 
@@ -541,7 +541,7 @@ class AppRunner(DirectObject):
 
         host = self.getHost(hostUrl)
         if hostDir and not host.hostDir:
-            host.hostDir = hostDir
+            host.hostDir = Filename.fromOsSpecific(hostDir)
 
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):

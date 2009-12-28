@@ -108,6 +108,7 @@ class TaskManager:
         self.globalClock = self.mgr.getClock()
         self.stepping = False
         self.running = False
+        self.destroyed = False
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
 
@@ -135,7 +136,8 @@ class TaskManager:
 
     def destroy(self):
         # This should be safe to call multiple times.
-        
+        self.notify.info("TaskManager.destroy()")
+        self.destroyed = True
         self._frameProfileQueue.clear()
         self.mgr.cleanup()
 
