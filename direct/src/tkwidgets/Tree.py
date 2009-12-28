@@ -53,7 +53,8 @@ class TreeNode:
         self._popupMenu = None
         self.fSortChildren = False # [gjeon] flag for sorting children or not
         self.fModeChildrenTag = 0 # [gjeon] flag for using filter or not
-        self.childrenTag = None # [gjeon] filter dictionary for 
+        self.childrenTag = None # [gjeon] filter dictionary for
+        self.setAsTarget = 0 # [gjeon] to visualize reparent target
 
     # [gjeon] to set fSortChildren
     def setFSortChildren(self, fSortChildren):
@@ -154,8 +155,8 @@ class TreeNode:
         elif (command == 'Collapse All'):
             self.updateAll(0)
         else:
-            self.item.MenuCommand(command)
-            if self.parent and (command != 'Update Explorer'):
+            skipUpdate = self.item.MenuCommand(command)
+            if not skipUpdate and self.parent and (command != 'Update Explorer'):
                 # Update parent to try to keep explorer up to date
                 self.parent.update()
 
@@ -381,6 +382,8 @@ class TreeNode:
             self.label = Label(self.canvas, text=text, bd=0, padx=2, pady=2)
         if self.selected:
             self.label.configure(fg="white", bg="darkblue")
+        elif self.setAsTarget:
+            self.label.configure(fg="white", bg="red")
         else:
             fg = self.item.GetTextFg()
             self.label.configure(fg=fg, bg="white")
