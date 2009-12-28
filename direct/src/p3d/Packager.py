@@ -807,7 +807,7 @@ class Packager:
                         tempFile.unlink()
                     if filenames is None:
                         self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
-                        continue
+                        filenames = []
 
                     # Extract the manifest file so we can figure out the dependent assemblies.
                     tempFile = Filename.temporary('', 'p3d_', '.manifest')
@@ -828,7 +828,7 @@ class Packager:
                         tempFile.unlink()
                     if afilenames is None and out != 31:
                         self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
-                        continue
+
                     if afilenames is not None:
                         filenames += afilenames
 
