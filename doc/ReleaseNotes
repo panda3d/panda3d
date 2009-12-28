@@ -4,19 +4,22 @@ This major release introduces tons of cool new features. As it
 is highly experimental, it is not recommended for production use.
 
 * Support for running Panda3D apps in a browser via web plugin
-* Experimental iPhone support
 * Fully automatic shadow mapping
 * Easy to use distribution and packaging framework
 * Support for GLSL shaders
 * Geometry shaders, both in Cg and GLSL
 * Improved Cg support
-* New import conventions
+* New, cleaner import conventions, replacing PandaModules
 * Parallax mapping
 * Support for OpenGL ES 1 and 2
 * Experimental Screen Space Ambient Occlusion
 * New collision solid: box
 * Blur / Sharpen postprocessing filter
 * Many improvements to the Shader Generator
+* Fixes and improvements to DistributedObject network system
+* New AI libraries
+* Most Panda objects now work with the pickle/cPickle and copy modules.
+* Now compiled for Python 2.6
 * Tons of new features and bugfixes
 
 ------------------------  RELEASE 1.6.2  ------------------------
