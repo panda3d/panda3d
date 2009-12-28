@@ -28,8 +28,8 @@
 ConfigureDecl(config_downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
-extern ConfigVariableInt downloader_disk_write_frequency;
 extern ConfigVariableInt downloader_byte_rate;
+extern ConfigVariableBool download_throttle;
 extern ConfigVariableDouble downloader_frequency;
 extern ConfigVariableInt downloader_timeout;
 extern ConfigVariableInt downloader_timeout_retries;

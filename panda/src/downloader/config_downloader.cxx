@@ -23,16 +23,19 @@
 ConfigureDef(config_downloader);
 NotifyCategoryDef(downloader, "");
 
-ConfigVariableInt downloader_disk_write_frequency
-("downloader-disk-write-frequency", 4,
- PRC_DESC("How often we write to disk is determined by this ratio which is "
-          "relative to the downloader-byte-rate (e.g. if disk-write-ratio is 4, "
-          "we will write every 4 seconds if the frequency is 0.2)"));
-
 ConfigVariableInt downloader_byte_rate
-("downloader-byte-rate", 3600,
- PRC_DESC("We'd like this to be about 1 second worth of download assuming a "
-          "28.8Kb connection (28.8Kb / 8 = 3600 bytes per second)."));
+("downloader-byte-rate", 500000,
+ PRC_DESC("Specifies the default max bytes per second of throughput that is "
+          "supported by any HTTP connections with download-throttle enabled.  "
+          "This may also be set on a per-channel basis with "
+          "HTTPChannel::set_max_bytes_per_second().  It has no effect unless "
+          "download-throttle (or HTTPChannel::set_download_throttle) is true."));
+
+ConfigVariableBool download_throttle
+("download-throttle", false,
+ PRC_DESC("When this is true, all HTTP channels will be bandwidth-limited "
+          "so as not to consume more than downloader-byte-rate bytes per "
+          "second."));
 
 ConfigVariableDouble downloader_frequency
 ("downloader-frequency", 0.2,

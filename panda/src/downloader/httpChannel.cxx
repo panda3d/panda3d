@@ -53,7 +53,7 @@ HTTPChannel(HTTPClient *client) :
   _skip_body_size = http_skip_body_size;
   _idle_timeout = http_idle_timeout;
   _blocking_connect = false;
-  _download_throttle = false;
+  _download_throttle = download_throttle;
   _max_bytes_per_second = downloader_byte_rate;
   _seconds_per_update = downloader_frequency;
   _max_updates_per_second = 1.0f / _seconds_per_update;
