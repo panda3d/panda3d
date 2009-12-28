@@ -64,9 +64,9 @@ void AsyncTaskManager::
 cleanup() {
   MutexHolder holder(_lock);
 
-  if (task_cat.is_spam()) {
-    do_output(task_cat.spam());
-    task_cat.spam(false)
+  if (task_cat.is_debug()) {
+    do_output(task_cat.debug());
+    task_cat.debug(false)
       << ": cleanup()\n";
   }
 
