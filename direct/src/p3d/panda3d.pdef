@@ -66,6 +66,7 @@ class panda3d(package):
     excludeModule('libpandaode')
     excludeModule('libp3vision')
     excludeModule('libpandaskel')
+    excludeModule('libpandaphysx')
 
     # Exclude these GUI toolkits; they're big, and many applications don't
     # use them.  We define them as separate, optional packages, below.
@@ -255,6 +256,16 @@ class ode(package):
     require('panda3d')
 
     file('libpandaode.dll')
+
+class physx(package):
+    # This package contains the code for the NVIDIA PhysX integration.
+    # As not every application uses the NVIDIA PhysX layers, and to cut down
+    # the download size, it is provided as separate package.
+
+    config(display_name = "Panda3D PhysX integration")
+    require('panda3d')
+
+    file('libpandaphysx.dll')
 
 class vision(package):
     # This package contains the code for webcam support, augmented
