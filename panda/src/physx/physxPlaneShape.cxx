@@ -1,5 +1,5 @@
 // Filename: physxPlaneShape.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,50 +12,69 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxPlaneShape.h"
-
-#include "luse.h"
-#include "physxPlane.h"
 #include "physxPlaneShapeDesc.h"
+#include "physxManager.h"
 
 TypeHandle PhysxPlaneShape::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_plane
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxPlane PhysxPlaneShape::
-get_plane() const {
-//  return *((PhysxPlane *)(nPlaneShape->getPlane().userData));
-  throw "Not Implemented";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : save_to_desc
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShape::link
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxPlaneShape::
-save_to_desc(PhysxPlaneShapeDesc & desc) const {
-  nassertv(nPlaneShape != NULL);
+link(NxShape *shapePtr) {
 
-  nPlaneShape->saveToDesc(desc.nPlaneShapeDesc);
+  _ptr = shapePtr->isPlane();
+  _ptr->userData = this;
+  _error_type = ET_ok;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.add(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_plane
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShape::unlink
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxPlaneShape::
-set_plane(const LVecBase3f & normal, float d) {
-  nassertv(nPlaneShape != NULL);
+unlink() {
 
-  nPlaneShape->setPlane(PhysxManager::lVecBase3_to_nxVec3(normal), d);
+  _ptr->userData = NULL;
+  _error_type = ET_released;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.remove(this);
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxPlaneShape::save_to_desc
+//       Access : Published
+//  Description : Saves the state of the shape object to a 
+//                descriptor.
+////////////////////////////////////////////////////////////////////
+void PhysxPlaneShape::
+save_to_desc(PhysxPlaneShapeDesc &shapeDesc) const {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->saveToDesc(shapeDesc._desc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxPlaneShape::set_plane
+//       Access: Published
+//  Description: Sets the plane equation. 
+//               - normal:  Normal for the plane, in the global
+//                          frame. Range: direction vector  
+//               - d: Distance coefficient of the plane equation.
+//                    Range: (-inf,inf) 
+////////////////////////////////////////////////////////////////////
+void PhysxPlaneShape::
+set_plane(const LVector3f &normal, float d) {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->setPlane(PhysxManager::vec3_to_nxVec3(normal), d);
+}
 

@@ -1,5 +1,5 @@
 // Filename: physxJoint.I
-// Created by:  pratt (Jun 16, 2006)
+// Created by:  enn0x (02Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,38 +15,49 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description : Returns true if the NxJoint associated with this
-//                Joint is not NULL.  The NxJoint will be NULL if
-//                the Joint has been released.
+//     Function: PhysxJoint::Constructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxJoint::
-is_valid() {
-  return nJoint != NULL;
+INLINE PhysxJoint::
+PhysxJoint() : PhysxObject() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_app_data
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void * PhysxJoint::
-get_app_data() const {
-  nassertr(nJoint != NULL, NULL);
-
-  return nJoint->appData;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_app_data
-//       Access : Published
-//  Description :
+//     Function: PhysxJoint::ls
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxJoint::
-set_app_data(void * value) {
-  nassertv(nJoint != NULL);
+ls() const {
 
-  nJoint->appData = value;
+  ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxJoint::ls
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxJoint::
+ls(ostream &out, int indent_level) const {
+
+  indent(out, indent_level) << get_type().get_name()
+                            << " " << get_name( )
+                            << " (at 0x" << this << ")";
+
+  NxActor *actorPtr[2];
+  ptr()->getActors(&actorPtr[0], &actorPtr[1]);
+
+  if (actorPtr[0]) {
+    out << " A1:0x" << actorPtr[0]->userData;
+  }
+
+  if (actorPtr[1]) {
+    out << " A2:0x" << actorPtr[1]->userData;
+  }
+
+  out << "\n";
 }
 

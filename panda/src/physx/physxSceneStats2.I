@@ -1,5 +1,5 @@
-// Filename: physxSceneStats2.I
-// Created by:  pratt (Jun 20, 2006)
+// Filename: physxSceneStats2.cxx
+// Created by:  enn0x (20Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -13,58 +13,62 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function : get_num_stats
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::get_num_stats
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int PhysxSceneStats2::
 get_num_stats() const {
-  return nSceneStats2->numStats;
+
+  return _ptr->numStats;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_cur_value
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::get_cur_value
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PhysxSceneStats2::
 get_cur_value(unsigned int index) const {
-  nassertr(index < nSceneStats2->numStats, -1);
-  return nSceneStats2->stats[index].curValue;
+
+  nassertr(index < _ptr->numStats, -1);
+  return _ptr->stats[index].curValue;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_max_value
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::get_max_value
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PhysxSceneStats2::
 get_max_value(unsigned int index) const {
-  nassertr(index < nSceneStats2->numStats, -1);
-  return nSceneStats2->stats[index].maxValue;
+
+  nassertr(index < _ptr->numStats, -1);
+  return _ptr->stats[index].maxValue;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_name
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::get_name
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const char * PhysxSceneStats2::
 get_name(unsigned int index) const {
-  nassertr(index < nSceneStats2->numStats, "");
-  return nSceneStats2->stats[index].name;
+
+  nassertr(index < _ptr->numStats, "");
+  return _ptr->stats[index].name;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_parent
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::get_parent
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int PhysxSceneStats2::
 get_parent(unsigned int index) const {
-  nassertr(index < nSceneStats2->numStats, 0);
-  return nSceneStats2->stats[index].parent;
+
+  nassertr(index < _ptr->numStats, 0);
+  return _ptr->stats[index].parent;
 }
 

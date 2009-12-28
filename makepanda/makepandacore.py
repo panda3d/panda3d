@@ -574,6 +574,19 @@ def ListRegistryKeys(path):
         _winreg.CloseKey(key)
     return result
 
+def ListRegistryValues(path):
+    result = []
+    index = 0
+    key = TryRegistryKey(path)
+    if (key != 0):
+        try:
+            while (1):
+                result.append(_winreg.EnumValue(key, index)[0])
+                index = index + 1
+        except: pass
+        _winreg.CloseKey(key)
+    return result
+
 def GetRegistryKey(path, subkey):
     if (platform.architecture()[0]=="64bit"):
         path = path.replace("SOFTWARE\\", "SOFTWARE\\Wow6432Node\\")
@@ -1399,6 +1412,27 @@ def SdkLocateMacOSX(osxtarget=None):
     else:
         SDK["MACOSX"] = ""
 
+PHYSXVERSIONINFO=[
+    ("PHYSX281","v2.8.1"),
+    ("PHYSX283","v2.8.3"),
+]
+
+def SdkLocatePhysX():
+    for (ver,key) in PHYSXVERSIONINFO:
+        if (sys.platform == "win32"):
+            folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
+            for folder in ListRegistryValues(folders):
+                if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key):
+                    SDK["PHYSX"] = folder
+                    SDK["PHYSXVERSION"] = ver
+        elif (sys.platform.startswith("linux")):
+            incpath = "/usr/include/PhysX/%s/SDKs" % key
+            libpath = "/usr/lib/PhysX/%s" % key
+            if (os.path.isdir(incpath) and os.path.isdir(libpath)):
+                SDK["PHYSX"] = incpath
+                SDK["PHYSXVERSION"] = ver
+                SDK["PHYSXLIBS"] = libpath
+
 ########################################################################
 ##
 ## SDK Auto-Disables
@@ -1438,6 +1472,12 @@ def SdkAutoDisableMax():
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
                 WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
+
+def SdkAutoDisablePhysX():
+    if ("PHYSX" not in SDK) and (PkgSkip("PHYSX")==0):
+        PkgDisable("PHYSX")
+        WARNINGS.append("I cannot locate SDK for PhysX")
+        WARNINGS.append("I have automatically added this command-line option: --no-physx")
 
 ########################################################################
 ##

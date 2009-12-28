@@ -1,5 +1,5 @@
 // Filename: pandaphysx.h
-// Created by:  pratt (Apr 20, 2006)
+// Created by:  pratt (20Apr2006)
 // 
 ////////////////////////////////////////////////////////////////////
 

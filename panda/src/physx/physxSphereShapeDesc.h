@@ -1,5 +1,5 @@
 // Filename: physxSphereShapeDesc.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,39 +15,35 @@
 #ifndef PHYSXSPHERESHAPEDESC_H
 #define PHYSXSPHERESHAPEDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
 
 #include "physxShapeDesc.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxSphereShapeDesc
-// Description :
+// Description : Descriptor class for PhysxSphereShape.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxSphereShapeDesc : public PhysxShapeDesc {
+
 PUBLISHED:
-  PhysxSphereShapeDesc();
+  INLINE PhysxSphereShapeDesc();
+  INLINE ~PhysxSphereShapeDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  INLINE float get_radius() const;
+  void set_radius(float radius);
 
-  INLINE void set_radius( float value );
+  float get_radius() const;
 
 public:
-  NxSphereShapeDesc nSphereShapeDesc;
+  NxShapeDesc *ptr() const { return (NxShapeDesc *)&_desc; };
+  NxSphereShapeDesc _desc;
 };
 
 #include "physxSphereShapeDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXSPHERESHAPEDESC_H

@@ -1,5 +1,5 @@
 // Filename: physxShape.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,414 +12,450 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxShape.h"
-
-#include "luse.h"
-#include "physxActorNode.h"
-#include "physxBounds3.h"
-#include "physxBox.h"
+#include "physxManager.h"
+#include "physxActor.h"
 #include "physxBoxShape.h"
-#include "physxCapsule.h"
 #include "physxCapsuleShape.h"
 #include "physxPlaneShape.h"
-#include "physxSphere.h"
 #include "physxSphereShape.h"
+#include "physxConvexShape.h"
+#include "physxHeightFieldShape.h"
+#include "physxTriangleMeshShape.h"
+#include "physxWheelShape.h"
+#include "physxGroupsMask.h"
+#include "physxBounds3.h"
+#include "physxSphere.h"
+#include "physxBox.h"
+#include "physxCapsule.h"
+#include "physxRay.h"
+#include "physxRaycastHit.h"
 
 TypeHandle PhysxShape::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : check_overlap_aabb
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-bool PhysxShape::
-check_overlap_aabb(const PhysxBounds3 & world_bounds) const {
-  nassertr(nShape != NULL, false);
-
-  return nShape->checkOverlapAABB(*(world_bounds.nBounds3));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : check_overlap_capsule
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-bool PhysxShape::
-check_overlap_capsule(const PhysxCapsule & world_capsule) const {
-  nassertr(nShape != NULL, false);
-
-  return nShape->checkOverlapCapsule(*(world_capsule.nCapsule));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : check_overlap_obb
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-bool PhysxShape::
-check_overlap_obb(const PhysxBox & world_box) const {
-  nassertr(nShape != NULL, false);
-
-  return nShape->checkOverlapOBB(*(world_box.nBox));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : check_overlap_sphere
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-bool PhysxShape::
-check_overlap_sphere(const PhysxSphere & world_sphere) const {
-  nassertr(nShape != NULL, false);
-
-  return nShape->checkOverlapSphere(*(world_sphere.nSphere));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_actor
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxActorNode & PhysxShape::
-get_actor() const {
-  nassertr(nShape != NULL, *((PhysxActorNode *)NULL));
-
-  return *((PhysxActorNode *)(nShape->getActor().userData));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_flag
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-bool PhysxShape::
-get_flag(PhysxShapeFlag flag) const {
-  nassertr(nShape != NULL, false);
-
-  return (bool)(nShape->getFlag((NxShapeFlag)flag));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_global_orientation
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LMatrix3f PhysxShape::
-get_global_orientation() const {
-  nassertr(nShape != NULL, *((LMatrix3f *)NULL));
-
-  return PhysxManager::nxMat33_to_lMatrix3(nShape->getGlobalOrientation());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_global_pose
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LMatrix4f PhysxShape::
-get_global_pose() const {
-  nassertr(nShape != NULL, *((LMatrix4f *)NULL));
-
-  return PhysxManager::nxMat34_to_lMatrix4(nShape->getGlobalPose());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_global_position
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxShape::
-get_global_position() const {
-  nassertr(nShape != NULL, *((LVecBase3f *)NULL));
-
-  return PhysxManager::nxVec3_to_lVecBase3(nShape->getGlobalPosition());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_group
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-unsigned short PhysxShape::
-get_group() const {
-  nassertr(nShape != NULL, -1);
-
-  return nShape->getGroup();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_local_orientation
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LMatrix3f PhysxShape::
-get_local_orientation() const {
-  nassertr(nShape != NULL, *((LMatrix3f *)NULL));
-
-  return PhysxManager::nxMat33_to_lMatrix3(nShape->getLocalOrientation());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_local_pose
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LMatrix4f PhysxShape::
-get_local_pose() const {
-  nassertr(nShape != NULL, *((LMatrix4f *)NULL));
-
-  return PhysxManager::nxMat34_to_lMatrix4(nShape->getLocalPose());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_local_position
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxShape::
-get_local_position() const {
-  nassertr(nShape != NULL, *((LVecBase3f *)NULL));
-
-  return PhysxManager::nxVec3_to_lVecBase3(nShape->getLocalPosition());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_material
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-unsigned short PhysxShape::
-get_material() const {
-  nassertr(nShape != NULL, -1);
-
-  return nShape->getMaterial();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_name
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-const char * PhysxShape::
-get_name() const {
-  nassertr(nShape != NULL, NULL);
-
-  return nShape->getName();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_skin_width
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-float PhysxShape::
-get_skin_width() const {
-  nassertr(nShape != NULL, -1.0f);
-
-  return nShape->getSkinWidth();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_world_bounds
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::release
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-get_world_bounds(PhysxBounds3 & dest) const {
-  nassertv(nShape != NULL);
+release() {
 
-  nShape->getWorldBounds(*(dest.nBounds3));
+  nassertv(_error_type == ET_ok);
+
+  unlink();
+  ptr()->getActor().releaseShape(*ptr());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_box
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::factory
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-const PhysxBoxShape * PhysxShape::
-is_box() const {
-  nassertr(nShape != NULL, NULL);
+PT(PhysxShape) PhysxShape::
+factory(NxShapeType shapeType) {
 
-  return (PhysxBoxShape *)(nShape->isBox()->userData);
+  switch (shapeType) {
+
+  case NX_SHAPE_PLANE:
+    return new PhysxPlaneShape();
+
+  case NX_SHAPE_SPHERE:
+    return new PhysxSphereShape();
+
+  case NX_SHAPE_BOX:
+    return new PhysxBoxShape();
+
+  case NX_SHAPE_CAPSULE:
+    return new PhysxCapsuleShape();
+
+  case NX_SHAPE_CONVEX:
+    return new PhysxConvexShape();
+
+  case NX_SHAPE_MESH:
+    return new PhysxTriangleMeshShape();
+
+  case NX_SHAPE_HEIGHTFIELD:
+    return new PhysxHeightFieldShape();
+
+  case NX_SHAPE_WHEEL:
+    return new PhysxWheelShape();
+  }
+
+  physx_cat.error() << "Unknown shape type.\n";
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_capsule
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_actor
+//       Access: Published
+//  Description: Retrieves the actor which this shape is associated
+//               with.
 ////////////////////////////////////////////////////////////////////
-const PhysxCapsuleShape * PhysxShape::
-is_capsule() const {
-  nassertr(nShape != NULL, NULL);
+PT(PhysxActor) PhysxShape::
+get_actor() const {
 
-  return (PhysxCapsuleShape *)(nShape->isCapsule()->userData);
+  nassertr(_error_type == ET_ok, NULL);
+  return (PhysxActor *)(ptr()->getActor().userData);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_plane
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::set_name
+//       Access: Published
+//  Description: Sets a name string for this object. The name can
+//               be retrieved again with get_name().
+//               This is for debugging and is not used by the
+//               physics engine.
 ////////////////////////////////////////////////////////////////////
-const PhysxPlaneShape * PhysxShape::
-is_plane() const {
-  nassertr(nShape != NULL, NULL);
+void PhysxShape::
+set_name(const char *name) {
 
-  return (PhysxPlaneShape *)(nShape->isPlane()->userData);
+  nassertv(_error_type == ET_ok);
+  ptr()->setName(name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_sphere
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_name
+//       Access: Published
+//  Description: Returns the name string. 
 ////////////////////////////////////////////////////////////////////
-const PhysxSphereShape * PhysxShape::
-is_sphere() const {
-  nassertr(nShape != NULL, NULL);
+const char *PhysxShape::
+get_name() const {
 
-  return (PhysxSphereShape *)(nShape->isSphere()->userData);
+  nassertr(_error_type == ET_ok, "");
+  return ptr()->getName();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_flag
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::set_flag
+//       Access: Published
+//  Description: Sets the specified shape flag.
+//
+//                The shape may be turned into a trigger by setting
+//                one or more of the TriggerFlags to true. A trigger
+//                shape will not collide with other shapes. Instead,
+//                if a shape enters the trigger's volume, a trigger
+//                event will be sent. Trigger events can be listened
+//                to by DirectObjects.
+//                The following trigger events can be sent:
+//                - physx-trigger-enter
+//                - physx-trigger-stay
+//                - physx-trigger-leave
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
 set_flag(PhysxShapeFlag flag, bool value) {
-  nassertv(nShape != NULL);
 
-  nShape->setFlag((NxShapeFlag)flag, value);
+  nassertv(_error_type == ET_ok);
+
+  ptr()->setFlag((NxShapeFlag)flag, value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_global_orientation
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_flag
+//       Access: Published
+//  Description: Returns the specified shape flag.
+////////////////////////////////////////////////////////////////////
+bool PhysxShape::
+get_flag(PhysxShapeFlag flag) const {
+
+  nassertr(_error_type == ET_ok, false);
+
+  return (ptr()->getFlag((NxShapeFlag)flag)) ? true : false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_skin_width
+//       Access: Published
+//  Description: Sets the skin width. 
+//               The skin width must be non-negative.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_global_orientation(const LMatrix3f & mat) {
-  nassertv(nShape != NULL);
+set_skin_width(float skinWidth) {
 
-  nShape->setGlobalOrientation(PhysxManager::lMatrix3_to_nxMat33(mat));
+  nassertv(_error_type == ET_ok);
+  nassertv(skinWidth >= 0.0f);
+
+  ptr()->setSkinWidth(skinWidth);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_global_pose
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_skin_width
+//       Access: Published
+//  Description: Returns the skin width.
+////////////////////////////////////////////////////////////////////
+float PhysxShape::
+get_skin_width() const {
+
+  nassertr(_error_type == ET_ok, 0.0f);
+
+  return ptr()->getSkinWidth();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_group
+//       Access: Published
+//  Description: Sets which collision group this shape is part of. 
+//
+//               Default group is 0. Maximum possible group is 31.
+//               Collision groups are sets of shapes which may or
+//               may not be set to collision detect with each other;
+//               this can be set using
+//               PhysxScene::set_group_collision_flag().
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_global_pose(const LMatrix4f & mat) {
-  nassertv(nShape != NULL);
+set_group(unsigned short group) {
 
-  nShape->setGlobalPose(PhysxManager::lMatrix4_to_nxMat34(mat));
+  nassertv(_error_type == ET_ok);
+  nassertv(group < 32);
+
+  ptr()->setGroup(group);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_global_position
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_group
+//       Access: Published
+//  Description: Retrieves the collision group set for this shape. 
+//               The collision group is an integer between 0 and
+//               31.
+////////////////////////////////////////////////////////////////////
+unsigned short PhysxShape::
+get_group() const {
+
+  nassertr(_error_type == ET_ok, 0);
+
+  return ptr()->getGroup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_local_pos
+//       Access: Published
+//  Description: Set the position of the shape in actor space, i.e.
+//               relative to the actor it is owned by.
+//
+//               Calling this method does NOT wake the associated
+//               actor up automatically.
+//
+//               Calling this method does not automatically update
+//               the inertia properties of the owning actor (if
+//               applicable); use
+//               PhysxActor::update_mass_from_shapes() to do this.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_global_position(const LVecBase3f & vec) {
-  nassertv(nShape != NULL);
+set_local_pos(const LPoint3f &pos) {
 
-  nShape->setGlobalPosition(PhysxManager::lVecBase3_to_nxVec3(vec));
+  nassertv(_error_type == ET_ok);
+
+  ptr()->setLocalPosition(PhysxManager::point3_to_nxVec3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_group
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_local_pos
+//       Access: Published
+//  Description: Retrieve the position of the shape in actor space,
+//               i.e. relative to the actor it is owned by. 
+////////////////////////////////////////////////////////////////////
+LPoint3f PhysxShape::
+get_local_pos() const {
+
+  nassertr(_error_type == ET_ok, LPoint3f::zero());
+
+  return PhysxManager::nxVec3_to_point3(ptr()->getLocalPosition());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_local_mat
+//       Access: Published
+//  Description: Set the transform of the shape in actor space,
+//               i.e. relative to the actor it is owned by.
+//
+//               Calling this method does NOT wake the associated
+//               actor up automatically.
+//
+//               Calling this method does not automatically update
+//               the inertia properties of the owning actor (if
+//               applicable); use
+//               PhysxActor::update_mass_from_shapes() to do this.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_group(unsigned short collision_group) {
-  nassertv(nShape != NULL);
+set_local_mat(const LMatrix4f &mat) {
 
-  nShape->setGroup(collision_group);
+  nassertv(_error_type == ET_ok);
+
+  ptr()->setLocalPose(PhysxManager::mat4_to_nxMat34(mat));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_local_orientation
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_local_mat
+//       Access: Published
+//  Description: Retrieve the transform of the shape in actor space,
+//               i.e. relative to the actor it is owned by. 
+////////////////////////////////////////////////////////////////////
+LMatrix4f PhysxShape::
+get_local_mat() const {
+
+  nassertr(_error_type == ET_ok, LMatrix4f::zeros_mat());
+
+  return PhysxManager::nxMat34_to_mat4(ptr()->getLocalPose());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::get_material_index
+//       Access: Published
+//  Description: Returns the material index currently assigned to
+//               the shape. 
+////////////////////////////////////////////////////////////////////
+unsigned short PhysxShape::
+get_material_index() const {
+
+  nassertr(_error_type == ET_ok, 0);
+  NxMaterialIndex index = ptr()->getMaterial();
+  return (unsigned int)index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_material
+//       Access: Published
+//  Description: Assigns a material to the shape.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_local_orientation(const LMatrix3f & mat) {
-  nassertv(nShape != NULL);
+set_material(const PhysxMaterial &material) {
 
-  nShape->setLocalOrientation(PhysxManager::lMatrix3_to_nxMat33(mat));
+  nassertv(_error_type == ET_ok);
+  ptr()->setMaterial(material.ptr()->getMaterialIndex());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_local_pose
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::set_material_index
+//       Access: Published
+//  Description: Assigns a material index to the shape. 
+//
+//               The material index can be retrieved by calling
+//               PhysxMaterial::get_material_index(). If the material
+//               index is invalid, it will still be recorded, but
+//               the default material (at index 0) will effectively
+//               be used for simulation.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_local_pose(const LMatrix4f & mat) {
-  nassertv(nShape != NULL);
+set_material_index(unsigned short index) {
 
-  nShape->setLocalPose(PhysxManager::lMatrix4_to_nxMat34(mat));
+  nassertv(_error_type == ET_ok);
+  ptr()->setMaterial((NxMaterialIndex)index);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_local_position
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::set_groups_mask
+//       Access: Published
+//  Description: Sets 128-bit mask used for collision filtering.
+//               Does NOT wake the associated actor up
+//               automatically.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
-set_local_position(const LVecBase3f & vec) {
-  nassertv(nShape != NULL);
+set_groups_mask(const PhysxGroupsMask &mask) {
 
-  nShape->setLocalPosition(PhysxManager::lVecBase3_to_nxVec3(vec));
+  nassertv(_error_type == ET_ok);
+  ptr()->setGroupsMask(mask.get_mask());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_material
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_groups_mask
+//       Access: Published
+//  Description: Gets 128-bit mask used for collision filtering.
 ////////////////////////////////////////////////////////////////////
-void PhysxShape::
-set_material(unsigned short mat_index) {
-  nassertv(nShape != NULL);
+PhysxGroupsMask PhysxShape::
+get_groups_mask() const {
 
-  nShape->setMaterial(mat_index);
+  PhysxGroupsMask mask;
+  nassertr(_error_type == ET_ok, mask);
+  mask.set_mask(ptr()->getGroupsMask());
+  return mask;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_name
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::get_world_bounds
+//       Access: Published
+//  Description: Returns a world space AABB enclosing this shape.
 ////////////////////////////////////////////////////////////////////
-void PhysxShape::
-set_name(const char * name) {
-  nassertv(nShape != NULL);
+PhysxBounds3 PhysxShape::
+get_world_bounds() const {
 
-  // Because the PhysX engine does not store its own copy of names,
-  // we keep a local copy on this instance.  Otherwise, it would be
-  // very easy for names to be declared in python and then
-  // invalidated when the string is reclaimed from reference
-  // counting.
-  _name_store = name;
-  nShape->setName(_name_store.c_str());
+  PhysxBounds3 bounds;
+  nassertr(_error_type == ET_ok, bounds);
+  ptr()->getWorldBounds(bounds._bounds);
+  return bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_skin_width
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::check_overlap_aabb
+//       Access: Published
+//  Description: Checks whether the shape overlaps a world-space
+//               AABB or not.
 ////////////////////////////////////////////////////////////////////
-void PhysxShape::
-set_skin_width(float skin_width) {
-  nassertv(nShape != NULL);
+bool PhysxShape::
+check_overlap_aabb(const PhysxBounds3 &world_bounds) const {
 
-  nShape->setSkinWidth(skin_width);
+  nassertr(_error_type == ET_ok, false);
+  return ptr()->checkOverlapAABB(world_bounds._bounds);
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::check_overlap_capsule
+//       Access: Published
+//  Description: Checks whether the shape overlaps a world-space
+//               capsule or not.
+////////////////////////////////////////////////////////////////////
+bool PhysxShape::
+check_overlap_capsule(const PhysxCapsule &world_capsule) const {
 
+  nassertr(_error_type == ET_ok, false);
+  return ptr()->checkOverlapCapsule(world_capsule._capsule);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::check_overlap_obb
+//       Access: Published
+//  Description: Checks whether the shape overlaps a world-space
+//               OBB or not.
+////////////////////////////////////////////////////////////////////
+bool PhysxShape::
+check_overlap_obb(const PhysxBox &world_box) const {
+
+  nassertr(_error_type == ET_ok, false);
+  return ptr()->checkOverlapOBB(world_box._box);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::check_overlap_sphere
+//       Access: Published
+//  Description: Checks whether the shape overlaps a world-space
+//               sphere or not.
+////////////////////////////////////////////////////////////////////
+bool PhysxShape::
+check_overlap_sphere(const PhysxSphere &world_sphere) const {
+
+  nassertr(_error_type == ET_ok, false);
+  return ptr()->checkOverlapSphere(world_sphere._sphere);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::raycast
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxRaycastHit PhysxShape::
+raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const {
+
+  NxRaycastHit hit;
+  nassertr(_error_type == ET_ok, hit);
+
+  NxU32 hints = NX_RAYCAST_SHAPE | NX_RAYCAST_IMPACT | NX_RAYCAST_DISTANCE;
+  if (smoothNormal == true) {
+    hints |= NX_RAYCAST_NORMAL;
+  }
+  else {
+    hints |= NX_RAYCAST_FACE_NORMAL;
+  }
+
+  ptr()->raycast(worldRay._ray, worldRay._length, hints, hit, firstHit);
+  return PhysxRaycastHit(hit);
+}
 

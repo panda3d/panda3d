@@ -1,5 +1,5 @@
 // Filename: physxD6Joint.cxx
-// Created by:  pratt (Jun 16, 2006)
+// Created by:  enn0x (02Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,86 +12,113 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxD6Joint.h"
-
-#include "luse.h"
 #include "physxD6JointDesc.h"
 
 TypeHandle PhysxD6Joint::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : load_from_desc
-//       Access : Published
-//  Description :
+//     Function: PhysxD6Joint::link
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-load_from_desc(const PhysxD6JointDesc & desc) {
-  nassertv(nD6Joint != NULL);
+link(NxJoint *jointPtr) {
 
-  nD6Joint->loadFromDesc(desc.nD6JointDesc);
+  _ptr = jointPtr->isD6Joint();
+  _ptr->userData = this;
+  _error_type = ET_ok;
+
+  PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
+  scene->_joints.add(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : save_to_desc
-//       Access : Published
-//  Description :
+//     Function: PhysxD6Joint::unlink
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-save_to_desc(PhysxD6JointDesc & desc) {
-  nassertv(nD6Joint != NULL);
+unlink() {
 
-  nD6Joint->saveToDesc(desc.nD6JointDesc);
+  _ptr->userData = NULL;
+  _error_type = ET_released;
+
+  PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
+  scene->_joints.remove(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_drive_angular_velocity
+//     Function : PhysxD6Joint::save_to_desc
 //       Access : Published
-//  Description :
+//  Description : Saves the state of the joint object to a 
+//                descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-set_drive_angular_velocity(const LVecBase3f & ang_vel) {
-  nassertv(nD6Joint != NULL);
+save_to_desc(PhysxD6JointDesc &jointDesc) const {
 
-  nD6Joint->setDriveAngularVelocity(PhysxManager::lVecBase3_to_nxVec3(ang_vel));
+  nassertv(_error_type == ET_ok);
+  _ptr->saveToDesc(jointDesc._desc);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_drive_linear_velocity
+//     Function : PhysxD6Joint::load_from_desc
 //       Access : Published
-//  Description :
+//  Description : Loads the entire state of the joint from a 
+//                descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-set_drive_linear_velocity(const LVecBase3f & lin_vel) {
-  nassertv(nD6Joint != NULL);
+load_from_desc(const PhysxD6JointDesc &jointDesc) {
 
-  nD6Joint->setDriveLinearVelocity(PhysxManager::lVecBase3_to_nxVec3(lin_vel));
+  nassertv(_error_type == ET_ok);
+  _ptr->loadFromDesc(jointDesc._desc);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_drive_orientation
-//       Access : Published
-//  Description :
+//     Function: PhysxD6Joint::set_drive_angular_velocity
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-set_drive_orientation(const LQuaternionf & orientation) {
-  nassertv(nD6Joint != NULL);
+set_drive_angular_velocity(const LVector3f &v) {
 
-  nD6Joint->setDriveOrientation(PhysxManager::lQuaternion_to_nxQuat(orientation));
+  nassertv(_error_type == ET_ok);
+  _ptr->setDriveAngularVelocity(PhysxManager::vec3_to_nxVec3(v));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_drive_position
-//       Access : Published
-//  Description :
+//     Function: PhysxD6Joint::set_drive_linear_velocity
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxD6Joint::
-set_drive_position(const LVecBase3f & position) {
-  nassertv(nD6Joint != NULL);
+set_drive_linear_velocity(const LVector3f &v) {
 
-  nD6Joint->setDrivePosition(PhysxManager::lVecBase3_to_nxVec3(position));
+  nassertv(_error_type == ET_ok);
+  _ptr->setDriveLinearVelocity(PhysxManager::vec3_to_nxVec3(v));
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxD6Joint::set_drive_orientation
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PhysxD6Joint::
+set_drive_orientation(const LQuaternionf &quat) {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->setDriveOrientation(PhysxManager::quat_to_nxQuat(quat));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxD6Joint::set_drive_position
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PhysxD6Joint::
+set_drive_position(const LPoint3f &pos) {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->setDrivePosition(PhysxManager::point3_to_nxVec3(pos));
+}
 

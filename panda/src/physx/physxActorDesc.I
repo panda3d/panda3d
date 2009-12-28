@@ -1,5 +1,5 @@
 // Filename: physxActorDesc.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (05Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,64 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxActorDesc::
-is_valid() const {
-  return nActorDesc.isValid();
+INLINE PhysxActorDesc::
+PhysxActorDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxActorDesc::
+~PhysxActorDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxActorDesc::
 set_to_default() {
-  nActorDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_density
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxActorDesc::
-get_density() const {
-  return nActorDesc.density;
-}
+INLINE bool PhysxActorDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : get_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE unsigned int PhysxActorDesc::
-get_flags() const {
-  return nActorDesc.flags;
+  return _desc.isValid();
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_density
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxActorDesc::
-set_density(float value) {
-  nActorDesc.density = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxActorDesc::
-set_flags(unsigned int value) {
-  nActorDesc.flags = value;
-}
-
 

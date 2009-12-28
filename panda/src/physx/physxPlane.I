@@ -1,5 +1,5 @@
 // Filename: physxPlane.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,88 +12,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-//     Function : belongs
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE bool PhysxPlane::
-belongs(const LVecBase3f & p) const {
-  nassertr(nPlane != NULL, false);
 
-  return nPlane->belongs(PhysxManager::lVecBase3_to_nxVec3(p));
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxPlane::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxPlane::
+PhysxPlane() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : distance
-//       Access : Published
-//  Description :
+//     Function: PhysxPlane::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxPlane::
-distance(const LVecBase3f & p) const {
-  nassertr(nPlane != NULL, -1.0f);
+INLINE PhysxPlane::
+PhysxPlane(const PhysxPlane &plane) {
 
-  return nPlane->distance(PhysxManager::lVecBase3_to_nxVec3(p));
+  _plane = plane._plane;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : inverse_transform
-//       Access : Published
-//  Description :
+//     Function: PhysxPlane::Destructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxPlane::
-inverse_transform(const LMatrix4f & transform, PhysxPlane & transformed) const {
-  nassertv(nPlane != NULL);
+INLINE PhysxPlane::
+~PhysxPlane() {
 
-  nPlane->inverseTransform(PhysxManager::lMatrix4_to_nxMat34(transform), *(transformed.nPlane));
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function : normalize
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxPlane::
-normalize() {
-  nassertv(nPlane != NULL);
-
-  nPlane->normalize();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : transform
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxPlane::
-transform(const LMatrix4f & transform, PhysxPlane & transformed) const {
-  nassertv(nPlane != NULL);
-
-  nPlane->transform(PhysxManager::lMatrix4_to_nxMat34(transform), *(transformed.nPlane));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_d
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxPlane::
-get_d() const {
-  nassertr(nPlane != NULL, -1.0f);
-
-  return nPlane->d;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_d
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxPlane::
-set_d(float value) {
-  nassertv(nPlane != NULL);
-
-  nPlane->d = value;
-}
-
 

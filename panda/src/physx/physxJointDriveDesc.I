@@ -1,5 +1,5 @@
 // Filename: physxJointDriveDesc.I
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,63 +12,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function : get_damping
-//       Access : Published
-//  Description :
+//     Function: PhysxJointDriveDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointDriveDesc::
-get_damping() const {
-  return nJointDriveDesc.damping;
+INLINE PhysxJointDriveDesc::
+PhysxJointDriveDesc() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_force_limit
-//       Access : Published
-//  Description :
+//     Function: PhysxJointDriveDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointDriveDesc::
-get_force_limit() const {
-  return nJointDriveDesc.forceLimit;
+INLINE PhysxJointDriveDesc::
+PhysxJointDriveDesc(float spring, float damping, float forceLimit) {
+
+  _desc.spring = spring;
+  _desc.damping = damping;
+  _desc.forceLimit = forceLimit;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_spring
-//       Access : Published
-//  Description :
+//     Function: PhysxJointDriveDesc::Destructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointDriveDesc::
-get_spring() const {
-  return nJointDriveDesc.spring;
-}
+INLINE PhysxJointDriveDesc::
+~PhysxJointDriveDesc() {
 
-////////////////////////////////////////////////////////////////////
-//     Function : set_damping
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointDriveDesc::
-set_damping(float value) {
-  nJointDriveDesc.damping = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_force_limit
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointDriveDesc::
-set_force_limit(float value) {
-  nJointDriveDesc.forceLimit = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_spring
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointDriveDesc::
-set_spring(float value) {
-  nJointDriveDesc.spring = value;
 }
 

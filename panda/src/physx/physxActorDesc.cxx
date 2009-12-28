@@ -1,5 +1,5 @@
 // Filename: physxActorDesc.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (05Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,70 +12,159 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxActorDesc.h"
-#include "physxShapeDesc.h"
 #include "physxBodyDesc.h"
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxActorDesc
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxActorDesc::
-PhysxActorDesc() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : add_shape
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::add_shape
+//       Access: Published
+//  Description: Adds a shape to the list of collision shapes
+//               composing this actor.
 ////////////////////////////////////////////////////////////////////
 void PhysxActorDesc::
-add_shape(PhysxShapeDesc pShapeDesc) {
-  nActorDesc.shapes.pushBack(pShapeDesc.nShapeDesc);
+add_shape(PhysxShapeDesc &desc) {
+
+  _desc.shapes.push_back(desc.ptr());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_body
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::set_name
+//       Access: Published
+//  Description: Sets the optional debug name for the actor.
 ////////////////////////////////////////////////////////////////////
-const PhysxBodyDesc * PhysxActorDesc::
+void PhysxActorDesc::
+set_name(const char *name) {
+
+  _desc.name = name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_density
+//       Access: Published
+//  Description: Set the density used during mass/intertia
+//               computation. This value is used if the actor's
+//               shapes do not have a mass asigned.
+////////////////////////////////////////////////////////////////////
+void PhysxActorDesc::
+set_density(float density) {
+
+  _desc.density = density;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_global_pos
+//       Access: Published
+//  Description: Set the position of the actor in global space.
+////////////////////////////////////////////////////////////////////
+void PhysxActorDesc::
+set_global_pos(const LPoint3f &pos) {
+
+  _desc.globalPose.t = PhysxManager::point3_to_nxVec3(pos);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_global_mat
+//       Access: Published
+//  Description: Set the position and orientation of the actor
+//               in global space. Scaling and shear arenot
+//               supported, even if the matrix contains a scale or
+//               shear.
+////////////////////////////////////////////////////////////////////
+void PhysxActorDesc::
+set_global_mat(const LMatrix4f &mat) {
+
+  _desc.globalPose = PhysxManager::mat4_to_nxMat34(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_global_hpr
+//       Access: Published
+//  Description: Sets the orientation of the actor in global space
+//               by providing angles for heading, pitch and roll.
+////////////////////////////////////////////////////////////////////
+void PhysxActorDesc::
+set_global_hpr(float h, float p, float r) {
+
+  LQuaternionf q;
+  LMatrix3f rot;
+  NxMat34 m;
+
+  q.set_hpr(LVector3f(h, p, r));
+  q.extract_to_matrix(rot);
+
+  _desc.globalPose.M = PhysxManager::mat3_to_nxMat33(rot);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::set_body
+//       Access: Published
+//  Description: Sets the body descriptor for this actor. The actor
+//               will be dynmaic if a body descriptor is set, and
+//               static if no body descriptor is set.
+////////////////////////////////////////////////////////////////////
+void PhysxActorDesc::
+set_body(PhysxBodyDesc &desc) {
+
+  _desc.body = &(desc._desc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::get_body
+//       Access: Published
+//  Description: Gets the body descriptor for this actor.
+////////////////////////////////////////////////////////////////////
+PhysxBodyDesc PhysxActorDesc::
 get_body() const {
-  throw "Not Implemented"; // return nActorDesc.body;
+
+  throw "Not Implemented";
+
+  //PhysxBodyDesc value;
+  //value._desc = *(_desc.body);
+  //return value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_global_pose
-//       Access : Published
-//  Description :
+//     Function: PhysxActorDesc::get_name
+//       Access: Published
+//  Description: Returns the optional debug name for this actor.
+////////////////////////////////////////////////////////////////////
+const char *PhysxActorDesc::
+get_name() const {
+
+  return _desc.name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::get_density
+//       Access: Published
+//  Description: Returns the actor's density.
+////////////////////////////////////////////////////////////////////
+float PhysxActorDesc::
+get_density() const {
+
+  return _desc.density;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::get_global_pos
+//       Access: Published
+//  Description: Returns the actor's position in global space.
+////////////////////////////////////////////////////////////////////
+LPoint3f PhysxActorDesc::
+get_global_pos() const {
+
+  return PhysxManager::nxVec3_to_point3(_desc.globalPose.t);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxActorDesc::get_global_mat
+//       Access: Published
+//  Description: Returns the actor's transform in global space.
 ////////////////////////////////////////////////////////////////////
 LMatrix4f PhysxActorDesc::
-get_global_pose() const {
-  return PhysxManager::nxMat34_to_lMatrix4(nActorDesc.globalPose);
-}
+get_global_mat() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : set_body
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-void PhysxActorDesc::
-set_body(const PhysxBodyDesc * value) {
-  nActorDesc.body = &(value->nBodyDesc);
+  return PhysxManager::nxMat34_to_mat4(_desc.globalPose);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_global_pose
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-void PhysxActorDesc::
-set_global_pose(LMatrix4f value) {
-  nActorDesc.globalPose = PhysxManager::lMatrix4_to_nxMat34(value);
-}
-
-#endif // HAVE_PHYSX
 

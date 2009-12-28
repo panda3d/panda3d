@@ -1,5 +1,5 @@
 // Filename: physxPlane.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,47 +15,45 @@
 #ifndef PHYSXPLANE_H
 #define PHYSXPLANE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lpoint3.h"
+#include "lvector3.h"
+#include "lmatrix.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
-#include "NxPhysics.h"
+#include "config_physx.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxPlane
-// Description :
+// Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxPlane {
+
 PUBLISHED:
-  PhysxPlane(const PhysxPlane & plane);
-  ~PhysxPlane();
+  INLINE PhysxPlane();
+  INLINE PhysxPlane(const PhysxPlane &plane);
+  INLINE ~PhysxPlane();
 
-  INLINE bool belongs(const LVecBase3f & p) const;
-  INLINE float distance(const LVecBase3f & p) const;
-  INLINE void inverse_transform(const LMatrix4f & transform, PhysxPlane & transformed) const;
-  INLINE void normalize();
-  LVecBase3f point_in_plane() const;
-  LVecBase3f project(const LVecBase3f & p) const;
-  PhysxPlane & set(const LVecBase3f & p0, const LVecBase3f & p1, const LVecBase3f & p2);
-  INLINE void transform(const LMatrix4f & transform, PhysxPlane & transformed) const;
-  PhysxPlane & zero();
+  float distance(const LPoint3f &p) const;
+  bool belongs(const LPoint3f &p) const;
+  void normalize();
+  LPoint3f point_in_plane() const;
+  LPoint3f project(const LPoint3f &p) const;
+  void transform(const LMatrix4f &transform, PhysxPlane &transformed) const;
+  void inverse_transform(const LMatrix4f &transform, PhysxPlane &transformed) const;
 
-  INLINE float get_d() const;
-  LVecBase3f get_normal() const;
+  PhysxPlane set(const LPoint3f &p0, const LPoint3f &p1, const LPoint3f &p2);
+  PhysxPlane zero();
 
-  INLINE void set_d( float value );
-  void set_normal( LVecBase3f value );
+  float get_d() const;
+  LVector3f get_normal() const;
+
+  void set_d(float d);
+  void set_normal(LVector3f normal);
 
 public:
-  NxPlane *nPlane;
+  NxPlane _plane;
 };
 
 #include "physxPlane.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXPLANE_H
+#endif // PHYSPLANE_H

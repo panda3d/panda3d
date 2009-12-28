@@ -1,5 +1,5 @@
 // Filename: physxSphereShapeDesc.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,22 +12,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxSphereShapeDesc.h"
 
-
-
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphereShapeDesc
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShapeDesc::set_radius
+//       Access: Published
+//  Description: Radius of shape. Must be positive.
 ////////////////////////////////////////////////////////////////////
-PhysxSphereShapeDesc::
-PhysxSphereShapeDesc()
-: PhysxShapeDesc( &nSphereShapeDesc ) {
+void PhysxSphereShapeDesc::
+set_radius(float radius) {
 
+  _desc.radius = radius;
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphereShapeDesc::get_radius
+//       Access: Published
+//  Description: Radius of shape.
+////////////////////////////////////////////////////////////////////
+float PhysxSphereShapeDesc::
+get_radius() const {
+
+  return _desc.radius;
+}
 

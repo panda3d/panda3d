@@ -1,5 +1,5 @@
 // Filename: physxSegment.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,46 +15,40 @@
 #ifndef PHYSXSEGMENT_H
 #define PHYSXSEGMENT_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lpoint3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
-#include "NxPhysics.h"
+#include "config_physx.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxSegment
-// Description :
+// Description : Represents a line segment.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxSegment {
+
 PUBLISHED:
-  PhysxSegment();
-  PhysxSegment(const LVecBase3f &p0, const LVecBase3f &p1);
-  PhysxSegment(const PhysxSegment & seg);
-  ~PhysxSegment();
+  INLINE PhysxSegment();
+  INLINE PhysxSegment(const PhysxSegment & segment);
+  PhysxSegment(const LPoint3f &p0, const LPoint3f &p1);
+  INLINE ~PhysxSegment();
 
-  INLINE void compute_direction(LVecBase3f & dir) const;
-  INLINE float compute_length() const;
-  INLINE void compute_point(LVecBase3f & pt, float t) const;
-  INLINE float compute_square_length() const;
-  LVecBase3f get_origin() const;
-  INLINE void set_origin_direction(const LVecBase3f & origin, const LVecBase3f & direction);
+  void compute_direction(LPoint3f &dir) const;
+  float compute_length() const;
+  void compute_point(LPoint3f &p, float t) const;
+  float compute_square_length() const;
+  LPoint3f get_origin() const;
+  void set_origin_direction(const LPoint3f &origin, const LVector3f &direction);
 
-  LVecBase3f get_p0() const;
-  LVecBase3f get_p1() const;
+  LPoint3f get_p0() const;
+  LPoint3f get_p1() const;
 
-  void set_p0( LVecBase3f value );
-  void set_p1( LVecBase3f value );
+  void set_p0(LPoint3f p);
+  void set_p1(LPoint3f p);
 
 public:
-  NxSegment *nSegment;
+  NxSegment _segment;
 };
 
 #include "physxSegment.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXSEGMENT_H
+#endif // PHYSSEGMENT_H

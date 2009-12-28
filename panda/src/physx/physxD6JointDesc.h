@@ -1,5 +1,5 @@
 // Filename: physxD6JointDesc.h
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,91 +15,91 @@
 #ifndef PHYSXD6JOINTDESC_H
 #define PHYSXD6JOINTDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "lvector3.h"
+#include "lpoint3.h"
+#include "lquaternion.h"
 
 #include "physxJointDesc.h"
 
+#include "NoMinMax.h"
+#include "NxPhysics.h"
+
 class PhysxJointDriveDesc;
 class PhysxJointLimitSoftDesc;
-class PhysxJointLimitSoftPairDesc;
-
-#include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxD6JointDesc
-// Description :
+// Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxD6JointDesc : public PhysxJointDesc {
+
 PUBLISHED:
-  PhysxD6JointDesc();
+  INLINE PhysxD6JointDesc();
+  INLINE ~PhysxD6JointDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  LVecBase3f get_drive_angular_velocity() const;
-  LVecBase3f get_drive_linear_velocity() const;
+  void set_flag(PhysxD6JointFlag flag, bool value);
+  void set_projection_distance(float distance);
+  void set_projection_angle(float angle);
+  void set_gear_ratio(float ratio);
+  void set_drive_position(const LPoint3f &pos);
+  void set_drive_linear_velocity(const LVector3f &v);
+  void set_drive_angular_velocity(const LVector3f &v);
+  void set_drive_orientation(const LQuaternionf &quat);
+  void set_projection_mode(PhysxProjectionMode mode);
+  void set_x_motion(PhysxD6JointMotion xMotion);
+  void set_y_motion(PhysxD6JointMotion yMotion);
+  void set_z_motion(PhysxD6JointMotion zMotion);
+  void set_swing1_motion(PhysxD6JointMotion xMotion);
+  void set_swing2_motion(PhysxD6JointMotion yMotion);
+  void set_twist_motion(PhysxD6JointMotion zMotion);
+  void set_x_drive(const PhysxJointDriveDesc &drive);
+  void set_y_drive(const PhysxJointDriveDesc &drive);
+  void set_z_drive(const PhysxJointDriveDesc &drive);
+  void set_swing_drive(const PhysxJointDriveDesc &drive);
+  void set_twist_drive(const PhysxJointDriveDesc &drive);
+  void set_slerp_drive(const PhysxJointDriveDesc &drive);
+  void set_linear_limit(const PhysxJointLimitSoftDesc &limit);
+  void set_swing1_limit(const PhysxJointLimitSoftDesc &limit);
+  void set_swing2_limit(const PhysxJointLimitSoftDesc &limit);
+  void set_twist_limit_low(const PhysxJointLimitSoftDesc &limit);
+  void set_twist_limit_high(const PhysxJointLimitSoftDesc &limit);
+
+  bool get_flag(PhysxD6JointFlag flag) const;
+  float get_projection_distance() const;
+  float get_projection_angle() const;
+  float get_gear_ratio() const;
+  LPoint3f get_drive_position() const;
+  LVector3f get_drive_linear_velocity() const;
+  LVector3f get_drive_angular_velocity() const;
   LQuaternionf get_drive_orientation() const;
-  LVecBase3f get_drive_position() const;
-  INLINE unsigned int get_flags() const;
-  INLINE float get_gear_ratio() const;
-  PhysxJointLimitSoftDesc & get_linear_limit() const;
-  INLINE float get_projection_angle() const;
-  INLINE float get_projection_distance() const;
-  PhysxJointProjectionMode get_projection_mode() const;
-  PhysxJointDriveDesc & get_slerp_drive() const;
-  PhysxJointLimitSoftDesc & get_swing1_limit() const;
-  PhysxD6JointMotion get_swing1_motion() const;
-  PhysxJointLimitSoftDesc & get_swing2_limit() const;
-  PhysxD6JointMotion get_swing2_motion() const;
-  PhysxJointDriveDesc & get_swing_drive() const;
-  PhysxJointDriveDesc & get_twist_drive() const;
-  PhysxJointLimitSoftPairDesc & get_twist_limit() const;
-  PhysxD6JointMotion get_twist_motion() const;
-  PhysxJointDriveDesc & get_x_drive() const;
+  PhysxProjectionMode get_projection_mode() const;
   PhysxD6JointMotion get_x_motion() const;
-  PhysxJointDriveDesc & get_y_drive() const;
   PhysxD6JointMotion get_y_motion() const;
-  PhysxJointDriveDesc & get_z_drive() const;
   PhysxD6JointMotion get_z_motion() const;
-
-  void set_drive_angular_velocity( LVecBase3f value );
-  void set_drive_linear_velocity( LVecBase3f value );
-  void set_drive_orientation( LQuaternionf value );
-  void set_drive_position( LVecBase3f value );
-  INLINE void set_flags( unsigned int value );
-  INLINE void set_gear_ratio( float value );
-  void set_linear_limit( PhysxJointLimitSoftDesc & value );
-  INLINE void set_projection_angle( float value );
-  INLINE void set_projection_distance( float value );
-  void set_projection_mode( PhysxJointProjectionMode value );
-  void set_slerp_drive( PhysxJointDriveDesc & value );
-  void set_swing1_limit( PhysxJointLimitSoftDesc & value );
-  void set_swing1_motion( PhysxD6JointMotion value );
-  void set_swing2_limit( PhysxJointLimitSoftDesc & value );
-  void set_swing2_motion( PhysxD6JointMotion value );
-  void set_swing_drive( PhysxJointDriveDesc & value );
-  void set_twist_drive( PhysxJointDriveDesc & value );
-  void set_twist_limit( PhysxJointLimitSoftPairDesc & value );
-  void set_twist_motion( PhysxD6JointMotion value );
-  void set_x_drive( PhysxJointDriveDesc & value );
-  void set_x_motion( PhysxD6JointMotion value );
-  void set_y_drive( PhysxJointDriveDesc & value );
-  void set_y_motion( PhysxD6JointMotion value );
-  void set_z_drive( PhysxJointDriveDesc & value );
-  void set_z_motion( PhysxD6JointMotion value );
+  PhysxD6JointMotion get_swing1_motion() const;
+  PhysxD6JointMotion get_swing2_motion() const;
+  PhysxD6JointMotion get_twist_motion() const;
+  PhysxJointDriveDesc get_x_drive() const;
+  PhysxJointDriveDesc get_y_drive() const;
+  PhysxJointDriveDesc get_z_drive() const;
+  PhysxJointDriveDesc get_swing_drive() const;
+  PhysxJointDriveDesc get_twist_drive() const;
+  PhysxJointDriveDesc get_slerp_drive() const;
+  PhysxJointLimitSoftDesc get_linear_limit() const;
+  PhysxJointLimitSoftDesc get_swing1_limit() const;
+  PhysxJointLimitSoftDesc get_swing2_limit() const;
+  PhysxJointLimitSoftDesc get_twist_limit_low() const;
+  PhysxJointLimitSoftDesc get_twist_limit_high() const;
 
 public:
-  NxD6JointDesc nD6JointDesc;
+  NxJointDesc *ptr() const { return (NxJointDesc *)&_desc; };
+  NxD6JointDesc _desc;
 };
 
 #include "physxD6JointDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXD6JOINTDESC_H

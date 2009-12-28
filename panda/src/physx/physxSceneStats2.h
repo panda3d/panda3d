@@ -1,5 +1,5 @@
 // Filename: physxSceneStats2.h
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (20Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,14 +15,9 @@
 #ifndef PHYSXSCENESTATS2_H
 #define PHYSXSCENESTATS2_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -30,8 +25,9 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxSceneStats2 {
+
 PUBLISHED:
-  PhysxSceneStats2(const NxSceneStats2 *stats2);
+  PhysxSceneStats2(const NxSceneStats2 *ptr);
   ~PhysxSceneStats2();
 
   INLINE unsigned int get_num_stats() const;
@@ -41,11 +37,9 @@ PUBLISHED:
   INLINE unsigned int get_parent(unsigned int index) const;
 
 private:
-  const NxSceneStats2 *nSceneStats2;
+  const NxSceneStats2 *_ptr;
 };
 
 #include "physxSceneStats2.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXSCENESTATS2_H

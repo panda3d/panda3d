@@ -1,5 +1,5 @@
 // Filename: physxJointDesc.h
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (28Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,60 +15,56 @@
 #ifndef PHYSXJOINTDESC_H
 #define PHYSXJOINTDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lpoint3.h"
+#include "lvector3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxEnums.h"
 
-class PhysxActorNode;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxActor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxJointDesc
-// Description :
+// Description : Abstract base class for joint descriptors.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxJointDesc {
+class EXPCL_PANDAPHYSX PhysxJointDesc : public PhysxEnums {
+
 PUBLISHED:
-  ~PhysxJointDesc();
+  virtual void set_to_default() = 0;
+  virtual bool is_valid() const = 0;
 
-  INLINE bool is_valid() const;
-  void set_global_anchor(const LVecBase3f & ws_anchor);
-  void set_global_axis(const LVecBase3f & ws_axis);
-  INLINE void set_to_default();
+  void set_name(const char *name);
+  void set_joint_flag(PhysxJointFlag flag, bool value);
+  void set_max_force(float force);
+  void set_max_torque(float torque);
+  void set_solver_extrapolation_factor(float factor);
+  void set_global_axis(const LVector3f &axis);
+  void set_global_anchor(const LPoint3f &anchor);
+  void set_local_normal(unsigned int idx, const LVector3f &normal);
+  void set_local_axis(unsigned int idx, const LVector3f &axis);
+  void set_local_anchor(unsigned int idx, const LPoint3f &anchor);
+  void set_actor(unsigned int idx, const PhysxActor &actor);
 
-  INLINE unsigned int get_joint_flags() const;
-  LVecBase3f get_local_anchor(int index) const;
-  LVecBase3f get_local_axis(int index) const;
-  LVecBase3f get_local_normal(int index) const;
-  INLINE float get_max_force() const;
-  INLINE float get_max_torque() const;
-  INLINE const char * get_name() const;
-
-  void set_actor(int index, PhysxActorNode * value);
-  INLINE void set_joint_flags(unsigned int value);
-  void set_local_anchor(int index, LVecBase3f value);
-  void set_local_axis(int index, LVecBase3f value);
-  void set_local_normal(int index, LVecBase3f value);
-  INLINE void set_max_force(float value);
-  INLINE void set_max_torque(float value);
-  INLINE void set_name(const char * value);
+  const char *get_name() const;
+  bool get_joint_flag(PhysxJointFlag flag) const;
+  float get_max_force() const;
+  float get_max_torque() const;
+  float get_solver_extrapolation_factor() const;
+  LVector3f get_local_normal(unsigned int idx) const;
+  LVector3f get_local_axis(unsigned int idx) const;
+  LPoint3f get_local_anchor(unsigned int idx) const;
+  PT(PhysxActor) get_actor(unsigned int idx) const;
 
 public:
-  NxJointDesc *nJointDesc;
+  virtual NxJointDesc *ptr() const = 0;
 
 protected:
-  PhysxJointDesc(NxJointDesc *subJointDesc);
-
-private:
-  string _name_store;
+  INLINE PhysxJointDesc();
 };
 
 #include "physxJointDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXJOINTDESC_H

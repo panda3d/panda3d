@@ -1,5 +1,5 @@
 // Filename: physxBoxShapeDesc.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,23 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxBoxShapeDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxBoxShapeDesc::
-is_valid() const {
-  return nBoxShapeDesc.isValid();
+INLINE PhysxBoxShapeDesc::
+PhysxBoxShapeDesc() : PhysxShapeDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxBoxShapeDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxBoxShapeDesc::
+~PhysxBoxShapeDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShapeDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxBoxShapeDesc::
 set_to_default() {
-  nBoxShapeDesc.setToDefault();
+
+  _desc.setToDefault();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShapeDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
+////////////////////////////////////////////////////////////////////
+INLINE bool PhysxBoxShapeDesc::
+is_valid() const {
+
+  return _desc.isValid();
 }
 

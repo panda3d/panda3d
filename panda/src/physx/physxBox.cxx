@@ -1,5 +1,5 @@
 // Filename: physxBox.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,114 +12,127 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxBox.h"
-
-#include "luse.h"
-
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxBox
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxBox::
-PhysxBox() {
-  nBox = new NxBox();
+PhysxBox(const LPoint3f &center, const LVector3f &extents, const LMatrix3f &rot) {
+
+  _box = NxBox(PhysxManager::point3_to_nxVec3(center),
+               PhysxManager::vec3_to_nxVec3(extents),
+               PhysxManager::mat3_to_nxMat33(rot));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxBox
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::is_valid
+//       Access: Published
+//  Description: Returns TRUE if the box is valid.
 ////////////////////////////////////////////////////////////////////
-PhysxBox::
-PhysxBox(const LVecBase3f & _center, const LVecBase3f & _extents, const LMatrix3f & _rot) {
-  nBox = new NxBox(PhysxManager::lVecBase3_to_nxVec3(_center), PhysxManager::lVecBase3_to_nxVec3(_extents), PhysxManager::lMatrix3_to_nxMat33(_rot));
+bool PhysxBox::
+is_valid() const {
+
+  return _box.isValid();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysxBox
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::rotate
+//       Access: Published
+//  Description: Recomputes the box after an arbitrary transform by
+//               a 4x4 matrix.
 ////////////////////////////////////////////////////////////////////
-PhysxBox::
-~PhysxBox() {
-  delete nBox;
+void PhysxBox::
+rotate(const LMatrix4f &m, PhysxBox &obb) const {
+
+  nassertv(!m.is_nan());
+
+  _box.rotate(PhysxManager::mat4_to_nxMat34(m), obb._box);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_center
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::set_empty
+//       Access: Published
+//  Description: Setups an empty box.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxBox::
+void PhysxBox::
+set_empty() {
+
+  _box.setEmpty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBox::get_center
+//       Access: Published
+//  Description: Return center of the box.
+////////////////////////////////////////////////////////////////////
+LPoint3f PhysxBox::
 get_center() const {
-  nassertr(nBox != NULL, *((LVecBase3f *)NULL));
 
-  return PhysxManager::nxVec3_to_lVecBase3(nBox->center);
+  return PhysxManager::nxVec3_to_point3(_box.GetCenter());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_extents
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::get_extents
+//       Access: Published
+//  Description: Returns the extents (radii) of the box.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxBox::
+LVector3f PhysxBox::
 get_extents() const {
-  nassertr(nBox != NULL, *((LVecBase3f *)NULL));
 
-  return PhysxManager::nxVec3_to_lVecBase3(nBox->extents);
+  return PhysxManager::nxVec3_to_vec3(_box.GetExtents());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_rot
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::get_rot
+//       Access: Published
+//  Description: Return the rotation of the box.
 ////////////////////////////////////////////////////////////////////
 LMatrix3f PhysxBox::
 get_rot() const {
-  nassertr(nBox != NULL, *((LMatrix3f *)NULL));
 
-  return PhysxManager::nxMat33_to_lMatrix3(nBox->rot);
+  return PhysxManager::nxMat33_to_mat3(_box.GetRot());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_center
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::set_center
+//       Access: Published
+//  Description: Sets the center of the box.
 ////////////////////////////////////////////////////////////////////
 void PhysxBox::
-set_center(LVecBase3f value) {
-  nassertv(nBox != NULL);
+set_center(LPoint3f center) {
 
-  nBox->center = PhysxManager::lVecBase3_to_nxVec3(value);
+  nassertv(!center.is_nan());
+
+  _box.center = PhysxManager::vec3_to_nxVec3(center);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_extents
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::set_extents
+//       Access: Published
+//  Description: Sets the extents of the box.
 ////////////////////////////////////////////////////////////////////
 void PhysxBox::
-set_extents(LVecBase3f value) {
-  nassertv(nBox != NULL);
+set_extents(LVector3f extents) {
 
-  nBox->extents = PhysxManager::lVecBase3_to_nxVec3(value);
+  nassertv(!extents.is_nan());
+
+  _box.extents = PhysxManager::vec3_to_nxVec3(extents);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_rot
-//       Access : Published
-//  Description :
+//     Function: PhysxBox::set_rot
+//       Access: Published
+//  Description: Sets the rotation of the box.
 ////////////////////////////////////////////////////////////////////
 void PhysxBox::
-set_rot(LMatrix3f value) {
-  nassertv(nBox != NULL);
+set_rot(LMatrix3f rot) {
 
-  nBox->rot = PhysxManager::lMatrix3_to_nxMat33(value);
+  nassertv(!rot.is_nan());
+
+  _box.rot = PhysxManager::mat3_to_nxMat33(rot);
 }
-
-#endif // HAVE_PHYSX
 

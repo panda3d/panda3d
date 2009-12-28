@@ -1,5 +1,5 @@
 // Filename: physxD6JointDesc.I
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,103 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxD6JointDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxD6JointDesc::
-is_valid() const {
-  return nD6JointDesc.isValid();
+INLINE PhysxD6JointDesc::
+PhysxD6JointDesc() : PhysxJointDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxD6JointDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxD6JointDesc::
+~PhysxD6JointDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxD6JointDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxD6JointDesc::
 set_to_default() {
-  nD6JointDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_flags
-//       Access : Published
-//  Description :
+//     Function: PhysxD6JointDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE unsigned int PhysxD6JointDesc::
-get_flags() const {
-  return nD6JointDesc.flags;
-}
+INLINE bool PhysxD6JointDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : get_gear_ratio
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxD6JointDesc::
-get_gear_ratio() const {
-  return nD6JointDesc.gearRatio;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_projection_angle
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxD6JointDesc::
-get_projection_angle() const {
-  return nD6JointDesc.projectionAngle;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_projection_distance
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxD6JointDesc::
-get_projection_distance() const {
-  return nD6JointDesc.projectionDistance;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxD6JointDesc::
-set_flags(unsigned int value) {
-  nD6JointDesc.flags = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_gear_ratio
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxD6JointDesc::
-set_gear_ratio(float value) {
-  nD6JointDesc.gearRatio = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_projection_angle
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxD6JointDesc::
-set_projection_angle(float value) {
-  nD6JointDesc.projectionAngle = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_projection_distance
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxD6JointDesc::
-set_projection_distance(float value) {
-  nD6JointDesc.projectionDistance = value;
+  return _desc.isValid();
 }
 

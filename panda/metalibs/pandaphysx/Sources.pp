@@ -5,24 +5,28 @@
 // under Windows).
 
 #define DIR_TYPE metalib
-#define BUILDING_DLL BUILDING_PANDAPHYSX
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
+#define BUILDING_DLL BUILDING_PANDAPHYSX
 
-#if $[eq $[LINK_IN_PHYSX],]
-  // We don't have any components if we're linking the Physics library
-  // directly into Panda.
-  #define COMPONENT_LIBS \
-      physx
-#endif
+#define COMPONENT_LIBS \
+    physx
 
-#define LOCAL_LIBS linmath putil express
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolbase:c dtoolutil:c dtool:m prc:c
+#define LOCAL_LIBS \
+    linmath \
+    putil \
+    express
+
+#define OTHER_LIBS \
+    interrogatedb:c \
+    dconfig:c \
+    dtoolconfig:m \
+    dtoolbase:c \
+    dtoolutil:c \
+    dtool:m \
+    prc:c
 
 #begin metalib_target
-  #define TARGET pandaphysx
-
-  #define SOURCES pandaphysx.cxx pandaphysx.h
-  #define INSTALL_HEADERS pandaphysx.h
-
+    #define TARGET pandaphysx
+    #define SOURCES pandaphysx.cxx pandaphysx.h
+    #define INSTALL_HEADERS pandaphysx.h
 #end metalib_target

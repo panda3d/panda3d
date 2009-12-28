@@ -14,7 +14,9 @@
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
     rtsp.h rtspcodes.h setjmp.h tinyxml.h winsock2.h \
     ode/ode.h collision_trimesh.h artools.h \
-    NxPhysics.h cloth/NxCloth.h fluids/NxFluid.h \
+    NxBoxController.h NxCapsuleController.h NxController.h \
+    NxControllerManager.h NxCooking.h NxExtended.h \
+    NxPhysics.h NxStream.h \
     netinet/tcp.h netinet/ip.h sys/socket.h \
     rfftw.h libtar.h malloc.h ucontext.h ctype.h \
     libavutil/avutil.h libavformat/avformat.h \

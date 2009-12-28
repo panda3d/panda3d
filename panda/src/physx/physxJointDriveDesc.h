@@ -1,5 +1,5 @@
 // Filename: physxJointDriveDesc.h
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,39 +15,39 @@
 #ifndef PHYSXJOINTDRIVEDESC_H
 #define PHYSXJOINTDRIVEDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxEnums.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxJointDriveDesc
-// Description :
+// Description : Used to describe drive properties for a
+//               PhysxD6Joint.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxJointDriveDesc {
+class PhysxJointDriveDesc : public PhysxEnums {
+
 PUBLISHED:
-  PhysxJointDriveDesc();
+  INLINE PhysxJointDriveDesc();
+  INLINE PhysxJointDriveDesc(float sping, float damping, float forceLimit);
+  INLINE ~PhysxJointDriveDesc();
 
+  void set_drive_type(PhysxD6JointDriveType type);
+  void set_spring(float spring);
+  void set_damping(float damping);
+  void set_force_limit(float limit);
 
-  INLINE float get_damping() const;
-  INLINE float get_force_limit() const;
-  INLINE float get_spring() const;
-
-  INLINE void set_damping( float value );
-  INLINE void set_force_limit( float value );
-  INLINE void set_spring( float value );
+  PhysxD6JointDriveType get_drive_type() const;
+  float get_spring() const;
+  float get_damping() const;
+  float get_force_limit() const;
 
 public:
-  NxJointDriveDesc nJointDriveDesc;
+  NxJointDriveDesc _desc;
 };
 
 #include "physxJointDriveDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXJOINTDRIVEDESC_H

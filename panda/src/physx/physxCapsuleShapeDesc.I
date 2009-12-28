@@ -1,5 +1,5 @@
 // Filename: physxCapsuleShapeDesc.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,83 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxCapsuleShapeDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxCapsuleShapeDesc::
-is_valid() const {
-  return nCapsuleShapeDesc.isValid();
+INLINE PhysxCapsuleShapeDesc::
+PhysxCapsuleShapeDesc() : PhysxShapeDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxCapsuleShapeDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxCapsuleShapeDesc::
+~PhysxCapsuleShapeDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxCapsuleShapeDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxCapsuleShapeDesc::
 set_to_default() {
-  nCapsuleShapeDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_flags
-//       Access : Published
-//  Description :
+//     Function: PhysxCapsuleShapeDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE unsigned int PhysxCapsuleShapeDesc::
-get_flags() const {
-  return nCapsuleShapeDesc.flags;
-}
+INLINE bool PhysxCapsuleShapeDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : get_height
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxCapsuleShapeDesc::
-get_height() const {
-  return nCapsuleShapeDesc.height;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_radius
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxCapsuleShapeDesc::
-get_radius() const {
-  return nCapsuleShapeDesc.radius;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxCapsuleShapeDesc::
-set_flags(unsigned int value) {
-  nCapsuleShapeDesc.flags = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_height
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxCapsuleShapeDesc::
-set_height(float value) {
-  nCapsuleShapeDesc.height = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_radius
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxCapsuleShapeDesc::
-set_radius(float value) {
-  nCapsuleShapeDesc.radius = value;
+  return _desc.isValid();
 }
 

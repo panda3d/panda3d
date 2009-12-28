@@ -1,5 +1,5 @@
 // Filename: physxCapsule.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,38 +15,41 @@
 #ifndef PHYSXCAPSULE_H
 #define PHYSXCAPSULE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
+#include "config_physx.h"
 #include "physxSegment.h"
-
-#include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxCapsule
-// Description :
+// Description : Represents a capsule.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxCapsule : public PhysxSegment {
+class EXPCL_PANDAPHYSX PhysxCapsule {
+
 PUBLISHED:
-  PhysxCapsule(const PhysxSegment & seg, float _radius);
-  ~PhysxCapsule();
+  INLINE PhysxCapsule();
+  INLINE PhysxCapsule(const PhysxSegment &segment, float radius);
+  INLINE ~PhysxCapsule();
 
+  void compute_direction(LPoint3f &dir) const;
+  float compute_length() const;
+  void compute_point(LPoint3f &p, float t) const;
+  float compute_square_length() const;
+  LPoint3f get_origin() const;
+  void set_origin_direction(const LPoint3f &origin, const LVector3f &direction);
 
-  INLINE float get_radius() const;
+  float get_radius() const;
+  LPoint3f get_p0() const;
+  LPoint3f get_p1() const;
 
-  INLINE void set_radius( float value );
+  void set_radius(float value);
+  void set_p0(LPoint3f p);
+  void set_p1(LPoint3f p);
 
 public:
-  NxCapsule *nCapsule;
+  NxCapsule _capsule;
 };
 
 #include "physxCapsule.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXCAPSULE_H
+#endif // PHYSCAPSULE_H

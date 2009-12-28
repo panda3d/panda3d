@@ -1,5 +1,5 @@
 // Filename: physxBodyDesc.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (05Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,67 +15,69 @@
 #ifndef PHYSXBODYDESC_H
 #define PHYSXBODYDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lvector3.h"
+#include "lmatrix.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxEnums.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBodyDesc
-// Description :
+// Description : Descriptor for the optional rigid body dynamic
+//               state of PhysxActor.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxBodyDesc {
+class EXPCL_PANDAPHYSX PhysxBodyDesc : public PhysxEnums {
+
 PUBLISHED:
-  PhysxBodyDesc();
+  INLINE PhysxBodyDesc();
+  INLINE ~PhysxBodyDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  INLINE float get_angular_damping() const;
-  LVecBase3f get_angular_velocity() const;
-  INLINE float get_ccd_motion_threshold() const;
-  INLINE unsigned int get_flags() const;
-  INLINE float get_linear_damping() const;
-  LVecBase3f get_linear_velocity() const;
-  INLINE float get_mass() const;
-  LMatrix4f get_mass_local_pose() const;
-  LVecBase3f get_mass_space_inertia() const;
-  INLINE float get_max_angular_velocity() const;
-  INLINE float get_sleep_angular_velocity() const;
-  INLINE float get_sleep_damping() const;
-  INLINE float get_sleep_energy_threshold() const;
-  INLINE float get_sleep_linear_velocity() const;
-  INLINE unsigned int get_solver_iteration_count() const;
-  INLINE float get_wake_up_counter() const;
+  void set_mass(float mass);
+  void set_linear_damping(float damping);
+  void set_angular_damping(float damping);
+  void set_linear_velocity(const LVector3f &velocity);
+  void set_angular_velocity(const LVector3f &velocity);
+  void set_max_angular_velocity(float maximum);
+  void set_sleep_linear_velocity(float velocity);
+  void set_sleep_angular_velocity(float velocity);
+  void set_solver_iteration_count(unsigned int count);
+  void set_sleep_energy_threshold(float threshold);
+  void set_sleep_damping(float damping);
+  void set_mass_local_mat(const LMatrix4f mat);
+  void set_mass_space_inertia(const LVector3f inertia);
+  void set_flag(PhysxBodyFlag flag, bool value);
+  void set_ccd_motion_threshold(float threshold);
+  void set_wake_up_counter(float value);
+  void set_contact_report_threshold(float threshold);
 
-  INLINE void set_angular_damping( float value );
-  void set_angular_velocity( LVecBase3f value );
-  INLINE void set_ccd_motion_threshold( float value );
-  INLINE void set_flags( unsigned int value );
-  INLINE void set_linear_damping( float value );
-  void set_linear_velocity( LVecBase3f value );
-  INLINE void set_mass( float value );
-  void set_mass_local_pose( LMatrix4f value );
-  void set_mass_space_inertia( LVecBase3f value );
-  INLINE void set_max_angular_velocity( float value );
-  INLINE void set_sleep_angular_velocity( float value );
-  INLINE void set_sleep_damping(float value);
-  INLINE void set_sleep_energy_threshold(float value);
-  INLINE void set_sleep_linear_velocity( float value );
-  INLINE void set_solver_iteration_count( unsigned int value );
-  INLINE void set_wake_up_counter( float value );
+  float get_mass() const;
+  float get_linear_damping() const;
+  float get_angular_damping() const;
+  LVector3f get_linear_velocity() const;
+  LVector3f get_angular_velocity() const;
+  float get_max_angular_velocity() const;
+  float get_sleep_linear_velocity() const;
+  float get_sleep_angular_velocity() const;
+  unsigned int get_solver_iteration_count() const;
+  float get_sleep_energy_threshold() const;
+  float get_sleep_damping() const;
+  LMatrix4f get_mass_local_mat() const;
+  LVector3f get_mass_space_inertia() const;
+  bool get_flag(PhysxBodyFlag flag) const;
+  float get_ccd_motion_threshold() const;
+  float get_wake_up_counter() const;
+  float get_contact_report_threshold() const;
 
 public:
-  NxBodyDesc nBodyDesc;
+  NxBodyDesc _desc;
 };
 
 #include "physxBodyDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXBODYDESC_H

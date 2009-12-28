@@ -1,5 +1,5 @@
 // Filename: physxPlaneShapeDesc.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,43 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShapeDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxPlaneShapeDesc::
-is_valid() const {
-  return nPlaneShapeDesc.isValid();
+INLINE PhysxPlaneShapeDesc::
+PhysxPlaneShapeDesc() : PhysxShapeDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShapeDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxPlaneShapeDesc::
+~PhysxPlaneShapeDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxPlaneShapeDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxPlaneShapeDesc::
 set_to_default() {
-  nPlaneShapeDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_d
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShapeDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxPlaneShapeDesc::
-get_d() const {
-  return nPlaneShapeDesc.d;
-}
+INLINE bool PhysxPlaneShapeDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : set_d
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxPlaneShapeDesc::
-set_d(float value) {
-  nPlaneShapeDesc.d = value;
+  return _desc.isValid();
 }
 

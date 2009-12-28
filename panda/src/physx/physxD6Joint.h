@@ -1,5 +1,5 @@
 // Filename: physxD6Joint.h
-// Created by:  pratt (Jun 16, 2006)
+// Created by:  enn0x (02Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,44 +15,55 @@
 #ifndef PHYSXD6JOINT_H
 #define PHYSXD6JOINT_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
 
 #include "physxJoint.h"
 
-class PhysxD6JointDesc;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxD6JointDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxD6Joint
-// Description :
+// Description : A D6 joint is a general constraint between two
+//               actors.  It allows the user to individually define
+//               the linear and rotational degrees of freedom.  It
+//               also allows the user to configure the joint with
+//               limits and driven degrees of freedom as they wish.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxD6Joint : public PhysxJoint {
+
 PUBLISHED:
+  INLINE PhysxD6Joint();
+  INLINE ~PhysxD6Joint();
 
-  void load_from_desc(const PhysxD6JointDesc & desc);
-  void save_to_desc(PhysxD6JointDesc & desc);
-  void set_drive_angular_velocity(const LVecBase3f & ang_vel);
-  void set_drive_linear_velocity(const LVecBase3f & lin_vel);
-  void set_drive_orientation(const LQuaternionf & orientation);
-  void set_drive_position(const LVecBase3f & position);
+  void save_to_desc(PhysxD6JointDesc &jointDesc) const;
+  void load_from_desc(const PhysxD6JointDesc &jointDesc);
 
+  void set_drive_angular_velocity(const LVector3f &v);
+  void set_drive_linear_velocity(const LVector3f &v);
+  void set_drive_orientation(const LQuaternionf &quat);
+  void set_drive_position(const LPoint3f &pos);
 
+////////////////////////////////////////////////////////////////////
 public:
-  NxD6Joint *nD6Joint;
+  INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
+  void link(NxJoint *jointPtr);
+  void unlink();
+
+private:
+  NxD6Joint *_ptr;
+
+////////////////////////////////////////////////////////////////////
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxD6Joint",
+    register_type(_type_handle, "PhysxD6Joint", 
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -68,7 +79,5 @@ private:
 };
 
 #include "physxD6Joint.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXD6JOINT_H

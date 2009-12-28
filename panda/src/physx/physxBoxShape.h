@@ -1,5 +1,5 @@
 // Filename: physxBoxShape.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,43 +15,60 @@
 #ifndef PHYSXBOXSHAPE_H
 #define PHYSXBOXSHAPE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "lvector3.h"
 
 #include "physxShape.h"
 
-class PhysxBox;
-class PhysxBoxShapeDesc;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxBoxShapeDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBoxShape
-// Description :
+// Description : A box shaped collision detection primitive. Each
+//               shape is owned by the actor which it is attached
+//               to.
+//
+//               An instance can be created by calling the
+//               createShape() method of the PhysxActor object that
+//               will own it, with a PhysxBoxShapeDesc object as the
+//               parameter, or by adding the shape descriptor to the
+//               PhysxActorDesc class before creating the actor.
+//
+//               The shape is deleted by calling release() on the
+//               shape itself.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxBoxShape : public PhysxShape {
+
 PUBLISHED:
+  INLINE PhysxBoxShape();
+  INLINE ~PhysxBoxShape();
 
-  LVecBase3f get_dimensions() const;
-  void get_world_obb(PhysxBox & obb) const;
-  void save_to_desc(PhysxBoxShapeDesc & desc) const;
-  void set_dimensions(const LVecBase3f & vec);
+  void save_to_desc(PhysxBoxShapeDesc &shapeDesc) const;
 
+  void set_dimensions(const LVector3f &dimensions);
+  LVector3f get_dimensions() const;
 
+////////////////////////////////////////////////////////////////////
 public:
-  NxBoxShape *nBoxShape;
+  INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
+  void link(NxShape *shapePtr);
+  void unlink();
+
+private:
+  NxBoxShape *_ptr;
+
+////////////////////////////////////////////////////////////////////
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxBoxShape",
+    register_type(_type_handle, "PhysxBoxShape", 
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -67,7 +84,5 @@ private:
 };
 
 #include "physxBoxShape.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXBOXSHAPE_H

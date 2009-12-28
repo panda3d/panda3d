@@ -9,130 +9,342 @@
   #define USE_PACKAGES physx
   #define LOCAL_LIBS pgraph linmath
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
-    #define INTERROGATE_OPTIONS $[INTERROGATE_OPTIONS] -DHAVE_PHYSX
+  #define INTERROGATE_OPTIONS $[INTERROGATE_OPTIONS]
 
   #define SOURCES \
     NoMinMax.h \
-        config_physx.h \
-    physxManager.I physxManager.h \
-    physxContactHandler.I physxContactHandler.h \
-    physxTriggerHandler.I physxTriggerHandler.h \
-    physxJointHandler.I physxJointHandler.h \
-    physxActorNode.I physxActorNode.h \
+    config_physx.h \
+    physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
     physxBodyDesc.I physxBodyDesc.h \
     physxBounds3.I physxBounds3.h \
     physxBox.I physxBox.h \
-    physxJoint.I physxJoint.h \
+    physxBoxController.I physxBoxController.h \
+    physxBoxControllerDesc.I physxBoxControllerDesc.h \
+    physxBoxForceFieldShape.I physxBoxForceFieldShape.h \
+    physxBoxForceFieldShapeDesc.I physxBoxForceFieldShapeDesc.h \
+    physxBoxShape.I physxBoxShape.h \
+    physxBoxShapeDesc.I physxBoxShapeDesc.h \
+    physxCapsule.I physxCapsule.h \
+    physxCapsuleController.I physxCapsuleController.h \
+    physxCapsuleControllerDesc.I physxCapsuleControllerDesc.h \
+    physxCapsuleForceFieldShape.I physxCapsuleForceFieldShape.h \
+    physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
+    physxCapsuleShape.I physxCapsuleShape.h \
+    physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxConstraintDominance.I physxConstraintDominance.h \
+    physxContactPair.I physxContactPair.h \
+    physxContactPoint.I physxContactPoint.h \
+    physxContactReport.I physxContactReport.h \
+    physxController.I physxController.h \
+    physxControllerDesc.I physxControllerDesc.h \
+    physxControllerReport.I physxControllerReport.h \
+    physxConvexForceFieldShape.I physxConvexForceFieldShape.h \
+    physxConvexForceFieldShapeDesc.I physxConvexForceFieldShapeDesc.h \
+    physxConvexMesh.I physxConvexMesh.h \
+    physxConvexMeshDesc.I physxConvexMeshDesc.h \
+    physxConvexShape.I physxConvexShape.h \
+    physxConvexShapeDesc.I physxConvexShapeDesc.h \
+    physxCylindricalJoint.I physxCylindricalJoint.h \
+    physxCylindricalJointDesc.I physxCylindricalJointDesc.h \
     physxD6Joint.I physxD6Joint.h \
-    physxJointDesc.I physxJointDesc.h \
     physxD6JointDesc.I physxD6JointDesc.h \
+    physxDebugGeomNode.I physxDebugGeomNode.h \
+    physxDistanceJoint.I physxDistanceJoint.h \
+    physxDistanceJointDesc.I physxDistanceJointDesc.h \
+    physxEnums.I physxEnums.h \
+    physxFileStream.I physxFileStream.h \
+    physxFixedJoint.I physxFixedJoint.h \
+    physxFixedJointDesc.I physxFixedJointDesc.h \
+    physxForceField.I physxForceField.h \
+    physxForceFieldDesc.I physxForceFieldDesc.h \
+    physxForceFieldShape.I physxForceFieldShape.h \
+    physxForceFieldShapeDesc.I physxForceFieldShapeDesc.h \
+    physxForceFieldShapeGroup.I physxForceFieldShapeGroup.h \
+    physxForceFieldShapeGroupDesc.I physxForceFieldShapeGroupDesc.h \
+    physxGroupsMask.I physxGroupsMask.h \
+    physxHeightField.I physxHeightField.h \
+    physxHeightFieldDesc.I physxHeightFieldDesc.h \
+    physxHeightFieldShape.I physxHeightFieldShape.h \
+    physxHeightFieldShapeDesc.I physxHeightFieldShapeDesc.h \
+    physxJoint.I physxJoint.h \
+    physxJointDesc.I physxJointDesc.h \
     physxJointDriveDesc.I physxJointDriveDesc.h \
+    physxJointLimitDesc.I physxJointLimitDesc.h \
     physxJointLimitSoftDesc.I physxJointLimitSoftDesc.h \
-    physxJointLimitSoftPairDesc.I physxJointLimitSoftPairDesc.h \
+    physxKitchen.I physxKitchen.h \
+    physxManager.I physxManager.h \
+    physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
     physxMaterialDesc.I physxMaterialDesc.h \
+    physxMemoryReadBuffer.I physxMemoryReadBuffer.h \
+    physxMemoryWriteBuffer.I physxMemoryWriteBuffer.h \
+    physxMeshPool.I physxMeshPool.h \
+    physxMotorDesc.I physxMotorDesc.h \
+    physxObject.I physxObject.h \
+    physxObjectCollection.I physxObjectCollection.h \
+    physxOverlapReport.I physxOverlapReport.h \
     physxPlane.I physxPlane.h \
+    physxPlaneShape.I physxPlaneShape.h \
+    physxPlaneShapeDesc.I physxPlaneShapeDesc.h \
+    physxPointInPlaneJoint.I physxPointInPlaneJoint.h \
+    physxPointInPlaneJointDesc.I physxPointInPlaneJointDesc.h \
+    physxPointOnLineJoint.I physxPointOnLineJoint.h \
+    physxPointOnLineJointDesc.I physxPointOnLineJointDesc.h \
+    physxPrismaticJoint.I physxPrismaticJoint.h \
+    physxPrismaticJointDesc.I physxPrismaticJointDesc.h \
+    physxPulleyJoint.I physxPulleyJoint.h \
+    physxPulleyJointDesc.I physxPulleyJointDesc.h \
     physxRay.I physxRay.h \
+    physxRaycastHit.I physxRaycastHit.h \
+    physxRaycastReport.I physxRaycastReport.h \
+    physxRevoluteJoint.I physxRevoluteJoint.h \
+    physxRevoluteJointDesc.I physxRevoluteJointDesc.h \
     physxScene.I physxScene.h \
     physxSceneDesc.I physxSceneDesc.h \
     physxSceneStats2.I physxSceneStats2.h \
     physxSegment.I physxSegment.h \
-    physxCapsule.I physxCapsule.h \
     physxShape.I physxShape.h \
-    physxBoxShape.I physxBoxShape.h \
-    physxCapsuleShape.I physxCapsuleShape.h \
-    physxPlaneShape.I physxPlaneShape.h \
-    physxSphereShape.I physxSphereShape.h \
     physxShapeDesc.I physxShapeDesc.h \
-    physxBoxShapeDesc.I physxBoxShapeDesc.h \
-    physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
-    physxPlaneShapeDesc.I physxPlaneShapeDesc.h \
-    physxSphereShapeDesc.I physxSphereShapeDesc.h \
     physxSphere.I physxSphere.h \
+    physxSphereForceFieldShape.I physxSphereForceFieldShape.h \
+    physxSphereForceFieldShapeDesc.I physxSphereForceFieldShapeDesc.h \
+    physxSphereShape.I physxSphereShape.h \
+    physxSphereShapeDesc.I physxSphereShapeDesc.h \
+    physxSphericalJoint.I physxSphericalJoint.h \
+    physxSphericalJointDesc.I physxSphericalJointDesc.h \
+    physxSpringDesc.I physxSpringDesc.h \
+    physxTriangleMesh.I physxTriangleMesh.h \
+    physxTriangleMeshDesc.I physxTriangleMeshDesc.h \
+    physxTriangleMeshShape.I physxTriangleMeshShape.h \
+    physxTriangleMeshShapeDesc.I physxTriangleMeshShapeDesc.h \
+    physxTriggerReport.I physxTriggerReport.h \
     physxUtilLib.I physxUtilLib.h \
+    physxWheelShape.I physxWheelShape.h \
+    physxWheelShapeDesc.I physxWheelShapeDesc.h \
 
   #define INCLUDED_SOURCES \
-    physxManager.cxx \
-    physxContactHandler.cxx \
-    physxTriggerHandler.cxx \
-    physxJointHandler.cxx \
-    physxActorNode.cxx \
+    physxActor.cxx \
     physxActorDesc.cxx \
     physxBodyDesc.cxx \
     physxBounds3.cxx \
     physxBox.cxx \
-    physxJoint.cxx \
+    physxBoxController.cxx \
+    physxBoxControllerDesc.cxx \
+    physxBoxForceFieldShape.cxx \
+    physxBoxForceFieldShapeDesc.cxx \
+    physxBoxShape.cxx \
+    physxBoxShapeDesc.cxx \
+    physxCapsule.cxx \
+    physxCapsuleController.cxx \
+    physxCapsuleControllerDesc.cxx \
+    physxCapsuleForceFieldShape.cxx \
+    physxCapsuleForceFieldShapeDesc.cxx \
+    physxCapsuleShape.cxx \
+    physxCapsuleShapeDesc.cxx \
+    physxConstraintDominance.cxx \
+    physxContactPair.cxx \
+    physxContactPoint.cxx \
+    physxContactReport.cxx \
+    physxController.cxx \
+    physxControllerDesc.cxx \
+    physxControllerReport.cxx \
+    physxConvexForceFieldShape.cxx \
+    physxConvexForceFieldShapeDesc.cxx \
+    physxConvexMesh.cxx \
+    physxConvexMeshDesc.cxx \
+    physxConvexShape.cxx \
+    physxConvexShapeDesc.cxx \
+    physxCylindricalJoint.cxx \
+    physxCylindricalJointDesc.cxx \
     physxD6Joint.cxx \
-    physxJointDesc.cxx \
     physxD6JointDesc.cxx \
+    physxDebugGeomNode.cxx \
+    physxDistanceJoint.cxx \
+    physxDistanceJointDesc.cxx \
+    physxEnums.cxx \
+    physxFileStream.cxx \
+    physxFixedJoint.cxx \
+    physxFixedJointDesc.cxx \
+    physxForceField.cxx \
+    physxForceFieldDesc.cxx \
+    physxForceFieldShape.cxx \
+    physxForceFieldShapeDesc.cxx \
+    physxForceFieldShapeGroup.cxx \
+    physxForceFieldShapeGroupDesc.cxx \
+    physxGroupsMask.cxx \
+    physxHeightField.cxx \
+    physxHeightFieldDesc.cxx \
+    physxHeightFieldShape.cxx \
+    physxHeightFieldShapeDesc.cxx \
+    physxJoint.cxx \
+    physxJointDesc.cxx \
     physxJointDriveDesc.cxx \
+    physxJointLimitDesc.cxx \
     physxJointLimitSoftDesc.cxx \
-    physxJointLimitSoftPairDesc.cxx \
+    physxKitchen.cxx \
+    physxManager.cxx \
+    physxMask.cxx \
     physxMaterial.cxx \
     physxMaterialDesc.cxx \
+    physxMemoryReadBuffer.cxx \
+    physxMemoryWriteBuffer.cxx \
+    physxMeshPool.cxx \
+    physxMotorDesc.cxx \
+    physxObject.cxx \
+    physxObjectCollection.cxx \
+    physxOverlapReport.cxx \
     physxPlane.cxx \
+    physxPlaneShape.cxx \
+    physxPlaneShapeDesc.cxx \
+    physxPointInPlaneJoint.cxx \
+    physxPointInPlaneJointDesc.cxx \
+    physxPointOnLineJoint.cxx \
+    physxPointOnLineJointDesc.cxx \
+    physxPrismaticJoint.cxx \
+    physxPrismaticJointDesc.cxx \
+    physxPulleyJoint.cxx \
+    physxPulleyJointDesc.cxx \
     physxRay.cxx \
+    physxRaycastHit.cxx \
+    physxRaycastReport.cxx \
+    physxRevoluteJoint.cxx \
+    physxRevoluteJointDesc.cxx \
     physxScene.cxx \
     physxSceneDesc.cxx \
     physxSceneStats2.cxx \
     physxSegment.cxx \
-    physxCapsule.cxx \
     physxShape.cxx \
-    physxBoxShape.cxx \
-    physxCapsuleShape.cxx \
-    physxPlaneShape.cxx \
-    physxSphereShape.cxx \
     physxShapeDesc.cxx \
-    physxBoxShapeDesc.cxx \
-    physxCapsuleShapeDesc.cxx \
-    physxPlaneShapeDesc.cxx \
-    physxSphereShapeDesc.cxx \
     physxSphere.cxx \
+    physxSphereForceFieldShape.cxx \
+    physxSphereForceFieldShapeDesc.cxx \
+    physxSphereShape.cxx \
+    physxSphereShapeDesc.cxx \
+    physxSphericalJoint.cxx \
+    physxSphericalJointDesc.cxx \
+    physxSpringDesc.cxx \
+    physxTriangleMesh.cxx \
+    physxTriangleMeshDesc.cxx \
+    physxTriangleMeshShape.cxx \
+    physxTriangleMeshShapeDesc.cxx \
+    physxTriggerReport.cxx \
     physxUtilLib.cxx \
+    physxWheelShape.cxx \
+    physxWheelShapeDesc.cxx \
 
   #define INSTALL_HEADERS \
     NoMinMax.h \
-        config_physx.h \
-    physxManager.I physxManager.h \
-    physxContactHandler.I physxContactHandler.h \
-    physxTriggerHandler.I physxTriggerHandler.h \
-    physxJointHandler.I physxJointHandler.h \
-    physxActorNode.I physxActorNode.h \
+    config_physx.h \
+    physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
     physxBodyDesc.I physxBodyDesc.h \
     physxBounds3.I physxBounds3.h \
     physxBox.I physxBox.h \
-    physxJoint.I physxJoint.h \
+    physxBoxController.I physxBoxController.h \
+    physxBoxControllerDesc.I physxBoxControllerDesc.h \
+    physxBoxForceFieldShape.I physxBoxForceFieldShape.h \
+    physxBoxForceFieldShapeDesc.I physxBoxForceFieldShapeDesc.h \
+    physxBoxShape.I physxBoxShape.h \
+    physxBoxShapeDesc.I physxBoxShapeDesc.h \
+    physxCapsule.I physxCapsule.h \
+    physxCapsuleController.I physxCapsuleController.h \
+    physxCapsuleControllerDesc.I physxCapsuleControllerDesc.h \
+    physxCapsuleForceFieldShape.I physxCapsuleForceFieldShape.h \
+    physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
+    physxCapsuleShape.I physxCapsuleShape.h \
+    physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxConstraintDominance.I physxConstraintDominance.h \
+    physxContactPair.I physxContactPair.h \
+    physxContactPoint.I physxContactPoint.h \
+    physxContactReport.I physxContactReport.h \
+    physxController.I physxController.h \
+    physxControllerDesc.I physxControllerDesc.h \
+    physxControllerReport.I physxControllerReport.h \
+    physxConvexForceFieldShape.I physxConvexForceFieldShape.h \
+    physxConvexForceFieldShapeDesc.I physxConvexForceFieldShapeDesc.h \
+    physxConvexMesh.I physxConvexMesh.h \
+    physxConvexMeshDesc.I physxConvexMeshDesc.h \
+    physxConvexShape.I physxConvexShape.h \
+    physxConvexShapeDesc.I physxConvexShapeDesc.h \
+    physxCylindricalJoint.I physxCylindricalJoint.h \
+    physxCylindricalJointDesc.I physxCylindricalJointDesc.h \
     physxD6Joint.I physxD6Joint.h \
-    physxJointDesc.I physxJointDesc.h \
     physxD6JointDesc.I physxD6JointDesc.h \
+    physxDebugGeomNode.I physxDebugGeomNode.h \
+    physxDistanceJoint.I physxDistanceJoint.h \
+    physxDistanceJointDesc.I physxDistanceJointDesc.h \
+    physxEnums.I physxEnums.h \
+    physxFileStream.I physxFileStream.h \
+    physxFixedJoint.I physxFixedJoint.h \
+    physxFixedJointDesc.I physxFixedJointDesc.h \
+    physxForceField.I physxForceField.h \
+    physxForceFieldDesc.I physxForceFieldDesc.h \
+    physxForceFieldShape.I physxForceFieldShape.h \
+    physxForceFieldShapeDesc.I physxForceFieldShapeDesc.h \
+    physxForceFieldShapeGroup.I physxForceFieldShapeGroup.h \
+    physxForceFieldShapeGroupDesc.I physxForceFieldShapeGroupDesc.h \
+    physxGroupsMask.I physxGroupsMask.h \
+    physxHeightField.I physxHeightField.h \
+    physxHeightFieldDesc.I physxHeightFieldDesc.h \
+    physxHeightFieldShape.I physxHeightFieldShape.h \
+    physxHeightFieldShapeDesc.I physxHeightFieldShapeDesc.h \
+    physxJoint.I physxJoint.h \
+    physxJointDesc.I physxJointDesc.h \
     physxJointDriveDesc.I physxJointDriveDesc.h \
+    physxJointLimitDesc.I physxJointLimitDesc.h \
     physxJointLimitSoftDesc.I physxJointLimitSoftDesc.h \
-    physxJointLimitSoftPairDesc.I physxJointLimitSoftPairDesc.h \
+    physxKitchen.I physxKitchen.h \
+    physxManager.I physxManager.h \
+    physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
     physxMaterialDesc.I physxMaterialDesc.h \
+    physxMemoryReadBuffer.I physxMemoryReadBuffer.h \
+    physxMemoryWriteBuffer.I physxMemoryWriteBuffer.h \
+    physxMeshPool.I physxMeshPool.h \
+    physxMotorDesc.I physxMotorDesc.h \
+    physxObject.I physxObject.h \
+    physxObjectCollection.I physxObjectCollection.h \
+    physxOverlapReport.I physxOverlapReport.h \
     physxPlane.I physxPlane.h \
+    physxPlaneShape.I physxPlaneShape.h \
+    physxPlaneShapeDesc.I physxPlaneShapeDesc.h \
+    physxPointInPlaneJoint.I physxPointInPlaneJoint.h \
+    physxPointInPlaneJointDesc.I physxPointInPlaneJointDesc.h \
+    physxPointOnLineJoint.I physxPointOnLineJoint.h \
+    physxPointOnLineJointDesc.I physxPointOnLineJointDesc.h \
+    physxPrismaticJoint.I physxPrismaticJoint.h \
+    physxPrismaticJointDesc.I physxPrismaticJointDesc.h \
+    physxPulleyJoint.I physxPulleyJoint.h \
+    physxPulleyJointDesc.I physxPulleyJointDesc.h \
     physxRay.I physxRay.h \
+    physxRaycastHit.I physxRaycastHit.h \
+    physxRaycastReport.I physxRaycastReport.h \
+    physxRevoluteJoint.I physxRevoluteJoint.h \
+    physxRevoluteJointDesc.I physxRevoluteJointDesc.h \
     physxScene.I physxScene.h \
     physxSceneDesc.I physxSceneDesc.h \
     physxSceneStats2.I physxSceneStats2.h \
     physxSegment.I physxSegment.h \
-    physxCapsule.I physxCapsule.h \
     physxShape.I physxShape.h \
-    physxBoxShape.I physxBoxShape.h \
-    physxCapsuleShape.I physxCapsuleShape.h \
-    physxPlaneShape.I physxPlaneShape.h \
-    physxSphereShape.I physxSphereShape.h \
     physxShapeDesc.I physxShapeDesc.h \
-    physxBoxShapeDesc.I physxBoxShapeDesc.h \
-    physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
-    physxPlaneShapeDesc.I physxPlaneShapeDesc.h \
-    physxSphereShapeDesc.I physxSphereShapeDesc.h \
     physxSphere.I physxSphere.h \
+    physxSphereForceFieldShape.I physxSphereForceFieldShape.h \
+    physxSphereForceFieldShapeDesc.I physxSphereForceFieldShapeDesc.h \
+    physxSphereShape.I physxSphereShape.h \
+    physxSphereShapeDesc.I physxSphereShapeDesc.h \
+    physxSphericalJoint.I physxSphericalJoint.h \
+    physxSphericalJointDesc.I physxSphericalJointDesc.h \
+    physxSpringDesc.I physxSpringDesc.h \
+    physxTriangleMesh.I physxTriangleMesh.h \
+    physxTriangleMeshDesc.I physxTriangleMeshDesc.h \
+    physxTriangleMeshShape.I physxTriangleMeshShape.h \
+    physxTriangleMeshShapeDesc.I physxTriangleMeshShapeDesc.h \
+    physxTriggerReport.I physxTriggerReport.h \
     physxUtilLib.I physxUtilLib.h \
+    physxWheelShape.I physxWheelShape.h \
+    physxWheelShapeDesc.I physxWheelShapeDesc.h \
 
   #define IGATESCAN all
 
 #end lib_target
-

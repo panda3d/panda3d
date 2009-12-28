@@ -1,5 +1,5 @@
 // Filename: physxActorDesc.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (05Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,48 +15,48 @@
 #ifndef PHYSXACTORDESC_H
 #define PHYSXACTORDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lpoint3.h"
+#include "lmatrix.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
-class PhysxShapeDesc;
-class PhysxBodyDesc;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxBodyDesc;
+class PhysxShapeDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxActorDesc
-// Description :
+// Description : Descriptor for PhysxActor.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxActorDesc {
+
 PUBLISHED:
-  PhysxActorDesc();
+  INLINE PhysxActorDesc();
+  INLINE ~PhysxActorDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  void add_shape(PhysxShapeDesc pShapeDesc);
+  void add_shape(PhysxShapeDesc &desc);
 
-  const PhysxBodyDesc * get_body() const;
-  INLINE float get_density() const;
-  INLINE unsigned int get_flags() const;
-  LMatrix4f get_global_pose() const;
+  void set_name(const char *name);
+  void set_density(float density);
+  void set_global_pos(const LPoint3f &pos);
+  void set_global_mat(const LMatrix4f &mat);
+  void set_global_hpr(float h, float p, float r);
+  void set_body(PhysxBodyDesc &desc);
 
-  void set_body( const PhysxBodyDesc * value );
-  INLINE void set_density( float value );
-  INLINE void set_flags( unsigned int value );
-  void set_global_pose( LMatrix4f value );
+  const char *get_name() const;
+  float get_density() const;
+  LPoint3f get_global_pos() const;
+  LMatrix4f get_global_mat() const;
+  PhysxBodyDesc get_body() const;
 
 public:
-  NxActorDesc nActorDesc;
+  NxActorDesc _desc;
 };
 
 #include "physxActorDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXACTORDESC_H

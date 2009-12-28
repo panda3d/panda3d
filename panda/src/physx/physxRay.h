@@ -1,5 +1,5 @@
 // Filename: physxRay.h
-// Created by:  pratt (Dec 12, 2007)
+// Created by:  enn0x (21Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,39 +15,36 @@
 #ifndef PHYSXRAY_H
 #define PHYSXRAY_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lvector3.h"
+#include "lpoint3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
-#include "NxPhysics.h"
+#include "config_physx.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxRay
-// Description :
+// Description : Represents an ray as an origin and direction.
+//               The ray will be infinite if no length is given.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxRay {
+
 PUBLISHED:
-  PhysxRay();
-  PhysxRay(const LVecBase3f & _orig, const LVecBase3f & _dir);
-  ~PhysxRay();
+  INLINE PhysxRay();
+  INLINE ~PhysxRay();
 
+  void set_length(float length);
+  void set_origin(const LPoint3f &origin);
+  void set_direction(const LVector3f &direction);
 
-  LVecBase3f get_dir() const;
-  LVecBase3f get_orig() const;
-
-  void set_dir(LVecBase3f value);
-  void set_orig(LVecBase3f value);
+  float get_length() const;
+  LPoint3f get_origin() const;
+  LVector3f get_direction() const;
 
 public:
-  NxRay *nRay;
+  NxRay _ray;
+  NxReal _length;
 };
 
 #include "physxRay.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXRAY_H
+#endif // PHYSRAY_H

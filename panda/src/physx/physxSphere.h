@@ -1,5 +1,5 @@
 // Filename: physxSphere.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,41 +15,39 @@
 #ifndef PHYSXSPHERE_H
 #define PHYSXSPHERE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "lpoint3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
-#include "NxPhysics.h"
+#include "config_physx.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxSphere
-// Description :
+// Description : Represents a sphere defined by its center point
+//               and radius.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxSphere {
+
 PUBLISHED:
-  PhysxSphere(const PhysxSphere & sphere);
-  ~PhysxSphere();
+  INLINE PhysxSphere();
+  INLINE PhysxSphere(const PhysxSphere &sphere);
+  INLINE ~PhysxSphere();
 
-  INLINE bool contains(const LVecBase3f & min, const LVecBase3f & max) const;
-  INLINE bool intersect(const PhysxSphere & sphere) const;
-  INLINE bool is_valid() const;
+  bool contains(const LPoint3f &p) const;
+  bool contains(const PhysxSphere &sphere) const;
+  bool contains(const LPoint3f &min, const LPoint3f &max) const;
+  bool intersect(const PhysxSphere &sphere) const;
+  bool is_valid() const;
 
-  LVecBase3f get_center() const;
-  INLINE float get_radius() const;
+  LPoint3f get_center() const;
+  float get_radius() const;
 
-  void set_center( LVecBase3f value );
-  INLINE void set_radius( float value );
+  void set_center(LPoint3f value);
+  void set_radius(float value);
 
 public:
-  NxSphere *nSphere;
+  NxSphere _sphere;
 };
 
 #include "physxSphere.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXSPHERE_H
+#endif // PHYSSPHERE_H

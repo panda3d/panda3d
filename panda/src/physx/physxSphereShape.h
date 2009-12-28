@@ -1,5 +1,5 @@
 // Filename: physxSphereShape.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,43 +15,62 @@
 #ifndef PHYSXSPHERESHAPE_H
 #define PHYSXSPHERESHAPE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "lvector3.h"
 
 #include "physxShape.h"
 
-class PhysxSphere;
-class PhysxSphereShapeDesc;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxSphereShapeDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxSphereShape
-// Description :
+// Description : A sphere shaped collision detection primitive. 
+//               Each shape is owned by an actor that it is attached
+//               to.
+//
+//               An instance can be created by calling the
+//               createShape() method of the PhysxActor object that
+//               should own it, with a PhysxSphereShapeDesc object
+//               as the parameter, or by adding the shape descriptor
+//               into the PhysxActorDesc class before creating the
+//               actor.
+//
+//               The shape is deleted by calling release() on the
+//               shape itself.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxSphereShape : public PhysxShape {
-PUBLISHED:
 
-  float get_radius() const;
-  void get_world_sphere(PhysxSphere & world_sphere) const;
-  void save_to_desc(PhysxSphereShapeDesc & desc) const;
+PUBLISHED:
+  INLINE PhysxSphereShape();
+  INLINE ~PhysxSphereShape();
+
+  void save_to_desc(PhysxSphereShapeDesc &shapeDesc) const;
+
   void set_radius(float radius);
 
+  float get_radius() const;
 
+////////////////////////////////////////////////////////////////////
 public:
-  NxSphereShape *nSphereShape;
+  INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
+  void link(NxShape *shapePtr);
+  void unlink();
+
+private:
+  NxSphereShape *_ptr;
+
+////////////////////////////////////////////////////////////////////
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxSphereShape",
+    register_type(_type_handle, "PhysxSphereShape", 
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -67,7 +86,5 @@ private:
 };
 
 #include "physxSphereShape.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXSPHERESHAPE_H

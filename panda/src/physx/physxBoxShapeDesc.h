@@ -1,5 +1,5 @@
 // Filename: physxBoxShapeDesc.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,39 +15,36 @@
 #ifndef PHYSXBOXSHAPEDESC_H
 #define PHYSXBOXSHAPEDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "lvector3.h"
 
 #include "physxShapeDesc.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBoxShapeDesc
-// Description :
+// Description : Descriptor class for PhysxBoxShape.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxBoxShapeDesc : public PhysxShapeDesc {
+
 PUBLISHED:
-  PhysxBoxShapeDesc();
+  INLINE PhysxBoxShapeDesc();
+  INLINE ~PhysxBoxShapeDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  LVecBase3f get_dimensions() const;
+  void set_dimensions(const LVector3f &dimensions);
 
-  void set_dimensions( LVecBase3f value );
+  LVector3f get_dimensions() const;
 
 public:
-  NxBoxShapeDesc nBoxShapeDesc;
+  NxShapeDesc *ptr() const { return (NxShapeDesc *)&_desc; };
+  NxBoxShapeDesc _desc;
 };
 
 #include "physxBoxShapeDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXBOXSHAPEDESC_H

@@ -1,5 +1,5 @@
 // Filename: physxBox.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,44 +15,42 @@
 #ifndef PHYSXBOX_H
 #define PHYSXBOX_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
 #include "luse.h"
 
-#include "NxPhysics.h"
+#include "config_physx.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBox
-// Description :
+// Description : Represents an oriented bounding box, as a center
+//               point, extents(radii) and a rotation. i.e. the
+//               center of the box is at the center point, the box
+//               is rotated around this point with the rotation and
+//               it is 2*extents in width, height and depth.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxBox {
+
 PUBLISHED:
-  PhysxBox();
-  PhysxBox(const LVecBase3f & _center, const LVecBase3f & _extents, const LMatrix3f & _rot);
-  ~PhysxBox();
+  INLINE PhysxBox();
+  INLINE ~PhysxBox();
+  PhysxBox(const LPoint3f &center, const LVector3f &extents, const LMatrix3f &rot);
 
-  INLINE bool is_valid() const;
-  INLINE void rotate(const LMatrix4f & mtx, PhysxBox & obb) const;
-  INLINE void set_empty();
+  bool is_valid() const;
+  void rotate(const LMatrix4f &m, PhysxBox &obb) const;
+  void set_empty();
 
-  LVecBase3f get_center() const;
-  LVecBase3f get_extents() const;
+  LPoint3f get_center() const;
+  LVector3f get_extents() const;
   LMatrix3f get_rot() const;
 
-  void set_center( LVecBase3f value );
-  void set_extents( LVecBase3f value );
-  void set_rot( LMatrix3f value );
+  void set_center(LPoint3f center);
+  void set_extents(LVector3f extents);
+  void set_rot(LMatrix3f rot);
 
 public:
-  NxBox *nBox;
+  NxBox _box;
 };
 
 #include "physxBox.I"
 
-#endif // HAVE_PHYSX
-
-#endif // PHYSXBOX_H
+#endif // PHYSBOX_H

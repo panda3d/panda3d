@@ -1,5 +1,5 @@
 // Filename: physxSphereShapeDesc.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,43 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShapeDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxSphereShapeDesc::
-is_valid() const {
-  return nSphereShapeDesc.isValid();
+INLINE PhysxSphereShapeDesc::
+PhysxSphereShapeDesc() : PhysxShapeDesc() {
+
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShapeDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxSphereShapeDesc::
+~PhysxSphereShapeDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphereShapeDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxSphereShapeDesc::
 set_to_default() {
-  nSphereShapeDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_radius
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShapeDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxSphereShapeDesc::
-get_radius() const {
-  return nSphereShapeDesc.radius;
-}
+INLINE bool PhysxSphereShapeDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : set_radius
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxSphereShapeDesc::
-set_radius(float value) {
-  nSphereShapeDesc.radius = value;
+  return _desc.isValid();
 }
 

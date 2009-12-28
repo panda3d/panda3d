@@ -1,5 +1,5 @@
 // Filename: physxPlaneShapeDesc.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,43 +12,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxPlaneShapeDesc.h"
-
-#include "luse.h"
-
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxPlaneShapeDesc
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxPlaneShapeDesc::
-PhysxPlaneShapeDesc()
-: PhysxShapeDesc( &nPlaneShapeDesc ) {
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_normal
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxPlaneShapeDesc::
-get_normal() const {
-  return PhysxManager::nxVec3_to_lVecBase3(nPlaneShapeDesc.normal);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_normal
-//       Access : Published
-//  Description :
+//     Function: PhysxPlaneShapeDesc::set_plane
+//       Access: Published
+//  Description: Sets the parameters of the plane equation.
+//               normal: Plane normal.
+//               d: The distance from the origin. 
 ////////////////////////////////////////////////////////////////////
 void PhysxPlaneShapeDesc::
-set_normal(LVecBase3f value) {
-  nPlaneShapeDesc.normal = PhysxManager::lVecBase3_to_nxVec3(value);
-}
+set_plane(const LVector3f &normal, float d) {
 
-#endif // HAVE_PHYSX
+  nassertv(!normal.is_nan());
+
+  _desc.normal = PhysxManager::vec3_to_nxVec3(normal);
+  _desc.d = d;
+}
 

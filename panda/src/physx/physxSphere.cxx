@@ -1,5 +1,5 @@
 // Filename: physxSphere.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,57 +12,116 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxSphere.h"
-
-#include "luse.h"
-
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphere
-//       Access : Published
-//  Description :
+//     Function: PhysxSphere::is_valid
+//       Access: Published
+//  Description: Returns TRUE if this sphere is valid.
 ////////////////////////////////////////////////////////////////////
-PhysxSphere::
-PhysxSphere(const PhysxSphere & sphere) {
+bool PhysxSphere::
+is_valid() const {
 
+  return _sphere.IsValid();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysxSphere
-//       Access : Published
-//  Description :
+//     Function: PhysxSphere::contains
+//       Access: Published
+//  Description: Tests if a point is contained within the sphere.
 ////////////////////////////////////////////////////////////////////
-PhysxSphere::
-~PhysxSphere() {
+bool PhysxSphere::
+contains(const LPoint3f &p) const {
 
+  nassertr(!p.is_nan(), false);
+
+  return _sphere.Contains(PhysxManager::vec3_to_nxVec3(p));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_center
-//       Access : Published
-//  Description :
+//     Function: PhysxSphere::contains
+//       Access: Published
+//  Description: Tests if a sphere is contained within the sphere.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxSphere::
+bool PhysxSphere::
+contains(const PhysxSphere &sphere) const {
+
+  return _sphere.Contains(sphere._sphere);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphere::contains
+//       Access: Published
+//  Description: Tests if an axis aligned box is contained within
+//               the sphere. The axis aligned box is defined by the
+//               minimum corner and the maximum corner.
+////////////////////////////////////////////////////////////////////
+bool PhysxSphere::
+contains(const LPoint3f &min, const LPoint3f &max) const {
+
+  nassertr(!min.is_nan(), false);
+  nassertr(!max.is_nan(), false);
+
+  return _sphere.Contains(PhysxManager::vec3_to_nxVec3(min), 
+                          PhysxManager::vec3_to_nxVec3(max));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphere::intersect
+//       Access: Published
+//  Description: Tests if the sphere intersects another sphere.
+//               Returns TRUE if the spheres overlap.
+////////////////////////////////////////////////////////////////////
+bool PhysxSphere::
+intersect(const PhysxSphere &sphere) const {
+
+  return _sphere.Intersect(sphere._sphere);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphere::get_center
+//       Access: Published
+//  Description: Returns the center of the sphere.
+////////////////////////////////////////////////////////////////////
+LPoint3f PhysxSphere::
 get_center() const {
-  nassertr(nSphere != NULL, *((LVecBase3f *)NULL));
 
-  return PhysxManager::nxVec3_to_lVecBase3(nSphere->center);
+  return PhysxManager::nxVec3_to_vec3(_sphere.center);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_center
-//       Access : Published
-//  Description :
+//     Function: PhysxSphere::set_center
+//       Access: Published
+//  Description: Sets the center of the sphere.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphere::
-set_center(LVecBase3f value) {
-  nassertv(nSphere != NULL);
+set_center(LPoint3f center) {
 
-  nSphere->center = PhysxManager::lVecBase3_to_nxVec3(value);
+  nassertv(!center.is_nan());
+
+  _sphere.center = PhysxManager::vec3_to_nxVec3(center);
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphere::get_radius
+//       Access: Published
+//  Description: Returns the sphere's radius.
+////////////////////////////////////////////////////////////////////
+float PhysxSphere::
+get_radius() const {
 
+  return _sphere.radius;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphere::set_radius
+//       Access: Published
+//  Description: Sets the sphere's radius.
+////////////////////////////////////////////////////////////////////
+void PhysxSphere::
+set_radius(float radius) {
+
+  _sphere.radius = radius;
+}
 

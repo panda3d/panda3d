@@ -1,5 +1,5 @@
 // Filename: physxMaterialDesc.I
-// Created by:  pratt (Jul 9, 2006)
+// Created by:  enn0x (21Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,143 +12,47 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxMaterialDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxMaterialDesc::
-is_valid() const {
-  return nMaterialDesc.isValid();
+INLINE PhysxMaterialDesc::
+PhysxMaterialDesc() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxMaterialDesc::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxMaterialDesc::
+~PhysxMaterialDesc() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxMaterialDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxMaterialDesc::
 set_to_default() {
-  nMaterialDesc.setToDefault();
+
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_dynamic_friction
-//       Access : Published
-//  Description :
+//     Function: PhysxMaterialDesc::is_valid
+//       Access: Published
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxMaterialDesc::
-get_dynamic_friction() const {
-  return nMaterialDesc.dynamicFriction;
-}
+INLINE bool PhysxMaterialDesc::
+is_valid() const {
 
-////////////////////////////////////////////////////////////////////
-//     Function : get_dynamic_friction_v
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxMaterialDesc::
-get_dynamic_friction_v() const {
-  return nMaterialDesc.dynamicFrictionV;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE unsigned int PhysxMaterialDesc::
-get_flags() const {
-  return nMaterialDesc.flags;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_restitution
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxMaterialDesc::
-get_restitution() const {
-  return nMaterialDesc.restitution;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_static_friction
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxMaterialDesc::
-get_static_friction() const {
-  return nMaterialDesc.staticFriction;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_static_friction_v
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxMaterialDesc::
-get_static_friction_v() const {
-  return nMaterialDesc.staticFrictionV;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_dynamic_friction
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_dynamic_friction(float value) {
-  nMaterialDesc.dynamicFriction = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_dynamic_friction_v
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_dynamic_friction_v(float value) {
-  nMaterialDesc.dynamicFrictionV = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_flags
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_flags(unsigned int value) {
-  nMaterialDesc.flags = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_restitution
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_restitution(float value) {
-  nMaterialDesc.restitution = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_static_friction
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_static_friction(float value) {
-  nMaterialDesc.staticFriction = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_static_friction_v
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxMaterialDesc::
-set_static_friction_v(float value) {
-  nMaterialDesc.staticFrictionV = value;
+  return _desc.isValid();
 }
 

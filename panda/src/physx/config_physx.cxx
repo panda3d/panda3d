@@ -1,5 +1,5 @@
-// Filename: config_physics.cxx
-// Created by:  pratt (Apr 18, 2006)
+// Filename: config_physx.cxx
+// Created by:  enn0x (01Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -13,17 +13,48 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_physx.h"
+#include "pandaSystem.h"
 
-#include "dconfig.h"
-
-#include "physxActorNode.h"
-#include "physxJoint.h"
-#include "physxD6Joint.h"
-#include "physxShape.h"
+#include "physxActor.h"
+#include "physxBoxController.h"
+#include "physxBoxForceFieldShape.h"
 #include "physxBoxShape.h"
+#include "physxCapsuleController.h"
+#include "physxCapsuleForceFieldShape.h"
 #include "physxCapsuleShape.h"
+#include "physxContactPair.h"
+#include "physxContactPoint.h"
+#include "physxController.h"
+#include "physxConvexMesh.h"
+#include "physxConvexForceFieldShape.h"
+#include "physxConvexShape.h"
+#include "physxCylindricalJoint.h"
+#include "physxD6Joint.h"
+#include "physxDebugGeomNode.h"
+#include "physxDistanceJoint.h"
+#include "physxFixedJoint.h"
+#include "physxForceField.h"
+#include "physxForceFieldShape.h"
+#include "physxForceFieldShapeGroup.h"
+#include "physxHeightField.h"
+#include "physxHeightFieldShape.h"
+#include "physxJoint.h"
+#include "physxMaterial.h"
+#include "physxObject.h"
 #include "physxPlaneShape.h"
+#include "physxPointInPlaneJoint.h"
+#include "physxPointOnLineJoint.h"
+#include "physxPrismaticJoint.h"
+#include "physxPulleyJoint.h"
+#include "physxRevoluteJoint.h"
+#include "physxScene.h"
+#include "physxShape.h"
+#include "physxSphereForceFieldShape.h"
 #include "physxSphereShape.h"
+#include "physxSphericalJoint.h"
+#include "physxTriangleMesh.h"
+#include "physxTriangleMeshShape.h"
+#include "physxWheelShape.h"
 
 ConfigureDef(config_physx);
 NotifyCategoryDef(physx, "");
@@ -32,15 +63,27 @@ ConfigureFn(config_physx) {
   init_libphysx();
 }
 
-ConfigVariableBool physx_want_visual_debugger
-("physx-want-visual-debugger", false);
+ConfigVariableBool physx_want_vrd
+("physx-want-vrd", false,
+PRC_DESC("Specified wether the manager should try to connect to the NVIDIA "
+         "PhysX visual debugger or not. Connection is established when "
+         "the first instance of PhysxManager is created."));
 
-ConfigVariableString physx_visual_debugger_host
-("physx-visual-debugger-host", "localhost");
+ConfigVariableString physx_vrd_host
+("physx-vrd-host", "localhost",
+PRC_DESC("Specified the host where the NVIDIA PhysX visual debugger is running"
+         "on. Only used if the config-varibale 'physx-want-visual-debugger' "
+         "is set to 'true'."));
 
-ConfigVariableInt physx_visual_debugger_port
-("physx-visual-debugger-port", 5425);
+ConfigVariableInt physx_vrd_port
+("physx-visual-debugger-port", 5425,
+PRC_DESC("Specified the port where the NVIDIA PhysX visual debugger is running"
+         "on. Only used if the config-varibale 'physx-want-visual-debugger' "
+         "is set to 'true'."));
 
+ConfigVariableEnum<PhysxEnums::PhysxUpAxis> physx_up_axis
+("physx-up-axis", PhysxEnums::Z_up,
+PRC_DESC("Set the up direction for controllers and heightfields."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libphysx
@@ -58,12 +101,48 @@ init_libphysx() {
   }
   initialized = true;
 
-  PhysxActorNode::init_type();
-  PhysxJoint::init_type();
-  PhysxD6Joint::init_type();
-  PhysxShape::init_type();
+  PhysxActor::init_type();
+  PhysxBoxController::init_type();
+  PhysxBoxForceFieldShape::init_type();
   PhysxBoxShape::init_type();
+  PhysxCapsuleController::init_type();
+  PhysxCapsuleForceFieldShape::init_type();
   PhysxCapsuleShape::init_type();
+  PhysxContactPair::init_type();
+  PhysxContactPoint::init_type();
+  PhysxController::init_type();
+  PhysxConvexMesh::init_type();
+  PhysxConvexForceFieldShape::init_type();
+  PhysxConvexShape::init_type();
+  PhysxCylindricalJoint::init_type();
+  PhysxD6Joint::init_type();
+  PhysxDebugGeomNode::init_type();
+  PhysxDistanceJoint::init_type();
+  PhysxFixedJoint::init_type();
+  PhysxForceField::init_type();
+  PhysxForceFieldShape::init_type();
+  PhysxForceFieldShapeGroup::init_type();
+  PhysxHeightField::init_type();
+  PhysxHeightFieldShape::init_type();
+  PhysxJoint::init_type();
+  PhysxMaterial::init_type();
+  PhysxObject::init_type();
   PhysxPlaneShape::init_type();
+  PhysxPointInPlaneJoint::init_type();
+  PhysxPointOnLineJoint::init_type();
+  PhysxPrismaticJoint::init_type();
+  PhysxPulleyJoint::init_type();
+  PhysxRevoluteJoint::init_type();
+  PhysxScene::init_type();
+  PhysxShape::init_type();
+  PhysxSphereForceFieldShape::init_type();
   PhysxSphereShape::init_type();
+  PhysxSphericalJoint::init_type();
+  PhysxTriangleMesh::init_type();
+  PhysxTriangleMeshShape::init_type();
+  PhysxWheelShape::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("PhysX");
 }
+

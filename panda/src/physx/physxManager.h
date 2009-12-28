@@ -1,5 +1,5 @@
 // Filename: physxManager.h
-// Created by:  pratt (Apr 6, 2006)
+// Created by:  enn0x (01Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,73 +15,110 @@
 #ifndef PHYSXMANAGER_H
 #define PHYSXMANAGER_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 #include "pointerTo.h"
 #include "luse.h"
 
-#include "physx_enumerations.h"
+#include "physxEnums.h"
+#include "physxObjectCollection.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+#include "NxExtended.h"
 
 class PhysxScene;
 class PhysxSceneDesc;
+class PhysxHeightField;
+class PhysxHeightFieldDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxManager
-// Description : This is the central manager for the Panda interface
-//               to the Ageia PhysX SDK.
+// Description : The central interface to the PhysX subsystem.
+//               Used e. g. for setting/retrieving global parameters
+//               or for creating scenes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxManager {
-PUBLISHED:
+class EXPCL_PANDAPHYSX PhysxManager : public PhysxEnums {
+
+protected:
   PhysxManager();
-  ~PhysxManager();
-
-// make enumerations available to Python interface
-#undef PHYSX_ENUMERATIONS_H
-#ifdef CPPPARSER
-#include "physx_enumerations_for_interrogate.h"
-#else
-#include "physx_enumerations.h"
-#endif
-
-  void set_parameter(PhysxParameter parameterType, float value);
-  float get_parameter(PhysxParameter parameterType);
-
-  PhysxScene *create_scene(PhysxSceneDesc &sceneDesc);
-  void release_scene(PhysxScene *scene);
-
-  unsigned int get_num_scenes();
-  PhysxScene *get_scene(unsigned int i);
-
-  bool is_hardware_available();
 
 public:
-  INLINE static LVecBase3f nxVec3_to_lVecBase3(const NxVec3 &vec);
-  INLINE static LMatrix3f nxMat33_to_lMatrix3(const NxMat33 &mat);
-  INLINE static LMatrix4f nxMat34_to_lMatrix4(const NxMat34 &mat);
-  INLINE static LQuaternionf nxQuat_to_lQuaternion(const NxQuat &quat);
+  ~PhysxManager();
 
-  INLINE static NxVec3 lVecBase3_to_nxVec3(const LVecBase3f &vec);
-  INLINE static NxMat33 lMatrix3_to_nxMat33(const LMatrix3f &mat);
-  INLINE static NxMat34 lMatrix4_to_nxMat34(const LMatrix4f &mat);
-  INLINE static NxQuat lQuaternion_to_nxQuat(const LQuaternionf &quat);
+PUBLISHED:
+  static PhysxManager *get_global_ptr();
+
+  void set_parameter(PhysxParameter param, float value);
+  float get_parameter(PhysxParameter param);
+
+  bool is_hardware_available();
+  unsigned int get_num_ppus();
+  unsigned int get_hw_version();
+  const char *get_internal_version();
+
+  unsigned int get_num_scenes() const;
+  PT(PhysxScene) create_scene(PhysxSceneDesc &desc);
+  PT(PhysxScene) get_scene(unsigned int idx) const;
+  MAKE_SEQ(get_scenes, get_num_scenes, get_scene);
+
+  unsigned int get_num_height_fields();
+  PT(PhysxHeightField) create_height_field(PhysxHeightFieldDesc &desc);
+  PT(PhysxHeightField) get_height_field(unsigned int idx);
+  MAKE_SEQ(get_height_fields, get_num_height_fields, get_height_field);
+
+  unsigned int get_num_convex_meshes();
+  PT(PhysxConvexMesh) get_convex_mesh(unsigned int idx);
+  MAKE_SEQ(get_convex_meshes, get_num_convex_meshes, get_convex_mesh);
+
+  unsigned int get_num_triangle_meshes();
+  PT(PhysxTriangleMesh) get_triangle_mesh(unsigned int idx);
+  MAKE_SEQ(get_triangle_meshes, get_num_triangle_meshes, get_triangle_mesh);
+
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level=0) const;
+
+public:
+  INLINE NxPhysicsSDK *get_sdk() const;
+
+  PhysxObjectCollection<PhysxScene> _scenes;
+  PhysxObjectCollection<PhysxHeightField> _heightfields;
+  PhysxObjectCollection<PhysxConvexMesh> _convex_meshes;
+  PhysxObjectCollection<PhysxTriangleMesh> _triangle_meshes;
+
+  INLINE static NxVec3 vec3_to_nxVec3(const LVector3f &v);
+  INLINE static LVector3f nxVec3_to_vec3(const NxVec3 &v);
+  INLINE static NxExtendedVec3 vec3_to_nxExtVec3(const LVector3f &v);
+  INLINE static LVector3f nxExtVec3_to_vec3(const NxExtendedVec3 &v);
+  INLINE static NxVec3 point3_to_nxVec3(const LPoint3f &p);
+  INLINE static LPoint3f nxVec3_to_point3(const NxVec3 &p);
+  INLINE static NxExtendedVec3 point3_to_nxExtVec3(const LPoint3f &p);
+  INLINE static LPoint3f nxExtVec3_to_point3(const NxExtendedVec3 &p);
+  INLINE static NxQuat quat_to_nxQuat(const LQuaternionf &q);
+  INLINE static LQuaternionf nxQuat_to_quat(const NxQuat &q);
+  INLINE static NxMat34 mat4_to_nxMat34(const LMatrix4f &m);
+  INLINE static LMatrix4f nxMat34_to_mat4(const NxMat34 &m);
+  INLINE static NxMat33 mat3_to_nxMat33(const LMatrix3f &m);
+  INLINE static LMatrix3f nxMat33_to_mat3(const NxMat33 &m);
+
+  INLINE static void update_vec3_from_nxVec3(LVector3f &v, const NxVec3 &nVec);
+  INLINE static void update_point3_from_nxVec3(LPoint3f &p, const NxVec3 &nVec);
 
 private:
-  NxPhysicsSDK *nPhysicsSDK;
-  NxRemoteDebugger *nRemoteDebugger;
+  NxPhysicsSDK *_sdk;
+
+  static PhysxManager *_global_ptr;
 
   class PhysxOutputStream : public NxUserOutputStream {
     void reportError(NxErrorCode code, const char *message, const char *file, int line);
     NxAssertResponse reportAssertViolation(const char *message, const char *file, int line);
     void print(const char *message);
+    const char *get_error_code_string(NxErrorCode code);
   };
-  PhysxOutputStream debugStream;
+  static PhysxOutputStream _outputStream;
+
+  static const char *get_sdk_error_string(const NxSDKCreateError &error);
 };
 
 #include "physxManager.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXMANAGER_H

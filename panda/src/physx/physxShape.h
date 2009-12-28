@@ -1,5 +1,5 @@
 // Filename: physxShape.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,83 +15,88 @@
 #ifndef PHYSXSHAPE_H
 #define PHYSXSHAPE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "pointerTo.h"
+#include "lpoint3.h"
+#include "lmatrix.h"
+#include "lquaternion.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxObject.h"
+#include "physxEnums.h"
 
-#include "typedWritableReferenceCount.h"
-
-class PhysxActorNode;
-class PhysxBounds3;
-class PhysxBox;
-class PhysxBoxShape;
-class PhysxCapsule;
-class PhysxCapsuleShape;
-class PhysxPlaneShape;
-class PhysxSphere;
-class PhysxSphereShape;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxActor;
+class PhysxMaterial;
+class PhysxGroupsMask;
+class PhysxBounds3;
+class PhysxSphere;
+class PhysxBox;
+class PhysxCapsule;
+class PhysxRay;
+class PhysxRaycastHit;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxShape
-// Description :
+// Description : Abstract base class for shapes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxShape : public TypedWritableReferenceCount {
+class EXPCL_PANDAPHYSX PhysxShape : public PhysxObject, public PhysxEnums {
+
 PUBLISHED:
-  INLINE bool is_valid();
+  void release();
 
-  bool check_overlap_aabb(const PhysxBounds3 & world_bounds) const;
-  bool check_overlap_capsule(const PhysxCapsule & world_capsule) const;
-  bool check_overlap_obb(const PhysxBox & world_box) const;
-  bool check_overlap_sphere(const PhysxSphere & world_sphere) const;
-  PhysxActorNode & get_actor() const;
-  bool get_flag(PhysxShapeFlag flag) const;
-  LMatrix3f get_global_orientation() const;
-  LMatrix4f get_global_pose() const;
-  LVecBase3f get_global_position() const;
-  unsigned short get_group() const;
-  LMatrix3f get_local_orientation() const;
-  LMatrix4f get_local_pose() const;
-  LVecBase3f get_local_position() const;
-  unsigned short get_material() const;
-  const char * get_name() const;
+  PT(PhysxActor) get_actor() const;
+
+  void set_name(const char *name);
+  void set_flag(const PhysxShapeFlag flag, bool value);
+  void set_skin_width(float skinWidth);
+  void set_group(unsigned short group);
+  void set_local_pos(const LPoint3f &pos);
+  void set_local_mat(const LMatrix4f &mat);
+  void set_material(const PhysxMaterial &material);
+  void set_material_index(unsigned short idx);
+  void set_groups_mask(const PhysxGroupsMask &mask);
+
+  const char *get_name() const;
+  bool get_flag(const PhysxShapeFlag flag) const;
   float get_skin_width() const;
-  void get_world_bounds(PhysxBounds3 & dest) const;
-  const PhysxBoxShape * is_box() const;
-  const PhysxCapsuleShape * is_capsule() const;
-  const PhysxPlaneShape * is_plane() const;
-  const PhysxSphereShape * is_sphere() const;
-  void set_flag(PhysxShapeFlag flag, bool value);
-  void set_global_orientation(const LMatrix3f & mat);
-  void set_global_pose(const LMatrix4f & mat);
-  void set_global_position(const LVecBase3f & vec);
-  void set_group(unsigned short collision_group);
-  void set_local_orientation(const LMatrix3f & mat);
-  void set_local_pose(const LMatrix4f & mat);
-  void set_local_position(const LVecBase3f & vec);
-  void set_material(unsigned short mat_index);
-  void set_name(const char * name);
-  void set_skin_width(float skin_width);
+  unsigned short get_group() const;
+  LPoint3f get_local_pos() const;
+  LMatrix4f get_local_mat() const;
+  unsigned short get_material_index() const;
+  PhysxGroupsMask get_groups_mask() const;
+  PhysxBounds3 get_world_bounds() const;
 
-  INLINE void * get_app_data() const;
+  bool check_overlap_aabb(const PhysxBounds3 &world_bounds) const;
+  bool check_overlap_capsule(const PhysxCapsule &world_capsule) const;
+  bool check_overlap_obb(const PhysxBox &world_box) const;
+  bool check_overlap_sphere(const PhysxSphere &world_sphere) const;
+  PhysxRaycastHit raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const;
 
-  INLINE void set_app_data( void * value );
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  NxShape *nShape;
+  static PT(PhysxShape) factory(NxShapeType shapeType);
 
+  virtual NxShape *ptr() const = 0;
+
+  virtual void link(NxShape *shapePtr) = 0;
+  virtual void unlink() = 0;
+
+protected:
+  INLINE PhysxShape();
+
+////////////////////////////////////////////////////////////////////
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "PhysxShape",
-                  TypedWritableReferenceCount::get_class_type());
+    PhysxObject::init_type();
+    register_type(_type_handle, "PhysxShape", 
+                  PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -103,12 +108,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  string _name_store;
 };
 
 #include "physxShape.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXSHAPE_H

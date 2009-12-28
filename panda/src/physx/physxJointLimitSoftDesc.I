@@ -1,5 +1,5 @@
 // Filename: physxJointLimitSoftDesc.I
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,103 +12,38 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description :
+//     Function: PhysxJointLimitSoftDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxJointLimitSoftDesc::
-is_valid() const {
-  return nJointLimitSoftDesc.isValid();
+INLINE PhysxJointLimitSoftDesc::
+PhysxJointLimitSoftDesc() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_to_default
-//       Access : Published
-//  Description :
+//     Function: PhysxJointLimitSoftDesc::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointLimitSoftDesc::
-set_to_default() {
-  nJointLimitSoftDesc.setToDefault();
+INLINE PhysxJointLimitSoftDesc::
+PhysxJointLimitSoftDesc(float value, float restitution, float spring, float damping) {
+
+  _desc.value = value;
+  _desc.restitution = restitution;
+  _desc.spring = spring;
+  _desc.damping = damping;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_damping
-//       Access : Published
-//  Description :
+//     Function: PhysxJointLimitSoftDesc::Destructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointLimitSoftDesc::
-get_damping() const {
-  return nJointLimitSoftDesc.damping;
-}
+INLINE PhysxJointLimitSoftDesc::
+~PhysxJointLimitSoftDesc() {
 
-////////////////////////////////////////////////////////////////////
-//     Function : get_restitution
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointLimitSoftDesc::
-get_restitution() const {
-  return nJointLimitSoftDesc.restitution;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_spring
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointLimitSoftDesc::
-get_spring() const {
-  return nJointLimitSoftDesc.spring;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_value
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxJointLimitSoftDesc::
-get_value() const {
-  return nJointLimitSoftDesc.value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_damping
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointLimitSoftDesc::
-set_damping(float value) {
-  nJointLimitSoftDesc.damping = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_restitution
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointLimitSoftDesc::
-set_restitution(float value) {
-  nJointLimitSoftDesc.restitution = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_spring
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointLimitSoftDesc::
-set_spring(float value) {
-  nJointLimitSoftDesc.spring = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_value
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxJointLimitSoftDesc::
-set_value(float value) {
-  nJointLimitSoftDesc.value = value;
 }
 

@@ -1,5 +1,5 @@
 // Filename: NxPhysics.h
-// Created by:  pratt (Apr 26, 2006)
+// Created by:  enn0x (02Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -20,151 +20,129 @@
 #ifndef NXPHYSICS_H
 #define NXPHYSICS_H
 
-#define NX_CALL_CONV
+class NxActor;
+class NxActorDesc;
+class NxBodyDesc;
+class NxBoxForceFieldShape;
+class NxBoxForceFieldShapeDesc;
+class NxBoxShape;
+class NxBoxShapeDesc;
+class NxCapsuleForceFieldShape;
+class NxCapsuleForceFieldShapeDesc;
+class NxCapsuleShape;
+class NxCapsuleShapeDesc;
+class NxConvexMesh;
+class NxConvexMeshDesc;
+class NxConvexForceFieldShape;
+class NxConvexForceFieldShapeDesc;
+class NxConvexShape;
+class NxConvexShapeDesc;
+class NxForceField;
+class NxForceFieldDesc;
+class NxForceFieldLinearKernelDesc;
+class NxForceFieldLinearKernel;
+class NxForceFieldShape;
+class NxForceFieldShapeDesc;
+class NxForceFieldShapeGroup;
+class NxForceFieldShapeGroupDesc;
+class NxHeightFieldShape;
+class NxHeightFieldShapeDesc;
+class NxHeightField;
+class NxHeightFieldDesc;
+class NxHeightFieldSample;
+class NxMaterial;
+class NxMaterialDesc;
+class NxPlaneShape;
+class NxPlaneShapeDesc;
+class NxPhysicsSDK;
+class NxRay;
+class NxRaycastHit;
+class NxScene;
+class NxSceneDesc;
+class NxShape;
+class NxShapeDesc;
+class NxSphereForceFieldShape;
+class NxSphereForceFieldShapeDesc;
+class NxSphereShape;
+class NxSphereShapeDesc;
+class NxTriangleMesh;
+class NxTriangleMeshDesc;
+class NxTriangleMeshShape;
+class NxTriangleMeshShapeDesc;
+class NxJointDesc;
+class NxCylindricalJointDesc;
+class NxD6JointDesc;
+class NxDistanceJointDesc;
+class NxFixedJointDesc;
+class NxPointInPlaneJointDesc;
+class NxPointOnLineJointDesc;
+class NxPrismaticJointDesc;
+class NxPulleyJointDesc;
+class NxRevoluteJointDesc;
+class NxSphericalJointDesc;
+class NxJoint;
+class NxCylindricalJoint;
+class NxD6Joint;
+class NxDistanceJoint;
+class NxFixedJoint;
+class NxPointInPlaneJoint;
+class NxPointOnLineJoint;
+class NxPrismaticJoint;
+class NxPulleyJoint;
+class NxRevoluteJoint;
+class NxSphericalJoint;
+class NxMotorDesc;
+class NxSpringDesc;
+class NxJointLimitDesc;
+class NxJointLimitPairDesc;
+class NxJointLimitSoftDesc;
+class NxJointLimitSoftPairDesc;
+class NxJointDriveDesc;
+class NxUserRaycastReport;
+class NxBounds3;
+class NxWheelShape;
+class NxWheelShapeDesc;
+class NxContactPair;
+class NxUserContactReport;
+class NxCloth;
+class NxClothDesc;
+class NxClothMesh;
+class NxClothMeshDesc;
+class NxMeshData;
+class NxConstraintDominance;
+class NxRemoteDebugger;
+class NxGroupsMask;
+class NxSceneStats2;
 
+class NxSoftBody;
+class NxSoftBodyDesc;
+class NxSoftBodyMesh;
+class NxSoftBodyMeshDesc;
 
-#include "NxFoundation.h"   //include the all of the foundation SDK 
+enum NxSDKCreateError;
+enum NxAssertResponse;
+enum NxErrorCode;
+enum NxTriggerFlag;
+enum NxHeightFieldAxis;
 
+template<class T> class NxUserEntityReport;
 
-//////////////general:
+class NxU8;
+class NxU16;
+class NxU32;
+class NxI32;
+class NxReal;
+class NxF32;
+class NxVec3;
+class NxMat33;
+class NxMat34;
+class NxQuat;
 
-#include "NxScene.h"
-#include "NxSceneDesc.h"
-
-#include "NxActor.h"
-#include "NxActorDesc.h"
-
-#include "NxMaterial.h"
-#include "NxMaterialDesc.h"
-
-#include "NxContactStreamIterator.h"
-
-#include "NxUserContactReport.h"
-#include "NxUserNotify.h"
-#include "NxUserRaycastReport.h"
-#include "NxUserEntityReport.h"
-
-#include "NxBodyDesc.h"
-
-#include "NxEffector.h"
-
-#include "NxSpringAndDamperEffector.h"
-#include "NxSpringAndDamperEffectorDesc.h"
-
-#include "NxScheduler.h"
-
-//#if NX_USE_FLUID_API
-//#include "fluids/NxFluid.h"
-//#include "fluids/NxFluidDesc.h"
-//#include "fluids/NxFluidEmitter.h"
-//#include "fluids/NxFluidEmitterDesc.h"
-//#endif
-//
-//#if NX_USE_CLOTH_API
-//#include "cloth/NxCloth.h"
-//#include "cloth/NxClothDesc.h"
-//#endif
-
-#include "NxCCDSkeleton.h"
-#include "NxTriangle.h"
-#include "NxScheduler.h"
-#include "NxSceneStats.h"
-#include "NxSceneStats2.h"
-/////////////joints:
-
-#include "NxJoint.h"
-
-#include "NxJointLimitDesc.h"
-#include "NxJointLimitPairDesc.h"
-#include "NxMotorDesc.h"
-#include "NxSpringDesc.h"
-
-#include "NxPointInPlaneJoint.h"
-#include "NxPointInPlaneJointDesc.h"
-
-#include "NxPointOnLineJoint.h"
-#include "NxPointOnLineJointDesc.h"
-
-#include "NxRevoluteJoint.h"
-#include "NxRevoluteJointDesc.h"
-
-#include "NxPrismaticJoint.h"
-#include "NxPrismaticJointDesc.h"
-
-#include "NxCylindricalJoint.h"
-#include "NxCylindricalJointDesc.h"
-
-#include "NxSphericalJoint.h"
-#include "NxSphericalJointDesc.h"
-
-#include "NxFixedJoint.h"
-#include "NxFixedJointDesc.h"
-
-#include "NxDistanceJoint.h"
-#include "NxDistanceJointDesc.h"
-
-#include "NxPulleyJoint.h"
-#include "NxPulleyJointDesc.h"
-
-#include "NxD6Joint.h"
-#include "NxD6JointDesc.h"
-
-//////////////shapes:
-
-#include "NxShape.h"
-#include "NxShapeDesc.h"
-
-#include "NxBoxShape.h"
-#include "NxBoxShapeDesc.h"
-
-#include "NxCapsuleShape.h"
-#include "NxCapsuleShapeDesc.h"
-
-#include "NxPlaneShape.h"
-#include "NxPlaneShapeDesc.h"
-
-#include "NxSphereShape.h"
-#include "NxSphereShapeDesc.h"
-
-#include "NxTriangleMesh.h"
-#include "NxTriangleMeshDesc.h"
-
-#include "NxTriangleMeshShape.h"
-#include "NxTriangleMeshShapeDesc.h"
-
-#include "NxConvexMesh.h"
-#include "NxConvexMeshDesc.h"
-
-#include "NxConvexShape.h"
-#include "NxConvexShapeDesc.h"
-
-#include "NxHeightField.h"
-#include "NxHeightFieldDesc.h"
-
-#include "NxHeightFieldShape.h"
-#include "NxHeightFieldShapeDesc.h"
-#include "NxHeightFieldSample.h"
-
-#include "NxWheelShape.h"
-#include "NxWheelShapeDesc.h"
-//////////////utils:
-
-#include "NxInertiaTensor.h"
-#include "NxIntersectionBoxBox.h"
-#include "NxIntersectionPointTriangle.h"
-#include "NxIntersectionRayPlane.h"
-#include "NxIntersectionRaySphere.h"
-#include "NxIntersectionRayTriangle.h"
-#include "NxIntersectionSegmentBox.h"
-#include "NxIntersectionSegmentCapsule.h"
-#include "NxIntersectionSweptSpheres.h"
-#include "NxPMap.h"
-#include "NxSmoothNormals.h"
-#include "NxConvexHull.h"
-#include "NxAllocateable.h"
-#include "NxExportedUtils.h"
-
-#include "PhysXLoader.h"
-
+class NxBox;
+class NxSphere;
+class NxSegment;
+class NxCapsule;
+class NxPlane;
+class NxUtilLib;
 
 #endif  // NXPHYSICS_H

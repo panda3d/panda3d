@@ -1,5 +1,5 @@
 // Filename: physxSegment.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (31Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,63 +12,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-//     Function : compute_direction
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxSegment::
-compute_direction(LVecBase3f & dir) const {
-  nassertv(nSegment != NULL);
 
-  nSegment->computeDirection(PhysxManager::lVecBase3_to_nxVec3(dir));
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSegment::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxSegment::
+PhysxSegment() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : compute_length
-//       Access : Published
-//  Description :
+//     Function: PhysxSegment::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysxSegment::
-compute_length() const {
-  nassertr(nSegment != NULL, -1.0f);
+INLINE PhysxSegment::
+PhysxSegment(const PhysxSegment &segment) {
 
-  return nSegment->computeLength();
+  _segment = segment._segment;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : compute_point
-//       Access : Published
-//  Description :
+//     Function: PhysxSegment::Destructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxSegment::
-compute_point(LVecBase3f & pt, float t) const {
-  nassertv(nSegment != NULL);
+INLINE PhysxSegment::
+~PhysxSegment() {
 
-  nSegment->computePoint(PhysxManager::lVecBase3_to_nxVec3(pt), t);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : compute_square_length
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE float PhysxSegment::
-compute_square_length() const {
-  nassertr(nSegment != NULL, -1.0f);
-
-  return nSegment->computeSquareLength();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_origin_direction
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxSegment::
-set_origin_direction(const LVecBase3f & origin, const LVecBase3f & direction) {
-  nassertv(nSegment != NULL);
-
-  nSegment->setOriginDirection(PhysxManager::lVecBase3_to_nxVec3(origin), PhysxManager::lVecBase3_to_nxVec3(direction));
 }
 

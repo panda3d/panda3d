@@ -1,5 +1,5 @@
 // Filename: physxJoint.h
-// Created by:  pratt (Jun 16, 2006)
+// Created by:  enn0x (02Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,63 +15,74 @@
 #ifndef PHYSXJOINT_H
 #define PHYSXJOINT_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
+#include "pointerTo.h"
+#include "lpoint3.h"
+#include "lvector3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxObject.h"
+#include "physxEnums.h"
 
-#include "typedWritableReferenceCount.h"
-
-class PhysxD6Joint;
-class PhysxScene;
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
+
+class PhysxActor;
+class PhysxScene;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxJoint
-// Description :
+// Description : Abstract base class for the different types of
+//               joints. All joints are used to connect two dynamic
+//               actors, or an actor and the environment.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxJoint : public TypedWritableReferenceCount {
+class EXPCL_PANDAPHYSX PhysxJoint : public PhysxObject, public PhysxEnums {
+
 PUBLISHED:
-  INLINE bool is_valid();
+  void release();
 
-  bool add_limit_plane(const LVecBase3f & normal, const LVecBase3f & point_in_plane, float restitution);
-  void get_breakable(float & max_force, float & max_torque);
-  LVecBase3f get_global_anchor() const;
-  LVecBase3f get_global_axis() const;
-  bool get_limit_point(LVecBase3f & world_limit_point);
-  const char * get_name() const;
-  bool get_next_limit_plane(LVecBase3f & plane_normal, float & plane_d, float * restitution);
-  PhysxScene & get_scene() const;
-  PhysxJointState get_state();
-  bool has_more_limit_planes();
-  void * is(PhysxJointType type);
-  PhysxD6Joint * is_d6_joint();
+  PT(PhysxActor) get_actor(unsigned int idx) const;
+  PT(PhysxScene) get_scene() const;
+
   void purge_limit_planes();
-  void reset_limit_plane_iterator();
-  void set_breakable(float max_force, float max_torque);
-  void set_global_anchor(const LVecBase3f & vec);
-  void set_global_axis(const LVecBase3f & vec);
-  void set_limit_point(const LVecBase3f & point, bool point_is_on_actor2);
-  void set_name(const char * name);
 
-  INLINE void * get_app_data() const;
+  void set_name(const char *name);
+  void set_global_anchor(const LPoint3f &anchor);
+  void set_global_axis(const LVector3f &axis);
+  void set_breakable(float maxForce, float maxTorque);
+  void set_solver_extrapolation_factor(float factor);
+  void set_use_acceleration_spring(bool value);
+  void set_limit_point(const LPoint3f &pos, bool isOnActor2=true);
+  void add_limit_plane(const LVector3f &normal, const LPoint3f &pointInPlane, float restitution=0.0f);
 
-  INLINE void set_app_data( void * value );
+  const char *get_name() const;
+  LPoint3f get_global_anchor() const;
+  LVector3f get_global_axis() const;
+  float get_solver_extrapolation_factor() const;
+  bool get_use_acceleration_spring() const;
+
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  NxJoint *nJoint;
+  static PT(PhysxJoint) factory(NxJointType shapeType);
 
+  virtual NxJoint *ptr() const = 0;
+
+  virtual void link(NxJoint *shapePtr) = 0;
+  virtual void unlink() = 0;
+
+protected:
+  INLINE PhysxJoint();
+
+////////////////////////////////////////////////////////////////////
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "PhysxJoint",
-                  TypedWritableReferenceCount::get_class_type());
+    PhysxObject::init_type();
+    register_type(_type_handle, "PhysxJoint", 
+                  PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -83,12 +94,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  string _name_store;
 };
 
 #include "physxJoint.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXJOINT_H

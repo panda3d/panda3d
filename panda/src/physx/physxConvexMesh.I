@@ -1,0 +1,59 @@
+// Filename: physxConvexMesh.I
+// Created by:  enn0x (13Oct09)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxConvexMesh::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxConvexMesh::
+PhysxConvexMesh() : PhysxObject() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxConvexMesh::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxConvexMesh::
+~PhysxConvexMesh() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxConvexMesh::ls
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxConvexMesh::
+ls() const {
+
+  ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxConvexMesh::ls
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxConvexMesh::
+ls(ostream &out, int indent_level) const {
+
+  indent(out, indent_level) << get_type().get_name()
+                            << " (at 0x" << this << ")\n";
+}
+

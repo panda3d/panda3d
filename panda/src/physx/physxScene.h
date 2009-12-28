@@ -1,5 +1,5 @@
 // Filename: physxScene.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (14Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,136 +15,243 @@
 #ifndef PHYSXSCENE_H
 #define PHYSXSCENE_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-#include "pvector.h"
+#include "lvector3.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-#include "physxContactHandler.h"
-#include "physxTriggerHandler.h"
-#include "physxJointHandler.h"
+#include "physxObject.h"
+#include "physxObjectCollection.h"
+#include "physxEnums.h"
+#include "physxContactReport.h"
+#include "physxControllerReport.h"
+#include "physxTriggerReport.h"
+#include "physxOverlapReport.h"
+#include "physxMask.h"
+#include "physxGroupsMask.h"
 
-class PhysxActorNode;
+#include "NoMinMax.h"
+#include "NxPhysics.h"
+#include "NxControllerManager.h"
+
+class PhysxActor;
 class PhysxActorDesc;
+class PhysxController;
+class PhysxControllerDesc;
+class PhysxConstraintDominance;
+class PhysxDebugGeomNode;
+class PhysxForceField;
+class PhysxForceFieldDesc;
+class PhysxForceFieldShapeGroup;
+class PhysxForceFieldShapeGroupDesc;
 class PhysxJoint;
 class PhysxJointDesc;
 class PhysxMaterial;
 class PhysxMaterialDesc;
-class PhysxSceneDesc;
+class PhysxOverlapReport;
+class PhysxRay;
+class PhysxRaycastHit;
+class PhysxRaycastReport;
 class PhysxSceneStats2;
-class PhysxShape;
-
-#include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxScene
-// Description :
+// Description : A scene is a collection of bodies, constraints,
+//               and effectors which can interact.
+//
+//               The scene simulates the behavior of these objects
+//               over time. Several scenes may exist at the same
+//               time, but each body, constraint, or effector object
+//               is specific to a scene -- they may not be shared.
+//
+//               For example, attempting to create a joint in one
+//               scene and then using it to attach bodies from a
+//               different scene results in undefined behavior.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxScene {
-PUBLISHED:
-  void update_panda_graph();
-  PT(PhysxActorNode) get_actor(unsigned int index);
-  void set_contact_reporting_enabled(bool enabled);
-  bool is_contact_reporting_enabled();
-  void set_trigger_reporting_enabled(bool enabled);
-  bool is_trigger_reporting_enabled();
-  void set_joint_reporting_enabled(bool enabled);
-  bool is_joint_reporting_enabled();
-  void set_contact_reporting_threshold(float threshold);
-  float get_contact_reporting_threshold();
+class EXPCL_PANDAPHYSX PhysxScene : public PhysxObject, public PhysxEnums {
 
-  bool check_results(PhysxSimulationStatus status, bool block);
-  PT(PhysxActorNode) create_actor(const PhysxActorDesc & desc, const string &name="");
-  PhysxJoint *create_joint(const PhysxJointDesc & desc);
-  PhysxMaterial *create_material(const PhysxMaterialDesc & desc);
-  void flush_caches();
-  void flush_stream();
-  unsigned int get_actor_group_pair_flags(unsigned short group1, unsigned short group2) const;
-  unsigned int get_actor_pair_flags(PhysxActorNode & actor_a, PhysxActorNode & actor_b) const;
-  unsigned int get_bound_for_island_size(PhysxActorNode & actor);
-  bool get_filter_bool() const;
-  unsigned int get_flags() const;
-  void get_gravity(LVecBase3f & vec);
-  bool get_group_collision_flag(unsigned short group1, unsigned short group2) const;
-  unsigned short get_highest_material_index() const;
-  PhysxMaterial * get_material_from_index(unsigned short mat_index);
-  float get_max_cpu_for_load_balancing();
-  unsigned int get_nb_actor_group_pairs() const;
-  unsigned int get_nb_actors() const;
-  unsigned int get_nb_cloths() const;
-  unsigned int get_nb_compartments() const;
-  unsigned int get_nb_dynamic_shapes() const;
-  unsigned int get_nb_effectors() const;
-  unsigned int get_nb_fluids() const;
-  unsigned int get_nb_force_fields() const;
-  unsigned int get_nb_implicit_screen_meshes() const;
-  unsigned int get_nb_joints() const;
-  unsigned int get_nb_materials() const;
-  unsigned int get_nb_pairs() const;
-  unsigned int get_nb_soft_bodies() const;
-  unsigned int get_nb_static_shapes() const;
-  PhysxJoint * get_next_joint();
-  unsigned int get_shape_pair_flags(PhysxShape & shape_a, PhysxShape & shape_b) const;
-  PhysxSimulationType get_sim_type() const;
+PUBLISHED:
+  INLINE PhysxScene();
+  INLINE ~PhysxScene();
+
+  void simulate(float dt);
+  void fetch_results();
+  void set_timing_variable();
+  void set_timing_fixed(float maxTimestep=1.0f/60.0f, unsigned int maxIter=8);
+
+  PT(PhysxDebugGeomNode) get_debug_geom_node();
+
+  void enable_contact_reporting(bool enabled);
+  bool is_contact_reporting_enabled() const;
+  void enable_trigger_reporting(bool enabled);
+  bool is_trigger_reporting_enabled() const;
+  void enable_controller_reporting(bool enabled);
+  bool is_controller_reporting_enabled() const;
+
+  void set_gravity(const LVector3f &gravity);
+
+  LVector3f get_gravity() const;
   PhysxSceneStats2 get_stats2() const;
-  void get_timing(float & max_timestep, unsigned int & max_iter, PhysxTimeStepMethod & method, unsigned int * num_sub_steps) const;
-  unsigned int get_total_nb_shapes() const;
-  bool is_writable();
-  void lock_queries();
-  PhysxThreadPollResult poll_for_background_work(PhysxThreadWait wait_type);
-  PhysxThreadPollResult poll_for_work(PhysxThreadWait wait_type);
-  void release_actor(PhysxActorNode & pActor);
-  void release_joint(PhysxJoint & pJoint);
-  void release_material(PhysxMaterial & pMaterial);
-  void reset_effector_iterator();
-  void reset_joint_iterator();
-  void reset_poll_for_work();
-  bool save_to_desc(PhysxSceneDesc & desc) const;
-  void set_actor_group_pair_flags(unsigned short group1, unsigned short group2, unsigned int flags);
-  void set_actor_pair_flags(PhysxActorNode & actor_a, PhysxActorNode & actor_b, unsigned int nx_contact_pair_flag);
-  void set_filter_bool(bool flag);
+  bool get_flag(PhysxSceneFlag flag) const; 
+  bool is_hardware_scene() const;
+
+  // Actors
+  unsigned int get_num_actors() const;
+  PT(PhysxActor) create_actor(PhysxActorDesc &desc);
+  PT(PhysxActor) get_actor(unsigned int idx) const;
+  MAKE_SEQ(get_actors, get_num_actors, get_actor);
+
+  // Joints
+  unsigned int get_num_joints() const;
+  PT(PhysxJoint) create_joint(PhysxJointDesc &desc);
+  PT(PhysxJoint) get_joint(unsigned int idx) const;
+  MAKE_SEQ(get_joints, get_num_joints, get_joint);
+
+  // Materials
+  unsigned int get_num_materials() const;
+  unsigned int get_hightest_material_index() const;
+  PT(PhysxMaterial) create_material(PhysxMaterialDesc &desc);
+  PT(PhysxMaterial) create_material();
+  PT(PhysxMaterial) get_material(unsigned int idx) const;
+  PT(PhysxMaterial) get_material_from_index(unsigned int idx) const;
+  MAKE_SEQ(get_materials, get_num_materials, get_material);
+
+  // Controllers
+  unsigned int get_num_controllers() const;
+  PT(PhysxController) create_controller(PhysxControllerDesc &controllerDesc);
+  PT(PhysxController) get_controller(unsigned int idx) const;
+  MAKE_SEQ(get_controllers, get_num_controllers, get_controller);
+
+  // Force fields
+  unsigned int get_num_force_fields() const;
+  PT(PhysxForceField) create_force_field(PhysxForceFieldDesc &desc);
+  PT(PhysxForceField) get_force_field(unsigned int idx) const;
+  MAKE_SEQ(get_force_fields, get_num_force_fields, get_force_field);
+
+  // Force field shape groups
+  unsigned int get_num_force_field_shape_groups() const;
+  PT(PhysxForceFieldShapeGroup) create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc);
+  PT(PhysxForceFieldShapeGroup) get_force_field_shape_group(unsigned int idx) const;
+  MAKE_SEQ(get_force_field_shape_groups, get_num_force_field_shape_groups, get_force_field_shape_group);
+
+  // Raycast queries
+  bool raycast_any_shape(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL) const;
+
+  PhysxRaycastHit raycast_closest_shape(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+
+  PhysxRaycastReport raycast_all_shapes(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+
+  bool raycast_any_bounds(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL) const;
+
+  PhysxRaycastHit raycast_closest_bounds(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+
+  PhysxRaycastReport raycast_all_bounds(const PhysxRay &ray,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(),
+    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+
+  // Overlap queries
+  PhysxOverlapReport overlap_sphere_shapes(const LPoint3f &center, float radius,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(), bool accurateCollision=true) const;
+
+  PhysxOverlapReport overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
+    PhysxShapesType shapesType=ST_all,
+    PhysxMask mask=PhysxMask::all_on(), bool accurateCollision=true) const;
+
+  // Filters
+  void set_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB, PhysxContactPairFlag flag, bool value);
+  void set_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB, bool value);
+  void set_actor_group_pair_flag(unsigned int g1, unsigned int g2, PhysxContactPairFlag flag, bool value);
+  void set_group_collision_flag(unsigned int g1, unsigned int g2, bool enable);
   void set_filter_ops(PhysxFilterOp op0, PhysxFilterOp op1, PhysxFilterOp op2);
-  void set_gravity(const LVecBase3f & vec);
-  void set_group_collision_flag(unsigned short group1, unsigned short group2, bool enable);
-  void set_max_cpu_for_load_balancing(float cpu_fraction);
-  void set_shape_pair_flags(PhysxShape & shape_a, PhysxShape & shape_b, unsigned int nx_contact_pair_flag);
-  void set_timing(float max_timestep, unsigned int max_iter, PhysxTimeStepMethod method);
-  void shutdown_worker_threads();
-  void simulate(float elapsed_time);
-  void unlock_queries();
+  void set_filter_bool(bool flag);
+  void set_filter_constant0(const PhysxGroupsMask &mask);
+  void set_filter_constant1(const PhysxGroupsMask &mask);
+  void set_dominance_group_pair(unsigned int g1, unsigned int g2, PhysxConstraintDominance dominance);
+
+  bool get_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB, PhysxContactPairFlag flag);
+  bool get_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB);
+  bool get_actor_group_pair_flag(unsigned int g1, unsigned int g2, PhysxContactPairFlag flag);
+  bool get_group_collision_flag(unsigned int g1, unsigned int g2);
+  bool get_filter_bool() const;
+  PhysxGroupsMask get_filter_constant0() const;
+  PhysxGroupsMask get_filter_constant1() const;
+  PhysxFilterOp get_filter_op0() const;
+  PhysxFilterOp get_filter_op1() const;
+  PhysxFilterOp get_filter_op2() const;
+  PhysxConstraintDominance get_dominance_group_pair(unsigned int g1, unsigned int g2);
+
+////////////////////////////////////////////////////////////////////
+PUBLISHED:
+  void release();
+
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  NxScene *nScene;
+  INLINE NxScene *ptr() const { return _ptr; };
+  INLINE NxControllerManager *cm() const { return _cm; };
+
+  void link(NxScene *ptr);
+  void unlink();
+
+  PhysxObjectCollection<PhysxMaterial> _materials;
+  PhysxObjectCollection<PhysxActor> _actors;
+  PhysxObjectCollection<PhysxJoint> _joints;
+  PhysxObjectCollection<PhysxForceField> _forcefields;
+  PhysxObjectCollection<PhysxForceFieldShapeGroup> _ffgroups;
+  PhysxObjectCollection<PhysxController> _controllers;
 
 private:
-  // Keep lists of all reference counted Physx objects so that they won't be
-  // inadvertantly destroyed before they've been released.
-  pvector<PT(PhysxActorNode)> _actors;
-  pvector<PT(PhysxJoint)> _joints;
-  pvector<PT(PhysxShape)> _shapes;
+  NxScene *_ptr;
+  NxControllerManager *_cm;
+  PT(PhysxDebugGeomNode) _debugNode;
 
-  bool contact_reporting_enabled;
-  PhysxContactHandler contact_handler;
-  bool trigger_reporting_enabled;
-  PhysxTriggerHandler trigger_handler;
-  bool joint_reporting_enabled;
-  PhysxJointHandler joint_handler;
+  PhysxContactReport _contact_report;
+  PhysxControllerReport _controller_report;
+  PhysxTriggerReport _trigger_report;
 
-  static PStatCollector _update_pcollector;
-  static PStatCollector _fetch_results_pcollector;
-  static PStatCollector _update_transforms_pcollector;
-  static PStatCollector _simulate_pcollector;
-  static PStatCollector _flush_stream_pcollector;
-  static PStatCollector _contact_reporting_pcollector;
-  static PStatCollector _trigger_reporting_pcollector;
-  static PStatCollector _joint_reporting_pcollector;
+  static PStatCollector _pcollector_fetch_results;
+  static PStatCollector _pcollector_update_transforms;
+  static PStatCollector _pcollector_debug_renderer;
+  static PStatCollector _pcollector_simulate;
+
+////////////////////////////////////////////////////////////////////
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    PhysxObject::init_type();
+    register_type(_type_handle, "PhysxScene", 
+                  PhysxObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {
+    init_type();
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "physxScene.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXSCENE_H

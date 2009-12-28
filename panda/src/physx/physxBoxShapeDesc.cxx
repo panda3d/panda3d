@@ -1,5 +1,5 @@
 // Filename: physxBoxShapeDesc.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,43 +12,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxBoxShapeDesc.h"
-
-#include "luse.h"
-
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxBoxShapeDesc
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxBoxShapeDesc::
-PhysxBoxShapeDesc()
-: PhysxShapeDesc( &nBoxShapeDesc ) {
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_dimensions
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxBoxShapeDesc::
-get_dimensions() const {
-  return PhysxManager::nxVec3_to_lVecBase3(nBoxShapeDesc.dimensions);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_dimensions
-//       Access : Published
-//  Description :
+//     Function: PhysxBoxShapeDesc::set_dimensions
+//       Access: Published
+//  Description: Sets the dimensions of the box.
+//
+//               The dimensions are the 'radii' of the box,
+//               meaning 1/2 extents in x dimension, 1/2 extents
+//               in y dimension, 1/2 extents in z dimension.
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxShapeDesc::
-set_dimensions(LVecBase3f value) {
-  nBoxShapeDesc.dimensions = PhysxManager::lVecBase3_to_nxVec3(value);
+set_dimensions(const LVector3f &dimensions) {
+
+  nassertv(!dimensions.is_nan());
+  _desc.dimensions = PhysxManager::vec3_to_nxVec3(dimensions);
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShapeDesc::get_dimensions
+//       Access: Published
+//  Description: Returns the dimensions of the box.
+////////////////////////////////////////////////////////////////////
+LVector3f PhysxBoxShapeDesc::
+get_dimensions() const {
+
+  return PhysxManager::nxVec3_to_vec3(_desc.dimensions);
+}
 

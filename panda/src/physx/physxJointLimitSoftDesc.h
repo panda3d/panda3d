@@ -1,5 +1,5 @@
 // Filename: physxJointLimitSoftDesc.h
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (01Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,43 +15,36 @@
 #ifndef PHYSXJOINTLIMITSOFTDESC_H
 #define PHYSXJOINTLIMITSOFTDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxJointLimitSoftDesc
-// Description :
+// Description : Describes a joint limit.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxJointLimitSoftDesc {
+class PhysxJointLimitSoftDesc {
+
 PUBLISHED:
-  PhysxJointLimitSoftDesc();
+  INLINE PhysxJointLimitSoftDesc();
+  INLINE PhysxJointLimitSoftDesc(float value, float restitution, float spring, float damping);
+  INLINE ~PhysxJointLimitSoftDesc();
 
-  INLINE bool is_valid() const;
-  INLINE void set_to_default();
+  void set_value(float value);
+  void set_restitution(float restitution);
+  void set_spring(float spring);
+  void set_damping(float damping);
 
-  INLINE float get_damping() const;
-  INLINE float get_restitution() const;
-  INLINE float get_spring() const;
-  INLINE float get_value() const;
-
-  INLINE void set_damping( float value );
-  INLINE void set_restitution( float value );
-  INLINE void set_spring( float value );
-  INLINE void set_value( float value );
+  float get_value() const;
+  float get_restitution() const;
+  float get_spring() const;
+  float get_damping() const;
 
 public:
-  NxJointLimitSoftDesc nJointLimitSoftDesc;
+  NxJointLimitSoftDesc _desc;
 };
 
 #include "physxJointLimitSoftDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXJOINTLIMITSOFTDESC_H

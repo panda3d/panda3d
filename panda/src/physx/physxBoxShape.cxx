@@ -1,5 +1,5 @@
 // Filename: physxBoxShape.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,63 +12,85 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxBoxShape.h"
-
-#include "luse.h"
-#include "physxBox.h"
 #include "physxBoxShapeDesc.h"
+#include "physxManager.h"
 
 TypeHandle PhysxBoxShape::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_dimensions
-//       Access : Published
-//  Description :
+//     Function: PhysxBoxShape::link
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxBoxShape::
+void PhysxBoxShape::
+link(NxShape *shapePtr) {
+
+  _ptr = shapePtr->isBox();
+  _ptr->userData = this;
+  _error_type = ET_ok;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.add(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShape::unlink
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PhysxBoxShape::
+unlink() {
+
+  _ptr->userData = NULL;
+  _error_type = ET_released;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.remove(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxBoxShape::save_to_desc
+//       Access : Published
+//  Description : Saves the state of the shape object to a 
+//                descriptor.
+////////////////////////////////////////////////////////////////////
+void PhysxBoxShape::
+save_to_desc(PhysxBoxShapeDesc &shapeDesc) const {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->saveToDesc(shapeDesc._desc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShape::set_dimensions
+//       Access: Published
+//  Description: Sets the box dimensions. 
+//
+//               The dimensions are the 'radii' of the box,
+//               meaning 1/2 extents in x dimension, 1/2 extents
+//               in y dimension, 1/2 extents in z dimension.
+////////////////////////////////////////////////////////////////////
+void PhysxBoxShape::
+set_dimensions(const LVector3f &vec) {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->setDimensions(PhysxManager::vec3_to_nxVec3(vec));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxBoxShape::get_dimensions
+//       Access: Published
+//  Description: Retrieves the dimensions of the box. 
+//
+//               The dimensions are the 'radii' of the box,
+//               meaning 1/2 extents in x dimension, 1/2 extents
+//               in y dimension, 1/2 extents in z dimension.
+////////////////////////////////////////////////////////////////////
+LVector3f PhysxBoxShape::
 get_dimensions() const {
-  nassertr(nBoxShape != NULL, *((LVecBase3f *)NULL));
 
-  return PhysxManager::nxVec3_to_lVecBase3(nBoxShape->getDimensions());
+  nassertr(_error_type == ET_ok, LVector3f::zero());
+  return PhysxManager::nxVec3_to_vec3(_ptr->getDimensions());
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_world_obb
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-void PhysxBoxShape::
-get_world_obb(PhysxBox & obb) const {
-  nassertv(nBoxShape != NULL);
-
-  nBoxShape->getWorldOBB(*(obb.nBox));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : save_to_desc
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-void PhysxBoxShape::
-save_to_desc(PhysxBoxShapeDesc & desc) const {
-  nassertv(nBoxShape != NULL);
-
-  nBoxShape->saveToDesc(desc.nBoxShapeDesc);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_dimensions
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-void PhysxBoxShape::
-set_dimensions(const LVecBase3f & vec) {
-  nassertv(nBoxShape != NULL);
-
-  nBoxShape->setDimensions(PhysxManager::lVecBase3_to_nxVec3(vec));
-}
-
-#endif // HAVE_PHYSX
 

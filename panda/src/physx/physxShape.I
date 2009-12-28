@@ -1,5 +1,5 @@
 // Filename: physxShape.I
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,39 +15,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function : is_valid
-//       Access : Published
-//  Description : Returns true if the NxShape associated with this
-//                is not NULL.  The NxShape will be NULL if the
-//                Actor that this shape is a part of has been
-//                released.
+//     Function: PhysxShape::Constructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxShape::
-is_valid() {
-  return nShape != NULL;
+INLINE PhysxShape::
+PhysxShape() : PhysxObject() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_app_data
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-INLINE void * PhysxShape::
-get_app_data() const {
-  nassertr(nShape != NULL, NULL);
-
-  return nShape->appData;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_app_data
-//       Access : Published
-//  Description :
+//     Function: PhysxShape::ls
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxShape::
-set_app_data(void * value) {
-  nassertv(nShape != NULL);
+ls() const {
 
-  nShape->appData = value;
+  ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::ls
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxShape::
+ls(ostream &out, int indent_level) const {
+
+  indent(out, indent_level) << get_type().get_name()
+                            << " " << get_name()
+                            << " (at 0x" << this << ")\n";
 }
 

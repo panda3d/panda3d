@@ -1,5 +1,5 @@
 // Filename: physxRay.cxx
-// Created by:  pratt (Dec 12, 2007)
+// Created by:  enn0x (21Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,90 +12,82 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxRay.h"
-
-#include "luse.h"
-
+#include "physxManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxRay
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxRay::
-PhysxRay() {
-  nRay = new NxRay();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : PhysxRay
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxRay::
-PhysxRay(const LVecBase3f & _orig, const LVecBase3f & _dir) {
-  nRay = new NxRay(PhysxManager::lVecBase3_to_nxVec3(_orig), PhysxManager::lVecBase3_to_nxVec3(_dir));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : ~PhysxRay
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-PhysxRay::
-~PhysxRay() {
-  delete nRay;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_dir
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxRay::
-get_dir() const {
-  nassertr(nRay != NULL, *((LVecBase3f *)NULL));
-
-  return PhysxManager::nxVec3_to_lVecBase3(nRay->dir);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_orig
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-LVecBase3f PhysxRay::
-get_orig() const {
-  nassertr(nRay != NULL, *((LVecBase3f *)NULL));
-
-  return PhysxManager::nxVec3_to_lVecBase3(nRay->orig);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : set_dir
-//       Access : Published
-//  Description :
+//     Function: PhysxRay::set_origin
+//       Access: Published
+//  Description: Sets the ray origin.
 ////////////////////////////////////////////////////////////////////
 void PhysxRay::
-set_dir(LVecBase3f value) {
-  nassertv(nRay != NULL);
+set_origin(const LPoint3f &origin) {
 
-  nRay->dir = PhysxManager::lVecBase3_to_nxVec3(value);
+  nassertv_always(!origin.is_nan());
+  _ray.orig = PhysxManager::point3_to_nxVec3(origin);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_orig
-//       Access : Published
-//  Description :
+//     Function: PhysxRay::get_origin
+//       Access: Published
+//  Description: Returns the ray origin
+////////////////////////////////////////////////////////////////////
+LPoint3f PhysxRay::
+get_origin() const {
+
+  return PhysxManager::nxVec3_to_point3(_ray.orig);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxRay::set_direction
+//       Access: Published
+//  Description: Set the ray direction. It is not required to pass
+//               a normalized vector.
 ////////////////////////////////////////////////////////////////////
 void PhysxRay::
-set_orig(LVecBase3f value) {
-  nassertv(nRay != NULL);
+set_direction(const LVector3f &direction) {
 
-  nRay->orig = PhysxManager::lVecBase3_to_nxVec3(value);
+  nassertv_always(!direction.is_nan());
+
+  _ray.dir = PhysxManager::vec3_to_nxVec3(direction);
+  _ray.dir.normalize();
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxRay::get_direction
+//       Access: Published
+//  Description: Returns the ray direction.
+////////////////////////////////////////////////////////////////////
+LVector3f PhysxRay::
+get_direction() const {
+
+  return PhysxManager::nxVec3_to_vec3(_ray.dir);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxRay::set_length
+//       Access: Published
+//  Description: Sets the ray length. If no length is set then the
+//               ray will be virtually infinite (the maximum
+//               floating point number will be used, e.g.
+//               3.40282346639e+038).
+////////////////////////////////////////////////////////////////////
+void PhysxRay::
+set_length(float length) {
+
+  nassertv_always(length > 0.0f);
+  _length = length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxRay::get_length
+//       Access: Published
+//  Description: Returns the ray length.
+////////////////////////////////////////////////////////////////////
+float PhysxRay::
+get_length() const {
+
+  return _length;
+}
+
 

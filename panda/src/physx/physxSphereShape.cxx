@@ -1,5 +1,5 @@
 // Filename: physxSphereShape.cxx
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (16Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,64 +12,76 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxSphereShape.h"
-
-#include "physxSphere.h"
 #include "physxSphereShapeDesc.h"
 
 TypeHandle PhysxSphereShape::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_radius
-//       Access : Published
-//  Description :
-////////////////////////////////////////////////////////////////////
-float PhysxSphereShape::
-get_radius() const {
-  nassertr(nSphereShape != NULL, -1.0f);
-
-  return nSphereShape->getRadius();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : get_world_sphere
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShape::link
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
-get_world_sphere(PhysxSphere & world_sphere) const {
-  nassertv(nSphereShape != NULL);
+link(NxShape *shapePtr) {
 
-  nSphereShape->getWorldSphere(*(world_sphere.nSphere));
+  _ptr = shapePtr->isSphere();
+  _ptr->userData = this;
+  _error_type = ET_ok;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.add(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : save_to_desc
-//       Access : Published
-//  Description :
+//     Function: PhysxSphereShape::unlink
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
-save_to_desc(PhysxSphereShapeDesc & desc) const {
-  nassertv(nSphereShape != NULL);
+unlink() {
 
-  nSphereShape->saveToDesc(desc.nSphereShapeDesc);
+  _ptr->userData = NULL;
+  _error_type = ET_released;
+
+  PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;
+  actor->_shapes.remove(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : set_radius
+//     Function : PhysxSphereShape::save_to_desc
 //       Access : Published
-//  Description :
+//  Description : Saves the state of the shape object to a 
+//                descriptor.
+////////////////////////////////////////////////////////////////////
+void PhysxSphereShape::
+save_to_desc(PhysxSphereShapeDesc &shapeDesc) const {
+
+  nassertv(_error_type == ET_ok);
+  _ptr->saveToDesc(shapeDesc._desc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphereShape::set_radius
+//       Access: Published
+//  Description: Sets the sphere radius. 
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
 set_radius(float radius) {
-  nassertv(nSphereShape != NULL);
 
-  nSphereShape->setRadius(radius);
+  nassertv(_error_type == ET_ok);
+  _ptr->setRadius(radius);
 }
 
-#endif // HAVE_PHYSX
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxSphereShape::get_radius
+//       Access: Published
+//  Description: Returns the radius of the sphere.
+////////////////////////////////////////////////////////////////////
+float PhysxSphereShape::
+get_radius() const {
 
-
+  nassertr(_error_type == ET_ok, 0.0f);
+  return _ptr->getRadius();
+}
 

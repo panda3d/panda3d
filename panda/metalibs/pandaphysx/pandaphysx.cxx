@@ -1,13 +1,10 @@
 // Filename: pandaphysx.cxx
-// Created by:  pratt (Apr 20, 2006)
+// Created by:  pratt (20Apr2006)
 // 
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaphysx.h"
-
-#ifndef LINK_IN_PHYSX
 #include "config_physx.h"
-#endif
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpandaphysx.so/.dll will fail if they
@@ -25,7 +22,5 @@
 ////////////////////////////////////////////////////////////////////
 void
 init_libpandaphysx() {
-#ifndef LINK_IN_PHYSX
   init_libphysx();
-#endif
 }

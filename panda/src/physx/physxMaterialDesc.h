@@ -1,5 +1,5 @@
 // Filename: physxMaterialDesc.h
-// Created by:  pratt (Jul 9, 2006)
+// Created by:  enn0x (21Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,53 +15,50 @@
 #ifndef PHYSXMATERIALDESC_H
 #define PHYSXMATERIALDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
 
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
+#include "physxEnums.h"
 
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxMaterialDesc
-// Description :
+// Description : Descriptor class for materials. See PhysxMaterial.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxMaterialDesc {
+class EXPCL_PANDAPHYSX PhysxMaterialDesc : public PhysxEnums {
+
 PUBLISHED:
-  PhysxMaterialDesc();
+  INLINE PhysxMaterialDesc();
+  INLINE ~PhysxMaterialDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  LVecBase3f get_dir_of_anisotropy() const;
-  INLINE float get_dynamic_friction() const;
-  INLINE float get_dynamic_friction_v() const;
-  INLINE unsigned int get_flags() const;
+  void set_dynamic_friction(float coef);
+  void set_static_friction(float coef);
+  void set_restitution(float rest);
+  void set_dynamic_friction_v(float coef);
+  void set_static_friction_v(float coef);
+  void set_dir_of_anisotropy(const LVector3f dir);
+  void set_flag(PhysxMaterialFlag flag, bool value);
+  void set_friction_combine_mode(PhysxCombineMode mode);
+  void set_restitution_combine_mode(PhysxCombineMode mode);
+
+  float get_dynamic_friction() const;
+  float get_static_friction() const;
+  float get_restitution() const;
+  float get_dynamic_friction_v() const;
+  float get_static_friction_v() const;
+  LVector3f get_dir_of_anisotropy() const;
+  bool get_flag(PhysxMaterialFlag flag) const;
   PhysxCombineMode get_friction_combine_mode() const;
-  INLINE float get_restitution() const;
   PhysxCombineMode get_restitution_combine_mode() const;
-  INLINE float get_static_friction() const;
-  INLINE float get_static_friction_v() const;
-
-  void set_dir_of_anisotropy(LVecBase3f value);
-  INLINE void set_dynamic_friction(float value);
-  INLINE void set_dynamic_friction_v(float value);
-  INLINE void set_flags(unsigned int value);
-  void set_friction_combine_mode(PhysxCombineMode value);
-  INLINE void set_restitution(float value);
-  void set_restitution_combine_mode(PhysxCombineMode value);
-  INLINE void set_static_friction(float value);
-  INLINE void set_static_friction_v(float value);
 
 public:
-  NxMaterialDesc nMaterialDesc;
+  NxMaterialDesc _desc;
 };
 
 #include "physxMaterialDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXMATERIALDESC_H

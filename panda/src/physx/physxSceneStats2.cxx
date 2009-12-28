@@ -1,5 +1,5 @@
 // Filename: physxSceneStats2.cxx
-// Created by:  pratt (Jun 20, 2006)
+// Created by:  enn0x (20Oct09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,28 +12,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_PHYSX
-
 #include "physxSceneStats2.h"
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSceneStats2
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxSceneStats2::
-PhysxSceneStats2(const NxSceneStats2 *stats2) {
-  nSceneStats2 = stats2;
+PhysxSceneStats2(const NxSceneStats2 *ptr) {
+
+  _ptr = ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysxSceneStats2
-//       Access : Published
-//  Description :
+//     Function: PhysxSceneStats2::Destructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxSceneStats2::
 ~PhysxSceneStats2() {
+
 }
 
-#endif // HAVE_PHYSX

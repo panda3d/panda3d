@@ -1,5 +1,5 @@
 // Filename: physxPlaneShapeDesc.h
-// Created by:  pratt (Apr 7, 2006)
+// Created by:  enn0x (08Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,41 +15,34 @@
 #ifndef PHYSXPLANESHAPEDESC_H
 #define PHYSXPLANESHAPEDESC_H
 
-#ifdef HAVE_PHYSX
-
 #include "pandabase.h"
-
-#include "physx_enumerations.h"
-#include "physxManager.h"
-#include "luse.h"
-
 #include "physxShapeDesc.h"
 
+#include "lvector3.h"
+
+#include "NoMinMax.h"
 #include "NxPhysics.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxPlaneShapeDesc
-// Description :
+// Description : Descriptor class for PhysxPlaneShape.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxPlaneShapeDesc : public PhysxShapeDesc {
+
 PUBLISHED:
-  PhysxPlaneShapeDesc();
+  INLINE PhysxPlaneShapeDesc();
+  INLINE ~PhysxPlaneShapeDesc();
 
-  INLINE bool is_valid() const;
   INLINE void set_to_default();
+  INLINE bool is_valid() const;
 
-  INLINE float get_d() const;
-  LVecBase3f get_normal() const;
-
-  INLINE void set_d( float value );
-  void set_normal( LVecBase3f value );
+  void set_plane(const LVector3f &normal, float d);
 
 public:
-  NxPlaneShapeDesc nPlaneShapeDesc;
+  NxShapeDesc *ptr() const { return (NxShapeDesc *)&_desc; };
+  NxPlaneShapeDesc _desc;
 };
 
 #include "physxPlaneShapeDesc.I"
-
-#endif // HAVE_PHYSX
 
 #endif // PHYSXPLANESHAPEDESC_H
