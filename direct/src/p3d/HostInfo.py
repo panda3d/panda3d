@@ -386,6 +386,9 @@ class HostInfo:
         This code is duplicated in C++, in
         P3DHost::determine_host_dir(). """
 
+        if self.hostDir:
+            return
+
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
