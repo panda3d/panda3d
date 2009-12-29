@@ -65,6 +65,7 @@ class CommonFilters:
         self.finalQuad = None
         self.bloom = []
         self.blur = []
+        self.ssao = []
         if self.task != None:
           taskMgr.remove(self.task)
           self.task = None
@@ -86,6 +87,13 @@ class CommonFilters:
             needtex = {}
             needtex["color"] = True
             if (configuration.has_key("CartoonInk")):
+                needtex["aux"] = True
+                auxbits |= AuxBitplaneAttrib.ABOAuxNormal
+            if (configuration.has_key("AmbientOcclusion")):
+                needtex["depth"] = True
+                needtex["ssao0"] = True
+                needtex["ssao1"] = True
+                needtex["ssao2"] = True
                 needtex["aux"] = True
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
             if (configuration.has_key("BlurSharpen")):
@@ -119,6 +127,22 @@ class CommonFilters:
                 self.blur[0].setShader(self.loadShader("filter-blurx.sha"))
                 self.blur[1].setShaderInput("src", blur0)
                 self.blur[1].setShader(self.loadShader("filter-blury.sha"))
+
+            if (configuration.has_key("AmbientOcclusion")):
+                ssao0=self.textures["ssao0"]
+                ssao1=self.textures["ssao1"]
+                ssao2=self.textures["ssao2"]
+                self.ssao.append(self.manager.renderQuadInto(colortex=ssao0))
+                self.ssao.append(self.manager.renderQuadInto(colortex=ssao1,div=2))
+                self.ssao.append(self.manager.renderQuadInto(colortex=ssao2))
+                self.ssao[0].setShaderInput("depth", self.textures["depth"])
+                self.ssao[0].setShaderInput("normal", self.textures["aux"])
+                self.ssao[0].setShaderInput("random", loader.loadTexture("maps/random.rgb"))
+                self.ssao[0].setShader(self.loadShader("filter-ssao.sha"))
+                self.ssao[1].setShaderInput("src", ssao0)
+                self.ssao[1].setShader(self.loadShader("filter-blurx.sha"))
+                self.ssao[2].setShaderInput("src", ssao1)
+                self.ssao[2].setShader(self.loadShader("filter-blury.sha"))
 
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
@@ -164,6 +188,9 @@ class CommonFilters:
             if (configuration.has_key("BlurSharpen")):
                 text += " uniform float4 texpad_txblur1,\n"
                 text += " out float4 l_texcoordBS : TEXCOORD3,\n"
+            if (configuration.has_key("AmbientOcclusion")):
+                text += " uniform float4 texpad_txssao2,\n"
+                text += " out float4 l_texcoordAO : TEXCOORD4,\n"
             text += " uniform float4x4 mat_modelproj)\n"
             text += "{\n"
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
@@ -174,6 +201,8 @@ class CommonFilters:
                 text += " l_texcoordB=(vtx_position.xzxz * texpad_txbloom3) + texpad_txbloom3;\n"
             if (configuration.has_key("BlurSharpen")):
                 text += " l_texcoordBS=(vtx_position.xzxz * texpad_txblur1) + texpad_txblur1;\n"
+            if (configuration.has_key("AmbientOcclusion")):
+                text += " l_texcoordAO=(vtx_position.xzxz * texpad_txssao2) + texpad_txssao2;\n"
             if (configuration.has_key("HalfPixelShift")):
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
                 if (configuration.has_key("CartoonInk")):
@@ -191,6 +220,8 @@ class CommonFilters:
             if (configuration.has_key("BlurSharpen")):
                 text += "float4 l_texcoordBS : TEXCOORD3,\n"
                 text += "uniform float4 k_blurval,\n"
+            if (configuration.has_key("AmbientOcclusion")):
+                text += "float4 l_texcoordAO : TEXCOORD4,\n"
             for key in self.textures:
                 text += "uniform sampler2D k_tx" + key + ",\n"
             if (configuration.has_key("CartoonInk")):
@@ -203,6 +234,8 @@ class CommonFilters:
             text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
             if (configuration.has_key("CartoonInk")):
                 text += CARTOON_BODY
+            if (configuration.has_key("AmbientOcclusion")):
+                text += "o_color *= tex2D(k_txssao2, l_texcoordAO.xy).r;\n"
             if (configuration.has_key("BlurSharpen")):
                 text += " o_color = lerp(tex2D(k_txblur1, l_texcoordBS.xy), o_color, k_blurval.x);\n"
             if (configuration.has_key("Bloom")):
@@ -261,6 +294,12 @@ class CommonFilters:
                 tcparam = config.density / float(config.numsamples)
                 self.finalQuad.setShaderInput("vlparams", config.numsamples, tcparam, config.decay, config.exposure)
         
+        if (changed == "AmbientOcclusion") or fullrebuild:
+            if (configuration.has_key("AmbientOcclusion")):
+                config = configuration["AmbientOcclusion"]
+                self.ssao[0].setShaderInput("params1", config.numsamples, -float(config.amount) / config.numsamples, config.radius, 0)
+                self.ssao[0].setShaderInput("params2", config.strength, config.falloff, 0, 0)
+
         self.update()
         return True
 
@@ -376,5 +415,22 @@ class CommonFilters:
         if (self.configuration.has_key("BlurSharpen")):
             del self.configuration["BlurSharpen"]
             return self.reconfigure(True, "BlurSharpen")
+        return True
+
+    def setAmbientOcclusion(self, numsamples = 16, radius = 0.05, amount = 2.0, strength = 0.01, falloff = 0.000002):
+        fullrebuild = (self.configuration.has_key("AmbientOcclusion") == False)
+        newconfig = FilterConfig()
+        newconfig.numsamples = numsamples
+        newconfig.radius = radius
+        newconfig.amount = amount
+        newconfig.strength = strength
+        newconfig.falloff = falloff
+        self.configuration["AmbientOcclusion"] = newconfig
+        return self.reconfigure(fullrebuild, "AmbientOcclusion")
+
+    def delAmbientOcclusion(self):
+        if (self.configuration.has_key("AmbientOcclusion")):
+            del self.configuration["AmbientOcclusion"]
+            return self.reconfigure(True, "AmbientOcclusion")
         return True
 
