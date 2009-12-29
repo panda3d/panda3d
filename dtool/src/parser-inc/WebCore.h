@@ -1,0 +1,3 @@
+namespace Awesomium {
+  class WebCore;
+};
