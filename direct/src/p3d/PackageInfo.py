@@ -25,11 +25,12 @@ class PackageInfo:
     unpackFactor = 0.01
     patchFactor = 0.01
 
-    # These tokens are returned by __downloadFile() and other
-    # InstallStep functions.
+    # These tokens are yielded (not returned) by __downloadFile() and
+    # other InstallStep functions.
     stepComplete = 1
     stepFailed = 2
     restartDownload = 3
+    stepContinue = 4
 
     class InstallStep:
         """ This class is one step of the installPlan list; it
@@ -194,29 +195,49 @@ class PackageInfo:
         synchronously, and then reads it.  Returns true on success,
         false on failure. """
 
+        for token in self.downloadDescFileGenerator(http):
+            if token != self.stepContinue:
+                break
+            Thread.considerYield()
+
+        return (token == self.stepComplete)
+    
+    def downloadDescFileGenerator(self, http):
+        """ A generator function that implements downloadDescFile()
+        one piece at a time.  It yields one of stepComplete,
+        stepFailed, or stepContinue. """
+
         assert self.descFile
 
         if self.hasDescFile:
             # We've already got one.
-            return True
+            yield self.stepComplete; return
 
         self.http = http
 
-        token = self.__downloadFile(
+        for token in self.__downloadFile(
             None, self.descFile,
             urlbase = self.descFile.filename,
-            filename = self.descFileBasename)
+            filename = self.descFileBasename):
+            if token == self.stepContinue:
+                yield token
+            else:
+                break
 
         while token == self.restartDownload:
             # Try again.
-            token = self.__downloadFile(
+            for token in self.__downloadFile(
                 None, self.descFile,
                 urlbase = self.descFile.filename,
-                filename = self.descFileBasename)
+                filename = self.descFileBasename):
+                if token == self.stepContinue:
+                    yield token
+                else:
+                    break
 
         if token == self.stepFailed:
             # Couldn't download the desc file.
-            return False
+            yield self.stepFailed; return
 
         assert token == self.stepComplete
 
@@ -228,9 +249,9 @@ class PackageInfo:
             # Weird, it passed the hash check, but we still can't read
             # it.
             self.notify.warning("Failure reading %s" % (filename))
-            return False
+            yield self.stepFailed; return
 
-        return True
+        yield self.stepComplete; return
 
     def __readDescFile(self):
         """ Reads the desc xml file for this particular package,
@@ -500,34 +521,59 @@ class PackageInfo:
         in, which will have been done by self.__readDescFile().
         """
 
+        for token in self.downloadPackageGenerator(http):
+            if token != self.stepContinue:
+                break
+            Thread.considerYield()
+
+        return (token == self.stepComplete)
+    
+    def downloadPackageGenerator(self, http):
+        """ A generator function that implements downloadPackage() one
+        piece at a time.  It yields one of stepComplete, stepFailed,
+        or stepContinue. """
+
         assert self.hasDescFile
 
         if self.hasPackage:
             # We've already got one.
-            return True
+            yield self.stepComplete; return
 
         # We should have an install plan by the time we get here.
         assert self.installPlans
 
         self.http = http
-        token = self.__followInstallPlans()
+        for token in self.__followInstallPlans():
+            if token == self.stepContinue:
+                yield token
+            else:
+                break
+            
         while token == self.restartDownload:
             # Try again.
-            if not self.downloadDescFile(http):
-                return False
-
-            token = self.__followInstallPlans()
+            for token in self.downloadDescFileGenerator(http):
+                if token == self.stepContinue:
+                    yield token
+                else:
+                    break
+            if token == self.stepComplete:
+                for token in self.__followInstallPlans():
+                    if token == self.stepContinue:
+                        yield token
+                    else:
+                        break
 
         if token == self.stepFailed:
-            return False
+            yield self.stepFailed; return
 
         assert token == self.stepComplete
-        return True
+        yield self.stepComplete; return
             
 
     def __followInstallPlans(self):
-        """ Performs all of the steps in self.installPlans.  Returns
-        one of stepComplete, stepFailed, or restartDownload. """
+        """ Performs all of the steps in self.installPlans.  Yields
+        one of stepComplete, stepFailed, restartDownload, or
+        stepContinue. """
 
         if not self.installPlans:
             self.__buildInstallPlans()
@@ -543,9 +589,14 @@ class PackageInfo:
             for step in plan:
                 self.currentStepEffort = step.getEffort()
 
-                token = step.func(step)
+                for token in step.func(step):
+                    if token == self.stepContinue:
+                        yield token
+                    else:
+                        break
+                    
                 if token == self.restartDownload:
-                    return token
+                    yield token
                 if token == self.stepFailed:
                     planFailed = True
                     break
@@ -555,13 +606,13 @@ class PackageInfo:
                 
             if not planFailed:
                 # Successfully downloaded!
-                return self.stepComplete
+                yield self.stepComplete; return
 
             if taskMgr.destroyed:
-                return self.stepFailed
+                yield self.stepFailed; return
 
         # All plans failed.
-        return self.stepFailed
+        yield self.stepFailed; return
 
     def __findPatchChain(self, fileSpec):
         """ Finds the chain of patches that leads from the indicated
@@ -596,8 +647,8 @@ class PackageInfo:
     def __downloadFile(self, step, fileSpec, urlbase = None, filename = None,
                        allowPartial = False):
         """ Downloads the indicated file from the host into
-        packageDir.  Returns one of stepComplete, stepFailed, or
-        restartDownload. """
+        packageDir.  Yields one of stepComplete, stepFailed, 
+        restartDownload, or stepContinue. """
 
         if not urlbase:
             urlbase = self.descFileDirname + '/' + fileSpec.filename
@@ -691,9 +742,9 @@ class PackageInfo:
                     # If the task manager has been destroyed, we must
                     # be shutting down.  Get out of here.
                     self.notify.warning("Task Manager destroyed, aborting %s" % (url))
-                    return self.stepFailed
+                    yield self.stepFailed; return
                     
-                Thread.considerYield()
+                yield self.stepContinue
                 
             if step:
                 step.bytesDone = channel.getBytesDownloaded() + channel.getFirstByteDelivered()
@@ -710,11 +761,11 @@ class PackageInfo:
                 # sure.
                 if self.host.redownloadContentsFile(self.http):
                     # Yes!  Go back and start over from the beginning.
-                    return self.restartDownload
+                    yield self.restartDownload; return
 
             else:
                 # Success!
-                return self.stepComplete
+                yield self.stepComplete; return
 
             # Maybe the mirror is bad.  Go back and try the next
             # mirror.
@@ -723,17 +774,17 @@ class PackageInfo:
         # is stale.  Try re-downloading it now, just to be sure.
         if self.host.redownloadContentsFile(self.http):
             # Yes!  Go back and start over from the beginning.
-            return self.restartDownload
+            yield self.restartDownload; return
 
         # All mirrors failed; the server (or the internet connection)
         # must be just fubar.
-        return self.stepFailed
+        yield self.stepFailed; return
 
     def __applyPatch(self, step, patchfile):
         """ Applies the indicated patching in-place to the current
         uncompressed archive.  The patchfile is removed after the
-        operation.  Returns one of stepComplete, stepFailed, or
-        restartDownload. """
+        operation.  Yields one of stepComplete, stepFailed, 
+        restartDownload, or stepContinue. """
 
         origPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         patchPathname = Filename(self.getPackageDir(), patchfile.file.filename)
@@ -752,9 +803,9 @@ class PackageInfo:
                 # If the task manager has been destroyed, we must
                 # be shutting down.  Get out of here.
                 self.notify.warning("Task Manager destroyed, aborting patch %s" % (origPathname))
-                return self.stepFailed
+                yield self.stepFailed; return
 
-            Thread.considerYield()
+            yield self.stepContinue
             ret = p.run()
         del p
         patchPathname.unlink()
@@ -762,18 +813,18 @@ class PackageInfo:
         if ret < 0:
             self.notify.warning("Patching of %s failed." % (origPathname))
             result.unlink()
-            return self.stepFailed
+            yield self.stepFailed; return
 
         if not result.renameTo(origPathname):
             self.notify.warning("Couldn't rename %s to %s" % (result, origPathname))
-            return self.stepFailed
+            yield self.stepFailed; return
             
-        return self.stepComplete
+        yield self.stepComplete; return
 
     def __uncompressArchive(self, step):
         """ Turns the compressed archive into the uncompressed
-        archive.  Returns one of stepComplete, stepFailed, or
-        restartDownload. """
+        archive.  Yields one of stepComplete, stepFailed, 
+        restartDownload, or stepContinue. """
 
         sourcePathname = Filename(self.getPackageDir(), self.compressedArchive.filename)
         targetPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
@@ -791,12 +842,12 @@ class PackageInfo:
                 # If the task manager has been destroyed, we must
                 # be shutting down.  Get out of here.
                 self.notify.warning("Task Manager destroyed, aborting decompresss %s" % (sourcePathname))
-                return self.stepFailed
+                yield self.stepFailed; return
 
-            Thread.considerYield()
+            yield self.stepContinue
 
         if result != EUSuccess:
-            return self.stepFailed
+            yield self.stepFailed; return
             
         step.bytesDone = totalBytes
         self.__updateStepProgress(step)
@@ -804,31 +855,31 @@ class PackageInfo:
         if not self.uncompressedArchive.quickVerify(self.getPackageDir(), notify= self.notify):
             self.notify.warning("after uncompressing, %s still incorrect" % (
                 self.uncompressedArchive.filename))
-            return self.stepFailed
+            yield self.stepFailed; return
 
         # Now that we've verified the archive, make it read-only.
         os.chmod(targetPathname.toOsSpecific(), 0444)
 
         # Now we can safely remove the compressed archive.
         sourcePathname.unlink()
-        return self.stepComplete
+        yield self.stepComplete; return
     
     def __unpackArchive(self, step):
         """ Unpacks any files in the archive that want to be unpacked
-        to disk.  Returns one of stepComplete, stepFailed, or
-        restartDownload. """
+        to disk.  Yields one of stepComplete, stepFailed, 
+        restartDownload, or stepContinue. """
 
         if not self.extracts:
             # Nothing to extract.
             self.hasPackage = True
-            return self.stepComplete
+            yield self.stepComplete; return
 
         mfPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         self.notify.info("Unpacking %s" % (mfPathname))
         mf = Multifile()
         if not mf.openRead(mfPathname):
             self.notify.warning("Couldn't open %s" % (mfPathname))
-            return self.stepFailed
+            yield self.stepFailed; return
         
         allExtractsOk = True
         step.bytesDone = 0
@@ -860,15 +911,15 @@ class PackageInfo:
                 # If the task manager has been destroyed, we must
                 # be shutting down.  Get out of here.
                 self.notify.warning("Task Manager destroyed, aborting unpacking %s" % (mfPathname))
-                return self.stepFailed
+                yield self.stepFailed; return
 
-            Thread.considerYield()
+            yield self.stepContinue
 
         if not allExtractsOk:
-            return self.stepFailed
+            yield self.stepFailed; return
 
         self.hasPackage = True
-        return self.stepComplete
+        yield self.stepComplete; return
 
     def installPackage(self, appRunner):
         """ Mounts the package and sets up system paths so it becomes

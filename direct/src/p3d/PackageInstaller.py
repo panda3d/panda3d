@@ -1,5 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
-from direct.stdpy.threading import Lock
+from direct.stdpy.threading import Lock, RLock
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.p3d.PackageInfo import PackageInfo
@@ -142,7 +142,7 @@ class PackageInstaller(DirectObject):
 
             return True
 
-    def __init__(self, appRunner, taskChain = 'install'):
+    def __init__(self, appRunner, taskChain = 'default'):
         self.globalLock.acquire()
         try:
             self.uniqueId = PackageInstaller.nextUniqueId
@@ -153,9 +153,10 @@ class PackageInstaller(DirectObject):
         self.appRunner = appRunner
         self.taskChain = taskChain
         
-        # If the task chain hasn't yet been set up, create the
+        # If we're to be running on an asynchronous task chain, and
+        # the task chain hasn't yet been set up already, create the
         # default parameters now.
-        if not taskMgr.hasTaskChain(self.taskChain):
+        if taskChain != 'default' and not taskMgr.hasTaskChain(self.taskChain):
             taskMgr.setupTaskChain(self.taskChain, numThreads = 1,
                                    threadPriority = TPLow)
 
@@ -165,7 +166,7 @@ class PackageInstaller(DirectObject):
 
         # A list of all packages that have been added to the
         # installer.
-        self.packageLock = Lock()
+        self.packageLock = RLock()
         self.packages = []
         self.state = self.S_initial
 
@@ -527,33 +528,43 @@ class PackageInstaller(DirectObject):
         """ This task runs on the aysynchronous task chain; each pass,
         it extracts one package from self.needsDownload and downloads
         it. """
-        
-        self.packageLock.acquire()
-        try:
-            # If we're done downloading, stop the task.
-            if self.state == self.S_done or not self.needsDownload:
-                self.downloadTask = None
-                return task.done
 
-            assert self.state == self.S_started        
-            pp = self.needsDownload[0]
-            del self.needsDownload[0]
-        finally:
+        while True:
+            self.packageLock.acquire()
+            try:
+                # If we're done downloading, stop the task.
+                if self.state == self.S_done or not self.needsDownload:
+                    self.downloadTask = None
+                    self.packageLock.release()
+                    yield task.done; return
+
+                assert self.state == self.S_started        
+                pp = self.needsDownload[0]
+                del self.needsDownload[0]
+            except:
+                self.packageLock.release()
             self.packageLock.release()
 
-        # Now serve this one package.
-        messenger.send('PackageInstaller-%s-packageStarted' % self.uniqueId,
-                       [pp], taskChain = 'default')
+            # Now serve this one package.
+            messenger.send('PackageInstaller-%s-packageStarted' % self.uniqueId,
+                           [pp], taskChain = 'default')
 
-        if not pp.package.hasPackage:
-            if not pp.package.downloadPackage(self.appRunner.http):
-                self.__donePackage(pp, False)
-                return task.cont
+            if not pp.package.hasPackage:
+                for token in pp.package.downloadPackageGenerator(self.appRunner.http):
+                    if token == pp.package.stepContinue:
+                        yield task.cont
+                    else:
+                        break
 
-        # Successfully downloaded and installed.
-        self.__donePackage(pp, True)
-        
-        return task.cont
+                if token != pp.package.stepComplete:
+                    self.__donePackage(pp, False)
+                    yield task.cont
+                    continue
+
+            # Successfully downloaded and installed.
+            self.__donePackage(pp, True)
+
+            yield task.cont
         
     def __donePackage(self, pp, success):
         """ Marks the indicated package as done, either successfully
