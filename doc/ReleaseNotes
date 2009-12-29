@@ -6,6 +6,7 @@ is highly experimental, it is not recommended for production use.
 * Support for running Panda3D apps in a browser via web plugin
 * Fully automatic shadow mapping
 * Easy to use distribution and packaging framework
+* Integrated support for PhysX
 * Support for GLSL shaders
 * Geometry shaders, both in Cg and GLSL
 * Improved Cg support
@@ -19,7 +20,7 @@ is highly experimental, it is not recommended for production use.
 * Fixes and improvements to DistributedObject network system
 * New AI libraries
 * Most Panda objects now work with the pickle/cPickle and copy modules.
-* Now compiled for Python 2.6
+* Windows build now compiled for Python 2.6
 * Tons of new features and bugfixes
 
 ------------------------  RELEASE 1.6.2  ------------------------
