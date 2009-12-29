@@ -10,6 +10,7 @@ is highly experimental, it is not recommended for production use.
 * Support for GLSL shaders
 * Geometry shaders, both in Cg and GLSL
 * Improved Cg support
+* Hardware geometry instancing support
 * New, cleaner import conventions, replacing PandaModules
 * Parallax mapping
 * Support for OpenGL ES 1 and 2
