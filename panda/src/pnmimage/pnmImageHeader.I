@@ -577,7 +577,7 @@ get_num_pixels() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const PNMImageHeader::PixelSpec &PNMImageHeader::Histogram::
 get_pixel(int n) const {
-  nassertr(n >= 0 && n < _pixels.size(), _pixels[0]._pixel);
+  nassertr(n >= 0 && n < (int)_pixels.size(), _pixels[0]._pixel);
   return _pixels[n]._pixel;
 }
 
@@ -589,7 +589,7 @@ get_pixel(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PNMImageHeader::Histogram::
 get_count(int n) const {
-  nassertr(n >= 0 && n < _pixels.size(), 0);
+  nassertr(n >= 0 && n < (int)_pixels.size(), 0);
   return _pixels[n]._count;
 }
 
