@@ -11,6 +11,7 @@ panda3d_modules = {
     "ode"         : "libpandaode",
     "vision"      : "libp3vision",
     "physx"       : "libpandaphysx",
+    "ai"          : "libpandaai",
 }
 
 class panda3d_import_manager:
