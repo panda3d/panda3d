@@ -1655,9 +1655,9 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("PYTHON")==0):
-    CopyTree(GetOutputDir()+'/direct','direct/src')
-    ConditionalWriteFile(GetOutputDir()+'/direct/__init__.py', "")
-    CopyFile(GetOutputDir()+'/lib/panda3d.py', input='direct/src/ffi/panda3d.py')
+    CopyTree(GetOutputDir()+'/direct', 'direct/src')
+    ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
+    CopyFile(GetOutputDir()+'/lib/panda3d.py', 'direct/src/ffi/panda3d.py')
 
 ##########################################################################################
 #
