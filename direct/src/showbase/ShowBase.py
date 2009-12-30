@@ -441,6 +441,8 @@ class ShowBase(DirectObject.DirectObject):
         if getattr(self, 'musicManager', None):
             self.musicManager.shutdown()
             self.musicManager = None
+            for sfxManager in self.sfxManagerList:
+                sfxManager.shutdown()
             self.sfxManagerList = []
         if getattr(self, 'loader', None):
             self.loader.destroy()

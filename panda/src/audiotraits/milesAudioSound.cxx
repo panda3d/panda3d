@@ -152,6 +152,10 @@ set_time(float time) {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSound::
 set_active(bool active) {
+  if (_manager == (MilesAudioManager *)NULL) {
+    return;
+  }
+
   miles_audio_debug("set_active(active="<<active<<")");
   if (_active != active) {
     _active = active;

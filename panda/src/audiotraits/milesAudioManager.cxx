@@ -679,8 +679,9 @@ release_sound(MilesAudioSound *audioSound) {
               <<audioSound->get_name()<<"\"), this = " << (void *)this);
   LightReMutexHolder holder(_lock);
   AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
-  nassertv(ai != _sounds_on_loan.end());
-  _sounds_on_loan.erase(ai);
+  if (ai != _sounds_on_loan.end()) {
+    _sounds_on_loan.erase(ai);
+  }
 
   audio_debug("MilesAudioManager::release_sound() finished");
 }
@@ -702,8 +703,10 @@ cleanup() {
   }
 
   // Be sure to cleanup associated sounds before cleaning up the manager:
+  AudioSet orig_sounds;
+  orig_sounds.swap(_sounds_on_loan);
   AudioSet::iterator ai;
-  for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
+  for (ai = orig_sounds.begin(); ai != orig_sounds.end(); ++ai) {
     (*ai)->cleanup();
   }
 

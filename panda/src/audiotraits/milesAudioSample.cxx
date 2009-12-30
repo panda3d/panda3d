@@ -60,7 +60,6 @@ MilesAudioSample::
 ~MilesAudioSample() {
   miles_audio_debug("~MilesAudioSample()");
   cleanup();
-  _manager->release_sound(this);
   miles_audio_debug("~MilesAudioSample() done");
 }
 
@@ -123,6 +122,10 @@ play() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 stop() {
+  if (_manager == (MilesAudioManager *)NULL) {
+    return;
+  }
+
   miles_audio_debug("stop()");
   _manager->stopping_sound(this);
   // The _paused flag should not be cleared here.  _paused is not like
@@ -279,6 +282,13 @@ status() const {
 void MilesAudioSample::
 cleanup() {
   stop();
+  set_active(false);
+  nassertv(_sample == 0);
+
+  if (_manager != (MilesAudioManager *)NULL) {
+    _manager->release_sound(this);
+    _manager = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -566,6 +576,9 @@ finish_callback(HSAMPLE sample) {
   if (milesAudio_cat.is_debug()) {
     milesAudio_cat.debug()
       << "finished " << *self << "\n";
+  }
+  if (self->_manager == (MilesAudioManager *)NULL) {
+    return;
   }
   self->_manager->_sounds_finished = true;
 }
