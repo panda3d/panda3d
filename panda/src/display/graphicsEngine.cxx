@@ -461,6 +461,7 @@ make_output(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 remove_window(GraphicsOutput *window) {
+  nassertr(window != NULL, false);
   Thread *current_thread = Thread::get_current_thread();
 
   // First, make sure we know what this window is.
@@ -525,17 +526,23 @@ void GraphicsEngine::
 remove_all_windows() {
   Thread *current_thread = Thread::get_current_thread();
 
+  // Let's move the _windows vector into a local copy first, and walk
+  // through that local copy, just in case someone we call during the
+  // loop attempts to modify _windows.  I don't know what code would
+  // be doing this, but it appeared to be happening, and this worked
+  // around it.
+  Windows old_windows;
+  old_windows.swap(_windows);
   Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+  for (wi = old_windows.begin(); wi != old_windows.end(); ++wi) {
     GraphicsOutput *win = (*wi);
+    nassertv(win != NULL);
     do_remove_window(win, current_thread);
     GraphicsStateGuardian *gsg = win->get_gsg();
     if (gsg != (GraphicsStateGuardian *)NULL) {
       gsg->release_all();
     }
   }
-  
-  _windows.clear();
 
   _app.do_close(this, current_thread);
   _app.do_pending(this, current_thread);
@@ -676,6 +683,7 @@ render_frame() {
     Windows::iterator wi;
     for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
       GraphicsOutput *win = (*wi);
+      nassertv(win != NULL);
       if (win->get_delete_flag()) {
         do_remove_window(win, current_thread);
         
@@ -1825,6 +1833,7 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
 void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
+  nassertv(window != NULL);
   LightReMutexHolder holder(_lock);
   nassertv(window->get_engine() == this);
 
@@ -1918,6 +1927,7 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_remove_window(GraphicsOutput *window, Thread *current_thread) {
+  nassertv(window != NULL);
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->clear_pipe();
 
