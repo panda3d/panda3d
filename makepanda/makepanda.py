@@ -53,8 +53,8 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","PANDATOOL",
-  "OPENGL","X11","XF86DGA","PHYSX",
+  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","OPENGL",
+  "X11","XF86DGA","PHYSX","PANDATOOL","CONTRIB",
 ])
 
 CheckPandaSourceTree()
@@ -238,6 +238,9 @@ if (RTDIST or RUNTIME) and (PkgSkip("TINYXML")):
 
 if (RUNTIME):
     SetLinkAllStatic(True)
+
+if not os.path.isdir("contrib"):
+    PkgDisable("contrib")
 
 ########################################################################
 ##
@@ -1842,6 +1845,10 @@ CopyAllHeaders('panda/src/particlesystem')
 CopyAllHeaders('panda/metalibs/pandaphysics')
 CopyAllHeaders('panda/src/testbed')
 
+if (PkgSkip("PHYSX")==0):
+    CopyAllHeaders('panda/src/physx')
+    CopyAllHeaders('panda/metalibs/pandaphysx')
+
 CopyAllHeaders('direct/src/directbase')
 CopyAllHeaders('direct/src/dcparser')
 CopyAllHeaders('direct/src/deadrec')
@@ -1902,9 +1909,9 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/win-stats')
     CopyAllHeaders('pandatool/src/xfileprogs')
 
-if (PkgSkip("PHYSX")==0):
-    CopyAllHeaders('panda/src/physx')
-    CopyAllHeaders('panda/metalibs/pandaphysx')
+if (PkgSkip("CONTRIB")==0):
+    CopyAllHeaders('contrib/src/contribbase')
+    CopyAllHeaders('contrib/src/ai')
 
 ########################################################################
 # 
@@ -4433,10 +4440,32 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
 #
+# DIRECTORY: contrib/src/ai/
+#
+if (PkgSkip("CONTRIB")==0 and not RUNTIME):
+  OPTS=['DIR:contrib/src/ai', 'BUILDING:PANDAAI']
+  TargetAdd('ai_composite1.obj', opts=OPTS, input='ai_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('contrib/src/ai', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpandaai.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpandaai.in', opts=['IMOD:pandaai', 'ILIB:libpandaai', 'SRCDIR:contrib/src/ai'])
+  TargetAdd('libpandaai_igate.obj', input='libpandaai.in', opts=["DEPENDENCYONLY"])
+  
+  TargetAdd('libpandaai_module.obj', input='libpandaai.in')
+  TargetAdd('libpandaai_module.obj', opts=OPTS)
+  TargetAdd('libpandaai_module.obj', opts=['IMOD:pandaai', 'ILIB:libpandaai'])
+  
+  TargetAdd('libpandaai.dll', input='libpandaai_module.obj')
+  TargetAdd('libpandaai.dll', input='ai_composite1.obj')
+  TargetAdd('libpandaai.dll', input='libpandaai_igate.obj')
+  TargetAdd('libpandaai.dll', input=COMMON_PANDA_LIBS)
+
+#
 # Run genpycode
 #
 
 if (PkgSkip("PYTHON")==0):
+  # We're phasing out the concept of PandaModules, so do not
+  # add new libraries here. See direct/src/ffi/panda3d.py
   TargetAdd('PandaModules.py', input='libpandaexpress.dll')
   TargetAdd('PandaModules.py', input='libpanda.dll')
   TargetAdd('PandaModules.py', input='libpandaphysics.dll')
@@ -4447,8 +4476,6 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
-  if (PkgSkip("PHYSX")==0):
-    TargetAdd('PandaModules.py', input='libpandaphysx.dll')
 
 #
 # Generate the models directory and samples directory
