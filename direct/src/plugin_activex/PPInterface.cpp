@@ -125,7 +125,9 @@ HRESULT PPInterface::GetHtmlDocDispatch( CComPtr<IDispatch>& pDispScript )
     HRESULT hr = S_OK; 
 
     CComPtr<IOleClientSite> pOleClientSite = GetClientSte( ); 
-    ASSERT( pOleClientSite ); 
+    if (pOleClientSite == NULL) {
+      return E_FAIL;
+    }
 
     CComPtr<IOleContainer> pOleContainer; 
     hr = pOleClientSite->GetContainer(& pOleContainer ); 
