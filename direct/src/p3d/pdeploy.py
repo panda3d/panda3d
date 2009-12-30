@@ -6,6 +6,7 @@ This command will help you to distribute your Panda application,
 consisting of a .p3d package, into a standalone executable, graphical
 installer or an HTML webpage. It will attempt to create packages
 for every platform, if possible.
+Note that pdeploy requires an internet connection to run.
 
 Usage:
 
@@ -68,10 +69,21 @@ Options:
      Examples of valid platforms are win32, linux_amd64 and osx_ppc.
 
   -c
-     If this option is provided, the -p option is ignored and
+     If this option is provided, any -P options are ignored and
      the p3d package is only deployed for the current platform.
      Furthermore, no per-platform subdirectories will be created
      inside the output dirctory.
+
+  -s
+     This option only has effect in 'installer' mode. If it is
+     provided, the resulting installers will be fully self-contained,
+     will not require an internet connection to run, and start up
+     much faster. Note that pdeploy will also take a very long time
+     to finish when -s is provided.
+     If it is omitted, pdeploy will finish much quicker, and the
+     resulting installers will be smaller, but they will require
+     an internet connection for the first run, and the load time
+     will be considerably longer.
 
   -l "License Name"
      Specifies the name of the software license that the game
@@ -121,9 +133,10 @@ licensename = ""
 licensefile = Filename()
 authorid = ""
 authorname = ""
+includeRequires = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:cl:L:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -143,6 +156,8 @@ for opt, arg in opts:
         platforms.append(arg)
     elif opt == '-c':
         currentPlatform = True
+    elif opt == '-s':
+        includeRequires = True
     elif opt == '-l':
         licensename = arg.strip()
     elif opt == '-L':

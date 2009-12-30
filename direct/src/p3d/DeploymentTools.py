@@ -4,9 +4,9 @@ to build for as many platforms as possible. """
 
 __all__ = ["Standalone", "Installer"]
 
-import os, sys, subprocess, tarfile, shutil, time, zipfile
+import os, sys, subprocess, tarfile, shutil, time, zipfile, glob
 from direct.directnotify.DirectNotifyGlobal import *
-from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem
+from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile, readXmlStream
 from direct.p3d.HostInfo import HostInfo
 from direct.showbase.AppRunnerGlobal import appRunner
 
@@ -27,11 +27,11 @@ class Standalone:
         self.tokens = tokens
         
         if appRunner:
-            self.host = appRunner.getHost("http://runtime.panda3d.org")
+            self.host = appRunner.getHost("http://runtime.panda3d.org/")
         else:
             hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
             hostDir.makeDir()
-            self.host = HostInfo("http://runtime.panda3d.org", hostDir = hostDir, asMirror = False, perPlatform = True)
+            self.host = HostInfo("http://runtime.panda3d.org/", hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
         if not self.host.readContentsFile():
@@ -156,11 +156,83 @@ class Installer:
         self.shortname = shortname
         self.fullname = fullname
         self.version = str(version)
+        self.includeRequires = False
         self.licensename = ""
         self.authorid = "org.panda3d"
         self.authorname = ""
         self.licensefile = Filename()
         self.standalone = Standalone(p3dfile, tokens)
+        self.http = self.standalone.http
+        
+        # Load the p3d file to read out the required packages
+        mf = Multifile()
+        if not mf.openRead(p3dfile):
+            Installer.notify.error("Not a Panda3D application: %s" % (p3dFilename))
+            return
+
+        # Now load the p3dInfo file.
+        self.hostUrl = PandaSystem.getPackageHostUrl()
+        if not self.hostUrl:
+            self.hostUrl = self.standalone.host.hostUrl
+        self.requirements = []
+        i = mf.findSubfile('p3d_info.xml')
+        if i >= 0:
+            stream = mf.openReadSubfile(i)
+            p3dInfo = readXmlStream(stream)
+            mf.closeReadSubfile(stream)
+            if p3dInfo:
+                p3dPackage = p3dInfo.FirstChildElement('package')
+                p3dHost = p3dPackage.FirstChildElement('host')
+                if p3dHost.Attribute('url'):
+                    self.hostUrl = p3dHost.Attribute('url')
+                p3dRequires = p3dPackage.FirstChildElement('requires')
+                while p3dRequires:
+                    self.requirements.append((p3dRequires.Attribute('name'), p3dRequires.Attribute('version')))
+                    p3dRequires = p3dRequires.NextSiblingElement('requires')
+
+    def installPackagesInto(self, rootDir, platform):
+        """ Installs the packages required by the .p3d file into
+        the specified root directory, for the given platform. """
+        
+        if not self.includeRequires:
+            return
+        
+        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = False)
+        if not host.readContentsFile():
+            if not host.downloadContentsFile(self.http):
+                Installer.notify.error("couldn't read host")
+                return
+        
+        for name, version in self.requirements:
+            package = host.getPackage(name, version, platform)
+            if not package.downloadDescFile(self.http):
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+            if not package.downloadPackage(self.http):
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+        
+        # Also install the 'images' package from the same host that p3dembed was downloaded from.
+        host = HostInfo(self.standalone.host.hostUrl, rootDir = rootDir, asMirror = False)
+        if not host.readContentsFile():
+            if not host.downloadContentsFile(self.http):
+                Installer.notify.error("couldn't read host")
+                return
+        
+        for package in host.getPackages(name = "images"):
+            if not package.downloadDescFile(self.http):
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+            if not package.downloadPackage(self.http):
+                Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
+            break
+        
+        # Remove the original multifiles. We don't need them and they take up space.
+        for mf in glob.glob(Filename(rootDir, "hosts/*/*/*.mf").toOsSpecific()):
+            os.remove(mf)
+        for mf in glob.glob(Filename(rootDir, "hosts/*/*/*/*.mf").toOsSpecific()):
+            os.remove(mf)
 
     def buildAll(self, outputDir = "."):
         """ Creates a (graphical) installer for every known platform.
@@ -216,27 +288,43 @@ class Installer:
         tempdir = Filename.temporary("", self.shortname.lower() + "_deb_", "") + "/"
         tempdir.makeDir()
         controlfile = open(Filename(tempdir, "control").toOsSpecific(), "w")
-        controlfile.write("Package: %s\n" % self.shortname.lower())
-        controlfile.write("Version: %s\n" % self.version)
-        controlfile.write("Section: games\n")
-        controlfile.write("Priority: optional\n")
-        controlfile.write("Architecture: %s\n" % arch)
-        controlfile.write("Description: %s\n" % self.fullname)
-        controlfile.write("Depends: libc6 libgcc1 libstdc++6 libx11-6\n")
+        print >>controlfile, "Package: %s" % self.shortname.lower()
+        print >>controlfile, "Version: %s" % self.version
+        print >>controlfile, "Section: games"
+        print >>controlfile, "Priority: optional"
+        print >>controlfile, "Architecture: %s" % arch
+        print >>controlfile, "Description: %s" % self.fullname
+        print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6"
         controlfile.close()
+        postrmfile = open(Filename(tempdir, "postrm").toOsSpecific(), "w")
+        print >>postrmfile, "#!/bin/sh"
+        print >>postrmfile, "rm -rf /usr/share/%s" % self.shortname.lower()
+        postrmfile.close()
+        os.chmod(Filename(tempdir, "postrm").toOsSpecific(), 0755)
         Filename(tempdir, "usr/bin/").makeDir()
+        self.standalone.tokens["root_dir"] = "/usr/share/" + self.shortname.lower()
         self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), platform)
         if not self.licensefile.empty():
             Filename(tempdir, "usr/share/doc/%s/" % self.shortname.lower()).makeDir()
             shutil.copyfile(self.licensefile.toOsSpecific(), Filename(tempdir, "usr/share/doc/%s/copyright" % self.shortname.lower()).toOsSpecific())
+        rootDir = Filename(tempdir, "usr/share/" + self.shortname.lower())
+        rootDir.makeDir()
+        Filename(rootDir, "log").makeDir()
+        Filename(rootDir, "prc").makeDir()
+        Filename(rootDir, "start").makeDir()
+        Filename(rootDir, "certs").makeDir()
+        self.installPackagesInto(rootDir, platform)
 
         # Create a control.tar.gz file in memory
         controlfile = Filename(tempdir, "control")
+        postrmfile = Filename(tempdir, "postrm")
         controltargz = CachedFile()
         controltarfile = tarfile.TarFile.gzopen("control.tar.gz", "w", controltargz, 9)
         controltarfile.add(controlfile.toOsSpecific(), "control")
+        controltarfile.add(postrmfile.toOsSpecific(), "postrm")
         controltarfile.close()
         controlfile.unlink()
+        postrmfile.unlink()
 
         # Create the data.tar.gz file in the temporary directory
         datatargz = CachedFile()
@@ -272,7 +360,11 @@ class Installer:
         # Create the executable for the application bundle
         exefile = Filename(output, "Contents/MacOS/" + self.shortname)
         exefile.makeDir()
+        self.standalone.tokens["root_dir"] = "../Resources"
         self.standalone.build(exefile, platform)
+        rootDir = Filename(output, "Contents/Resources/")
+        rootDir.makeDir()
+        self.installPackagesInto(rootDir, platform)
         
         # Create the application plist file.
         # Although it might make more sense to use Python's plistlib module here,
@@ -459,7 +551,13 @@ class Installer:
 
         exefile = Filename(Filename.getTempDirectory(), self.shortname + ".exe")
         exefile.unlink()
+        self.standalone.tokens["root_dir"] = "."
         self.standalone.build(exefile, platform)
+        
+        # Temporary directory to store the rootdir in
+        rootDir = Filename.temporary("", self.shortname.lower() + "_exe_", "") + "/"
+        rootDir.makeDir()
+        self.installPackagesInto(rootDir, platform)
 
         nsifile = Filename(Filename.getTempDirectory(), self.shortname + ".nsi")
         nsifile.unlink()
@@ -468,7 +566,7 @@ class Installer:
         # Some global info
         nsi.write('Name "%s"\n' % self.fullname)
         nsi.write('OutFile "%s"\n' % output.toOsSpecific())
-        nsi.write('InstallDir "$PROGRAMFILES\%s"\n' % self.fullname)
+        nsi.write('InstallDir "$PROGRAMFILES\\%s"\n' % self.fullname)
         nsi.write('SetCompress auto\n')
         nsi.write('SetCompressor lzma\n')
         nsi.write('ShowInstDetails nevershow\n')
@@ -479,7 +577,7 @@ class Installer:
         nsi.write('RequestExecutionLevel admin\n')
         nsi.write('\n')
         nsi.write('Function launch\n')
-        nsi.write('  ExecShell "open" "$INSTDIR\%s.exe"\n' % self.shortname)
+        nsi.write('  ExecShell "open" "$INSTDIR\\%s.exe"\n' % self.shortname)
         nsi.write('FunctionEnd\n')
         nsi.write('\n')
         nsi.write('!include "MUI2.nsh"\n')
@@ -508,25 +606,37 @@ class Installer:
         nsi.write('  File "%s"\n' % exefile.toOsSpecific())
         for f in extrafiles:
             nsi.write('  File "%s"\n' % f.toOsSpecific())
-        nsi.write('  WriteUninstaller "$INSTDIR\Uninstall.exe"\n')
+        curdir = ""
+        for root, dirs, files in os.walk(rootDir.toOsSpecific()):
+            for name in files:
+                file = Filename.fromOsSpecific(os.path.join(root, name))
+                if file.getExtension().lower() == "mf": continue
+                file.makeAbsolute()
+                file.makeRelativeTo(rootDir)
+                outdir = file.getDirname().replace('/', '\\')
+                if curdir != outdir:
+                    nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
+                    curdir = outdir
+                nsi.write('  File "%s"\n' % os.path.join(root, name))
+        nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')
         nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
-        nsi.write('    CreateDirectory "$SMPROGRAMS\$StartMenuFolder"\n')
-        nsi.write('    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"\n')
+        nsi.write('    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"\n')
+        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
         nsi.write('SectionEnd\n')
 
         # This section defines the uninstaller.
         nsi.write('Section Uninstall\n')
-        nsi.write('  Delete "$INSTDIR\%s.exe"\n' % self.shortname)
+        nsi.write('  Delete "$INSTDIR\\%s.exe"\n' % self.shortname)
         for f in extrafiles:
             nsi.write('  Delete "%s"\n' % f.getBasename())
-        nsi.write('  Delete "$INSTDIR\Uninstall.exe"\n')
-        nsi.write('  RMDir "$INSTDIR"\n')
+        nsi.write('  Delete "$INSTDIR\\Uninstall.exe"\n')
+        nsi.write('  RMDir /r "$INSTDIR"\n')
         nsi.write('  ; Start menu items\n')
         nsi.write('  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder\n')
-        nsi.write('  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"\n')
-        nsi.write('  RMDir "$SMPROGRAMS\$StartMenuFolder"\n')
+        nsi.write('  Delete "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk"\n')
+        nsi.write('  RMDir "$SMPROGRAMS\\$StartMenuFolder"\n')
         nsi.write('SectionEnd')
         nsi.close()
 
@@ -541,4 +651,5 @@ class Installer:
         os.system(cmd)
 
         nsifile.unlink()
+        shutil.rmtree(rootDir.toOsSpecific())
         return output
