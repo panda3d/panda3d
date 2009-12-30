@@ -46,6 +46,17 @@ ConfigVariableEnum<LODNodeType> default_lod_type
  PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
           "LODNode that is created by LODNode::make_default_lod()."));
 
+ConfigVariableInt parallax_mapping_samples
+("parallax-mapping-samples", 3,
+ PRC_DESC("Sets the amount of samples to use in the parallax mapping "
+          "implementation. A value of 0 means to disable it entirely."));
+
+ConfigVariableDouble parallax_mapping_scale
+("parallax-mapping-scale", 0.1,
+ PRC_DESC("Sets the strength of the effect of parallax mapping, that is, "
+          "how much influence the height values have on the texture "
+          "coordinates."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraphnodes
 //  Description: Initializes the library.  This must be called at

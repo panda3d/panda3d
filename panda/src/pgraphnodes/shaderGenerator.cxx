@@ -893,7 +893,7 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   text << "\t // Fetch all textures.\n";
-  if (_map_index_height >= 0) {
+  if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
     Texture *tex = texture->get_on_texture(texture->get_on_stage(_map_index_height));
     nassertr(tex != NULL, NULL);
     text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(tex->get_texture_type());
@@ -910,17 +910,25 @@ synthesize_shader(const RenderState *rs) {
     } else {
       text << ".rgb";
     }
-    text << " * 0.2 - 0.1);\n";
+    text << " * 2.0 - 1.0) * " << parallax_mapping_scale << ";\n";
+    // Additional samples
+    for (int i=0; i<parallax_mapping_samples-1; i++) {
+      text << "\t parallax_offset = l_eyevec.xyz * (parallax_offset + (tex" << _map_index_height;
+      if (_map_height_in_alpha) {
+        text << ".aaa";
+      } else {
+        text << ".rgb";
+      }
+      text << " * 2.0 - 1.0)) * " << 0.5 * parallax_mapping_scale << ";\n";
+    }
   }
   for (int i=0; i<_num_textures; i++) {
     if (i != _map_index_height) {
       Texture *tex = texture->get_on_texture(texture->get_on_stage(i));
       nassertr(tex != NULL, NULL);
       // Parallax mapping pushes the texture coordinates of the other textures away from the camera.
-      // The normal map coordinates aren't pushed (since that would give inconsistent behaviour when
-      // the height map is packed with the normal map together).
-      if (_map_index_height >= 0 && i != _map_index_normal) {
-        text << "\t l_texcoord" << i << ".xyz += parallax_offset;\n";
+      if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
+        text << "\t l_texcoord" << i << ".xyz -= parallax_offset;\n";
       }
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
       text << "(tex_" << i << ", l_texcoord" << i << ".";
