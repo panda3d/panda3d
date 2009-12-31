@@ -21,7 +21,7 @@
     rfftw.h libtar.h malloc.h ucontext.h ctype.h \
     libavutil/avutil.h libavformat/avformat.h \
     libavcodec/avcodec.h libswscale/swscale.h \
-    libavformat/avio.h AR/ar.h
+    libavformat/avio.h AR/ar.h \
     WebCore.h WebView.h WebViewListener.h
 
 
