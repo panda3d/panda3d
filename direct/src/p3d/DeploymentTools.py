@@ -8,7 +8,6 @@ import os, sys, subprocess, tarfile, shutil, time, zipfile, glob
 from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile, readXmlStream
 from direct.p3d.HostInfo import HostInfo
-from direct.showbase.AppRunnerGlobal import appRunner
 
 class CachedFile:
     def __init__(self): self.str = ""
@@ -26,12 +25,9 @@ class Standalone:
         self.basename = self.p3dfile.getBasenameWoExtension()
         self.tokens = tokens
         
-        if appRunner:
-            self.host = appRunner.getHost("http://runtime.panda3d.org/")
-        else:
-            hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
-            hostDir.makeDir()
-            self.host = HostInfo("http://runtime.panda3d.org/", hostDir = hostDir, asMirror = False, perPlatform = True)
+        hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
+        hostDir.makeDir()
+        self.host = HostInfo("http://runtime.panda3d.org/", hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
         if not self.host.readContentsFile():
