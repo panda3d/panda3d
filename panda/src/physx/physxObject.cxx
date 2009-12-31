@@ -16,27 +16,3 @@
 
 TypeHandle PhysxObject::_type_handle;
 
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::set_mass
-//       Access: Published
-//  Description: Set the mass of body. 
-////////////////////////////////////////////////////////////////////
-void PhysxObject::
-set_mass(float mass) {
-
-  _desc.mass = mass;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::get_mass
-//       Access: Published
-//  Description: Get the mass of body. 
-////////////////////////////////////////////////////////////////////
-float PhysxObject::
-get_mass() const {
-
-  return _desc.mass;
-}
-*/
-
