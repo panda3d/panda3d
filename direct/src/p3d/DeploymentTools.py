@@ -482,6 +482,7 @@ class Installer:
         plist.write('\t</array>\n')
         plist.write('</dict>\n')
         plist.write('</plist>\n')
+        plist.close()
         
         plist = open(Filename(output, "Contents/Resources/en.lproj/Description.plist").toOsSpecific(), "w")
         plist.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -494,6 +495,14 @@ class Installer:
         plist.write('\t<string>%s</string>\n' % self.fullname)
         plist.write('</dict>\n')
         plist.write('</plist>\n')
+        plist.close()
+        
+        postflight = open(Filename(output, "Contents/Resources/postflight").toOsSpecific(), "w")
+        print >>postflight, '#!/bin/sh'
+        print >>postflight, 'chmod -R 777 "%s"' % appname
+        print >>postflight, 'chmod -R 755 "%s/hosts/"' % appname
+        postflight.close()
+        os.chmod(Filename(output, "Contents/Resources/postflight").toOsSpecific(), 0755)
         
         if hasattr(tarfile, "PAX_FORMAT"):
             archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz", format = tarfile.PAX_FORMAT)
