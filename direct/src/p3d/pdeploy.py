@@ -228,6 +228,7 @@ elif deploy_mode == 'installer':
     i.licensefile = licensefile
     i.authorid = authorid
     i.authorname = authorname
+    i.includeRequires = includeRequires
     
     if currentPlatform:
         platform = PandaSystem.getPlatform()
