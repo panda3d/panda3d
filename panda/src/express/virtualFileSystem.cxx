@@ -36,7 +36,13 @@ VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 VirtualFileSystem::
 VirtualFileSystem() :
   vfs_case_sensitive
-("vfs-case-sensitive", true,
+("vfs-case-sensitive", 
+#ifdef NDEBUG
+ false,  // The default for a production build is not case-sensitive;
+         // this avoids runtime overhead to verify case sensitivity.
+#else
+ true,
+#endif
  PRC_DESC("Set this true to make the VirtualFileSystem present the native "
           "OS-provided filesystem as if it were a case-sensitive file "
           "system, even if it is not (e.g. on Windows).  This variable "

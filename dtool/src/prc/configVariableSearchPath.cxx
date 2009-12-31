@@ -39,7 +39,9 @@ reload_search_path() {
     string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
     ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
     if (!expanded.empty()) {
-      _cache.append_directory(Filename::from_os_specific(expanded));
+      Filename dir = Filename::from_os_specific(expanded);
+      dir.make_true_case();
+      _cache.append_directory(dir);
     }
   }
 

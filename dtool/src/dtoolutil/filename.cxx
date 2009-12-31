@@ -413,12 +413,16 @@ from_os_specific(const string &os_specific, Filename::Type type) {
 //       Access: Published, Static
 //  Description: Returns the same thing as from_os_specific(), but
 //               embedded environment variable references
-//               (e.g. "$DMODELS/foo.txt") are expanded out.
+//               (e.g. "$DMODELS/foo.txt") are expanded out.  It also
+//               automatically elevates the file to its true case if
+//               needed.
 ////////////////////////////////////////////////////////////////////
 Filename Filename::
 expand_from(const string &os_specific, Filename::Type type) {
-  return from_os_specific(ExecutionEnvironment::expand_string(os_specific),
-                          type);
+  Filename file = from_os_specific(ExecutionEnvironment::expand_string(os_specific),
+                                   type);
+  file.make_true_case();
+  return file;
 }
 
 ////////////////////////////////////////////////////////////////////

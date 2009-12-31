@@ -164,6 +164,7 @@ reload_implicit_pages() {
       string prc_dir = ExecutionEnvironment::get_environment_variable(prc_dir_envvar_list[i]);
       if (!prc_dir.empty()) {
         Filename prc_dir_filename = Filename::from_os_specific(prc_dir);
+        prc_dir_filename.make_true_case();
         if (scan_auto_prc_dir(prc_dir_filename)) {
           _search_path.append_directory(prc_dir_filename);
         }
@@ -188,6 +189,7 @@ reload_implicit_pages() {
           q = path.length();
         }
         Filename prc_dir_filename = Filename::from_os_specific(path.substr(p, q - p));
+        prc_dir_filename.make_true_case();
         if (scan_auto_prc_dir(prc_dir_filename)) {
           _search_path.append_directory(prc_dir_filename);
         }
