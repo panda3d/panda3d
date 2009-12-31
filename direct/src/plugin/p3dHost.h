@@ -91,6 +91,8 @@ private:
   typedef map<string, P3DPackage *> PackageMap;
   typedef map<string, PackageMap> Packages;
   Packages _packages;
+  typedef vector<P3DPackage *> FailedPackages;
+  FailedPackages _failed_packages;
 
   friend class P3DInstanceManager;
 };

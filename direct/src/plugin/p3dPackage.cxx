@@ -1197,6 +1197,37 @@ is_extractable(FileSpec &file, const string &filename) const {
   return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::instance_terminating
+//       Access: Private
+//  Description: Called when P3D_RC_shutdown is received by any
+//               Download object, which indicates that the instance
+//               owning this download object is terminating and we
+//               should either find a new instance or abort the
+//               download.
+//
+//               The return value is true if a new instance is
+//               available, or false if not.
+////////////////////////////////////////////////////////////////////
+bool P3DPackage::
+instance_terminating(P3DInstance *instance) {
+  if (_instances.empty() ||
+      (_instances.size() == 1 && instance == _instances[0])) {
+    // No other instances.
+    return false;
+  }
+
+  // There are more instances available to continue this download;
+  // pick one of them.  Move this one to the end of the list.
+  Instances::iterator ii = find(_instances.begin(), _instances.end(), instance);
+  if (ii != _instances.end()) {
+    _instances.erase(ii);
+    _instances.push_back(instance);
+  }
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::Download::Constructor
 //       Access: Public
@@ -1423,10 +1454,24 @@ do_step(bool download_finished) {
   if (_download->get_download_success()) {
     // The Download object has already validated the hash.
     return IT_step_complete;
+
   } else if (_download->get_download_terminated()) {
-    // The download was interrupted because we're shutting down.
-    // Don't try any other plans.
-    return IT_terminate;
+    // The download was interrupted because its instance is shutting
+    // down.  Don't try any other plans, unless we have some more
+    // instances.
+    P3DInstance *instance = _download->get_instance();
+    if (!_package->instance_terminating(instance)) {
+      // That was the only instance referencing this package, so stop
+      // the download.
+      nout << "Terminating download of " << _urlbase << "\n";
+      return IT_terminate;
+    }
+    nout << "Restarting download of " << _urlbase << " on new instance\n";
+
+    p3d_unref_delete(_download);
+    _download = NULL;
+    return IT_continue;
+
   } else {
     // The Download object has already tried all of the mirrors, and
     // they all failed.

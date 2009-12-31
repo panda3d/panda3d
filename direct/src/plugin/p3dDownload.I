@@ -24,6 +24,28 @@ get_url() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::set_instance
+//       Access: Public
+//  Description: Specifies the particular P3DInstance that is
+//               responsible for downloading this object.
+////////////////////////////////////////////////////////////////////
+inline void P3DDownload::
+set_instance(P3DInstance *instance) {
+  _instance = instance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::get_instance
+//       Access: Public
+//  Description: Returns the particular P3DInstance that is
+//               responsible for downloading this object.
+////////////////////////////////////////////////////////////////////
+inline P3DInstance *P3DDownload::
+get_instance() const {
+  return _instance;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::get_download_progress
 //       Access: Public
 //  Description: Returns an indication of the progress through the

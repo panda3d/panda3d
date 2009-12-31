@@ -269,6 +269,9 @@ P3DInstance::
   Downloads::iterator di;
   for (di = _downloads.begin(); di != _downloads.end(); ++di) {
     P3DDownload *download = (*di).second;
+    if (download->get_instance() == this) {
+      download->set_instance(NULL);
+    }
     p3d_unref_delete(download);
   }
   _downloads.clear();
@@ -880,12 +883,16 @@ feed_url_stream(int unique_id,
   }
 
   P3DDownload *download = (*di).second;
+  assert(download->get_instance() == this);
   bool download_ok = download->feed_url_stream
     (result_code, http_status_code, total_expected_data,
      this_data, this_data_size);
 
   if (!download_ok || download->get_download_finished()) {
     // All done.
+    if (download->get_instance() == this) {
+      download->set_instance(NULL);
+    }
     _downloads.erase(di);
     p3d_unref_delete(download);
   }
@@ -1128,6 +1135,7 @@ start_download(P3DDownload *download, bool add_request) {
 
   int download_id = inst_mgr->get_unique_id();
   download->set_download_id(download_id);
+  download->set_instance(this);
 
   download->ref();
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;

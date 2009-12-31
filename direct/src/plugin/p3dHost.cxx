@@ -63,6 +63,12 @@ P3DHost::
     }
   }
   _packages.clear();
+
+  FailedPackages::iterator pi;
+  for (pi = _failed_packages.begin(); pi != _failed_packages.end(); ++pi) {
+    delete (*pi);
+  }
+  _failed_packages.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -285,13 +291,21 @@ get_package(const string &package_name, const string &package_version,
   string key = package_name + "_" + package_version;
   PackageMap::iterator pi = package_map.find(key);
   if (pi != package_map.end()) {
-    return (*pi).second;
+    P3DPackage *package = (*pi).second;
+    if (!package->get_failed()) {
+      return package;
+    }
+
+    // If the package has previously failed, move it aside and try
+    // again (maybe it just failed because the user interrupted it).
+    nout << "Package " << key << " has previously failed; trying again.\n";
+    _failed_packages.push_back(package);
+    (*pi).second = NULL;
   }
 
   P3DPackage *package = 
     new P3DPackage(this, package_name, package_version, alt_host);
-  bool inserted = package_map.insert(PackageMap::value_type(key, package)).second;
-  assert(inserted);
+  package_map[key] = package;
 
   return package;
 }

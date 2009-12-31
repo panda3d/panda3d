@@ -30,6 +30,7 @@ P3DDownload() {
   
   _canceled = false;
   _download_id = 0;
+  _instance = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +51,7 @@ P3DDownload(const P3DDownload &copy) :
   
   _canceled = false;
   _download_id = 0;
+  _instance = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

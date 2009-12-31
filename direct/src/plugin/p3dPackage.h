@@ -213,6 +213,7 @@ private:
   void set_saved_download(Download *download);
 
   bool is_extractable(FileSpec &file, const string &filename) const;
+  bool instance_terminating(P3DInstance *instance);
 
 public:
   class RequiredPackage {

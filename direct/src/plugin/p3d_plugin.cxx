@@ -86,6 +86,7 @@ P3D_initialize(int api_version, const char *contents_filename,
 
 void 
 P3D_finalize() {
+  nout << "P3D_finalize called\n";
   P3DInstanceManager::delete_global_ptr();
 }
 

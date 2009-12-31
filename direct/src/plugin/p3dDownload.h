@@ -17,6 +17,7 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dReferenceCount.h"
+class P3DInstance;
 
 #include <time.h>
 
@@ -36,6 +37,9 @@ public:
 
   void set_url(const string &url);
   inline const string &get_url() const;
+
+  inline void set_instance(P3DInstance *instance);
+  inline P3DInstance *get_instance() const;
 
   inline double get_download_progress() const;
   inline bool is_download_progress_known() const;
@@ -78,6 +82,7 @@ private:
   bool _canceled;
   int _download_id;
   string _url;
+  P3DInstance *_instance;
 };
 
 #include "p3dDownload.I"

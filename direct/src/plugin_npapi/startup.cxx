@@ -418,10 +418,11 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
 NPError
 NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
               NPBool seekable, uint16_t *stype) {
-  nout << "NewStream " << type << ", " << stream->url 
-       << ", " << stream->end 
+  nout << "NewStream " << type << ": " << (void *)stream
+       << ", " << stream->url << ", size = " << stream->end 
        << ", notifyData = " << stream->notifyData
-       << "\n";
+       << ", for " << instance 
+       << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -436,8 +437,7 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
 ////////////////////////////////////////////////////////////////////
 NPError 
 NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
-  nout << "DestroyStream " << stream->url 
-       << ", " << stream->end 
+  nout << "DestroyStream: " << (void *)stream << ", " << stream->url 
        << ", notifyData = " << stream->notifyData
        << ", reason = " << reason
        << ", for " << instance 

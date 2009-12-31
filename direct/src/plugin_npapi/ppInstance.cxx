@@ -336,6 +336,7 @@ stop_outstanding_streams() {
     NPStream *stream = (*si);
     nout << "Stopping stream " << (void *)stream << "\n";
     browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
+    destroy_stream(stream, NPRES_USER_BREAK);
   }
 
   assert(_streams.empty());
@@ -450,9 +451,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
 NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
   Streams::iterator si = find(_streams.begin(), _streams.end(), stream);
-  if (si == _streams.end()) {
-    nout << "Got destroy_stream for unknown stream\n";
-  } else {
+  if (si != _streams.end()) {
     _streams.erase(si);
   }
 

@@ -129,8 +129,14 @@ P3DInstanceManager::
   sigaction(SIGPIPE, &_old_sigpipe, NULL);
 #endif  // _WIN32
 
-  assert(_instances.empty());
+  // force-finish any remaining instances.
+  while (!_instances.empty()) {
+    P3DInstance *inst = *(_instances.begin());
+    finish_instance(inst);
+  }
+
   assert(_sessions.empty());
+  assert(_instances.empty());
 
   if (_auth_session != NULL) {
     p3d_unref_delete(_auth_session);
@@ -421,11 +427,12 @@ start_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
-  nout << "finish_instance\n";
+  nout << "finish_instance: " << inst << "\n";
   Instances::iterator ii;
   ii = _instances.find(inst);
-  assert(ii != _instances.end());
-  _instances.erase(ii);
+  if (ii != _instances.end()) {
+    _instances.erase(ii);
+  }
 
   Sessions::iterator si = _sessions.find(inst->get_session_key());
   if (si != _sessions.end()) {
@@ -442,9 +449,7 @@ finish_instance(P3DInstance *inst) {
   }
 
   inst->cleanup();
-  nout << "done cleanup, calling delete\n";
   p3d_unref_delete(inst);
-  nout << "done finish_instance\n";
 }
 
 ////////////////////////////////////////////////////////////////////
