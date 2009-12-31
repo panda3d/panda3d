@@ -4641,6 +4641,10 @@ except:
 ##########################################################################################
 
 def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
+    if (os.path.isfile(file)):
+        os.remove(file)
+    elif (os.path.isdir(file)):
+        shutil.rmtree(file)
     if (RUNTIME):
         # Invoke the make_installer script.
         AddToPathEnv("PATH", GetOutputDir() + "\\bin")
@@ -4652,8 +4656,6 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     print "Building "+fullname+" installer. This can take up to an hour."
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
-    if (os.path.exists(file)):
-        os.remove(file)
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
     WriteFile(GetOutputDir()+"/tmp/__init__.py", "")
