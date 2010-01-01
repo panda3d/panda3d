@@ -411,12 +411,11 @@ class ShipPilot(PhysicsWalker):
         else:
             # Normally min straightHeading is 0.0
             self.straightHeading = max(0.0, min(self.STRAIGHT_SAIL_BONUS_TIME, self.straightHeading))
-        
+
         # Straight Sailing Acceleration Bonus
         straightSailBonus = 0.0
         straightSailBonus = self.straightHeading / self.STRAIGHT_SAIL_BONUS_TIME
         straightSailBonus = min(self.MAX_STRAIGHT_SAIL_BONUS, straightSailBonus * self.MAX_STRAIGHT_SAIL_BONUS)
-        
         # self.__speed=(forward and self.ship.acceleration) or (reverse and self.ship.reverseAcceleration)
         self.__speed = self.ship.acceleration
         
@@ -427,7 +426,7 @@ class ShipPilot(PhysicsWalker):
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
-        
+
         # Add in Straight Sailing Multiplier
         self.__speed *= (straightSailBonus * self.ship.speednerf)
         self.__speed += self.ship.speedboost
@@ -501,7 +500,6 @@ class ShipPilot(PhysicsWalker):
             # update pos:
             # Take a step in the direction of our previous heading.
             self.__vel=Vec3(Vec3.forward() * distance + Vec3.right() * slideDistance)
-            
             # rotMat is the rotation matrix corresponding to
             # our previous heading.
             rotMat=Mat3.rotateMatNormaxis(self.shipNodePath.getH(), Vec3.up())
@@ -526,7 +524,7 @@ class ShipPilot(PhysicsWalker):
                     "newVector", newVector)
                 onScreenDebug.add(
                     "newVector length", newVector.length())
-                
+
             base.controlForce.setVector(newVector)
             
             assert base.controlForce.getLocalVector() == newVector,'1'
@@ -621,6 +619,9 @@ class ShipPilot(PhysicsWalker):
         """
         assert self.debugPrint("enableShipControls()")
 
+        # Reset our straight heading timer (to clear the straight-line sailing bonus)
+        self.straightHeading = 0
+
         self.setCollisionsActive(1)
         
         if __debug__:
@@ -641,8 +642,12 @@ class ShipPilot(PhysicsWalker):
         """
         Ignore the arrow keys, etc.
         """
+        # Clear our force vector
         base.controlForce.setVector(Vec3(0))
-            
+
+        # Reset our straight heading timer (to clear the straight-line sailing bonus)
+        self.straightHeading = 0
+        
         assert self.debugPrint("disableShipControls()")
         taskName = "ShipControls-%s"%(id(self),)
         taskMgr.remove(taskName)
