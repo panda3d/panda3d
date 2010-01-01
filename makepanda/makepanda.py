@@ -240,7 +240,7 @@ if (RUNTIME):
     SetLinkAllStatic(True)
 
 if not os.path.isdir("contrib"):
-    PkgDisable("contrib")
+    PkgDisable("CONTRIB")
 
 ########################################################################
 ##
