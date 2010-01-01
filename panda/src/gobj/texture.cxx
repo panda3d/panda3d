@@ -4231,13 +4231,13 @@ do_get_uncompressed_ram_image() {
 //     Function: Texture::get_ram_image_as
 //       Access: Published
 //  Description: Returns the uncompressed system-RAM image data
-//               associated with the texture, but rather than
+//               associated with the texture. Rather than
 //               just returning a pointer to the data, like
 //               get_uncompressed_ram_image, this function first
-//               processes the data, reorders the components using
-//               the specified format string, and fills these into
-//               a new area. The 'format' arugment should specify
-//               in which order the components of the texture
+//               processes the data and reorders the components
+//               using the specified format string, and places these
+//               into a new char array. The 'format' argument should
+//               specify in which order the components of the texture
 //               must be. For example, valid format strings are
 //               "RGBA", "GA", "ABRG" or "AAA". A component can
 //               also be written as "0" or "1", which means an
