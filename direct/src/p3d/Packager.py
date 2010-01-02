@@ -786,7 +786,6 @@ class Packager:
 
                 if file.filename.getExtension().lower() == "manifest":
                     filenames = self.__parseManifest(file.filename)
-                    print file.filename, filenames
                     if filenames is None:
                         self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
                         continue
