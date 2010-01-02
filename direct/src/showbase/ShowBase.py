@@ -305,6 +305,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtin__.base = self
         __builtin__.render2d = self.render2d
         __builtin__.aspect2d = self.aspect2d
+        __builtin__.pixel2d = self.pixel2d
         __builtin__.render = self.render
         __builtin__.hidden = self.hidden
         __builtin__.camera = self.camera
@@ -333,6 +334,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.wantRender2dp:
             __builtin__.render2dp = self.render2dp
             __builtin__.aspect2dp = self.aspect2dp
+            __builtin__.pixel2dp = self.pixel2dp
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
@@ -967,6 +969,14 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
         self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
         self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+        
+        # This special root, pixel2d, uses units in pixels that are relative
+        # to the window. The upperleft corner of the window is (0, 0),
+        # the lowerleft corner is (xsize, -ysize), in this coordinate system.
+        xsize, ysize = self.getSize()
+        self.pixel2d = self.render2d.attachNewNode(PGTop("pixel2d"))
+        self.pixel2d.setPos(-1, 0, 1)
+        self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
     def setupRender2dp(self):
         """
@@ -1030,6 +1040,15 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
         self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
         self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
+        
+        # This special root, pixel2d, uses units in pixels that are relative
+        # to the window. The upperleft corner of the window is (0, 0),
+        # the lowerleft corner is (xsize, -ysize), in this coordinate system.
+        xsize, ysize = self.getSize()
+        self.pixel2dp = self.render2dp.attachNewNode(PGTop("pixel2dp"))
+        self.pixel2dp.node().setStartSort(16384)
+        self.pixel2dp.setPos(-1, 0, 1)
+        self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
@@ -1063,6 +1082,27 @@ class ShowBase(DirectObject.DirectObject):
                 aspectRatio = float(props.getXSize()) / float(props.getYSize())
 
         return aspectRatio
+
+    def getSize(self, win = None):
+        # Returns the actual size of the indicated (or main
+        # window), or the default size if there is not yet a
+        # main window.
+
+        if win == None:
+            win = self.win
+
+        if win != None and win.hasSize():
+            return win.getXSize(), win.getYSize()
+        else:
+            if win == None or not hasattr(win, "getRequestedProperties"):
+                props = WindowProperties.getDefault()
+            else:
+                props = win.getRequestedProperties()
+                if not props.hasSize():
+                    props = WindowProperties.getDefault()
+
+            if props.hasSize():
+                return props.getXSize(), props.getYSize()
 
     def makeCamera(self, win, sort = 0, scene = None,
                    displayRegion = (0, 1, 0, 1), stereo = None,
@@ -1317,6 +1357,8 @@ class ShowBase(DirectObject.DirectObject):
         # Tell the gui system about our new mouse watcher.
         self.aspect2d.node().setMouseWatcher(mw.node())
         self.aspect2dp.node().setMouseWatcher(mw.node())
+        self.pixel2d.node().setMouseWatcher(mw.node())
+        self.pixel2dp.node().setMouseWatcher(mw.node())
         mw.node().addRegion(PGMouseWatcherBackground())
 
     # [gjeon] this function is seperated from setupMouse to allow multiple mouse watchers
@@ -2420,6 +2462,9 @@ class ShowBase(DirectObject.DirectObject):
                     
                     # If anybody needs to update their GUI, put a callback on this event
                     messenger.send("aspectRatioChanged")
+            
+            self.pixel2d.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
+            self.pixel2dp.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
 
     def userExit(self):
         # The user has requested we exit the program.  Deal with this.
@@ -2509,5 +2554,3 @@ class WindowControls:
         s += "mouseWatcher = " + str(self.mouseWatcher) + "\n"
         s += "mouseAndKeyboard = " + str(self.mouseKeyboard) + "\n"
         return s
-
-
