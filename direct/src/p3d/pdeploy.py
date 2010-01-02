@@ -202,6 +202,12 @@ if version == '' and deploy_mode == 'installer':
 if not outputDir:
     print '\nYou must name the output directory with the -o parameter.\n'
     sys.exit(1)
+if not outputDir.exists():
+    print '\nThe specified output directory does not exist!\n'
+    sys.exit(1)
+elif not outputDir.isDirectory():
+    print '\nThe specified output directory is a file!\n'
+    sys.exit(1)
 
 if deploy_mode == 'standalone':
     s = Standalone(appFilename, tokens)

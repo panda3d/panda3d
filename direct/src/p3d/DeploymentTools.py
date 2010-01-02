@@ -292,6 +292,12 @@ class Installer:
         print >>controlfile, "Description: %s" % self.fullname
         print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6"
         controlfile.close()
+        postinst = open(Filename(tempdir, "postinst").toOsSpecific(), "w")
+        print >>postinst, "#!/bin/sh"
+        print >>postinst, "chmod -R 777 /usr/share/%s" % self.shortname.lower()
+        print >>postinst, "chmod -R 555 /usr/share/%s/hosts" % self.shortname.lower()
+        postinst.close()
+        os.chmod(Filename(tempdir, "postinst").toOsSpecific(), 0755)
         postrmfile = open(Filename(tempdir, "postrm").toOsSpecific(), "w")
         print >>postrmfile, "#!/bin/sh"
         print >>postrmfile, "rm -rf /usr/share/%s" % self.shortname.lower()
@@ -313,13 +319,16 @@ class Installer:
 
         # Create a control.tar.gz file in memory
         controlfile = Filename(tempdir, "control")
+        postinstfile = Filename(tempdir, "postinst")
         postrmfile = Filename(tempdir, "postrm")
         controltargz = CachedFile()
         controltarfile = tarfile.TarFile.gzopen("control.tar.gz", "w", controltargz, 9)
         controltarfile.add(controlfile.toOsSpecific(), "control")
+        controltarfile.add(postinstfile.toOsSpecific(), "postinst")
         controltarfile.add(postrmfile.toOsSpecific(), "postrm")
         controltarfile.close()
         controlfile.unlink()
+        postinstfile.unlink()
         postrmfile.unlink()
 
         # Create the data.tar.gz file in the temporary directory
