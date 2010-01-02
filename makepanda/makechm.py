@@ -120,7 +120,7 @@ def parseManualTOC(filename):
     filename = open(filename)
     text = filename.read()
     filename.close()
-    text = text.split("<h2>Table of Contents</h2>")[1].split("</td>")[0]
+    text = text.split("<h2>Table of Contents</h2>")[1].split("</div>")[0]
     text = "<root>" + text.replace("<li>", "") + "</root>"
     text = re.sub(re.compile("<!--([^>]+)>"), "", text)
     result = []
