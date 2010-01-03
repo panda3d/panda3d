@@ -284,6 +284,7 @@ private:
   bool _keep_user_env;
   bool _auto_install;
   bool _auto_start;
+  bool _stop_on_ready;
   bool _auth_button_clicked;
   bool _failed;
 

@@ -131,6 +131,7 @@ P3DInstance(P3D_request_ready_func *func,
   _allow_python_dev = false;
   _keep_user_env = (_fparams.lookup_token_int("keep_user_env") != 0);
   _auto_start = (_fparams.lookup_token_int("auto_start") != 0);
+  _stop_on_ready = (_fparams.lookup_token_int("stop_on_ready") != 0);
   _auto_install = true;
   if (_fparams.has_token("auto_install")) {
     _auto_install = (_fparams.lookup_token_int("auto_install") != 0);
@@ -1960,7 +1961,9 @@ scan_app_desc_file(TiXmlDocument *doc) {
   }
 
   nout << "_auto_install = " << _auto_install 
-       << ", _auto_start = " << _auto_start << "\n";
+       << ", _auto_start = " << _auto_start 
+       << ", _stop_on_ready = " << _stop_on_ready
+       << "\n";
 
   if (_hidden && _got_wparams) {
     _wparams.set_window_type(P3D_WT_hidden);
@@ -2465,7 +2468,8 @@ make_splash_window() {
   }
 
   if (_wparams.get_window_type() != P3D_WT_embedded && 
-      !_stuff_to_download && _auto_install && _auto_start && _p3d_trusted) {
+      !_stuff_to_download && _auto_install &&
+      (_auto_start || _stop_on_ready) && _p3d_trusted) {
     // If it's a toplevel or fullscreen window, then we don't want a
     // splash window unless we have stuff to download, or a button to
     // display.
@@ -2869,9 +2873,17 @@ ready_to_start() {
 
   _panda_script_object->set_string_property("status", "ready");
   send_notify("onready");
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (_stop_on_ready) {
+    // If we've got the "stop_on_ready" token, then exit abruptly
+    // now, instead of displaying the splash window.
+    request_stop_main_thread();
+    return;
+  }
+
   if (_auto_start) {
     set_background_image(IT_launch);
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     inst_mgr->start_instance(this);
 
   } else {
