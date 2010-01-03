@@ -42,6 +42,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _name = s->get_filename ( );
 
 #ifdef HAVE_CG
+  _cg_context = 0;
   if (s->get_language() == Shader::SL_Cg) {
     
     // Ask the shader to compile itself for us and 
