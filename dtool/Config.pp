@@ -756,6 +756,7 @@
 #else
   #define AWESOMIUM_LIBS $[if $[WINDOWS_PLATFORM],awesomium.lib,awesomium]
 #endif
+#define AWESOMIUM_FRAMEWORK
 #defer HAVE_AWESOMIUM $[libtest $[AWESOMIUM_LPATH],$[AWESOMIUM_LIBS]]
 
 // Mozilla's so-called Gecko SDK, a.k.a. Xulrunner SDK, implements
