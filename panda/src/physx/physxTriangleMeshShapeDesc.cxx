@@ -21,7 +21,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshShapeDesc::
-set_mesh(PT(PhysxTriangleMesh) mesh) {
+set_mesh(PhysxTriangleMesh *mesh) {
 
   _desc.meshData = mesh->ptr();
 }

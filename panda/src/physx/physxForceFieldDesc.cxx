@@ -207,7 +207,7 @@ add_include_group_shape(PhysxForceFieldShapeDesc &desc) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxForceFieldDesc::
-add_shape_group(PT(PhysxForceFieldShapeGroup) group) {
+add_shape_group(PhysxForceFieldShapeGroup *group) {
 
   _desc.shapeGroups.push_back(group->ptr());
 }
@@ -218,7 +218,7 @@ add_shape_group(PT(PhysxForceFieldShapeGroup) group) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxForceFieldDesc::
-set_actor(PT(PhysxActor) actor) {
+set_actor(PhysxActor *actor) {
 
   _desc.actor = actor->ptr();
 }

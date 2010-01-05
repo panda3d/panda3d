@@ -37,7 +37,7 @@ PUBLISHED:
   INLINE void set_to_default();
   INLINE bool is_valid() const;
 
-  void set_mesh(PT(PhysxTriangleMesh) mesh);
+  void set_mesh(PhysxTriangleMesh *mesh);
 
 public:
   NxShapeDesc *ptr() const { return (NxShapeDesc *)&_desc; };

@@ -125,7 +125,7 @@ get_num_scenes() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxManager::
+PhysxScene *PhysxManager::
 create_scene(PhysxSceneDesc &desc) {
 
   nassertr(desc.is_valid(),NULL);
@@ -137,7 +137,7 @@ create_scene(PhysxSceneDesc &desc) {
   desc._desc.flags |= NX_SF_ENABLE_ACTIVETRANSFORMS;
   desc._desc.flags |= NX_SF_SIMULATE_SEPARATE_THREAD;
 
-  PT(PhysxScene) scene = new PhysxScene();
+  PhysxScene *scene = new PhysxScene();
   nassertr(scene, NULL);
 
   NxScene *scenePtr = _sdk->createScene(desc._desc);
@@ -153,7 +153,7 @@ create_scene(PhysxSceneDesc &desc) {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxManager::
+PhysxScene *PhysxManager::
 get_scene(unsigned int idx) const {
 
   nassertr_always(idx < _sdk->getNbScenes(), NULL);
@@ -180,12 +180,12 @@ get_num_height_fields() {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxHeightField) PhysxManager::
+PhysxHeightField *PhysxManager::
 create_height_field(PhysxHeightFieldDesc &desc) {
 
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxHeightField) hf = new PhysxHeightField();
+  PhysxHeightField *hf = new PhysxHeightField();
   nassertr(hf, NULL);
 
   NxHeightField *hfPtr = _sdk->createHeightField(desc._desc);
@@ -201,7 +201,7 @@ create_height_field(PhysxHeightFieldDesc &desc) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxHeightField) PhysxManager::
+PhysxHeightField *PhysxManager::
 get_height_field(unsigned int idx) {
 
   nassertr_always(idx < _sdk->getNbHeightFields(), NULL);
@@ -225,7 +225,7 @@ get_num_convex_meshes() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxConvexMesh) PhysxManager::
+PhysxConvexMesh *PhysxManager::
 get_convex_mesh(unsigned int idx) {
 
   nassertr_always(idx < _sdk->getNbConvexMeshes(), NULL);
@@ -249,7 +249,7 @@ get_num_triangle_meshes() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxTriangleMesh) PhysxManager::
+PhysxTriangleMesh *PhysxManager::
 get_triangle_mesh(unsigned int idx) {
 
   nassertr_always(idx < _sdk->getNbTriangleMeshes(), NULL);

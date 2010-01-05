@@ -41,11 +41,11 @@ PUBLISHED:
   INLINE PhysxMeshPool();
   INLINE ~PhysxMeshPool();
 
-  static PT(PhysxConvexMesh) load_convex_mesh(const Filename &filename);
-  static PT(PhysxTriangleMesh) load_triangle_mesh(const Filename &filename);
+  static PhysxConvexMesh *load_convex_mesh(const Filename &filename);
+  static PhysxTriangleMesh *load_triangle_mesh(const Filename &filename);
 
-  static bool release_convex_mesh(PT(PhysxConvexMesh) mesh);
-  static bool release_triangle_mesh(PT(PhysxTriangleMesh) mesh);
+  static bool release_convex_mesh(PhysxConvexMesh *mesh);
+  static bool release_triangle_mesh(PhysxTriangleMesh *mesh);
 
   static void list_contents();
   static void list_contents(ostream &out);
@@ -55,12 +55,11 @@ private:
 
   typedef pmap<Filename, PT(PhysxConvexMesh)> ConvexMeshes;
   typedef pmap<Filename, PT(PhysxTriangleMesh)> TriangleMeshes;
+  //typedef pmap<Filename, PT(PhysxClothMesh)> ClothMeshes;
+  //typedef pmap<Filename, PT(PhysxSoftBodyMesh)> SoftbodyMeshes;
 
   static ConvexMeshes _convex_meshes;
   static TriangleMeshes _triangle_meshes;
-
-  //typedef pmap<Filename, PT(PhysxClothMesh)> ClothMeshes;
-  //typedef pmap<Filename, PT(PhysxSoftBodyMesh)> SoftbodyMeshes;
   //static ClothMeshes _cloth_meshes;
   //static SoftbodyMeshes _softbody_meshes;
 };

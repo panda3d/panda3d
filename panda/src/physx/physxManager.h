@@ -57,21 +57,21 @@ PUBLISHED:
   const char *get_internal_version();
 
   unsigned int get_num_scenes() const;
-  PT(PhysxScene) create_scene(PhysxSceneDesc &desc);
-  PT(PhysxScene) get_scene(unsigned int idx) const;
+  PhysxScene *create_scene(PhysxSceneDesc &desc);
+  PhysxScene *get_scene(unsigned int idx) const;
   MAKE_SEQ(get_scenes, get_num_scenes, get_scene);
 
   unsigned int get_num_height_fields();
-  PT(PhysxHeightField) create_height_field(PhysxHeightFieldDesc &desc);
-  PT(PhysxHeightField) get_height_field(unsigned int idx);
+  PhysxHeightField *create_height_field(PhysxHeightFieldDesc &desc);
+  PhysxHeightField *get_height_field(unsigned int idx);
   MAKE_SEQ(get_height_fields, get_num_height_fields, get_height_field);
 
   unsigned int get_num_convex_meshes();
-  PT(PhysxConvexMesh) get_convex_mesh(unsigned int idx);
+  PhysxConvexMesh *get_convex_mesh(unsigned int idx);
   MAKE_SEQ(get_convex_meshes, get_num_convex_meshes, get_convex_mesh);
 
   unsigned int get_num_triangle_meshes();
-  PT(PhysxTriangleMesh) get_triangle_mesh(unsigned int idx);
+  PhysxTriangleMesh *get_triangle_mesh(unsigned int idx);
   MAKE_SEQ(get_triangle_meshes, get_num_triangle_meshes, get_triangle_mesh);
 
   INLINE void ls() const;

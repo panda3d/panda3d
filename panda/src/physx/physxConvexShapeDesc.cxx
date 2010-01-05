@@ -21,7 +21,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexShapeDesc::
-set_mesh(PT(PhysxConvexMesh) mesh) {
+set_mesh(PhysxConvexMesh *mesh) {
 
   _desc.meshData = mesh->ptr();
 }

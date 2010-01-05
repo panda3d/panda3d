@@ -47,7 +47,7 @@ PUBLISHED:
   void set_mat(const LMatrix4f &mat);
   void set_hpr(float h, float p, float r);
   void set_coordinates(PhysxForceFieldCoordinates coordinates);
-  void set_actor(PT(PhysxActor) actor);
+  void set_actor(PhysxActor *actor);
 
   void set_kernel_constant(const LVector3f &constant);
   void set_kernel_position_target(const LPoint3f &target);
@@ -60,7 +60,7 @@ PUBLISHED:
   void set_kernel_noise(const LVector3f &noise);
 
   void add_include_group_shape(PhysxForceFieldShapeDesc &shapeDesc);
-  void add_shape_group(PT(PhysxForceFieldShapeGroup) group);
+  void add_shape_group(PhysxForceFieldShapeGroup *group);
 
 public:
   void create_kernel(NxScene *scenePtr);

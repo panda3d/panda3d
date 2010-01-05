@@ -54,13 +54,13 @@ prepare_filename(Filename &fn) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(PhysxConvexMesh) PhysxMeshPool::
+PhysxConvexMesh *PhysxMeshPool::
 load_convex_mesh(const Filename &filename) {
 
   Filename fn(filename);
   if (!prepare_filename(fn)) return NULL;
 
-  PT(PhysxConvexMesh) mesh;
+  PhysxConvexMesh *mesh;
 
   ConvexMeshes::iterator it = _convex_meshes.find(fn);
   if (it == _convex_meshes.end()) {
@@ -94,13 +94,13 @@ load_convex_mesh(const Filename &filename) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(PhysxTriangleMesh) PhysxMeshPool::
+PhysxTriangleMesh *PhysxMeshPool::
 load_triangle_mesh(const Filename &filename) {
 
   Filename fn(filename);
   if (!prepare_filename(fn)) return NULL;
 
-  PT(PhysxTriangleMesh) mesh;
+  PhysxTriangleMesh *mesh;
 
   TriangleMeshes::iterator it = _triangle_meshes.find(fn);
   if (it == _triangle_meshes.end()) {
@@ -135,7 +135,7 @@ load_triangle_mesh(const Filename &filename) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool PhysxMeshPool::
-release_convex_mesh(PT(PhysxConvexMesh) mesh) {
+release_convex_mesh(PhysxConvexMesh *mesh) {
 
   ConvexMeshes::iterator it;
   for (it=_convex_meshes.begin(); it != _convex_meshes.end(); ++it) {
@@ -154,7 +154,7 @@ release_convex_mesh(PT(PhysxConvexMesh) mesh) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool PhysxMeshPool::
-release_triangle_mesh(PT(PhysxTriangleMesh) mesh) {
+release_triangle_mesh(PhysxTriangleMesh *mesh) {
 
   TriangleMeshes::iterator it;
   for (it=_triangle_meshes.begin(); it != _triangle_meshes.end(); ++it) {
@@ -192,7 +192,7 @@ list_contents( ostream &out ) {
     ConvexMeshes::const_iterator it;
     for (it=_convex_meshes.begin(); it != _convex_meshes.end(); ++it) {
       Filename fn = (*it).first;
-      PT(PhysxConvexMesh) mesh = (*it).second;
+      PhysxConvexMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
           << " (convex mesh, " << mesh->ptr()->getReferenceCount() 
@@ -205,7 +205,7 @@ list_contents( ostream &out ) {
     TriangleMeshes::const_iterator it;
     for (it=_triangle_meshes.begin(); it != _triangle_meshes.end(); ++it) {
       Filename fn = (*it).first;
-      PT(PhysxTriangleMesh) mesh = (*it).second;
+      PhysxTriangleMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
           << " (triangle mesh, " << mesh->ptr()->getReferenceCount() 

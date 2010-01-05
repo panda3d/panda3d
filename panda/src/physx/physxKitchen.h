@@ -42,8 +42,8 @@ PUBLISHED:
   bool cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename);
   bool cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filename);
 
-  PT(PhysxConvexMesh) cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc);
-  PT(PhysxTriangleMesh) cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc);
+  PhysxConvexMesh *cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc);
+  PhysxTriangleMesh *cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc);
 
 private:
   NxCookingInterface *_cooking;

@@ -88,7 +88,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxConvexMesh) PhysxKitchen::
+PhysxConvexMesh *PhysxKitchen::
 cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 
   nassertr_always(meshDesc.is_valid(), false);
@@ -100,7 +100,7 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
   nassertr(sdk, NULL);
 
-  PT(PhysxConvexMesh) mesh = new PhysxConvexMesh();
+  PhysxConvexMesh *mesh = new PhysxConvexMesh();
   nassertr(mesh, NULL);
 
   NxConvexMesh *meshPtr = sdk->createConvexMesh(PhysxMemoryReadBuffer(buffer.data));
@@ -116,7 +116,7 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxTriangleMesh) PhysxKitchen::
+PhysxTriangleMesh *PhysxKitchen::
 cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 
   nassertr_always(meshDesc.is_valid(), false);
@@ -128,7 +128,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
   nassertr(sdk, NULL);
 
-  PT(PhysxTriangleMesh) mesh = new PhysxTriangleMesh();
+  PhysxTriangleMesh *mesh = new PhysxTriangleMesh();
   nassertr(mesh, NULL);
 
   NxTriangleMesh *meshPtr = sdk->createTriangleMesh(PhysxMemoryReadBuffer(buffer.data));
