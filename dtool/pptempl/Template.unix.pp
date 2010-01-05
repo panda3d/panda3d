@@ -50,6 +50,7 @@
   #define install_lib $[active_target(metalib_target lib_target ss_lib_target static_lib_target)]
   #define install_bin $[active_target(bin_target)]
   #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_modules $[sort $[INSTALL_MODULES(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_MODULES]]
   #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
   #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
   #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target ss_lib_target static_lib_target dynamic_lib_target bin_target)] $[INSTALL_DATA]]
@@ -130,6 +131,7 @@
 #mkdir $[sort \
     $[if $[install_lib],$[install_lib_dir]] \
     $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
+    $[if $[install_lib] $[install_modules],$[install_lib_dir]] \
     $[if $[install_headers],$[install_headers_dir]] \
     $[if $[install_parser_inc],$[install_parser_inc_dir]] \
     $[if $[install_data],$[install_data_dir]] \
@@ -255,6 +257,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
 // the directories if necessary.
 #define installed_files \
      $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+     $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
      $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -371,6 +374,7 @@ $[TAB] $[BUNDLE_LIB_C++]
     $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
     $[if $[link_extra_bundle],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
@@ -528,6 +532,7 @@ $[TAB] $[link_bin_c]
 #define installed_files \
     $[install_bin_dir]/$[TARGET] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
@@ -718,6 +723,13 @@ $[TAB] $[compile_c++]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
+$[TAB] $[INSTALL_PROG]
+#end file
+
+#foreach file $[install_modules]
+$[install_lib_dir]/$[file] : $[file]
+#define local $[file]
+#define dest $[install_lib_dir]
 $[TAB] $[INSTALL_PROG]
 #end file
 

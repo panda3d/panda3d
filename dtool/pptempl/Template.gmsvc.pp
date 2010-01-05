@@ -87,6 +87,7 @@
   #define install_lib $[active_target(metalib_target static_lib_target dynamic_lib_target ss_lib_target)] $[real_lib_targets]
   #define install_bin $[active_target(bin_target)]
   #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_modules $[sort $[INSTALL_MODULES(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_MODULES]]
   #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
   #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
   #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
@@ -153,6 +154,7 @@
 #mkdir $[sort \
     $[if $[install_lib],$[install_lib_dir]] \
     $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
+    $[if $[install_bin] $[install_modules],$[install_lib_dir]] \
     $[if $[install_headers],$[install_headers_dir]] \
     $[if $[install_parser_inc],$[install_parser_inc_dir]] \
     $[if $[install_data],$[install_data_dir]] \
@@ -278,6 +280,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
 // the directories if necessary.
 #define installed_files \
      $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+     $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
      $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -420,6 +423,7 @@ $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[dl
       $[if $[has_pdb],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
@@ -674,6 +678,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
     $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \
     $[if $[eq $[USE_COMPILER],MSVC8],$[install_bin_dir]/$[TARGET].exe.manifest] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[if $[bin_postprocess_target],$[install_bin_dir]/$[bin_postprocess_target].exe] \
@@ -887,6 +892,13 @@ $[TAB] $[COMPILE_C++]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
+$[TAB] chmod +x $[local]; cp $[install_dash_p] -f $[local] $[dest]/
+#end file
+
+#foreach file $[install_modules]
+$[install_lib_dir]/$[file] : $[file]
+#define local $[file]
+#define dest $[install_lib_dir]
 $[TAB] chmod +x $[local]; cp $[install_dash_p] -f $[local] $[dest]/
 #end file
 
