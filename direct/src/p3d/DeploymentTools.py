@@ -27,7 +27,7 @@ class Standalone:
         
         hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
         hostDir.makeDir()
-        self.host = HostInfo("http://runtime.panda3d.org/", hostDir = hostDir, asMirror = False, perPlatform = True)
+        self.host = HostInfo(PandaSystem.getPackageHostUrl(), hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
         if not self.host.readContentsFile():

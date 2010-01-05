@@ -195,7 +195,7 @@ P3D_class_definition* PPBrowserObject::get_class_definition()
     {
         // Create a default class_definition object, and fill in the
         // appropriate pointers.
-        _browser_object_class = P3D_make_class_definition();
+        _browser_object_class = P3D_make_class_definition_ptr();
         _browser_object_class->_finish = &object_finish;
 
         _browser_object_class->_get_repr = &object_get_repr;

@@ -16,11 +16,11 @@
 #define P3D_PLUGIN_COMMON
 
 // This header file is included by all C++ files in this directory
-// that contribute to p3d_plugin; provides some common symbol
+// that contribute to p3d_plugin; it provides some common symbol
 // declarations.
 
 #define P3D_FUNCTION_PROTOTYPES
-#define BUILDING_P3D_PLUGIN
+//#define BUILDING_P3D_PLUGIN
 #define TIXML_USE_STL
 
 // It's a good idea to pick up this header file, even though we don't

@@ -15,7 +15,7 @@
 #include "panda3dBase.h"
 #include "httpClient.h"
 #include "find_root_dir.h"
-#include "p3d_plugin_config.h"
+#include "load_plugin.h"
 #include "executionEnvironment.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
@@ -66,108 +66,6 @@ Panda3DBase(bool console_environment) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::run_embedded
-//       Access: Public
-//  Description: Runs with the data embedded in the current
-//               executable, at the specified offset.
-////////////////////////////////////////////////////////////////////
-int Panda3DBase::
-run_embedded(int read_offset, int argc, char *argv[]) {
-  // Make sure the splash window will be put in the center of the screen
-  _win_x = -2;
-  _win_y = -2;
-  
-  // Read out some parameters from the binary
-  pifstream read;
-  Filename f = ExecutionEnvironment::get_binary_name();
-  f.make_absolute();
-  f.set_binary();
-  if (!f.open_read(read)) {
-	  cerr << "Failed to read from stream. Maybe the binary is corrupt?\n";
-	  return 1;
-  }
-  read.seekg(read_offset);
-  char curchr = 1;
-  string curstr;
-  bool havenull = false;
-  P3D_token token;
-  token._keyword = NULL;
-  token._value = NULL;
-  string keyword;
-  string value;
-  string root_dir;
-  while (true) {
-    curchr = read.get();
-    if (curchr == 0) {
-      // Two null bytes in a row means we've reached the end of the data.
-      if (havenull) {
-        break;
-      }
-      
-      // This means we haven't seen an '=' character yet.
-      if (keyword == "") {
-        if (curstr != "") {
-          cerr << "Ignoring token '" << curstr << "' without value\n";
-        }
-      } else {
-        value.assign(curstr);
-        P3D_token token;
-        token._keyword = keyword.c_str();
-        token._value = value.c_str();
-        _tokens.push_back(token);
-        
-        // Read out the tokens that may interest us
-        if (keyword == "width") {
-          _win_width = atoi(value.c_str());
-        } else if (keyword == "height") {
-          _win_height = atoi(value.c_str());
-        } else if (keyword == "root_dir") {
-          root_dir = value;
-        }
-      }
-      curstr = "";
-      havenull = true;
-    } else if (curchr == '=') {
-      keyword.assign(curstr);
-      curstr = "";
-      havenull = false;
-    } else {
-      curstr += curchr;
-      havenull = false;
-    }
-  }
-  // Update the offset to the current read pointer.
-  // This is where the multifile really starts.
-  read_offset = read.tellg();
-  read.close();
-  
-  // Make the root directory absolute
-  Filename root_dir_f (root_dir);
-  root_dir_f.make_absolute(f.get_dirname());
-  
-  // Initialize the plugin
-  if (!P3D_initialize(P3D_API_VERSION, NULL,
-                      _host_url.c_str(), _verify_contents, _this_platform.c_str(),
-                      _log_dirname.c_str(), _log_basename.c_str(),
-                      !_enable_security, _console_environment,
-                      root_dir_f.c_str())) {
-    // Oops, failure to initialize.
-    cerr << "Failed to initialize plugin (wrong API version?)\n";
-    return 1;
-  }
-  
-  // Create a plugin instance and run the program
-  P3D_instance *inst = create_instance
-    (f, true, _win_x, _win_y, _win_width, _win_height,
-     argv, argc, read_offset);
-  _instances.insert(inst);
-  
-  run_main_loop();
-  P3D_finalize();
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Panda3DBase::run_main_loop
 //       Access: Public
 //  Description: Gets lost in the application main loop, waiting for
@@ -192,13 +90,13 @@ run_main_loop() {
       DispatchMessage(&msg);
 
       // Check for new requests from the Panda3D plugin.
-      P3D_instance *inst = P3D_check_request(wait_cycle);
+      P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
       while (inst != (P3D_instance *)NULL) {
-        P3D_request *request = P3D_instance_get_request(inst);
+        P3D_request *request = P3D_instance_get_request_ptr(inst);
         if (request != (P3D_request *)NULL) {
           handle_request(request);
         }
-        inst = P3D_check_request(wait_cycle);
+        inst = P3D_check_request_ptr(wait_cycle);
       }
 
       while (!_url_getters.empty() && 
@@ -220,9 +118,9 @@ run_main_loop() {
     // Not an embedded window, so we don't have our own window to
     // generate Windows events.  Instead, just wait for requests.
     while (!time_to_exit()) {
-      P3D_instance *inst = P3D_check_request(wait_cycle);
+      P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
       if (inst != (P3D_instance *)NULL) {
-        P3D_request *request = P3D_instance_get_request(inst);
+        P3D_request *request = P3D_instance_get_request_ptr(inst);
         if (request != (P3D_request *)NULL) {
           handle_request(request);
         }
@@ -337,7 +235,7 @@ handle_request(P3D_request *request) {
     break;
   };
 
-  P3D_request_finish(request, handled);
+  P3D_request_finish_ptr(request, handled);
 }
 
 #ifdef _WIN32
@@ -477,18 +375,18 @@ create_instance(const string &p3d, bool start_instance,
     argv.push_back(args[i]);
   }
 
-  P3D_instance *inst = P3D_new_instance(NULL, tokens_p, num_tokens,
-                                        argv.size(), &argv[0], NULL);
+  P3D_instance *inst = P3D_new_instance_ptr(NULL, tokens_p, num_tokens,
+                                            argv.size(), &argv[0], NULL);
 
   if (inst != NULL) {
     if (start_instance) {
       // We call start() first, to give the core API a chance to
       // notice the "hidden" attrib before we set the window
       // parameters.
-      P3D_instance_start(inst, is_local, os_p3d_filename.c_str(), p3d_offset);
+      P3D_instance_start_ptr(inst, is_local, os_p3d_filename.c_str(), p3d_offset);
     }
 
-    P3D_instance_setup_window
+    P3D_instance_setup_window_ptr
       (inst, _window_type, win_x, win_y, win_width, win_height, &_parent_window);
   }
 
@@ -503,7 +401,7 @@ create_instance(const string &p3d, bool start_instance,
 ////////////////////////////////////////////////////////////////////
 void Panda3DBase::
 delete_instance(P3D_instance *inst) {
-  P3D_instance_finish(inst);
+  P3D_instance_finish_ptr(inst);
   _instances.erase(inst);
 
   // Make sure we also terminate any pending URLGetters associated
@@ -609,22 +507,22 @@ is_url(const string &param) {
 ////////////////////////////////////////////////////////////////////
 void Panda3DBase::
 report_downloading_package(P3D_instance *instance) {
-  P3D_object *obj = P3D_instance_get_panda_script_object(instance);
+  P3D_object *obj = P3D_instance_get_panda_script_object_ptr(instance);
   
-  P3D_object *display_name = P3D_object_get_property(obj, "downloadPackageDisplayName");
+  P3D_object *display_name = P3D_object_get_property_ptr(obj, "downloadPackageDisplayName");
   if (display_name == NULL) {
     cerr << "Installing package.\n";
     return;
   }
 
-  int name_length = P3D_object_get_string(display_name, NULL, 0);
+  int name_length = P3D_object_get_string_ptr(display_name, NULL, 0);
   char *name = new char[name_length + 1];
-  P3D_object_get_string(display_name, name, name_length + 1);
+  P3D_object_get_string_ptr(display_name, name, name_length + 1);
 
   cerr << "Installing " << name << "\n";
 
   delete[] name;
-  P3D_object_decref(display_name);
+  P3D_object_decref_ptr(display_name);
   _reporting_download = true;
 }
  
@@ -723,7 +621,7 @@ run() {
   if (_channel->run() || _rf.get_data_size() != 0) {
     if (_rf.get_data_size() != 0) {
       // Got some new data.
-      bool download_ok = P3D_instance_feed_url_stream
+      bool download_ok = P3D_instance_feed_url_stream_ptr
         (_instance, _unique_id, P3D_RC_in_progress,
          _channel->get_status_code(),
          _channel->get_file_size(),
@@ -755,7 +653,7 @@ run() {
     cerr << "Error getting URL " << _url << "\n";
   }
 
-  P3D_instance_feed_url_stream
+  P3D_instance_feed_url_stream_ptr
     (_instance, _unique_id, status,
      _channel->get_status_code(),
      _bytes_sent, NULL, 0);

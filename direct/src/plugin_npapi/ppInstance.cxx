@@ -122,7 +122,7 @@ PPInstance::
 #endif  // __APPLE__
 
   if (_p3d_inst != NULL) {
-    P3D_instance_finish(_p3d_inst);
+    P3D_instance_finish_ptr(_p3d_inst);
     _p3d_inst = NULL;
   }
 
@@ -274,7 +274,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
         // If we already have an instance by the time we get this
         // stream, start sending the data to the instance (instead of
         // having to mess around with a temporary file).
-        _p3d_instance_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+        _p3d_instance_id = P3D_instance_start_stream_ptr(_p3d_inst, _instance_url.c_str());
         nout << "p3d instance to stream " << _p3d_instance_id << "\n";
       }
       
@@ -387,7 +387,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   switch (req->_rtype) {
   case PPDownloadRequest::RT_user:
-    P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+    P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
                                  P3D_RC_in_progress, 0,
                                  stream->end, buffer, len);
     return len;
@@ -425,7 +425,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
       assert(!_opened_p3d_temp_file);
       req->_rtype = PPDownloadRequest::RT_user;
       req->_user_id = _p3d_instance_id;
-      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+      P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
                                    P3D_RC_in_progress, 0,
                                    stream->end, buffer, len);
       return len;
@@ -475,7 +475,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
   case PPDownloadRequest::RT_user:
     {
       assert(!req->_notified_done);
-      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+      P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
                                    result_code, 0, stream->end, NULL, 0);
       req->_notified_done = true;
     }
@@ -494,7 +494,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
     } else {
       // The instance has (only just) been created.  Tell it we've
       // sent it all the data it will get.
-      P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+      P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
                                    result_code, 0, stream->end, NULL, 0);
     }
     assert(!req->_notified_done);
@@ -545,7 +545,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       nout << "Failure starting stream\n";
       assert(reason != NPRES_DONE);
 
-      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+      P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
                                    P3D_RC_generic_error, 0, 0, NULL, 0);
       req->_notified_done = true;
     }
@@ -680,7 +680,7 @@ handle_request(P3D_request *request) {
   switch (request->_request_type) {
   case P3D_RT_stop:
     if (_p3d_inst != NULL) {
-      P3D_instance_finish(_p3d_inst);
+      P3D_instance_finish_ptr(_p3d_inst);
       _p3d_inst = NULL;
     }
     cleanup_window();
@@ -723,7 +723,7 @@ handle_request(P3D_request *request) {
     break;
   };
 
-  P3D_request_finish(request, handled);
+  P3D_request_finish_ptr(request, handled);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -783,7 +783,7 @@ handle_event(void *event) {
 
   }
 
-  if (P3D_instance_handle_event(_p3d_inst, &edata)) {
+  if (P3D_instance_handle_event_ptr(_p3d_inst, &edata)) {
     retval = true;
   }
 
@@ -807,7 +807,7 @@ get_panda_script_object() {
   P3D_object *main = NULL;
 
   if (_p3d_inst != NULL) {
-    main = P3D_instance_get_panda_script_object(_p3d_inst);
+    main = P3D_instance_get_panda_script_object_ptr(_p3d_inst);
   }
   nout << "get_panda_script_object, main = " << main << "\n";
 
@@ -876,19 +876,19 @@ p3dobj_to_variant(NPVariant *result, P3D_object *object) {
 P3D_object *PPInstance::
 variant_to_p3dobj(const NPVariant *variant) {
   if (NPVARIANT_IS_VOID(*variant)) {
-    return P3D_new_undefined_object();
+    return P3D_new_undefined_object_ptr();
   } else if (NPVARIANT_IS_NULL(*variant)) {
-    return P3D_new_none_object();
+    return P3D_new_none_object_ptr();
   } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
-    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));
+    return P3D_new_bool_object_ptr(NPVARIANT_TO_BOOLEAN(*variant));
   } else if (NPVARIANT_IS_INT32(*variant)) {
-    return P3D_new_int_object(NPVARIANT_TO_INT32(*variant));
+    return P3D_new_int_object_ptr(NPVARIANT_TO_INT32(*variant));
   } else if (NPVARIANT_IS_DOUBLE(*variant)) {
-    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(*variant));
+    return P3D_new_float_object_ptr(NPVARIANT_TO_DOUBLE(*variant));
   } else if (NPVARIANT_IS_STRING(*variant)) {
     NPString str = NPVARIANT_TO_STRING(*variant);
     const UC_NPString &uc_str = *(UC_NPString *)(&str);
-    return P3D_new_string_object(uc_str.UTF8Characters, uc_str.UTF8Length);
+    return P3D_new_string_object_ptr(uc_str.UTF8Characters, uc_str.UTF8Length);
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
     NPObject *object = NPVARIANT_TO_OBJECT(*variant);
     if (object->_class == &PPPandaObject::_object_class) {
@@ -903,7 +903,7 @@ variant_to_p3dobj(const NPVariant *variant) {
   }
 
   // Hmm, none of the above?
-  return P3D_new_none_object();
+  return P3D_new_none_object_ptr();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1311,7 +1311,7 @@ send_p3d_temp_file_data() {
   size_t total = 0;
   size_t count = in.gcount();
   while (count != 0) {
-    P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+    P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
                                  P3D_RC_in_progress, 0,
                                  _p3d_temp_file_total_size, buffer, count);
     total += count;
@@ -1328,7 +1328,7 @@ send_p3d_temp_file_data() {
 
   if (_finished_p3d_temp_file) {
     // If we'd already finished the stream earlier, tell the plugin.
-    P3D_instance_feed_url_stream(_p3d_inst, _p3d_instance_id,
+    P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
                                  P3D_RC_done, 0, _p3d_temp_file_total_size,
                                  NULL, 0);
   }
@@ -1469,7 +1469,8 @@ do_load_plugin() {
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   nout << "Attempting to load core API from " << pathname << "\n";
-  if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
+  if (!load_plugin(pathname, "", "", true, "", "", "", false, false, 
+                   _root_dir, nout)) {
     nout << "Unable to launch core API in " << pathname << "\n";
     set_failed();
     return;
@@ -1480,7 +1481,7 @@ do_load_plugin() {
 #else
   static const bool official = false;
 #endif
-  P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+  P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                          P3D_PLUGIN_SEQUENCE_VERSION, official,
                          PANDA_DISTRIBUTOR,
                          PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
@@ -1511,7 +1512,7 @@ create_instance() {
     tokens = &_tokens[0];
   }
   _started = true;
-  _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), 
+  _p3d_inst = P3D_new_instance_ptr(request_ready, tokens, _tokens.size(), 
                                0, NULL, this);
   if (_p3d_inst == NULL) {
     set_failed();
@@ -1524,7 +1525,7 @@ create_instance() {
   if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                         &window_object) == NPERR_NO_ERROR) {
     PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
-    P3D_instance_set_browser_script_object(_p3d_inst, pobj);
+    P3D_instance_set_browser_script_object_ptr(_p3d_inst, pobj);
     browser->releaseobject(window_object);
   } else {
     nout << "Couldn't get window_object\n";
@@ -1533,14 +1534,14 @@ create_instance() {
   if (_script_object != NULL) {
     // Now that we have a true instance, initialize our
     // script_object with the proper P3D_object pointer.
-    P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
+    P3D_object *main = P3D_instance_get_panda_script_object_ptr(_p3d_inst);
     nout << "new instance, setting main = " << main << "\n";
     _script_object->set_main(main);
   }
 
   if (_got_instance_url) {
     // Create the user_id for streaming the p3d data into the instance.
-    _p3d_instance_id = P3D_instance_start_stream(_p3d_inst, _instance_url.c_str());
+    _p3d_instance_id = P3D_instance_start_stream_ptr(_p3d_inst, _instance_url.c_str());
     nout << "p3d instance to stream " << _p3d_instance_id << "\n";
 
     // If we have already started to receive any instance data, send it
@@ -1659,7 +1660,7 @@ send_window() {
     window_type = P3D_WT_hidden;
   }    
 
-  P3D_instance_setup_window
+  P3D_instance_setup_window_ptr
     (_p3d_inst, window_type,
      x, y, _window.width, _window.height,
      &parent_window);
@@ -1770,7 +1771,7 @@ set_failed() {
     }
 
     if (_p3d_inst != NULL) {
-      P3D_instance_finish(_p3d_inst);
+      P3D_instance_finish_ptr(_p3d_inst);
       _p3d_inst = NULL;
     }
     cleanup_window();
@@ -1790,9 +1791,9 @@ handle_request_loop() {
     return;
   }
 
-  P3D_instance *p3d_inst = P3D_check_request(0.0);
+  P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
   while (p3d_inst != (P3D_instance *)NULL) {
-    P3D_request *request = P3D_instance_get_request(p3d_inst);
+    P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
     if (request != (P3D_request *)NULL) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
       assert(inst != NULL);
@@ -1803,7 +1804,7 @@ handle_request_loop() {
         return;
       }
     }
-    p3d_inst = P3D_check_request(0.0);
+    p3d_inst = P3D_check_request_ptr(0.0);
   }
 
   // Also check to see if we have any file_data objects that have
@@ -2098,7 +2099,7 @@ thread_run() {
   size_t count = _file.gcount();
   while (count != 0) {
     _total_count += count;
-    bool download_ok = P3D_instance_feed_url_stream
+    bool download_ok = P3D_instance_feed_url_stream_ptr
       (_p3d_inst, _user_id, P3D_RC_in_progress,
        0, _file_size, (const unsigned char *)buffer, count);
 
@@ -2138,7 +2139,7 @@ thread_run() {
     result = P3D_RC_generic_error;
   }
 
-  P3D_instance_feed_url_stream
+  P3D_instance_feed_url_stream_ptr
     (_p3d_inst, _user_id, result, 0, _total_count, NULL, 0);
 
   // All done.

@@ -16,7 +16,7 @@
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
 
-#include "panda3dBase.cxx"
+//#include "panda3dBase.cxx"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -317,7 +317,7 @@ post_arg_processing() {
 
   // Set up the "super mirror" URL, if specified.
   if (!_super_mirror_url.empty()) {
-    P3D_set_super_mirror(_super_mirror_url.c_str());
+    P3D_set_super_mirror_ptr(_super_mirror_url.c_str());
   }
 
   return true;
@@ -673,8 +673,8 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    _host_url, _verify_contents, _this_platform, _log_dirname,
                    _log_basename, trusted_environment, _console_environment,
-                   cerr)) {
-    cerr << "Unable to launch core API in " << pathname << "\n" << flush;
+                   _root_dir, cerr)) {
+    cerr << "Unable to launch core API in " << pathname << "\n";
     return false;
   }
 
@@ -684,10 +684,10 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
 #else
   static const bool official = false;
 #endif
-  P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
-                         P3D_PLUGIN_SEQUENCE_VERSION, official,
-                         PANDA_DISTRIBUTOR,
-                         PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+  P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+                             P3D_PLUGIN_SEQUENCE_VERSION, official,
+                             PANDA_DISTRIBUTOR,
+                             PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
 
   return true;
 }

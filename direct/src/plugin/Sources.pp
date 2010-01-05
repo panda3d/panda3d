@@ -13,24 +13,7 @@
 // who are preparing a custom Panda3D package for download by the
 // plugin will need to build this.
 
-#begin lib_target
-
-// 
-// p3d_plugin.dll, the main entry point to the Core API.
-//
-
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
-  #define TARGET p3d_plugin
-  #define LIB_PREFIX
-
-  #define OTHER_LIBS \
-    $[if $[OSX_PLATFORM],subprocbuffer]
-
-  #define COMBINED_SOURCES \
-    $[TARGET]_composite1.cxx
-
-  #define SOURCES \
+#define COREAPI_SOURCES \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
     $[if $[IS_OSX],find_root_dir_assist.mm] \
@@ -76,7 +59,7 @@
     p3dWindowParams.h p3dWindowParams.I \
     run_p3dpython.h
 
-  #define INCLUDED_SOURCES \
+#define COREAPI_INCLUDED_SOURCES \
     p3d_plugin.cxx \
     p3dAuthSession.cxx \
     p3dBoolObject.cxx \
@@ -110,12 +93,53 @@
     p3dX11SplashWindow.cxx \
     p3dWindowParams.cxx
 
+#begin lib_target
+
+// 
+// p3d_plugin.dll, the main entry point to the Core API.
+//
+
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
+  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
+  #define TARGET p3d_plugin
+  #define LIB_PREFIX
+  #define BUILDING_DLL BUILDING_P3D_PLUGIN
+
+  #define OTHER_LIBS \
+    $[if $[OSX_PLATFORM],subprocbuffer]
+
+  #define COMBINED_SOURCES p3d_plugin_composite1.cxx
+  #define SOURCES $[COREAPI_SOURCES]
+  #define INCLUDED_SOURCES $[COREAPI_INCLUDED_SOURCES]
+
   #define INSTALL_HEADERS \
     p3d_plugin.h
 
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
 
 #end lib_target
+
+#begin static_lib_target
+
+// 
+// libp3d_plugin_static.lib, the Core API as a static library (for p3dembed).
+//
+
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
+  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
+  #define TARGET p3d_plugin_static
+  #define BUILDING_DLL BUILDING_P3D_PLUGIN
+
+  #define OTHER_LIBS \
+    $[if $[OSX_PLATFORM],subprocbuffer]
+
+  #define COMBINED_SOURCES p3d_plugin_composite1.cxx
+  #define SOURCES $[COREAPI_SOURCES]
+  #define INCLUDED_SOURCES $[COREAPI_INCLUDED_SOURCES]
+
+  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
+
+#end static_lib_target
 
 #begin bin_target
 

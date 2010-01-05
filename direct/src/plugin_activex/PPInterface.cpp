@@ -406,50 +406,50 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
 {
     if ( !variant )
     {
-        return P3D_new_none_object();
+        return P3D_new_none_object_ptr();
     }
     switch( variant->vt )
     {
     case VT_VOID: 
         {
-            return P3D_new_undefined_object();
+            return P3D_new_undefined_object_ptr();
             break;
         } 
     case VT_EMPTY:
         {
-            // return P3D_new_none_object();
+            // return P3D_new_none_object_ptr();
             // A.T. Panda really expect undefined object here
-            return P3D_new_undefined_object();
+            return P3D_new_undefined_object_ptr();
             break;
         } 
     case VT_BOOL: 
         {
-            return P3D_new_bool_object( variant->bVal );
+            return P3D_new_bool_object_ptr( variant->bVal );
             break;
         } 
     case VT_I2: 
         {
-            return P3D_new_int_object( variant->iVal );
+            return P3D_new_int_object_ptr( variant->iVal );
             break;
         }
     case VT_I4:
         {
-            return P3D_new_int_object( variant->lVal );
+            return P3D_new_int_object_ptr( variant->lVal );
             break;
         }
     case VT_I8:
         {
-            return P3D_new_int_object( variant->llVal );
+            return P3D_new_int_object_ptr( variant->llVal );
             break;
         }
     case VT_R4:
         {
-            return P3D_new_float_object( variant->fltVal );
+            return P3D_new_float_object_ptr( variant->fltVal );
             break;
         }
     case VT_R8:
         {
-            return P3D_new_float_object( variant->dblVal );
+            return P3D_new_float_object_ptr( variant->dblVal );
             break;
         }
     case VT_BSTR:
@@ -463,7 +463,7 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
             WideCharToMultiByte(CP_UTF8, 0, bstr, blen,
                                 sbuffer, slen, NULL, NULL);
 
-            P3D_object *object = P3D_new_string_object(sbuffer, slen);
+            P3D_object *object = P3D_new_string_object_ptr(sbuffer, slen);
             delete[] sbuffer;
             return object;
             break;
@@ -488,7 +488,7 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
         }
     default:
         {
-            return P3D_new_undefined_object();
+            return P3D_new_undefined_object_ptr();
             break;
         }
     }

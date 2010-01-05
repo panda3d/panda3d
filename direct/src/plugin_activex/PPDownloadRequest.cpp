@@ -38,7 +38,7 @@ bool PPDownloadRequest::DataNotify( size_t expectedDataSize, const void* data, s
         {
             if ( m_p3dRequest )
             {
-                ret = P3D_instance_feed_url_stream( m_p3dRequest->_instance, 
+                ret = P3D_instance_feed_url_stream_ptr( m_p3dRequest->_instance, 
                     m_p3dRequest->_request._get_url._unique_id, 
                     P3D_RC_in_progress, 
                     0, 

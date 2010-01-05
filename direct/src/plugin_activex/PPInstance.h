@@ -23,21 +23,13 @@
 #include "PPDownloadCallback.h"
 #include "PPLogger.h"
 #include "fileSpec.h"
+#include "load_plugin.h"
 
 #define WM_PY_LAUNCHED        (WM_USER + 1)
 #define WM_PROGRESS           (WM_USER + 2)
 #define WM_PANDA_NOTIFICATION (WM_USER + 3)
 
 class CP3DActiveXCtrl;
-
-extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
-extern P3D_make_class_definition_func *P3D_make_class_definition;
-extern P3D_new_undefined_object_func *P3D_new_undefined_object;
-extern P3D_new_none_object_func *P3D_new_none_object;
-extern P3D_new_bool_object_func *P3D_new_bool_object;
-extern P3D_new_int_object_func *P3D_new_int_object;
-extern P3D_new_float_object_func *P3D_new_float_object;
-extern P3D_new_string_object_func *P3D_new_string_object;
 
 class PPInstance
 {

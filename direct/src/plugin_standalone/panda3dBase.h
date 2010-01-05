@@ -40,7 +40,6 @@ class Panda3DBase {
 public:
   Panda3DBase(bool console_environment);
 
-  int run_embedded(int read_offset, int argc, char *argv[]);
   void run_main_loop();
 
 protected:

@@ -50,7 +50,7 @@
 
 static int s_instanceCount = 0;
 
-void P3D_NofificationSync(P3D_instance *instance)
+void P3D_NotificationSync(P3D_instance *instance)
 {
     static bool handleRequestOnUIThread = true;
     if ( instance )
@@ -91,7 +91,7 @@ PPInstance::~PPInstance(  )
 {
     if ( m_p3dInstance )
     {
-        P3D_instance_finish( m_p3dInstance );
+        P3D_instance_finish_ptr( m_p3dInstance );
         m_p3dInstance = NULL;
     }
     if ( m_p3dObject )
@@ -449,7 +449,8 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 #endif  // P3D_PLUGIN_P3D_PLUGIN
       
       nout << "Attempting to load core API from " << pathname << "\n";
-      if (!load_plugin(pathname, "", "", true, "", "", "", false, false, nout)) {
+      if (!load_plugin(pathname, "", "", true, "", "", "", false, false, 
+                       m_rootDir, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;
       } else {
@@ -458,7 +459,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 #else
         static const bool official = false;
 #endif
-        P3D_set_plugin_version(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
+        P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                                P3D_PLUGIN_SEQUENCE_VERSION, official,
                                PANDA_DISTRIBUTOR,
                                PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
@@ -530,7 +531,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
         p3dTokens[i]._value = strdup( m_parentCtrl.m_parameters[ i ].second );
     }
     nout << "Creating new P3D instance object \n";
-    m_p3dInstance = P3D_new_instance( &P3D_NofificationSync, p3dTokens, m_parentCtrl.m_parameters.size(), 0, NULL, (void*)&m_parentCtrl );
+    m_p3dInstance = P3D_new_instance_ptr( &P3D_NotificationSync, p3dTokens, m_parentCtrl.m_parameters.size(), 0, NULL, (void*)&m_parentCtrl );
 
     for ( UINT j = 0; j < m_parentCtrl.m_parameters.size(); j++ )
     {
@@ -546,17 +547,17 @@ int PPInstance::Start( const std::string& p3dFilename  )
     }
     CComPtr<IDispatchEx> pDispatch;
     PPBrowserObject *pobj = new PPBrowserObject( &m_parentCtrl, pDispatch );
-    P3D_instance_set_browser_script_object( m_p3dInstance, pobj );
+    P3D_instance_set_browser_script_object_ptr( m_p3dInstance, pobj );
     P3D_OBJECT_DECREF( pobj );
     
-    m_p3dObject = P3D_instance_get_panda_script_object( m_p3dInstance );
+    m_p3dObject = P3D_instance_get_panda_script_object_ptr( m_p3dInstance );
     P3D_OBJECT_INCREF( m_p3dObject );
     
-    P3D_instance_setup_window( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, &parent_window );
+    P3D_instance_setup_window_ptr( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, &parent_window );
 
     nout << "Starting new P3D instance " << p3dFilename << "\n";
 
-    if ( !P3D_instance_start( m_p3dInstance, false, p3dFilename.c_str(), 0 ) )
+    if ( !P3D_instance_start_ptr( m_p3dInstance, false, p3dFilename.c_str(), 0 ) )
     {
         nout << "Error starting P3D instance: " << GetLastError() << "\n";
         return 1;
@@ -591,10 +592,10 @@ std::string PPInstance::GetP3DFilename( )
 
 void PPInstance::HandleRequestLoop() 
 {
-    P3D_instance *p3d_inst = P3D_check_request(0.0);
+    P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
     while ( p3d_inst != NULL ) 
     {
-        P3D_request *request = P3D_instance_get_request(p3d_inst);
+        P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
         if ( request != NULL ) 
         {
             CP3DActiveXCtrl* parent = ( CP3DActiveXCtrl* )(p3d_inst->_user_data);
@@ -607,7 +608,7 @@ void PPInstance::HandleRequestLoop()
                 nout << "Error handling P3D request. Instance's user data is not a Control \n";
             }
         }
-        p3d_inst = P3D_check_request(0.0);
+        p3d_inst = P3D_check_request_ptr(0.0);
     }
 }
 
@@ -639,7 +640,7 @@ void PPInstance::HandleRequestGetUrl( void* data )
         result_code = P3D_RC_generic_error;
     }
 
-    P3D_instance_feed_url_stream( 
+    P3D_instance_feed_url_stream_ptr( 
         request->_instance, 
         request->_request._get_url._unique_id, 
         result_code, 
@@ -648,7 +649,7 @@ void PPInstance::HandleRequestGetUrl( void* data )
         (const void*)NULL, 
         0 
         );
-    P3D_request_finish( request, true );
+    P3D_request_finish_ptr( request, true );
 }
 
 void PPInstance::HandleRequest( P3D_request *request ) 
@@ -663,7 +664,7 @@ void PPInstance::HandleRequest( P3D_request *request )
     {
         case P3D_RT_stop:
         {
-            P3D_instance_finish( request->_instance );
+            P3D_instance_finish_ptr( request->_instance );
             handled = true;
             break;
         }
@@ -701,7 +702,7 @@ void PPInstance::HandleRequest( P3D_request *request )
             break;
         }
     };
-    P3D_request_finish( request, handled );
+    P3D_request_finish_ptr( request, handled );
 }
 
 ////////////////////////////////////////////////////////////////////
