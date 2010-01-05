@@ -561,13 +561,13 @@ st_timer_callback(EventLoopTimerRef timer, void *user_data) {
 void Panda3DBase::
 timer_callback(EventLoopTimerRef timer) {
   // Check for new requests from the Panda3D plugin.
-  P3D_instance *inst = P3D_check_request(0.0);
+  P3D_instance *inst = P3D_check_request_ptr(0.0);
   while (inst != (P3D_instance *)NULL) {
-    P3D_request *request = P3D_instance_get_request(inst);
+    P3D_request *request = P3D_instance_get_request_ptr(inst);
     if (request != (P3D_request *)NULL) {
       handle_request(request);
     }
-    inst = P3D_check_request(0.0);
+    inst = P3D_check_request_ptr(0.0);
   }
   
   // Check the download tasks.
