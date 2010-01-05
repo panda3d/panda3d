@@ -185,7 +185,7 @@ load_plugin(const string &p3d_plugin_filename,
   // Posix case.
   assert(module == NULL);
   if (filename.empty()) {
-    module = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL | RTLD_DEEPBIND);
+    module = dlopen(NULL, RTLD_LAZY | RTLD_LOCAL);
   } else {
     module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_LOCAL);
   }
