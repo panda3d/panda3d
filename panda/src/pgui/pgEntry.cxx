@@ -636,6 +636,7 @@ setup_minimal(float width, int num_lines) {
   set_max_chars(0);
   set_max_width(width);
   set_num_lines(num_lines);
+  update_text();
 
   _accept_enabled = true;
 
