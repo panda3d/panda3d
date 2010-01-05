@@ -96,7 +96,8 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     pandabase:c downloader:c express:c pandaexpress:m \
-    pystub
+    pystub \
+    $[if $[OSX_PLATFORM],subprocbuffer]
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 

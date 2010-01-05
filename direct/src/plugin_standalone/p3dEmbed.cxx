@@ -18,10 +18,10 @@
 #include "load_plugin.h"
 
 #ifdef _WIN32
-unsigned long p3d_offset = 0xFF3D3D00;
+volatile unsigned long p3d_offset = 0xFF3D3D00;
 #else
 #include <stdint.h>
-uint32_t p3d_offset = 0xFF3D3D00;
+volatile uint32_t p3d_offset = 0xFF3D3D00;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +41,16 @@ P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
 ////////////////////////////////////////////////////////////////////
 int P3DEmbed::
 run_embedded(streampos read_offset, int argc, char *argv[]) {
+  // Check to see if we've actually got an application embedded.  If
+  // we do, read_offset will have been modified to contain a different
+  // value than the one we compiled in, above.  We test against
+  // read_offset + 1, because any appearances of this exact number
+  // within the binary will be replaced (including this one).
+  if (read_offset + (streampos)1 == (streampos)0xFF3D3D01) {
+    cerr << "This program is not intended to be run directly.\nIt is used by pdeploy to construct an embedded Panda3D application.\n";
+    return 1;
+  }
+
   // Make sure the splash window will be put in the center of the screen
   _win_x = -2;
   _win_y = -2;
@@ -155,16 +165,6 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
 
 int
 main(int argc, char *argv[]) {
-  // Check to see if we've actually got an application embedded.  If
-  // we do, p3d_offset will have been modified to contain a different
-  // value than the one we compiled in, above.  We test against
-  // p3d_offset + 1, because any appearances of this exact number
-  // within the binary will be replaced (including this one).
-  if (p3d_offset + 1 == 0xFF3D3D01) {
-    cerr << "This program is not intended to be run directly.\nIt is used by pdeploy to construct an embedded Panda3D application.\n";
-    return 1;
-  }
-
   P3DEmbed program(true);
   return program.run_embedded(p3d_offset, argc, argv);
 }
