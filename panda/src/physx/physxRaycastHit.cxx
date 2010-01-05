@@ -32,7 +32,7 @@ is_empty() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxRaycastHit::
+PhysxShape *PhysxRaycastHit::
 get_shape() const {
 
   nassertr_always(_hit.shape, NULL);

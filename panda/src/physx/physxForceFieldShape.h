@@ -39,8 +39,8 @@ class EXPCL_PANDAPHYSX PhysxForceFieldShape : public PhysxObject, public PhysxEn
 PUBLISHED:
   void release();
 
-  PT(PhysxForceField) get_force_field() const;
-  PT(PhysxForceFieldShapeGroup) get_shape_group() const;
+  PhysxForceField *get_force_field() const;
+  PhysxForceFieldShapeGroup *get_shape_group() const;
 
   void set_name(const char *name);
   void set_mat(const LMatrix4f &mat);
@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  static PT(PhysxForceFieldShape) factory(NxShapeType shapeType);
+  static PhysxForceFieldShape *factory(NxShapeType shapeType);
 
   virtual NxForceFieldShape *ptr() const = 0;
 

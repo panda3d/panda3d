@@ -51,7 +51,7 @@ link(NxScene *scenePtr) {
 
   while (NxU32 i=_ptr->getMaterialArray(materials, 5, iterator)) {
     while(i--) {
-      PT(PhysxMaterial) material = new PhysxMaterial();
+      PhysxMaterial *material = new PhysxMaterial();
       material->link(materials[i]);
     }
   }
@@ -70,7 +70,7 @@ unlink() {
 
   for (NxU32 i=0; i < nControllers; i++) {
     NxController *controllerPtr = _cm->getController(i);
-    PT(PhysxController) controller = (PhysxController *)controllerPtr->getUserData();
+    PhysxController *controller = (PhysxController *)controllerPtr->getUserData();
     controller->unlink();
   }
 
@@ -79,7 +79,7 @@ unlink() {
   NxU32 nActors = _ptr->getNbActors();
 
   for (NxU32 i=0; i < nActors; i++) {
-    PT(PhysxActor) actor = (PhysxActor *)actors[i]->userData;
+    PhysxActor *actor = (PhysxActor *)actors[i]->userData;
 
     // Actor could have already been unlinked by controller
     if (actor) {
@@ -93,7 +93,7 @@ unlink() {
   _ptr->resetJointIterator();
   for (NxU32 i=0; i < nJoints; i++) {
     NxJoint *jointPtr = _ptr->getNextJoint();
-    PT(PhysxJoint) joint = (PhysxJoint *)jointPtr->userData;
+    PhysxJoint *joint = (PhysxJoint *)jointPtr->userData;
     joint->unlink();
   }
 
@@ -102,7 +102,7 @@ unlink() {
   NxU32 nFields = _ptr->getNbForceFields();
 
   for (NxU32 i=0; i < nFields; i++) {
-    PT(PhysxForceField) field = (PhysxForceField *)fields[i]->userData;
+    PhysxForceField *field = (PhysxForceField *)fields[i]->userData;
     field->unlink();
   }
 
@@ -112,7 +112,7 @@ unlink() {
   _ptr->resetForceFieldShapeGroupsIterator();
   for (NxU32 i=0; i < nGroups; i++) {
     NxForceFieldShapeGroup *groupPtr = _ptr->getNextForceFieldShapeGroup();
-    PT(PhysxForceFieldShapeGroup) group = (PhysxForceFieldShapeGroup *)groupPtr->userData;
+    PhysxForceFieldShapeGroup *group = (PhysxForceFieldShapeGroup *)groupPtr->userData;
     group->unlink();
   }
 
@@ -125,7 +125,7 @@ unlink() {
 
   while (NxU32 i=_ptr->getMaterialArray(materials, 5, iterator)) {
     while(i--) {
-      PT(PhysxMaterial) material = (PhysxMaterial *)materials[i]->userData;
+      PhysxMaterial *material = (PhysxMaterial *)materials[i]->userData;
       material->unlink();
     }
   }
@@ -323,13 +323,13 @@ get_num_actors() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxScene::
+PhysxActor *PhysxScene::
 create_actor(PhysxActorDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxActor) actor = new PhysxActor();
+  PhysxActor *actor = new PhysxActor();
   nassertr(actor, NULL);
 
   NxActor *actorPtr = _ptr->createActor(desc._desc);
@@ -345,7 +345,7 @@ create_actor(PhysxActorDesc &desc) {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxScene::
+PhysxActor *PhysxScene::
 get_actor(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -371,7 +371,7 @@ get_actor(unsigned int idx) const {
 //               Reparent it to render and leave position at
 //               (0,0,0).
 ////////////////////////////////////////////////////////////////////
-PT(PhysxDebugGeomNode) PhysxScene::
+PhysxDebugGeomNode *PhysxScene::
 get_debug_geom_node() {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -505,13 +505,13 @@ get_num_materials() const {
 //               references an undefined material, the default
 //               material with index 0 is used instead.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxMaterial) PhysxScene::
+PhysxMaterial *PhysxScene::
 create_material(PhysxMaterialDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxMaterial) material = new PhysxMaterial();
+  PhysxMaterial *material = new PhysxMaterial();
   nassertr(material, NULL);
 
   NxMaterial *materialPtr = _ptr->createMaterial(desc._desc);
@@ -528,12 +528,12 @@ create_material(PhysxMaterialDesc &desc) {
 //  Description: Creates a new PhysxMaterial using the default
 //               settings of PhysxMaterialDesc.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxMaterial) PhysxScene::
+PhysxMaterial *PhysxScene::
 create_material() {
 
   nassertr(_error_type == ET_ok, NULL);
 
-  PT(PhysxMaterial) material = new PhysxMaterial();
+  PhysxMaterial *material = new PhysxMaterial();
   nassertr(material, NULL);
 
   NxMaterialDesc desc;
@@ -575,7 +575,7 @@ get_hightest_material_index() const {
 //               material that has been released, then the default
 //               material is returned, but no error is reported.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxMaterial) PhysxScene::
+PhysxMaterial *PhysxScene::
 get_material_from_index(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -592,7 +592,7 @@ get_material_from_index(unsigned int idx) const {
 //               materials. See also get_material_from_index,
 //               which retrieves a material by it's material index.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxMaterial) PhysxScene::
+PhysxMaterial *PhysxScene::
 get_material(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -630,13 +630,13 @@ get_num_controllers() const {
 //       Access: Published
 //  Description: Creates a new character controller.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxController) PhysxScene::
+PhysxController *PhysxScene::
 create_controller(PhysxControllerDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxController) controller = PhysxController::factory(desc.ptr()->getType());
+  PhysxController *controller = PhysxController::factory(desc.ptr()->getType());
   nassertr(controller, NULL);
 
   desc.ptr()->callback = &_controller_report;
@@ -656,7 +656,7 @@ create_controller(PhysxControllerDesc &desc) {
 //       Access: Published
 //  Description: Retrieves the n-th controller within the scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxController) PhysxScene::
+PhysxController *PhysxScene::
 get_controller(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -687,13 +687,13 @@ get_num_joints() const {
 //       Access: Published
 //  Description: Creates a joint in this scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxJoint) PhysxScene::
+PhysxJoint *PhysxScene::
 create_joint(PhysxJointDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxJoint) joint = PhysxJoint::factory(desc.ptr()->getType());
+  PhysxJoint *joint = PhysxJoint::factory(desc.ptr()->getType());
   nassertr(joint, NULL);
 
   NxJoint *jointPtr = _ptr->createJoint(*desc.ptr());
@@ -710,7 +710,7 @@ create_joint(PhysxJointDesc &desc) {
 //  Description: Retrieve the n-th joint from the array of all the
 //               joints in the scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxJoint) PhysxScene::
+PhysxJoint *PhysxScene::
 get_joint(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -744,7 +744,7 @@ get_num_force_fields() const {
 //       Access: Published
 //  Description: Creates a force field in this scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceField) PhysxScene::
+PhysxForceField *PhysxScene::
 create_force_field(PhysxForceFieldDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -754,7 +754,7 @@ create_force_field(PhysxForceFieldDesc &desc) {
   nassertr(desc.is_valid(),NULL);
 
   // Create the force field
-  PT(PhysxForceField) field = new PhysxForceField();
+  PhysxForceField *field = new PhysxForceField();
   nassertr(field, NULL);
 
   NxForceField *fieldPtr = _ptr->createForceField(desc._desc);
@@ -771,7 +771,7 @@ create_force_field(PhysxForceFieldDesc &desc) {
 //  Description: Returns the n-th force field from the array of
 //               all the force fields in the scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceField) PhysxScene::
+PhysxForceField *PhysxScene::
 get_force_field(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -802,12 +802,12 @@ get_num_force_field_shape_groups() const {
 //  Description: Creates a new force field shape group in this
 //               scene.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShapeGroup) PhysxScene::
+PhysxForceFieldShapeGroup *PhysxScene::
 create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
 
-  PT(PhysxForceFieldShapeGroup) group = new PhysxForceFieldShapeGroup();
+  PhysxForceFieldShapeGroup *group = new PhysxForceFieldShapeGroup();
   nassertr(group, NULL);
 
   NxForceFieldShapeGroup *groupPtr = _ptr->createForceFieldShapeGroup(desc._desc);
@@ -824,7 +824,7 @@ create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
 //  Description: Returns the n-th force field shape group in this
 //               scene
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShapeGroup) PhysxScene::
+PhysxForceFieldShapeGroup *PhysxScene::
 get_force_field_shape_group(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -1076,17 +1076,6 @@ overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
 
   return report;
 }
-
-
-
-
-
-
-
-
-
-
-//################################
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::set_actor_pair_flag

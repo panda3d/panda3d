@@ -43,7 +43,7 @@ release() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxController) PhysxController::
+PhysxController *PhysxController::
 factory(NxControllerType controllerType) {
 
   switch (controllerType) {
@@ -67,7 +67,7 @@ factory(NxControllerType controllerType) {
 //  Description: Retrieves the actor which this controller is
 //               associated with.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxController::
+PhysxActor *PhysxController::
 get_actor() const {
 
   nassertr(_error_type == ET_ok, NULL);

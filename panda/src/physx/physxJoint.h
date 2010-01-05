@@ -40,8 +40,8 @@ class EXPCL_PANDAPHYSX PhysxJoint : public PhysxObject, public PhysxEnums {
 PUBLISHED:
   void release();
 
-  PT(PhysxActor) get_actor(unsigned int idx) const;
-  PT(PhysxScene) get_scene() const;
+  PhysxActor *get_actor(unsigned int idx) const;
+  PhysxScene *get_scene() const;
 
   void purge_limit_planes();
 
@@ -64,7 +64,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  static PT(PhysxJoint) factory(NxJointType shapeType);
+  static PhysxJoint *factory(NxJointType shapeType);
 
   virtual NxJoint *ptr() const = 0;
 

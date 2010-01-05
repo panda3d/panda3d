@@ -43,7 +43,7 @@ link(NxActor *actorPtr) {
   for (NxU32 i=0; i < nShapes; i++) {
     if (shapes[i]->getName() == NULL) shapes[i]->setName("");
 
-    PT(PhysxShape) shape = PhysxShape::factory(shapes[i]->getType());
+    PhysxShape *shape = PhysxShape::factory(shapes[i]->getType());
     shape->link(shapes[i]);
   }
 }
@@ -61,7 +61,7 @@ unlink() {
   NxU32 nShapes = _ptr->getNbShapes();
 
   for (NxU32 i=0; i < nShapes; i++) {
-    PT(PhysxShape) shape = (PhysxShape *)shapes[i]->userData;
+    PhysxShape *shape = (PhysxShape *)shapes[i]->userData;
     shape->unlink();
   }
 
@@ -94,7 +94,7 @@ release() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
-link_controller(PT(PhysxController) controller) {
+link_controller(PhysxController *controller) {
 
   _controller = controller;
 }
@@ -350,7 +350,7 @@ get_node_path() const {
 //       Access: Published
 //  Description: Retrieves the scene which this actor belongs to.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxActor::
+PhysxScene *PhysxActor::
 get_scene() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -387,13 +387,13 @@ get_num_shapes() const {
 //               with a call to update_mass_from_shapes() to do
 //               that.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxActor::
+PhysxShape *PhysxActor::
 create_shape(PhysxShapeDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxShape) shape = PhysxShape::factory(desc.ptr()->getType());
+  PhysxShape *shape = PhysxShape::factory(desc.ptr()->getType());
   nassertr(shape, NULL);
 
   NxShape *shapePtr = _ptr->createShape(*desc.ptr());
@@ -411,7 +411,7 @@ create_shape(PhysxShapeDesc &desc) {
 //               array of shapes. Index must be in the range from
 //               zero to (number-of-shapes minus 1).
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxActor::
+PhysxShape *PhysxActor::
 get_shape(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -432,7 +432,7 @@ get_shape(unsigned int idx) const {
 //               shape's name matches the specified name is
 //               returned, or NULL if no shape has a matching name.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxActor::
+PhysxShape *PhysxActor::
 get_shape_by_name(const char *name) const {
 
   nassertr(_error_type == ET_ok, NULL);

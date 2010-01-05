@@ -48,11 +48,11 @@ PUBLISHED:
   void set_name(const char *name);
 
   const char *get_name() const;
-  PT(PhysxScene) get_scene() const;
-  PT(PhysxForceFieldShapeGroup) get_include_shape_group() const;
+  PhysxScene *get_scene() const;
+  PhysxForceFieldShapeGroup *get_include_shape_group() const;
 
   unsigned int get_num_shape_groups() const;
-  PT(PhysxForceFieldShapeGroup) get_shape_group(unsigned int idx) const;
+  PhysxForceFieldShapeGroup *get_shape_group(unsigned int idx) const;
   MAKE_SEQ(get_shape_groups, get_num_shape_groups, get_shape_group);
 
 ////////////////////////////////////////////////////////////////////

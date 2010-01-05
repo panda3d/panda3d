@@ -46,7 +46,7 @@ class EXPCL_PANDAPHYSX PhysxShape : public PhysxObject, public PhysxEnums {
 PUBLISHED:
   void release();
 
-  PT(PhysxActor) get_actor() const;
+  PhysxActor *get_actor() const;
 
   void set_name(const char *name);
   void set_flag(const PhysxShapeFlag flag, bool value);
@@ -78,7 +78,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  static PT(PhysxShape) factory(NxShapeType shapeType);
+  static PhysxShape *factory(NxShapeType shapeType);
 
   virtual NxShape *ptr() const = 0;
 

@@ -36,7 +36,7 @@ link(NxForceField *materialPtr) {
   scene->_forcefields.add(this);
 
   // Link include shape group
-  PT(PhysxForceFieldShapeGroup) group = new PhysxForceFieldShapeGroup();
+  PhysxForceFieldShapeGroup *group = new PhysxForceFieldShapeGroup();
   group->link(&(_ptr->getIncludeShapeGroup()));
   _ptr->getIncludeShapeGroup().setName("");
 }
@@ -50,7 +50,7 @@ void PhysxForceField::
 unlink() {
 
   // Unlink inlcude shape group
-  PT(PhysxForceFieldShapeGroup) group = (PhysxForceFieldShapeGroup *)(_ptr->getIncludeShapeGroup().userData);
+  PhysxForceFieldShapeGroup *group = (PhysxForceFieldShapeGroup *)(_ptr->getIncludeShapeGroup().userData);
   group->unlink();
 
   // Unlink self
@@ -105,7 +105,7 @@ get_name() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxForceField::
+PhysxScene *PhysxForceField::
 get_scene() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -117,7 +117,7 @@ get_scene() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShapeGroup) PhysxForceField::
+PhysxForceFieldShapeGroup *PhysxForceField::
 get_include_shape_group() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -141,7 +141,7 @@ get_num_shape_groups() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShapeGroup) PhysxForceField::
+PhysxForceFieldShapeGroup *PhysxForceField::
 get_shape_group(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);

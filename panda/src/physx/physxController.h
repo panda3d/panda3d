@@ -37,7 +37,7 @@ class EXPCL_PANDAPHYSX PhysxController : public PhysxObject, public PhysxEnums {
 PUBLISHED:
   void release();
 
-  PT(PhysxActor) get_actor() const;
+  PhysxActor *get_actor() const;
 
   void set_pos(const LPoint3f &pos);
   void set_sharpness(float sharpness);
@@ -64,7 +64,7 @@ PUBLISHED:
 public:
   void update(float dt);
 
-  static PT(PhysxController) factory(NxControllerType shapeType);
+  static PhysxController *factory(NxControllerType shapeType);
 
   virtual NxController *ptr() const = 0;
 

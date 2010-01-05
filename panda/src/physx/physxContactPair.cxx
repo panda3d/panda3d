@@ -25,7 +25,7 @@ TypeHandle PhysxContactPair::_type_handle;
 //  Description: Returns the first of the two actors that makes up
 //               this pair.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxContactPair::
+PhysxActor *PhysxContactPair::
 get_actor_a() const {
 
   NxActor *actorPtr = _pair.actors[0];
@@ -38,7 +38,7 @@ get_actor_a() const {
 //  Description: Returns the second of the two actors that make up
 //               his pair.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxContactPair::
+PhysxActor *PhysxContactPair::
 get_actor_b() const {
 
   NxActor *actorPtr = _pair.actors[1];

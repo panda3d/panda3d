@@ -48,7 +48,7 @@ release() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxJoint) PhysxJoint::
+PhysxJoint *PhysxJoint::
 factory(NxJointType shapeType) {
 
   switch (shapeType) {
@@ -121,7 +121,7 @@ get_name() const {
 //  Description: Retrieves the actor which this joint is associated
 //               with.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxJoint::
+PhysxActor *PhysxJoint::
 get_actor(unsigned int idx) const {
 
   nassertr_always(idx < 2, NULL);
@@ -138,7 +138,7 @@ get_actor(unsigned int idx) const {
 //  Description: Retrieves the scene which this joint is associated
 //               with.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxJoint::
+PhysxScene *PhysxJoint::
 get_scene() const {
 
   nassertr(_error_type == ET_ok, NULL);

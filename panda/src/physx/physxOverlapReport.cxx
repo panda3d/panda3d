@@ -24,7 +24,7 @@ bool PhysxOverlapReport::
 onEvent(NxU32 nbEntities, NxShape **entities) {
 
   for (unsigned int i=0; i<nbEntities; i++) {
-    PT(PhysxShape) shape = (PhysxShape *)entities[i]->userData;
+    PhysxShape *shape = (PhysxShape *)entities[i]->userData;
     _overlaps.push_back(shape);
   }
 
@@ -47,7 +47,7 @@ get_num_overlaps() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxOverlapReport::
+PhysxShape *PhysxOverlapReport::
 get_first_overlap() {
 
   _iterator = _overlaps.begin();
@@ -59,7 +59,7 @@ get_first_overlap() {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxOverlapReport::
+PhysxShape *PhysxOverlapReport::
 get_next_overlap() {
 
   if (_iterator != _overlaps.end()) {
@@ -75,7 +75,7 @@ get_next_overlap() {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxOverlapReport::
+PhysxShape *PhysxOverlapReport::
 get_overlap(unsigned int idx) {
 
   nassertr(idx < get_num_overlaps(), NULL);

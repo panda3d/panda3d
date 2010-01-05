@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE PhysxMaterial();
   INLINE ~PhysxMaterial();
 
-  PT(PhysxScene) get_scene() const;
+  PhysxScene *get_scene() const;
   unsigned short get_material_index() const;
 
   void load_from_desc(const PhysxMaterialDesc &materialDesc);

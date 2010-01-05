@@ -37,7 +37,7 @@ PUBLISHED:
 
   bool is_empty() const;
 
-  PT(PhysxShape) get_shape() const;
+  PhysxShape *get_shape() const;
   LPoint3f get_impact_pos() const;
   LVector3f get_impact_normal() const;
   float get_distance() const;

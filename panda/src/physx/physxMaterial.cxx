@@ -71,7 +71,7 @@ release() {
 //       Access: Published
 //  Description: Returns the scene that owns this material.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxMaterial::
+PhysxScene *PhysxMaterial::
 get_scene() const {
 
   nassertr(_error_type == ET_ok, NULL);

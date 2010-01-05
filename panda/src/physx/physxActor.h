@@ -84,7 +84,7 @@ PUBLISHED:
   float compute_kinetic_energy() const;
   bool update_mass_from_shapes(float density, float totalMass);
 
-  PT(PhysxScene) get_scene() const;
+  PhysxScene *get_scene() const;
 
   // NodePath
   void attach_node_path(const NodePath &np);
@@ -93,9 +93,9 @@ PUBLISHED:
 
   // Shapes
   unsigned int get_num_shapes() const;
-  PT(PhysxShape) create_shape(PhysxShapeDesc &desc);
-  PT(PhysxShape) get_shape(unsigned int idx) const;
-  PT(PhysxShape) get_shape_by_name(const char *name) const;
+  PhysxShape *create_shape(PhysxShapeDesc &desc);
+  PhysxShape *get_shape(unsigned int idx) const;
+  PhysxShape *get_shape_by_name(const char *name) const;
   MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
 
   // Forces
@@ -189,7 +189,7 @@ PUBLISHED:
 public:
   INLINE NxActor *ptr() const { return _ptr; };
 
-  void link_controller(PT(PhysxController) controller);
+  void link_controller(PhysxController *controller);
   void link(NxActor *ptr);
   void unlink();
 

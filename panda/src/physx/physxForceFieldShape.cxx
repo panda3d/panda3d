@@ -42,7 +42,7 @@ release() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShape) PhysxForceFieldShape::
+PhysxForceFieldShape *PhysxForceFieldShape::
 factory(NxShapeType shapeType) {
 
   switch (shapeType) {
@@ -70,7 +70,7 @@ factory(NxShapeType shapeType) {
 //  Description: Returns the owning force field if this is a shape
 //               of an include group, else NULL will be returned.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceField) PhysxForceFieldShape::
+PhysxForceField *PhysxForceFieldShape::
 get_force_field() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -87,7 +87,7 @@ get_force_field() const {
 //       Access: Published
 //  Description: Returns the owning force field shape group.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShapeGroup) PhysxForceFieldShape::
+PhysxForceFieldShapeGroup *PhysxForceFieldShape::
 get_shape_group() const {
 
   nassertr(_error_type == ET_ok, NULL);

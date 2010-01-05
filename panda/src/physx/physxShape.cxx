@@ -52,7 +52,7 @@ release() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxShape) PhysxShape::
+PhysxShape *PhysxShape::
 factory(NxShapeType shapeType) {
 
   switch (shapeType) {
@@ -92,7 +92,7 @@ factory(NxShapeType shapeType) {
 //  Description: Retrieves the actor which this shape is associated
 //               with.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxShape::
+PhysxActor *PhysxShape::
 get_actor() const {
 
   nassertr(_error_type == ET_ok, NULL);

@@ -56,7 +56,7 @@ PUBLISHED:
   LVector3f get_local_normal(unsigned int idx) const;
   LVector3f get_local_axis(unsigned int idx) const;
   LPoint3f get_local_anchor(unsigned int idx) const;
-  PT(PhysxActor) get_actor(unsigned int idx) const;
+  PhysxActor *get_actor(unsigned int idx) const;
 
 public:
   virtual NxJointDesc *ptr() const = 0;

@@ -40,7 +40,7 @@ link(NxForceFieldShapeGroup *groupPtr) {
   _ptr->resetShapesIterator();
   for (NxU32 i=0; i < nShapes; i++) {
     NxForceFieldShape *shapePtr = _ptr->getNextShape();
-    PT(PhysxForceFieldShape) shape = PhysxForceFieldShape::factory(shapePtr->getType());
+    PhysxForceFieldShape *shape = PhysxForceFieldShape::factory(shapePtr->getType());
     shape->link(shapePtr);
   }
 }
@@ -58,7 +58,7 @@ unlink() {
   _ptr->resetShapesIterator();
   for (NxU32 i=0; i < nShapes; i++) {
     NxForceFieldShape *shapePtr = _ptr->getNextShape();
-    PT(PhysxForceFieldShape) shape = (PhysxForceFieldShape *)shapePtr->userData;
+    PhysxForceFieldShape *shape = (PhysxForceFieldShape *)shapePtr->userData;
     shape->unlink();
   }
 
@@ -91,7 +91,7 @@ release() {
 //  Description: Returns the scene that owns this force field shape
 //               group.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxScene) PhysxForceFieldShapeGroup::
+PhysxScene *PhysxForceFieldShapeGroup::
 get_scene() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -104,7 +104,7 @@ get_scene() const {
 //  Description: Returns the force field of this group if this is
 //               an include group. If not NULL will be returned.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceField) PhysxForceFieldShapeGroup::
+PhysxForceField *PhysxForceFieldShapeGroup::
 get_force_field() const {
 
   nassertr(_error_type == ET_ok, NULL);
@@ -177,13 +177,13 @@ get_num_shapes() const {
 //  Description: Creates a force field shape and adds it to the
 //               group.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShape) PhysxForceFieldShapeGroup::
+PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 create_shape(PhysxForceFieldShapeDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
   nassertr(desc.is_valid(),NULL);
 
-  PT(PhysxForceFieldShape) shape = PhysxForceFieldShape::factory(desc.ptr()->getType());
+  PhysxForceFieldShape *shape = PhysxForceFieldShape::factory(desc.ptr()->getType());
   nassertr(shape, NULL);
 
   NxForceFieldShape *shapePtr = _ptr->createShape(*desc.ptr());
@@ -199,7 +199,7 @@ create_shape(PhysxForceFieldShapeDesc &desc) {
 //       Access: Published
 //  Description: Returns the i-th shape in the force field group.
 ////////////////////////////////////////////////////////////////////
-PT(PhysxForceFieldShape) PhysxForceFieldShapeGroup::
+PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 get_shape(unsigned int idx) const {
 
   nassertr(_error_type == ET_ok, NULL);

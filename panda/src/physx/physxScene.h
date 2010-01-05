@@ -77,7 +77,7 @@ PUBLISHED:
   void set_timing_variable();
   void set_timing_fixed(float maxTimestep=1.0f/60.0f, unsigned int maxIter=8);
 
-  PT(PhysxDebugGeomNode) get_debug_geom_node();
+  PhysxDebugGeomNode *get_debug_geom_node();
 
   void enable_contact_reporting(bool enabled);
   bool is_contact_reporting_enabled() const;
@@ -95,41 +95,41 @@ PUBLISHED:
 
   // Actors
   unsigned int get_num_actors() const;
-  PT(PhysxActor) create_actor(PhysxActorDesc &desc);
-  PT(PhysxActor) get_actor(unsigned int idx) const;
+  PhysxActor *create_actor(PhysxActorDesc &desc);
+  PhysxActor *get_actor(unsigned int idx) const;
   MAKE_SEQ(get_actors, get_num_actors, get_actor);
 
   // Joints
   unsigned int get_num_joints() const;
-  PT(PhysxJoint) create_joint(PhysxJointDesc &desc);
-  PT(PhysxJoint) get_joint(unsigned int idx) const;
+  PhysxJoint *create_joint(PhysxJointDesc &desc);
+  PhysxJoint *get_joint(unsigned int idx) const;
   MAKE_SEQ(get_joints, get_num_joints, get_joint);
 
   // Materials
   unsigned int get_num_materials() const;
   unsigned int get_hightest_material_index() const;
-  PT(PhysxMaterial) create_material(PhysxMaterialDesc &desc);
-  PT(PhysxMaterial) create_material();
-  PT(PhysxMaterial) get_material(unsigned int idx) const;
-  PT(PhysxMaterial) get_material_from_index(unsigned int idx) const;
+  PhysxMaterial *create_material(PhysxMaterialDesc &desc);
+  PhysxMaterial *create_material();
+  PhysxMaterial *get_material(unsigned int idx) const;
+  PhysxMaterial *get_material_from_index(unsigned int idx) const;
   MAKE_SEQ(get_materials, get_num_materials, get_material);
 
   // Controllers
   unsigned int get_num_controllers() const;
-  PT(PhysxController) create_controller(PhysxControllerDesc &controllerDesc);
-  PT(PhysxController) get_controller(unsigned int idx) const;
+  PhysxController *create_controller(PhysxControllerDesc &controllerDesc);
+  PhysxController *get_controller(unsigned int idx) const;
   MAKE_SEQ(get_controllers, get_num_controllers, get_controller);
 
   // Force fields
   unsigned int get_num_force_fields() const;
-  PT(PhysxForceField) create_force_field(PhysxForceFieldDesc &desc);
-  PT(PhysxForceField) get_force_field(unsigned int idx) const;
+  PhysxForceField *create_force_field(PhysxForceFieldDesc &desc);
+  PhysxForceField *get_force_field(unsigned int idx) const;
   MAKE_SEQ(get_force_fields, get_num_force_fields, get_force_field);
 
   // Force field shape groups
   unsigned int get_num_force_field_shape_groups() const;
-  PT(PhysxForceFieldShapeGroup) create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc);
-  PT(PhysxForceFieldShapeGroup) get_force_field_shape_group(unsigned int idx) const;
+  PhysxForceFieldShapeGroup *create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc);
+  PhysxForceFieldShapeGroup *get_force_field_shape_group(unsigned int idx) const;
   MAKE_SEQ(get_force_field_shape_groups, get_num_force_field_shape_groups, get_force_field_shape_group);
 
   // Raycast queries

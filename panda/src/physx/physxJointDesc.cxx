@@ -250,7 +250,7 @@ get_joint_flag(const PhysxJointFlag flag) const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(PhysxActor) PhysxJointDesc::
+PhysxActor *PhysxJointDesc::
 get_actor(unsigned int idx) const {
 
   nassertr_always(idx < 2, NULL);

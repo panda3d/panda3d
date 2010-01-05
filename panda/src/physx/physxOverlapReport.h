@@ -36,9 +36,9 @@ class EXPCL_PANDAPHYSX PhysxOverlapReport : public PhysxUserEntityReport {
 
 PUBLISHED:
   unsigned int get_num_overlaps() const;
-  PT(PhysxShape) get_first_overlap();
-  PT(PhysxShape) get_next_overlap();
-  PT(PhysxShape) get_overlap(unsigned int idx);
+  PhysxShape *get_first_overlap();
+  PhysxShape *get_next_overlap();
+  PhysxShape *get_overlap(unsigned int idx);
   MAKE_SEQ(get_overlaps, get_num_overlaps, get_overlap);
 
 public:
