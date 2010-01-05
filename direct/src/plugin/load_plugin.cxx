@@ -185,7 +185,7 @@ load_plugin(const string &p3d_plugin_filename,
   // Posix case.
   assert(module == NULL);
   if (filename.empty()) {
-    module = dlopen(NULL, RTLD_LAZY | RTLD_LOCAL);
+    module = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL | RTLD_DEEPBIND);
   } else {
     module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_LOCAL);
   }
@@ -246,6 +246,38 @@ load_plugin(const string &p3d_plugin_filename,
   P3D_instance_handle_event_ptr = (P3D_instance_handle_event_func *)get_func(module, "P3D_instance_handle_event");  
 
   #undef get_func
+
+  // Successfully loaded.
+  plugin_loaded = true;
+
+  if (!init_plugin(contents_filename, host_url, 
+                   verify_contents, platform,
+                   log_directory, log_basename,
+                   trusted_environment, console_environment,
+                   root_dir, logfile)) {
+    unload_dso();
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_plugin
+//  Description: Ensures all the required function pointers have been
+//               set, and then calls P3D_initialize() on the
+//               recently-loaded plugin.  Returns true on success,
+//               false on failure.
+//
+//               It is not necessary to call this after calling
+//               load_plugin(); it is called implicitly.
+////////////////////////////////////////////////////////////////////
+bool
+init_plugin(const string &contents_filename, const string &host_url, 
+            bool verify_contents, const string &platform,
+            const string &log_directory, const string &log_basename,
+            bool trusted_environment, bool console_environment,
+            const string &root_dir, ostream &logfile) {
 
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize_ptr == NULL ||
@@ -330,12 +362,8 @@ load_plugin(const string &p3d_plugin_filename,
       << "\nP3D_instance_feed_url_stream_ptr = " << P3D_instance_feed_url_stream_ptr
       << "\nP3D_instance_handle_event_ptr = " << P3D_instance_handle_event_ptr
       << "\n";
-    unload_dso();
     return false;
   }
-
-  // Successfully loaded.
-  plugin_loaded = true;
 
   if (!P3D_initialize_ptr(P3D_API_VERSION, contents_filename.c_str(),
                           host_url.c_str(), verify_contents, platform.c_str(),
@@ -346,7 +374,6 @@ load_plugin(const string &p3d_plugin_filename,
     logfile
       << "Failed to initialize plugin (passed API version " 
       << P3D_API_VERSION << ")\n";
-    unload_plugin();
     return false;
   }
 
@@ -388,6 +415,7 @@ unload_dso() {
     dlclose(module);
 #endif
     module = NULL;
+    dso_needs_unload = false;
   }
   
   P3D_initialize_ptr = NULL;

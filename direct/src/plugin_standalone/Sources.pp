@@ -103,7 +103,7 @@
 
   #define SOURCES \
     panda3dBase.cxx panda3dBase.h panda3dBase.I \
-    p3dEmbed.cxx
+    p3dEmbed.cxx p3dEmbedMain.cxx
 
   #define WIN_RESOURCE_FILE panda3d.rc
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib

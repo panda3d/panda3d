@@ -33,6 +33,8 @@ public:
   P3DEmbed(bool console_environment);
 
   int run_embedded(streampos read_offset, int argc, char *argv[]);
+
+  streampos _read_offset_check;
 };
 
 #endif

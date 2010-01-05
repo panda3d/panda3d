@@ -17,13 +17,6 @@
 #include "p3dEmbed.h"
 #include "load_plugin.h"
 
-#ifdef _WIN32
-volatile unsigned long p3d_offset = 0xFF3D3D00;
-#else
-#include <stdint.h>
-volatile uint32_t p3d_offset = 0xFF3D3D00;
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DEmbed::Constructor
 //       Access: Public
@@ -46,7 +39,12 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // value than the one we compiled in, above.  We test against
   // read_offset + 1, because any appearances of this exact number
   // within the binary will be replaced (including this one).
-  if (read_offset + (streampos)1 == (streampos)0xFF3D3D01) {
+
+  // We also have to store this computation in a member variable, to
+  // work around a compiler optimization that might otherwise remove
+  // the + 1 from the test.
+  _read_offset_check = read_offset + (streampos)1;
+  if (_read_offset_check == (streampos)0xFF3D3D01) {
     cerr << "This program is not intended to be run directly.\nIt is used by pdeploy to construct an embedded Panda3D application.\n";
     return 1;
   }
@@ -133,12 +131,52 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   Filename root_dir_f(root_dir);
   root_dir_f.make_absolute(f.get_dirname());
 
-  // Initialize the plugin.  Since we are linked with the core API
-  // statically, we pass the empty string as the plugin filename, and
-  // pull the required symbols out of the local address space.
-  if (!load_plugin("", "",
-                   _host_url, _verify_contents, _this_platform, _log_dirname,
-                   _log_basename, true, _console_environment,
+  // Initialize the core API by directly assigning all of the function
+  // pointers.
+  P3D_initialize_ptr = &P3D_initialize;
+  P3D_finalize_ptr = &P3D_finalize;
+  P3D_set_plugin_version_ptr = &P3D_set_plugin_version;
+  P3D_set_super_mirror_ptr = &P3D_set_super_mirror;
+  P3D_new_instance_ptr = &P3D_new_instance;
+  P3D_instance_start_ptr = &P3D_instance_start;
+  P3D_instance_start_stream_ptr = &P3D_instance_start_stream;
+  P3D_instance_finish_ptr = &P3D_instance_finish;
+  P3D_instance_setup_window_ptr = &P3D_instance_setup_window;
+
+  P3D_object_get_type_ptr = &P3D_object_get_type;
+  P3D_object_get_bool_ptr = &P3D_object_get_bool;
+  P3D_object_get_int_ptr = &P3D_object_get_int;
+  P3D_object_get_float_ptr = &P3D_object_get_float;
+  P3D_object_get_string_ptr = &P3D_object_get_string;
+  P3D_object_get_repr_ptr = &P3D_object_get_repr;
+  P3D_object_get_property_ptr = &P3D_object_get_property;
+  P3D_object_set_property_ptr = &P3D_object_set_property;
+  P3D_object_has_method_ptr = &P3D_object_has_method;
+  P3D_object_call_ptr = &P3D_object_call;
+  P3D_object_eval_ptr = &P3D_object_eval;
+  P3D_object_incref_ptr = &P3D_object_incref;
+  P3D_object_decref_ptr = &P3D_object_decref;
+
+  P3D_make_class_definition_ptr = &P3D_make_class_definition;
+  P3D_new_undefined_object_ptr = &P3D_new_undefined_object;
+  P3D_new_none_object_ptr = &P3D_new_none_object;
+  P3D_new_bool_object_ptr = &P3D_new_bool_object;
+  P3D_new_int_object_ptr = &P3D_new_int_object;
+  P3D_new_float_object_ptr = &P3D_new_float_object;
+  P3D_new_string_object_ptr = &P3D_new_string_object;
+  P3D_instance_get_panda_script_object_ptr = &P3D_instance_get_panda_script_object;
+  P3D_instance_set_browser_script_object_ptr = &P3D_instance_set_browser_script_object;
+
+  P3D_instance_get_request_ptr = &P3D_instance_get_request;
+  P3D_check_request_ptr = &P3D_check_request;
+  P3D_request_finish_ptr = &P3D_request_finish;
+  P3D_instance_feed_url_stream_ptr = &P3D_instance_feed_url_stream;
+  P3D_instance_handle_event_ptr = &P3D_instance_handle_event;
+
+  // Now call init_plugin() to verify that we got all of the required
+  // function pointers.  This will also call P3D_initialize().
+  if (!init_plugin("", _host_url, _verify_contents, _this_platform, 
+                   _log_dirname, _log_basename, true, _console_environment,
                    root_dir_f.to_os_specific(), cerr)) {
     cerr << "Unable to launch core API\n";
     return 1;
@@ -152,20 +190,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   
   run_main_loop();
 
-  // Though it's not strictly necessary to call P3D_finalize() here
-  // (because unload_plugin() will call it), we have to do it anyway,
-  // to force the contents of libp3d_plugin_static.lib to be linked
-  // in.  If we don't appear to make any calls to these functions,
-  // then the linker may decide to omit all of them.
-  P3D_finalize();
 
   unload_plugin();
   return 0;
 }
-
-int
-main(int argc, char *argv[]) {
-  P3DEmbed program(true);
-  return program.run_embedded(p3d_offset, argc, argv);
-}
-
