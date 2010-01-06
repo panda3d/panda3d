@@ -218,7 +218,7 @@
   // Added to avoid old iostream reference problems
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
   // Added to make pandatool function in VS 9
-  #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:MFC90.LIB /NOD:libcmtd /NOD:libc
+  #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
 
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
