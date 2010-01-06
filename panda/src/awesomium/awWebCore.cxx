@@ -21,11 +21,12 @@ TypeHandle AwWebCore::_type_handle;
 AwWebCore::
 AwWebCore(AwWebCore::LogLevel level, bool enablePlugins , AwWebCore::PixelFormat pixelFormat) :
   WebCore(static_cast<Awesomium::LogLevel>(level), enablePlugins, static_cast<Awesomium::PixelFormat>(pixelFormat)) {  
-  awesomium_cat.info() << "constructing webcore";
+  awesomium_cat.info() << "constructing webcore\n";
 }
 
 AwWebCore::
 ~AwWebCore() {
+  awesomium_cat.info() << "destructor webcore\n";
 }
 
 Awesomium::WebCore& AwWebCore::
