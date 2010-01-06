@@ -4871,7 +4871,7 @@ def MakeInstallerOSX():
                 oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
                 oscmd("otool -L %s | grep .%s.dylib > %s/tmp/otool-libs.txt" % (libname, VERSION, GetOutputDir()), True)
                 for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                    if len(line.strip()) > 0:
+                    if len(line.strip()) > 0 and not line.strip().endswith(":"):
                         libdep = line.strip().split(" ", 1)[0]
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, libname), True)
     
@@ -4906,8 +4906,19 @@ def MakeInstallerOSX():
     
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
-    oscmd("cp -R %s/bin/*                 dstroot/tools/Developer/Tools/Panda3D/" % GetOutputDir())
     oscmd("ln -s /Developer/Tools/Panda3D dstroot/tools/Developer/Panda3D/bin")
+    for base in os.listdir(GetOutputDir()+"/bin"):
+        binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
+        # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
+        oscmd("cp -R " + GetOutputDir() + "/bin/" + base + " " + binname)
+        
+        # Execute install_name_tool to make the binaries reference an absolute path
+        if (not os.path.islink(binname)):
+            oscmd("otool -L %s | grep .%s.dylib > %s/tmp/otool-libs.txt" % (binname, VERSION, GetOutputDir()), True)
+            for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
+                if len(line.strip()) > 0 and not line.strip().endswith(":"):
+                    libdep = line.strip().split(" ", 1)[0]
+                    oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, binname), True)
     
     if PkgSkip("PYTHON")==0:
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
