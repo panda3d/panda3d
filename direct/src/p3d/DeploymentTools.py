@@ -193,7 +193,7 @@ class Installer:
         if not self.includeRequires:
             return
         
-        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = False)
+        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = True)
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 Installer.notify.error("couldn't read host")
@@ -223,12 +223,6 @@ class Installer:
                 Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             break
-        
-        # Remove the original multifiles. We don't need them and they take up space.
-        for mf in glob.glob(Filename(rootDir, "hosts/*/*/*.mf").toOsSpecific()):
-            os.remove(mf)
-        for mf in glob.glob(Filename(rootDir, "hosts/*/*/*/*.mf").toOsSpecific()):
-            os.remove(mf)
 
     def buildAll(self, outputDir = "."):
         """ Creates a (graphical) installer for every known platform.
@@ -624,7 +618,6 @@ class Installer:
         for root, dirs, files in os.walk(rootDir.toOsSpecific()):
             for name in files:
                 file = Filename.fromOsSpecific(os.path.join(root, name))
-                if file.getExtension().lower() == "mf": continue
                 file.makeAbsolute()
                 file.makeRelativeTo(rootDir)
                 outdir = file.getDirname().replace('/', '\\')

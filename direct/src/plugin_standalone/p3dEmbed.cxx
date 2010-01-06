@@ -173,6 +173,20 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   P3D_instance_feed_url_stream_ptr = &P3D_instance_feed_url_stream;
   P3D_instance_handle_event_ptr = &P3D_instance_handle_event;
 
+  // Calling the executable with --prep just prepares the directory
+  // structure, this is usually invoked in the installer.
+  if (argc == 2 && strcmp(argv[1], "--prep") == 0) {
+    _window_type = P3D_WT_hidden;
+    _log_basename = "prep";
+    P3D_token token;
+    token._keyword = "stop_on_ready";
+    token._value = "1";
+    _tokens.push_back(token);
+    token._keyword = "hidden";
+    token._value = "1";
+    _tokens.push_back(token);
+  }
+
   // Now call init_plugin() to verify that we got all of the required
   // function pointers.  This will also call P3D_initialize().
   if (!init_plugin("", _host_url, _verify_contents, _this_platform, 
