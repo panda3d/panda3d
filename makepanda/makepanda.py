@@ -3592,6 +3592,7 @@ if (RUNTIME):
     TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
     TargetAdd('Panda3D.app', input='plugin_standalone_panda3d.obj')
     TargetAdd('Panda3D.app', input='plugin_standalone_panda3dMac.obj')
+    TargetAdd('Panda3D.app', input='plugin_standalone_panda3dBase.obj')
     TargetAdd('Panda3D.app', input='plugin_common.obj')
     TargetAdd('Panda3D.app', input='plugin_find_root_dir_assist.obj')
     TargetAdd('Panda3D.app', input='libpandaexpress.dll')
