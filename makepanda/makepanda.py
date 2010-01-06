@@ -3455,18 +3455,19 @@ if (RTDIST or RUNTIME):
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
   if (RTDIST):
-    TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_mkdir_complete.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir.obj')
-    if (sys.platform == "darwin"):
-      TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir_assist.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_fileSpec.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
-    TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
-    if (sys.platform == "darwin"):
-        TargetAdd('p3d_plugin.dll', input='libsubprocbuffer.ilb')
-    TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+    for fname in ["p3d_plugin.dll", "libp3d_plugin_static.ilb"]:
+      TargetAdd(fname, input='plugin_plugin.obj')
+      TargetAdd(fname, input='plugin_mkdir_complete.obj')
+      TargetAdd(fname, input='plugin_find_root_dir.obj')
+      if (sys.platform == "darwin"):
+        TargetAdd(fname, input='plugin_find_root_dir_assist.obj')
+      TargetAdd(fname, input='plugin_fileSpec.obj')
+      TargetAdd(fname, input='plugin_binaryXml.obj')
+      TargetAdd(fname, input='plugin_handleStream.obj')
+      TargetAdd(fname, input='plugin_handleStreamBuf.obj')
+      if (sys.platform == "darwin"):
+        TargetAdd(fname, input='libsubprocbuffer.ilb')
+      TargetAdd(fname, opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
@@ -3572,8 +3573,10 @@ if (RUNTIME):
     TargetAdd('panda3d.res', opts=OPTS, winrc=panda3d_rc)
   
   TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
+  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
+  TargetAdd('panda3d.exe', input='plugin_standalone_panda3dBase.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
   if (sys.platform == "darwin"):
     TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
@@ -3611,8 +3614,10 @@ if (RUNTIME):
 
 if (RTDIST):
   OPTS=['DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
+  DefSymbol("P3DEMBED", "BUILDING_P3D_PLUGIN", "")
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
+  TargetAdd('plugin_standalone_p3dEmbedMain.obj', opts=OPTS, input='p3dEmbedMain.cxx')
   TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS, input='p3dEmbed.cxx')
   TargetAdd('plugin_standalone_pystub.obj', opts=OPTS, input='pystub.cxx')
   TargetAdd('plugin_standalone_dtoolbase_composite1.obj', opts=OPTS, input='dtoolbase_composite1.cxx')
@@ -3626,6 +3631,8 @@ if (RTDIST):
   TargetAdd('plugin_standalone_dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
   TargetAdd('plugin_standalone_express_composite.obj', opts=OPTS, input='express_composite.cxx')
   TargetAdd('plugin_standalone_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
+  TargetAdd('p3dembed.exe', input='plugin_standalone_panda3dBase.obj')
+  TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbedMain.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_p3dEmbed.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_pystub.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolbase_composite1.obj')
@@ -3639,16 +3646,12 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='plugin_standalone_dconfig_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_express_composite.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_downloader_composite.obj')
-  TargetAdd('p3dembed.exe', input='plugin_mkdir_complete.obj')
-  TargetAdd('p3dembed.exe', input='plugin_find_root_dir.obj')
+  TargetAdd('p3dembed.exe', input='plugin_common.obj')
   if (sys.platform == "darwin"):
     TargetAdd('p3dembed.exe', input='plugin_find_root_dir_assist.obj')
-  TargetAdd('p3dembed.exe', input='plugin_fileSpec.obj')
-  TargetAdd('p3dembed.exe', input='plugin_binaryXml.obj')
-  TargetAdd('p3dembed.exe', input='plugin_handleStream.obj')
-  TargetAdd('p3dembed.exe', input='plugin_handleStreamBuf.obj')
   if (sys.platform == "darwin"):
-      TargetAdd('p3dembed.exe', input='libsubprocbuffer.ilb')
+    TargetAdd('p3dembed.exe', input='libsubprocbuffer.ilb')
+  TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
   TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
 #
