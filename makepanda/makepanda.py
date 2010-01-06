@@ -3605,6 +3605,7 @@ if (RUNTIME):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
+    TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dBase.obj')
     TargetAdd('panda3dw.exe', input='plugin_common.obj')
     TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
