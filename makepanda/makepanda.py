@@ -3558,6 +3558,7 @@ if (RUNTIME and sys.platform.startswith("win")):
 #
 
 if (RUNTIME or RTDIST):
+  OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
 
 if (RUNTIME):
