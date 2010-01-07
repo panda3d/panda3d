@@ -3557,13 +3557,10 @@ if (RUNTIME and sys.platform.startswith("win")):
 # DIRECTORY: direct/src/plugin_standalone/
 #
 
-if (RUNTIME or RTDIST):
-  OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
-  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
-
 if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
+  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
   
   if (sys.platform.startswith("win")):
     panda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
@@ -3622,6 +3619,7 @@ if (RTDIST):
   DefSymbol("P3DEMBED", "BUILDING_P3D_PLUGIN", "")
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
+  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
   TargetAdd('plugin_standalone_p3dEmbedMain.obj', opts=OPTS, input='p3dEmbedMain.cxx')
   TargetAdd('plugin_standalone_p3dEmbed.obj', opts=OPTS, input='p3dEmbed.cxx')
   TargetAdd('plugin_standalone_pystub.obj', opts=OPTS, input='pystub.cxx')
