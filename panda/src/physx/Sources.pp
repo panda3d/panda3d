@@ -1,15 +1,16 @@
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
+#define BUILDING_DLL BUILDING_PANDAPHYSX
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
+#define EXTRA_CDEFS NX32 $[if $[eq $[PLATFORM], Linux], LINUX CORELIB NX_DISABLE_FLUIDS]
+
 #begin lib_target
   #define TARGET physx
-  #define BUILD_TARGET $[HAVE_PHYSX]
+  #define LOCAL_LIBS pgraph linmath grutil
   #define USE_PACKAGES physx
-  #define LOCAL_LIBS pgraph linmath
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
-  #define INTERROGATE_OPTIONS $[INTERROGATE_OPTIONS]
 
   #define SOURCES \
     NoMinMax.h \
@@ -52,8 +53,8 @@
     physxDebugGeomNode.I physxDebugGeomNode.h \
     physxDistanceJoint.I physxDistanceJoint.h \
     physxDistanceJointDesc.I physxDistanceJointDesc.h \
-    physxEnums.I physxEnums.h \
-    physxFileStream.I physxFileStream.h \
+    physxEnums.h \
+    physxFileStream.h \
     physxFixedJoint.I physxFixedJoint.h \
     physxFixedJointDesc.I physxFixedJointDesc.h \
     physxForceField.I physxForceField.h \
@@ -77,8 +78,8 @@
     physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
     physxMaterialDesc.I physxMaterialDesc.h \
-    physxMemoryReadBuffer.I physxMemoryReadBuffer.h \
-    physxMemoryWriteBuffer.I physxMemoryWriteBuffer.h \
+    physxMemoryReadBuffer.h \
+    physxMemoryWriteBuffer.h \
     physxMeshPool.I physxMeshPool.h \
     physxMotorDesc.I physxMotorDesc.h \
     physxObject.I physxObject.h \
@@ -124,6 +125,7 @@
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
 
   #define INCLUDED_SOURCES \
+    config_physx.cxx \
     physxActor.cxx \
     physxActorDesc.cxx \
     physxBodyDesc.cxx \
@@ -274,8 +276,8 @@
     physxDebugGeomNode.I physxDebugGeomNode.h \
     physxDistanceJoint.I physxDistanceJoint.h \
     physxDistanceJointDesc.I physxDistanceJointDesc.h \
-    physxEnums.I physxEnums.h \
-    physxFileStream.I physxFileStream.h \
+    physxEnums.h \
+    physxFileStream.h \
     physxFixedJoint.I physxFixedJoint.h \
     physxFixedJointDesc.I physxFixedJointDesc.h \
     physxForceField.I physxForceField.h \
@@ -299,8 +301,8 @@
     physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
     physxMaterialDesc.I physxMaterialDesc.h \
-    physxMemoryReadBuffer.I physxMemoryReadBuffer.h \
-    physxMemoryWriteBuffer.I physxMemoryWriteBuffer.h \
+    physxMemoryReadBuffer.h \
+    physxMemoryWriteBuffer.h \
     physxMeshPool.I physxMeshPool.h \
     physxMotorDesc.I physxMotorDesc.h \
     physxObject.I physxObject.h \

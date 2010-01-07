@@ -8,22 +8,12 @@
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
 #define BUILDING_DLL BUILDING_PANDAPHYSX
 
-#define COMPONENT_LIBS \
-    physx
+#define EXTRA_CDEFS NX32 $[if $[eq $[PLATFORM], Linux], LINUX CORELIB NX_DISABLE_FLUIDS]
 
-#define LOCAL_LIBS \
-    linmath \
-    putil \
-    express
-
-#define OTHER_LIBS \
-    interrogatedb:c \
-    dconfig:c \
-    dtoolconfig:m \
-    dtoolbase:c \
-    dtoolutil:c \
-    dtool:m \
-    prc:c
+#define COMPONENT_LIBS physx
+#define LOCAL_LIBS linmath putil express
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #begin metalib_target
     #define TARGET pandaphysx
