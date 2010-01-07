@@ -894,7 +894,7 @@
 // Info for the Ageia PhysX SDK
 #define PHYSX_IPATH
 #define PHYSX_LPATH
-#define PHYSX_LIBS PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib
+#define PHYSX_LIBS $[if $[WINDOWS_PLATFORM],PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib,PhysXLoader NxCharacter NxCooking]
 #defer HAVE_PHYSX $[libtest $[PHYSX_LPATH],$[PHYSX_LIBS]]
 
 // Info for TinyXML library
