@@ -891,7 +891,7 @@
 #endif
 #defer HAVE_OPENAL $[or $[OPENAL_FRAMEWORK],$[libtest $[OPENAL_LPATH],$[OPENAL_LIBS]]]
 
-// Info for the Ageia PhysX SDK
+// Info for the NVIDIA PhysX SDK
 #define PHYSX_IPATH
 #define PHYSX_LPATH
 #define PHYSX_LIBS $[if $[WINDOWS_PLATFORM],PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib,PhysXLoader NxCharacter NxCooking]
