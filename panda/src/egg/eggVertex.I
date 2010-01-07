@@ -318,6 +318,17 @@ get_external_index() const {
   return _external_index;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::sorts_less_than
+//       Access: Published
+//  Description: An ordering operator to compare two vertices for
+//               sorting order.  This imposes an arbitrary ordering
+//               useful to identify unique vertices.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertex::
+sorts_less_than(const EggVertex &other) const {
+  return compare_to(other) < 0;
+}
 
 
 

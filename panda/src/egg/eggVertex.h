@@ -104,7 +104,8 @@ PUBLISHED:
   INLINE int get_external_index() const;
 
   void write(ostream &out, int indent_level) const;
-  bool sorts_less_than(const EggVertex &other) const;
+  INLINE bool sorts_less_than(const EggVertex &other) const;
+  int compare_to(const EggVertex &other) const;
 
   int get_num_local_coord() const;
   int get_num_global_coord() const;

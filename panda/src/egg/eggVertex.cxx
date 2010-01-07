@@ -281,7 +281,6 @@ clear_uv(const string &name) {
 }
 
 
-
 ///////////////////////////////////////////////////////////////////
 //       Class : GroupRefEntry
 // Description : A temporary class used in EggVertex::write(), below,
@@ -362,7 +361,7 @@ write(ostream &out, int indent_level) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::sorts_less_than
+//     Function: EggVertex::compare_to
 //       Access: Published
 //  Description: An ordering operator to compare two vertices for
 //               sorting order.  This imposes an arbitrary ordering
@@ -382,22 +381,23 @@ write(ostream &out, int indent_level) const {
 //               memberships, else the vertices will tend to fly apart
 //               when the joints animate.
 ////////////////////////////////////////////////////////////////////
-bool EggVertex::
-sorts_less_than(const EggVertex &other) const {
+int EggVertex::
+compare_to(const EggVertex &other) const {
   if (_external_index != other._external_index) {
-    return _external_index < other._external_index;
+    return (int)_external_index - (int)other._external_index;
   }
   if (_num_dimensions != other._num_dimensions) {
-    return _num_dimensions < other._num_dimensions;
+    return (int)_num_dimensions - (int)other._num_dimensions;
   }
 
   int compare =
     _pos.compare_to(other._pos, egg_parameters->_pos_threshold);
   if (compare != 0) {
-    return compare < 0;
+    return compare;
   }
-  if (_dxyzs != other._dxyzs) {
-    return _dxyzs < other._dxyzs;
+  compare = _dxyzs.compare_to(other._dxyzs);
+  if (compare != 0) {
+    return compare;
   }
 
   // Merge-compare the uv maps.
@@ -406,28 +406,28 @@ sorts_less_than(const EggVertex &other) const {
   bi = other._uv_map.begin();
   while (ai != _uv_map.end() && bi != other._uv_map.end()) {
     if ((*ai).first < (*bi).first) {
-      return true;
+      return -1;
 
     } else if ((*bi).first < (*ai).first) {
-      return false;
+      return 1;
 
     } else {
       int compare = (*ai).second->compare_to(*(*bi).second);
       if (compare != 0) {
-        return compare < 0;
+        return compare;
       }
     }
     ++ai;
     ++bi;
   }
   if (bi != other._uv_map.end()) {
-    return true;
+    return -1;
   }
   if (ai != _uv_map.end()) {
-    return false;
+    return 1;
   }
 
-  return EggAttributes::sorts_less_than(other);
+  return EggAttributes::compare_to(other);
 }
 
 ////////////////////////////////////////////////////////////////////
