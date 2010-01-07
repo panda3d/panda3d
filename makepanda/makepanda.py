@@ -3557,6 +3557,9 @@ if (RUNTIME and sys.platform.startswith("win")):
 # DIRECTORY: direct/src/plugin_standalone/
 #
 
+if (RUNTIME or RTDIST):
+  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
+
 if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
@@ -3573,7 +3576,6 @@ if (RUNTIME):
     TargetAdd('panda3d.res', opts=OPTS, winrc=panda3d_rc)
   
   TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
-  TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dBase.obj')
