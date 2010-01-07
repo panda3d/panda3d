@@ -108,6 +108,7 @@ TextNode(const string &name, const TextProperties &copy) :
 {
   _flags = 0;
   _max_rows = 0;
+  _usage_hint = GeomEnums::UH_static;
 
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _card_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -141,6 +142,7 @@ TextNode(const TextNode &copy) :
   _card_color(copy._card_color),
   _flags(copy._flags),
   _max_rows(copy._max_rows),
+  _usage_hint(GeomEnums::UH_static),
   _frame_width(copy._frame_width),
   _card_border_size(copy._card_border_size),
   _card_border_uv_portion(copy._card_border_uv_portion),
