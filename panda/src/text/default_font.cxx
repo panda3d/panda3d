@@ -22,11 +22,11 @@
 // The particular font we use may come from either of two possible
 // sources:
 
-// If we have the Freetype library available, we use uhvr8ac.pfb, a
-// PostScript Type1 font installed along with TeX (and it was probably
-// converted there from some other format).  It defines the font
-// "Nimbus Sans L Regular Condensed", a nice simple sans-serif font.
-
+// If we have the Freetype library available, we use persans.ttf, part
+// of the "Perspective Sans" font family downloaded from
+// http://www.fontsquirrel.com/fonts/Perspective-Sans, which appears
+// to be freeware.
+//
 // If Freetype is not available, we use cmss12.bam, which was in turn
 // generated from cmss12.720pk, and defines "Computer Modern Sans
 // Serif", a basic Metafont-generated font supplied with TeX.  This
@@ -37,9 +37,9 @@
 
 #ifdef HAVE_FREETYPE
 
-// If we have FreeType available, include the pfb font; it's superior
-// because it's dynamic.
-#include "uhvr8ac.pfb.c"
+// If we have FreeType available, include the ttf font; it's superior
+// because it's dynamic.  See above.
+#include "persans.ttf.c"
 
 #elif defined(HAVE_ZLIB)
 
