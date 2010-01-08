@@ -19,6 +19,7 @@
 #include "luse.h"
 
 #include "config_physx.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBox

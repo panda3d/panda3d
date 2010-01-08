@@ -4,8 +4,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define EXTRA_CDEFS NX32 $[if $[eq $[PLATFORM], Linux], LINUX CORELIB NX_DISABLE_FLUIDS]
-
 #begin lib_target
   #define TARGET physx
   #define LOCAL_LIBS pgraph linmath grutil

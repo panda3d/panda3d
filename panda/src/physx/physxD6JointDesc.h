@@ -21,9 +21,7 @@
 #include "lquaternion.h"
 
 #include "physxJointDesc.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxJointDriveDesc;
 class PhysxJointLimitSoftDesc;

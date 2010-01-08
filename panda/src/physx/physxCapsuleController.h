@@ -19,8 +19,7 @@
 #include "lvector3.h"
 
 #include "physxController.h"
-
-#include "NxCapsuleController.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxCapsuleController

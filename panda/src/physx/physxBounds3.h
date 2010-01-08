@@ -19,8 +19,7 @@
 #include "luse.h"
 
 #include "config_physx.h"
-
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBounds3

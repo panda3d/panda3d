@@ -27,10 +27,7 @@
 #include "physxOverlapReport.h"
 #include "physxMask.h"
 #include "physxGroupsMask.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
-#include "NxControllerManager.h"
+#include "physx_includes.h"
 
 class PhysxActor;
 class PhysxActorDesc;

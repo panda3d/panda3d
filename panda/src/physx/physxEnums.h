@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 #ifdef CPPPARSER
 

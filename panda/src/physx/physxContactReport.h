@@ -17,9 +17,7 @@
 
 #include "pandabase.h"
 #include "pStatCollector.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxContactReport

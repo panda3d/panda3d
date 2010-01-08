@@ -19,8 +19,7 @@
 #include "lpoint3.h"
 #include "nodePath.h"
 
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxConvexMeshDesc

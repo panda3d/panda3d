@@ -20,6 +20,7 @@
 #include "pointerTo.h"
 
 #include "config_physx.h"
+#include "physx_includes.h"
 
 class PhysxShape;
 

@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "pStatCollector.h"
 
-#include "NxController.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxControllerReport

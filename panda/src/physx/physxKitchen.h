@@ -18,9 +18,7 @@
 #include "pandabase.h"
 #include "filename.h"
 
-#include "NoMinMax.h"
-#include "NxPhysics.h"
-#include "NxCooking.h"
+#include "physx_includes.h"
 
 class PhysxConvexMesh;
 class PhysxConvexMeshDesc;

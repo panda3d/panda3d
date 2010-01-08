@@ -18,9 +18,7 @@
 #include "pandabase.h"
 
 #include "physxJoint.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxMotorDesc;
 class PhysxPulleyJointDesc;

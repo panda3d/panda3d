@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "lpoint3.h"
 
-#include "NxController.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxControllerDesc

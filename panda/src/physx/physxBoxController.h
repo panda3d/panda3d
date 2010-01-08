@@ -19,8 +19,7 @@
 #include "lvector3.h"
 
 #include "physxController.h"
-
-#include "NxBoxController.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxBoxController

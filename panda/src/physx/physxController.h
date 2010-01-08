@@ -23,8 +23,7 @@
 
 #include "physxObject.h"
 #include "physxEnums.h"
-
-#include "NxController.h"
+#include "physx_includes.h"
 
 class PhysxActor;
 

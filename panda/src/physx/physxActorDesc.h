@@ -19,8 +19,7 @@
 #include "lpoint3.h"
 #include "lmatrix.h"
 
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxBodyDesc;
 class PhysxShapeDesc;

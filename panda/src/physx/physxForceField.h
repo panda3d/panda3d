@@ -19,9 +19,7 @@
 #include "lvector3.h"
 
 #include "physxObject.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxScene;
 class PhysxForceFieldDesc;

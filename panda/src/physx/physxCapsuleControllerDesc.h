@@ -18,8 +18,7 @@
 #include "pandabase.h"
 
 #include "physxControllerDesc.h"
-
-#include "NxCapsuleController.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxCapsuleControllerDesc

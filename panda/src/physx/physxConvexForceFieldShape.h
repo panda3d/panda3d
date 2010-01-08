@@ -18,9 +18,7 @@
 #include "pandabase.h"
 
 #include "physxForceFieldShape.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxConvexForceFieldShapeDesc;
 

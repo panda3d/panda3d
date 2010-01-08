@@ -22,9 +22,7 @@
 #include "physxContactReport.h"
 #include "physxControllerReport.h"
 #include "physxTriggerReport.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxHeightField

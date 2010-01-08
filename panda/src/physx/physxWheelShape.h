@@ -18,9 +18,7 @@
 #include "pandabase.h"
 
 #include "physxShape.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
+#include "physx_includes.h"
 
 class PhysxWheelShapeDesc;
 

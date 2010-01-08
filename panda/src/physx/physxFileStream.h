@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 
-#include "NoMinMax.h"
-#include "NxStream.h"
+#include "physx_includes.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxFileStream

@@ -21,10 +21,7 @@
 
 #include "physxEnums.h"
 #include "physxObjectCollection.h"
-
-#include "NoMinMax.h"
-#include "NxPhysics.h"
-#include "NxExtended.h"
+#include "physx_includes.h"
 
 class PhysxScene;
 class PhysxSceneDesc;

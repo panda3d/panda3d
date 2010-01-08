@@ -8,8 +8,6 @@
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
 #define BUILDING_DLL BUILDING_PANDAPHYSX
 
-#define EXTRA_CDEFS NX32 $[if $[eq $[PLATFORM], Linux], LINUX CORELIB NX_DISABLE_FLUIDS]
-
 #define COMPONENT_LIBS physx
 #define LOCAL_LIBS linmath putil express
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
