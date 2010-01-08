@@ -13,6 +13,16 @@
 // who are preparing a custom Panda3D package for download by the
 // plugin will need to build this.
 
+// If P3D_PLUGIN_MT is defined, then (on Windows) /MT is used to
+// compile the core API and the NPAPI and ActiveX plugins, instead of
+// /MD.  This links the plugin with the static C runtime library,
+// instead of the dynamic runtime library, which is much better for
+// distributing the plugin with the XPI and CAB interfaces.  This
+// requires that special /MT versions of OpenSSL, libjpeg, libpng,
+// zlib, and TinyXML are available.
+
+#define _MT $[if $[P3D_PLUGIN_MT],_mt]
+
 #define COREAPI_SOURCES \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
@@ -100,10 +110,11 @@
 //
 
   #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
+  #define USE_PACKAGES tinyxml$[_MT] openssl$[_MT] zlib$[_MT] jpeg$[_MT] png$[_MT] x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
   #define BUILDING_DLL BUILDING_P3D_PLUGIN
+  #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
 
   #define OTHER_LIBS \
     $[if $[OSX_PLATFORM],subprocbuffer]
@@ -159,8 +170,15 @@
 #end bin_target
 
 
-#begin static_lib_target
+#define PLUGIN_COMMON_SOURCES \
+    load_plugin.cxx load_plugin.h \
+    fileSpec.cxx fileSpec.h fileSpec.I \
+    find_root_dir.cxx find_root_dir.h \
+    $[if $[IS_OSX],find_root_dir_assist.mm] \
+    is_pathsep.h is_pathsep.I \
+    mkdir_complete.cxx mkdir_complete.h
 
+#begin static_lib_target
 // 
 // libplugin_common.lib, a repository of code shared between the core
 // API and the various plugin implementations.
@@ -170,15 +188,25 @@
   #define TARGET plugin_common
   #define USE_PACKAGES tinyxml openssl
 
-  #define SOURCES \
-    load_plugin.cxx load_plugin.h \
-    fileSpec.cxx fileSpec.h fileSpec.I \
-    find_root_dir.cxx find_root_dir.h \
-    $[if $[IS_OSX],find_root_dir_assist.mm] \
-    is_pathsep.h is_pathsep.I \
-    mkdir_complete.cxx mkdir_complete.h
+  #define SOURCES $[PLUGIN_COMMON_SOURCES]
 
 #end static_lib_target
+
+#if $[P3D_PLUGIN_MT]
+#begin static_lib_target
+// 
+// libplugin_common_mt.lib, the same as above, with /MT compilation.
+//
+
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL]]
+  #define TARGET plugin_common_mt
+  #define USE_PACKAGES tinyxml_mt openssl_mt
+  #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME 1
+
+  #define SOURCES $[PLUGIN_COMMON_SOURCES]
+
+#end static_lib_target
+#endif
 
 
 

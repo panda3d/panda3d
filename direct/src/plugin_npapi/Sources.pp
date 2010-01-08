@@ -6,7 +6,8 @@
 
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_NPAPI]]
 
-#define USE_PACKAGES tinyxml npapi
+#define _MT $[if $[P3D_PLUGIN_MT],_mt]
+#define USE_PACKAGES tinyxml$[_MT] npapi
 
 #begin lib_target
   // By Mozilla convention, on Windows at least, the generated DLL
@@ -16,7 +17,8 @@
   #define TARGET nppanda3d
   #define LIB_PREFIX
 
-  #define LOCAL_LIBS plugin_common
+  #define LOCAL_LIBS plugin_common$[_MT]
+  #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx
