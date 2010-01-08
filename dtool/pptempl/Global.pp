@@ -98,11 +98,25 @@
   #define openssl_libs $[OPENSSL_LIBS]
 #endif
 
+#if $[HAVE_OPENSSL_MT]
+  #define openssl_mt_ipath $[wildcard $[OPENSSL_MT_IPATH]]
+  #define openssl_mt_lpath $[wildcard $[OPENSSL_MT_LPATH]]
+  #define openssl_mt_cflags $[OPENSSL_MT_CFLAGS]
+  #define openssl_mt_libs $[OPENSSL_MT_LIBS]
+#endif
+
 #if $[HAVE_ZLIB]
   #define zlib_ipath $[wildcard $[ZLIB_IPATH]]
   #define zlib_lpath $[wildcard $[ZLIB_LPATH]]
   #define zlib_cflags $[ZLIB_CFLAGS]
   #define zlib_libs $[ZLIB_LIBS]
+#endif
+
+#if $[HAVE_ZLIB_MT]
+  #define zlib_mt_ipath $[wildcard $[ZLIB_MT_IPATH]]
+  #define zlib_mt_lpath $[wildcard $[ZLIB_MT_LPATH]]
+  #define zlib_mt_cflags $[ZLIB_MT_CFLAGS]
+  #define zlib_mt_libs $[ZLIB_MT_LIBS]
 #endif
 
 #if $[HAVE_GL]
@@ -242,11 +256,25 @@
   #define jpeg_libs $[JPEG_LIBS]
 #endif
 
+#if $[HAVE_JPEG_MT]
+  #define jpeg_mt_ipath $[wildcard $[JPEG_MT_IPATH]]
+  #define jpeg_mt_lpath $[wildcard $[JPEG_MT_LPATH]]
+  #define jpeg_mt_cflags $[JPEG_MT_CFLAGS]
+  #define jpeg_mt_libs $[JPEG_MT_LIBS]
+#endif
+
 #if $[HAVE_PNG]
   #define png_ipath $[wildcard $[PNG_IPATH]]
   #define png_lpath $[wildcard $[PNG_LPATH]]
   #define png_cflags $[PNG_CFLAGS]
   #define png_libs $[PNG_LIBS]
+#endif
+
+#if $[HAVE_PNG_MT]
+  #define png_mt_ipath $[wildcard $[PNG_MT_IPATH]]
+  #define png_mt_lpath $[wildcard $[PNG_MT_LPATH]]
+  #define png_mt_cflags $[PNG_MT_CFLAGS]
+  #define png_mt_libs $[PNG_MT_LIBS]
 #endif
 
 #if $[HAVE_TIFF]
@@ -421,6 +449,12 @@
   #define tinyxml_ipath $[wildcard $[TINYXML_IPATH]]
   #define tinyxml_lpath $[wildcard $[TINYXML_LPATH]]
   #define tinyxml_libs $[TINYXML_LIBS]
+#endif
+
+#if $[HAVE_TINYXML_MT]
+  #define tinyxml_mt_ipath $[wildcard $[TINYXML_MT_IPATH]]
+  #define tinyxml_mt_lpath $[wildcard $[TINYXML_MT_LPATH]]
+  #define tinyxml_mt_libs $[TINYXML_MT_LIBS]
 #endif
 
 #if $[HAVE_CHROMIUM]
