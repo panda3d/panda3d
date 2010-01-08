@@ -1304,7 +1304,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return 0;
 
   case WM_RBUTTONDOWN:
-    cerr << "RBUTTONDOWN\n";
     if (_lost_keypresses) {
       resend_lost_keypresses();
     }
@@ -1348,7 +1347,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return 0;
 
   case WM_RBUTTONUP:
-    cerr << "RBUTTONUP\n";
     if (_lost_keypresses) {
       resend_lost_keypresses();
     }
