@@ -1,5 +1,5 @@
 // Filename: x11GraphicsWindow.h
-// Created by:  pro-rsoft (07Jul09)
+// Created by:  rdb (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -20,6 +20,11 @@
 #include "x11GraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
+
+#ifdef HAVE_XRANDR
+typedef unsigned short Rotation;
+typedef unsigned short SizeID;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : x11GraphicsWindow
@@ -75,6 +80,10 @@ protected:
   Window _xwindow;
   Colormap _colormap;
   XIC _ic;
+  XVisualInfo *_visual_info;
+  
+  Rotation _orig_rotation;
+  SizeID _orig_size_id;
 
   long _event_mask;
   bool _awaiting_configure;

@@ -26,7 +26,6 @@
 #include "textEncoder.h"
 #include "throw_event.h"
 #include "lightReMutexHolder.h"
-#include "nativeWindowHandle.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -180,104 +179,27 @@ open_window() {
     }
   }
   
-  XVisualInfo *visual_info = glxgsg->_visual;
-  if (visual_info == NULL) {
+  _visual_info = glxgsg->_visual;
+  if (_visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
     glxdisplay_cat.error()
       << "No X visual: cannot open window.\n";
     return false;
   }
-  Visual *visual = visual_info->visual;
-  int depth = visual_info->depth;
-
-  if (!_properties.has_origin()) {
-    _properties.set_origin(0, 0);
-  }
-  if (!_properties.has_size()) {
-    _properties.set_size(100, 100);
-  }
-  
-  Window parent_window = glx_pipe->get_root();
-  WindowHandle *window_handle = _properties.get_parent_window();
-  if (window_handle != NULL) {
-    glxdisplay_cat.info()
-      << "Got parent_window " << *window_handle << "\n";
-    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
-      glxdisplay_cat.info()
-        << "os_handle type " << os_handle->get_type() << "\n";
-      
-      if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
-        NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
-        parent_window = x11_handle->get_handle();
-      } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
-        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
-        parent_window = (Window)int_handle->get_handle();
-      }
-    }
-  }
-  _parent_window_handle = window_handle;
+  Visual *visual = _visual_info->visual;
   
 #ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
   } else {
-    setup_colormap(visual_info);
+    setup_colormap(_visual_info);
   }
 #else
-  setup_colormap(visual_info);
+  setup_colormap(_visual_info);
 #endif  // HAVE_GLXFBCONFIG
 
-  _event_mask =
-    ButtonPressMask | ButtonReleaseMask |
-    KeyPressMask | KeyReleaseMask |
-    EnterWindowMask | LeaveWindowMask |
-    PointerMotionMask |
-    FocusChangeMask |
-    StructureNotifyMask;
-
-  // Initialize window attributes
-  XSetWindowAttributes wa;
-  wa.background_pixel = XBlackPixel(_display, _screen);
-  wa.border_pixel = 0;
-  wa.colormap = _colormap;
-  wa.event_mask = _event_mask;
-
-  unsigned long attrib_mask = 
-    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-  _xwindow = XCreateWindow
-    (_display, parent_window,
-     _properties.get_x_origin(), _properties.get_y_origin(),
-     _properties.get_x_size(), _properties.get_y_size(),
-     0, depth, InputOutput, visual, attrib_mask, &wa);
-
-  if (_xwindow == (Window)0) {
-    glxdisplay_cat.error()
-      << "failed to create X window.\n";
+  if (!x11GraphicsWindow::open_window()) {
     return false;
-  }
-  set_wm_properties(_properties, false);
-
-  // We don't specify any fancy properties of the XIC.  It would be
-  // nicer if we could support fancy IM's that want preedit callbacks,
-  // etc., but that can wait until we have an X server that actually
-  // supports these to test it on.
-  XIM im = glx_pipe->get_im();
-  _ic = NULL;
-  if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       (void*)NULL);
-    if (_ic == (XIC)NULL) {
-      glxdisplay_cat.warning()
-        << "Couldn't create input context.\n";
-    }
-  }
-
-  if (_properties.get_cursor_hidden()) {
-    XDefineCursor(_display, _xwindow, glx_pipe->get_hidden_cursor());
   }
 
   glXMakeCurrent(_display, _xwindow, glxgsg->_context);
@@ -292,25 +214,6 @@ open_window() {
     return false;
   }
   _fb_properties = glxgsg->get_fb_properties();
-  
-  XMapWindow(_display, _xwindow);
-
-  if (_properties.get_raw_mice()) {
-    open_raw_mice();
-  } else {
-    if (glxdisplay_cat.is_debug()) {
-      glxdisplay_cat.debug()
-        << "Raw mice not requested.\n";
-    }
-  }
-
-  // Create a WindowHandle for ourselves
-  _window_handle = NativeWindowHandle::make_x11(_xwindow);
-
-  // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
-    _parent_window_handle->attach_child(_window_handle);
-  }
 
   return true;
 }

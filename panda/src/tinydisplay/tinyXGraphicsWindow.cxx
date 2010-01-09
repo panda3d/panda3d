@@ -468,10 +468,10 @@ open_window() {
       << "No suitable X Visual available; cannot open window.\n";
     return false;
   }
-  XVisualInfo *visual_info = &vinfo_array[0];
+  _visual_info = &vinfo_array[0];
 
-  _visual = visual_info->visual;
-  _depth = visual_info->depth;
+  _visual = _visual_info->visual;
+  _depth = _visual_info->depth;
   _bytes_per_pixel = _depth / 8;
   if (_bytes_per_pixel == 3) {
     // Seems to be a special case.
@@ -479,7 +479,7 @@ open_window() {
   }
   tinydisplay_cat.info()
     << "Got X Visual with depth " << _depth << " (bpp " << _bytes_per_pixel << ") and class ";
-  switch (visual_info->c_class) {
+  switch (_visual_info->c_class) {
   case TrueColor:
     tinydisplay_cat.info(false) << "TrueColor\n";
     break;
@@ -505,86 +505,10 @@ open_window() {
     break;
   }
 
-  if (!_properties.has_origin()) {
-    _properties.set_origin(0, 0);
-  }
-  if (!_properties.has_size()) {
-    _properties.set_size(100, 100);
-  }
-  
-  Window parent_window = tinyx_pipe->get_root();
-  WindowHandle *window_handle = _properties.get_parent_window();
-  if (window_handle != NULL) {
-    tinydisplay_cat.info()
-      << "Got parent_window " << *window_handle << "\n";
-    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
-      tinydisplay_cat.info()
-        << "os_handle type " << os_handle->get_type() << "\n";
-      
-      if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
-        NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
-        parent_window = x11_handle->get_handle();
-      } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
-        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
-        parent_window = (Window)int_handle->get_handle();
-      }
-    }
-  }
-  _parent_window_handle = window_handle;
+  setup_colormap(_visual_info);
 
-  setup_colormap(visual_info);
-
-  _event_mask =
-    ButtonPressMask | ButtonReleaseMask |
-    KeyPressMask | KeyReleaseMask |
-    EnterWindowMask | LeaveWindowMask |
-    PointerMotionMask |
-    FocusChangeMask |
-    StructureNotifyMask;
-
-  // Initialize window attributes
-  XSetWindowAttributes wa;
-  wa.background_pixel = XBlackPixel(_display, _screen);
-  wa.border_pixel = 0;
-  wa.colormap = _colormap;
-  wa.event_mask = _event_mask;
-
-  unsigned long attrib_mask = 
-    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-  _xwindow = XCreateWindow
-    (_display, parent_window,
-     _properties.get_x_origin(), _properties.get_y_origin(),
-     _properties.get_x_size(), _properties.get_y_size(),
-     0, _depth, InputOutput, _visual, attrib_mask, &wa);
-
-  if (_xwindow == (Window)0) {
-    tinydisplay_cat.error()
-      << "failed to create X window.\n";
+  if (!x11GraphicsWindow::open_window()) {
     return false;
-  }
-  set_wm_properties(_properties, false);
-
-  // We don't specify any fancy properties of the XIC.  It would be
-  // nicer if we could support fancy IM's that want preedit callbacks,
-  // etc., but that can wait until we have an X server that actually
-  // supports these to test it on.
-  XIM im = tinyx_pipe->get_im();
-  _ic = NULL;
-  if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       NULL);
-    if (_ic == (XIC)NULL) {
-      tinydisplay_cat.warning()
-        << "Couldn't create input context.\n";
-    }
-  }
-
-  if (_properties.get_cursor_hidden()) {
-    XDefineCursor(_display, _xwindow, tinyx_pipe->get_hidden_cursor());
   }
 
   _gc = XCreateGC(_display, _xwindow, 0, NULL);

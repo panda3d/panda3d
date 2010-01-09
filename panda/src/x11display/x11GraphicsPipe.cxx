@@ -1,5 +1,5 @@
 // Filename: x11GraphicsPipe.cxx
-// Created by:  pro-rsoft (07Jul09)
+// Created by:  rdb (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //

@@ -1,5 +1,5 @@
 // Filename: x11GraphicsWindow.cxx
-// Created by:  pro-rsoft (07Jul09)
+// Created by:  rdb (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -24,6 +24,7 @@
 #include "textEncoder.h"
 #include "throw_event.h"
 #include "lightReMutexHolder.h"
+#include "nativeWindowHandle.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -33,6 +34,16 @@
 #include <X11/Xatom.h>
 #ifdef HAVE_XF86DGA
 #include <X11/extensions/xf86dga.h>
+#endif
+
+#ifdef HAVE_XRANDR
+// Ugly workaround around the conflicting definition
+// of Connection that randr.h provides.
+#define _RANDR_H_
+typedef unsigned short Rotation;
+typedef unsigned short SizeID;
+typedef unsigned short SubpixelOrder;
+#include <X11/extensions/Xrandr.h>
 #endif
 
 #ifdef HAVE_LINUX_INPUT_H
@@ -64,6 +75,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _screen = x11_pipe->get_screen();
   _xwindow = (Window)NULL;
   _ic = (XIC)NULL;
+  _visual_info = NULL;
+  _orig_size_id = -1;
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
   _wm_delete_window = x11_pipe->_wm_delete_window;
@@ -456,15 +469,20 @@ set_properties_now(WindowProperties &properties) {
   }
 
   // Fullscreen mode is implemented with a hint to the window manager.
-  // However, we also implicitly set the origin to (0, 0) and the size
-  // to the desktop size, and request undecorated mode, in case the
-  // user has a less-capable window manager (or no window manager at
-  // all).
-  if (properties.get_fullscreen()) {
-    properties.set_undecorated(true);
-    properties.set_origin(0, 0);
-    properties.set_size(x11_pipe->get_display_width(),
-                        x11_pipe->get_display_height());
+  // However, we also implicitly set the origin to (0, 0) and request
+  // undecorated mode, in case the user has a less-capable
+  // window manager (or no window manager at all).
+  if (properties.has_fullscreen()) {
+    if (properties.get_fullscreen()) {
+      properties.set_undecorated(true);
+      properties.set_origin(0, 0);
+#ifndef HAVE_XRANDR
+      // If we don't have Xrandr support, we fake the fullscreen
+      // support by setting the window size to the desktop size.
+      properties.set_size(x11_pipe->get_display_width(),
+                          x11_pipe->get_display_height());
+#endif
+    }
   }
 
   GraphicsWindow::set_properties_now(properties);
@@ -656,6 +674,18 @@ close_window() {
     XFlush(_display);
   }
 
+#ifdef HAVE_XRANDR
+  // Change the resolution back to what it was.
+  // Don't remove the SizeID typecast!
+  if (_orig_size_id != (SizeID) -1) {
+    x11GraphicsPipe *x11_pipe;
+    DCAST_INTO_V(x11_pipe, _pipe);
+    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+    XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
+    _orig_size_id = -1;
+  }
+#endif
+
   GraphicsWindow::close_window();
 }
 
@@ -668,8 +698,146 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool x11GraphicsWindow::
 open_window() {
-  assert(false); // This shouldn't happen.
-  return false;
+  if (_visual_info == NULL) {
+    // No X visual for this fbconfig; how can we open the window?
+    x11display_cat.error()
+      << "No X visual: cannot open window.\n";
+    return false;
+  }
+  
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_R(x11_pipe, _pipe, false);
+  
+  if (!_properties.has_origin()) {
+    _properties.set_origin(0, 0);
+  }
+  if (!_properties.has_size()) {
+    _properties.set_size(100, 100);
+  }
+  
+#ifdef HAVE_XRANDR
+  _orig_size_id = -1;
+  if (_properties.get_fullscreen()) {
+    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+    _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+    int num_sizes, new_size_id = -1;
+    XRRScreenSize *xrrs;
+    xrrs = XRRSizes(_display, 0, &num_sizes);
+    for (int i = 0; i < num_sizes; ++i) {
+      if (xrrs[i].width == _properties.get_x_size() && 
+          xrrs[i].height == _properties.get_y_size()) {
+        new_size_id = i;
+      }
+    }
+    if (new_size_id == -1) {
+      x11display_cat.error() 
+        << "Videocard has no supported display resolutions at specified res ("
+        << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
+      _orig_size_id = -1;
+      return false;
+    }
+    if (new_size_id != _orig_size_id) {
+      XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+    } else {
+      _orig_size_id = -1;
+    }
+    _properties.set_origin(0, 0);
+  }
+#endif
+  
+  Window parent_window = x11_pipe->get_root();
+  WindowHandle *window_handle = _properties.get_parent_window();
+  if (window_handle != NULL) {
+    x11display_cat.info()
+      << "Got parent_window " << *window_handle << "\n";
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      x11display_cat.info()
+        << "os_handle type " << os_handle->get_type() << "\n";
+      
+      if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
+        NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
+        parent_window = x11_handle->get_handle();
+      } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
+        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
+        parent_window = (Window)int_handle->get_handle();
+      }
+    }
+  }
+  _parent_window_handle = window_handle;
+  
+  _event_mask =
+    ButtonPressMask | ButtonReleaseMask |
+    KeyPressMask | KeyReleaseMask |
+    EnterWindowMask | LeaveWindowMask |
+    PointerMotionMask |
+    FocusChangeMask | StructureNotifyMask;
+
+  // Initialize window attributes
+  XSetWindowAttributes wa;
+  wa.background_pixel = XBlackPixel(_display, _screen);
+  wa.border_pixel = 0;
+  wa.colormap = _colormap;
+  wa.event_mask = _event_mask;
+
+  unsigned long attrib_mask = 
+    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+  _xwindow = XCreateWindow
+    (_display, parent_window,
+     _properties.get_x_origin(), _properties.get_y_origin(),
+     _properties.get_x_size(), _properties.get_y_size(),
+     0, _visual_info->depth, InputOutput,
+     _visual_info->visual, attrib_mask, &wa);
+
+  if (_xwindow == (Window)0) {
+    x11display_cat.error()
+      << "failed to create X window.\n";
+    return false;
+  }
+  set_wm_properties(_properties, false);
+
+  // We don't specify any fancy properties of the XIC.  It would be
+  // nicer if we could support fancy IM's that want preedit callbacks,
+  // etc., but that can wait until we have an X server that actually
+  // supports these to test it on.
+  XIM im = x11_pipe->get_im();
+  _ic = NULL;
+  if (im) {
+    _ic = XCreateIC
+      (im,
+       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+       (void*)NULL);
+    if (_ic == (XIC)NULL) {
+      x11display_cat.warning()
+        << "Couldn't create input context.\n";
+    }
+  }
+
+  if (_properties.get_cursor_hidden()) {
+    XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
+  }
+  
+  XMapWindow(_display, _xwindow);
+
+  if (_properties.get_raw_mice()) {
+    open_raw_mice();
+  } else {
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "Raw mice not requested.\n";
+    }
+  }
+
+  // Create a WindowHandle for ourselves
+  _window_handle = NativeWindowHandle::make_x11(_xwindow);
+
+  // And tell our parent window that we're now its child.
+  if (_parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->attach_child(_window_handle);
+  }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -898,8 +1066,7 @@ setup_colormap(XVisualInfo *visual) {
 //  Description: Adds raw mice to the _input_devices list.
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
-open_raw_mice()
-{
+open_raw_mice() {
 #ifdef HAVE_LINUX_INPUT_H
   bool any_present = false;
   bool any_mice = false;
