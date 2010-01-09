@@ -17,6 +17,16 @@
 #include "config_x11display.h"
 #include "frameBufferProperties.h"
 
+#ifdef HAVE_XRANDR
+// Ugly workaround around the conflicting definition
+// of Connection that randr.h provides.
+#define _RANDR_H_
+typedef unsigned short Rotation;
+typedef unsigned short SizeID;
+typedef unsigned short SubpixelOrder;
+#include <X11/extensions/Xrandr.h>
+#endif
+
 TypeHandle x11GraphicsPipe::_type_handle;
 
 bool x11GraphicsPipe::_error_handlers_installed = false;
@@ -80,6 +90,33 @@ x11GraphicsPipe(const string &display) {
   _display_width = DisplayWidth(_display, _screen);
   _display_height = DisplayHeight(_display, _screen);
   _is_valid = true;
+
+#ifdef HAVE_XRANDR
+  // Use Xrandr to fill in the supported resolution list.
+  int num_sizes, num_rates;
+  XRRScreenSize *xrrs;
+  xrrs = XRRSizes(_display, 0, &num_sizes);
+  _display_information->_total_display_modes = 0;
+  for (int i = 0; i < num_sizes; ++i) {
+    XRRRates(_display, 0, i, &num_rates);
+    _display_information->_total_display_modes += num_rates;
+  }
+  
+  short *rates;
+  short counter = 0;
+  _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
+  for (int i = 0; i < num_sizes; ++i) {
+    int num_rates;
+    rates = XRRRates(_display, 0, i, &num_rates);
+    for (int j = 0; j < num_rates; ++j) {
+      DisplayMode* dm = _display_information->_display_mode_array + counter;
+      dm->width = xrrs[i].width;
+      dm->height = xrrs[i].height;
+      dm->refresh_rate = rates[j];
+      ++counter;
+    }
+  }
+#endif
 
   // Connect to an input method for supporting international text
   // entry.

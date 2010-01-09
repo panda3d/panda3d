@@ -691,11 +691,18 @@
 #defer HAVE_X11 $[and $[IS_LINUX],$[libtest $[X11_LPATH],$[X11_LIBS]]]
 
 // This defines if we have XF86DGA installed. This enables smooth
-// FPS-style mouse in glxdisplay, when mouse mode M_relative is used.
+// FPS-style mouse in x11display, when mouse mode M_relative is used.
 #define XF86DGA_IPATH /usr/include/X11/extensions
 #define XF86DGA_LPATH /usr/lib
 #define XF86DGA_LIBS Xxf86dga
 #defer HAVE_XF86DGA $[libtest $[XF86DGA_LPATH],$[XF86DGA_LIBS]]
+
+// This defines if we have XF86DGA installed. This
+// enables resolution switching in x11display.
+#define XRANDR_IPATH /usr/include/X11/extensions
+#define XRANDR_LPATH /usr/lib
+#define XRANDR_LIBS Xrandr
+#defer HAVE_XRANDR $[libtest $[XRANDR_LPATH],$[XRANDR_LIBS]]
 
 // How about GLX?
 #define GLX_IPATH

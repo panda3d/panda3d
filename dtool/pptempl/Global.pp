@@ -164,6 +164,13 @@
   #define xf86dga_libs $[XF86DGA_LIBS]
 #endif
 
+#if $[HAVE_XRANDR]
+  #define xrandr_ipath $[wildcard $[XRANDR_IPATH]]
+  #define xrandr_lpath $[wildcard $[XRANDR_LPATH]]
+  #define xrandr_cflags $[XRANDR_CFLAGS]
+  #define xrandr_libs $[XRANDR_LIBS]
+#endif
+
 #if $[HAVE_MESA]
   #define mesa_ipath $[wildcard $[MESA_IPATH]]
   #define mesa_lpath $[wildcard $[MESA_LPATH]]

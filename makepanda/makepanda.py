@@ -54,7 +54,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
   "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","OPENGL",
-  "X11","XF86DGA","PHYSX","PANDATOOL","CONTRIB",
+  "X11","XF86DGA","XRANDR","PHYSX","PANDATOOL","CONTRIB",
 ])
 
 CheckPandaSourceTree()
@@ -309,6 +309,7 @@ else:
 
 if (COMPILER=="MSVC"):
     PkgDisable("X11")
+    PkgDisable("XRANDR")
     PkgDisable("XF86DGA")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
@@ -484,6 +485,7 @@ if (COMPILER=="LINUX"):
             SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
         SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
         if (not RUNTIME):
+            SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
     if (RUNTIME):
@@ -1284,6 +1286,7 @@ DTOOL_CONFIG=[
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
+    ("HAVE_XRANDR",                    'UNDEF',                  '1'),
     ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
@@ -1387,6 +1390,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
+        dtool_config["HAVE_XRANDR"] = 'UNDEF'
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
@@ -3055,7 +3059,7 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("OPENGL")==
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'X11', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -3249,7 +3253,7 @@ if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgS
     TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
   else:
     TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
-    TargetAdd('libtinydisplay.dll', opts=['X11', 'XF86DGA'])
+    TargetAdd('libtinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA'])
   TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
   TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
   TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
