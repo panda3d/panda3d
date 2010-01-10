@@ -28,7 +28,13 @@ class WinGraphicsPipe;
 
 #define PM_INACTIVE  (WM_APP+124)
 
-
+typedef struct {
+  int x;
+  int y;
+  int width;
+  int height;
+}
+WINDOW_METRICS;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WinGraphicsWindow
@@ -82,6 +88,16 @@ protected:
 
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
+
+  virtual bool do_fullscreen_switch();
+  virtual bool do_windowed_switch();
+  virtual bool do_fullscreen_enable();
+  virtual bool do_fullscreen_disable();
+
+  virtual bool calculate_metrics(bool fullscreen, DWORD style,
+                                 WINDOW_METRICS &metrics, bool &has_origin);
+
+  virtual DWORD make_style(bool fullscreen);
 
   virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
                                           DWORD &bitdepth);

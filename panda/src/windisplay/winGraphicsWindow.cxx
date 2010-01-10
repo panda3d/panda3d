@@ -329,6 +329,26 @@ set_properties_now(WindowProperties &properties) {
     
     properties.clear_foreground();
   }
+
+  if (properties.has_fullscreen()) {
+    if (properties.get_fullscreen() && !is_fullscreen()) {
+      if (do_fullscreen_switch()){
+        _properties.set_fullscreen(true);
+        properties.clear_fullscreen();
+      } else {
+        windisplay_cat.warning()
+          << "Switching to fullscreen mode failed!\n";
+      }
+    } else if (!properties.get_fullscreen() && is_fullscreen()){
+      if (do_windowed_switch()){
+        _properties.set_fullscreen(false);
+        properties.clear_fullscreen();
+      } else {
+        windisplay_cat.warning()
+          << "Switching to windowed mode failed!\n";
+      }
+    }
+  }
 }
 
 
@@ -345,7 +365,7 @@ close_window() {
 
   if (is_fullscreen()) {
     // revert to default display mode.
-    ChangeDisplaySettings(NULL, 0x0);
+    do_fullscreen_disable();
   }
 
   // Remove the window handle from our global map.
@@ -723,6 +743,61 @@ do_fullscreen_resize(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::do_fullscreen_switch
+//       Access: Protected, Virtual
+//  Description: Called in the set_properties_now function
+//               to switch to fullscreen.
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+do_fullscreen_switch() {
+  DWORD window_style = make_style(true);
+  SetWindowLong(_hWnd, GWL_STYLE, window_style);
+
+  WINDOW_METRICS metrics;
+  bool has_origin;
+  if (!calculate_metrics(true, window_style, metrics, has_origin)){
+    return false;
+  }
+  SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, metrics.width, metrics.height,
+    SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+  do_fullscreen_enable();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::do_windowed_switch
+//       Access: Protected, Virtual
+//  Description: Called in the set_properties_now function
+//               to switch to windowed mode.
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+do_windowed_switch() {
+  do_fullscreen_disable();
+  DWORD window_style = make_style(false);
+  SetWindowLong(_hWnd, GWL_STYLE, window_style);
+
+  WINDOW_METRICS metrics;
+  bool has_origin;
+  _properties.set_origin(-1, -1);
+
+  if (!calculate_metrics(false, window_style, metrics, has_origin)){
+    return false;
+  }
+  
+  // We make an initial SetWindowPos call so that the new styles are taken into account,
+  // then call do_reshape_request which does the actual sizing and positioning.
+
+  SetWindowPos(_hWnd, HWND_NOTOPMOST, metrics.x, metrics.y,
+               metrics.width, metrics.height,
+               SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
+
+  do_reshape_request(0, 0, false, metrics.width, metrics.height);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::reconsider_fullscreen_size
 //       Access: Protected, Virtual
 //  Description: Called before creating a fullscreen window to give
@@ -748,12 +823,13 @@ support_overlay_window(bool) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::open_graphic_window
+//     Function: WinGraphicsWindow::make_style
 //       Access: Private
-//  Description: Creates a regular or fullscreen window.
+//  Description: Constructs a dwStyle for the specified mode,
+//               be it windowed or fullscreen.
 ////////////////////////////////////////////////////////////////////
-bool WinGraphicsWindow::
-open_graphic_window(bool fullscreen) {
+DWORD WinGraphicsWindow::
+make_style(bool fullscreen) {
   //  from MSDN:
   //  An OpenGL window has its own pixel format. Because of this, only
   //  device contexts retrieved for the client area of an OpenGL
@@ -761,8 +837,8 @@ open_graphic_window(bool fullscreen) {
   //  OpenGL window should be created with the WS_CLIPCHILDREN and
   //  WS_CLIPSIBLINGS styles. Additionally, the window class attribute
   //  should not include the CS_PARENTDC style.
-  DWORD window_style = 
-    WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+  DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
   if (fullscreen){
     window_style |= WS_SYSMENU;
@@ -775,50 +851,48 @@ open_graphic_window(bool fullscreen) {
       window_style |= WS_BORDER;
     }
   }
-  
-  string title;
-  if (_properties.has_title()) {
-    title = _properties.get_title();
-  }
+  return window_style;
+}
 
-  if (!_properties.has_size()) {
-    //Just pick a conservative default size if one isn't specified.
-    _properties.set_size(640, 480);
-  }
-
-  int x_size = _properties.get_x_size();
-  int y_size = _properties.get_y_size();
-
-  int x_origin = 0;
-  int y_origin = 0;
-  bool has_origin = _properties.has_origin();
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::calculate_metrics
+//       Access: Private
+//  Description: Calculates the metrics for the specified mode,
+//               be it windowed or fullscreen.
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
+                  bool &has_origin) {
+  metrics.x = 0;
+  metrics.y = 0;
+  has_origin = _properties.has_origin();
   if (!fullscreen && has_origin) {
-    x_origin = _properties.get_x_origin();
-    y_origin = _properties.get_y_origin();
+    metrics.x = _properties.get_x_origin();
+    metrics.y = _properties.get_y_origin();
     
     // A coordinate of -2 means to center the window in its client area.
-    if (x_origin == -2) {
-      x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+    if (metrics.x == -2) {
+      metrics.x = 0.5 * (_pipe->get_display_width() - _properties.get_x_origin());
     }
-    if (y_origin == -2) {
-      y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+    if (metrics.y == -2) {
+      metrics.y = 0.5 * (_pipe->get_display_height() - _properties.get_y_origin());
     }
-    _properties.set_origin(x_origin, y_origin);
+    _properties.set_origin(metrics.x, metrics.y);
 
-    if (x_origin == -1 && y_origin == -1) {
-      x_origin = 0;
-      y_origin = 0;
+    if (metrics.x == -1 && metrics.y == -1) {
+      metrics.x = 0;
+      metrics.y = 0;
       has_origin = false;
     }
   }
 
-  int clientAreaWidth = x_size;
-  int clientAreaHeight = y_size;
+  metrics.width = _properties.get_x_size();
+  metrics.height = _properties.get_y_size();
 
   if (!fullscreen){
     RECT win_rect;
-    SetRect(&win_rect, x_origin, y_origin,
-            x_origin + x_size, y_origin + y_size);
+    SetRect(&win_rect, metrics.x, metrics.y,
+            metrics.x + metrics.width, metrics.y + metrics.height);
     
     // Compute window size based on desired client area size
     if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
@@ -828,14 +902,42 @@ open_graphic_window(bool fullscreen) {
     }
 
     if (has_origin) {
-      x_origin = win_rect.left;
-      y_origin = win_rect.top;
+      metrics.x = win_rect.left;
+      metrics.y = win_rect.top;
     } else {
-      x_origin = CW_USEDEFAULT;
-      y_origin = CW_USEDEFAULT;
+      metrics.x = CW_USEDEFAULT;
+      metrics.y = CW_USEDEFAULT;
     }
-    clientAreaWidth = win_rect.right - win_rect.left;
-    clientAreaHeight = win_rect.bottom - win_rect.top;
+    metrics.width = win_rect.right - win_rect.left;
+    metrics.height = win_rect.bottom - win_rect.top;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::open_graphic_window
+//       Access: Private
+//  Description: Creates a regular or fullscreen window.
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+open_graphic_window(bool fullscreen) {
+  DWORD window_style = make_style(fullscreen);
+  
+  string title;
+  if (_properties.has_title()) {
+    title = _properties.get_title();
+  }
+
+  if (!_properties.has_size()) {
+    //Just fill in a conservative default size if one isn't specified.
+    _properties.set_size(640, 480);
+  }
+
+  WINDOW_METRICS metrics;
+  bool has_origin;
+  if (!calculate_metrics(fullscreen, window_style, metrics, has_origin)){
+    return false;
   }
 
   const WindowClass &wclass = register_window_class(_properties);
@@ -869,13 +971,13 @@ open_graphic_window(bool fullscreen) {
 
   if (!_hparent) { // This can be a regular window or a fullscreen window
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
-                         x_origin, y_origin,
-                         clientAreaWidth,
-                         clientAreaHeight,
+                         metrics.x, metrics.y,
+                         metrics.width,
+                         metrics.height,
                          NULL, NULL, hinstance, 0);
   } else { // This is a regular window with a parent
-    x_origin = 0;
-    y_origin = 0;
+    int x_origin = 0;
+    int y_origin = 0;
     
     if (!fullscreen && has_origin) {
       x_origin = _properties.get_x_origin();
@@ -885,7 +987,7 @@ open_graphic_window(bool fullscreen) {
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
                          x_origin, y_origin,
-                         x_size, y_size,
+                         _properties.get_x_size(), _properties.get_y_size(),
                          _hparent, NULL, hinstance, 0);
     
     if (_hWnd) {
@@ -914,46 +1016,81 @@ open_graphic_window(bool fullscreen) {
   // up the desktop during the mode change.
 
   if (fullscreen){
-    HWND hDesktopWindow = GetDesktopWindow();
-    HDC scrnDC = GetDC(hDesktopWindow);
-    DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
-    //  DWORD drvr_ver = GetDeviceCaps(scrnDC, DRIVERVERSION);
-    //  DWORD cur_scrnwidth = GetDeviceCaps(scrnDC, HORZRES);
-    //  DWORD cur_scrnheight = GetDeviceCaps(scrnDC, VERTRES);
-    ReleaseDC(hDesktopWindow, scrnDC);
-    
-    DWORD dwWidth = _properties.get_x_size();
-    DWORD dwHeight = _properties.get_y_size();
-    DWORD dwFullScreenBitDepth = cur_bitdepth;
-
-    DEVMODE dm;
-    reconsider_fullscreen_size(dwWidth, dwHeight, dwFullScreenBitDepth);
-    if (!find_acceptable_display_mode(dwWidth, dwHeight, dwFullScreenBitDepth, dm)) {
-      windisplay_cat.error() 
-        << "Videocard has no supported display resolutions at specified res ("
-        << dwWidth << " x " << dwHeight << " x " << dwFullScreenBitDepth <<")\n";
+    if (!do_fullscreen_enable()){
       return false;
     }
-
-    dm.dmPelsWidth = dwWidth;
-    dm.dmPelsHeight = dwHeight;
-    dm.dmBitsPerPel = dwFullScreenBitDepth;
-    int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
-
-    if (chg_result != DISP_CHANGE_SUCCESSFUL) {
-      windisplay_cat.error()
-        << "ChangeDisplaySettings failed (error code: "
-        << chg_result << ") for specified res (" << dwWidth
-        << " x " << dwHeight << " x " << dwFullScreenBitDepth
-        << "), " << _fullscreen_display_mode.dmDisplayFrequency  << "Hz\n";
-      return false;
-    }
-
-    _properties.set_origin(0, 0);
-    _properties.set_size(dwWidth, dwHeight);
-
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::do_fullscreen_enable
+//       Access: Private
+//  Description: This is a low-level function that just puts Windows
+//               in fullscreen mode. Not to confuse with
+//               do_fullscreen_switch().
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+do_fullscreen_enable() {
+
+  HWND hDesktopWindow = GetDesktopWindow();
+  HDC scrnDC = GetDC(hDesktopWindow);
+  DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
+  //  DWORD drvr_ver = GetDeviceCaps(scrnDC, DRIVERVERSION);
+  //  DWORD cur_scrnwidth = GetDeviceCaps(scrnDC, HORZRES);
+  //  DWORD cur_scrnheight = GetDeviceCaps(scrnDC, VERTRES);
+  ReleaseDC(hDesktopWindow, scrnDC);
+  
+  DWORD dwWidth = _properties.get_x_size();
+  DWORD dwHeight = _properties.get_y_size();
+  DWORD dwFullScreenBitDepth = cur_bitdepth;
+
+  DEVMODE dm;
+  reconsider_fullscreen_size(dwWidth, dwHeight, dwFullScreenBitDepth);
+  if (!find_acceptable_display_mode(dwWidth, dwHeight, dwFullScreenBitDepth, dm)) {
+    windisplay_cat.error() 
+      << "Videocard has no supported display resolutions at specified res ("
+      << dwWidth << " x " << dwHeight << " x " << dwFullScreenBitDepth <<")\n";
+    return false;
+  }
+
+  dm.dmPelsWidth = dwWidth;
+  dm.dmPelsHeight = dwHeight;
+  dm.dmBitsPerPel = dwFullScreenBitDepth;
+  int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+  if (chg_result != DISP_CHANGE_SUCCESSFUL) {
+    windisplay_cat.error()
+      << "ChangeDisplaySettings failed (error code: "
+      << chg_result << ") for specified res (" << dwWidth
+      << " x " << dwHeight << " x " << dwFullScreenBitDepth
+      << "), " << _fullscreen_display_mode.dmDisplayFrequency  << "Hz\n";
+    return false;
+  }
+
+  _properties.set_origin(0, 0);
+  _properties.set_size(dwWidth, dwHeight);
+
+  return true;
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::do_fullscreen_disable
+//       Access: Private
+//  Description: This is a low-level function that just gets Windows
+//               out of fullscreen mode. Not to confuse with
+//               do_windowed_switch().
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+do_fullscreen_disable() {
+  int chg_result = ChangeDisplaySettings(NULL, 0x0);
+  if (chg_result != DISP_CHANGE_SUCCESSFUL) {
+    windisplay_cat.warning()
+      << "ChangeDisplaySettings failed to restore Windowed mode\n";
+    return false;
+  }
   return true;
 }
 
@@ -1241,7 +1378,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // losing the graphics context.
             ShowWindow(_hWnd, SW_MINIMIZE);
             GdiFlush();
-            ChangeDisplaySettings(NULL, 0x0);
+            do_fullscreen_disable();
             fullscreen_minimized(properties);
           }
       }
@@ -2165,7 +2302,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-          cout << "[FS FOUND] " << dwWidth << "x" << dwHeight << "@" << bpp << endl;
+      // cout << "[FS FOUND] " << dwWidth << "x" << dwHeight << "@" << bpp << endl;
       // We want to modify the current DEVMODE rather than using a fresh one in order
       // to work around a Windows 7 bug.
       ZeroMemory(&dm, sizeof(dm));
