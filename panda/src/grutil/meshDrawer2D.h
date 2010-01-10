@@ -72,7 +72,21 @@ PUBLISHED:
     float x, float y, float w, float h, 
     float u, float v, float us, float vs, 
     LVector4f color);
-                
+  
+  void rectangle_border(
+      float x, float y, float w, float h,
+      float r, float t, float l, float b,
+      float tr, float tt, float tl, float tb,
+      float u, float v, float us, float vs, 
+      LVector4f color);
+
+  void rectangle_border_tiled(
+      float x, float y, float w, float h,
+      float r, float t, float l, float b,
+      float tr, float tt, float tl, float tb,
+      float u, float v, float us, float vs, 
+      LVector4f color);
+
   void rectangle_tiled(
     float x, float y, float w, float h, 
     float u, float v, float us, float vs, 
