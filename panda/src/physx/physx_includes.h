@@ -18,14 +18,17 @@
 
 // Platform-specific defines
 #ifdef WIN32
-#define NX32
+#define NX32 1
 #endif
 
 #ifdef IS_LINUX
-#define LINUX
-#define NX32
-#define CORELIB
-#define NX_DISABLE_FLUIDS
+#define LINUX 1
+#define NX32 1
+#define CORELIB 1
+#define NX_DISABLE_FLUIDS 1
+#endif
+
+#ifdef IS_FREEBSD
 #endif
 
 #ifdef IS_OSX
