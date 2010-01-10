@@ -480,15 +480,13 @@ set_properties_now(WindowProperties &properties) {
           << "Videocard has no supported display resolutions at specified res ("
           << reqsizex << " x " << reqsizey <<")\n";
         _orig_size_id = -1;
-      }
-      if (new_size_id != _orig_size_id) {
-        XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
-        _properties.set_fullscreen(true);
-        properties.clear_fullscreen();
       } else {
-        _orig_size_id = -1;
+        if (new_size_id != _orig_size_id) {
+          XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+        } else {
+          _orig_size_id = -1;
+        }
         _properties.set_fullscreen(true);
-        properties.clear_fullscreen();
       }
 #else
       // If we don't have Xrandr support, we fake the fullscreen
@@ -506,7 +504,6 @@ set_properties_now(WindowProperties &properties) {
         _orig_size_id = -1;
       }
       _properties.set_fullscreen(false);
-      properties.clear_fullscreen();
 #endif
     }
   }
