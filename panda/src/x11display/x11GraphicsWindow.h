@@ -82,8 +82,10 @@ protected:
   XIC _ic;
   XVisualInfo *_visual_info;
   
+#ifdef HAVE_XRANDR
   Rotation _orig_rotation;
   SizeID _orig_size_id;
+#endif
 
   long _event_mask;
   bool _awaiting_configure;

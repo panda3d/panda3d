@@ -76,7 +76,9 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _xwindow = (Window)NULL;
   _ic = (XIC)NULL;
   _visual_info = NULL;
+#ifdef HAVE_XRANDR
   _orig_size_id = -1;
+#endif
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
   _wm_delete_window = x11_pipe->_wm_delete_window;
@@ -448,43 +450,91 @@ set_properties_now(WindowProperties &properties) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
   
-  // A coordinate of -2 means to center the window on screen.
-  if (properties.has_origin() && (properties.get_x_origin() == -2
-                              || properties.get_y_origin() == -2)) {
-    int x_origin = properties.get_x_origin();
-    int y_origin = properties.get_y_origin();
-    if (properties.has_size()) {
-      if (x_origin == -2) {
-        x_origin = 0.5 * (x11_pipe->get_display_width() - properties.get_x_size());
-      }
-      if (y_origin == -2) {
-        y_origin = 0.5 * (x11_pipe->get_display_height() - properties.get_y_size());
-      }
-      properties.set_origin(x_origin, y_origin);
-    } else {
-      // I'm not sure what to do in this case, when no size is specified.
-      // Using XGetGeometry results for me in a BadDrawable here.
-      // I guess we can just ignore this case (when no size is specified).
-    }
-  }
-
-  // Fullscreen mode is implemented with a hint to the window manager.
-  // However, we also implicitly set the origin to (0, 0) and request
-  // undecorated mode, in case the user has a less-capable
-  // window manager (or no window manager at all).
+  // Handle fullscreen mode.
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
-      properties.set_undecorated(true);
       properties.set_origin(0, 0);
-#ifndef HAVE_XRANDR
+#ifdef HAVE_XRANDR
+      XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+      if (_orig_size_id == (SizeID) -1) {
+        _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+      }
+      int num_sizes, reqsizex, reqsizey, new_size_id = -1;
+      if (properties.has_size()) {
+        reqsizex = properties.get_x_size();
+        reqsizey = properties.get_y_size();
+      } else {
+        reqsizex = _properties.get_x_size();
+        reqsizey = _properties.get_y_size();
+      }
+      XRRScreenSize *xrrs;
+      xrrs = XRRSizes(_display, 0, &num_sizes);
+      for (int i = 0; i < num_sizes; ++i) {
+        if (xrrs[i].width == properties.get_x_size() && 
+            xrrs[i].height == properties.get_y_size()) {
+          new_size_id = i;
+        }
+      }
+      if (new_size_id == -1) {
+        x11display_cat.error() 
+          << "Videocard has no supported display resolutions at specified res ("
+          << reqsizex << " x " << reqsizey <<")\n";
+        _orig_size_id = -1;
+      }
+      if (new_size_id != _orig_size_id) {
+        XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+        _properties.set_fullscreen(true);
+        properties.clear_fullscreen();
+      } else {
+        _orig_size_id = -1;
+        _properties.set_fullscreen(true);
+        properties.clear_fullscreen();
+      }
+#else
       // If we don't have Xrandr support, we fake the fullscreen
       // support by setting the window size to the desktop size.
       properties.set_size(x11_pipe->get_display_width(),
                           x11_pipe->get_display_height());
 #endif
+    } else {
+#ifdef HAVE_XRANDR
+      // Change the resolution back to what it was.
+      // Don't remove the SizeID typecast!
+      if (_orig_size_id != (SizeID) -1) {
+        XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+        XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
+        _orig_size_id = -1;
+      }
+      _properties.set_fullscreen(false);
+      properties.clear_fullscreen();
+#endif
     }
   }
-
+  
+  if (properties.has_origin()) {
+    // A coordinate of -2 means to center the window on screen.
+    if (properties.get_x_origin() == -2 || properties.get_y_origin() == -2) {
+      int x_origin = properties.get_x_origin();
+      int y_origin = properties.get_y_origin();
+      if (properties.has_size()) {
+        if (x_origin == -2) {
+          x_origin = 0.5 * (x11_pipe->get_display_width() - properties.get_x_size());
+        }
+        if (y_origin == -2) {
+          y_origin = 0.5 * (x11_pipe->get_display_height() - properties.get_y_size());
+        }
+      } else {
+        if (x_origin == -2) {
+          x_origin = 0.5 * (x11_pipe->get_display_width() - _properties.get_x_size());
+        }
+        if (y_origin == -2) {
+          y_origin = 0.5 * (x11_pipe->get_display_height() - _properties.get_y_size());
+        }
+      }
+      properties.set_origin(x_origin, y_origin);
+    }
+  }
+  
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
@@ -504,20 +554,14 @@ set_properties_now(WindowProperties &properties) {
     _properties.set_title(properties.get_title());
     properties.clear_title();
   }
-
-  // Ditto for fullscreen mode.
-  if (properties.has_fullscreen()) {
-    _properties.set_fullscreen(properties.get_fullscreen());
-    properties.clear_fullscreen();
-  }
-
+  
   // The size and position of an already-open window are changed via
   // explicit X calls.  These may still get intercepted by the window
   // manager.  Rather than changing _properties immediately, we'll
   // wait for the ConfigureNotify message to come back.
   XWindowChanges changes;
   int value_mask = 0;
-
+  
   if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
@@ -525,12 +569,14 @@ set_properties_now(WindowProperties &properties) {
     if (changes.y != -1) value_mask |= CWY;
     properties.clear_origin();
   }
+  
   if (properties.has_size()) {
     changes.width = properties.get_x_size();
     changes.height = properties.get_y_size();
     value_mask |= (CWWidth | CWHeight);
     properties.clear_size();
   }
+  
   if (properties.has_z_order()) {
     // We'll send the classic stacking request through the standard
     // interface, for users of primitive window managers; but we'll
@@ -678,10 +724,19 @@ close_window() {
   // Change the resolution back to what it was.
   // Don't remove the SizeID typecast!
   if (_orig_size_id != (SizeID) -1) {
-    x11GraphicsPipe *x11_pipe;
-    DCAST_INTO_V(x11_pipe, _pipe);
-    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
-    XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
+    Window root;
+    if (_pipe != NULL) {
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      root = x11_pipe->get_root();
+    } else {
+      // Oops. Looks like the pipe was destroyed
+      // before the window gets closed. Oh well,
+      // let's get the root window by ourselves.
+      root = RootWindow(_display, _screen);
+    }
+    XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, root);
+    XRRSetScreenConfig(_display, conf, root, _orig_size_id, _orig_rotation, CurrentTime);
     _orig_size_id = -1;
   }
 #endif
@@ -716,10 +771,11 @@ open_window() {
   }
   
 #ifdef HAVE_XRANDR
-  _orig_size_id = -1;
   if (_properties.get_fullscreen()) {
     XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
-    _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+    if (_orig_size_id == (SizeID) -1) {
+      _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
+    }
     int num_sizes, new_size_id = -1;
     XRRScreenSize *xrrs;
     xrrs = XRRSizes(_display, 0, &num_sizes);
@@ -741,7 +797,6 @@ open_window() {
     } else {
       _orig_size_id = -1;
     }
-    _properties.set_origin(0, 0);
   }
 #endif
   
