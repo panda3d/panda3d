@@ -14,7 +14,8 @@
 #begin install_icons
   #define SOURCES \
       folder.gif minusnode.gif openfolder.gif plusnode.gif python.gif \
-      sphere2.gif tk.gif
+      sphere2.gif tk.gif dot_black.gif dot_blue.gif dot_green.gif \
+      dot_red.gif dot_white.gif
 #end install_icons
 
 #begin install_egg
