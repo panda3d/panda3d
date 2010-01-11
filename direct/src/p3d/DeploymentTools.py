@@ -193,7 +193,7 @@ class Installer:
         if not self.includeRequires:
             return
         
-        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = True)
+        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = True, perPlatform = False)
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 Installer.notify.error("couldn't read host")
@@ -209,7 +209,7 @@ class Installer:
                 continue
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
-        host = HostInfo(self.standalone.host.hostUrl, rootDir = rootDir, asMirror = False)
+        host = HostInfo(self.standalone.host.hostUrl, rootDir = rootDir, asMirror = False, perPlatform = False)
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 Installer.notify.error("couldn't read host")
@@ -284,10 +284,11 @@ class Installer:
         print >>controlfile, "Priority: optional"
         print >>controlfile, "Architecture: %s" % arch
         print >>controlfile, "Description: %s" % self.fullname
-        print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6"
+        print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6 libssl0.9.8"
         controlfile.close()
         postinst = open(Filename(tempdir, "postinst").toOsSpecific(), "w")
         print >>postinst, "#!/bin/sh"
+        print >>postinst, "/usr/bin/%s --prep" % self.shortname.lower()
         print >>postinst, "chmod -R 777 /usr/share/%s" % self.shortname.lower()
         print >>postinst, "chmod -R 555 /usr/share/%s/hosts" % self.shortname.lower()
         postinst.close()
