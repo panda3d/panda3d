@@ -19,6 +19,7 @@
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     meshDrawer.I meshDrawer.h \
+    meshDrawer2D.I meshDrawer2D.h \
     geoMipTerrain.I geoMipTerrain.h \
     sceneGraphAnalyzerMeter.I sceneGraphAnalyzerMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
@@ -35,6 +36,7 @@
     config_grutil.cxx \
     frameRateMeter.cxx \
     meshDrawer.cxx \
+    meshDrawer2D.cxx \
     geoMipTerrain.cxx \
     sceneGraphAnalyzerMeter.cxx \
     heightfieldTesselator.cxx \
@@ -50,6 +52,7 @@
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     meshDrawer.I meshDrawer.h \
+    meshDrawer2D.I meshDrawer2D.h \
     geoMipTerrain.I geoMipTerrain.h \
     sceneGraphAnalyzerMeter.I sceneGraphAnalyzerMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
