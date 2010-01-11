@@ -70,7 +70,7 @@ matches_normal(const EggAttributes &other) const {
     return true;
   }
   return (get_normal() == other.get_normal() && 
-          _dnormals.compare_to(other._dnormals) == 0);
+          _dnormals.compare_to(other._dnormals, egg_parameters->_normal_threshold) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ matches_color(const EggAttributes &other) const {
     return true;
   }
   return (get_color() == other.get_color() && 
-          _drgbas.compare_to(other._drgbas) == 0);
+          _drgbas.compare_to(other._drgbas, egg_parameters->_color_threshold) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@
 #include "pandabase.h"
 
 #include "eggMorphList.h"
-
+#include "eggParameters.h"
 #include "typedObject.h"
 #include "luse.h"
 #include "pnotify.h"

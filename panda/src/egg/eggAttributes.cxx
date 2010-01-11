@@ -119,7 +119,7 @@ compare_to(const EggAttributes &other) const {
     if (compare != 0) {
       return compare;
     }
-    compare = _dnormals.compare_to(other._dnormals);
+    compare = _dnormals.compare_to(other._dnormals, egg_parameters->_normal_threshold);
     if (compare != 0) {
       return compare;
     }
@@ -131,7 +131,7 @@ compare_to(const EggAttributes &other) const {
     if (compare != 0) {
       return compare;
     }
-    compare = _drgbas.compare_to(other._drgbas);
+    compare = _drgbas.compare_to(other._drgbas, egg_parameters->_color_threshold);
     if (compare != 0) {
       return compare;
     }

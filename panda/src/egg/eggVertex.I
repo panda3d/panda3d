@@ -327,7 +327,7 @@ get_external_index() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggVertex::
 sorts_less_than(const EggVertex &other) const {
-  return compare_to(other) < 0;
+  return (compare_to(other) < 0);
 }
 
 

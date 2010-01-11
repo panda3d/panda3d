@@ -45,7 +45,7 @@ public:
   INLINE bool operator == (const EggMorphList<MorphType> &other) const;
   INLINE bool operator != (const EggMorphList<MorphType> &other) const;
   INLINE bool operator < (const EggMorphList<MorphType> &other) const;
-  int compare_to(const EggMorphList<MorphType> &other) const;
+  int compare_to(const EggMorphList<MorphType> &other, double threshold) const;
 
   INLINE iterator begin();
   INLINE const_iterator begin() const;

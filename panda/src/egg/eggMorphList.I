@@ -98,12 +98,12 @@ operator < (const EggMorphList<MorphType> &other) const {
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 int EggMorphList<MorphType>::
-compare_to(const EggMorphList<MorphType> &other) const {
+compare_to(const EggMorphList<MorphType> &other, double threshold) const {
   if (_morphs.size() != other._morphs.size()) {
     return (int)_morphs.size() - (int)other._morphs.size();
   }
   for (size_t i = 0; i < _morphs.size(); i++) {
-    int compare = _morphs[i].compare_to(other._morphs[i]);
+    int compare = _morphs[i].compare_to(other._morphs[i], threshold);
     if (compare < 0) {
       return compare;
     }

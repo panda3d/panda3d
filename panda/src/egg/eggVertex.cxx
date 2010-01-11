@@ -395,7 +395,7 @@ compare_to(const EggVertex &other) const {
   if (compare != 0) {
     return compare;
   }
-  compare = _dxyzs.compare_to(other._dxyzs);
+  compare = _dxyzs.compare_to(other._dxyzs, egg_parameters->_pos_threshold);
   if (compare != 0) {
     return compare;
   }

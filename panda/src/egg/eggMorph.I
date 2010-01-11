@@ -93,12 +93,12 @@ operator != (const EggMorph<Parameter> &other) const {
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE int EggMorph<Parameter>::
-compare_to(const EggMorph<Parameter> &other) const {
+compare_to(const EggMorph<Parameter> &other, double threshold) const {
   int compare = strcmp(get_name().c_str(), other.get_name().c_str());
   if (compare != 0) {
     return compare;
   }
-  return _offset.compare_to(other._offset);
+  return _offset.compare_to(other._offset, threshold);
 }
 
 ////////////////////////////////////////////////////////////////////
