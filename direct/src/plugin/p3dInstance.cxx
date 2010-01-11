@@ -212,7 +212,7 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object->set_string_property("pluginDistributor", inst_mgr->get_plugin_distributor());
   _panda_script_object->set_string_property("coreapiHostUrl", inst_mgr->get_coreapi_host_url());
   time_t timestamp = inst_mgr->get_coreapi_timestamp();
-  _panda_script_object->set_int_property("coreapiTimestamp", timestamp);
+  _panda_script_object->set_int_property("coreapiTimestamp", (int)timestamp);
   _panda_script_object->set_string_property("coreapiTimestampString", ctime(&timestamp));
 
 
@@ -1245,6 +1245,8 @@ make_xml() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   xinstance->SetAttribute("root_dir", inst_mgr->get_root_dir());
+  xinstance->SetAttribute("log_directory", inst_mgr->get_log_directory());
+
   if (!inst_mgr->get_super_mirror().empty()) {
     xinstance->SetAttribute("super_mirror", inst_mgr->get_super_mirror());
   }
@@ -2976,7 +2978,7 @@ report_package_progress(P3DPackage *package, double progress) {
   char buffer[buffer_size];
 
   time_t elapsed = time(NULL) - _download_begin;
-  _panda_script_object->set_int_property("downloadElapsedSeconds", elapsed);
+  _panda_script_object->set_int_property("downloadElapsedSeconds", (int)elapsed);
 
   sprintf(buffer, "%d:%02d", (int)(elapsed / 60), (int)(elapsed % 60));
   _panda_script_object->set_string_property("downloadElapsedFormatted", buffer);
@@ -2984,7 +2986,7 @@ report_package_progress(P3DPackage *package, double progress) {
   if (progress > 0 && (elapsed > 5 || progress > 0.2)) {
     time_t total = (time_t)((double)elapsed / progress);
     time_t remaining = max(total, elapsed) - elapsed;
-    _panda_script_object->set_int_property("downloadRemainingSeconds", remaining);
+    _panda_script_object->set_int_property("downloadRemainingSeconds", (int)remaining);
     sprintf(buffer, "%d:%02d", (int)(remaining / 60), (int)(remaining % 60));
     _panda_script_object->set_string_property("downloadRemainingFormatted", buffer);
   }

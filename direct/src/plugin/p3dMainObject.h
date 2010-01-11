@@ -71,6 +71,7 @@ private:
   P3D_object *call_play(P3D_object *params[], int num_params);
   P3D_object *call_read_game_log(P3D_object *params[], int num_params);
   P3D_object *call_read_system_log(P3D_object *params[], int num_params);
+  P3D_object *call_read_log(P3D_object *params[], int num_params);
   P3D_object *read_log(const string &log_pathname, 
                        P3D_object *params[], int num_params);
   P3D_object *call_uninstall(P3D_object *params[], int num_params);

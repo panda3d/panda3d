@@ -191,6 +191,8 @@ has_method(const string &method_name) {
     return true;
   } else if (method_name == "read_system_log") {
     return true;
+  } else if (method_name == "read_log") {
+    return true;
   } else if (method_name == "uninstall") {
     return true;
   }
@@ -227,6 +229,8 @@ call(const string &method_name, bool needs_response,
     return call_read_game_log(params, num_params);
   } else if (method_name == "read_system_log") {
     return call_read_system_log(params, num_params);
+  } else if (method_name == "read_log") {
+    return call_read_log(params, num_params);
   } else if (method_name == "uninstall") {
     return call_uninstall(params, num_params);
   }
@@ -362,9 +366,7 @@ call_play(P3D_object *params[], int num_params) {
 P3D_object *P3DMainObject::
 call_read_game_log(P3D_object *params[], int num_params) {
   if (_inst != NULL) {
-    nout << "querying " << _inst << "->_log_pathname\n";
     string log_pathname = _inst->get_log_pathname();
-    nout << "result is " << log_pathname << "\n";
     return read_log(log_pathname, params, num_params);
   }
 
@@ -396,6 +398,54 @@ call_read_system_log(P3D_object *params[], int num_params) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMainObject::call_read_log
 //       Access: Private
+//  Description: Reads a named logfile.  The filename must end
+//               in ".log" and must not contain any slashes or colons
+//               (it must be found within the log directory).
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+call_read_log(P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  if (num_params < 1) {
+    return inst_mgr->new_undefined_object();
+  }
+
+  int size = P3D_OBJECT_GET_STRING(params[0], NULL, 0);
+  char *buffer = new char[size];
+  P3D_OBJECT_GET_STRING(params[0], buffer, size);
+  string log_filename = string(buffer, size);
+  delete[] buffer;
+
+  if (log_filename.size() < 4 || log_filename.substr(log_filename.size() - 4) != string(".log")) {
+    // Wrong filename extension.
+    return inst_mgr->new_undefined_object();
+  }
+
+  size_t slash = log_filename.find('/');
+  if (slash != string::npos) {
+    // No slashes allowed.
+    return inst_mgr->new_undefined_object();
+  }
+
+  slash = log_filename.find('\\');
+  if (slash != string::npos) {
+    // Nor backslashes.
+    return inst_mgr->new_undefined_object();
+  }
+
+  size_t colon = log_filename.find(':');
+  if (colon != string::npos) {
+    // Nor colons, for that matter.
+    return inst_mgr->new_undefined_object();
+  }
+
+  string log_pathname = inst_mgr->get_log_directory() + log_filename;
+  return read_log(log_pathname, params + 1, num_params - 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::read_log
+//       Access: Private
 //  Description: The generic log-reader function.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
@@ -406,35 +456,77 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
     return inst_mgr->new_undefined_object();
   }
 
-  // Check the parameter, if any--if specified, it specifies the last
-  // n bytes to retrieve.
-  int max_bytes = 0;
+  // Check the first parameter, if any--if given, it specifies the
+  // last n bytes to retrieve.
+  size_t tail_bytes = 0;
   if (num_params > 0) {
-    max_bytes = P3D_OBJECT_GET_INT(params[0]);
+    tail_bytes = (size_t)max(P3D_OBJECT_GET_INT(params[0]), 0);
+  }
+
+  // Check the second parameter, if any--if given, it specifies the
+  // first n bytes to retrieve.
+  size_t head_bytes = 0;
+  if (num_params > 1) {
+    head_bytes = (size_t)max(P3D_OBJECT_GET_INT(params[1]), 0);
   }
 
   // Get the size of the file.
   log.seekg(0, ios::end);
-  size_t size = (size_t)log.tellg();
-  nout << "read_log: " << log_pathname << " is " << size << " bytes\n";
+  size_t file_size = (size_t)log.tellg();
+  nout << "read_log: " << log_pathname << " is " << file_size
+       << " bytes, tail_bytes = " << tail_bytes << ", head_bytes = "
+       << head_bytes << "\n";
 
-  if (max_bytes > 0 && max_bytes < (int)size) {
-    // Apply the limit.
-    log.seekg(size - max_bytes, ios::beg);
-    size = (size_t)max_bytes;
+  size_t return_size = file_size;
+  string separator;
+
+  if (file_size <= head_bytes + tail_bytes) {
+    // We will return the entire log.
+    head_bytes = file_size;
+    tail_bytes = 0;
+    return_size = file_size;
+
+  } else if (head_bytes == 0) {
+    // We will be returning the tail of the log only.
+    return_size = tail_bytes;
+
+  } else if (tail_bytes == 0) {
+    // We will be returning the head of the log only.
+    return_size = head_bytes;
+
   } else {
-    // Read the entire file.
-    log.seekg(0, ios::beg);
+    // We will be excising the middle part of the log.
+    separator = "\n\n**** truncated ****\n\n";
+    return_size = head_bytes + separator.size() + tail_bytes;
   }
 
-  nout << "allocating " << size << " bytes to return.\n";
-  char *buffer = new char[size];
+  nout << "allocating " << return_size << " bytes to return.\n";
+  char *buffer = new char[return_size];
   if (buffer == NULL) {
     return NULL;
   }
 
-  log.read(buffer, size);
-  P3D_object *result = new P3DStringObject(buffer, log.gcount());
+  char *bp = buffer;
+  if (head_bytes > 0) {
+    log.seekg(0, ios::beg);
+    log.read(bp, head_bytes);
+    bp += log.gcount();
+  }
+
+  if (!separator.empty()) {
+    memcpy(bp, separator.data(), separator.length());
+    bp += separator.length();
+  }
+
+  if (tail_bytes > 0) {
+    log.seekg(file_size - tail_bytes, ios::beg);
+    log.read(bp, tail_bytes);
+    bp += log.gcount();
+  }
+
+  assert(bp <= buffer + return_size);
+
+  P3D_object *result = new P3DStringObject(buffer, bp - buffer);
   delete[] buffer;
 
   return result;
