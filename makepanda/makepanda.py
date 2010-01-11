@@ -4847,6 +4847,7 @@ def MakeInstallerOSX():
     import compileall
     if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
+    if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
     
     #TODO: add postflight script
     #oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
