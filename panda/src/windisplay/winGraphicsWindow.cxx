@@ -779,20 +779,18 @@ do_windowed_switch() {
 
   WINDOW_METRICS metrics;
   bool has_origin;
-  _properties.set_origin(-1, -1);
 
   if (!calculate_metrics(false, window_style, metrics, has_origin)){
     return false;
   }
   
-  // We make an initial SetWindowPos call so that the new styles are taken into account,
-  // then call do_reshape_request which does the actual sizing and positioning.
+  // We send SWP_FRAMECHANGED so that the new styles are taken into account.
+  // Also, we place the Windows at 0,0 to play safe until we decide how to
+  // get Panda to remember the windowed origin.
 
-  SetWindowPos(_hWnd, HWND_NOTOPMOST, metrics.x, metrics.y,
+  SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0,
                metrics.width, metrics.height,
-               SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
-
-  do_reshape_request(0, 0, false, metrics.width, metrics.height);
+               SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
   return true;
 }
