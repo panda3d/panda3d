@@ -453,7 +453,6 @@ set_properties_now(WindowProperties &properties) {
   // Handle fullscreen mode.
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
-      properties.set_origin(0, 0);
 #ifdef HAVE_XRANDR
       XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
       if (_orig_size_id == (SizeID) -1) {
@@ -486,7 +485,6 @@ set_properties_now(WindowProperties &properties) {
         } else {
           _orig_size_id = -1;
         }
-        _properties.set_fullscreen(true);
       }
 #else
       // If we don't have Xrandr support, we fake the fullscreen
@@ -503,8 +501,11 @@ set_properties_now(WindowProperties &properties) {
         XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
         _orig_size_id = -1;
       }
-      _properties.set_fullscreen(false);
 #endif
+      // Set the origin back to what it was
+      if (!properties.has_origin() && _properties.has_origin()) {
+        properties.set_origin(_properties.get_x_origin(), _properties.get_y_origin());
+      }
     }
   }
   
@@ -552,6 +553,12 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_title();
   }
   
+  // Same for fullscreen.
+  if (properties.has_fullscreen()) {
+    _properties.set_fullscreen(properties.get_fullscreen());
+    properties.clear_fullscreen();
+  }
+  
   // The size and position of an already-open window are changed via
   // explicit X calls.  These may still get intercepted by the window
   // manager.  Rather than changing _properties immediately, we'll
@@ -559,7 +566,12 @@ set_properties_now(WindowProperties &properties) {
   XWindowChanges changes;
   int value_mask = 0;
   
-  if (properties.has_origin()) {
+  if (_properties.get_fullscreen()) {
+    changes.x = 0;
+    changes.y = 0;
+    value_mask |= CWX | CWY;
+    properties.clear_origin();
+  } else if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;
@@ -924,8 +936,13 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     size_hints_p = XAllocSizeHints();
     if (size_hints_p != (XSizeHints *)NULL) {
       if (properties.has_origin()) {
-        size_hints_p->x = properties.get_x_origin();
-        size_hints_p->y = properties.get_y_origin();
+        if (_properties.get_fullscreen()) {
+          size_hints_p->x = 0;
+          size_hints_p->y = 0;
+        } else {
+          size_hints_p->x = properties.get_x_origin();
+          size_hints_p->y = properties.get_y_origin();
+        }
         size_hints_p->flags |= USPosition;
       }
       if (properties.has_size()) {
@@ -986,9 +1003,11 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
     // We also request it as a state.
     state_data[next_state_data++] = _net_wm_state_fullscreen;
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, _net_wm_state_add);
+    // Don't ask me why this has to be 1/0 and not _net_wm_state_add.
+    // It doesn't seem to work otherwise.
+    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 1);
   } else {
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, _net_wm_state_remove);
+    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 0);
   }
 
   // If we asked for a window without a border, there's no excellent
@@ -1001,7 +1020,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // Class to "Undecorated", and let the user configure his/her window
   // manager not to put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
-  if (properties.get_undecorated()) {
+  if (properties.get_undecorated() || properties.get_fullscreen()) {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = (char*) "Undecorated";
 
@@ -1055,7 +1074,6 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     for (int i = 0; i < next_set_data; ++i) {
       XClientMessageEvent event;
       memset(&event, 0, sizeof(event));
-
       event.type = ClientMessage;
       event.send_event = True;
       event.display = _display;
@@ -1067,7 +1085,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
       event.data.l[2] = 0;
       event.data.l[3] = 1;
 
-      XSendEvent(_display, x11_pipe->get_root(), True, 0, (XEvent *)&event);
+      XSendEvent(_display, x11_pipe->get_root(), True, SubstructureNotifyMask | SubstructureRedirectMask, (XEvent *)&event);
     }
   }
 
