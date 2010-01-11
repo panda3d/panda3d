@@ -49,7 +49,6 @@
 #define P3D_DEFAULT_PLUGIN_FILENAME "p3d_plugin.dll"
 
 static int s_instanceCount = 0;
-
 void P3D_NotificationSync(P3D_instance *instance)
 {
     static bool handleRequestOnUIThread = true;
@@ -89,30 +88,19 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
 
 PPInstance::~PPInstance(  )
 {
-    if ( m_p3dInstance )
-    {
-        P3D_instance_finish_ptr( m_p3dInstance );
-        m_p3dInstance = NULL;
-    }
-    if ( m_p3dObject )
-    {
-        P3D_OBJECT_DECREF( m_p3dObject );
-        m_p3dObject = NULL;
-    }
-    if ( m_pluginLoaded )
-    {
-        UnloadPlugin();
-    }
 }
 
 int PPInstance::DownloadFile( const std::string& from, const std::string& to )
 {
     int error( 0 );
-    PPDownloadRequest p3dFileDownloadRequest( *this, to ); 
-    PPDownloadCallback dcForFile( p3dFileDownloadRequest );
+	HRESULT hr( S_OK ); 
 
     nout << "Downloading " << from << " into " << to << "\n";
-    HRESULT hr = ::URLOpenStream( m_parentCtrl.GetControllingUnknown(), from.c_str(), 0, &dcForFile );
+	{
+		PPDownloadRequest p3dFileDownloadRequest( *this, to ); 
+		PPDownloadCallback dcForFile( p3dFileDownloadRequest );
+		hr = ::URLOpenStream( m_parentCtrl.GetControllingUnknown(), from.c_str(), 0, &dcForFile );
+	}
     if ( FAILED( hr ) )
     {   
         error = 1;
@@ -568,6 +556,27 @@ int PPInstance::Start( const std::string& p3dFilename  )
     return 0;
 }
 
+int PPInstance::Stop( )
+{
+	m_eventStop.SetEvent( );
+	::WaitForSingleObject( m_eventDownloadStopped.m_hObject, INFINITE ); 
+    if ( m_p3dInstance )
+    {
+        P3D_instance_finish_ptr( m_p3dInstance );
+        m_p3dInstance = NULL;
+    }
+    if ( m_p3dObject )
+    {
+        P3D_OBJECT_DECREF( m_p3dObject );
+        m_p3dObject = NULL;
+    }
+    if ( m_pluginLoaded )
+    {
+        UnloadPlugin();
+    }
+	return 0;
+}
+
 std::string PPInstance::GetHostUrl( )
 {
     CString hostingPageLocation = m_parentCtrl.m_hostingPageUrl.Left( m_parentCtrl.m_hostingPageUrl.ReverseFind( '/' ) );;
@@ -614,6 +623,7 @@ void PPInstance::HandleRequestLoop()
 
 void PPInstance::HandleRequestGetUrl( void* data )
 {
+	HRESULT hr( S_OK );
     P3D_request *request = static_cast<P3D_request*>( data );
     if ( !request )
     {
@@ -629,10 +639,11 @@ void PPInstance::HandleRequestGetUrl( void* data )
     }
 
     nout << "Handling P3D_RT_get_url request from " << url << "\n";
-    PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
-    PPDownloadCallback bsc( p3dObjectDownloadRequest );
-    HRESULT hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
-
+	{
+		PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
+		PPDownloadCallback bsc( p3dObjectDownloadRequest );
+		hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
+	}
     P3D_result_code result_code = P3D_RC_done;
     if ( FAILED( hr ) )
     {

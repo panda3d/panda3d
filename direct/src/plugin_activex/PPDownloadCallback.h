@@ -35,6 +35,7 @@ class PPDownloadCallback : public IBindStatusCallback
 {
 public:
     PPDownloadCallback( PPDownloadCallbackSync& downloadSync );
+	virtual ~PPDownloadCallback();
 
     // IUnknown methods
     STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject);

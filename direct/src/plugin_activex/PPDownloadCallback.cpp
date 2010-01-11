@@ -23,6 +23,11 @@ PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync )
 {
 }
 
+PPDownloadCallback::~PPDownloadCallback()
+{
+	m_spStream.Release();
+}
+
 STDMETHODIMP PPDownloadCallback::QueryInterface(REFIID riid, void **ppvObject)
 {
     TRACE(_T("IUnknown::QueryInterface\n"));
@@ -224,7 +229,7 @@ STDMETHODIMP PPDownloadCallback::OnDataAvailable(DWORD grfBSCF, DWORD dwSize,
         }
     }
 
-    if (BSCF_LASTDATANOTIFICATION & grfBSCF)
+    if (BSCF_LASTDATANOTIFICATION & grfBSCF || E_ABORT == hr )
     {
         m_spStream.Release();
     }

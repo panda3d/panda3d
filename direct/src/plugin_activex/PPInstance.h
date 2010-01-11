@@ -46,6 +46,7 @@ public:
     static void unref_plugin();
 
     int Start( const std::string& p3dFileName );
+	int Stop( );
 
     std::string GetHostUrl( );
     std::string GetP3DFilename( );
@@ -56,6 +57,7 @@ public:
 
     HWND m_parentWnd;
     CEvent m_eventStop;
+	CEvent m_eventDownloadStopped;
 
     P3D_object* m_p3dObject;
 

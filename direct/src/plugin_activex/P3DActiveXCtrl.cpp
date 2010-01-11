@@ -197,6 +197,11 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     DoSuperclassPaint(pdc, rcBounds);
 }
 
+void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
+{
+	m_instance.Stop();
+	COleControl::OnClose( dwSaveOption );
+}
 
 
 // CP3DActiveXCtrl::DoPropExchange - Persistence support

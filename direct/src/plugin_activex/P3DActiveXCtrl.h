@@ -36,6 +36,7 @@ public:
 // Overrides
 public:
     virtual void OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInvalid);
+	virtual void OnClose( DWORD dwSaveOption );
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
     virtual void DoPropExchange(CPropExchange* pPX);
     virtual void OnResetState();

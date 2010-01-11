@@ -19,6 +19,8 @@
 
 bool PPDownloadRequest::Begin( ) 
 {
+	m_instance.m_eventStop.ResetEvent( );
+	m_instance.m_eventDownloadStopped.ResetEvent( );
     return true;
 }
 
@@ -94,5 +96,6 @@ bool PPDownloadRequest::End( )
         ::CloseHandle( m_hFile );
         m_hFile = INVALID_HANDLE_VALUE;
     }
+	m_instance.m_eventDownloadStopped.SetEvent( );
     return true;
 }
