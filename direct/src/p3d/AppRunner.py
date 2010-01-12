@@ -112,6 +112,9 @@ class AppRunner(DirectObject):
         # the instance starts up.
         self.rootDir = None
 
+        # The log directory.  Also filled in when the instance starts.
+        self.logDirectory = None
+
         # self.superMirrorUrl, if nonempty, is the "super mirror" URL
         # that should be contacted first before trying the actual
         # host.  This is primarily used for "downloading" from a
@@ -522,13 +525,20 @@ class AppRunner(DirectObject):
                                needsResponse = False)
         self.deferredEvals = []
 
-    def setInstanceInfo(self, rootDir, superMirrorUrl):
+    def setInstanceInfo(self, rootDir, logDirectory, superMirrorUrl):
         """ Called by the browser to set some global information about
         the instance. """
 
         # rootDir is the root Panda3D install directory on the local
         # machine.
         self.rootDir = Filename.fromOsSpecific(rootDir)
+
+        # logDirectory is the directory name where all log files end
+        # up.
+        if logDirectory:
+            self.logDirectory = Filename.fromOsSpecific(logDirectory)
+        else:
+            self.logDirectory = Filename(rootDir, 'log')
 
         # The "super mirror" URL, generally used only by panda3d.exe.
         self.superMirrorUrl = superMirrorUrl
@@ -920,6 +930,7 @@ def dummyAppRunner(tokens = [], argv = None):
         rootDir = Filename(Filename.getHomeDirectory(), '.panda3d')
 
     appRunner.rootDir = rootDir
+    appRunner.logDirectory = Filename(rootDir, 'log')
 
     # Of course we will have the panda3d application loaded.
     appRunner.addPackageInfo('panda3d', platform, version, hostUrl)
