@@ -386,7 +386,8 @@ class TreeNode:
             self.label.configure(fg="white", bg="red")
         else:
             fg = self.item.GetTextFg()
-            self.label.configure(fg=fg, bg="white")
+            bg = self.item.GetTextBg()
+            self.label.configure(fg=fg, bg=bg)
         id = self.canvas.create_window(textx, texty,
                                        anchor="nw", window=self.label)
         self.label.bind("<1>", self.select_or_edit)
@@ -485,6 +486,9 @@ class TreeItem:
 
     def GetTextFg(self):
         return "black"
+
+    def GetTextBg(self):
+        return "white"
 
     def GetLabelText(self):
         """Return label text string to display in front of text (if any)."""
