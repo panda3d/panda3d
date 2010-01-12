@@ -16,6 +16,7 @@
 #include "frameRateMeter.h"
 #include "sceneGraphAnalyzerMeter.h"
 #include "meshDrawer.h"
+#include "meshDrawer2D.h"
 #include "geoMipTerrain.h"
 #include "ffmpegTexture.h"
 #include "movieTexture.h"
@@ -87,6 +88,7 @@ init_libgrutil() {
 
   FrameRateMeter::init_type();
   MeshDrawer::init_type();
+  MeshDrawer2D::init_type();
   GeoMipTerrain::init_type();
   NodeVertexTransform::init_type();
   RigidBodyCombiner::init_type();
