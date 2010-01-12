@@ -82,7 +82,9 @@ bool PiecewiseCurve::
 get_point(float t, LVecBase3f &point) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
-
+  if (curve == NULL){
+    return false;
+  }
   // We use | instead of || so we won't short-circuit this calculation.
   return result | curve->get_point(t, point);
 }

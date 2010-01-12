@@ -518,10 +518,6 @@ evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const {
     }
   }
 
-  if (default_curve == (ParametricCurve *)NULL) {
-    return false;
-  }
-
   if (xyz_curve == (ParametricCurve *)NULL) {
     xyz_curve = default_curve;
   }
