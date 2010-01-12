@@ -4870,11 +4870,11 @@ def MakeInstallerOSX():
             # Execute install_name_tool to make them reference an absolute path
             if (libname.endswith(".dylib") and not os.path.islink(libname)):
                 oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
-                oscmd("otool -L %s | grep .%s.dylib > %s/tmp/otool-libs.txt" % (libname, VERSION, GetOutputDir()), True)
+                oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, VERSION, GetOutputDir()), True)
                 for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                     if len(line.strip()) > 0 and not line.strip().endswith(":"):
                         libdep = line.strip().split(" ", 1)[0]
-                        if not libdep.startswith("/Developer/Panda3D/lib/"):
+                        if "/" not in libdep:
                             oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, libname), True)
     
     # Scripts to configure this version of Panda3D (in environment.plist)
@@ -4916,11 +4916,11 @@ def MakeInstallerOSX():
         
         # Execute install_name_tool to make the binaries reference an absolute path
         if (not os.path.islink(binname)):
-            oscmd("otool -L %s | grep .%s.dylib > %s/tmp/otool-libs.txt" % (binname, VERSION, GetOutputDir()), True)
+            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (binname, VERSION, GetOutputDir()), True)
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
-                    if not libdep.startswith("/Developer/Panda3D/lib/"):
+                    if "/" not in libdep:
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, binname), True)
     
     if PkgSkip("PYTHON")==0:
@@ -5020,7 +5020,7 @@ function have16installed() {
         print >>dist, '        <line choice="samples"/>'
     print >>dist, '        <line choice="headers"/>'
     print >>dist, '    </choices-outline>'
-    print >>dist, '    <choice id="uninstall16" title="Uninstall Panda3D 1.6.x" tooltip="Uninstalls Panda3D 1.6.x before installing Panda3D %s" description="If this option is checked, Panda3D 1.6.x is removed from /Applications/Panda3D/ before the new version is installed. This is recommended to avoid library conflicts." selected="have16installed()" enabled="have16installed()" visible="have16installed()">' % VERSION
+    print >>dist, '    <choice id="uninstall16" title="Uninstall Panda3D 1.6.x" tooltip="Uninstalls Panda3D 1.6.x before installing Panda3D %s" description="If this option is checked, Panda3D 1.6.x is removed from /Applications/Panda3D/ before the new version is installed. This is recommended to avoid library conflicts. WARNING: EVERYTHING UNDER /Applications/Panda3D WILL BE DELETED. MAKE SURE YOU HAVE BACKED UP IMPORTANT DATA!" selected="have16installed()" enabled="have16installed()" visible="have16installed()">' % VERSION
     print >>dist, '        <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg"/>'
     print >>dist, '    </choice>'
     print >>dist, '    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">'
