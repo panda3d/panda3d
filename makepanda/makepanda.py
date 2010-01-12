@@ -4874,8 +4874,8 @@ def MakeInstallerOSX():
                 for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                     if len(line.strip()) > 0 and not line.strip().endswith(":"):
                         libdep = line.strip().split(" ", 1)[0]
-                        if "/" not in libdep:
-                            oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, libname), True)
+                        if not libdep.startswith("/"):
+                            oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
     
     # Scripts to configure this version of Panda3D (in environment.plist)
     oscmd("mkdir -p dstroot/scripts/base/")
@@ -4920,8 +4920,8 @@ def MakeInstallerOSX():
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
-                    if "/" not in libdep:
-                        oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, libdep, binname), True)
+                    if not libdep.startswith("/"):
+                        oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
     
     if PkgSkip("PYTHON")==0:
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
