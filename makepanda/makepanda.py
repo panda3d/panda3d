@@ -4870,7 +4870,7 @@ def MakeInstallerOSX():
             # Execute install_name_tool to make them reference an absolute path
             if (libname.endswith(".dylib") and not os.path.islink(libname)):
                 oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
-                oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, VERSION, GetOutputDir()), True)
+                oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, GetOutputDir()), True)
                 for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                     if len(line.strip()) > 0 and not line.strip().endswith(":"):
                         libdep = line.strip().split(" ", 1)[0]
@@ -4916,7 +4916,7 @@ def MakeInstallerOSX():
         
         # Execute install_name_tool to make the binaries reference an absolute path
         if (not os.path.islink(binname)):
-            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (binname, VERSION, GetOutputDir()), True)
+            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (binname, GetOutputDir()), True)
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
