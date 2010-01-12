@@ -107,6 +107,7 @@ aux-display tinydisplay
     file('Config.prc', extract = True, text = """
 plugin-path $PANDA3D_ROOT
 default-model-extension .bam
+cull-bin gui-popup 60 unsorted
 """ + auxDisplays)
 
 class morepy(package):
