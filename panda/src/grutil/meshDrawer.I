@@ -48,7 +48,10 @@ INLINE MeshDrawer::
 ////////////////////////////////////////////////////////////////////
 //     Function: MeshDrawer::get_root
 //       Access: Published
-//  Description: Returns the root NodePath.
+//  Description: Returns the root NodePath.  You should use this node
+//               to reparent mesh drawer onto the scene
+//               might also want to disable depth draw or enable
+//               transparency.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath MeshDrawer::
 get_root() {
@@ -59,6 +62,8 @@ get_root() {
 //     Function: MeshDrawer::set_budget
 //       Access: Published
 //  Description: Sets the total triangle budget of the drawer.
+//               This will not be exceeded.  Don't set some thing too 
+//               large because it will be slow
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer::
 set_budget(int total_budget) {

@@ -1,5 +1,6 @@
 // Filename: meshDrawer.h
 // Created by:  treeform (19dec08)
+// Changes by:  treeform (12jan10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -41,7 +42,18 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MeshDrawer
-// Description :
+// Description : Mesh drawer creates a single geom object that can be
+//               shaped with different draw commands.  This is an 
+//               efficient way to render bunch of billboards, particles, 
+//               fast changing triangles.  Its implemented by recycling 
+//               same geom over and over again.  Max budget specifies 
+//               how many triangles are allowed.  Some uses of this 
+//               class can be : particle system, radar icons, health 
+//               bars, 2d icons, 2d ui, bullets, missile trails.  Any 
+//               that can be drawn with triangles can be drawn with 
+//               this class.  At the low level this uses the 
+//               GeomVertexRewriter's.  The internal geom consists of 
+//               vertex, normal, uv and color channels.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GRUTIL MeshDrawer : public TypedObject {
 PUBLISHED:

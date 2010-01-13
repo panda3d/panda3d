@@ -84,6 +84,8 @@ void MeshDrawer::generator(int budget) {
 //     Function: MeshDrawer::begin
 //       Access: Published
 //  Description: Pass the current camera node and the root node.
+//               Passing the camera is required to generate
+//               bill boards that face it.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::begin(NodePath camera, NodePath render) {
   // sanity check
@@ -125,7 +127,7 @@ void MeshDrawer::begin(NodePath camera, NodePath render) {
 //     Function: MeshDrawer::end
 //       Access: Published
 //  Description: Finish the drawing and clearing off the remaining
-//               vertexes.
+//               vertexes.  
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::end() {
 
@@ -151,6 +153,7 @@ void MeshDrawer::end() {
 //       Access: Published
 //  Description: Draws a particle that is sort of like a bill board
 //               but has an extra rotation component.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::particle(LVector3f pos, LVector4f frame, float size, 
   LVector4f color, float rotation) {
@@ -182,6 +185,7 @@ void MeshDrawer::particle(LVector3f pos, LVector4f frame, float size,
 //       Access: Published
 //  Description: Works just like particle but accepts 2 frames and
 //               a blend (from 0 to 1) component between them
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::blended_particle(LVector3f pos, LVector4f frame1, 
   LVector4f frame2, float blend, float size, LVector4f color, float rotation) {
@@ -199,6 +203,7 @@ void MeshDrawer::blended_particle(LVector3f pos, LVector4f frame1,
 //       Access: Published
 //  Description: Draws a billboard - particle with no rotation.
 //               Billboards always face the camera.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::billboard(LVector3f pos, LVector4f frame, float size, 
   LVector4f _color) {
@@ -229,6 +234,7 @@ void MeshDrawer::billboard(LVector3f pos, LVector4f frame, float size,
 //       Access: Published
 //  Description: Draws a segment a line with a thickness. That has
 //               billboarding effect.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::segment(LVector3f start, LVector3f stop, LVector4f frame,
                          float thickness, LVector4f color) {
@@ -242,6 +248,8 @@ void MeshDrawer::segment(LVector3f start, LVector3f stop, LVector4f frame,
 //  Description: Draws a segment a line with a thickness.  This
 //               segment does not use the bill boarding behavior
 //               and instead draws 2 planes in a cross.
+//               Stars at start and ends at stop.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::cross_segment(LVector3f start, LVector3f stop, LVector4f frame,
                                float thickness, LVector4f color) {
@@ -285,6 +293,8 @@ void MeshDrawer::cross_segment(LVector3f start, LVector3f stop, LVector4f frame,
 //       Access: Published
 //  Description: Draws a segment a line with different thickness
 //               and color on both sides.
+//               Stars at start and ends at stop.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::uneven_segment(LVector3f start, LVector3f stop,
   LVector4f frame, float thickness_start, LVector4f color_start,
@@ -324,6 +334,7 @@ void MeshDrawer::uneven_segment(LVector3f start, LVector3f stop,
 //     Function: MeshDrawer::explosion
 //       Access: Published
 //  Description: Draws number of particles in a sphere like emitter.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::explosion(
   LVector3f pos, LVector4f frame, float size, LVector4f _color,
@@ -343,6 +354,7 @@ void MeshDrawer::explosion(
 //       Access: Published
 //  Description: Draws a number of particles in a big line with a
 //               shift dictated by the offset.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::stream(LVector3f start, LVector3f stop, LVector4f frame, float size, LVector4f _color,
         int number, float offset) {
@@ -366,7 +378,8 @@ void MeshDrawer::stream(LVector3f start, LVector3f stop, LVector4f frame, float 
 //               the MeshDrawer object.  This performs a similar
 //               functions as RigidBodyCombiner but for very
 //               dynamic situations that share the same texture
-//               like physcal chunks of explosions.
+//               like physcal chunks of explosions.  
+//               It can be a little slow 
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::geometry(NodePath draw_node) {
   assert(_render.get_error_type() == NodePath::ET_ok);
@@ -432,6 +445,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
 //  Description: Stars or continues linked segment.
 //               Control position, frame, thickness and color with
 //               parameters.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
         float thickness, LVector4f color) {
@@ -534,6 +548,7 @@ void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
 //  Description: Finish drawing linked segments, needs at least
 //               two calls to link_segment before it can end
 //               the linked segment.
+//               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::link_segment_end(LVector4f frame, LVector4f color)
 {
