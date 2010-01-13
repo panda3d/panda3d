@@ -63,7 +63,7 @@ run_command_line(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:M:Sp:fw:t:s:o:l:ih";
+  const char *optstr = "+mu:M:Sp:fw:t:s:o:l:iVUPh";
 
   bool allow_multiple = false;
 
@@ -160,6 +160,24 @@ run_command_line(int argc, char *argv[]) {
 #endif  // _WIN32
       }
       break;
+
+    case 'V':
+      cout << P3D_PLUGIN_MAJOR_VERSION << "."
+           << P3D_PLUGIN_MINOR_VERSION << "."
+           << P3D_PLUGIN_SEQUENCE_VERSION;
+#ifndef PANDA_OFFICIAL_VERSION
+      cout << "c";
+#endif
+      cout << "\n";
+      exit(0);
+
+    case 'U':
+      cout << PANDA_PACKAGE_HOST_URL << "\n";
+      exit(0);
+
+    case 'P':
+      cout << DTOOL_PLATFORM << "\n";
+      exit(0);
 
     case 'h':
     case '?':
@@ -784,5 +802,14 @@ usage() {
 
     << "  -p platform\n"
     << "    Specify the platform to masquerade as.  The default is \""
-    << DTOOL_PLATFORM << "\" .\n\n";
+    << DTOOL_PLATFORM << "\" .\n\n"
+
+    << "  -V\n"
+    << "    Output only the plugin version string and exit immediately.\n\n"
+
+    << "  -U\n"
+    << "    Output only the plugin host URL and exit immediately.\n\n"
+
+    << "  -P\n"
+    << "    Output only the plugin platform string and exit immediately.\n\n";
 }
