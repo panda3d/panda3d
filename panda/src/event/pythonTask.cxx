@@ -37,6 +37,7 @@ PythonTask(PyObject *function, const string &name) :
   _args = NULL;
   _upon_death = NULL;
   _owner = NULL;
+  _registered_to_owner = false;
   _generator = NULL;
 
   set_function(function);
@@ -528,13 +529,14 @@ upon_death(AsyncTaskManager *manager, bool clean_exit) {
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
 register_to_owner() {
-  if (_owner != Py_None) {
+  if (_owner != Py_None && !_registered_to_owner) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
     
+    _registered_to_owner = true;
     call_owner_method("_addTask");
     
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -550,13 +552,15 @@ register_to_owner() {
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
 unregister_from_owner() {
-  if (_owner != Py_None) {
+  // make sure every call to _clearTask corresponds to a call to _addTask
+  if (_owner != Py_None && _registered_to_owner) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
     
+    _registered_to_owner = false;
     call_owner_method("_clearTask");
     
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)

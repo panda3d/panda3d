@@ -66,6 +66,7 @@ private:
   bool _append_task;
   PyObject *_upon_death;
   PyObject *_owner;
+  bool _registered_to_owner;
   PyObject *_dict;
 
   PyObject *_generator;
