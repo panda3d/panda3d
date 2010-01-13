@@ -48,8 +48,6 @@ PUBLISHED:
   INLINE MeshDrawer();
   INLINE ~MeshDrawer();
 
-  INLINE void set_plate_size(int plate_size);
-  INLINE int get_plate_size();
   INLINE void set_budget(int budget);
   INLINE int get_budget();
 
@@ -59,24 +57,24 @@ PUBLISHED:
   INLINE void tri(LVector3f v1, LVector4f c1, LVector2f uv1,
                   LVector3f v2, LVector4f c2, LVector2f uv2,
                   LVector3f v3, LVector4f c3, LVector2f uv3);
-  void particle(LVector3f pos, int frame, float size, LVector4f color, float rotation);
-  void blended_particle(LVector3f pos, int frame1, int frame2,
-           float blend, float size, LVector4f color, float rotation);
-  void billboard(LVector3f pos, int frame, float size, LVector4f color);
-  void segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
-  void cross_segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
+                  
+  void particle(LVector3f pos, LVector4f frame, float size, LVector4f color, float rotation);
+  void blended_particle(LVector3f pos, LVector4f frame1, LVector4f frame2,
+    float blend, float size, LVector4f color, float rotation);
+  void billboard(LVector3f pos, LVector4f frame, float size, LVector4f color);
+  void segment(LVector3f start, LVector3f stop, LVector4f frame, float thickness, LVector4f color);
+  void cross_segment(LVector3f start, LVector3f stop, LVector4f frame, float thickness, LVector4f color);
   void uneven_segment(LVector3f start, LVector3f stop,
-        int frame, int multi_frame,
-        float thickness_start, LVector4f color_start,
-        float thickness_stop, LVector4f color_stop);
+    LVector4f frame, float thickness_start, LVector4f color_start,
+    float thickness_stop, LVector4f color_stop);
 
-  void link_segment(LVector3f pos, int frame, float thickness, LVector4f color);
-  void link_segment_end(int frame, LVector4f color);
+  void link_segment(LVector3f pos, LVector4f frame, float thickness, LVector4f color);
+  void link_segment_end(LVector4f frame, LVector4f color);
 
-  void explosion(LVector3f pos, int frame, float size, LVector4f color,
-           int seed, int number, float distance);
-  void stream(LVector3f start, LVector3f stop, int frame, float size, LVector4f color,
-        int number, float offset);
+  void explosion(LVector3f pos, LVector4f frame, float size, LVector4f color,
+    int seed, int number, float distance);
+  void stream(LVector3f start, LVector3f stop, LVector4f frame, float size, LVector4f color,
+    int number, float offset);
   void geometry(NodePath node);
   void end();
 
@@ -85,8 +83,6 @@ private:
   // use vars
   NodePath _root;
   NodePath _camera, _render;
-  int _plate_size;
-  float _frame_size;
   int _budget;
 
   // store regeneration geoms & nodes

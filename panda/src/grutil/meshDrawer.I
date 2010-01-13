@@ -29,8 +29,6 @@ MeshDrawer() {
   _uv = NULL;
   _color = NULL;
   _budget = 5000;
-  _plate_size = 16;
-  _frame_size = 1.0f / float(_plate_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,38 +44,6 @@ INLINE MeshDrawer::
   if (_uv != NULL)     delete _uv;
   if (_color != NULL)  delete _color;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer::set_plate_size
-//       Access: Published
-//  Description: Sets the number of images are on one side
-//               of a sqare plate.
-//               Geom drawer expects a plate of square image for
-//               most of its billboard operatoins.  If plate size is
-//               3 the frame numbering would look like this:
-//                 0 1 2
-//                 3 4 5
-//                 6 7 8
-//               you can select any frame you like for many of the
-//               billboards and segments.
-////////////////////////////////////////////////////////////////////
-INLINE void MeshDrawer::
-set_plate_size(int one_side_size) {
-  _plate_size = one_side_size;
-  _frame_size = 1.0f / float(_plate_size);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer::get_plate_size
-//       Access: Published
-//  Description: Gets the number of images are on one side
-//               of a sqare plate.
-////////////////////////////////////////////////////////////////////
-INLINE int MeshDrawer::
-get_plate_size() {
-  return _plate_size;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MeshDrawer::get_root
