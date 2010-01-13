@@ -630,7 +630,7 @@ def CompileCxx(obj,src,opts):
         cmd = "cl "
         if (platform.architecture()[0]=="64bit"):
             cmd += "/favor:blend "
-        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
+        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
@@ -647,7 +647,7 @@ def CompileCxx(obj,src,opts):
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
         if ("BIGOBJ" in opts): cmd += " /bigobj"
-        cmd += " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
+        cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
@@ -1424,7 +1424,7 @@ def WriteConfigSettings():
     
     #if (GetOptimize() <= 1):
     #    dtool_config["DO_PIPELINING"] = '1'
-    
+
     if (GetOptimize() <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
 
@@ -2413,8 +2413,8 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
-  TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ"], input='display_composite.cxx')
+  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA', 'BIGOBJ']
+  TargetAdd('display_composite.obj', opts=OPTS, input='display_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
@@ -2431,7 +2431,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('device_composite.obj', opts=OPTS, input='device_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite.cxx"])
   TargetAdd('libdevice.in', opts=OPTS, input=IGATEFILES)
@@ -2505,8 +2505,8 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA']
-  TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ"], input='collide_composite.cxx')
+  OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA', 'BIGOBJ']
+  TargetAdd('collide_composite.obj', opts=OPTS, input='collide_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
   TargetAdd('libcollide.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libcollide.in', opts=['IMOD:panda', 'ILIB:libcollide', 'SRCDIR:panda/src/collide'])
@@ -2529,8 +2529,8 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA']
-  TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ"], input='pgui_composite.cxx')
+  OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA', 'BIGOBJ']
+  TargetAdd('pgui_composite.obj', opts=OPTS, input='pgui_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
   TargetAdd('libpgui.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpgui.in', opts=['IMOD:panda', 'ILIB:libpgui', 'SRCDIR:panda/src/pgui'])
