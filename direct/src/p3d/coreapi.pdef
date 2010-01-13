@@ -1,4 +1,4 @@
-from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename
+from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename, DSearchPath, ExecutionEnvironment
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -29,20 +29,33 @@ class images(package):
     names = ['download', 'failed', 'play_click', 'play_ready', 'play_rollover',
              'auth_click', 'auth_ready', 'auth_rollover']
     configDict = {}
+
+    # Construct a search path to look for the images.
+    search = DSearchPath()
+
+    # First on the path: an explicit $PLUGIN_IMAGES env var.
+    if ExecutionEnvironment.hasEnvironmentVariable('PLUGIN_IMAGES'):
+        search.appendDirectory(Filename.expandFrom('$PLUGIN_IMAGES'))
+
+    # Next on the path: the models/plugin_images directory within the
+    # current directory.
+    search.appendDirectory('models/plugin_images')
+
+    # Finally on the path: models/plugin_images within the model
+    # search path.
+    for dir in getModelPath().getDirectories():
+        search.appendDirectory(Filename(dir, 'plugin_images'))
+
     for name in names:
         # Look for a png image first.
         basename = '%s.png' % (name)
-        filename = Filename('plugin_images/%s' % (basename))
-        found = filename.resolveFilename(getModelPath().getValue())
-        if not found:
-            found = filename.resolveFilename("models")
+        filename = Filename(basename)
+        found = filename.resolveFilename(search)
         if not found:
             # Then try a jpeg image.
             basename = '%s.jpg' % (name)
-            filename = Filename('plugin_images/%s' % (basename))
-            found = filename.resolveFilename(getModelPath().getValue())
-            if not found:
-                found = filename.resolveFilename("models")
+            filename = Filename(basename)
+            found = filename.resolveFilename(search)
             
         if found:
             # Add the image file to the package
