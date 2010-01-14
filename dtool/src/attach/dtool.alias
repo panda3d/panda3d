@@ -8,6 +8,7 @@ if ( ! $?HAVE_NEARTOOL ) setenv HAVE_NEARTOOL "no"
 if ( ! $?HAVE_ATRIA ) setenv HAVE_ATRIA "no"
 
 set host=$HOST
+if ( ! $?TERM ) setenv TERM "none"
 if ( $TERM == "iris-ansi" || $TERM == "iris-ansi-net" ) then
   alias ctshowprojs 'echo -n "\033P1.y"$USER"@"$host" -- "$CTPROJS"\033\\"; echo -n "\033P3.y"`echo $CTPROJS | cut -f1 -d:`\($host\)"\033\\"'
 else if ( $TERM == "xterm" || $TERM == "color-xterm" || $TERM == "cygwin" ) then
