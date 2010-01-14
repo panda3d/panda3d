@@ -802,7 +802,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   vtx._index = _vert_count++;
 
   if ((remaining_weight) > 0.01) {
-    mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
+    mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vtx._index << endl;
   }    
 
   _vertexArray.append(MakeMayaPoint(vtx._pos));
