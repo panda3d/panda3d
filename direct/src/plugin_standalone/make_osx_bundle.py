@@ -15,7 +15,7 @@ import glob
 import shutil
 
 import direct
-from pandac.PandaModules import Filename, DSearchPath, getModelPath
+from pandac.PandaModules import Filename, DSearchPath, getModelPath, ExecutionEnvironment
 
 def usage(code, msg = ''):
     print >> sys.stderr, __doc__
@@ -25,7 +25,7 @@ def usage(code, msg = ''):
 def makeBundle(startDir):
     fstartDir = Filename.fromOsSpecific(startDir)
 
-    # Search for nppandad along $PATH.
+    # Search for panda3d_mac along $PATH.
     path = DSearchPath()
     if 'PATH' in os.environ:
         path.appendPath(os.environ['PATH'])
@@ -34,10 +34,24 @@ def makeBundle(startDir):
     if not panda3d_mac:
         raise StandardError, "Couldn't find panda3d_mac on path."
 
-    # Find the icon file on the model-path.
-    icons = getModelPath().findFile('plugin_images/panda3d.icns')
-    if not icons:
-        icons = getModelPath().findFile('models/plugin_images/panda3d.icns')
+    # Construct a search path to look for the images.
+    search = DSearchPath()
+
+    # First on the path: an explicit $PLUGIN_IMAGES env var.
+    if ExecutionEnvironment.hasEnvironmentVariable('PLUGIN_IMAGES'):
+        search.appendDirectory(Filename.expandFrom('$PLUGIN_IMAGES'))
+
+    # Next on the path: the models/plugin_images directory within the
+    # current directory.
+    search.appendDirectory('models/plugin_images')
+
+    # Finally on the path: models/plugin_images within the model
+    # search path.
+    for dir in getModelPath().getDirectories():
+        search.appendDirectory(Filename(dir, 'plugin_images'))
+
+    # Now find the icon file on the above search path.
+    icons = search.findFile('panda3d.icns')
     if not icons:
         raise StandardError, "Couldn't find panda3d.icns on model-path."
 
