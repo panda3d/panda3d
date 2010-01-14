@@ -91,5 +91,7 @@ if __name__ == '__main__':
 
     startDir = os.path.split(sys.argv[0])[0]
     makeBundle(startDir)
-    buildDmg(startDir)
+
+    # We don't need the dmg these days; the installer is better.
+    #buildDmg(startDir)
     
