@@ -1472,6 +1472,7 @@ class Packager:
 
             filename = file.newName.rsplit('.', 1)[0]
             moduleName = filename.replace("/", ".")
+            newName = moduleName
             if moduleName.endswith('.__init__'):
                 moduleName = moduleName.rsplit('.', 1)[0]
 
@@ -1480,7 +1481,7 @@ class Packager:
                 # deal with it again.
                 return
 
-            self.freezer.addModule(moduleName, newName = moduleName,
+            self.freezer.addModule(moduleName, newName = newName,
                                    filename = file.filename)
 
         def addEggFile(self, file):

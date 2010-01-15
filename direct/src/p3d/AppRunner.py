@@ -677,7 +677,7 @@ class AppRunner(DirectObject):
 
         self.initPackedAppEnvironment()
 
-        # Mount the Multifile under /mf, by convention.
+        # Mount the Multifile under self.multifileRoot.
         vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
         VFSImporter.reloadSharedPackages()
 
