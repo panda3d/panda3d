@@ -15,8 +15,7 @@
 #include "panda3d.h"
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
-
-//#include "panda3dBase.cxx"
+#include "find_root_dir.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -300,6 +299,9 @@ run_command_line(int argc, char *argv[]) {
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 post_arg_processing() {
+  // Now is a good time to assign _root_dir.
+  _root_dir = find_root_dir();
+
   // Set host_url_prefix to end with a slash.
   _host_url_prefix = _host_url;
   if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.length() - 1] != '/') {

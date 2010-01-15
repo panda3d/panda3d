@@ -44,7 +44,13 @@ Panda3DBase::
 Panda3DBase(bool console_environment) {
   _console_environment = console_environment;
 
-  _root_dir = find_root_dir();
+  // We can't assign _root_dir immediately, because it requires a
+  // low-level Mac call that will balk if we're not logged in to the
+  // console, which will prevent scripts from using "panda3d -P" to
+  // find the platform and whatnot.  Instead, we'll assign it after
+  // we've processed the command line.
+  //_root_dir = find_root_dir();
+
   _reporting_download = false;
   _enable_security = false;
 

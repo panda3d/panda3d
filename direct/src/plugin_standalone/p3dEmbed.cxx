@@ -16,6 +16,7 @@
 
 #include "p3dEmbed.h"
 #include "load_plugin.h"
+#include "find_root_dir.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DEmbed::Constructor
@@ -24,6 +25,9 @@
 ////////////////////////////////////////////////////////////////////
 P3DEmbed::
 P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
+  // Since the Pand3DBase constructor no longer assigns _root_dir, we
+  // have to do it here.
+  _root_dir = find_root_dir();
 }
 
 ////////////////////////////////////////////////////////////////////
