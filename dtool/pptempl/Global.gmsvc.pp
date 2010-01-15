@@ -143,10 +143,10 @@
 
 #defer LINKER_DEF_FILE_ARG $[if $[LINKER_DEF_FILE],/DEF:"$[LINKER_DEF_FILE]",]
 
-#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[eq $[USE_COMPILER], MSVC9],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[eq $[USE_COMPILER], MSVC9],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
 #defer MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[IDL_CDEFS:%=/D%] $[idl]
