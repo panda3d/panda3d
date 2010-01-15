@@ -414,12 +414,22 @@ def makeInstaller():
 
     if sys.platform == "darwin":
         tmproot = "/var/tmp/Panda3D Runtime/"
+
+        # Apparently, we have to rename this package with each
+        # version, or Snow Leopard won't think the versions are
+        # increasing.  I don't really understand why this is so.  It
+        # might be related to the use of the Tiger PackageMaker's
+        # output being run on Snow Leopard.  Whatever.  Numbering the
+        # package files works around the problem and doesn't seem to
+        # cause additional problems, so we'll do that.
+        pkgname = 'p3d-setup-%s.pkg' % (options.version)
+        
         if os.path.exists(tmproot):
             shutil.rmtree(tmproot)
-        if os.path.isfile("p3d-setup.pkg"):
-            os.remove("p3d-setup.pkg")
-        elif os.path.isdir("p3d-setup.pkg"):
-            shutil.rmtree("p3d-setup.pkg")
+        if os.path.isfile(pkgname):
+            os.remove(pkgname)
+        elif os.path.isdir(pkgname):
+            shutil.rmtree(pkgname)
         if not os.path.exists(tmproot):
             os.makedirs(tmproot)
         dst_npapi = os.path.join(tmproot, "Library", "Internet Plug-Ins", npapi)
@@ -451,7 +461,7 @@ def makeInstaller():
             CMD += ' --id "%s"' % package_id
             CMD += ' --version "%s"' % options.version
             CMD += ' --title "%s"' % options.long_name
-            CMD += ' --out p3d-setup.pkg'
+            CMD += ' --out "%s"' % (pkgname)
             CMD += ' --target 10.4' # The earliest version of OSX supported by Panda
             CMD += ' --domain system'
             CMD += ' --root "%s"' % tmproot
@@ -476,9 +486,9 @@ def makeInstaller():
             description.close()
             CMD = packagemaker
             CMD += ' -build'
-            CMD += ' -f "%s"' % tmproot
-            CMD += ' -r "%s"' % tmpresdir
-            CMD += ' -p p3d-setup.pkg'
+            CMD += ' -f "%s"' % (tmproot)
+            CMD += ' -r "%s"' % (tmpresdir)
+            CMD += ' -p "%s"' % (pkgname)
             CMD += ' -i "%s"' % (infoFilename)
             CMD += ' -d "%s"' % (descriptionFilename)
         
@@ -497,13 +507,13 @@ def makeInstaller():
         if os.path.exists(tmpresdir):
             shutil.rmtree(tmpresdir)
 
-        if not os.path.exists('p3d-setup.pkg'):
-            print "Unable to create p3d-setup.pkg."
+        if not os.path.exists(pkgname):
+            print "Unable to create %s." % (pkgname)
             sys.exit(1)
         
         # Pack the .pkg into a .dmg
         if not os.path.exists(tmproot): os.makedirs(tmproot)
-        shutil.copytree("p3d-setup.pkg", os.path.join(tmproot, "p3d-setup.pkg"))
+        shutil.copytree(pkgname, os.path.join(tmproot, pkgname))
         tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
         print ""
