@@ -34,4 +34,4 @@
 // PANDA_PACKAGE_VERSION, because it is anticipated that this plugin
 // code, once settled, will need to be updated much less frequently
 // than Panda itself.
-#define P3D_PLUGIN_VERSION 0 9 11
+#define P3D_PLUGIN_VERSION 1 0 0
