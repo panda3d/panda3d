@@ -89,14 +89,14 @@ int main (int argc, char* argv[]) {
   }
   if (havepanda3d == 0 || panda3d == NULL) {
 #ifdef _WIN32
-    panda3d = "panda3d.exe";
+    panda3d = (char*) "panda3d.exe";
 #else
-    panda3d = "panda3d";
+    panda3d = (char*) "panda3d";
 #endif
   }
   
   // Fill in a new argv object to pass to panda3d(.exe).
-  char** newargv = malloc(sizeof(char*) * (argc + 2));
+  char** newargv = (char**) malloc(sizeof(char*) * (argc + 2));
   newargv [0] = argv [0];
   newargv [1] = p3dfile;
   int i;
