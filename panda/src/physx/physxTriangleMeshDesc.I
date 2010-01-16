@@ -24,11 +24,14 @@ PhysxTriangleMeshDesc() {
   _desc.flags = 0;
   _desc.pointStrideBytes = sizeof(NxVec3);
   _desc.triangleStrideBytes = 3*sizeof(NxU32);
+  _desc.materialIndexStride = sizeof(NxMaterialIndex);
   _desc.points = NULL;
   _desc.triangles = NULL;
+  _desc.materialIndices = NULL;
 
   _vertices = NULL;
   _triangles = NULL;
+  _materials = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +48,10 @@ INLINE PhysxTriangleMeshDesc::
 
   if (_triangles) {
     delete [] _triangles;
+  }
+
+  if (_materials) {
+    delete [] _materials;
   }
 }
 

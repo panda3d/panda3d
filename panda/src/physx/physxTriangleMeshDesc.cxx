@@ -65,16 +65,25 @@ set_vertex(unsigned int idx, const LPoint3f &vert) {
 //               set_triangle are done!
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshDesc::
-set_num_triangles(unsigned int numTriangles) {
+set_num_triangles(unsigned int numTriangles, bool use_material_indices) {
 
   if (_desc.triangles) {
     delete [] _triangles;
+  }
+
+  if (_desc.materialIndices) {
+    delete [] _materials;
   }
 
   _triangles = new NxU32[3 * numTriangles];
 
   _desc.numTriangles = numTriangles;
   _desc.triangles = _triangles;
+
+  if (use_material_indices == true) {
+    _materials = new NxMaterialIndex[numTriangles];
+    _desc.materialIndices = _materials;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,9 +93,15 @@ set_num_triangles(unsigned int numTriangles) {
 //               indices i1, i2, i3.
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshDesc::
-set_triangle(unsigned int idx, unsigned int i1, unsigned int i2, unsigned int i3) {
+set_triangle(unsigned int idx,
+             unsigned int i1, unsigned int i2, unsigned int i3,
+             unsigned int material_index) {
 
   nassertv(_desc.numTriangles > idx);
+
+  if (_desc.materialIndices) {
+    _materials[idx] = (NxMaterialIndex) material_index;
+  }
 
   idx = 3 * idx;
   _triangles[idx] = i1;

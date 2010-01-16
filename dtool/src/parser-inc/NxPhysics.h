@@ -137,6 +137,7 @@ class NxVec3;
 class NxMat33;
 class NxMat34;
 class NxQuat;
+class NxMaterialIndex;
 
 class NxBox;
 class NxSphere;

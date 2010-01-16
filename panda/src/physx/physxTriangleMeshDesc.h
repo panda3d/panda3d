@@ -36,8 +36,10 @@ PUBLISHED:
   void set_num_vertices(unsigned int n);
   void set_vertex(unsigned int idx, const LPoint3f &vert);
 
-  void set_num_triangles(unsigned int n);
-  void set_triangle(unsigned int idx, unsigned int i1, unsigned int i2, unsigned int i3);
+  void set_num_triangles(unsigned int n, bool use_material_indices=false);
+  void set_triangle(unsigned int idx,
+                    unsigned int i1, unsigned int i2, unsigned int i3,
+                    unsigned int material_index=1);
 
   void set_from_node_path(const NodePath &np);
 
@@ -47,6 +49,7 @@ public:
 private:
   NxVec3 *_vertices;
   NxU32 *_triangles;
+  NxMaterialIndex *_materials;
   NxTriangleMeshDesc _desc;
 };
 
