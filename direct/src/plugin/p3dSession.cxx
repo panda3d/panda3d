@@ -29,6 +29,7 @@
 #include "run_p3dpython.h"
 
 #include <ctype.h>
+#include <time.h>
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -1018,6 +1019,49 @@ start_p3dpython(P3DInstance *inst) {
     log_basename = log_basename.substr(slash + 1);
   }
 #endif  // _WIN32
+
+  // Check if we want to keep copies of recent logs on disk.
+  // Get the log history count from the HTML tokens, or from the
+  // p3d_info.xml file.
+  int log_history = inst->get_fparams().lookup_token_int("log_history");
+  if (!log_basename.empty() && (log_history > 1)) {
+    // Append suffix separator
+    log_basename += "-";
+
+    // Delete all but the most recent 'log_history' logs
+    vector<string> all_logs;
+    vector<string> matching_logs;
+    string log_directory = inst_mgr->get_log_directory();
+    inst_mgr->scan_directory(log_directory, all_logs);
+    for (int i=0; i<(int)all_logs.size(); ++i) {
+      if ((all_logs[i].size() > 4) &&
+          (all_logs[i].find(log_basename) == 0) &&
+          (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
+        matching_logs.push_back((log_directory + all_logs[i]));
+      }
+    }
+    for (int i=0; i<(int)matching_logs.size()-log_history; ++i) {
+      unlink(matching_logs[i].c_str());
+    }
+
+    // Append a timestamp suffix to the log_basename
+    _tzset();
+    time_t log_time_seconds = time(NULL);
+    struct tm *log_time_local_p = localtime(&log_time_seconds);
+    if (log_time_local_p != NULL) {
+      struct tm log_time_local = *log_time_local_p;
+      static const size_t buffer_size = 16;
+      char buffer[buffer_size];
+      sprintf(buffer, "%02d%02d%02d_%02d%02d%02d", 
+              (int)(log_time_local.tm_year+1900-2000),
+              (int)(log_time_local.tm_mon),
+              (int)(log_time_local.tm_mday),
+              (int)(log_time_local.tm_hour),
+              (int)(log_time_local.tm_min),
+              (int)(log_time_local.tm_sec));
+      log_basename += buffer;
+    }
+  }
 
   if (!console_output && !log_basename.empty()) {
     _log_pathname = inst_mgr->get_log_directory();

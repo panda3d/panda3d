@@ -450,9 +450,11 @@ call_read_log(P3D_object *params[], int num_params) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
 read_log(const string &log_pathname, P3D_object *params[], int num_params) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  string log_directory = inst_mgr->get_log_directory();
+
   ifstream log(log_pathname.c_str(), ios::in);
   if (!log) {
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     return inst_mgr->new_undefined_object();
   }
 
@@ -468,6 +470,49 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   size_t head_bytes = 0;
   if (num_params > 1) {
     head_bytes = (size_t)max(P3D_OBJECT_GET_INT(params[1]), 0);
+  }
+
+  // Check if we want data from previous logs
+  const char log_sep_line_char = '-';
+  const int log_sep_line_chars = 80;
+  const int log_sep_filename_chars = 256;
+  const int log_sep_bytes = log_sep_line_chars + log_sep_filename_chars + 16;
+  size_t tail_bytes_prev = 0;
+  vector<string> log_basenames_prev;
+  if (num_params > 2) {
+    // Determine the base of the log file names
+    tail_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[2]), 0);
+    if (tail_bytes_prev > 0) {
+      string log_basename = log_pathname;
+      size_t slash = log_basename.rfind('/');
+      if (slash != string::npos) {
+        log_basename = log_basename.substr(slash + 1);
+      }
+#ifdef _WIN32
+      slash = log_basename.rfind('\\');
+      if (slash != string::npos) {
+        log_basename = log_basename.substr(slash + 1);
+      }
+#endif  // _WIN32
+      string log_basename_curr = log_basename;
+      int dash = log_basename.rfind("-");
+      if (dash != string::npos) {
+        log_basename = log_basename.substr(0, dash+1);
+
+        // Find matching files
+        vector<string> all_logs;
+        inst_mgr->scan_directory(log_directory, all_logs);
+        for (int i=0; i<(int)all_logs.size(); ++i) {
+          if ((all_logs[i].size() > 4) &&
+              (all_logs[i].find(log_basename) == 0) &&
+              (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
+            if (all_logs[i] != log_basename_curr) {
+              log_basenames_prev.push_back(all_logs[i]);
+            }
+          }
+        }
+      }
+    }
   }
 
   // Get the size of the file.
@@ -500,6 +545,12 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
     return_size = head_bytes + separator.size() + tail_bytes;
   }
 
+  // We will need additional space for data from previous logs
+  if ((tail_bytes_prev > 0) && (log_basenames_prev.size() > 0)) {
+      int extra_bytes_per_prev_log = tail_bytes_prev + log_sep_bytes;
+      return_size += log_basenames_prev.size() * extra_bytes_per_prev_log;
+  }
+
   nout << "allocating " << return_size << " bytes to return.\n";
   char *buffer = new char[return_size];
   if (buffer == NULL) {
@@ -524,11 +575,40 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
     bp += log.gcount();
   }
 
+  // add data for previous logs
+  if ((tail_bytes_prev > 0) && (log_basenames_prev.size() > 0)) {
+    string log_sep_line = "\n";
+    for (int c=0; c<log_sep_line_chars; ++c) {
+        log_sep_line += log_sep_line_char;
+    }
+    log_sep_line += "\n";
+    for (int i=0; i<(int)log_basenames_prev.size(); ++i) {
+      ifstream log_prev((log_directory+log_basenames_prev[i]).c_str(), ios::in);
+      if (log_prev) {
+        // Insert file separator
+        string log_sep = "\n"+log_sep_line+log_basenames_prev[i]+log_sep_line+"\n";
+        assert(log_sep.length() <= (unsigned)log_sep_bytes); 
+        memcpy(bp, log_sep.data(), log_sep.length());
+        bp += log_sep.length();
+        // Insert prev file data
+        log_prev.seekg(0, ios::end);
+        size_t file_size = (size_t)log_prev.tellg();
+        size_t data_size = tail_bytes_prev;
+        if (data_size > file_size) {
+          data_size = file_size;
+        }
+        log_prev.seekg(file_size - data_size, ios::beg);
+        log_prev.read(bp, data_size);
+        bp += log_prev.gcount();
+      }
+    }
+  }
+
   assert(bp <= buffer + return_size);
 
   P3D_object *result = new P3DStringObject(buffer, bp - buffer);
   delete[] buffer;
-
+  
   return result;
 }
 
