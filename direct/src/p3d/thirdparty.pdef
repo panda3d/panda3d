@@ -52,7 +52,7 @@ class twisted(package):
     config(display_name = "Twisted")
     require('panda3d')
 
-    module('twisted', 'twisted.*')
+    module('twisted', 'twisted.*', 'twisted.*.*')
 
 class pil(package):
     config(display_name = "Python Imaging Library")
