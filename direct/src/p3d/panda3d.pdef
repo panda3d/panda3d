@@ -269,6 +269,8 @@ class physx(package):
     require('panda3d')
 
     file('libpandaphysx.dll')
+    file('physxcudart_20.dll')
+    file('PhysXDevice.dll')
 
 class ai(package):
     # This package contains the PandAI library for pathfinding
