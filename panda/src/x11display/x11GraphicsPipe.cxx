@@ -21,6 +21,7 @@
 // Ugly workaround around the conflicting definition
 // of Connection that randr.h provides.
 #define _RANDR_H_
+typedef unsigned short Connection;
 typedef unsigned short Rotation;
 typedef unsigned short SizeID;
 typedef unsigned short SubpixelOrder;
