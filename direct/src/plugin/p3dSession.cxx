@@ -1045,7 +1045,11 @@ start_p3dpython(P3DInstance *inst) {
     }
 
     // Append a timestamp suffix to the log_basename
+#ifdef _WIN32
     _tzset();
+#else
+    tzset();
+#endif
     time_t log_time_seconds = time(NULL);
     struct tm *log_time_local_p = localtime(&log_time_seconds);
     if (log_time_local_p != NULL) {
