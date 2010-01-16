@@ -4542,6 +4542,7 @@ if (True or (not RUNTIME and not RTDIST)):
     
     if (sys.platform.startswith("win")):
       TargetAdd(base+".exe", input='p3dWrapper.exe')
+      CopyFile(GetOutputDir()+"/bin/"+base+".p3d", g)
     else:
       CopyFile(GetOutputDir()+"/bin/"+base, g)
 
