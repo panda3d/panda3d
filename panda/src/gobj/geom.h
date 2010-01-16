@@ -202,7 +202,7 @@ private:
   // if we could simplify the cache system now.
 
   // The pipelined data with each CacheEntry.
-  class CDataCache : public CycleData {
+  class EXPCL_PANDA_GOBJ CDataCache : public CycleData {
   public:
     INLINE CDataCache();
     INLINE CDataCache(const CDataCache &copy);
