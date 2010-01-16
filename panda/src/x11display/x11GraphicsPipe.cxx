@@ -20,12 +20,9 @@
 #ifdef HAVE_XRANDR
 // Ugly workaround around the conflicting definition
 // of Connection that randr.h provides.
-#define _RANDR_H_
-typedef unsigned short Connection;
-typedef unsigned short Rotation;
-typedef unsigned short SizeID;
-typedef unsigned short SubpixelOrder;
+#define Connection XConnection
 #include <X11/extensions/Xrandr.h>
+#undef Connection
 #endif
 
 TypeHandle x11GraphicsPipe::_type_handle;
