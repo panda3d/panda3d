@@ -1114,7 +1114,14 @@ def CompileAnything(target, inputs, opts, progress = None):
         exit("No input files for target "+target)
     infile = inputs[0]
     origsuffix = GetOrigExt(target)
-    if (target == "pandac/PandaModules.py"):
+    if (len(inputs) == 1 and origsuffix == GetOrigExt(infile)):
+        # It must be a simple copy operation.
+        ProgressOutput(progress, "Copying file", target)
+        CopyFile(target, infile)
+        if (origsuffix==".exe" and not sys.platform.startswith("win")):
+            os.system("chmod +x \"%s\"" % target)
+        return
+    elif (target == "pandac/PandaModules.py"):
         ProgressOutput(progress, "Generating 'pandac' tree")
         return RunGenPyCode(target, inputs, opts)
     elif (infile.endswith(".py")):
@@ -1185,9 +1192,6 @@ def CompileAnything(target, inputs, opts, progress = None):
         elif (infile.endswith(".rc") or infile.endswith(".r")):
             ProgressOutput(progress, "Building resource object", target)
             return CompileResource(target, infile, opts)
-    if (len(inputs) == 1):
-        ProgressOutput(progress, "Copying file", target)
-        return CopyFile(target, infile)
     exit("Don't know how to compile: "+target)
 
 ##########################################################################################
@@ -1725,13 +1729,6 @@ if (PkgSkip("PANDATOOL")==0):
 if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
     CopyTree(GetOutputDir()+'/Pmw',         'thirdparty/Pmw')
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
-
-# Copy prebuilt p3d files
-for g in glob.glob("direct/src/p3d/*.p3d"):
-    base = os.path.basename(g)
-    if (sys.platform.startswith("win")):
-        base = base.split(".", 1)[0]
-    CopyFile(GetOutputDir()+"/bin/"+base, g)
 
 ########################################################################
 #
@@ -4529,6 +4526,24 @@ if (RTDIST):
   TargetAdd('_panda3d', opts=OPTS, input='panda3d.pdef')
   TargetAdd('_coreapi', opts=OPTS, input='coreapi.pdef')
   TargetAdd('_thirdparty', opts=OPTS, input='thirdparty.pdef')
+
+#
+# Distribute prebuilt .p3d files as executable.
+#
+
+if (True or (not RUNTIME and not RTDIST)):
+  if (sys.platform.startswith("win")):
+    OPTS=['DIR:direct/src/p3d']
+    TargetAdd('p3dWrapper.exe', opts=OPTS, input='p3dWrapper.c')
+  
+  for g in glob.glob("direct/src/p3d/*.p3d"):
+    base = os.path.basename(g)
+    base = base.split(".", 1)[0]
+    
+    if (sys.platform.startswith("win")):
+      TargetAdd(base+".exe", input='p3dWrapper.exe')
+    else:
+      CopyFile(GetOutputDir()+"/bin/"+base, g)
 
 ##########################################################################################
 #
