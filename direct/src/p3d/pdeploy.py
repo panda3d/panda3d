@@ -186,11 +186,11 @@ if not appFilename.exists():
     print 'Application filename does not exist!'
     sys.exit(1)
 
-if shortname.lower() != shortname or ' ' in shortname:
-    print '\nProvided short name should be lowercase, and may not contain spaces!\n'
-
 if shortname == '':
     shortname = appFilename.getBasenameWoExtension()
+
+if shortname.lower() != shortname or ' ' in shortname:
+    print '\nProvided short name should be lowercase, and may not contain spaces!\n'
 
 if fullname == '':
     fullname = shortname
@@ -251,16 +251,36 @@ elif deploy_mode == 'installer':
             i.build(output, platform)
 
 elif deploy_mode == 'html':
+    w, h = tokens.get("width", 640), tokens.get("height", 480)
+    if "data" not in tokens:
+        tokens["data"] = appFilename.getBasename()
+
     print "Creating %s.html..." % shortname
-    html = open(shortname + ".html", "w")
-    html.write("<html>\n")
-    html.write("  <head>\n")
-    html.write("    <title>%s</title>\n" % fullname)
-    html.write("  </head>\n")
-    html.write("  <body>\n")
-    html.write("    <object data=\"%s\" type=\"application/x-panda3d\"></object>\n" % appFilename.getBasename())
-    html.write("  </body>\n")
-    html.write("</html>\n")
+    html = open(Filename(outputDir, shortname + ".html").toOsSpecific(), "w")
+    print >>html, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+    print >>html, "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+    print >>html, "  <head>"
+    print >>html, "    <title>%s</title>" % fullname
+    print >>html, "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
+    if authorname:
+        print >>html, "    <meta name=\"Author\" content=\"%s\" />" % authorname.replace('"', '\\"')
+    print >>html, "  </head>"
+    print >>html, "  <body>"
+    print >>html, "    <object",
+    for key, value in tokens.items():
+        print >>html, "%s=\"%s\"" % (key, value.replace('"', '\\"')),
+    if "width" not in tokens:
+        print >>html, "width=\"%s\"" % w,
+    if "height" not in tokens:
+        print >>html, "height=\"%s\"" % h,
+    print >>html, "type=\"application/x-panda3d\">"
+    print >>html, "      <object width=\"%s\" height=\"%s\" classid=\"CLSID:924B4927-D3BA-41EA-9F7E-8A89194AB3AC\">" % (w, h)
+    for key, value in tokens.items():
+        print >>html, "        <param name=\"%s\" value=\"%s\" />" % (key, value.replace('"', '\\"'))
+    print >>html, "      </object>"
+    print >>html, "    </object>"
+    print >>html, "  </body>"
+    print >>html, "</html>"
     html.close()
 else:
     usage(1, 'Invalid deployment mode!')
@@ -268,3 +288,4 @@ else:
 # An explicit call to exit() is required to exit the program, when
 # this module is packaged in a p3d file.
 sys.exit(0)
+
