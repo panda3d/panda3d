@@ -4531,7 +4531,7 @@ if (RTDIST):
 # Distribute prebuilt .p3d files as executable.
 #
 
-if (True or (not RUNTIME and not RTDIST)):
+if (not RUNTIME and not RTDIST):
   if (sys.platform.startswith("win")):
     OPTS=['DIR:direct/src/p3d']
     TargetAdd('p3dWrapper.exe', opts=OPTS, input='p3dWrapper.c')
