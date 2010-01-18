@@ -6131,6 +6131,8 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 fillin_from(Texture *dummy) {
+  MutexHolder holder(_lock);
+
   // Use the setters instead of setting these directly, so we can
   // correctly avoid incrementing _properties_modified if none of
   // these actually change.  (Otherwise, we'd have to reload the
