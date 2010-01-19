@@ -2073,20 +2073,20 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='interrogate_composite.obj')
   TargetAdd('interrogate.exe', input='libcppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
+  TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
   TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
   TargetAdd('interrogate_module.exe', input='libcppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL'])
+  TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
 
   if (not RTDIST):
     TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
     TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
     TargetAdd('parse_file.exe', input='libcppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-    TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
+    TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
@@ -2097,7 +2097,7 @@ if (PkgSkip("OPENSSL")==0 and not RUNTIME):
   TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
   TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
   TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL'])
+  TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
 
 #
 # DIRECTORY: dtool/src/test_interrogate/
@@ -2108,7 +2108,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
+  TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
 
 #
 # DIRECTORY: panda/src/pandabase/
@@ -4537,7 +4537,8 @@ if (RTDIST):
 if (not RUNTIME and not RTDIST):
   if (sys.platform.startswith("win")):
     OPTS=['DIR:direct/src/p3d']
-    TargetAdd('p3dWrapper.exe', opts=OPTS, input='p3dWrapper.c')
+    TargetAdd('p3dWrapper.obj', opts=OPTS, input='p3dWrapper.c')
+    TargetAdd('p3dWrapper.exe', input='p3dWrapper.obj')
   
   for g in glob.glob("direct/src/p3d/*.p3d"):
     base = os.path.basename(g)
