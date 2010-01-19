@@ -3229,7 +3229,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('pview.exe', input='libp3framework.dll')
   TargetAdd('pview.exe', input='libpandafx.dll')
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('pview.exe', opts=['ADVAPI'])
+  TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
 
 #
 # DIRECTORY: panda/src/tinydisplay/
