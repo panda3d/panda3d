@@ -2,6 +2,7 @@
 !include LogicLib.nsh
 !include FileFunc.nsh
 !include FileAssociation.nsh
+!include AddToPath.nsh
 
 ; Several variables are assumed to be pre-defined by the caller.  See
 ; make_installer.py in this directory.
@@ -99,6 +100,9 @@ Section "MainSection" SEC01
 !ifdef DEP6P
   File "${DEP6P}"
 !endif
+!ifdef DEP7P
+  File "${DEP7P}"
+!endif
 
   ${registerExtension} "$INSTDIR\${PANDA3DW}" ".p3d" "Panda3D applet"
  
@@ -113,6 +117,10 @@ Section "MainSection" SEC01
 
   # Make the directory "$INSTDIR" read write accessible by all users
   AccessControl::GrantOnFile "$INSTDIR" "(BU)" "FullAccess"
+  
+  # Add "$INSTDIR" to the system PATH.
+  Push "$INSTDIR"
+  Call AddToPath
 
 ;  File "..\..\..\path\to\file\Example.file"
 SectionEnd
@@ -183,6 +191,9 @@ Mozilla-Install-Loop:
 !ifdef NPAPI_DEP6
      CopyFiles $INSTDIR\${NPAPI_DEP6} "$2"
 !endif
+!ifdef NPAPI_DEP7
+     CopyFiles $INSTDIR\${NPAPI_DEP7} "$2"
+!endif
  ${EndIf}
 
   goto Mozilla-Install-Loop
@@ -221,6 +232,9 @@ Section Uninstall
 !ifdef DEP6
   Delete "$INSTDIR\${DEP6}"
 !endif
+!ifdef DEP7
+  Delete "$INSTDIR\${DEP7}"
+!endif
 
 StrCpy $1 "0"
 Mozilla-Uninstall-Loop:
@@ -257,8 +271,13 @@ Mozilla-Uninstall-End:
 !endif
 
   RMDir "$INSTDIR"
+  
+  # Remove "$INSTDIR" fromthe system PATH.
+  Push "$INSTDIR"
+  Call un.RemoveFromPath
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   SetAutoClose true
 SectionEnd
+
