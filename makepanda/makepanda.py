@@ -3228,7 +3228,8 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('pview.exe', input='pview_pview.obj')
   TargetAdd('pview.exe', input='libp3framework.dll')
   TargetAdd('pview.exe', input='libpandafx.dll')
-  TargetAdd('pview.exe', input='libpandagl.dll')
+  if (PkgSkip("OPENGL")==0):
+      TargetAdd('pview.exe', input='libpandagl.dll')
   TargetAdd('pview.exe', input='libpandaegg.dll')
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
