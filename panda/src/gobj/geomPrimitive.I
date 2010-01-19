@@ -273,12 +273,17 @@ check_valid(const GeomVertexData *vertex_data) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Returns a const pointer to the vertex index array so
 //               application code can read it directly.  This might
 //               return NULL if the primitive is nonindexed.  Do not
 //               attempt to modify the returned array; use
 //               modify_vertices() or set_vertices() for this.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_vertices() const {
@@ -288,10 +293,15 @@ get_vertices() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_index_stride
-//       Access: Public
+//       Access: Published
 //  Description: A convenience function to return the gap between
 //               successive index numbers, in bytes, of the index
 //               data.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_index_stride() const {
@@ -301,7 +311,7 @@ get_index_stride() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_ends
-//       Access: Public
+//       Access: Published
 //  Description: Returns a const pointer to the primitive ends
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
@@ -310,6 +320,11 @@ get_index_stride() const {
 //               Note that simple primitive types, like triangles, do
 //               not have a ends array: since all the primitives
 //               have the same number of vertices, it is not needed.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_int GeomPrimitive::
 get_ends() const {
@@ -319,7 +334,7 @@ get_ends() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_mins
-//       Access: Public
+//       Access: Published
 //  Description: Returns a const pointer to the primitive mins
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
@@ -327,6 +342,11 @@ get_ends() const {
 //
 //               Note that simple primitive types, like triangles, do
 //               not have a mins array.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_mins() const {
@@ -337,7 +357,7 @@ get_mins() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_maxs
-//       Access: Public
+//       Access: Published
 //  Description: Returns a const pointer to the primitive maxs
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
@@ -345,6 +365,11 @@ get_mins() const {
 //
 //               Note that simple primitive types, like triangles, do
 //               not have a maxs array.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_maxs() const {

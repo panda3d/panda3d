@@ -58,7 +58,7 @@
     pbitops.I pbitops.h \
     portalMask.h \
     pta_double.h \
-    pta_int.h pta_ushort.h \
+    pta_ushort.h \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
@@ -107,7 +107,7 @@
     nodeCachedReferenceCount.cxx \
     pbitops.cxx \
     pta_double.cxx \
-    pta_int.cxx pta_ushort.cxx \
+    pta_ushort.cxx \
     pythonCallbackObject.cxx \
     simpleHashMap.cxx \
     sparseArray.cxx \
@@ -169,7 +169,7 @@
     portalMask.h \
     pbitops.I pbitops.h \
     pta_double.h \
-    pta_int.h pta_ushort.h \
+    pta_ushort.h \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \

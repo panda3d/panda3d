@@ -988,7 +988,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::modify_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Returns a modifiable pointer to the vertex index
 //               list, so application code can directly fiddle with
 //               this data.  Use with caution, since there are no
@@ -1005,6 +1005,11 @@ write(ostream &out, int indent_level) const {
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexArrayData) GeomPrimitive::
 modify_vertices(int num_vertices) {
@@ -1016,7 +1021,7 @@ modify_vertices(int num_vertices) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::set_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Completely replaces the vertex index list with a new
 //               table.  Chances are good that you should also replace
 //               the ends list with set_ends() at the same time.
@@ -1029,6 +1034,11 @@ modify_vertices(int num_vertices) {
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
@@ -1042,13 +1052,18 @@ set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::set_nonindexed_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Sets the primitive up as a nonindexed primitive,
 //               using the indicated vertex range.
 //
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_nonindexed_vertices(int first_vertex, int num_vertices) {
@@ -1067,7 +1082,7 @@ set_nonindexed_vertices(int first_vertex, int num_vertices) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::modify_ends
-//       Access: Public
+//       Access: Published
 //  Description: Returns a modifiable pointer to the primitive ends
 //               array, so application code can directly fiddle with
 //               this data.  Use with caution, since there are no
@@ -1080,6 +1095,11 @@ set_nonindexed_vertices(int first_vertex, int num_vertices) {
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 PTA_int GeomPrimitive::
 modify_ends() {
@@ -1098,7 +1118,7 @@ modify_ends() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::set_ends
-//       Access: Public
+//       Access: Published
 //  Description: Completely replaces the primitive ends array with
 //               a new table.  Chances are good that you should also
 //               replace the vertices list with set_vertices() at the
@@ -1111,6 +1131,11 @@ modify_ends() {
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_ends(CPTA_int ends) {
@@ -1123,7 +1148,7 @@ set_ends(CPTA_int ends) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::set_minmax
-//       Access: Public
+//       Access: Published
 //  Description: Explicitly specifies the minimum and maximum
 //               vertices, as well as the lists of per-component min
 //               and max.
@@ -1136,6 +1161,11 @@ set_ends(CPTA_int ends) {
 //               Note that any modification to the vertex array will
 //               normally cause this to be recomputed, unless you set
 //               it immediately again.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_minmax(int min_vertex, int max_vertex,
@@ -1152,10 +1182,15 @@ set_minmax(int min_vertex, int max_vertex,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::clear_minmax
-//       Access: Public
+//       Access: Published
 //  Description: Undoes a previous call to set_minmax(), and allows
 //               the minimum and maximum values to be recomputed
 //               normally.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 clear_minmax() {
@@ -1165,7 +1200,7 @@ clear_minmax() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_num_vertices_per_primitive
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: If the primitive type is a simple type in which all
 //               primitives have the same number of vertices, like
 //               triangles, returns the number of vertices per
@@ -1173,6 +1208,11 @@ clear_minmax() {
 //               type in which different primitives might have
 //               different numbers of vertices, for instance a
 //               triangle strip, returns 0.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_num_vertices_per_primitive() const {
@@ -1181,9 +1221,14 @@ get_num_vertices_per_primitive() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_min_num_vertices_per_primitive
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the minimum number of vertices that must be
 //               added before close_primitive() may legally be called.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_min_num_vertices_per_primitive() const {
@@ -1192,12 +1237,17 @@ get_min_num_vertices_per_primitive() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_num_unused_vertices_per_primitive
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the number of vertices that are added between
 //               primitives that aren't, strictly speaking, part of
 //               the primitives themselves.  This is used, for
 //               instance, to define degenerate triangles to connect
 //               otherwise disconnected triangle strips.
+//
+//               This method is intended for low-level usage only.
+//               There are higher-level methods for more common usage.
+//               We recommend you do not use this method directly.  If
+//               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_num_unused_vertices_per_primitive() const {

@@ -62,3 +62,8 @@ forcetype PointerToArray<float>
 forcetype ConstPointerToArray<float>
 renametype PointerToArray<float> PTAFloat
 renametype ConstPointerToArray<float> CPTAFloat
+
+forcetype PointerToArray<int>
+forcetype ConstPointerToArray<int>
+renametype PointerToArray<int> PTAInt
+renametype ConstPointerToArray<int> CPTAInt

@@ -48,6 +48,7 @@
     profileTimer.I profileTimer.h \
     pStatCollectorForwardBase.h \
     pta_uchar.h pta_float.h \
+    pta_int.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     stringDecoder.h stringDecoder.I \
@@ -101,6 +102,7 @@
     profileTimer.cxx \
     pStatCollectorForwardBase.cxx \
     pta_uchar.cxx pta_float.cxx \
+    pta_int.cxx \
     ramfile.cxx \
     referenceCount.cxx \
     stringDecoder.cxx \
@@ -163,6 +165,7 @@
     profileTimer.I profileTimer.h \
     pStatCollectorForwardBase.h \
     pta_uchar.h pta_float.h \
+    pta_int.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     stringDecoder.h stringDecoder.I \

@@ -29,15 +29,13 @@
 //               rather than defining the pta again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, RefCountObj<vector_int>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToBase<RefCountObj<vector_int> >);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArray<int>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ConstPointerToArray<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, RefCountObj<vector_int>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToBase<RefCountObj<vector_int> >);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArray<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArray<int>)
 
-BEGIN_PUBLISH
 typedef PointerToArray<int> PTA_int;
 typedef ConstPointerToArray<int> CPTA_int;
-END_PUBLISH
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

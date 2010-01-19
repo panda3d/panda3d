@@ -143,16 +143,16 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
-public:
+PUBLISHED:
   // These public methods are not intended for high-level usage.  They
-  // are public so that C++ code that absolutely needs fast access to
-  // the primitive data can get to it, but using them requires
-  // knowledge about how the component primitives are encoded within
-  // the GeomPrimitive class, and it's easy to screw something up.
-  // Also, if too many code samples depend on this internal knowledge,
-  // it may make it difficult to extend this class later.  It is
-  // recommended that application-level code use the above interfaces
-  // instead.
+  // are public so that low-level code that absolutely needs fast
+  // access to the primitive data can get to it, but using them
+  // requires knowledge about how the component primitives are encoded
+  // within the GeomPrimitive class, and it's easy to screw something
+  // up.  Also, if too many code samples depend on this internal
+  // knowledge, it may make it difficult to extend this class later.
+  // It is recommended that application-level code use the above
+  // interfaces instead.
 
   INLINE CPT(GeomVertexArrayData) get_vertices() const;
   PT(GeomVertexArrayData) modify_vertices(int num_vertices = -1);
@@ -176,6 +176,7 @@ public:
   virtual int get_min_num_vertices_per_primitive() const;
   virtual int get_num_unused_vertices_per_primitive() const;
 
+public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
