@@ -1029,11 +1029,7 @@ def GetLibCache():
     if (LD_CACHE == None):
         LD_CACHE = []
         print "Generating library cache..."
-        if (LocateBinary("ldconfig") != None):
-            if (sys.platform.startswith("freebsd")):
-                handle = os.popen(LocateBinary("ldconfig"))
-            else:
-                handle = os.popen(LocateBinary("ldconfig") + " -NXp")
+        if (LocateBinary("ldconfig") != None and not sys.platform.startswith("freebsd")):
             result = handle.read().strip().split("\n")
             for line in result:
                 lib = line.strip().split(" ", 1)[0]
