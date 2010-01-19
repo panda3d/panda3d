@@ -3443,7 +3443,7 @@ if (RTDIST or RUNTIME):
   if (sys.platform != "darwin" and not sys.platform.startswith("win")):
     DefSymbol("RUNTIME", "HAVE_X11", "1")
   
-  OPTS=['DIR:direct/src/plugin', 'RUNTIME', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
   
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
@@ -3617,8 +3617,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  OPTS=['DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
-  DefSymbol("P3DEMBED", "BUILDING_P3D_PLUGIN", "")
+  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
