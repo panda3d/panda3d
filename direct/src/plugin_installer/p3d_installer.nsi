@@ -2,7 +2,6 @@
 !include LogicLib.nsh
 !include FileFunc.nsh
 !include FileAssociation.nsh
-!include AddToPath.nsh
 
 ; Several variables are assumed to be pre-defined by the caller.  See
 ; make_installer.py in this directory.
@@ -117,10 +116,6 @@ Section "MainSection" SEC01
 
   # Make the directory "$INSTDIR" read write accessible by all users
   AccessControl::GrantOnFile "$INSTDIR" "(BU)" "FullAccess"
-  
-  # Add "$INSTDIR" to the system PATH.
-  Push "$INSTDIR"
-  Call AddToPath
 
 ;  File "..\..\..\path\to\file\Example.file"
 SectionEnd
@@ -271,10 +266,6 @@ Mozilla-Uninstall-End:
 !endif
 
   RMDir "$INSTDIR"
-  
-  # Remove "$INSTDIR" fromthe system PATH.
-  Push "$INSTDIR"
-  Call un.RemoveFromPath
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"

@@ -30,8 +30,16 @@ int main (int argc, char* argv[]) {
   int i;
   char buffer [BUFFER_SIZE];
   char* p3dfile;
-  char** newargv;
+  char* runtime = NULL;
   DWORD size;
+  STARTUPINFO si;
+  PROCESS_INFORMATION pi;
+  char *cmd;
+  char *newcmd;
+  HKEY hKey = 0;
+  char buf [1024] = {0};
+  DWORD dwType = 0;
+  DWORD dwBufSize = sizeof(buf);
   size = GetModuleFileName (NULL, buffer, BUFFER_SIZE);
   assert (size > 0);
 
@@ -41,18 +49,44 @@ int main (int argc, char* argv[]) {
   p3dfile [size] = 0;
   memcpy (p3dfile + size - 3, "p3d", 3);
 
-  /* Fill in a new argv object to pass to panda3d(.exe). */
-  newargv = (char**) malloc (sizeof (char*) * (argc + 2));
-  newargv [0] = "panda3d.exe";
-  newargv [1] = p3dfile;
-  for (i = 1; i < argc; ++i) {
-    newargv [i + 1] = _strdup (argv [i]);
-  }
-  newargv [argc + 1] = NULL;
-  if (_execvp ("panda3d.exe", newargv) == -1) {
-    fprintf (stderr, "panda3d.exe: %s", _strerror (NULL));
+  /* Find the Panda3D applet\DefaultIcon key and extract the path to the runtime from there. */
+  if (RegOpenKey (HKEY_CLASSES_ROOT, "Panda3D applet\\DefaultIcon", &hKey) == ERROR_SUCCESS) {
+    dwType = REG_SZ;
+    if (RegQueryValueEx(hKey, 0, 0, &dwType, (BYTE*) buf, &dwBufSize) == ERROR_SUCCESS) {
+      for (i = dwBufSize - 1; i >= 0; --i) {
+        if (buf [i] == '/' || buf [i] == '\\') {
+          runtime = (char*) malloc (i + 13);
+          memcpy (runtime, buf, i);
+          runtime [i] = 0;         
+          strcat (runtime, "\\panda3d.exe");      
+          break;
+        }
+      }
+    } else {
+      fprintf (stderr, "Failed to read registry key. Try reinstalling the Panda3D Runtime.\n");
+      return 1;
+    }
+    RegCloseKey(hKey);
+  } else {
+    fprintf (stderr, "The Panda3D Runtime does not appear to be installed!\n");
     return 1;
   }
+
+  if (runtime == NULL) {
+    fprintf (stderr, "Failed to find panda3d.exe in registry. Try reinstalling the Panda3D Runtime.\n");
+    return 1;
+  }
+
+  /* Build the command-line and run panda3d.exe. */
+  cmd = GetCommandLine();
+  newcmd = (char*) malloc (strlen(runtime) + strlen(p3dfile) + strlen (cmd) - strlen (argv[0]) + 7);
+  sprintf (newcmd, "\"%s\" \"%s\" %s", runtime, p3dfile, cmd + strlen (argv[0]));
+  memset(&si, 0, sizeof(si));
+  si.cb = sizeof(STARTUPINFO);
+  if (CreateProcess(runtime, newcmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    WaitForSingleObject(pi.hProcess, INFINITE);
+  }
+  free (newcmd);
   return 0;
 }
 
