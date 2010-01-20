@@ -527,7 +527,20 @@ $[TAB]$[TOUCH_CMD] $[TARGET_DIR]/$[egg]
 
    // And this is the actual optchar pass.
 $[target] : $[sources] $[TARGET_DIR]/stamp
-$[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
+
+////////////////////////////////
+//$[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
+
+///// Handles very long lists of egg files by echoing them //////
+///// out to a file then having egg-optchar read in the    //////
+///// list from that file.  Comment out four lines below   //////
+///// and uncomment line above to revert to the old way.   //////
+
+#define sources_file eoc.tmp
+$[TAB]echo -n $[sources] > $[sources_file]
+$[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] -inf $[sources_file]
+$[TAB]$[DEL_CMD] eoc.tmp
+////////////////////////////////
 #endif
 
 #end optchar_egg
