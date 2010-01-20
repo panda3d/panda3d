@@ -28,6 +28,7 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
   add_runline("-o output.egg [opts] input.egg");
   add_runline("-d dirname [opts] file.egg [file.egg ...]");
   add_runline("-inplace [opts] file.egg [file.egg ...]");
+  add_runline("-inf input_list_filename [opts]");
 
   add_option
     ("o", "filename", 50,
@@ -53,6 +54,13 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
      "input egg files are lost.",
      &EggMultiFilter::dispatch_none, &_inplace);
 
+  add_option
+    ("inf", "filename", 95,
+     "Reads input args from a text file instead of the command line.  "
+     "Useful for really, really large lists of args that break the "
+     "OS-imposed limits on the length of command lines.",
+     &EggMultiFilter::dispatch_filename, &_got_input_filename, &_input_filename);
+
   // Derived programs will set this true when they discover some
   // command-line option that will prevent the program from generating
   // output.  This removes some checks for an output specification in
@@ -71,6 +79,21 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
 ////////////////////////////////////////////////////////////////////
 bool EggMultiFilter::
 handle_args(ProgramBase::Args &args) {
+  if (_got_input_filename) {
+    nout << "Populating args from input file: " << _input_filename << "\n";
+    // Makes sure the file is set is_text
+    _filename = Filename::text_filename(_input_filename);
+    ifstream input;
+    if (!_filename.open_read(input)) {
+      nout << "Error opening file: " << _input_filename << "\n";
+      return false;
+    }
+    string line;
+    // File should be a space-delimited list of egg files
+    while (getline(input, line, ' ')) {
+      args.push_back(line);
+    }
+  }
   if (args.empty()) {
     if (!_allow_empty) {
       nout << "You must specify the egg file(s) to read on the command line.\n";

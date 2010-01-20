@@ -43,6 +43,9 @@ protected:
   bool _got_output_dirname;
   Filename _output_dirname;
   bool _inplace;
+  Filename _input_filename;
+  Filename _filename;
+  bool _got_input_filename;
 
   bool _read_only;
 };
