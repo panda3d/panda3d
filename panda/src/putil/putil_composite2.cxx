@@ -14,7 +14,6 @@
 #include "nodeCachedReferenceCount.cxx"
 #include "pbitops.cxx"
 #include "pta_double.cxx"
-#include "pta_int.cxx"
 #include "pta_ushort.cxx"
 #include "pythonCallbackObject.cxx"
 #include "simpleHashMap.cxx"
