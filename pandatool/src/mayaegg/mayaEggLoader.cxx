@@ -756,6 +756,12 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   for (gri = vert->gref_begin(); gri != vert->gref_end(); ++gri) {
     EggGroup *egg_joint = (*gri);
     double membership = egg_joint->get_vertex_membership(vert);
+
+    if (membership < 0)
+    {
+      mayaloader_cat.warning() << "negative weight value " << membership << " is replaced with 0 on: " << context->get_name() << endl;
+      membership = 0.0;
+    }
     remaining_weight -= membership;
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
   }
