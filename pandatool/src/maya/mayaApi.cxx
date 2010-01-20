@@ -44,7 +44,7 @@ static MFnAnimCurve force_link_with_OpenMayaAnim;
 //               instead, use the open_api() method.
 ////////////////////////////////////////////////////////////////////
 MayaApi::
-MayaApi(const string &program_name) {
+MayaApi(const string &program_name, bool view_license, bool revert_dir) {
   if (program_name == "plug-in") {
     // In this special case, we are invoking the code from within a
     // plug-in, so we need not (and should not) call
@@ -65,28 +65,32 @@ MayaApi(const string &program_name) {
   // Furthermore, the current directory may change during the call to
   // any Maya function!  Egad!
   _cwd = ExecutionEnvironment::get_cwd();
-  MStatus stat = MLibrary::initialize((char *)program_name.c_str());
+  MStatus stat = MLibrary::initialize(false, (char *)program_name.c_str(), view_license);
 
   int error_count = init_maya_repeat_count;
   while (!stat && error_count > 1) {
     stat.perror("MLibrary::initialize");
     Thread::sleep(init_maya_timeout);
-    stat = MLibrary::initialize((char *)program_name.c_str());
+    stat = MLibrary::initialize(false, (char *)program_name.c_str(), view_license);
     --error_count;
   }
-  
-  // Restore the current directory.
-  string dirname = _cwd.to_os_specific();
-  if (chdir(dirname.c_str()) < 0) {
-    maya_cat.warning()
-      << "Unable to restore current directory to " << _cwd
-      << " after initializing Maya.\n";
-  } else {
-    if (maya_cat.is_debug()) {
-      maya_cat.debug()
-        << "Restored current directory to " << _cwd << "\n";
-    }
+
+  // Restore the current directory. Ever since Maya 2010, there seems to be
+  // some bad mojo when you do this.
+  if( revert_dir ){
+	  string dirname = _cwd.to_os_specific();
+	  if (chdir(dirname.c_str()) < 0) {
+		maya_cat.warning()
+		  << "Unable to restore current directory to " << _cwd
+		  << " after initializing Maya.\n";
+	  } else {
+		if (maya_cat.is_debug()) {
+		  maya_cat.debug()
+			<< "Restored current directory to " << _cwd << "\n";
+		}
+	  }
   }
+  
 
   if (!stat) {
     stat.perror("MLibrary::initialize");
@@ -151,7 +155,7 @@ MayaApi::
 //               case, the maya library is not re-initialized.
 ////////////////////////////////////////////////////////////////////
 PT(MayaApi) MayaApi::
-open_api(string program_name) {
+open_api(string program_name, bool view_license, bool revertdir) {
   if (_global_api == (MayaApi *)NULL) {
     // We need to create a new MayaApi object.
     if (program_name.empty()) {
@@ -161,7 +165,7 @@ open_api(string program_name) {
       }
     }
 
-    _global_api = new MayaApi(program_name);
+    _global_api = new MayaApi(program_name, view_license, revertdir);
 
     // Try to compare the string-formatted runtime version number with
     // the numeric compile-time version number, so we can sanity check

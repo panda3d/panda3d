@@ -185,7 +185,9 @@ run() {
 
   nout << "Initializing Maya.\n";
   MayaToEggConverter converter(_program_name);
-  if (!converter.open_api()) {
+  //reverting directories is really not needed for maya2egg.  It's
+  //more needed for mayaeggloader and such
+  if (!converter.open_api(false)) {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }

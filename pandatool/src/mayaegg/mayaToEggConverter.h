@@ -100,7 +100,7 @@ public:
 
   void clear();
 
-  bool open_api();
+  bool open_api(bool revert_directory=true);
   void close_api();
 
 private:

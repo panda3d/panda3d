@@ -593,9 +593,11 @@ convert_maya() {
 //               there is an error.
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
-open_api() {
+open_api(bool revert_directory) {
   if (_maya == (MayaApi *)NULL || !_maya->is_valid()) {
-    _maya = MayaApi::open_api(_program_name);
+	  //maya to egg converter only needs a read license.
+	  //only egg2maya need write lisences.
+    _maya = MayaApi::open_api(_program_name, true, revert_directory);
   }
   return _maya->is_valid();
 }
@@ -2612,9 +2614,9 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
 
       if (color_def->_has_texture) {
         // If we have a texture on color, apply it as the filename.
-        //if (mayaegg_cat.is_debug()) {
-          //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
-        //}
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
+        }
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
         Filename fullpath, outpath;
         _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
@@ -2665,7 +2667,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                                              fullpath, outpath);
             tex.set_alpha_filename(outpath);
             tex.set_alpha_fullpath(fullpath);
-          }
+          } 
         } else {
           // If there is no transparency texture specified, we don't
           // have any transparency, so tell the egg format to ignore any
