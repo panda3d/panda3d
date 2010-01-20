@@ -2347,14 +2347,14 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA','BIGOBJ']
   TargetAdd('pgraph_nodePath.obj', opts=OPTS, input='nodePath.cxx')
-  TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite1.cxx')
-  TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite2.cxx')
-  TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite3.cxx')
-  TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite4.cxx')
+  TargetAdd('pgraph_composite1.obj', opts=OPTS, input='pgraph_composite1.cxx')
+  TargetAdd('pgraph_composite2.obj', opts=OPTS, input='pgraph_composite2.cxx')
+  TargetAdd('pgraph_composite3.obj', opts=OPTS, input='pgraph_composite3.cxx')
+  TargetAdd('pgraph_composite4.obj', opts=OPTS, input='pgraph_composite4.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
-  TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ"], input=IGATEFILES)
+  TargetAdd('libpgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpgraph.in', opts=['IMOD:panda', 'ILIB:libpgraph', 'SRCDIR:panda/src/pgraph'])
   TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
 
@@ -2375,7 +2375,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('chan_composite.obj', opts=OPTS, input='chan_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite.cxx"])
   IGATEFILES.remove('movingPart.h')
@@ -2389,7 +2389,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/char', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/char', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('char_composite.obj', opts=OPTS, input='char_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite.cxx"])
   TargetAdd('libchar.in', opts=OPTS, input=IGATEFILES)
@@ -2517,7 +2517,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/parametrics', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/parametrics', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('parametrics_composite.obj', opts=OPTS, input='parametrics_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite.cxx"])
   TargetAdd('libparametrics.in', opts=OPTS, input=IGATEFILES)
