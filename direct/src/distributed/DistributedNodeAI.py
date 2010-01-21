@@ -66,7 +66,11 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
 
     def setParent(self, parentToken):
         self.notify.debug('setParent(%s): %s' % (self.doId, parentToken))
-        self.do_setParent(parentToken)
+        if parentToken == 0:
+            senderId = self.air.getAvatarIdFromSender()
+            self.air.writeServerEvent('suspicious', senderId, 'setParent(0)')
+        else:
+            self.do_setParent(parentToken)
 
     def do_setParent(self, parentToken):
         self.getParentMgr().requestReparent(self, parentToken)

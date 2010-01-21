@@ -106,7 +106,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         justGotRequiredParentAsStr = ((not self.isGenerated()) and
                                       self.gotStringParentToken)
         if not justGotRequiredParentAsStr:
-            self.do_setParent(parentToken)
+            if parentToken != 0:
+                self.do_setParent(parentToken)
         self.gotStringParentToken = 0
 
     def do_setParent(self, parentToken):
