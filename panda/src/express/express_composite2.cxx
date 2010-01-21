@@ -1,3 +1,4 @@
+#include "pta_int.cxx"
 #include "pta_uchar.cxx"
 #include "pta_float.cxx"
 #include "ramfile.cxx"
