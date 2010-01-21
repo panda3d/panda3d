@@ -4541,6 +4541,7 @@ if (not RUNTIME and not RTDIST):
     OPTS=['DIR:direct/src/p3d']
     TargetAdd('p3dWrapper.obj', opts=OPTS, input='p3dWrapper.c')
     TargetAdd('p3dWrapper.exe', input='p3dWrapper.obj')
+    TargetAdd('p3dWrapper.exe', opts=["ADVAPI"])
   
   for g in glob.glob("direct/src/p3d/*.p3d"):
     base = os.path.basename(g)
