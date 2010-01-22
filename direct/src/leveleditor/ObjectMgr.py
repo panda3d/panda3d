@@ -5,6 +5,7 @@ Defines ObjectMgr
 import os, time, wx
 
 from direct.task import Task
+from direct.actor.Actor import Actor
 from pandac.PandaModules import *
 
 import ObjectGlobals as OG
@@ -63,6 +64,8 @@ class ObjectMgr:
             parent = render
 
         objDef = self.editor.objectPalette.findItem(typeName)
+        if objDef is None:
+            objDef = self.editor.protoPalette.findItem(typeName)
         newobj = None
         if objDef and type(objDef) != dict:
             if objDef.createFunction:
@@ -78,12 +81,29 @@ class ObjectMgr:
 
                 # create new obj using function and keyword arguments defined in ObjectPalette
                 newobj = func(**funcArgs)
-
+            elif objDef.actor:
+                if model is None:
+                    model = objDef.model
+                try:
+                    newobj = Actor(model)
+                except:
+                    newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
             elif objDef.model is not None:
                 # since this obj is simple model let's load the model
                 if model is None:
                     model = objDef.model
-                newobj = loader.loadModel(model)
+                try:
+                    newobj = loader.loadModel(model)
+                except:
+                    newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
+
+            anim = ''
+            if len(objDef.anims) > 0:
+                anim = objDef.anims[0]
+                # load new anim
+                animName = os.path.basename(anim)
+                newAnim = newobj.loadAnims({animName:anim})
+                newobj.loop(animName)                
 
             if newobj is None:
                 return None
@@ -102,7 +122,7 @@ class ObjectMgr:
                 properties[key] = objDef.properties[key][OG.PROP_DEFAULT]
 
             # insert obj data to main repository
-            self.objects[uid] = [uid, newobj, objDef, model, properties]
+            self.objects[uid] = [uid, newobj, objDef, model, anim, properties]
             self.npIndex[NodePath(newobj)] = uid
 
             if fSelectObject:
@@ -269,13 +289,32 @@ class ObjectMgr:
 
             if fSelectObject:
                 base.direct.select(newobj)        
-        
+
+    def updateObjectAnim(self, anim, obj, fSelectObject=True):
+        """ replace object's anim """
+        if obj[OG.OBJ_ANIM] != anim:
+            base.direct.deselectAll()
+            objNP = obj[OG.OBJ_NP]
+
+            # load new anim
+            animName = os.path.basename(anim)
+            newAnim = objNP.loadAnims({animName:anim})
+            objNP.loop(animName)
+            obj[OG.OBJ_ANIM] = anim
+            if fSelectObject:
+                base.direct.select(objNP)
 
     def updateObjectModelFromUI(self, event, obj):
         """ replace object's model with one selected from UI """
         model = event.GetString()
         if model is not None:
             self.updateObjectModel(model, obj)
+
+    def updateObjectAnimFromUI(self, event, obj):
+        """ replace object's anim with one selected from UI """
+        anim = event.GetString()
+        if anim is not None:
+            self.updateObjectAnim(anim, obj)
 
     def updateObjectProperty(self, event, obj, propName):
         """

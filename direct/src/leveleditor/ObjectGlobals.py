@@ -7,7 +7,8 @@ OBJ_UID = 0
 OBJ_NP = 1
 OBJ_DEF = 2
 OBJ_MODEL = 3
-OBJ_PROP = 4
+OBJ_ANIM = 4
+OBJ_PROP = 5
 
 # supported UI types
 PROP_UI_ENTRY = '_PropUIEntry'

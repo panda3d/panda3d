@@ -11,6 +11,7 @@ from ObjectPropertyUI import *
 from SceneGraphUI import *
 from LayerEditorUI import *
 from HotKeyUI import *
+from ProtoPaletteUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
@@ -95,12 +96,15 @@ class LevelEditorUI(WxAppShell):
         self.perspView = Viewport.makePerspective(self.viewFrame)
         self.viewFrame.AppendWindow(self.perspView)
 
-        self.leftBarUpPane = wx.Panel(self.leftFrame)
+        self.leftBarUpFrame = wx.SplitterWindow(self.leftFrame, wx.SP_3D | wx.SP_BORDER)
+        self.leftBarUpPane = wx.Panel(self.leftBarUpFrame)
+        self.leftBarMidPane = wx.Panel(self.leftBarUpFrame)
         self.leftBarDownPane = wx.Panel(self.leftFrame)
         self.rightBarUpPane = wx.Panel(self.rightFrame)
         self.rightBarDownPane = wx.Panel(self.rightFrame)
 
-        self.leftFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarDownPane)
+        self.leftFrame.SplitHorizontally(self.leftBarUpFrame, self.leftBarDownPane)
+        self.leftBarUpFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarMidPane)
         self.rightFrame.SplitHorizontally(self.rightBarUpPane, self.rightBarDownPane)
         self.mainFrame.SplitVertically(self.leftFrame, self.baseFrame, 200)
         self.baseFrame.SplitVertically(self.viewFrame, self.rightFrame, 600)
@@ -108,6 +112,7 @@ class LevelEditorUI(WxAppShell):
         self.viewFrame.SetDropTarget(PandaTextDropTarget(self.editor))
 
         self.leftFrame.SetSashGravity(0.5)
+        self.leftBarUpFrame.SetSashGravity(0.5)
         self.rightFrame.SetSashGravity(0.5)        
         self.baseFrame.SetSashGravity(1.0)
 
@@ -116,6 +121,7 @@ class LevelEditorUI(WxAppShell):
         self.SetSizer(sizer); self.Layout()
 
         self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane, self.editor)
+        self.protoPaletteUI = ProtoPaletteUI(self.leftBarMidPane, self.editor)
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
         self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane, self.editor)
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane, self.editor)
@@ -190,6 +196,7 @@ class LevelEditorUI(WxAppShell):
         self.sceneGraphUI.showPandaObjectChildren()
 
     def onDestroy(self, evt):
+        self.editor.protoPalette.saveToFile()
         self.editor.saveSettings()
 
     def updateGrids(self, newSize, newSpacing):

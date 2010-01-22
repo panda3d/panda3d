@@ -68,8 +68,8 @@ class ObjectHandler:
 
 class PandaActor(Actor.Actor):
     def __init__(self):
-        Actor.Actor.__init__(self, "models/panda-model.egg",{"walk":"models/panda-walk4.egg"})
+        Actor.Actor.__init__(self, "models/panda-model.egg")
         self.setScale(0.005)
-        self.loop("walk")
+
 
     

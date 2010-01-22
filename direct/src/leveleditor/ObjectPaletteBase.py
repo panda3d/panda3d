@@ -1,16 +1,19 @@
+import copy
 import ObjectGlobals as OG
 
 class ObjectBase:
     """ Base class for obj definitions """
     
-    def __init__(self, name='', createFunction = None, model = None, models= [], properties={},
-                 movable = True):
+    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], properties={},
+                 movable = True, actor = False):
         self.name = name
         self.createFunction = createFunction
         self.model = model
-        self.models = models
-        self.properties = properties
+        self.models = models[:]
+        self.anims = anims[:]
+        self.properties = copy.deepcopy(properties)
         self.movable = movable
+        self.actor = actor
 
 class ObjectPaletteBase:
     """

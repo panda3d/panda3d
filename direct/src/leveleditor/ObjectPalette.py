@@ -101,6 +101,7 @@ class ObjectPalette(ObjectPaletteBase):
         self.add('Animal')
         self.add(ObjectBase(name='Panda',
                             createFunction = ('.createPanda', {}),
+                            anims = ['models/panda-walk4.egg',],
                             properties = {}),
                  'Animal')
 

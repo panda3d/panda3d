@@ -2,13 +2,40 @@
 UI for object property control
 """
 import wx
+import os
+
 from wx.lib.scrolledpanel import ScrolledPanel
-
 from direct.wxwidgets.WxSlider import *
-
+from pandac.PandaModules import *
 import ObjectGlobals as OG
 
+class AnimFileDrop(wx.FileDropTarget):
+    def __init__(self, editor):
+        wx.FileDropTarget.__init__(self)
+        self.editor = editor
 
+    def OnDropFiles(self, x, y, filenames):
+        obj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
+        if obj is None:
+            return
+
+        objDef = obj[OG.OBJ_DEF]
+        if not objDef.actor:
+            return
+
+        objNP = obj[OG.OBJ_NP]
+
+        for filename in filenames:
+            name = os.path.basename(filename)
+            animName = Filename.fromOsSpecific(filename).getFullpath()
+            if animName not in objDef.anims:
+                objDef.anims.append(animName)
+
+            objNP.loadAnims({name:animName})
+            objNP.loop(name)
+            obj[OG.OBJ_ANIM] = animName
+            self.editor.ui.objectPropertyUI.updateProps(obj)
+            
 class ObjectPropUI(wx.Panel):
     """
     Base class for ObjectPropUIs,
@@ -124,6 +151,8 @@ class ObjectPropertyUI(ScrolledPanel):
         parentSizer.Add(self, 1, wx.EXPAND, 0)
         parent.SetSizer(parentSizer); parent.Layout()
 
+        self.SetDropTarget(AnimFileDrop(self.editor))
+
     def clearPropUI(self):
         sizer = self.GetSizer()
         if sizer is not None:
@@ -174,6 +203,14 @@ class ObjectPropertyUI(ScrolledPanel):
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                             self.editor.objectMgr.onLeaveObjectPropUI,
                             lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectModelFromUI(p0, p1))
+
+        if len(objDef.anims) > 0:
+            propUI = ObjectPropUICombo(self.propPane, 'anim', obj[OG.OBJ_ANIM], objDef.anims)
+            sizer.Add(propUI)            
+
+            propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
+                            self.editor.objectMgr.onLeaveObjectPropUI,
+                            lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectAnimFromUI(p0, p1))
 
         for key in objDef.properties.keys():
             propDef = objDef.properties[key]

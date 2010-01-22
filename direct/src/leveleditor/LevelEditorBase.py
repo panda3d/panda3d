@@ -14,6 +14,7 @@ base = ShowBase(False)
 
 from ObjectMgr import *
 from FileMgr import *
+from ProtoPalette import *
 
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """ 
@@ -23,6 +24,7 @@ class LevelEditorBase(DirectObject):
         self.actionEvents = []
         self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
+        self.protoPalette = ProtoPalette()
 
         # define your own config file in inherited class
         self.settingsFile = None
