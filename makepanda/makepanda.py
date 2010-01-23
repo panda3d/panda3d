@@ -4699,7 +4699,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     cmd=cmd+'/DLANGUAGE="English" '
     cmd=cmd+'/DRUNTEXT="Visit the Panda Manual" '
     cmd=cmd+'/DIBITMAP="panda-install.bmp" '
-    cmd=cmd+'/DUBITMAP="panda-uninstall.bmp" '
+    cmd=cmd+'/DUBITMAP="panda-install.bmp" '
     cmd=cmd+'/DPANDA="'+panda+'" '
     cmd=cmd+'/DPANDACONF="'+panda+'\\etc" '
     cmd=cmd+'/DPSOURCE="'+psource+'" '
