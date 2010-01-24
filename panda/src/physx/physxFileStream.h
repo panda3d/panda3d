@@ -16,6 +16,8 @@
 #define PHYSXFILESTREAM_H
 
 #include "pandabase.h"
+#include "virtualFile.h"
+#include "filename.h"
 
 #include "physx_includes.h"
 
@@ -26,7 +28,7 @@
 class EXPCL_PANDAPHYSX PhysxFileStream : public NxStream {
 
 public:
-  PhysxFileStream(const char *filename, bool load);
+  PhysxFileStream(const Filename &fn, bool load);
   virtual ~PhysxFileStream();
 
   virtual NxU8 readByte() const;
@@ -44,7 +46,13 @@ public:
   virtual NxStream &storeBuffer(const void *buffer, NxU32 size);
 
 private:
-  FILE* fp;
+
+  // write
+  FILE* _fp;
+
+  // read
+  PT(VirtualFile) _vf;
+  istream *_in;
 };
 
 #endif // PHYSXFILESTREAM_H

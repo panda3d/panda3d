@@ -16,14 +16,22 @@
 
 #include "stdio.h"
 
+#include "virtualFileSystem.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxFileStream::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PhysxFileStream::PhysxFileStream(const char *filename, bool load) : fp(NULL)
+PhysxFileStream::PhysxFileStream(const Filename &fn, bool load) : _fp(NULL), _vf(NULL), _in(NULL)
 {
-  fp = fopen(filename, load ? "rb" : "wb");
+  if (load) {
+    _vf = VirtualFileSystem::get_global_ptr()->get_file(fn);
+    _in = _vf->open_read_file(true);
+  }
+  else {
+    _fp = fopen(fn.c_str(), "wb");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +41,8 @@ PhysxFileStream::PhysxFileStream(const char *filename, bool load) : fp(NULL)
 ////////////////////////////////////////////////////////////////////
 PhysxFileStream::~PhysxFileStream()
 {
-  if (fp) fclose(fp);
+  if (_fp) fclose(_fp);
+  if (_vf) _vf->close_read_file(_in);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,8 +53,8 @@ PhysxFileStream::~PhysxFileStream()
 NxU8 PhysxFileStream::readByte() const
 {
   NxU8 b;
-  size_t r = fread(&b, sizeof(NxU8), 1, fp);
-  NX_ASSERT(r);
+  _in->read((char *)&b, sizeof(NxU8));
+  NX_ASSERT(!(_in->bad()));
   return b;
 }
 
@@ -57,8 +66,8 @@ NxU8 PhysxFileStream::readByte() const
 NxU16 PhysxFileStream::readWord() const
 {
   NxU16 w;
-  size_t r = fread(&w, sizeof(NxU16), 1, fp);
-  NX_ASSERT(r);
+  _in->read((char *)&w, sizeof(NxU16));
+  NX_ASSERT(!(_in->bad()));
   return w;
 }
 
@@ -70,8 +79,8 @@ NxU16 PhysxFileStream::readWord() const
 NxU32 PhysxFileStream::readDword() const
 {
   NxU32 d;
-  size_t r = fread(&d, sizeof(NxU32), 1, fp);
-  NX_ASSERT(r);
+  _in->read((char *)&d, sizeof(NxU32));
+  NX_ASSERT(!(_in->bad()));
   return d;
 }
 
@@ -83,8 +92,8 @@ NxU32 PhysxFileStream::readDword() const
 float PhysxFileStream::readFloat() const
 {
   NxReal f;
-  size_t r = fread(&f, sizeof(NxReal), 1, fp);
-  NX_ASSERT(r);
+  _in->read((char *)&f, sizeof(NxReal));
+  NX_ASSERT(!(_in->bad()));
   return f;
 }
 
@@ -96,8 +105,8 @@ float PhysxFileStream::readFloat() const
 double PhysxFileStream::readDouble() const
 {
   NxF64 f;
-  size_t r = fread(&f, sizeof(NxF64), 1, fp);
-  NX_ASSERT(r);
+  _in->read((char *)&f, sizeof(NxF64));
+  NX_ASSERT(!(_in->bad()));
   return f;
 }
 
@@ -108,8 +117,8 @@ double PhysxFileStream::readDouble() const
 ////////////////////////////////////////////////////////////////////
 void PhysxFileStream::readBuffer(void *buffer, NxU32 size) const
 {
-  size_t w = fread(buffer, size, 1, fp);
-  NX_ASSERT(w);
+  _in->read((char *)buffer, size);
+  NX_ASSERT(!(_in->bad()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +128,7 @@ void PhysxFileStream::readBuffer(void *buffer, NxU32 size) const
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeByte(NxU8 b)
 {
-  size_t w = fwrite(&b, sizeof(NxU8), 1, fp);
+  size_t w = fwrite(&b, sizeof(NxU8), 1, _fp);
   NX_ASSERT(w);
   return *this;
 }
@@ -131,7 +140,7 @@ NxStream &PhysxFileStream::storeByte(NxU8 b)
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeWord(NxU16 w)
 {
-  size_t ww = fwrite(&w, sizeof(NxU16), 1, fp);
+  size_t ww = fwrite(&w, sizeof(NxU16), 1, _fp);
   NX_ASSERT(ww);
   return *this;
 }
@@ -143,7 +152,7 @@ NxStream &PhysxFileStream::storeWord(NxU16 w)
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeDword(NxU32 d)
 {
-  size_t w = fwrite(&d, sizeof(NxU32), 1, fp);
+  size_t w = fwrite(&d, sizeof(NxU32), 1, _fp);
   NX_ASSERT(w);
   return *this;
 }
@@ -155,7 +164,7 @@ NxStream &PhysxFileStream::storeDword(NxU32 d)
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeFloat(NxReal f)
 {
-  size_t w = fwrite(&f, sizeof(NxReal), 1, fp);
+  size_t w = fwrite(&f, sizeof(NxReal), 1, _fp);
   NX_ASSERT(w);
   return *this;
 }
@@ -167,7 +176,7 @@ NxStream &PhysxFileStream::storeFloat(NxReal f)
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeDouble(NxF64 f)
 {
-  size_t w = fwrite(&f, sizeof(NxF64), 1, fp);
+  size_t w = fwrite(&f, sizeof(NxF64), 1, _fp);
   NX_ASSERT(w);
   return *this;
 }
@@ -179,7 +188,7 @@ NxStream &PhysxFileStream::storeDouble(NxF64 f)
 ////////////////////////////////////////////////////////////////////
 NxStream &PhysxFileStream::storeBuffer(const void *buffer, NxU32 size)
 {
-  size_t w = fwrite(buffer, size, 1, fp);
+  size_t w = fwrite(buffer, size, 1, _fp);
   NX_ASSERT(w);
   return *this;
 }

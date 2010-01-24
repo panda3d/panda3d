@@ -63,7 +63,7 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename) 
   nassertr_always(filename.touch(), false);
   nassertr_always(meshDesc.is_valid(), false);
 
-  PhysxFileStream stream = PhysxFileStream(filename.c_str(), false);
+  PhysxFileStream stream = PhysxFileStream(filename, false);
   return _cooking->NxCookConvexMesh(meshDesc.get_desc(), stream);
 }
 
@@ -79,7 +79,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
   nassertr_always(filename.touch(), false);
   nassertr_always(meshDesc.is_valid(), false);
 
-  PhysxFileStream stream = PhysxFileStream(filename.c_str(), false);
+  PhysxFileStream stream = PhysxFileStream(filename, false);
   return _cooking->NxCookTriangleMesh(meshDesc.get_desc(), stream);
 }
 

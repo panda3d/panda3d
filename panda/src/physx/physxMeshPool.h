@@ -50,7 +50,7 @@ PUBLISHED:
   static void list_contents(ostream &out);
 
 private:
-  static bool prepare_filename(Filename &fn);
+  static bool check_filename(const Filename &fn);
 
   typedef pmap<Filename, PT(PhysxConvexMesh)> ConvexMeshes;
   typedef pmap<Filename, PT(PhysxTriangleMesh)> TriangleMeshes;

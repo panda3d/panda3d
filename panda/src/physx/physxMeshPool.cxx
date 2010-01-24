@@ -16,6 +16,7 @@
 #include "physxConvexMesh.h"
 #include "physxTriangleMesh.h"
 #include "physxFileStream.h"
+#include "virtualFileSystem.h"
 
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
@@ -23,26 +24,20 @@ PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
 //PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::prepare_filename
+//     Function: PhysxMeshPool::check_file
 //       Access: Private
-//  Description: Checks if the filename is valid, then resolves the
-//               filename on the Panda3D model search patch, and
-//               finally checks if the filename exists.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool PhysxMeshPool::
-prepare_filename(Filename &fn) {
+check_filename(const Filename &fn) {
 
-  if (fn.empty()) {
-    // Invalid filename.
-    physx_cat.error() << "Invalid filename\n";
+  if (!(VirtualFileSystem::get_global_ptr()->exists(fn))) {
+    physx_cat.error() << "File does not exists: " << fn << endl;
     return false;
   }
 
-  fn.resolve_filename(get_model_path());
-
-  if (!fn.exists()) {
-    // Non-existent filename.
-    physx_cat.error() << "Invalid filename\n";
+  if (!(VirtualFileSystem::get_global_ptr()->is_regular_file(fn))) {
+    physx_cat.error() << "Not a regular file: " << fn << endl;
     return false;
   }
 
@@ -55,10 +50,9 @@ prepare_filename(Filename &fn) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxConvexMesh *PhysxMeshPool::
-load_convex_mesh(const Filename &filename) {
+load_convex_mesh(const Filename &fn) {
 
-  Filename fn(filename);
-  if (!prepare_filename(fn)) return NULL;
+  if (!check_filename(fn)) return NULL;
 
   PhysxConvexMesh *mesh;
 
@@ -66,7 +60,7 @@ load_convex_mesh(const Filename &filename) {
   if (it == _convex_meshes.end()) {
     // Not found; load mesh.
     NxConvexMesh *meshPtr;
-    PhysxFileStream stream = PhysxFileStream(fn.to_os_specific().c_str(), true);
+    PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxConvexMesh();
     nassertr_always(mesh, NULL);
@@ -95,10 +89,9 @@ load_convex_mesh(const Filename &filename) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxTriangleMesh *PhysxMeshPool::
-load_triangle_mesh(const Filename &filename) {
+load_triangle_mesh(const Filename &fn) {
 
-  Filename fn(filename);
-  if (!prepare_filename(fn)) return NULL;
+  if (!check_filename(fn)) return NULL;
 
   PhysxTriangleMesh *mesh;
 
@@ -106,7 +99,7 @@ load_triangle_mesh(const Filename &filename) {
   if (it == _triangle_meshes.end()) {
     // Not found; load mesh.
     NxTriangleMesh *meshPtr;
-    PhysxFileStream stream = PhysxFileStream(fn.to_os_specific().c_str(), true);
+    PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxTriangleMesh();
     nassertr_always(mesh, NULL);
