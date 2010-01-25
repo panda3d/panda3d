@@ -967,11 +967,15 @@ glsl_compile_shader(GSG *gsg) {
     if (!_glsl_gshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_gshader);
     
+#ifdef OPENGLES
+    nassertr(false, false); // OpenGL ES has no geometry shaders.
+#else
     // Set the vertex output limit to the maximum
     nassertr(gsg->_glProgramParameteri != NULL, false);
     GLint max_vertices;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &max_vertices);
     gsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_EXT, max_vertices); 
+#endif
   }
   
   // There might be warnings. Only report them for one shader program.
