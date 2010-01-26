@@ -1,23 +1,22 @@
 import os
 import imp
 
-from ObjectMgr import ObjectMgr
-from ObjectHandler import ObjectHandler
-from ObjectPalette import ObjectPalette
-
+import ObjectMgr
+import ObjectHandler
+import ObjectPalette
 import ObjectGlobals as OG
 
 class FileMgr:
     """ To handle data file """
     
-    def __init__(self, editor):
+    def __init__(self, editor=None):
         self.editor = editor
 
     def saveToFile(self, fileName):
         try:
             f = open(fileName, 'w')
             f.write("from pandac.PandaModules import *\n")
-            f.write("\nhasattr(base, 'le'):\n")
+            f.write("\nif hasattr(base, 'le'):\n")
             f.write("\tobjectMgr = base.le.objectMgr\n")
             f.write('\tui = base.le.ui\n')
             f.write('\tui.sceneGraphUI.reset()\n\n')
@@ -46,9 +45,9 @@ class FileMgr:
         file, pathname, description = imp.find_module(moduleName, [dirname])
         try:
             if self.editor is None: # when loaded outside of LE
-                base.objectPalette = ObjectPalette()
-                base.objectHandler = ObjectHandler(None)
-                base.objectMgr = ObjectMgr(None)
+                base.objectPalette = ObjectPalette.ObjectPalette()
+                base.objectHandler = ObjectHandler.ObjectHandler(None)
+                base.objectMgr = ObjectMgr.ObjectMgr(None)
 
             module = imp.load_module(moduleName, file, pathname, description)
         except:

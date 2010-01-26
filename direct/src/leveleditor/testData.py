@@ -1,6 +1,6 @@
 from pandac.PandaModules import *
 
-hasattr(base, 'le'):
+if hasattr(base, 'le'):
 	objectMgr = base.le.objectMgr
 	ui = base.le.ui
 	ui.sceneGraphUI.reset()
