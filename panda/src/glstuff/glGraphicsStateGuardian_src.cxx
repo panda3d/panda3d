@@ -950,8 +950,6 @@ reset() {
   } else {
     _glProgramParameteri = NULL;
   }
-#else
-  _glProgramParameteri = NULL;
 #endif
 
 #ifdef OPENGLES_2
