@@ -15,9 +15,14 @@ class FileDrop(wx.FileDropTarget):
     def OnDropFiles(self, x, y, filenames):
         for filename in filenames:
             name = os.path.basename(filename)
+
+            if self.editor.protoPalette.findItem(name):
+                print 'This model already exists in ProtoPalette!'
+                return
+
             modelname = Filename.fromOsSpecific(filename).getFullpath()
             itemData = ObjectBase(name=name, model=modelname, actor=True)
-            base.le.protoPalette.add(itemData)
+            self.editor.protoPalette.add(itemData)
             newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
             self.editor.ui.protoPaletteUI.tree.SetItemPyData(newItem, itemData)
             self.editor.ui.protoPaletteUI.tree.ScrollTo(newItem)
