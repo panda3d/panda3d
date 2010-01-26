@@ -67,8 +67,10 @@ class ObjectMgr:
             objDef = self.editor.objectPalette.findItem(typeName)
             if objDef is None:
                 objDef = self.editor.protoPalette.findItem(typeName)
-        else:
+        else: # when loaded outside of LE
             objDef = base.objectPalette.findItem(typeName)
+            if objDef is None:
+                objDef = base.protoPalette.findItem(typeName)
         newobj = None
         if objDef and type(objDef) != dict:
             if objDef.createFunction:
@@ -78,7 +80,7 @@ class ObjectMgr:
                     # when it's using default objectHandler
                     if self.editor:
                         func = Functor(eval("base.le.objectHandler%s"%funcName))
-                    else:
+                    else: # when loaded outside of LE
                         func = Functor(eval("base.objectHandler%s"%funcName))                        
                 else:
                     # when it's not using default objectHandler, whole name of the handling obj
@@ -405,7 +407,7 @@ class ObjectMgr:
         if funcName.startswith('.'):
             if self.editor:
                 func = Functor(eval("base.le.objectHandler%s"%funcName))
-            else:
+            else: # when loaded outside of LE
                 func = Functor(eval("base.objectHandler%s"%funcName))                
         else:
             func = Functor(eval(funcName))

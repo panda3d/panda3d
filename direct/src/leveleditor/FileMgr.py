@@ -1,9 +1,10 @@
 import os
 import imp
 
-import ObjectMgr
-import ObjectHandler
-import ObjectPalette
+from ObjectMgr import ObjectMgr
+from ObjectHandler import ObjectHandler
+from ObjectPalette import ObjectPalette
+from ProtoPalette import ProtoPalette
 import ObjectGlobals as OG
 
 class FileMgr:
@@ -45,9 +46,10 @@ class FileMgr:
         file, pathname, description = imp.find_module(moduleName, [dirname])
         try:
             if self.editor is None: # when loaded outside of LE
-                base.objectPalette = ObjectPalette.ObjectPalette()
-                base.objectHandler = ObjectHandler.ObjectHandler(None)
-                base.objectMgr = ObjectMgr.ObjectMgr(None)
+                base.objectPalette = ObjectPalette()
+                base.protoPalette = ProtoPalette()
+                base.objectHandler = ObjectHandler(None)
+                base.objectMgr = ObjectMgr(None)
 
             module = imp.load_module(moduleName, file, pathname, description)
         except:
