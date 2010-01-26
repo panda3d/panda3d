@@ -1,12 +1,12 @@
 from pandac.PandaModules import *
 
 if hasattr(base, 'le'):
-	objectMgr = base.le.objectMgr
-	ui = base.le.ui
-	ui.sceneGraphUI.reset()
+    objectMgr = base.le.objectMgr
+    ui = base.le.ui
+    ui.sceneGraphUI.reset()
 
 else:
-	objectMgr = base.objectMgr
+    objectMgr = base.objectMgr
 # temporary place holder for nodepath
 objects = {}
 
@@ -60,6 +60,6 @@ if objects['1252623762.9gjeon']:
     objectMgr.updateObjectProperties(objects['1252623762.9gjeon'], {})
 
 if hasattr(base, 'le'):
-	ui.layerEditorUI.reset()
-	ui.layerEditorUI.addLayerEntry('Layer1', 1 )
-	ui.layerEditorUI.addLayerData(1, '1252538687.73gjeon')
+    ui.layerEditorUI.reset()
+    ui.layerEditorUI.addLayerEntry('Layer1', 1 )
+    ui.layerEditorUI.addLayerData(1, '1252538687.73gjeon')

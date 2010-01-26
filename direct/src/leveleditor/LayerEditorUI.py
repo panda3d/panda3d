@@ -239,14 +239,14 @@ class LayerEditorUI(wx.Panel):
 
     def traverse(self):
         self.saveData.append("\nif hasattr(base, 'le'):")
-        self.saveData.append("\tui.layerEditorUI.reset()")
+        self.saveData.append("    ui.layerEditorUI.reset()")
         for index in range(self.llist.GetItemCount()):
-            self.saveData.append("\tui.layerEditorUI.addLayerEntry('%s', %s )"%(self.llist.GetItemText(index), self.llist.GetItemData(index)))
+            self.saveData.append("    ui.layerEditorUI.addLayerEntry('%s', %s )"%(self.llist.GetItemText(index), self.llist.GetItemData(index)))
         layersDataDictKeys = self.layersDataDict.keys()
         for i in range(len(layersDataDictKeys)):
             layerData = self.layersDataDict[layersDataDictKeys[i]]
             for j in range(len(layerData)):
-                self.saveData.append("\tui.layerEditorUI.addLayerData(%s, '%s')"%(layersDataDictKeys[i], layerData[j]))
+                self.saveData.append("    ui.layerEditorUI.addLayerData(%s, '%s')"%(layersDataDictKeys[i], layerData[j]))
 
     def getSaveData(self):
         self.saveData = []
