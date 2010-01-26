@@ -1,13 +1,19 @@
 from pandac.PandaModules import *
 
-objectMgr = base.le.objectMgr
+hasattr(base, 'le'):
+	objectMgr = base.le.objectMgr
+	ui = base.le.ui
+	ui.sceneGraphUI.reset()
+
+else:
+	objectMgr = base.objectMgr
 # temporary place holder for nodepath
 objects = {}
 
 objects['1252538687.73gjeon'] = objectMgr.addNewObject('Smiley', '1252538687.73gjeon', 'models/smiley.egg', None)
 if objects['1252538687.73gjeon']:
     objects['1252538687.73gjeon'].setPos(Point3(8.66381, 0, 7.13246))
-    objects['1252538687.73gjeon'].setHpr(VBase3(180, 0, 0))
+    objects['1252538687.73gjeon'].setHpr(VBase3(-180, 0, 0))
     objects['1252538687.73gjeon'].setScale(VBase3(1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252538687.73gjeon'], {'123': 1, 'Abc': 'a', 'Number': 1, 'Happy': True})
 
@@ -51,4 +57,9 @@ if objects['1252623762.9gjeon']:
     objects['1252623762.9gjeon'].setPos(Point3(0, 0, 0))
     objects['1252623762.9gjeon'].setHpr(VBase3(172.8, 0, 0))
     objects['1252623762.9gjeon'].setScale(VBase3(0.005, 0.005, 0.005))
-    objectMgr.updateObjectProperties(objects['1252623762.9gjeon'], {'Distance': 1.0, 'Abc': 'a'})
+    objectMgr.updateObjectProperties(objects['1252623762.9gjeon'], {})
+
+if hasattr(base, 'le'):
+	ui.layerEditorUI.reset()
+	ui.layerEditorUI.addLayerEntry('Layer1', 1 )
+	ui.layerEditorUI.addLayerData(1, '1252538687.73gjeon')

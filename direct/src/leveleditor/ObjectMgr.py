@@ -63,9 +63,12 @@ class ObjectMgr:
         if parent is None:
             parent = render
 
-        objDef = self.editor.objectPalette.findItem(typeName)
-        if objDef is None:
-            objDef = self.editor.protoPalette.findItem(typeName)
+        if self.editor:
+            objDef = self.editor.objectPalette.findItem(typeName)
+            if objDef is None:
+                objDef = self.editor.protoPalette.findItem(typeName)
+        else:
+            objDef = base.objectPalette.findItem(typeName)
         newobj = None
         if objDef and type(objDef) != dict:
             if objDef.createFunction:
@@ -73,7 +76,10 @@ class ObjectMgr:
                 funcArgs = objDef.createFunction[OG.FUNC_ARGS]
                 if funcName.startswith('.'):
                     # when it's using default objectHandler
-                    func = Functor(eval("base.le.objectHandler%s"%funcName))
+                    if self.editor:
+                        func = Functor(eval("base.le.objectHandler%s"%funcName))
+                    else:
+                        func = Functor(eval("base.objectHandler%s"%funcName))                        
                 else:
                     # when it's not using default objectHandler, whole name of the handling obj
                     # should be included in function name
@@ -125,10 +131,10 @@ class ObjectMgr:
             self.objects[uid] = [uid, newobj, objDef, model, anim, properties]
             self.npIndex[NodePath(newobj)] = uid
 
-            if fSelectObject:
-                base.direct.select(newobj)
-                
-            self.editor.ui.sceneGraphUI.add(newobj)
+            if self.editor:
+                if fSelectObject:
+                    base.direct.select(newobj)
+                self.editor.ui.sceneGraphUI.add(newobj)
 
         return newobj
 
@@ -397,7 +403,10 @@ class ObjectMgr:
         funcArgs = propDef[OG.PROP_FUNC][OG.FUNC_ARGS]
 
         if funcName.startswith('.'):
-            func = Functor(eval("base.le.objectHandler%s"%funcName))
+            if self.editor:
+                func = Functor(eval("base.le.objectHandler%s"%funcName))
+            else:
+                func = Functor(eval("base.objectHandler%s"%funcName))                
         else:
             func = Functor(eval(funcName))
 
@@ -414,7 +423,7 @@ class ObjectMgr:
         # finally call update function
         func(**kwargs)
 
-        if fSelectObject:
+        if self.editor and fSelectObject:
             base.direct.select(obj[OG.OBJ_NP])
 
     def updateObjectProperties(self, nodePath, propValues):

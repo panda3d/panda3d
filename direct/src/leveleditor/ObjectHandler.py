@@ -45,7 +45,8 @@ class ObjectHandler:
 
     def updateSmiley(self, val, obj):
         objNP = obj[OG.OBJ_NP]
-        base.direct.deselectAll()
+        if base.direct:
+            base.direct.deselectAll()
         for child in objNP.findAllMatches("+GeomNode"):
             child.removeNode()
 
