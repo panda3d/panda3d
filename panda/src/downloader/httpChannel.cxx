@@ -1617,7 +1617,7 @@ run_ssl_handshake() {
   } else {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << "Using cipher " << SSL_CIPHER_get_name(cipher) << "\n";
+        << "Using cipher " << SSL_CIPHER_get_name((SSL_SIPHER *) cipher) << "\n";
     }
   }
 
