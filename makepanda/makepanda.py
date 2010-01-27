@@ -4810,10 +4810,6 @@ def MakeInstallerLinux():
     PV=PYTHONV.replace("python", "")
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
-    if (os.path.exists("/usr/bin/rpmbuild")):
-        oscmd("rm -rf `rpm -E '%_target_cpu'`")
-    if (os.path.exists("/usr/bin/dpkg-deb")):
-        oscmd("rm -rf `dpkg --print-architecture`")
     oscmd("mkdir linuxroot")
     
     # Invoke installpanda.py to install it into a temporary dir
@@ -4832,6 +4828,7 @@ def MakeInstallerLinux():
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot linuxroot -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
+        oscmd("rmdir "+ARCH, True)
     
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
