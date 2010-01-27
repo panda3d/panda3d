@@ -803,15 +803,15 @@ add_signature(const Filename &composite, const string &password) {
 //               needed.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey) {
+add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey) {
   // Convert the certificate and chain into our own CertChain
   // structure.
   CertChain cert_chain;
   cert_chain.push_back(CertRecord(certificate));
   if (chain != NULL) {
-    int num = sk_num(chain);
+    int num = sk_X509_num(chain);
     for (int i = 0; i < num; ++i) {
-      cert_chain.push_back(CertRecord((X509 *)sk_value(chain, i)));
+      cert_chain.push_back(CertRecord((X509 *)sk_X509_value(chain, i)));
     }
   }
 
@@ -1129,13 +1129,13 @@ validate_signature_certificate(int n) const {
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
 
   // Copy our CertChain structure into an X509 pointer and
-  // accompanying STACK pointer.
+  // accompanying STACK_OF(X509) pointer.
   X509 *x509 = chain[0]._cert;
-  STACK *stack = NULL;
+  STACK_OF(X509) *stack = NULL;
   if (chain.size() > 1) {
-    stack = sk_new(NULL);
+    stack = sk_X509_new(NULL);
     for (size_t n = 1; n < chain.size(); ++n) {
-      sk_push(stack, (char *)chain[n]._cert);
+      sk_X509_push(stack, chain[n]._cert);
     }
   }
 
@@ -1156,7 +1156,7 @@ validate_signature_certificate(int n) const {
       << "\n";
   }
 
-  sk_free(stack);
+  sk_X509_free(stack);
   X509_STORE_CTX_cleanup(ctx);
   X509_STORE_CTX_free(ctx);
 

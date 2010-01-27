@@ -1610,8 +1610,8 @@ run_ssl_handshake() {
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
   }
 
-  SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
-  if (cipher == (SSL_CIPHER *)NULL) {
+  const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
+  if (cipher == (const SSL_CIPHER *)NULL) {
     downloader_cat.warning()
       << "No current cipher on SSL connection.\n";
   } else {

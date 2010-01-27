@@ -28,12 +28,13 @@ struct SSlStartup
 {
    SSlStartup()
    {
-        SSL_METHOD *meth;
+        const SSL_METHOD *meth;
         SSLeay_add_ssl_algorithms();
         //meth = SSLv23_server_method();
         meth = SSLv23_method();
         SSL_load_error_strings();
-        global_ssl_ctx = SSL_CTX_new (meth);                        
+        // I hate this cast, but older versions of OpenSSL need it.
+        global_ssl_ctx = SSL_CTX_new ((SSL_METHOD *) meth);                        
    }
 
    ~SSlStartup()
@@ -323,8 +324,4 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
 #endif  // HAVE_OPENSSL
 
 #endif //__SOCKET_TCP_SSL_H__
-
-
-
-
 

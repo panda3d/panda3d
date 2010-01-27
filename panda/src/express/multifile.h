@@ -100,7 +100,7 @@ PUBLISHED:
                      const string &password = "");
   bool add_signature(const Filename &composite, 
                      const string &password = "");
-  bool add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey);
+  bool add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey);
   bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
 
   int get_num_signatures() const;
