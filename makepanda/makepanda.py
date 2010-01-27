@@ -54,7 +54,8 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
   "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","OPENGL",
-  "X11","XF86DGA","XRANDR","PHYSX","PANDATOOL","CONTRIB",
+  "OSMESA","X11","XF86DGA","XRANDR","PHYSX",
+  "PANDATOOL","CONTRIB",
 ])
 
 CheckPandaSourceTree()
@@ -456,7 +457,8 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        SmartPkgEnable("OPENGL",      "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("OPENGL",    "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
         SmartPkgEnable("GTK2",      "gtk+-2.0")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
@@ -3024,15 +3026,15 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/mesadisplay/
 #
 
-if (not sys.platform.startswith("win") and PkgSkip("OPENGL")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL']
+if (not sys.platform.startswith("win") and PkgSkip("OPENGL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL', 'OSMESA']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL']
   TargetAdd('libpandamesa.dll', input='mesadisplay_composite.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
   TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['MODULE', 'OPENGL'])
+  TargetAdd('libpandamesa.dll', opts=['MODULE', 'OPENGL', 'OSMESA'])
 
 #
 # DIRECTORY: panda/src/x11display/
