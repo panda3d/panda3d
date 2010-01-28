@@ -888,7 +888,7 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared'
-                if ("MODULE" not in opts): " -Wl,-soname=" + os.path.basename(dll)
+                if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
@@ -4554,6 +4554,7 @@ if (not RUNTIME and not RTDIST):
       CopyFile(GetOutputDir()+"/bin/"+base+".p3d", g)
     else:
       CopyFile(GetOutputDir()+"/bin/"+base, g)
+      oscmd("chmod +x "+GetOutputDir()+"/bin/"+base)
 
 ##########################################################################################
 #
@@ -4722,11 +4723,11 @@ Depends: PYTHONV
 Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
-Description: The Panda3D free 3D engine
-  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
-  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
-  
-  This is the package for the developers, install panda3d-runtime for the runtime files.
+Description: The Panda3D free 3D engine SDK
+ Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
+ Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
+ .
+ This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
 
 """
 
@@ -4739,29 +4740,28 @@ Architecture: ARCH
 Essential: no
 Provides: panda3d-runtime
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
-Description: The Panda3D free 3D engine
-  This package contains the Panda3D runtime, which is necessary to run p3d files, and the mozilla browser plugin.
+Description: Runtime binary and browser plugin for the Panda3D Game Engine 
+ This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.  
 
 """
 
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
 # naming for the Python package.
-# The "AutoReqProv: no" field is necessary, otherwise
-# the user will be required to install Maya in order
-# to install the resulting RPM.
 INSTALLER_SPEC_FILE="""
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
-Summary: The Panda3D free 3D engine
+Summary: The Panda3D free 3D engine SDK
 Name: panda3d
 Version: VERSION
 Release: 1
 License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
-AutoReqProv: no
 %description
-The Panda3D engine.
+Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
+Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
+
+This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
 %post
 /sbin/ldconfig
 %postun
@@ -4778,9 +4778,33 @@ The Panda3D engine.
 /usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
-/usr/%_lib
+/usr/%_lib/panda3d
 %{python_sitearch}
 /usr/include/panda3d
+"""
+
+RUNTIME_INSTALLER_SPEC_FILE="""
+Summary: Runtime binary and browser plugin for the Panda3D Game Engine   
+Name: panda3d-runtime
+Version: VERSION
+Release: 1
+License: BSD License
+Group: Productivity/Graphics/Other
+BuildRoot: PANDASOURCE/linuxroot
+%description
+This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
+%files
+%defattr(-,root,root)
+/usr/bin/panda3d
+/usr/%_lib/nppanda3d.so
+/usr/%_lib/mozilla/plugins/nppanda3d.so
+/usr/%_lib/mozilla-firefox/plugins/nppanda3d.so
+/usr/%_lib/xulrunner-addons/plugins/nppanda3d.so
+/usr/share/mime-info/panda3d-runtime.mime
+/usr/share/mime-info/panda3d-runtime.keys
+/usr/share/mime/packages/panda3d-runtime.xml
+/usr/share/application-registry/panda3d-runtime.applications
+/usr/share/applications/*.desktop
 """
 
 Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
@@ -4804,10 +4828,10 @@ Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
 def MakeInstallerLinux():
     import compileall
     if RUNTIME: # No worries, it won't be used
-      PYTHONV="python"
+      PYTHONV = "python"
     else:
-      PYTHONV=SDK["PYTHONVERSION"]
-    PV=PYTHONV.replace("python", "")
+      PYTHONV = SDK["PYTHONVERSION"]
+    PV = PYTHONV.replace("python", "")
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
     oscmd("mkdir linuxroot")
@@ -4822,18 +4846,25 @@ def MakeInstallerLinux():
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
         oscmd("rpm -E '%_target_cpu' > "+GetOutputDir()+"/tmp/architecture.txt")
-        ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
+        ARCH = ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
-        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV).replace("PV",PV)
+        if (RUNTIME):
+          txt = RUNTIME_INSTALLER_SPEC_FILE[1:]
+        else:
+          txt = INSTALLER_SPEC_FILE[1:]
+        txt = txt.replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV).replace("PV",PV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot linuxroot -bb panda3d.spec")
-        oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
+        if (RUNTIME):
+          oscmd("mv "+ARCH+"/panda3d-runtime-"+VERSION+"-1."+ARCH+".rpm .")
+        else:
+          oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
         oscmd("rmdir "+ARCH, True)
     
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
-        ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
-        if RUNTIME:
+        ARCH = ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
+        if (RUNTIME):
           txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
           txt = INSTALLER_DEB_FILE[1:]
@@ -4853,7 +4884,7 @@ def MakeInstallerLinux():
             oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
     
-    if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
+    if not (os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
     
 #    oscmd("chmod -R 755 linuxroot")
