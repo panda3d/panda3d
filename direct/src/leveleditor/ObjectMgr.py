@@ -167,6 +167,7 @@ class ObjectMgr:
             return
 
         self.currNodePath = obj[OG.OBJ_NP]
+        # [gjeon] to connect transform UI with nodepath's transform
         self.spawnUpdateObjectUITask()
         self.updateObjectPropertyUI(obj)
 
@@ -263,6 +264,13 @@ class ObjectMgr:
         np.setSx(float(self.editor.ui.objectPropertyUI.propSX.getValue()))
         np.setSy(float(self.editor.ui.objectPropertyUI.propSY.getValue()))
         np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))        
+        
+    def updateObjectColor(self, r, g, b, a):
+        if self.currNodePath is None:
+            return
+
+        np = self.currNodePath
+        np.setColorScale(r, g, b, a)
 
     def updateObjectModel(self, model, obj, fSelectObject=True):
         """ replace object's model """
@@ -469,6 +477,8 @@ class ObjectMgr:
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
                     self.saveData.append("    objects['%s'].setScale(%s)"%(uid, np.getScale()))
+                    self.saveData.append("    objects['%s'].setTransparency(1)"%uid)
+                    self.saveData.append("    objects['%s'].setColorScale(%s)"%(uid, np.getColorScale()))
                     self.saveData.append("    objectMgr.updateObjectProperties(objects['%s'], %s)"%(uid,objProp))
                     
                 self.traverse(child, uid)

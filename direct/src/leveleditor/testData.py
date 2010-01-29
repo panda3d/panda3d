@@ -15,6 +15,8 @@ if objects['1252538687.73gjeon']:
     objects['1252538687.73gjeon'].setPos(Point3(8.66381, 0, 7.13246))
     objects['1252538687.73gjeon'].setHpr(VBase3(-180, 0, 0))
     objects['1252538687.73gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252538687.73gjeon'].setTransparency(1)
+    objects['1252538687.73gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252538687.73gjeon'], {'123': 1, 'Abc': 'a', 'Number': 1, 'Happy': True})
 
 objects['1252538690.2gjeon'] = objectMgr.addNewObject('H Double Smiley', '1252538690.2gjeon', None, objects['1252538687.73gjeon'])
@@ -22,6 +24,8 @@ if objects['1252538690.2gjeon']:
     objects['1252538690.2gjeon'].setPos(Point3(0, 0, 2.12046))
     objects['1252538690.2gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252538690.2gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252538690.2gjeon'].setTransparency(1)
+    objects['1252538690.2gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252538690.2gjeon'], {'Distance': 2.0, 'Abc': 'a'})
 
 objects['1252539696.69gjeon'] = objectMgr.addNewObject('H Double Smiley', '1252539696.69gjeon', None, objects['1252538687.73gjeon'])
@@ -29,6 +33,8 @@ if objects['1252539696.69gjeon']:
     objects['1252539696.69gjeon'].setPos(Point3(-9.53674e-006, 0, 0))
     objects['1252539696.69gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252539696.69gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252539696.69gjeon'].setTransparency(1)
+    objects['1252539696.69gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252539696.69gjeon'], {'Distance': 2.0, 'Abc': 'a'})
 
 objects['1252539897.22gjeon'] = objectMgr.addNewObject('H Double Smiley', '1252539897.22gjeon', None, objects['1252538687.73gjeon'])
@@ -36,6 +42,8 @@ if objects['1252539897.22gjeon']:
     objects['1252539897.22gjeon'].setPos(Point3(0.06987, 0, -2.12046))
     objects['1252539897.22gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252539897.22gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252539897.22gjeon'].setTransparency(1)
+    objects['1252539897.22gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252539897.22gjeon'], {'Distance': 2.0, 'Abc': 'a'})
 
 objects['1252538689.13gjeon'] = objectMgr.addNewObject('V Double Smiley', '1252538689.13gjeon', None, objects['1252538687.73gjeon'])
@@ -43,6 +51,8 @@ if objects['1252538689.13gjeon']:
     objects['1252538689.13gjeon'].setPos(Point3(6.07152, 0, -0.863791))
     objects['1252538689.13gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252538689.13gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252538689.13gjeon'].setTransparency(1)
+    objects['1252538689.13gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252538689.13gjeon'], {'Distance': 1.0, 'Abc': 'a'})
 
 objects['1252539974.19gjeon'] = objectMgr.addNewObject('Smiley', '1252539974.19gjeon', 'models/frowney.egg', objects['1252538689.13gjeon'])
@@ -50,6 +60,8 @@ if objects['1252539974.19gjeon']:
     objects['1252539974.19gjeon'].setPos(Point3(0.06987, 0, 3.09209))
     objects['1252539974.19gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252539974.19gjeon'].setScale(VBase3(1, 1, 1))
+    objects['1252539974.19gjeon'].setTransparency(1)
+    objects['1252539974.19gjeon'].setColorScale(VBase4(1, 1, 1, 1))
     objectMgr.updateObjectProperties(objects['1252539974.19gjeon'], {'123': 1, 'Abc': 'a', 'Number': 1, 'Happy': True})
 
 objects['1252623762.9gjeon'] = objectMgr.addNewObject('Panda', '1252623762.9gjeon', None, None)
@@ -57,6 +69,8 @@ if objects['1252623762.9gjeon']:
     objects['1252623762.9gjeon'].setPos(Point3(0, 0, 0))
     objects['1252623762.9gjeon'].setHpr(VBase3(172.8, 0, 0))
     objects['1252623762.9gjeon'].setScale(VBase3(0.005, 0.005, 0.005))
+    objects['1252623762.9gjeon'].setTransparency(1)
+    objects['1252623762.9gjeon'].setColorScale(VBase4(1, 0, 0, 0.57))
     objectMgr.updateObjectProperties(objects['1252623762.9gjeon'], {})
 
 if hasattr(base, 'le'):
