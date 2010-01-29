@@ -275,7 +275,7 @@ class ObjectMgr:
         obj[OG.OBJ_RGBA] = (r,g,b,a)
         for child in np.getChildren():
             if not child.hasTag('OBJRoot') and\
-               child.getName() != 'bboxines':
+               child.getName() != 'bboxLines':
                 child.setTransparency(1)
                 child.setColorScale(r, g, b, a)
 

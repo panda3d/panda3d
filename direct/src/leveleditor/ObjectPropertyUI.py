@@ -269,12 +269,11 @@ class ObjectPropertyUI(ScrolledPanel):
                                    self.editor.objectMgr.updateObjectTransform)
 
         objNP = obj[OG.OBJ_NP]
-        objNP.setTransparency(1)
-        colorScale = objNP.getColorScale()
-        self.propCR = ObjectPropUISlider(self.propPane, 'CR', colorScale.getX(), 0, 1)
-        self.propCG = ObjectPropUISlider(self.propPane, 'CG', colorScale.getY(), 0, 1)
-        self.propCB = ObjectPropUISlider(self.propPane, 'CB', colorScale.getZ(), 0, 1)        
-        self.propCA = ObjectPropUISlider(self.propPane, 'CA', colorScale.getW(), 0, 1) 
+        objRGBA = obj[OG.OBJ_RGBA]
+        self.propCR = ObjectPropUISlider(self.propPane, 'CR', objRGBA[0], 0, 1)
+        self.propCG = ObjectPropUISlider(self.propPane, 'CG', objRGBA[1], 0, 1)
+        self.propCB = ObjectPropUISlider(self.propPane, 'CB', objRGBA[2], 0, 1)        
+        self.propCA = ObjectPropUISlider(self.propPane, 'CA', objRGBA[3], 0, 1) 
         colorProps = [self.propCR, self.propCG, self.propCB, self.propCA]
 
         for colorProp in colorProps:
@@ -283,13 +282,13 @@ class ObjectPropertyUI(ScrolledPanel):
         sizer.AddMany(colorProps)
         button = wx.Button(self.propPane, -1, 'Color Picker', (0,0), (140, 20))
         _colourData = wx.ColourData()
-        _colourData.SetColour(wx.Colour(colorScale.getX() * 255, colorScale.getY() * 255, colorScale.getZ() * 255))
-        button.Bind(wx.EVT_BUTTON, lambda p0=None, p1=_colourData, p2=colorScale.getW() * 255: self.openColorPicker(p0, p1, p2))
+        _colourData.SetColour(wx.Colour(objRGBA[0] * 255, objRGBA[1] * 255, objRGBA[2] * 255))
+        button.Bind(wx.EVT_BUTTON, lambda p0=None, p1=_colourData, p2=objRGBA[3] * 255: self.openColorPicker(p0, p1, p2))
 
         sizer.Add(button)
 
         if self.colorPicker:
-            self.openColorPicker(None, _colourData, colorScale.getW() * 255)
+            self.openColorPicker(None, _colourData, objRGBA[3] * 255)
 
         objDef = obj[OG.OBJ_DEF]
 
