@@ -67,6 +67,8 @@ TinyXGraphicsWindow::
     XFreeGC(_display, _gc);
   }
   if (_ximage != NULL) {
+    PANDA_FREE_ARRAY(_ximage->data);
+    _ximage->data = NULL;
     XDestroyImage(_ximage);
   }
 }
