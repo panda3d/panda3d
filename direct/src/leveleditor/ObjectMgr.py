@@ -130,7 +130,7 @@ class ObjectMgr:
                 properties[key] = objDef.properties[key][OG.PROP_DEFAULT]
 
             # insert obj data to main repository
-            self.objects[uid] = [uid, newobj, objDef, model, anim, properties]
+            self.objects[uid] = [uid, newobj, objDef, model, anim, properties, (1,1,1,1)]
             self.npIndex[NodePath(newobj)] = uid
 
             if self.editor:
@@ -150,7 +150,7 @@ class ObjectMgr:
         return self.objects.get(uid)
 
     def findObjectByNodePath(self, nodePath):
-        uid = self.npIndex.get(nodePath)
+        uid = self.npIndex.get(NodePath(nodePath))
         if uid is None:
             return None
         else:
@@ -265,12 +265,19 @@ class ObjectMgr:
         np.setSy(float(self.editor.ui.objectPropertyUI.propSY.getValue()))
         np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))        
         
-    def updateObjectColor(self, r, g, b, a):
-        if self.currNodePath is None:
-            return
+    def updateObjectColor(self, r, g, b, a, np=None):
+        if np is None:
+            np = self.currNodePath
 
-        np = self.currNodePath
-        np.setColorScale(r, g, b, a)
+        obj = self.findObjectByNodePath(np)
+        if not obj:
+            return
+        obj[OG.OBJ_RGBA] = (r,g,b,a)
+        for child in np.getChildren():
+            if not child.hasTag('OBJRoot') and\
+               child.getName() != 'bboxines':
+                child.setTransparency(1)
+                child.setColorScale(r, g, b, a)
 
     def updateObjectModel(self, model, obj, fSelectObject=True):
         """ replace object's model """
@@ -463,6 +470,7 @@ class ObjectMgr:
                     objDef = obj[OG.OBJ_DEF]
                     objModel = obj[OG.OBJ_MODEL]
                     objProp = obj[OG.OBJ_PROP]
+                    objRGBA = obj[OG.OBJ_RGBA]
 
                     if parentId:
                         parentStr = "objects['%s']"%parentId
@@ -477,8 +485,7 @@ class ObjectMgr:
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
                     self.saveData.append("    objects['%s'].setScale(%s)"%(uid, np.getScale()))
-                    self.saveData.append("    objects['%s'].setTransparency(1)"%uid)
-                    self.saveData.append("    objects['%s'].setColorScale(%s)"%(uid, np.getColorScale()))
+                    self.saveData.append("    objectMgr.updateObjectColor(%f, %f, %f, %f, objects['%s'])"%(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid))
                     self.saveData.append("    objectMgr.updateObjectProperties(objects['%s'], %s)"%(uid,objProp))
                     
                 self.traverse(child, uid)
