@@ -143,25 +143,28 @@ class ObjectPropUICombo(ObjectPropUI):
         return self.ui.GetStringSelection()
 
 class ColorPicker(CubeColourDialog):
-    def __init__(self, parent, colourData=None, style=CCD_SHOW_ALPHA, alpha = 255, callback=None):
-        self.callback=callback
+    def __init__(self, parent, colourData=None, style=CCD_SHOW_ALPHA, alpha = 255, updateCB=None, exitCB=None):
+        self.updateCB=updateCB
         CubeColourDialog.__init__(self, parent, colourData, style)
         self.okButton.Hide()
         self.cancelButton.Hide()
         self._colour.alpha = alpha
         self.alphaSpin.SetValue(self._colour.alpha)
         self.DrawAlpha()
+        if exitCB:
+            self.Bind(wx.EVT_CLOSE, exitCB)
 
     def SetPanelColours(self):
         self.oldColourPanel.RefreshColour(self._oldColour)
         self.newColourPanel.RefreshColour(self._colour)
-        if self.callback:
-            self.callback(self._colour.r, self._colour.g, self._colour.b, self._colour.alpha)
+        if self.updateCB:
+            self.updateCB(self._colour.r, self._colour.g, self._colour.b, self._colour.alpha)
 
 class ObjectPropertyUI(ScrolledPanel):
     def __init__(self, parent, editor):
         self.editor = editor
         self.colorPicker = None
+        self.lastColorPickerPos = None
         ScrolledPanel.__init__(self, parent)
 
         parentSizer = wx.BoxSizer(wx.VERTICAL)
@@ -179,7 +182,12 @@ class ObjectPropertyUI(ScrolledPanel):
         self.Layout()
         self.SetupScrolling(self, scroll_y = True, rate_y = 20)
 
-    def colorPickerCB(self, rr, gg, bb, aa):
+    def colorPickerExitCB(self, evt=None):
+        self.lastColorPickerPos = self.colorPicker.GetPosition()
+        self.colorPicker.Destroy()
+        self.colorPicker = None
+
+    def colorPickerUpdateCB(self, rr, gg, bb, aa):
         r = rr / 255.0
         g = gg / 255.0
         b = bb / 255.0
@@ -220,11 +228,14 @@ class ObjectPropertyUI(ScrolledPanel):
         
     def openColorPicker(self, evt, colourData, alpha):
         if self.colorPicker:
+            self.lastColorPickerPos = self.colorPicker.GetPosition()
             self.colorPicker.Destroy()
 
-        self.colorPicker = ColorPicker(self, colourData, alpha=alpha, callback=self.colorPickerCB)
+        self.colorPicker = ColorPicker(self, colourData, alpha=alpha, updateCB=self.colorPickerUpdateCB, exitCB=self.colorPickerExitCB)
         self.colorPicker.GetColourData().SetChooseFull(True)
         self.colorPicker.Show()
+        if self.lastColorPickerPos:
+            self.colorPicker.SetPosition(self.lastColorPickerPos)
         
     def updateProps(self, obj):
         self.clearPropUI()
