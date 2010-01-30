@@ -247,10 +247,12 @@ class DirectSession(DirectObject):
             't': ('Toggle Textures', 'base.toggleTexture()', 0),
             'shift-a': ('Toggle Vis all', 'self.selected.toggleVisAll()', 0),
             'w': ('Toggle Wireframe', 'base.toggleWireframe()', 0),
-            '[': ('Undo', 'self.undo()', 0),
-            'shift-[': ('Undo', 'self.undo()', 0),
-            ']': ('Redo', 'self.redo()', 0),
-            'shift-]': ('Redo', 'self.redo()', 0),
+            '[': ('DIRECT-Undo', 'self.undo()', 0),
+            'shift-[': ('DIRECT-Undo', 'self.undo()', 0),
+            ']': ('DIRECT-Redo', 'DIRECT-self.redo()', 0),
+            'shift-]': ('DIRECT-Redo', 'self.redo()', 0),
+            'control-z': ('Undo', 0, 'LE-Undo'),
+            'shift-z' : ('Redo', 0, 'LE-Redo'),
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
