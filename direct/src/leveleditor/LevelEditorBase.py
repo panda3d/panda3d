@@ -14,6 +14,7 @@ base = ShowBase(False)
 
 from ObjectMgr import *
 from FileMgr import *
+from ActionMgr import *
 from ProtoPalette import *
 
 class LevelEditorBase(DirectObject):
@@ -24,6 +25,7 @@ class LevelEditorBase(DirectObject):
         self.actionEvents = []
         self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
+        self.actionMgr = ActionMgr()
         self.protoPalette = ProtoPalette()
 
         # define your own config file in inherited class
@@ -81,6 +83,8 @@ class LevelEditorBase(DirectObject):
             ('preRemoveNodePath', self.removeNodePathHook),
             ('DIRECT_selectedNodePath_fMulti_fTag', self.selectedNodePathHook),
             ('DIRECT_deselectAll', self.deselectAll),
+            ('LE-Undo', self.actionMgr.undo),
+            ('LE-Redo', self.actionMgr.redo),
             ])
 
         # Add all the action events
@@ -137,6 +141,7 @@ class LevelEditorBase(DirectObject):
     def reset(self):
         base.direct.deselectAll()
         self.objectMgr.reset()
+        self.actionMgr.reset()
 
     def save(self):
         if self.currentFile:
@@ -182,7 +187,7 @@ class LevelEditorBase(DirectObject):
                 elif line.startswith('gridSpacing'):
                     gridSpacing = float(configLines[i])
                 elif line.startswith('hotKey'):
-                    base.direct.hotKeyMap = eval(configLines[i])
+                    base.direct.hotKeyMap.update(eval(configLines[i]))
 
             self.ui.updateGrids(gridSize, gridSpacing)
         except:

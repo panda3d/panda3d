@@ -12,6 +12,7 @@ from SceneGraphUI import *
 from LayerEditorUI import *
 from HotKeyUI import *
 from ProtoPaletteUI import *
+from ActionMgr import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
@@ -19,7 +20,9 @@ class PandaTextDropTarget(wx.TextDropTarget):
         self.editor = editor
 
     def OnDropText(self, x, y, text):
-        self.editor.objectMgr.addNewObject(text)
+        action = ActionAddNewObj(self.editor.objectMgr.addNewObject, text)
+        self.editor.actionMgr.push(action)
+        action()
 
 class LevelEditorUI(WxAppShell):
     """ Class for Panda3D LevelEditor """ 
