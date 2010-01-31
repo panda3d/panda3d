@@ -90,7 +90,7 @@ Section "${SMDIRECTORY}" SecCore
         File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
         File /r "${PANDA}\bin\*.dll"
-        File /r "${PANDA}\bin\Microsoft.VC90.CRT.manifest"
+        File /r "${PANDA}\bin\Microsoft.*.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\directscripts
@@ -148,6 +148,7 @@ Section "${SMDIRECTORY}" SecCore
             File /r "${PANDA}\pandac\input\*"
             SetOutPath $INSTDIR\bin
             File /r "${PANDA}\bin\*.exe"
+            File /r "${PANDA}\bin\*.p3d"
             SetOutPath $INSTDIR\lib
             File /r /x *.exp "${PANDA}\lib\*"
             SetOutPath $INSTDIR\include
