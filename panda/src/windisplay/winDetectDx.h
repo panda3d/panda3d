@@ -538,6 +538,8 @@ static int get_display_information (DisplaySearchParameters &display_search_para
           else {
             behavior_flags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
           }
+          // This is important to prevent DirectX from forcing the FPU into single-precision mode.
+          behavior_flags |= D3DCREATE_FPU_PRESERVE;
 
           HRESULT result;
 
