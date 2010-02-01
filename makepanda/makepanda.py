@@ -4720,7 +4720,7 @@ Priority: optional
 Architecture: ARCH
 Essential: no
 Depends: PYTHONV
-Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV)
+Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), python-pmw
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine SDK
