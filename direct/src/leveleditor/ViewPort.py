@@ -214,7 +214,7 @@ class Viewport(wx.Panel, DirectObject):
   @staticmethod
   def makePerspective(parent):
     v = Viewport('persp', parent)
-    v.camPos = Point3(30, 30, 30)
+    v.camPos = Point3(-30, -30, 30)
     v.camLookAt = Point3(0, 0, 0)
 
     v.grid = DirectGrid(parent=render)
@@ -227,7 +227,7 @@ class Viewport(wx.Panel, DirectObject):
   @staticmethod
   def makeLeft(parent): return Viewport.makeOrthographic(parent, 'left', Point3(100, 0, 0))
   @staticmethod
-  def makeFront(parent): return Viewport.makeOrthographic(parent, 'front', Point3(0, 100, 0))
+  def makeFront(parent): return Viewport.makeOrthographic(parent, 'front', Point3(0, -100, 0))
   @staticmethod
   def makeTop(parent): return Viewport.makeOrthographic(parent, 'top', Point3(0, 0, 100))
 

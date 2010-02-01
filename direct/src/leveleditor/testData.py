@@ -13,7 +13,7 @@ objects = {}
 objects['1252538687.73gjeon'] = objectMgr.addNewObject('Smiley', '1252538687.73gjeon', 'models/smiley.egg', None)
 if objects['1252538687.73gjeon']:
     objects['1252538687.73gjeon'].setPos(Point3(8.66381, 0, 7.13246))
-    objects['1252538687.73gjeon'].setHpr(VBase3(-180, 0, 0))
+    objects['1252538687.73gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252538687.73gjeon'].setScale(VBase3(1, 1, 1))
     objectMgr.updateObjectColor(1.000000, 1.000000, 1.000000, 1.000000, objects['1252538687.73gjeon'])
     objectMgr.updateObjectProperties(objects['1252538687.73gjeon'], {'123': 1, 'Abc': 'a', 'Number': 1, 'Happy': True})
@@ -61,7 +61,7 @@ if objects['1252539974.19gjeon']:
 objects['1252623762.9gjeon'] = objectMgr.addNewObject('Panda', '1252623762.9gjeon', None, None)
 if objects['1252623762.9gjeon']:
     objects['1252623762.9gjeon'].setPos(Point3(0, 0, 0))
-    objects['1252623762.9gjeon'].setHpr(VBase3(172.8, 0, 0))
+    objects['1252623762.9gjeon'].setHpr(VBase3(0, 0, 0))
     objects['1252623762.9gjeon'].setScale(VBase3(0.005, 0.005, 0.005))
     objectMgr.updateObjectColor(1.000000, 0.000000, 0.000000, 0.517647, objects['1252623762.9gjeon'])
     objectMgr.updateObjectProperties(objects['1252623762.9gjeon'], {})
