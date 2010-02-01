@@ -507,7 +507,9 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
               (all_logs[i].find(log_basename) == 0) &&
               (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
             if (all_logs[i] != log_basename_curr) {
-              log_basenames_prev.push_back(all_logs[i]);
+              //log_basenames_prev.push_back(all_logs[i]);
+              //reverse order
+              log_basenames_prev.insert(log_basenames_prev.begin(), all_logs[i]);
             }
           }
         }
