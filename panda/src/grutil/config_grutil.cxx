@@ -109,9 +109,9 @@ init_libgrutil() {
 #if defined(HAVE_FFMPEG)
   TexturePool *ts = TexturePool::get_global_ptr();
   if (use_movietexture) {
-    ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg wmv asf flv nut ogm");
+    ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm");
   } else {
-    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg mpeg wmv asf flv nut ogm");
+    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm");
   }
 #endif
 }
