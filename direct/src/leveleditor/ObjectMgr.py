@@ -106,12 +106,18 @@ class ObjectMgr:
                     newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
 
             anim = ''
-            if len(objDef.anims) > 0:
-                anim = objDef.anims[0]
+            i = 0
+            defaultAnim = ''
+            for i in range(len(objDef.anims)):
+                anim = objDef.anims[i]
                 # load new anim
                 animName = os.path.basename(anim)
+                if i < len(objDef.animNames):
+                    animName = objDef.animNames[i]
                 newAnim = newobj.loadAnims({animName:anim})
-                newobj.loop(animName)                
+                if i == 0:
+                    defaultAnim = animName
+                    newobj.loop(defaultAnim)
 
             if newobj is None:
                 return None

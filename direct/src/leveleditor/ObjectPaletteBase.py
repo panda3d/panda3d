@@ -4,13 +4,14 @@ import ObjectGlobals as OG
 class ObjectBase:
     """ Base class for obj definitions """
     
-    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], properties={},
+    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], animNames = [], properties={},
                  movable = True, actor = False):
         self.name = name
         self.createFunction = createFunction
         self.model = model
         self.models = models[:]
         self.anims = anims[:]
+        self.animNames = animNames[:]
         self.properties = copy.deepcopy(properties)
         self.movable = movable
         self.actor = actor
