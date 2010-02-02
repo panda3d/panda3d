@@ -45,12 +45,6 @@ class FileMgr:
             moduleName = moduleName[:-3]
         file, pathname, description = imp.find_module(moduleName, [dirname])
         try:
-            if self.editor is None: # when loaded outside of LE
-                base.objectPalette = ObjectPalette()
-                base.protoPalette = ProtoPalette()
-                base.objectHandler = ObjectHandler(None)
-                base.objectMgr = ObjectMgr(None)
-
             module = imp.load_module(moduleName, file, pathname, description)
         except:
             print 'failed to load %s'%fileName
