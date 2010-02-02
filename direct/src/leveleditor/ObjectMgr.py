@@ -107,17 +107,16 @@ class ObjectMgr:
 
             anim = ''
             i = 0
-            defaultAnim = ''
             for i in range(len(objDef.anims)):
-                anim = objDef.anims[i]
+                animFile = objDef.anims[i]
                 # load new anim
-                animName = os.path.basename(anim)
+                animName = os.path.basename(animFile)
                 if i < len(objDef.animNames):
                     animName = objDef.animNames[i]
-                newAnim = newobj.loadAnims({animName:anim})
+                newAnim = newobj.loadAnims({animName:animFile})
                 if i == 0:
-                    defaultAnim = animName
-                    newobj.loop(defaultAnim)
+                    anim = animFile
+                    newobj.loop(animName)
 
             if newobj is None:
                 return None
