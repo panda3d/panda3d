@@ -732,7 +732,7 @@
 // Is DirectX9 available, and should we try to build with it?
 #define DX9_IPATH
 #define DX9_LPATH
-#define DX9_LIBS d3d9.lib d3dx9.lib dxerr.lib
+#define DX9_LIBS d3d9.lib d3dx9.lib dxerr9.lib
 #defer HAVE_DX9 $[libtest $[DX9_LPATH],$[DX9_LIBS]]
 
 // Is OpenCV installed, and where?
