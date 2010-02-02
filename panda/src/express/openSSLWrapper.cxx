@@ -44,9 +44,25 @@ OpenSSLWrapper() {
   load_certificates_from_der_ram((const char *)ca_bundle_data, ca_bundle_data_len);
 
   // Load in any default certificates listed in the Config.prc file.
+  ConfigVariableFilename ca_bundle_filename
+    ("ca-bundle-filename", "",
+     PRC_DESC("This names the certificate authority file for OpenSSL "
+              "to use to verify whether SSL certificates are trusted or not.  "
+              "The file named by this setting should contain one or more "
+              "PEM-formatted certificates from trusted certificate "
+              "authorities.  This is a fairly standard file; a copy of "
+              "ca-bundle.crt is included in the OpenSSL distribution, and "
+              "is also included with Panda."));
+  
   if (!ca_bundle_filename.empty()) {
     load_certificates(ca_bundle_filename);
   }
+
+  ConfigVariableList ssl_certificates
+    ("ssl-certificates",
+     PRC_DESC("This variable lists additional filenames, on top of the file "
+              "named by ca-bundle-filename, that contain trusted SSL "
+              "certificates or certificate authorities."));
 
   int num_certs = ssl_certificates.get_num_unique_values();
   for (int ci = 0; ci < num_certs; ci++) {

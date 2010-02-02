@@ -69,22 +69,6 @@ ConfigVariableBool collect_tcp
 ConfigVariableDouble collect_tcp_interval
 ("collect-tcp-interval", 0.2);
 
-ConfigVariableFilename ca_bundle_filename
-("ca-bundle-filename", "",
- PRC_DESC("This names the certificate authority file for OpenSSL "
-          "to use to verify whether SSL certificates are trusted or not.  "
-          "The file named by this setting should contain one or more "
-          "PEM-formatted certificates from trusted certificate "
-          "authorities.  This is a fairly standard file; a copy of "
-          "ca-bundle.crt is included in the OpenSSL distribution, and "
-          "is also included with Panda."));
-
-ConfigVariableList ssl_certificates
-("ssl-certificates",
- PRC_DESC("This variable lists additional filenames, on top of the file "
-          "named by ca-bundle-filename, that contain trusted SSL "
-          "certificates or certificate authorities."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libexpress
 //  Description: Initializes the library.  This must be called at
