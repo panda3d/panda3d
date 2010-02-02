@@ -1252,9 +1252,18 @@ def SdkLocateDirectX():
     if (sys.platform != "win32"): return
     GetSdkDir("directx8", "DX8")
     GetSdkDir("directx9", "DX9")
+    ## We first try to locate the August SDK in 64 bits, then 32.
+    if ("DX9" not in SDK):
+        dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
+        if (dir != 0):
+            SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+    if ("DX9" not in SDK):
+        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
+        if (dir != 0):
+            SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     if ("DX9" not in SDK):
         ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
+        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")		
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     archStr = "x86" 
@@ -1376,7 +1385,11 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
-    
+
+    if (platsdk == 0):
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.0A","InstallationFolder")
+        if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
+		
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
         if (platform.architecture()[0]!="64bit" or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
             platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")

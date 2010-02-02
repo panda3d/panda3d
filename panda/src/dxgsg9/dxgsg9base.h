@@ -29,9 +29,10 @@
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 //#define D3D_DEBUG_INFO
+#undef Configure
 #include <d3d9.h>
 #include <d3dx9.h>
-#include <dxerr9.h>
+#include <dxerr.h>
 #undef WIN32_LEAN_AND_MEAN
 
 #if (D3D_SDK_VERSION & 0xffff) < 32
@@ -40,9 +41,9 @@
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString9(HRESULT) << endl  // leave out descriptions to shrink release build
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString(HRESULT) << endl  // leave out descriptions to shrink release build
 #else
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString9(HRESULT) << ": " << DXGetErrorDescription9(HRESULT) << endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString(HRESULT) << ": " << DXGetErrorDescription(HRESULT) << endl
 #endif
 #endif
 

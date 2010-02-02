@@ -337,7 +337,10 @@ if (COMPILER=="MSVC"):
             LibDirectory(pkg, SDK[pkg] + '/lib')
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
-            LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
+            if (vnum=="9"):
+                LibName(pkg, 'dxerr.lib')
+            else:
+                LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
     LibName("WINSOCK", "wsock32.lib")
