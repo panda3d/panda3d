@@ -92,6 +92,10 @@ class LevelEditorBase(DirectObject):
         base.direct.manipulationControl.supportMultiView()
         base.direct.cameraControl.useMayaCamControls = 1
 
+        for widget in base.direct.manipulationControl.widgetList:
+            widget.setBin('gui-popup', 0)
+            widget.setDepthTest(0)
+
         # [gjeon] to handle delete here first
         base.direct.ignore('DIRECT-delete')
         
