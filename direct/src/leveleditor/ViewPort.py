@@ -10,7 +10,8 @@ __all__ = ["Viewport", "ViewportManager", "ViewportMenu"]
 from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
-from pandac.PandaModules import WindowProperties, OrthographicLens, Point3, BitMask32
+from direct.directtools.DirectGlobals import *
+from pandac.PandaModules import WindowProperties, OrthographicLens, Point3
 import wx
 
 HORIZONTAL = wx.SPLIT_HORIZONTAL
@@ -20,16 +21,6 @@ VPLEFT     = 10
 VPFRONT    = 11
 VPTOP      = 12
 VPPERSPECTIVE = 13
-
-TopCameraBitmask = BitMask32.bit(0)
-FrontCameraBitmask = BitMask32.bit(1)
-LeftCameraBitmask = BitMask32.bit(2)
-PerspCameraBitmask = BitMask32.bit(3)
-
-CameraBitmasks = {'persp':PerspCameraBitmask,
-                 'left':LeftCameraBitmask,
-                 'front':FrontCameraBitmask,
-                 'top':TopCameraBitmask}
 
 class ViewportManager:
   """Manages the global viewport stuff."""
@@ -91,7 +82,7 @@ class Viewport(wx.Panel, DirectObject):
     self.win = base.openWindow(props = props, gsg = ViewportManager.gsg)
     if self.win:
       self.cam2d = base.makeCamera2d(self.win)
-      self.cam2d.node().setCameraMask(CameraBitmasks[self.name])
+      self.cam2d.node().setCameraMask(LE_CAM_MASKS[self.name])
       
     if ViewportManager.gsg == None:
       ViewportManager.gsg = self.win.getGsg()
@@ -102,9 +93,10 @@ class Viewport(wx.Panel, DirectObject):
     self.cam.reparentTo(self.camera)
     self.camNode = self.cam.node()
 
-    self.camNode.setCameraMask(CameraBitmasks[self.name])
+    self.camNode.setCameraMask(LE_CAM_MASKS[self.name])
 
     bt = base.setupMouse(self.win, True)
+    bt.node().setPrefix('_le_%s_'%self.name[:3])    
     mw = bt.getParent()
     mk = mw.getParent()
     winCtrl = WindowControls(
@@ -195,20 +187,14 @@ class Viewport(wx.Panel, DirectObject):
     if name == 'left':
       v.grid.setHpr(0, 0, 90)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_leftViewGridBack")
-      v.grid.hide(PerspCameraBitmask)
-      v.grid.hide(FrontCameraBitmask)
-      v.grid.hide(TopCameraBitmask)
+      LE_showInOneCam(v.grid, name)
     elif name == 'front':
       v.grid.setHpr(90, 0, 90)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_frontViewGridBack")
-      v.grid.hide(PerspCameraBitmask)
-      v.grid.hide(LeftCameraBitmask)
-      v.grid.hide(TopCameraBitmask)
+      LE_showInOneCam(v.grid, name)
     else:
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_topViewGridBack")
-      v.grid.hide(PerspCameraBitmask)
-      v.grid.hide(LeftCameraBitmask)
-      v.grid.hide(FrontCameraBitmask)
+      LE_showInOneCam(v.grid, name)
     return v
   
   @staticmethod
@@ -219,9 +205,7 @@ class Viewport(wx.Panel, DirectObject):
 
     v.grid = DirectGrid(parent=render)
     #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_perspViewGridBack")
-    v.grid.hide(FrontCameraBitmask)
-    v.grid.hide(LeftCameraBitmask)
-    v.grid.hide(TopCameraBitmask)
+    LE_showInOneCam(v.grid, 'persp')
     return v
   
   @staticmethod

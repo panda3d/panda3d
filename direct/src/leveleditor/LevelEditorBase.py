@@ -39,6 +39,30 @@ class LevelEditorBase(DirectObject):
         base.closeWindow(base.win)
         base.win = base.winList[3]
 
+        base.direct.disableMouseEvents()
+        newMouseEvents = map(lambda x: "_le_per_%s"%x, base.direct.mouseEvents) +\
+                         map(lambda x: "_le_fro_%s"%x, base.direct.mouseEvents) +\
+                         map(lambda x: "_le_lef_%s"%x, base.direct.mouseEvents) +\
+                         map(lambda x: "_le_top_%s"%x, base.direct.mouseEvents)
+        base.direct.mouseEvents = newMouseEvents
+        base.direct.enableMouseEvents()
+
+        base.direct.disableKeyEvents()
+        keyEvents = map(lambda x: "_le_per_%s"%x, base.direct.keyEvents) +\
+                         map(lambda x: "_le_fro_%s"%x, base.direct.keyEvents) +\
+                         map(lambda x: "_le_lef_%s"%x, base.direct.keyEvents) +\
+                         map(lambda x: "_le_top_%s"%x, base.direct.keyEvents)
+        base.direct.keyEvents = keyEvents
+        base.direct.enableKeyEvents()
+
+        base.direct.disableModifierEvents()
+        modifierEvents = map(lambda x: "_le_per_%s"%x, base.direct.modifierEvents) +\
+                         map(lambda x: "_le_fro_%s"%x, base.direct.modifierEvents) +\
+                         map(lambda x: "_le_lef_%s"%x, base.direct.modifierEvents) +\
+                         map(lambda x: "_le_top_%s"%x, base.direct.modifierEvents)
+        base.direct.modifierEvents = modifierEvents
+        base.direct.enableModifierEvents()
+
         base.direct.cameraControl.lockRoll = True
         base.direct.setFScaleWidgetByCam(1)
 
@@ -67,7 +91,7 @@ class LevelEditorBase(DirectObject):
         base.direct.manipulationControl.fAllowMarquee = 1
         base.direct.manipulationControl.supportMultiView()
         base.direct.cameraControl.useMayaCamControls = 1
-        
+
         # [gjeon] to handle delete here first
         base.direct.ignore('DIRECT-delete')
         

@@ -179,7 +179,7 @@ class DirectCameraControl(DirectObject):
         # if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):
 
         # Do this when not trying to manipulate camera
-        if not self.altDown:
+        if not self.altDown and len(base.direct.selected.getSelectedAsList()) == 0:
             # Check for a hit point based on
             # current mouse position
             # Allow intersection with unpickable objects

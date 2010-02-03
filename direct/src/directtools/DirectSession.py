@@ -121,6 +121,8 @@ class DirectSession(DirectObject):
         self.fAlt = 0
         self.fShift = 0
         self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
+        self.fMouse2 = 0
+        self.fMouse3 = 0
 
         self.pos = VBase3()
         self.hpr = VBase3()
@@ -167,9 +169,9 @@ class DirectSession(DirectObject):
             ['SGE_Place', Placer.place],
             ['SGE_Set Color', Slider.rgbPanel],
             ['SGE_Explore', SceneGraphExplorer.explore],])
-        self.modifierEvents = ['control', 'control-up',
-                              'shift', 'shift-up',
-                              'alt', 'alt-up',
+        self.modifierEvents = ['control', 'control-up', 'control-repeat',
+                              'shift', 'shift-up', 'shift-repeat',
+                              'alt', 'alt-up', 'alt-repeat',
                                ]
 
         keyList = map(chr, range(97, 123))
@@ -453,10 +455,52 @@ class DirectSession(DirectObject):
             self.ignore(event)
 
     def inputHandler(self, input):
-        # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
         if not hasattr(self, 'oobeMode') or self.oobeMode == 0:
-            for winCtrl in base.winControls:
-                if winCtrl.mouseWatcher and winCtrl.mouseWatcher.node().hasMouse():
+            # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
+            if base.direct.manipulationControl.fMultiView:
+                # handling orphan events
+                if self.fMouse1 and 'mouse1' not in input or\
+                   self.fMouse2 and 'mouse2' not in input or\
+                   self.fMouse3 and 'mouse3' not in input:
+                    if input.endswith('-up') or\
+                       input not in self.modifierEvents:
+                        # to handle orphan events
+                        return                        
+
+                if (self.fMouse1 == 0 and 'mouse1-up' in input) or\
+                   (self.fMouse2 == 0 and 'mouse2-up' in input) or\
+                   (self.fMouse3 == 0 and 'mouse3-up' in input):
+                    # to handle orphan events
+                    return 
+
+                if (self.fMouse1 or self.fMouse2 or self.fMouse3) and\
+                   input[4:7] != base.direct.camera.getName()[:3] and\
+                   input.endswith('-up'):
+                    # to handle orphan events
+                    return  
+
+                winCtrl = None
+                possibleWinCtrls = []
+                for cWinCtrl in base.winControls:
+                    if cWinCtrl.mouseWatcher.node().hasMouse():
+                        possibleWinCtrls.append(cWinCtrl)
+
+                if len(possibleWinCtrls) == 1:
+                    winCtrl = possibleWinCtrls[0]
+                elif len(possibleWinCtrls) > 1:
+                    for cWinCtrl in possibleWinCtrls:
+                        if (input.endswith('-up') and\
+                            not input in self.modifierEvents and\
+                            not input in self.mouseEvents) or\
+                           (input in self.mouseEvents):
+                            if input[4:7] == cWinCtrl.camera.getName()[:3]:
+                                winCtrl = cWinCtrl
+                        else:
+                            if input[4:7] != cWinCtrl.camera.getName()[:3]:
+                                winCtrl = cWinCtrl                                
+                if winCtrl is None:
+                    return
+                if input not in self.modifierEvents:
                     self.win = winCtrl.win
                     self.camera = winCtrl.camera
                     self.trueCamera = self.camera
@@ -466,9 +510,15 @@ class DirectSession(DirectObject):
                     base.direct.iRay = base.direct.dr.iRay
                     base.mouseWatcher = winCtrl.mouseWatcher
                     base.mouseWatcherNode = winCtrl.mouseWatcher.node()
-                    if base.direct.manipulationControl.fMultiView:
-                        base.direct.widget = base.direct.manipulationControl.widgetList[base.camList.index(NodePath(winCtrl.camNode))]
-                    break
+                    base.direct.dr.mouseUpdate()
+                    LE_showInOneCam(self.selectedNPReadout, self.camera.getName())
+                    base.direct.widget = base.direct.manipulationControl.widgetList[base.camList.index(NodePath(winCtrl.camNode))]
+
+                input = input[8:] # get rid of camera prefix
+                if self.fAlt and 'alt' not in input and not input.endswith('-up'):
+                    input = 'alt-' + input
+                if input.endswith('-repeat'):
+                    input = input[:-7]
 
         # Deal with keyboard and mouse input
         if input in self.hotKeyMap.keys():
@@ -487,13 +537,17 @@ class DirectSession(DirectObject):
             modifiers = self.getModifiers(input, 'mouse1')
             messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'mouse2-up':
+            self.fMouse2 = 0
             messenger.send('DIRECT-mouse2Up')
         elif input.find('mouse2') != -1:
+            self.fMouse2 = 1
             modifiers = self.getModifiers(input, 'mouse2')
             messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
         elif input == 'mouse3-up':
+            self.fMouse3 = 0
             messenger.send('DIRECT-mouse3Up')
         elif input.find('mouse3') != -1:
+            self.fMouse3 = 1
             modifiers = self.getModifiers(input, 'mouse3')
             messenger.send('DIRECT-mouse3', sentArgs = [modifiers])
         elif input == 'shift':
@@ -510,12 +564,22 @@ class DirectSession(DirectObject):
         elif input == 'control-up':
             self.fControl = 0
         elif input == 'alt':
+            if self.fAlt:
+                return
             self.fAlt = 1
             # [gjeon] to update alt key information while mouse1 is pressed
             if self.fMouse1:
                 modifiers = DIRECT_NO_MOD
                 modifiers |= DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
+            elif self.fMouse2:
+                modifiers = DIRECT_NO_MOD
+                modifiers |= DIRECT_ALT_MOD
+                messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
+            elif self.fMouse3:
+                modifiers = DIRECT_NO_MOD
+                modifiers |= DIRECT_ALT_MOD
+                messenger.send('DIRECT-mouse3', sentArgs = [modifiers])
         elif input == 'alt-up':
             self.fAlt = 0
 

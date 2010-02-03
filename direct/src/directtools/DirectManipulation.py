@@ -188,10 +188,8 @@ class DirectManipulationControl(DirectObject):
         self.marquee.create()
 
         if self.fMultiView:
-            for i in range(4):
-                if i != base.camList.index(NodePath(base.direct.camNode)):
-                    self.marquee.hide(BitMask32.bit(i))
-        
+            LE_showInOneCam(self.marquee, base.direct.camera.getName())
+
     def manipulationStop(self):
         taskMgr.remove('manipulateObject')
         taskMgr.remove('manip-move-wait')
