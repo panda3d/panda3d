@@ -234,6 +234,17 @@ private:
   string _origin_hostname;
   string _origin_port;
 
+  // We need a list of previous time reports so we can average the
+  // predicted download time over the past few seconds.
+  class TimeReport {
+  public:
+    double _total;
+    double _report_time;
+  };
+  typedef deque<TimeReport> TimeReports;
+  TimeReports _time_reports;
+  double _total_time_reports;
+
   P3DTemporaryFile *_temp_p3d_filename;
 
   // For downloading the various images used by the splash window.
@@ -333,7 +344,6 @@ private:
   int _download_package_index;
   size_t _total_download_size;
   size_t _total_downloaded;
-  time_t _download_begin;
   bool _download_started;
   bool _download_complete;
   bool _instance_started;

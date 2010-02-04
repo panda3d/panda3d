@@ -59,6 +59,10 @@ typedef P3DX11SplashWindow SplashWindowType;
 typedef P3DSplashWindow SplashWindowType;
 #endif
 
+// The amount of time (in seconds) over which we average the total
+// download time, for smoothing out the time estimate.
+static const double time_average = 10.0;
+
 // These are the various image files we might download for use in the
 // splash window.  This list must match the ImageType enum.
 const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
@@ -102,6 +106,7 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object->set_instance(this);
   _user_data = user_data;
   _request_pending = false;
+  _total_time_reports = 0;
   _temp_p3d_filename = NULL;
   _image_package = NULL;
   _current_background_image = IT_none;
@@ -410,7 +415,7 @@ set_p3d_url(const string &p3d_url) {
   make_splash_window();
 
   // Mark the time we started downloading, so we'll know when to reveal
-  // the progress bar.
+  // the progress bar, and we can predict the total download time.
 #ifdef _WIN32
   _start_dl_instance_tick = GetTickCount();
 #else
@@ -2752,7 +2757,6 @@ ready_to_install() {
     _download_complete = false;
     _download_package_index = 0;
     _total_downloaded = 0;
-    _download_begin = time(NULL);
 
     nout << "Beginning install of " << _downloading_packages.size()
          << " packages, total " << _total_download_size
@@ -2977,18 +2981,54 @@ report_package_progress(P3DPackage *package, double progress) {
   static const size_t buffer_size = 256;
   char buffer[buffer_size];
 
-  time_t elapsed = time(NULL) - _download_begin;
-  _panda_script_object->set_int_property("downloadElapsedSeconds", (int)elapsed);
+  // Get the floating-point elapsed time.
+#ifdef _WIN32
+  int now = GetTickCount();
+  double elapsed = (double)(now - _start_dl_instance_tick) * 0.001;
+#else
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  double elapsed = (double)(now.tv_sec - _start_dl_instance_timeval.tv_sec) +
+    (double)(now.tv_usec - _start_dl_instance_timeval.tv_usec) / 1000000.0;
+#endif
 
-  sprintf(buffer, "%d:%02d", (int)(elapsed / 60), (int)(elapsed % 60));
+  int ielapsed = (int)elapsed;
+  _panda_script_object->set_int_property("downloadElapsedSeconds", ielapsed);
+
+  sprintf(buffer, "%d:%02d", ielapsed / 60, ielapsed % 60);
   _panda_script_object->set_string_property("downloadElapsedFormatted", buffer);
 
-  if (progress > 0 && (elapsed > 5 || progress > 0.2)) {
-    time_t total = (time_t)((double)elapsed / progress);
-    time_t remaining = max(total, elapsed) - elapsed;
-    _panda_script_object->set_int_property("downloadRemainingSeconds", (int)remaining);
-    sprintf(buffer, "%d:%02d", (int)(remaining / 60), (int)(remaining % 60));
-    _panda_script_object->set_string_property("downloadRemainingFormatted", buffer);
+  if (progress > 0 && (elapsed > 5.0 || progress > 0.2)) {
+    double this_total = elapsed / progress;
+    double this_remaining = max(this_total - elapsed, 0.0);
+
+    // Age out any old time reports.
+    double old = elapsed - min(time_average, this_remaining);
+    while (!_time_reports.empty() && _time_reports.front()._report_time < old) {
+      TimeReport &tr0 = _time_reports.front();
+      _total_time_reports -= tr0._total;
+      _time_reports.pop_front();
+    }
+    if (_time_reports.empty()) {
+      _total_time_reports = 0.0;
+    }
+
+    // Add a new time report.
+    TimeReport tr;
+    tr._total = this_total;
+    tr._report_time = elapsed;
+    _time_reports.push_back(tr);
+    _total_time_reports += tr._total;
+      
+    // Now get the average report.
+    if (!_time_reports.empty()) {
+      double total = _total_time_reports / (double)_time_reports.size();
+      double remaining = max(total - elapsed, 0.0);
+      int iremaining = (int)(remaining + 0.5);
+      _panda_script_object->set_int_property("downloadRemainingSeconds", iremaining);
+      sprintf(buffer, "%d:%02d", iremaining / 60, iremaining % 60);
+      _panda_script_object->set_string_property("downloadRemainingFormatted", buffer);
+    }
   }
 }
 
