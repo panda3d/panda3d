@@ -186,7 +186,7 @@ class SceneGraphUI(wx.Panel):
 
     def changeHierarchy(self, data, x, y):
         itemText = data.split('_')
-        itemId = itemText[1]
+        itemId = itemText[-1] # uid is the last token
         parent = self.tree.GetRootItem()
         item = self.traverse(parent, itemId)
         if item is None:
