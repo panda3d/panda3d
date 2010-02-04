@@ -91,6 +91,13 @@ class DoCollectionManager:
                 matches.append(value)
         return matches, len(matches)
 
+    def doFindAllInstances(self, cls):
+        matches = []
+        for value in self.doId2do.values():
+            if isinstance(value, cls):
+                matches.append(value)
+        return matches
+
     def _getDistanceFromLA(self, do):
         if hasattr(do, 'getPos'):
             return do.getPos(localAvatar).length()
