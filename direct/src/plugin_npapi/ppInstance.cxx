@@ -1992,14 +1992,17 @@ copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
 ////////////////////////////////////////////////////////////////////
 const wchar_t *PPInstance::
 make_ansi_string(wstring &result, NPNSString *ns_string) {
-  // An NPNSString is really just an NSString, which is itself just a
-  // CFString.
-  CFStringRef cfstr = (CFStringRef)ns_string;
-  CFIndex length = CFStringGetLength(cfstr);
-
   result.clear();
-  for (CFIndex i = 0; i < length; ++i) {
-    result += (wchar_t)CFStringGetCharacterAtIndex(cfstr, i);
+  
+  if (ns_string != NULL) {
+    // An NPNSString is really just an NSString, which is itself just a
+    // CFString.
+    CFStringRef cfstr = (CFStringRef)ns_string;
+    CFIndex length = CFStringGetLength(cfstr);
+    
+    for (CFIndex i = 0; i < length; ++i) {
+      result += (wchar_t)CFStringGetCharacterAtIndex(cfstr, i);
+    }
   }
 
   return result.c_str();
