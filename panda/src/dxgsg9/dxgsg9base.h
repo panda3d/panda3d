@@ -29,9 +29,21 @@
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 //#define D3D_DEBUG_INFO
+
+#undef Configure
 #include <d3d9.h>
 #include <d3dx9.h>
+
+#ifdef USE_GENERIC_DXERR_LIBRARY
+#include <dxerr.h>
+#define DX_GET_ERROR_STRING_FUNC DXGetErrorString
+#define DX_GET_ERROR_DESCRIPTION_FUNC DXGetErrorDescription
+#else
 #include <dxerr9.h>
+#define DX_GET_ERROR_STRING_FUNC DXGetErrorString9
+#define DX_GET_ERROR_DESCRIPTION_FUNC DXGetErrorDescription9
+#endif
+
 #undef WIN32_LEAN_AND_MEAN
 
 #if (D3D_SDK_VERSION & 0xffff) < 32
@@ -40,9 +52,9 @@
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString9(HRESULT) << endl  // leave out descriptions to shrink release build
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << endl  // leave out descriptions to shrink release build
 #else
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString9(HRESULT) << ": " << DXGetErrorDescription9(HRESULT) << endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << endl
 #endif
 #endif
 

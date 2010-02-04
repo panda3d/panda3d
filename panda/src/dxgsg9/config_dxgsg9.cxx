@@ -28,7 +28,7 @@
 
 #include "dconfig.h"
 
-Configure(config_dxgsg9);
+DToolConfigure(config_dxgsg9);
 NotifyCategoryDef(dxgsg9, ":display:gsg");
 NotifyCategoryDef(wdxdisplay9, "display");
 

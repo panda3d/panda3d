@@ -1257,10 +1257,12 @@ def SdkLocateDirectX():
         dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+            SDK["GENERIC_DXERR_LIBRARY"] = 1;
     if ("DX9" not in SDK):
         dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+            SDK["GENERIC_DXERR_LIBRARY"] = 1;
     if ("DX9" not in SDK):
         ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
         dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")		

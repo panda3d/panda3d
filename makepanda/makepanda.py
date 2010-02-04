@@ -46,6 +46,7 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 OSXTARGET=None
+
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
@@ -337,7 +338,7 @@ if (COMPILER=="MSVC"):
             LibDirectory(pkg, SDK[pkg] + '/lib')
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
-            if (vnum=="9"):
+            if (vnum=="9" and "GENERIC_DXERR_LIBRARY" in SDK):
                 LibName(pkg, 'dxerr.lib')
             else:
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
@@ -1338,6 +1339,8 @@ DTOOL_CONFIG=[
     ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+    ("_SECURE_SCL",                    '1',                      'UNDEF'),	 
+    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
 
@@ -1452,6 +1455,11 @@ def WriteConfigSettings():
     
     if (RUNTIME):
         dtool_config["HAVE_P3D_PLUGIN"] = '1'
+
+    if ("GENERIC_DXERR_LIBRARY" in SDK):
+        dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "1"
+    else:
+        dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "UNDEF"
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
