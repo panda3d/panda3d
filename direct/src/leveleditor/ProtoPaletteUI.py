@@ -53,6 +53,8 @@ class ProtoPaletteUI(wx.Panel):
         self.rootName = "Proto Objects"
         self.root = self.tree.AddRoot(self.rootName)
         self.addTreeNodes(self.root, self.palette.dataStruct)
+        
+        self.editorTxt = "Proto Objects Editor"
 
         self.opAdd    = "Add Group"
         self.opDelete = "Delete Group"
@@ -81,6 +83,7 @@ class ProtoPaletteUI(wx.Panel):
 
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
+        self.tree.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnEndLabelEdit)
         self.tree.Bind(wx.EVT_KILL_FOCUS , self.OnKillFocus)
 
         self.SetDropTarget(FileDrop(self.editor))
@@ -145,6 +148,25 @@ class ProtoPaletteUI(wx.Panel):
             tds = wx.DropSource(self.tree)
             tds.SetData(tdo)
             tds.DoDragDrop(True)
+
+    def OnEndLabelEdit(self, event):
+        item = event.GetItem()
+        if item != self.tree.GetRootItem():
+            newLabel = event.GetLabel()
+            if self.traverse(self.tree.GetRootItem(), newLabel) is None:
+               oldLabel = self.tree.GetItemText(item)
+               if isinstance(self.editor.protoPalette.findItem(oldLabel), ObjectBase):
+                  event.Veto()
+                  wx.MessageBox("Only groups allowed to be renamed", self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+               elif not self.editor.protoPalette.rename(oldLabel, newLabel):
+                  event.Veto()
+                  wx.MessageBox("Label '%s' is not allowed" % newLabel, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+            else:
+               event.Veto()
+               wx.MessageBox("There is already an item labled '%s'" % newLabel, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+        else:
+            event.Veto()
+            wx.MessageBox("'%s' renaming is not allowed" % self.rootName, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
 
     def OnKillFocus(self, event):
         print "Leaving protoUI window..."
