@@ -1230,6 +1230,7 @@ DTOOL_CONFIG=[
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
     ("SIMPLE_THREADS",                 '1',                      '1'),
+    ("DEBUG_THREADS",                  'UNDEF',                  'UNDEF'),
     ("HAVE_POSIX_THREADS",             'UNDEF',                  '1'),
     ("HAVE_AUDIO",                     '1',                      '1'),
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
