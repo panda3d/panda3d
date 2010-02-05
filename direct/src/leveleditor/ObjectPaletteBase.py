@@ -86,8 +86,27 @@ class ObjectPaletteBase:
         try:
             item = self.data[name]
         except:
-            return None;
+            return None
         return item
+
+    def rename(self, oldName, newName):
+        #import pdb;set_trace()
+        if oldName == newName:
+           return False
+        if newName == "":
+           return False
+        try:
+            for key in self.dataStruct.keys():
+                if self.dataStruct[key] == oldName:
+                   self.dataStruct[key] = newName
+
+            self.dataStruct[newName] = self.dataStruct.pop(oldName)
+            item = self.data.pop(oldName)
+            item.name = newName
+            self.data[newName] = item
+        except:
+            return False
+        return True
 
     def populate(self):
         # You should implement this in subclass
