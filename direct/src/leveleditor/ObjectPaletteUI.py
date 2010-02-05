@@ -14,7 +14,7 @@ class ObjectPaletteUI(wx.Panel):
         self.palette = self.editor.objectPalette
         self.tree = wx.TreeCtrl(self)
         root = self.tree.AddRoot('Objects')
-        self.addTreeNodes(root, self.palette.data)
+        self.addTreeNodes(root, self.palette.dataStruct)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -27,13 +27,48 @@ class ObjectPaletteUI(wx.Panel):
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
 
+    def traverse(self, parent, itemText):
+        if itemText == self.tree.GetItemText(parent):
+           return parent
+        item, cookie = self.tree.GetFirstChild(parent)
+        while item:
+              # if the item was found - return it
+              if itemText == self.tree.GetItemText(item):
+                 return item
+
+              # the tem was not found - checking if it has children
+              if self.tree.ItemHasChildren(item):
+                 # item has children - delving into it
+                 child = self.traverse(item, itemText)
+                 if child is not None:
+                    return child
+
+              # continue iteration to the next child
+              item, cookie = self.tree.GetNextChild(parent, cookie)
+        return None
+
+    def addTreeNode(self, itemText, parentItem, items):
+        newItem = wx.TreeItemId
+        parentText = items[itemText]
+        if parentText == self.palette.rootName:
+           newItem = self.tree.AppendItem(parentItem, itemText)
+           self.tree.SetItemPyData(newItem, itemText)
+        else:
+           item = self.traverse(parentItem, parentText)
+           if item is None:
+              item = self.addTreeNode(parentText, parentItem, items)
+
+           newItem = self.tree.AppendItem(item, itemText)
+           self.tree.SetItemPyData(newItem, itemText)
+
+        return newItem
+
     def addTreeNodes(self, parentItem, items):
+        #import pdb;set_trace()
         for key in items.keys():
-            newItem = self.tree.AppendItem(parentItem, key)
-            if type(items[key]) == dict:
-                self.addTreeNodes(newItem, items[key])
-            else:
-                self.tree.SetItemPyData(newItem, items[key])
+            item = self.traverse(parentItem, key)
+            if item is None:
+               newItem = self.addTreeNode(key, parentItem, items)
 
     def onSelected(self, event):
         data = self.tree.GetItemPyData(event.GetItem())

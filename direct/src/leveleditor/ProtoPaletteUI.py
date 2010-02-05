@@ -24,11 +24,7 @@ class FileDrop(wx.FileDropTarget):
             itemData = ObjectBase(name=name, model=modelname, actor=True)
             self.editor.protoPalette.add(itemData)
 
-            #import pdb;set_trace()
-            parent = self.editor.ui.protoPaletteUI.tree.GetSelection()
-            if parent is None:
-               parent = self.editor.ui.protoPaletteUI.root
-            newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(parent, name)
+            newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
             self.editor.ui.protoPaletteUI.tree.SetItemPyData(newItem, itemData)
             self.editor.ui.protoPaletteUI.tree.ScrollTo(newItem)
 
@@ -40,7 +36,6 @@ class ProtoPaletteUITextDrop(wx.TextDropTarget):
     def OnDropText(self, x, y, text):
         self.editor.ui.protoPaletteUI.ChangeHierarchy(text, x, y)
 
-
 class ProtoPaletteUI(wx.Panel):
     def __init__(self, parent, editor):
         wx.Panel.__init__(self, parent)
@@ -48,12 +43,12 @@ class ProtoPaletteUI(wx.Panel):
         self.editor = editor
         self.palette = self.editor.protoPalette
         #self.tree = wx.TreeCtrl(self)
-        self.tree = wx.TreeCtrl(self, id=-1, pos=wx.DefaultPosition, 
+        self.tree = wx.TreeCtrl(self, id=-1, pos=wx.DefaultPosition,
                   size=wx.DefaultSize, style=wx.TR_EDIT_LABELS|wx.TR_DEFAULT_STYLE,
                   validator=wx.DefaultValidator, name="treeCtrl")
         self.rootName = "Proto Objects"
         self.root = self.tree.AddRoot(self.rootName)
-        self.addTreeNodes(self.root, self.palette.data)
+        self.addTreeNodes(self.root, self.palette.dataStruct)
 
         self.opAdd    = "Add Group"
         self.opDelete = "Delete Group"
@@ -82,22 +77,58 @@ class ProtoPaletteUI(wx.Panel):
 
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
+        self.tree.Bind(wx.EVT_KILL_FOCUS , self.OnKillFocus)
 
         self.SetDropTarget(FileDrop(self.editor))
-        self.SetDropTarget(ProtoPaletteUITextDrop(self.editor))
+
+    def traverse(self, parent, itemName):
+        # prevent from traversing into self
+        if itemName == self.tree.GetItemText(parent):
+           return parent
+
+        # main loop - serching for an item with an itemId
+        item, cookie = self.tree.GetFirstChild(parent)
+        while item:
+              # if the item was found - return it
+              if itemName == self.tree.GetItemText(item):
+                 return item
+
+              # the tem was not found - checking if it has children
+              if self.tree.ItemHasChildren(item):
+                 # item has children - delving into it
+                 child = self.traverse(item, itemName)
+                 if child is not None:
+                    return child
+
+              # continue iteration to the next child
+              item, cookie = self.tree.GetNextChild(parent, cookie)
+        return None
+
+    def addTreeNode(self, itemText, parentItem, items):
+        newItem = wx.TreeItemId
+        parentText = items[itemText]
+        if parentText == self.palette.rootName:
+           newItem = self.tree.AppendItem(parentItem, itemText)
+           self.tree.SetItemPyData(newItem, itemText)
+        else:
+           item = self.traverse(parentItem, parentText)
+           if item is None:
+              item = self.addTreeNode(parentText, parentItem, items)
+
+           newItem = self.tree.AppendItem(item, itemText)
+           self.tree.SetItemPyData(newItem, itemText)
+
+        return newItem
 
     def addTreeNodes(self, parentItem, items):
         for key in items.keys():
-            newItem = self.tree.AppendItem(parentItem, key)
-            if type(items[key]) == dict:
-                self.addTreeNodes(newItem, items[key])
-            else:
-                self.tree.SetItemPyData(newItem, items[key])
+            item = self.traverse(parentItem, key)
+            if item is None:
+               self.addTreeNode(key, parentItem, items)
 
     def onSelected(self, event):
         data = self.tree.GetItemPyData(event.GetItem())
-        if data:
-            print data.properties
+        self.SetDropTarget(ProtoPaletteUITextDrop(self.editor))
 
     def onBeginDrag(self, event):
         item = event.GetItem()
@@ -110,6 +141,10 @@ class ProtoPaletteUI(wx.Panel):
             tds = wx.DropSource(self.tree)
             tds.SetData(tdo)
             tds.DoDragDrop(True)
+
+    def OnKillFocus(self, event):
+        print "Leaving protoUI window..."
+        self.SetDropTarget(FileDrop(self.editor))
 
     def menuAppendGenItems(self):
         for item in self.menuItemsGen:
@@ -124,7 +159,7 @@ class ProtoPaletteUI(wx.Panel):
     def onShowPopup(self, event):
         pos = event.GetPosition()
         pos = self.ScreenToClient(pos)
-        
+
         for menuItem in self.popupmenu.GetMenuItems():
             self.popupmenu.RemoveItem(menuItem)
 
@@ -156,60 +191,46 @@ class ProtoPaletteUI(wx.Panel):
 
         i = 1
         namestr = "Group%s"%(i)
-        found = self.Traverse(self.root, namestr)
+        found = self.traverse(self.root, namestr)
         while found:
               i = i + 1
               namestr = "Group%s"%(i)
-              found = self.Traverse(self.root, namestr)
+              found = self.traverse(self.root, namestr)
 
         newItem = self.tree.AppendItem(parent, namestr)
+        itemData = ObjectGen(name=namestr)
+        parentName = self.tree.GetItemText(parent)
+        if parentName == self.rootName:
+           self.editor.protoPalette.add(itemData)
+        else:
+           self.editor.protoPalette.add(itemData, parentName)
+        self.tree.SetItemPyData(newItem, itemData)
         #uid = self.editor.objectMgr.genUniqueId()
 
         self.tree.Expand(self.root)
+        self.tree.ScrollTo(newItem)
 
     def DeleteGroup(self):
         item = self.tree.GetSelection()
         itemText = self.tree.GetItemText(item)
         if item is not None and itemText != self.rootName:
            self.tree.Delete(item)
-
-    def Traverse(self, parent, itemName):
-        # prevent from traversing into self
-        if itemName == self.tree.GetItemText(parent):
-           return parent
-
-        # main loop - serching for an item with an itemId
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-              # if the item was found - return it
-              if itemName == self.tree.GetItemText(item):
-                 return item
-
-              # the tem was not found - checking if it has children
-              if self.tree.ItemHasChildren(item):
-                 # item has children - delving into it
-                 child = self.Traverse(item, itemName)
-                 if child is not None:
-                    return child
-
-              # continue iteration to the next child
-              item, cookie = self.tree.GetNextChild(parent, cookie)
-        return None
+           self.editor.protoPalette.delete(itemText)
 
     def ReParent(self, parent, newParent):
-
         # main loop - iterating over item's children
         item, cookie = self.tree.GetFirstChild(parent)
         while item:
            itemName = self.tree.GetItemText(item)
            itemData = self.tree.GetItemPyData(item)
+
            newItem = self.tree.AppendItem(newParent, itemName)
            self.tree.SetItemPyData(newItem, itemData)
-           
+
            # if an item had children, we need to re-parent them as well
            if self.tree.ItemHasChildren(item):
               # recursing...
-              self.ReParent(item, newItem)
+              self.ReParent(item, newItem, )
 
            # continue iteration to the next child
            item, cookie = self.tree.GetNextChild(parent, cookie)
@@ -217,7 +238,7 @@ class ProtoPaletteUI(wx.Panel):
     def ChangeHierarchy(self, itemName, x, y):
         #import pdb;set_trace()
         parent = self.tree.GetRootItem()
-        item = self.Traverse(parent, itemName)
+        item = self.traverse(parent, itemName)
         if item is None:
            return
 
@@ -227,5 +248,16 @@ class ProtoPaletteUI(wx.Panel):
            if  dragToItem == item:
                return
            newItem = self.tree.AppendItem(dragToItem, itemName)
+
+           itemObj = self.editor.protoPalette.findItem(itemName)
+           if itemObj is not None:
+              dragToItemName = self.tree.GetItemText(dragToItem)
+              
+              # reparenting the data objects...
+              if dragToItemName == self.rootName:
+                 self.editor.protoPalette.add(itemObj)
+              else:
+                 self.editor.protoPalette.add(itemObj, dragToItemName)
+
            self.ReParent(item, newItem)
            self.tree.Delete(item)
