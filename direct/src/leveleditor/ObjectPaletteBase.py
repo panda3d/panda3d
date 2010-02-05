@@ -38,11 +38,8 @@ class ObjectPaletteBase:
         """
         You can insert item to obj palette tree.
 
-        'item' is the name to be inserted, it can be either a group or obj.
-        If item is a group 'obj' will be None.
+        'item' is the object to be inserted, it can be either a group or obj.
         'parentName' is the name of parent under where this item will be inserted.
-        'data' is used in recursive searching.
-
         """
         if type(self.data) != dict:
            return None

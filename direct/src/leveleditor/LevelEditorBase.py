@@ -16,6 +16,7 @@ from ObjectMgr import *
 from FileMgr import *
 from ActionMgr import *
 from ProtoPalette import *
+from MayaConverter import *
 
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """ 
@@ -110,6 +111,7 @@ class LevelEditorBase(DirectObject):
             ('DIRECT-delete', self.handleDelete),
             ('preRemoveNodePath', self.removeNodePathHook),
             ('DIRECT_selectedNodePath_fMulti_fTag', self.selectedNodePathHook),
+            ('DIRECT_deselectedNodePath', self.deselectAll),
             ('DIRECT_deselectAll', self.deselectAll),
             ('LE-Undo', self.actionMgr.undo),
             ('LE-Redo', self.actionMgr.redo),
@@ -140,20 +142,22 @@ class LevelEditorBase(DirectObject):
             base.direct.selected.last = None
 
     def handleDelete(self):
-        reply = wx.MessageBox("Do you want to delete selected?", "Delete?",
-                              wx.YES_NO | wx.ICON_QUESTION)
-        if reply == wx.YES:
-            base.direct.removeAllSelected()
-            self.objectMgr.deselectAll()
-        else:
-            # need to reset COA
-            dnp = base.direct.selected.last
-            # Update camera controls coa to this point
-            # Coa2Camera = Coa2Dnp * Dnp2Camera
-            mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(base.direct.camera)
-            row = mCoa2Camera.getRow(3)
-            coa = Vec3(row[0], row[1], row[2])
-            base.direct.cameraControl.updateCoa(coa)
+        action = ActionDeleteObj(self)
+        self.actionMgr.push(action)
+        action()
+##         reply = wx.MessageBox("Do you want to delete selected?", "Delete?",
+##                               wx.YES_NO | wx.ICON_QUESTION)
+##         if reply == wx.YES:
+##             base.direct.removeAllSelected()
+##         else:
+##             # need to reset COA
+##             dnp = base.direct.selected.last
+##             # Update camera controls coa to this point
+##             # Coa2Camera = Coa2Dnp * Dnp2Camera
+##             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(base.direct.camera)
+##             row = mCoa2Camera.getRow(3)
+##             coa = Vec3(row[0], row[1], row[2])
+##             base.direct.cameraControl.updateCoa(coa)
 
     def selectedNodePathHook(self, nodePath, fMultiSelect = 0, fSelectTag = 1):
         # handle unpickable nodepath
@@ -163,7 +167,7 @@ class LevelEditorBase(DirectObject):
 
         self.objectMgr.selectObject(nodePath)
 
-    def deselectAll(self):
+    def deselectAll(self, np=None):
         self.objectMgr.deselectAll()
 
     def reset(self):
@@ -221,3 +225,15 @@ class LevelEditorBase(DirectObject):
         except:
             pass
 
+
+    def convertMaya(self, modelname, obj=None, isAnim=False):
+        if obj and isAnim:
+            mayaConverter = MayaConverter(self.ui, self, modelname, obj, isAnim)
+        else:
+            reply = wx.MessageBox("Is it an animation file?", "Animation?",
+                              wx.YES_NO | wx.ICON_QUESTION)
+            if reply == wx.YES:
+                mayaConverter = MayaConverter(self.ui, self, modelname, None, True)
+            else:        
+                mayaConverter = MayaConverter(self.ui, self, modelname, None, False)
+        mayaConverter.Show()

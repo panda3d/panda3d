@@ -20,7 +20,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
         self.editor = editor
 
     def OnDropText(self, x, y, text):
-        action = ActionAddNewObj(self.editor.objectMgr.addNewObject, text)
+        action = ActionAddNewObj(self.editor, text)
         self.editor.actionMgr.push(action)
         action()
 

@@ -58,7 +58,7 @@ class ObjectMgr:
             self.lastUidMod = 0
         return newUid
 
-    def addNewObject(self, typeName, uid = None, model = None, parent=None, fSelectObject=True):
+    def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True):
         """ function to add new obj to the scene """
         if parent is None:
             parent = render
@@ -105,7 +105,6 @@ class ObjectMgr:
                 except:
                     newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
 
-            anim = ''
             i = 0
             for i in range(len(objDef.anims)):
                 animFile = objDef.anims[i]
@@ -114,9 +113,14 @@ class ObjectMgr:
                 if i < len(objDef.animNames):
                     animName = objDef.animNames[i]
                 newAnim = newobj.loadAnims({animName:animFile})
-                if i == 0:
-                    anim = animFile
-                    newobj.loop(animName)
+
+                if anim:
+                    if anim == animFile:
+                        newobj.loop(animName)
+                else:
+                    if i == 0:
+                        anim = animFile
+                        newobj.loop(animName)
 
             if newobj is None:
                 return None
@@ -150,6 +154,11 @@ class ObjectMgr:
         if uid:
             del self.objects[uid]
             del self.npIndex[nodePath]
+
+        # remove children also
+        for child in nodePath.getChildren():
+            if child.hasTag('OBJRoot'):
+                self.removeObjectByNodePath(child)
 
     def findObjectById(self, uid):
         return self.objects.get(uid)
@@ -290,7 +299,8 @@ class ObjectMgr:
             base.direct.deselectAll()
 
             objNP = obj[OG.OBJ_NP]
-
+            objRGBA = obj[OG.OBJ_RGBA]
+            
             # load new model
             newobj = loader.loadModel(model)
             newobj.setTag('OBJRoot','1')
@@ -305,6 +315,9 @@ class ObjectMgr:
             newobj.setPos(objNP.getPos())
             newobj.setHpr(objNP.getHpr())
             newobj.setScale(objNP.getScale())
+
+            # copy RGBA data
+            self.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], newobj)
 
             # delete old geom
             del self.npIndex[NodePath(objNP)]
@@ -474,6 +487,7 @@ class ObjectMgr:
                     np = obj[OG.OBJ_NP]
                     objDef = obj[OG.OBJ_DEF]
                     objModel = obj[OG.OBJ_MODEL]
+                    objAnim = obj[OG.OBJ_ANIM]
                     objProp = obj[OG.OBJ_PROP]
                     objRGBA = obj[OG.OBJ_RGBA]
 
@@ -482,10 +496,17 @@ class ObjectMgr:
                     else:
                         parentStr = "None"
 
-                    if objModel is None:
-                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', None, %s)"%(uid, objDef.name, uid, parentStr))
+                    if objModel:
+                        modelStr = "'%s'"%objModel
                     else:
-                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', '%s', %s)"%(uid, objDef.name, uid, objModel, parentStr))
+                        modelStr = "None"
+
+                    if objAnim:
+                        animStr = "'%s'"%objAnim
+                    else:
+                        animStr = "None"
+
+                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr))
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
@@ -505,6 +526,10 @@ class ObjectMgr:
         if obj is None:
             return None
         objDef = obj[OG.OBJ_DEF]
+        objModel = obj[OG.OBJ_MODEL]
+        objAnim = obj[OG.OBJ_ANIM]
+        objRGBA = obj[OG.OBJ_RGBA]
+
         if parent is None:
             parent = nodePath.getParent()
 
@@ -520,6 +545,9 @@ class ObjectMgr:
             return None
         # copy model info
         self.updateObjectModel(obj[OG.OBJ_MODEL], newObj, fSelectObject=False)
+
+        # copy anim info
+        self.updateObjectAnim(obj[OG.OBJ_ANIM], newObj, fSelectObject=False)
 
         # copy other properties
         for key in obj[OG.OBJ_PROP]:

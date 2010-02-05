@@ -21,6 +21,10 @@ class FileDrop(wx.FileDropTarget):
                return
 
             modelname = Filename.fromOsSpecific(filename).getFullpath()
+            if modelname.endswith('.mb') or\
+               modelname.endswith('.ma'):
+                self.editor.convertMaya(modelname)
+                return
             itemData = ObjectBase(name=name, model=modelname, actor=True)
             self.editor.protoPalette.add(itemData)
 

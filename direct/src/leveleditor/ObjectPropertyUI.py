@@ -29,6 +29,11 @@ class AnimFileDrop(wx.FileDropTarget):
         for filename in filenames:
             name = os.path.basename(filename)
             animName = Filename.fromOsSpecific(filename).getFullpath()
+            if name.endswith('.mb') or\
+               name.endswith('.ma'):
+                self.editor.convertMaya(animName, obj, isAnim=True)
+                return
+
             if animName not in objDef.anims:
                 objDef.anims.append(animName)
 
