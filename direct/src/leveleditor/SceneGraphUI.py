@@ -22,7 +22,9 @@ class SceneGraphUI(wx.Panel):
         wx.Panel.__init__(self, parent)
 
         self.editor = editor
-        self.tree = wx.TreeCtrl(self)
+        self.tree = wx.TreeCtrl(self, id=-1, pos=wx.DefaultPosition,
+                  size=wx.DefaultSize, style=wx.TR_MULTIPLE|wx.TR_DEFAULT_STYLE,
+                  validator=wx.DefaultValidator, name="treeCtrl")
         self.root = self.tree.AddRoot('render')
         self.tree.SetItemPyData(self.root, "render")
 
@@ -175,7 +177,7 @@ class SceneGraphUI(wx.Panel):
            itemId = self.tree.GetItemPyData(item)
            newItem = self.tree.AppendItem(newParent, data)
            self.tree.SetItemPyData(newItem, itemId)
-           
+
            # if an item had children, we need to re-parent them as well
            if self.tree.ItemHasChildren(item):
               # recursing...
@@ -239,12 +241,33 @@ class SceneGraphUI(wx.Panel):
                 self.removePandaObjectChildren(item)
              # continue iteration to the next child
 
+    def delete(self, itemId):
+        item = self.traverse(self.root, itemId)
+        if item:
+           self.tree.UnselectItem(item)
+           self.tree.Delete(item)
+
+    def select(self, itemId):
+        item = self.traverse(self.root, itemId)
+        if item:
+           if not self.tree.IsSelected(item):
+              self.tree.SelectItem(item)
+
+    def deSelect(self, itemId):
+        item =  self.traverse(self.root, itemId)
+        if item is not None:
+           self.tree.UnselectItem(item)
+
     def onSelected(self, event):
         itemId = self.tree.GetItemPyData(event.GetItem())
         if itemId:
             obj = self.editor.objectMgr.findObjectById(itemId);
             if obj:
-                base.direct.select(obj[OG.OBJ_NP])
+                selections = self.tree.GetSelections()
+                if len(selections) > 1:
+                   base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 1, fLEPane = 0)
+                else:
+                   base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 0, fLEPane = 0)
 
     def onBeginDrag(self, event):
         item = event.GetItem()

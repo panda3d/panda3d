@@ -174,8 +174,9 @@ class ObjectMgr:
         self.currNodePath = None
         taskMgr.remove('_le_updateObjectUITask')
         self.editor.ui.objectPropertyUI.clearPropUI()
+        self.editor.ui.sceneGraphUI.tree.UnselectAll()
 
-    def selectObject(self, nodePath):
+    def selectObject(self, nodePath, fLEPane=0):
         obj = self.findObjectByNodePath(nodePath)
         if obj is None:
             return
@@ -184,6 +185,9 @@ class ObjectMgr:
         # [gjeon] to connect transform UI with nodepath's transform
         self.spawnUpdateObjectUITask()
         self.updateObjectPropertyUI(obj)
+        #import pdb;pdb.set_trace()
+        if fLEPane == 0:
+           self.editor.ui.sceneGraphUI.select(obj[OG.OBJ_UID])
 
     def updateObjectPropertyUI(self, obj):
         objDef = obj[OG.OBJ_DEF]
@@ -192,7 +196,7 @@ class ObjectMgr:
 
     def onEnterObjectPropUI(self, event):
         taskMgr.remove('_le_updateObjectUITask')        
-        
+
     def onLeaveObjectPropUI(self, event):
         self.spawnUpdateObjectUITask()
         

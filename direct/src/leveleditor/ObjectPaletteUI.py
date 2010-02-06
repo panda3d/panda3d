@@ -71,10 +71,8 @@ class ObjectPaletteUI(wx.Panel):
                newItem = self.addTreeNode(key, parentItem, items)
 
     def onSelected(self, event):
-        data = self.tree.GetItemPyData(event.GetItem())
-        if data:
-            print data.properties
-
+        pass
+        
     def onBeginDrag(self, event):
         item = event.GetItem()
 

@@ -110,7 +110,7 @@ class LevelEditorBase(DirectObject):
             # Node path events
             ('DIRECT-delete', self.handleDelete),
             ('preRemoveNodePath', self.removeNodePathHook),
-            ('DIRECT_selectedNodePath_fMulti_fTag', self.selectedNodePathHook),
+            ('DIRECT_selectedNodePath_fMulti_fTag_fLEPane', self.selectedNodePathHook),
             ('DIRECT_deselectedNodePath', self.deselectAll),
             ('DIRECT_deselectAll', self.deselectAll),
             ('LE-Undo', self.actionMgr.undo),
@@ -142,9 +142,15 @@ class LevelEditorBase(DirectObject):
             base.direct.selected.last = None
 
     def handleDelete(self):
+        oldSelectedNPs = base.direct.selected.getSelectedAsList()
+        for oldNP in oldSelectedNPs:
+            obj = self.objectMgr.findObjectByNodePath(oldNP)
+            if obj:
+               self.ui.sceneGraphUI.delete(obj[OG.OBJ_UID])
         action = ActionDeleteObj(self)
         self.actionMgr.push(action)
         action()
+
 ##         reply = wx.MessageBox("Do you want to delete selected?", "Delete?",
 ##                               wx.YES_NO | wx.ICON_QUESTION)
 ##         if reply == wx.YES:
@@ -159,13 +165,19 @@ class LevelEditorBase(DirectObject):
 ##             coa = Vec3(row[0], row[1], row[2])
 ##             base.direct.cameraControl.updateCoa(coa)
 
-    def selectedNodePathHook(self, nodePath, fMultiSelect = 0, fSelectTag = 1):
+    def selectedNodePathHook(self, nodePath, fMultiSelect = 0, fSelectTag = 1, fLEPane = 0):
         # handle unpickable nodepath
         if nodePath.getName() in base.direct.iRay.unpickable:
             base.direct.deselect(nodePath)
             return
 
-        self.objectMgr.selectObject(nodePath)
+        if fMultiSelect == 0 and fLEPane == 0:
+           oldSelectedNPs = base.direct.selected.getSelectedAsList()
+           for oldNP in oldSelectedNPs:
+              obj = self.objectMgr.findObjectByNodePath(oldNP)
+              if obj:
+                 self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
+        self.objectMgr.selectObject(nodePath, fLEPane)
 
     def deselectAll(self, np=None):
         self.objectMgr.deselectAll()
