@@ -674,7 +674,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " -g -D_DEBUG"
+        if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
