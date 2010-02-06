@@ -651,7 +651,7 @@ class DirectSession(DirectObject):
         return Task.cont
     
     def select(self, nodePath, fMultiSelect = 0,
-               fSelectTag = 1, fResetAncestry = 1):
+               fSelectTag = 1, fResetAncestry = 1, fLEPane = 0):
         dnp = self.selected.select(nodePath, fMultiSelect, fSelectTag)
         if dnp:
             messenger.send('DIRECT_preSelectNodePath', [dnp])
@@ -689,7 +689,7 @@ class DirectSession(DirectObject):
                         widget.setScalingFactor(dnp.getRadius())
                 else:
                     self.widget.setScalingFactor(dnp.getRadius())
-                
+
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)
@@ -698,6 +698,7 @@ class DirectSession(DirectObject):
             # Send an message marking the event
             messenger.send('DIRECT_selectedNodePath', [dnp])
             messenger.send('DIRECT_selectedNodePath_fMulti_fTag', [dnp, fMultiSelect, fSelectTag])
+            messenger.send('DIRECT_selectedNodePath_fMulti_fTag_fLEPane', [dnp, fMultiSelect, fSelectTag, fLEPane])
 
     def followSelectedNodePathTask(self, state):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
