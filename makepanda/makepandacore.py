@@ -1783,7 +1783,7 @@ def SetOrigExt(x, v):
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
     dllext = ""
-    if (GetOptimize() <= 2): dllext = "_d"
+    if (GetOptimize() <= 2 and sys.platform.startswith("win")): dllext = "_d"
 
     if (fn == "PandaModules.py"): return "pandac/" + fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
