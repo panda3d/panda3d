@@ -141,8 +141,10 @@ class DirectSession(DirectObject):
 
         self.actionEvents = [
             ['select', self.select],
+            ['DIRECT-select', self.selectCB],
             ['deselect', self.deselect],
             ['deselectAll', self.deselectAll],
+            ['DIRECT-preDeselectAll', self.deselectAllCB],
             ['highlightAll', self.selected.highlightAll],
             ['preRemoveNodePath', self.deselect],
             # Scene graph explorer functions
@@ -649,9 +651,13 @@ class DirectSession(DirectObject):
                     sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
                     self.widget.setDirectScalingFactor(sf)
         return Task.cont
-    
+
     def select(self, nodePath, fMultiSelect = 0,
-               fSelectTag = 1, fResetAncestry = 1, fLEPane = 0):
+               fSelectTag = 1, fResetAncestry = 1, fLEPane=0, fUndo=1):
+        messenger.send('DIRECT-select', [nodePath, fMultiSelect, fSelectTag, fResetAncestry, fLEPane, fUndo])
+
+    def selectCB(self, nodePath, fMultiSelect = 0,
+               fSelectTag = 1, fResetAncestry = 1, fLEPane = 0, fUndo=1):
         dnp = self.selected.select(nodePath, fMultiSelect, fSelectTag)
         if dnp:
             messenger.send('DIRECT_preSelectNodePath', [dnp])
@@ -725,6 +731,9 @@ class DirectSession(DirectObject):
             messenger.send('DIRECT_deselectedNodePath', [dnp])
 
     def deselectAll(self):
+        messenger.send('DIRECT-preDeselectAll')
+
+    def deselectAllCB(self):
         self.selected.deselectAll()
         # Hide the manipulation widget
         if self.manipulationControl.fMultiView:
