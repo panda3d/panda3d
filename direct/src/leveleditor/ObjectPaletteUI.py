@@ -72,7 +72,7 @@ class ObjectPaletteUI(wx.Panel):
 
     def onSelected(self, event):
         pass
-        
+
     def onBeginDrag(self, event):
         item = event.GetItem()
 

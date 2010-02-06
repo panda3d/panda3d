@@ -34,7 +34,7 @@ class LevelEditorBase(DirectObject):
         
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
-        fTk = base.config.GetBool('want-tk', 0)
+        fTk = 0
         fWx = 0
         base.startDirect(fWantTk = fTk, fWantWx = fWx)
         base.closeWindow(base.win)
@@ -97,8 +97,10 @@ class LevelEditorBase(DirectObject):
             widget.setBin('gui-popup', 0)
             widget.setDepthTest(0)
 
-        # [gjeon] to handle delete here first
+        # [gjeon] to intercept messages here
         base.direct.ignore('DIRECT-delete')
+        base.direct.ignore('DIRECT-select')
+        base.direct.ignore('DIRECT-preDeselectAll')
         
         # [gjeon] do not use the old way of finding current DR
         base.direct.drList.tryToGetCurrentDr = False
@@ -108,10 +110,13 @@ class LevelEditorBase(DirectObject):
 
         self.actionEvents.extend([
             # Node path events
+            ('DIRECT-select', self.select),
             ('DIRECT-delete', self.handleDelete),
+            ('DIRECT-preDeselectAll', self.deselectAll),
+            ('DIRECT_deselectAll', self.deselectAllCB),
             ('preRemoveNodePath', self.removeNodePathHook),
+            ('DIRECT_deselectedNodePath', self.deselectAllCB),
             ('DIRECT_selectedNodePath_fMulti_fTag_fLEPane', self.selectedNodePathHook),
-            ('DIRECT_deselectedNodePath', self.deselectAll),
             ('DIRECT_deselectAll', self.deselectAll),
             ('LE-Undo', self.actionMgr.undo),
             ('LE-Redo', self.actionMgr.redo),
@@ -165,6 +170,20 @@ class LevelEditorBase(DirectObject):
 ##             coa = Vec3(row[0], row[1], row[2])
 ##             base.direct.cameraControl.updateCoa(coa)
 
+    def select(self, nodePath, fMultiSelect=0, fSelectTag=1, fResetAncestry=1, fLEPane=0, fUndo=1):
+        if fUndo:
+            # Select tagged object if present
+            if fSelectTag:
+                for tag in base.direct.selected.tagList:
+                    if nodePath.hasNetTag(tag):
+                        nodePath = nodePath.findNetTag(tag)
+                        break
+            action = ActionSelectObj(self, nodePath, fMultiSelect)
+            self.actionMgr.push(action)
+            action()
+        else:
+            base.direct.selectCB(nodePath, fMultiSelect, fSelectTag, fResetAncestry, fLEPane, fUndo)
+
     def selectedNodePathHook(self, nodePath, fMultiSelect = 0, fSelectTag = 1, fLEPane = 0):
         # handle unpickable nodepath
         if nodePath.getName() in base.direct.iRay.unpickable:
@@ -180,6 +199,13 @@ class LevelEditorBase(DirectObject):
         self.objectMgr.selectObject(nodePath, fLEPane)
 
     def deselectAll(self, np=None):
+        if len(base.direct.selected.getSelectedAsList()) ==0:
+            return
+        action = ActionDeselectAll(self)
+        self.actionMgr.push(action)
+        action()
+
+    def deselectAllCB(self, dnp=None):
         self.objectMgr.deselectAll()
 
     def reset(self):

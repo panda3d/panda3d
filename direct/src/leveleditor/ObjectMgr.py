@@ -7,7 +7,7 @@ import os, time, wx
 from direct.task import Task
 from direct.actor.Actor import Actor
 from pandac.PandaModules import *
-
+from ActionMgr import *
 import ObjectGlobals as OG
 
 class ObjectMgr:
@@ -26,7 +26,7 @@ class ObjectMgr:
         self.currNodePath = None   
 
     def reset(self):
-        self.deselectAll()
+        self.deselectAllCB()
 
         for id in self.objects.keys():
             self.objects[id][OG.OBJ_NP].removeNode()
@@ -130,8 +130,6 @@ class ObjectMgr:
 
             if uid is None:
                 uid = self.genUniqueId()
-            else:
-                fSelectObject = False
 
             # populate obj data using default values
             properties = {}
@@ -144,7 +142,7 @@ class ObjectMgr:
 
             if self.editor:
                 if fSelectObject:
-                    base.direct.select(newobj)
+                    self.editor.select(newobj, fUndo=0)
                 self.editor.ui.sceneGraphUI.add(newobj)
 
         return newobj
@@ -249,7 +247,7 @@ class ObjectMgr:
         if self.currNodePath is None:
             return
 
-        np = self.currNodePath
+        np = hidden.attachNewNode('temp')
         np.setX(float(self.editor.ui.objectPropertyUI.propX.getValue()))
         np.setY(float(self.editor.ui.objectPropertyUI.propY.getValue()))
         np.setZ(float(self.editor.ui.objectPropertyUI.propZ.getValue()))
@@ -282,6 +280,18 @@ class ObjectMgr:
         np.setSx(float(self.editor.ui.objectPropertyUI.propSX.getValue()))
         np.setSy(float(self.editor.ui.objectPropertyUI.propSY.getValue()))
         np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))        
+
+        obj = self.findObjectByNodePath(self.currNodePath)
+        action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
+        self.editor.actionMgr.push(action)
+        np.remove()
+        action()
+
+    def setObjectTransform(self, uid, xformMat):
+        obj = self.findObjectById(uid)
+        if obj:
+            print obj[OG.OBJ_NP], xformMat
+            obj[OG.OBJ_NP].setMat(xformMat)
         
     def updateObjectColor(self, r, g, b, a, np=None):
         if np is None:
@@ -300,7 +310,7 @@ class ObjectMgr:
     def updateObjectModel(self, model, obj, fSelectObject=True):
         """ replace object's model """
         if obj[OG.OBJ_MODEL] != model:
-            base.direct.deselectAll()
+            base.direct.deselectAllCB()
 
             objNP = obj[OG.OBJ_NP]
             objRGBA = obj[OG.OBJ_RGBA]
@@ -333,12 +343,12 @@ class ObjectMgr:
             self.npIndex[NodePath(newobj)] = obj[OG.OBJ_UID]
 
             if fSelectObject:
-                base.direct.select(newobj)        
+                base.direct.select(newobj, fUndo=0)        
 
     def updateObjectAnim(self, anim, obj, fSelectObject=True):
         """ replace object's anim """
         if obj[OG.OBJ_ANIM] != anim:
-            base.direct.deselectAll()
+            base.direct.deselectAllCB()
             objNP = obj[OG.OBJ_NP]
 
             # load new anim
@@ -347,7 +357,7 @@ class ObjectMgr:
             objNP.loop(animName)
             obj[OG.OBJ_ANIM] = anim
             if fSelectObject:
-                base.direct.select(objNP)
+                base.direct.select(objNP, fUndo=0)
 
     def updateObjectModelFromUI(self, event, obj):
         """ replace object's model with one selected from UI """
@@ -463,7 +473,7 @@ class ObjectMgr:
         func(**kwargs)
 
         if self.editor and fSelectObject:
-            base.direct.select(obj[OG.OBJ_NP])
+            base.direct.select(obj[OG.OBJ_NP], fUndo=0)
 
     def updateObjectProperties(self, nodePath, propValues):
         """
@@ -510,7 +520,7 @@ class ObjectMgr:
                     else:
                         animStr = "None"
 
-                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr))
+                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, fSelectObject=False)"%(uid, objDef.name, uid, modelStr, parentStr, animStr))
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
@@ -575,7 +585,7 @@ class ObjectMgr:
                 self.duplicateChild(nodePath, newObjNP)
                 duplicatedNPs.append(newObjNP)
 
-        base.direct.deselectAll()
+        base.direct.deselectAllCB()
         print duplicatedNPs
         for newNodePath in duplicatedNPs:
-            base.direct.select(newNodePath, fMultiSelect = 1)
+            base.direct.select(newNodePath, fMultiSelect = 1, fUndo=0)
