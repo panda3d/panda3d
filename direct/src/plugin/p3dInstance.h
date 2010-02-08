@@ -329,13 +329,17 @@ private:
   bool _instance_window_attached;
   bool _stuff_to_download;
 
-  // Members for deciding whether and when to display the progress bar
-  // for downloading the initial instance data.
+  // Keep track of when the download was started, for reporting
+  // purposes.  These members are used both for the instance download,
+  // and for the later package download.
 #ifdef _WIN32
-  int _start_dl_instance_tick;
+  int _start_dl_tick;
 #else
-  struct timeval _start_dl_instance_timeval;
+  struct timeval _start_dl_timeval;
 #endif
+
+  // This is set false initially, but true if the instance download
+  // continues for more than a couple of seconds.
   bool _show_dl_instance_progress;
 
   typedef vector<P3DPackage *> Packages;

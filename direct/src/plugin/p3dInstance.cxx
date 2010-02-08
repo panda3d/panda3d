@@ -417,9 +417,9 @@ set_p3d_url(const string &p3d_url) {
   // Mark the time we started downloading, so we'll know when to reveal
   // the progress bar, and we can predict the total download time.
 #ifdef _WIN32
-  _start_dl_instance_tick = GetTickCount();
+  _start_dl_tick = GetTickCount();
 #else
-  gettimeofday(&_start_dl_instance_timeval, NULL);
+  gettimeofday(&_start_dl_timeval, NULL);
 #endif
   _show_dl_instance_progress = false;
 
@@ -459,9 +459,9 @@ make_p3d_stream(const string &p3d_url) {
   // Mark the time we started downloading, so we'll know when to reveal
   // the progress bar.
 #ifdef _WIN32
-  _start_dl_instance_tick = GetTickCount();
+  _start_dl_tick = GetTickCount();
 #else
-  gettimeofday(&_start_dl_instance_timeval, NULL);
+  gettimeofday(&_start_dl_timeval, NULL);
 #endif
   _show_dl_instance_progress = false;
 
@@ -2758,6 +2758,14 @@ ready_to_install() {
     _download_package_index = 0;
     _total_downloaded = 0;
 
+    // Record the time we started the package download, so we can
+    // report downlaodElapsedTime and predict downloadRemainingTime.
+#ifdef _WIN32
+    _start_dl_tick = GetTickCount();
+#else
+    gettimeofday(&_start_dl_timeval, NULL);
+#endif
+
     nout << "Beginning install of " << _downloading_packages.size()
          << " packages, total " << _total_download_size
          << " bytes required.\n";
@@ -2914,12 +2922,12 @@ report_instance_progress(double progress, bool is_progress_known,
     // instance file might be already in the browser cache).
 #ifdef _WIN32
     int now = GetTickCount();
-    double elapsed = (double)(now - _start_dl_instance_tick) * 0.001;
+    double elapsed = (double)(now - _start_dl_tick) * 0.001;
 #else
     struct timeval now;
     gettimeofday(&now, NULL);
-    double elapsed = (double)(now.tv_sec - _start_dl_instance_timeval.tv_sec) +
-      (double)(now.tv_usec - _start_dl_instance_timeval.tv_usec) / 1000000.0;
+    double elapsed = (double)(now.tv_sec - _start_dl_timeval.tv_sec) +
+      (double)(now.tv_usec - _start_dl_timeval.tv_usec) / 1000000.0;
 #endif
 
     // Put up the progress bar after 2 seconds have elapsed, if we've
@@ -2984,12 +2992,12 @@ report_package_progress(P3DPackage *package, double progress) {
   // Get the floating-point elapsed time.
 #ifdef _WIN32
   int now = GetTickCount();
-  double elapsed = (double)(now - _start_dl_instance_tick) * 0.001;
+  double elapsed = (double)(now - _start_dl_tick) * 0.001;
 #else
   struct timeval now;
   gettimeofday(&now, NULL);
-  double elapsed = (double)(now.tv_sec - _start_dl_instance_timeval.tv_sec) +
-    (double)(now.tv_usec - _start_dl_instance_timeval.tv_usec) / 1000000.0;
+  double elapsed = (double)(now.tv_sec - _start_dl_timeval.tv_sec) +
+    (double)(now.tv_usec - _start_dl_timeval.tv_usec) / 1000000.0;
 #endif
 
   int ielapsed = (int)elapsed;
