@@ -42,7 +42,9 @@ class PackageInstaller(DirectObject):
     class PendingPackage:
         """ This class describes a package added to the installer for
         download. """
-        
+
+        notify = directNotify.newCategory("PendingPackage")
+
         def __init__(self, packageName, version, host):
             self.packageName = packageName
             self.version = version
@@ -564,7 +566,8 @@ class PackageInstaller(DirectObject):
             # Successfully downloaded and installed.
             self.__donePackage(pp, True)
 
-            yield task.cont
+            # Continue the loop without yielding, so we pick up the
+            # next package within this same frame.
         
     def __donePackage(self, pp, success):
         """ Marks the indicated package as done, either successfully
