@@ -163,6 +163,12 @@ class TaskManager:
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
+    def getCurrentTask(self):
+        """ Returns the task currently executing on this thread, or
+        None if this is being called outside of the task manager. """
+
+        return Thread.getCurrentThread().getCurrentTask()
+
     def hasTaskChain(self, chainName):
         """ Returns true if a task chain with the indicated name has
         already been defined, or false otherwise.  Note that
