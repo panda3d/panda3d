@@ -443,10 +443,13 @@ unlock_and_do_task() {
   nassertr(_manager != (AsyncTaskManager *)NULL, DS_done);
   PT(ClockObject) clock = _manager->get_clock();
 
+  Thread *current_thread = Thread::get_current_thread();
+  record_task(current_thread);
+
   // It's important to release the lock while the task is being
   // serviced.
   _manager->_lock.release();
-  
+
   double start = clock->get_real_time();
   _task_pcollector.start();
   DoneStatus status = do_task();
@@ -461,6 +464,8 @@ unlock_and_do_task() {
   _total_dt += _dt;
 
   _chain->_time_in_frame += _dt;
+
+  clear_task(current_thread);
 
   return status;
 }

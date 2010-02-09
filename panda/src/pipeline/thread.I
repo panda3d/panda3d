@@ -299,6 +299,18 @@ preempt() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_current_task
+//       Access: Published
+//  Description: Returns the task currently executing on this thread
+//               (via the AsyncTaskManager), if any, or NULL if the
+//               thread is not currently servicing a task.
+////////////////////////////////////////////////////////////////////
+INLINE AsyncTaskBase *Thread::
+get_current_task() const {
+  return _current_task;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::prepare_for_exit
 //       Access: Published
 //  Description: Should be called by the main thread just before

@@ -11,6 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
+    asyncTaskBase.h asyncTaskBase.I \
     contextSwitch.c contextSwitch.h \
     blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \
@@ -70,6 +71,7 @@
     threadPriority.h
 
   #define INCLUDED_SOURCES  \
+    asyncTaskBase.cxx \
     conditionVar.cxx \
     conditionVarDebug.cxx \
     conditionVarDirect.cxx \
@@ -123,6 +125,7 @@
     threadPriority.cxx
 
   #define INSTALL_HEADERS  \
+    asyncTaskBase.h asyncTaskBase.I \
     contextSwitch.h \
     blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \

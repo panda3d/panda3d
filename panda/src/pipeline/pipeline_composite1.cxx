@@ -1,3 +1,4 @@
+#include "asyncTaskBase.cxx"
 #include "conditionVar.cxx"
 #include "conditionVarDebug.cxx"
 #include "conditionVarDirect.cxx"

@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pipeline.h"
+#include "asyncTaskBase.h"
 #include "mainThread.h"
 #include "externalThread.h"
 #include "thread.h"
@@ -69,6 +70,7 @@ init_libpipeline() {
   }
   initialized = true;
 
+  AsyncTaskBase::init_type();
   MainThread::init_type();
   ExternalThread::init_type();
   Thread::init_type();

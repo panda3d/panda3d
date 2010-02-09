@@ -34,6 +34,7 @@ class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
 class ConditionVarFullDebug;
+class AsyncTaskBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Thread
@@ -100,6 +101,8 @@ PUBLISHED:
   PyObject *get_python_data() const;
 #endif
 
+  INLINE AsyncTaskBase *get_current_task() const;
+
   INLINE static void prepare_for_exit();
 
 public:
@@ -136,6 +139,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
+  AsyncTaskBase *_current_task;
 
 #ifdef HAVE_PYTHON
   PyObject *_python_data;
@@ -179,6 +183,7 @@ private:
   friend class ThreadPosixImpl;
   friend class ThreadSimpleImpl;
   friend class MainThread;
+  friend class AsyncTaskBase;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

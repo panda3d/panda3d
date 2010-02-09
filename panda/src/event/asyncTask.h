@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 
-#include "typedReferenceCount.h"
-#include "namable.h"
+#include "asyncTaskBase.h"
 #include "pmutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
@@ -41,7 +40,7 @@ class AsyncTaskChain;
 //               class, and override do_task(), to define the
 //               functionality you wish to have the task perform.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA_EVENT AsyncTask : public AsyncTaskBase {
 public:
   AsyncTask(const string &name = string());
   ALLOC_DELETED_CHAIN(AsyncTask);
@@ -162,9 +161,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    AsyncTaskBase::init_type();
     register_type(_type_handle, "AsyncTask",
-                  TypedReferenceCount::get_class_type());
+                  AsyncTaskBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -53,6 +53,7 @@ Thread(const string &name, const string &sync_name) :
   _pstats_callback = NULL;
   _pipeline_stage = 0;
   _joinable = false;
+  _current_task = NULL;
 
 #ifdef HAVE_PYTHON
   _python_data = Py_None;
