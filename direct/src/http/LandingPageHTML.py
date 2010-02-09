@@ -222,6 +222,18 @@ stylesheet = '''
   border-top: 1px solid #ffffff;
   }
   
+  tbody tr[altColoring] td
+  {
+  background: LightCyan;
+  border-top: 1px solid #ffffff;
+  }
+  
+  tbody tr[altColoring].odd td
+  {
+  background: PaleTurquoise;
+  border-top: 1px solid #ffffff;
+  }
+  
   tbody tr.dead td
   {
   background:#ff0000;
