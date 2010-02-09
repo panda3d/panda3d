@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector
 from pandac import PandaModules
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
@@ -37,11 +37,29 @@ class PackageInfo:
         represents a single atomic piece of the installation step, and
         the relative effort of that piece.  When the plan is executed,
         it will call the saved function pointer here. """
-        def __init__(self, func, bytes, factor):
-            self.func = func
+        def __init__(self, func, bytes, factor, stepType):
+            self.__funcPtr = func
             self.bytesNeeded = bytes
             self.bytesDone = 0
             self.bytesFactor = factor
+            self.stepType = stepType
+            self.pStatCol = PStatCollector(':App:PackageInstaller:%s' % (stepType))
+
+        def func(self):
+            """ self.__funcPtr(self) will return a generator of
+            tokens.  This function defines a new generator that yields
+            each of those tokens, but wraps each call into the nested
+            generator within a pair of start/stop collector calls. """
+            
+            self.pStatCol.start()
+            for token in self.__funcPtr(self):
+                self.pStatCol.stop()
+                yield token
+                self.pStatCol.start()
+
+            # Shouldn't ever get here.
+            self.pStatCol.stop()
+            raise StopIteration
 
         def getEffort(self):
             """ Returns the relative amount of effort of this step. """
@@ -215,10 +233,13 @@ class PackageInfo:
 
         self.http = http
 
-        for token in self.__downloadFile(
+        func = lambda step, self = self: self.__downloadFile(
             None, self.descFile,
             urlbase = self.descFile.filename,
-            filename = self.descFileBasename):
+            filename = self.descFileBasename)
+        step = self.InstallStep(func, self.descFile.size, self.downloadFactor, 'downloadDesc')
+
+        for token in step.func():
             if token == self.stepContinue:
                 yield token
             else:
@@ -226,10 +247,12 @@ class PackageInfo:
 
         while token == self.restartDownload:
             # Try again.
-            for token in self.__downloadFile(
+            func = lambda step, self = self: self.__downloadFile(
                 None, self.descFile,
                 urlbase = self.descFile.filename,
-                filename = self.descFileBasename):
+                filename = self.descFileBasename)
+            step = self.InstallStep(func, self.descFile.size, self.downloadFactor, 'downloadDesc')
+            for token in step.func():
                 if token == self.stepContinue:
                     yield token
                 else:
@@ -350,6 +373,9 @@ class PackageInfo:
         """ Sets up self.installPlans, a list of one or more "plans"
         to download and install the package. """
 
+        pc = PStatCollector(':App:PackageInstaller:buildInstallPlans')
+        pc.start()
+
         self.hasPackage = False
 
         if self.asMirror:
@@ -361,9 +387,10 @@ class PackageInfo:
             downloadSize = self.compressedArchive.size
             func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec, allowPartial = True)
             
-            step = self.InstallStep(func, downloadSize, self.downloadFactor)
+            step = self.InstallStep(func, downloadSize, self.downloadFactor, 'download')
             installPlan = [step]
             self.installPlans = [installPlan]
+            pc.stop()
             return 
 
         # The normal download process.  Determine what we will need to
@@ -375,7 +402,7 @@ class PackageInfo:
         unpackSize = 0
         for file in self.extracts:
             unpackSize += file.size
-        step = self.InstallStep(self.__unpackArchive, unpackSize, self.unpackFactor)
+        step = self.InstallStep(self.__unpackArchive, unpackSize, self.unpackFactor, 'unpack')
         planA = [step]
 
         # If the uncompressed archive file is good, that's all we'll
@@ -383,14 +410,16 @@ class PackageInfo:
         self.uncompressedArchive.actualFile = None
         if self.uncompressedArchive.quickVerify(self.getPackageDir(), notify = self.notify):
             self.installPlans = [planA]
+            pc.stop()
             return
 
         # Maybe the compressed archive file is good.
         if self.compressedArchive.quickVerify(self.getPackageDir(), notify = self.notify):
             uncompressSize = self.uncompressedArchive.size
-            step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
+            step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor, 'uncompress')
             planA = [step] + planA
             self.installPlans = [planA]
+            pc.stop()
             return
 
         # Maybe we can download one or more patches.  We'll come back
@@ -399,13 +428,13 @@ class PackageInfo:
         planB = planA[:]
 
         uncompressSize = self.uncompressedArchive.size
-        step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
+        step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor, 'uncompress')
         planB = [step] + planB
 
         downloadSize = self.compressedArchive.size
         func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec, allowPartial = True)
 
-        step = self.InstallStep(func, downloadSize, self.downloadFactor)
+        step = self.InstallStep(func, downloadSize, self.downloadFactor, 'download')
         planB = [step] + planB
 
         # Now look for patches.  Start with the md5 hash from the
@@ -429,6 +458,8 @@ class PackageInfo:
             # There are no patches to download, oh well.  Stick with
             # plan B as the only plan.
             self.installPlans = [planB]
+
+        pc.stop()
 
     def __scanDirectoryRecursively(self, dirname):
         """ Generates a list of Filename objects: all of the files
@@ -589,7 +620,7 @@ class PackageInfo:
             for step in plan:
                 self.currentStepEffort = step.getEffort()
 
-                for token in step.func(step):
+                for token in step.func():
                     if token == self.stepContinue:
                         yield token
                     else:
@@ -633,12 +664,12 @@ class PackageInfo:
         for patchfile in patchChain:
             downloadSize = patchfile.file.size
             func = lambda step, fileSpec = patchfile.file: self.__downloadFile(step, fileSpec, allowPartial = True)
-            step = self.InstallStep(func, downloadSize, self.downloadFactor)
+            step = self.InstallStep(func, downloadSize, self.downloadFactor, 'download')
             plan.append(step)
 
             patchSize = patchfile.targetFile.size
             func = lambda step, patchfile = patchfile: self.__applyPatch(step, patchfile)
-            step = self.InstallStep(func, patchSize, self.patchFactor)
+            step = self.InstallStep(func, patchSize, self.patchFactor, 'patch')
             plan.append(step)
 
         patchMaker.cleanup()

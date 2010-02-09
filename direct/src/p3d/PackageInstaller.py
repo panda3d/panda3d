@@ -3,7 +3,7 @@ from direct.stdpy.threading import Lock, RLock
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.p3d.PackageInfo import PackageInfo
-from pandac.PandaModules import TPLow
+from pandac.PandaModules import TPLow, PStatCollector
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class PackageInstaller(DirectObject):
@@ -495,8 +495,10 @@ class PackageInstaller(DirectObject):
             # files, stop the task.
             if not self.needsDescFile:
                 self.descFileTask = None
-                messenger.send('PackageInstaller-%s-allHaveDesc' % self.uniqueId,
-                               taskChain = 'default')
+
+                eventName = 'PackageInstaller-%s-allHaveDesc' % self.uniqueId
+                messenger.send(eventName, taskChain = 'default')
+
                 return task.done
             pp = self.needsDescFile[0]
             del self.needsDescFile[0]
@@ -545,11 +547,12 @@ class PackageInstaller(DirectObject):
                 del self.needsDownload[0]
             except:
                 self.packageLock.release()
+                raise
             self.packageLock.release()
 
             # Now serve this one package.
-            messenger.send('PackageInstaller-%s-packageStarted' % self.uniqueId,
-                           [pp], taskChain = 'default')
+            eventName = 'PackageInstaller-%s-packageStarted' % self.uniqueId
+            messenger.send(eventName, [pp], taskChain = 'default')
 
             if not pp.package.hasPackage:
                 for token in pp.package.downloadPackageGenerator(self.appRunner.http):
@@ -559,12 +562,18 @@ class PackageInstaller(DirectObject):
                         break
 
                 if token != pp.package.stepComplete:
+                    pc = PStatCollector(':App:PackageInstaller:donePackage:%s' % (pp.package.packageName))
+                    pc.start()
                     self.__donePackage(pp, False)
+                    pc.stop()
                     yield task.cont
                     continue
 
             # Successfully downloaded and installed.
+            pc = PStatCollector(':App:PackageInstaller:donePackage:%s' % (pp.package.packageName))
+            pc.start()
             self.__donePackage(pp, True)
+            pc.stop()
 
             # Continue the loop without yielding, so we pick up the
             # next package within this same frame.
@@ -575,7 +584,10 @@ class PackageInstaller(DirectObject):
         assert not pp.done
 
         if success:
+            pc = PStatCollector(':App:PackageInstaller:install:%s' % (pp.package.packageName))
+            pc.start()
             pp.package.installPackage(self.appRunner)
+            pc.stop()
 
         self.packageLock.acquire()
         try:
@@ -588,8 +600,8 @@ class PackageInstaller(DirectObject):
         finally:
             self.packageLock.release()
 
-        messenger.send('PackageInstaller-%s-packageDone' % self.uniqueId,
-                       [pp], taskChain = 'default')
+        eventName = 'PackageInstaller-%s-packageDone' % self.uniqueId
+        messenger.send(eventName, [pp], taskChain = 'default')
 
     def __progressTask(self, task):
         self.callbackLock.acquire()

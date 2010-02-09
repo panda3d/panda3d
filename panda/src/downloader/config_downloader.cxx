@@ -49,12 +49,12 @@ ConfigVariableInt downloader_timeout_retries
 ("downloader-timeout-retries", 5);
 
 ConfigVariableDouble decompressor_step_time
-("decompressor-step-time", 0.1,
+("decompressor-step-time", 0.005,
  PRC_DESC("Specifies the maximum amount of time that should be consumed by "
           "a single call to Decompressor::run()."));
 
 ConfigVariableDouble extractor_step_time
-("extractor-step-time", 0.1,
+("extractor-step-time", 0.005,
  PRC_DESC("Specifies the maximum amount of time that should be consumed by "
           "a single call to Extractor::step()."));
 
