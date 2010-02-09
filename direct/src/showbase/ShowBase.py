@@ -59,6 +59,9 @@ class ShowBase(DirectObject.DirectObject):
         if config.GetBool('want-variable-dump', 0):
             ExceptionVarDump.install()
 
+        # Locate the directory containing the main program
+        self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
+
         # The appRunner should have been created by the time ShowBase
         # has been.
         self.appRunner = AppRunnerGlobal.appRunner
