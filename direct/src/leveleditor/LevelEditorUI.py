@@ -4,6 +4,7 @@ from wx.lib.agw import fourwaysplitter as FWS
 
 from pandac.PandaModules import *
 from direct.wxwidgets.WxAppShell import *
+from direct.directtools.DirectSelection import SelectionRay
 
 from ViewPort import *
 from ObjectPaletteUI import *
@@ -15,14 +16,44 @@ from ProtoPaletteUI import *
 from ActionMgr import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
-    def __init__(self, editor):
+    def __init__(self, editor, view):
         wx.TextDropTarget.__init__(self)
         self.editor = editor
+        self.view = view
 
     def OnDropText(self, x, y, text):
+        # create new object
         action = ActionAddNewObj(self.editor, text)
         self.editor.actionMgr.push(action)
+        newobj = action()
+
+        # change window coordinate to mouse coordinate
+        mx = 2 * (x/float(self.view.ClientSize.GetWidth()) - 0.5)
+        my = -2 * (y/float(self.view.ClientSize.GetHeight()) - 0.5)
+
+        # create ray from the camera to detect 3d position
+        iRay = SelectionRay(self.view.camera)
+        iRay.collider.setFromLens(self.view.camNode, mx, my)
+        iRay.collideWithGeom()
+        iRay.ct.traverse(self.view.grid)
+        entry = iRay.getEntry(0)
+        hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+
+        # create a temp nodePath to get the position
+        np = hidden.attachNewNode('temp')
+        np.setPos(self.view.camera, hitPt)
+
+        # update temp nodePath's HPR and scale with newobj's
+        np.setHpr(newobj.getHpr())
+        np.setScale(newobj.getScale())
+
+        # transform newobj to cursor position
+        obj = self.editor.objectMgr.findObjectByNodePath(newobj)
+        action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
+        self.editor.actionMgr.push(action)
+        np.remove()
         action()
+        del iRay
 
 class LevelEditorUI(WxAppShell):
     """ Class for Panda3D LevelEditor """ 
@@ -112,8 +143,11 @@ class LevelEditorUI(WxAppShell):
         self.mainFrame.SplitVertically(self.leftFrame, self.baseFrame, 200)
         self.baseFrame.SplitVertically(self.viewFrame, self.rightFrame, 600)
         
-        self.viewFrame.SetDropTarget(PandaTextDropTarget(self.editor))
-
+        self.topView.SetDropTarget(PandaTextDropTarget(self.editor, self.topView))
+        self.frontView.SetDropTarget(PandaTextDropTarget(self.editor, self.frontView))
+        self.leftView.SetDropTarget(PandaTextDropTarget(self.editor, self.leftView))
+        self.perspView.SetDropTarget(PandaTextDropTarget(self.editor, self.perspView))
+        
         self.leftFrame.SetSashGravity(0.5)
         self.leftBarUpFrame.SetSashGravity(0.5)
         self.rightFrame.SetSashGravity(0.5)        
