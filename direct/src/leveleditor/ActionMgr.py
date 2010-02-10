@@ -17,6 +17,8 @@ class ActionMgr:
 
     def push(self, action):
         self.undoList.append(action)
+        if len(self.redoList) > 0:
+            self.redoList.pop()
         print 'current undoList', self.undoList
 
     def undo(self):
@@ -41,6 +43,11 @@ class ActionBase(Functor):
     """ Base class for user actions """
 
     def __init__(self, function, *args, **kargs):
+        self.function = function
+        if function is None:
+            def nullFunc():
+                pass
+            function = nullFunc
         Functor.__init__(self, function, *args, **kargs)
         self.result = None
 
@@ -225,14 +232,15 @@ class ActionTransformObj(ActionBase):
     def saveStatus(self):
         obj = self.editor.objectMgr.findObjectById(self.uid)
         if obj:
-            self.origMat = Mat4(obj[OG.OBJ_NP].getMat())
+            self.origMat = Mat4(self.editor.objectMgr.objectsLastXform[obj[OG.OBJ_UID]])
+            #self.origMat = Mat4(obj[OG.OBJ_NP].getMat())
 
-    def redo(self):
-        if self.uid is None:
-            print "Can't redo this add"        
-        else:
-            self.result = self._do__call__()#uid=self.uid, xformMat=self.xformMat)
-            return self.result
+    def _do__call__(self, *args, **kargs):
+        self.result = ActionBase._do__call__(self, *args, **kargs)
+        obj = self.editor.objectMgr.findObjectById(self.uid)
+        if obj:
+            self.editor.objectMgr.objectsLastXform[self.uid] = Mat4(obj[OG.OBJ_NP].getMat())        
+        return self.result
 
     def undo(self):
         if self.origMat is None:
@@ -242,6 +250,7 @@ class ActionTransformObj(ActionBase):
             obj = self.editor.objectMgr.findObjectById(self.uid)
             if obj:
                 obj[OG.OBJ_NP].setMat(self.origMat)
+                self.editor.objectMgr.objectsLastXform[self.uid] = Mat4(self.origMat)
             del self.origMat
             self.origMat = None
 
@@ -270,3 +279,34 @@ class ActionDeselectAll(ActionBase):
             if obj:
                 self.editor.select(obj[OG.OBJ_NP], fMultiSelect=1, fUndo=0)
         self.selectedUIDs = []
+
+class ActionUpdateObjectProp(ActionBase):
+    """ Action class for updating object property """
+
+    def __init__(self, editor, fSelectObject, obj, propName, val, oldVal, function, undoFunc, *args, **kargs):
+        self.editor = editor
+        self.fSelectObject = fSelectObject
+        self.obj = obj
+        self.propName = propName
+        self.newVal = val
+        self.oldVal = oldVal
+        self.undoFunc = undoFunc
+        ActionBase.__init__(self, function, *args, **kargs)
+
+    def saveStatus(self):
+        self.obj[OG.OBJ_PROP][self.propName] = self.newVal
+
+    def redo(self):
+        self.result = self._do__call__()#uid=self.uid, xformMat=self.xformMat)
+        if self.editor and self.fSelectObject:
+            base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)             
+        return self.result
+
+    def undo(self):
+        print "Undo : updateObjectProp"
+        if self.oldVal:
+            self.obj[OG.OBJ_PROP][self.propName] = self.oldVal
+            if self.undoFunc:
+                self.undoFunc()
+                if self.editor and self.fSelectObject:
+                    base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)        

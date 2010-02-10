@@ -20,6 +20,7 @@ class ObjectMgr:
         self.objects = {}
         self.npIndex = {}
         self.saveData = []
+        self.objectsLastXform = {}
 
         self.lastUid = ''
         self.lastUidMode = 0
@@ -180,6 +181,7 @@ class ObjectMgr:
             return
 
         self.currNodePath = obj[OG.OBJ_NP]
+        self.objectsLastXform[obj[OG.OBJ_UID]] = Mat4(self.currNodePath.getMat())
         # [gjeon] to connect transform UI with nodepath's transform
         self.spawnUpdateObjectUITask()
         self.updateObjectPropertyUI(obj)
@@ -443,34 +445,47 @@ class ObjectMgr:
         propDataType = propDef[OG.PROP_DATATYPE]
 
         val = OG.TYPE_CONV[propDataType](val)
-        objProp[propName] = val
-
-        if propDef[OG.PROP_FUNC] is None:
-            return
+        oldVal = objProp[propName]
+        #objProp[propName] = val
         
-        funcName = propDef[OG.PROP_FUNC][OG.FUNC_NAME]
-        funcArgs = propDef[OG.PROP_FUNC][OG.FUNC_ARGS]
-
-        if funcName.startswith('.'):
-            if self.editor:
-                func = Functor(eval("base.le.objectHandler%s"%funcName))
-            else: # when loaded outside of LE
-                func = Functor(eval("base.objectHandler%s"%funcName))                
+        if propDef[OG.PROP_FUNC] is None:
+            func = None
+            undoFunc = None
         else:
-            func = Functor(eval(funcName))
+            funcName = propDef[OG.PROP_FUNC][OG.FUNC_NAME]
+            funcArgs = propDef[OG.PROP_FUNC][OG.FUNC_ARGS]
 
-        # populate keyword arguments
-        kwargs = {}
-        for key in funcArgs.keys():
-            if funcArgs[key] == OG.ARG_VAL:
-                kwargs[key] = val
-            elif funcArgs[key] == OG.ARG_OBJ:
-                kwargs[key] = obj
+            # populate keyword arguments
+            kwargs = {}
+            undoKwargs = {}
+            for key in funcArgs.keys():
+                if funcArgs[key] == OG.ARG_VAL:
+                    kwargs[key] = val
+                    undoKwargs[key] = oldVal
+                elif funcArgs[key] == OG.ARG_OBJ:
+                    undoKwargs[key] = obj
+                    objProp[propName] = val
+                    kwargs[key] = obj
+                else:
+                    kwargs[key] = funcArgs[key]
+                    undoKwargs[key] = funcArgs[key]
+
+            if funcName.startswith('.'):
+                if self.editor:
+                    func = Functor(eval("base.le.objectHandler%s"%funcName), **kwargs)
+                    undoFunc = Functor(eval("base.le.objectHandler%s"%funcName), **undoKwargs)
+                else: # when loaded outside of LE
+                    func = Functor(eval("base.objectHandler%s"%funcName), **kwargs)
+                    undoFunc = Functor(eval("base.objectHandler%s"%funcName), **undoKwargs)                    
             else:
-                kwargs[key] = funcArgs[key]
-
-        # finally call update function
-        func(**kwargs)
+                func = Functor(eval(funcName), **kwargs)
+                undoFunc = Functor(eval(funcName), **undoKwargs)
+                
+            # finally call update function
+            #func(**kwargs)
+        action = ActionUpdateObjectProp(self.editor, fSelectObject, obj, propName, val, oldVal, func, undoFunc)
+        self.editor.actionMgr.push(action)
+        action()
 
         if self.editor and fSelectObject:
             base.direct.select(obj[OG.OBJ_NP], fUndo=0)

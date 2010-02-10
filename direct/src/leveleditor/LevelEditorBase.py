@@ -120,6 +120,7 @@ class LevelEditorBase(DirectObject):
             ('DIRECT_deselectAll', self.deselectAll),
             ('LE-Undo', self.actionMgr.undo),
             ('LE-Redo', self.actionMgr.redo),
+            ('DIRECT_manipulateObjectCleanup', self.cleanUpManipulating),
             ])
 
         # Add all the action events
@@ -169,6 +170,14 @@ class LevelEditorBase(DirectObject):
 ##             row = mCoa2Camera.getRow(3)
 ##             coa = Vec3(row[0], row[1], row[2])
 ##             base.direct.cameraControl.updateCoa(coa)
+
+    def cleanUpManipulating(self, selectedNPs):
+        for np in selectedNPs:
+            obj = self.objectMgr.findObjectByNodePath(np)
+            if obj:
+                action = ActionTransformObj(self, obj[OG.OBJ_UID], Mat4(np.getMat()))
+                self.actionMgr.push(action)
+                action()                
 
     def select(self, nodePath, fMultiSelect=0, fSelectTag=1, fResetAncestry=1, fLEPane=0, fUndo=1):
         if fUndo:
