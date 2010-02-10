@@ -57,7 +57,7 @@ class ProtoPaletteUI(wx.Panel):
         self.editorTxt = "Proto Objects Editor"
 
         self.opAdd    = "Add Group"
-        self.opDelete = "Delete Group"
+        self.opDelete = "Delete"
 
         self.menuItemsGen = list()
         self.menuItemsGen.append(self.opAdd)
@@ -207,7 +207,7 @@ class ProtoPaletteUI(wx.Panel):
         if text == self.opAdd:
            self.AddGroup()
         elif text == self.opDelete:
-           self.DeleteGroup()
+           self.Delete()
 
     def AddGroup(self):
         #import pdb;set_trace()
@@ -236,10 +236,10 @@ class ProtoPaletteUI(wx.Panel):
         self.tree.Expand(self.root)
         self.tree.ScrollTo(newItem)
 
-    def DeleteGroup(self):
+    def Delete(self):
         item = self.tree.GetSelection()
         itemText = self.tree.GetItemText(item)
-        if item is not None and itemText != self.rootName:
+        if item and itemText != self.rootName:
            self.tree.Delete(item)
            self.editor.protoPalette.delete(itemText)
 

@@ -71,7 +71,6 @@ class ObjectPaletteBase:
 
     def delete(self, name):
         try:
-           import pdb;set_trace()
            deleteItems = {}
            node = self.deleteStruct(name, deleteItems)
            if node is not None:
