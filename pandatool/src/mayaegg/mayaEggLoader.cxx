@@ -633,6 +633,7 @@ struct MayaEggVertex
   Normald               _normal;
   TexCoordd             _uv;
   vector<MayaEggWeight> _weights;
+  double                _sumWeights; // [gjeon] to be used in normalizing weights
   int                   _index; 
   int                   _external_index; // masad: use egg's index directly
 };
@@ -741,6 +742,7 @@ public:
 int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
 {
   MayaEggVertex vtx;
+  vtx._sumWeights = 0.0;
   vtx._pos = vert->get_pos3();
   if (vert->has_normal()) {
     vtx._normal = vert->get_normal();
@@ -764,11 +766,13 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     }
     remaining_weight -= membership;
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
+    vtx._sumWeights += membership; // [gjeon] to be used in normalizing weights
   }
   
   if (vtx._weights.size()==0) {
     if (context != 0) {
       vtx._weights.push_back(MayaEggWeight(1.0, context));
+      vtx._sumWeights == 1.0; // [gjeon] to be used in normalizing weights
     }
     remaining_weight = 0.0;
   } else {
@@ -779,6 +783,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
       EggGroup *egg_joint = (*gri);
       double membership = egg_joint->get_vertex_membership(vert);
       vtx._weights.push_back(MayaEggWeight(membership+remaining_weight, egg_joint));
+      vtx._sumWeights += (membership + remaining_weight); // [gjeon] to be used in normalizing weights
     }
   }
 
@@ -1317,7 +1322,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
   for (vert=M->_vert_tab.begin(); vert != M->_vert_tab.end(); ++vert) {
     for (unsigned int i=0; i<vert->_weights.size(); i++) {
-      double strength = vert->_weights[i].first;
+      double strength = vert->_weights[i].first / vert->_sumWeights; // [gjeon] nomalizing weights
       MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
       values[vert->_index * joints.size() + joint->_index] = (float)strength;
     }
