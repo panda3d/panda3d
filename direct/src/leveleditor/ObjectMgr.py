@@ -26,7 +26,7 @@ class ObjectMgr:
         self.currNodePath = None   
 
     def reset(self):
-        self.deselectAllCB()
+        base.direct.deselectAllCB()
 
         for id in self.objects.keys():
             self.objects[id][OG.OBJ_NP].removeNode()

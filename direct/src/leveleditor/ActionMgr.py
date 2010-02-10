@@ -170,6 +170,21 @@ class ActionDeleteObj(ActionBase):
             self.hierarchy = {}
             self.objInfos = {}            
 
+class ActionChangeHierarchy(ActionBase):
+     """ Action class for changing Scene Graph Hierarchy """
+
+     def __init__(self, editor, oldGrandParentId, oldParentId, newParentId, childName, *args, **kargs):
+         self.editor = editor
+         self.oldGrandParentId = oldGrandParentId
+         self.oldParentId = oldParentId
+         self.newParentId = newParentId
+         self.childName = childName
+         function = self.editor.ui.sceneGraphUI.parent
+         ActionBase.__init__(self, function, self.oldParentId, self.newParentId, self.childName, **kargs)
+
+     def undo(self):
+         self.editor.ui.sceneGraphUI.parent(self.oldParentId, self.oldGrandParentId, self.childName)
+
 class ActionSelectObj(ActionBase):
     """ Action class for adding new object """
     

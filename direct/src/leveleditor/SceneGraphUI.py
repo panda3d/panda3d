@@ -4,6 +4,7 @@ Defines Scene Graph tree UI
 import wx
 import cPickle as pickle
 from pandac.PandaModules import *
+from ActionMgr import *
 
 import ObjectGlobals as OG
 
@@ -102,20 +103,6 @@ class SceneGraphUI(wx.Panel):
            item, cookie = self.tree.GetNextChild(parent, cookie)
            self.removePandaObjectChildren(itemToRemove)
 
-    def getTreeItem(self, parent, itemId):
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-             if itemId == self.tree.GetItemPyData(item):
-                return item
-             child = None
-             if self.tree.ItemHasChildren(item):
-                child = self.getTreeItem(item, itemId)
-             if child is not None:
-                return child
-             # continue iteration to the next child
-             item, cookie = self.tree.GetNextChild(parent, cookie)
-        return None
-
     def add(self, item):
         #import pdb;pdb.set_trace()
         if item is None:
@@ -131,7 +118,7 @@ class SceneGraphUI(wx.Panel):
         if parentObj is None:
             parent = self.root
         else:
-            parent = self.getTreeItem(self.root, parentObj[OG.OBJ_UID])
+            parent = self.traverse(self.root, parentObj[OG.OBJ_UID])
 
         namestr = "%s_%s"%(obj[OG.OBJ_DEF].name, obj[OG.OBJ_UID])
         newItem = self.tree.AppendItem(parent, namestr)
@@ -143,8 +130,6 @@ class SceneGraphUI(wx.Panel):
         self.tree.Expand(self.root)
 
     def traverse(self, parent, itemId):
-        print "in traverse for itemId=%s..." %repr(itemId)
-
         # prevent from traversing into self
         if itemId == self.tree.GetItemPyData(parent):
            return None
@@ -167,9 +152,7 @@ class SceneGraphUI(wx.Panel):
               item, cookie = self.tree.GetNextChild(parent, cookie)
         return None
 
-    def reParent(self, parent, newParent):
-        #import pdb;set_trace()
-
+    def reParentTree(self, parent, newParent):
         # main loop - iterating over item's children
         item, cookie = self.tree.GetFirstChild(parent)
         while item:
@@ -181,48 +164,65 @@ class SceneGraphUI(wx.Panel):
            # if an item had children, we need to re-parent them as well
            if self.tree.ItemHasChildren(item):
               # recursing...
-              self.reParent(item, newItem)
+              self.reParentTree(item, newItem)
 
            # continue iteration to the next child
            item, cookie = self.tree.GetNextChild(parent, cookie)
 
+    def reParentData(self, parent, child):
+        child.wrtReparentTo(parent)
+
+    def reParent(self, oldParent, newParent, child):
+        if newParent is None:
+           newParent = self.root
+        itemId = self.tree.GetItemPyData(oldParent)
+        newItem = self.tree.AppendItem(newParent, child)
+        self.tree.SetItemPyData(newItem, itemId)
+        self.reParentTree(oldParent, newItem)
+
+        obj = self.editor.objectMgr.findObjectById(itemId)
+        itemId = self.tree.GetItemPyData(newParent)
+        if itemId != "render":
+          newParentObj = self.editor.objectMgr.findObjectById(itemId)
+          self.reParentData(newParentObj[OG.OBJ_NP], obj[OG.OBJ_NP])
+        else:
+          self.reParentData(render, obj[OG.OBJ_NP])
+
+        self.tree.Delete(oldParent)
+        if self.shouldShowPandaObjChildren:
+           self.removePandaObjectChildren(oldParent)
+           self.addPandaObjectChildren(oldParent)
+           self.removePandaObjectChildren(newParent)
+           self.addPandaObjectChildren(newpParent)
+
+    def isChildOrGrandChild(self, parent, child):
+        childId = self.tree.GetItemPyData(child)
+        return self.traverse(parent, childId)
+
     def changeHierarchy(self, data, x, y):
         itemText = data.split('_')
         itemId = itemText[-1] # uid is the last token
-        parent = self.tree.GetRootItem()
-        item = self.traverse(parent, itemId)
+        item = self.traverse(self.tree.GetRootItem(), itemId)
         if item is None:
            return
 
         dragToItem, flags = self.tree.HitTest(wx.Point(x, y))
         if dragToItem.IsOk():
            # prevent draging into itself
-           if  dragToItem == item:
-               return
-           newItem = self.tree.AppendItem(dragToItem, data)
-           self.tree.SetItemPyData(newItem, itemId)
-           self.reParent(item, newItem)
-           oldParent = self.tree.GetItemParent(item)
-           self.tree.Delete(item)
+           if dragToItem == item:
+              return
+           if self.isChildOrGrandChild(item, dragToItem):
+              return
 
-           obj = self.editor.objectMgr.findObjectById(itemId)
-           itemId = self.tree.GetItemPyData(dragToItem)
-           dragToItemObj = None
-           if itemId != "render":
-              dragToItemObj = self.editor.objectMgr.findObjectById(itemId)
+           # undo function setup...
+           action = ActionChangeHierarchy(self.editor, self.tree.GetItemPyData(self.tree.GetItemParent(item)), self.tree.GetItemPyData(item), self.tree.GetItemPyData(dragToItem), data)
+           self.editor.actionMgr.push(action)
+           action()
 
-           objNodePath = obj[OG.OBJ_NP]
-           if dragToItemObj is None:
-              objNodePath.wrtReparentTo(render)
-           else:
-              objNodePath.wrtReparentTo(dragToItemObj[OG.OBJ_NP])
-
-           if self.shouldShowPandaObjChildren:
-              self.removePandaObjectChildren(oldParent)
-              self.addPandaObjectChildren(oldParent)
-              self.removePandaObjectChildren(dragToItem)
-              self.addPandaObjectChildren(dragToItem)
-
+    def parent(self, oldParentId, newParentId, childName):
+        oldParent = self.traverse(self.tree.GetRootItem(), oldParentId)
+        newParent = self.traverse(self.tree.GetRootItem(), newParentId)
+        self.reParent(oldParent, newParent, childName)
 
     def showPandaObjectChildren(self):
         itemList = list()
