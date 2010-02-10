@@ -82,7 +82,7 @@ get_bam_modified() const {
 //               efficient to use the same BamWriter to serialize all
 //               of them together.
 ////////////////////////////////////////////////////////////////////
-string TypedWritable::
+INLINE string TypedWritable::
 encode_to_bam_stream() const {
   string data;
   if (!encode_to_bam_stream(data)) {

@@ -85,31 +85,6 @@ any_path(PandaNode *node, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::Constructor
-//       Access: Published
-//  Description: Constructs a NodePath with the indicated parent
-//               NodePath and child node; the child node must be a
-//               stashed or unstashed child of the parent.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-NodePath(const NodePath &parent, PandaNode *child_node, 
-         Thread *current_thread) :
-  _error_type(ET_fail)
-{
-  nassertv(!parent.is_empty());
-  nassertv(child_node != (PandaNode *)NULL);
-  int pipeline_stage = current_thread->get_pipeline_stage();
-  _head = PandaNode::get_component(parent._head, child_node, pipeline_stage,
-                                   current_thread);
-  nassertv(_head != (NodePathComponent *)NULL);
-
-  if (_head != (NodePathComponent *)NULL) {
-    _error_type = ET_ok;
-  }
-  _backup_key = 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Copy Constructor
 //       Access: Published
 //  Description:
@@ -2385,6 +2360,37 @@ INLINE string NodePath::
 get_name() const {
   nassertr_always(!is_empty(), string());
   return node()->get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::encode_full_path_to_bam_stream
+//       Access: Published
+//  Description: Converts the NodePath object into a single
+//               stream of data using a BamWriter, and returns that
+//               data as a string string.  Returns empty string on
+//               failure.
+//
+//               This is different from NodePath::write_bam_stream()
+//               and PandaNode::encode_to_bam_stream(), in that it
+//               encodes the *entire graph* of all nodes connected to
+//               the NodePath, including all parent nodes and
+//               siblings.  (The other methods only encode this node
+//               and the nodes below it.)  This may be necessary for
+//               correct streaming of related NodePaths and
+//               restoration of instances, etc., but it does mean you
+//               must detach() a node before writing it if you want to
+//               limit the nodes that get written.
+//
+//               This method is used by __reduce__ to handle streaming
+//               of NodePaths to a pickle file.
+////////////////////////////////////////////////////////////////////
+INLINE string NodePath::
+encode_full_path_to_bam_stream() const {
+  string data;
+  if (!encode_full_path_to_bam_stream(data)) {
+    return string();
+  }
+  return data;
 }
 
 

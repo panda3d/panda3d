@@ -162,8 +162,8 @@ PUBLISHED:
   INLINE NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
   INLINE NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
-  INLINE NodePath(const NodePath &parent, PandaNode *child_node,
-                  Thread *current_thread = Thread::get_current_thread());
+  NodePath(const NodePath &parent, PandaNode *child_node,
+           Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
@@ -868,6 +868,10 @@ PUBLISHED:
 
   BLOCKING bool write_bam_file(const string &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
+
+  INLINE string encode_full_path_to_bam_stream() const;
+  bool encode_full_path_to_bam_stream(string &data, BamWriter *writer = NULL) const;
+  static NodePath decode_full_path_from_bam_stream(const string &data, BamReader *reader = NULL);
 
 private:
   static NodePathComponent *

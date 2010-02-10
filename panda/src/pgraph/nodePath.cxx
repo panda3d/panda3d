@@ -67,6 +67,7 @@
 #include "pStatTimer.h"
 #include "modelNode.h"
 #include "py_panda.h"
+#include "bam.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -135,6 +136,36 @@ static ConfigVariableEnum<EmptyNodePathType> empty_node_path
 
 // ***End temporary transition code for operator bool
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Constructor
+//       Access: Published
+//  Description: Constructs a NodePath with the indicated parent
+//               NodePath and child node; the child node must be a
+//               stashed or unstashed child of the parent.
+////////////////////////////////////////////////////////////////////
+NodePath::
+NodePath(const NodePath &parent, PandaNode *child_node, 
+         Thread *current_thread) :
+  _error_type(ET_fail)
+{
+  nassertv(child_node != (PandaNode *)NULL);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  if (parent.is_empty()) {
+    // Special case: constructing a NodePath at the root.
+    _head = PandaNode::attach(NULL, child_node, 0, pipeline_stage, current_thread);
+  } else {
+    _head = PandaNode::get_component(parent._head, child_node, pipeline_stage,
+                                     current_thread);
+  }
+  nassertv(_head != (NodePathComponent *)NULL);
+
+  if (_head != (NodePathComponent *)NULL) {
+    _error_type = ET_ok;
+  }
+  _backup_key = 0;
+}
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
@@ -236,20 +267,6 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // (e.g. this), and the arguments necessary to reconstruct this
   // object.
 
-  if (is_empty()) {
-    // Reconstruct an empty NodePath.  Not a 100% reconstruction,
-    // because we lose the specific error status, but I don't think
-    // that matters much.
-    PyObject *this_class = PyObject_Type(self);
-    if (this_class == NULL) {
-      return NULL;
-    }
-    
-    PyObject *result = Py_BuildValue("(O())", this_class);
-    Py_DECREF(this_class);
-    return result;
-  }
-
   BamWriter *writer = NULL;
   if (pickler != NULL) {
     PyObject *py_writer = PyObject_GetAttrString(pickler, "bamWriter");
@@ -262,13 +279,12 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
-  // We have a non-empty NodePath.  We need to streamify the
-  // underlying node.
+  // We have a non-empty NodePath.
 
   string bam_stream;
-  if (!node()->encode_to_bam_stream(bam_stream, writer)) {
+  if (!encode_full_path_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
-    stream << "Could not bamify object of type " << node()->get_type() << "\n";
+    stream << "Could not bamify " << this;
     string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
     return NULL;
@@ -6607,6 +6623,153 @@ write_bam_stream(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::encode_full_path_to_bam_stream
+//       Access: Published
+//  Description: Converts the NodePath object into a single
+//               stream of data using a BamWriter, and stores that
+//               data in the indicated string.  Returns true on
+//               success, false on failure.
+//
+//               This is different from NodePath::write_bam_stream()
+//               and PandaNode::encode_to_bam_stream(), in that it
+//               encodes the *entire graph* of all nodes connected to
+//               the NodePath, including all parent nodes and
+//               siblings.  (The other methods only encode this node
+//               and the nodes below it.)  This may be necessary for
+//               correct streaming of related NodePaths and
+//               restoration of instances, etc., but it does mean you
+//               must detach() a node before writing it if you want to
+//               limit the nodes that get written.
+//
+//               This method is used by __reduce__ to handle streaming
+//               of NodePaths to a pickle file.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
+  data.clear();
+  ostringstream stream;
+
+  DatagramOutputFile dout;
+  if (!dout.open(stream)) {
+    return false;
+  }
+  
+  BamWriter local_writer;
+  if (writer == NULL) {
+    // Create our own writer.
+    
+    if (!dout.write_header(_bam_header)) {
+      return false;
+    }
+    writer = &local_writer;
+  }
+  
+  writer->set_target(&dout);
+  
+  // Write an initial Datagram to represent the error type and
+  // number of nodes.
+  int num_nodes = get_num_nodes();
+  Datagram dg;
+  dg.add_uint8(_error_type);
+  dg.add_int32(num_nodes);
+  
+  if (!dout.put_datagram(dg)) {
+    writer->set_target(NULL);
+    return false;
+  }
+  
+  // Now write the nodes, one at a time.
+  for (int i = 0; i < num_nodes; ++i) {
+    PandaNode *node = get_node(num_nodes - i - 1);
+    nassertr(node != NULL, false);
+    if (!writer->write_object(node)) {
+      writer->set_target(NULL);
+      return false;
+    }
+  }
+  writer->set_target(NULL);
+  
+  data = stream.str();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::decode_full_path_from_bam_stream
+//       Access: Published, Static
+//  Description: Reads the string created by a previous call to
+//               encode_full_path_to_bam_stream(), and extracts and
+//               returns the NodePath on that string.  Returns NULL on
+//               error.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+decode_full_path_from_bam_stream(const string &data, BamReader *reader) {
+  NodePath result;
+
+  istringstream stream(data);
+
+  DatagramInputFile din;
+  if (!din.open(stream)) {
+    return NodePath::fail();
+  }
+
+  BamReader local_reader;
+  if (reader == NULL) {
+    // Create a local reader.
+
+    string head;
+    if (!din.read_header(head, _bam_header.size())) {
+      return NodePath::fail();
+    }
+    
+    if (head != _bam_header) {
+      return NodePath::fail();
+    }
+
+    reader = &local_reader;
+  }
+  
+  reader->set_source(&din);
+
+  // One initial datagram to encode the error type, and the number of nodes.
+  Datagram dg;
+  if (!din.get_datagram(dg)) {
+    return NodePath::fail();
+  }
+
+  DatagramIterator dgi(dg);
+  ErrorType error_type = (ErrorType)dgi.get_uint8();
+  int num_nodes = dgi.get_int32();
+  if (num_nodes == 0) {
+    // An empty NodePath.
+    result._error_type = error_type;
+
+  } else {
+    // A real NodePath.  Ignore error_type.
+    for (int i = 0; i < num_nodes; ++i) {
+      TypedWritable *object = reader->read_object();
+
+      if (object == (TypedWritable *)NULL ||
+          !object->is_of_type(PandaNode::get_class_type())) {
+        reader->set_source(NULL);
+        return NodePath::fail();
+      }
+  
+      if (!reader->resolve()) {
+        reader->set_source(NULL);
+        return NodePath::fail();
+      }
+
+      PandaNode *node = DCAST(PandaNode, object);
+      result = NodePath(result, node);
+    }
+  }
+  
+  reader->set_source(NULL);
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_common_ancestor
 //       Access: Private, Static
 //  Description: Walks up from both NodePaths to find the first node
@@ -7542,7 +7705,6 @@ py_decode_NodePath_from_bam_stream(const string &data) {
 ////////////////////////////////////////////////////////////////////
 NodePath
 py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data) {
-
   BamReader *reader = NULL;
   if (unpickler != NULL) {
     PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
@@ -7555,13 +7717,7 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
     }
   }
 
-  PT(PandaNode) node = PandaNode::decode_from_bam_stream(data, reader);
-  if (node == (PandaNode *)NULL) {
-    PyErr_SetString(PyExc_ValueError, "Could not unpack bam stream");
-    return NodePath();
-  }    
-
-  return NodePath(node);
+  return NodePath::decode_full_path_from_bam_stream(data, reader);
 }
 #endif  // HAVE_PYTHON
 
