@@ -295,6 +295,8 @@ run() {
   _excludes.clear();
   _ignore_sliders.clear();
   _force_joints.clear();
+  _got_transform = false;
+  _transform = LMatrix4d::ident_mat();
   _data->clear();
   _animation_convert = AC_none;
   _character_name = "";
