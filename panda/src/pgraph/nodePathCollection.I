@@ -46,6 +46,30 @@ operator + (const NodePathCollection &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::append
+//       Access: Published
+//  Description: Adds a new NodePath to the collection.  This method
+//               duplicates the add_path() method; it is provided to
+//               satisfy Python's naming convention.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+append(const NodePath &node_path) {
+  add_path(node_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::extend
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+//               This method duplicates the += operator; it is
+//               provided to satisfy Python's naming convention.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePathCollection::
+extend(const NodePathCollection &other) {
+  operator += (other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::ls
 //       Access: Published
 //  Description: Lists all the nodes at and below each node in the

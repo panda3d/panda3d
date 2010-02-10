@@ -44,3 +44,27 @@ operator + (const TextureCollection &other) const {
   a += other;
   return a;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::append
+//       Access: Published
+//  Description: Adds a new Texture to the collection.  This method
+//               duplicates the add_texture() method; it is provided to
+//               satisfy Python's naming convention.
+////////////////////////////////////////////////////////////////////
+void TextureCollection::
+append(Texture *texture) {
+  add_texture(texture);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::extend
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+//               This method duplicates the += operator; it is
+//               provided to satisfy Python's naming convention.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureCollection::
+extend(const TextureCollection &other) {
+  operator += (other);
+}

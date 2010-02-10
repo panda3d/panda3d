@@ -35,13 +35,14 @@ const int BamReader::_cur_minor = _bam_minor_ver;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
-BamReader(DatagramGenerator *generator, const Filename &name)
-  : _source(generator), _filename(name)
+BamReader(DatagramGenerator *source, const Filename &name)
+  : _source(source), _filename(name)
 {
+  _needs_init = true;
   _num_extra_objects = 0;
   _nesting_level = 0;
   _now_creating = _created_objs.end();
@@ -54,7 +55,7 @@ BamReader(DatagramGenerator *generator, const Filename &name)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
@@ -64,8 +65,24 @@ BamReader::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::set_source
+//       Access: Published
+//  Description: Changes the source of future datagrams for this
+//               BamReader.  This also implicitly calls init() if it
+//               has not already been called.
+////////////////////////////////////////////////////////////////////
+void BamReader::
+set_source(DatagramGenerator *source) {
+  _source = source;
+  if (_needs_init && _source != NULL) {
+    bool success = init();
+    nassertv(success);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::init
-//       Access: Public
+//       Access: Published
 //  Description: Initializes the BamReader prior to reading any
 //               objects from its source.  This includes reading the
 //               Bam header.
@@ -75,6 +92,9 @@ BamReader::
 ////////////////////////////////////////////////////////////////////
 bool BamReader::
 init() {
+  nassertr(_source != NULL, false);
+  nassertr(_needs_init, false);
+  _needs_init = false;
   Datagram header;
 
   if (_source->is_error()) {
@@ -135,7 +155,7 @@ init() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::set_aux_data
-//       Access: Public
+//       Access: Published
 //  Description: Associates an arbitrary block of data with the
 //               indicated object (or NULL), and the indicated name.
 //
@@ -179,7 +199,7 @@ set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_aux_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns the pointer previously associated with the
 //               bam reader by a previous call to set_aux_data(), or
 //               NULL if data with the indicated key has not been set.
@@ -201,7 +221,7 @@ get_aux_data(TypedWritable *obj, const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_object
-//       Access: Public
+//       Access: Published
 //  Description: Reads a single object from the Bam file.  If the
 //               object type is known, a new object of the appropriate
 //               type is created and returned; otherwise, NULL is
@@ -241,7 +261,7 @@ read_object() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_object
-//       Access: Public
+//       Access: Published
 //  Description: Reads a single object from the Bam file.  
 //
 //               This flavor of read_object() returns both a
@@ -321,7 +341,7 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::resolve
-//       Access: Public
+//       Access: Published
 //  Description: This may be called at any time during processing of
 //               the Bam file to resolve all the known pointers so
 //               far.  It is usually called at the end of the
@@ -470,7 +490,7 @@ resolve() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::change_pointer
-//       Access: Public
+//       Access: Published
 //  Description: Indicates that an object recently read from the bam
 //               stream should be replaced with a new object.  Any
 //               future occurrences of the original object in the
@@ -530,7 +550,7 @@ change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_point
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_handle
-//       Access: Public
+//       Access: Published
 //  Description: Reads a TypeHandle out of the Datagram.
 ////////////////////////////////////////////////////////////////////
 TypeHandle BamReader::

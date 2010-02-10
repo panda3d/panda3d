@@ -74,6 +74,14 @@ int NodePath::_max_search_depth = 7000;
 TypeHandle NodePath::_type_handle;
 
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"  
+#ifndef CPPPARSER
+extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
+extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamReader;
+#endif  // CPPPARSER
+#endif  // HAVE_PYTHON
+
 // ***Begin temporary transition code for operator bool
 enum EmptyNodePathType {
   ENP_future,
@@ -196,9 +204,33 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
 //       Access: Published
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
+//
+//               This hooks into the native pickle and cPickle
+//               modules, but it cannot properly handle
+//               self-referential BAM objects.
 ////////////////////////////////////////////////////////////////////
 PyObject *NodePath::
 __reduce__(PyObject *self) const {
+  return __reduce_persist__(self, NULL);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::__reduce_persist__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+//
+//               This is similar to __reduce__, but it provides
+//               additional support for the missing persistent-state
+//               object needed to properly support self-referential
+//               BAM objects written to the pickle stream.  This hooks
+//               into the pickle and cPickle modules implemented in
+//               direct/src/stdpy.
+////////////////////////////////////////////////////////////////////
+PyObject *NodePath::
+__reduce_persist__(PyObject *self, PyObject *pickler) const {
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
   // (e.g. this), and the arguments necessary to reconstruct this
@@ -218,11 +250,23 @@ __reduce__(PyObject *self) const {
     return result;
   }
 
+  BamWriter *writer = NULL;
+  if (pickler != NULL) {
+    PyObject *py_writer = PyObject_GetAttrString(pickler, "bamWriter");
+    if (py_writer == NULL) {
+      // It's OK if there's no bamWriter.
+      PyErr_Clear();
+    } else {
+      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      Py_DECREF(py_writer);
+    }
+  }
+
   // We have a non-empty NodePath.  We need to streamify the
   // underlying node.
 
   string bam_stream;
-  if (!node()->encode_to_bam_stream(bam_stream)) {
+  if (!node()->encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify object of type " << node()->get_type() << "\n";
     string message = stream.str();
@@ -236,16 +280,33 @@ __reduce__(PyObject *self) const {
     return NULL;
   }
 
-  PyObject *func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStream");
-  if (func == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStream()");
-    Py_DECREF(this_class);
-    return NULL;
+  PyObject *func;
+  if (writer != NULL) {
+    // The modified pickle support: call the "persistent" version of
+    // this function, which receives the unpickler itself as an
+    // additional parameter.
+    func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStreamPersist");
+    if (func == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStreamPersist()");
+      Py_DECREF(this_class);
+      return NULL;
+    }
+
+  } else {
+    // The traditional pickle support: call the non-persistent version
+    // of this function.
+
+    func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStream");
+    if (func == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStream()");
+      Py_DECREF(this_class);
+      return NULL;
+    }
   }
-  Py_DECREF(this_class);
 
   PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), bam_stream.size());
   Py_DECREF(func);
+  Py_DECREF(this_class);
   return result;
 }
 #endif  // HAVE_PYTHON
@@ -7467,7 +7528,34 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 NodePath
 py_decode_NodePath_from_bam_stream(const string &data) {
-  PT(PandaNode) node = PandaNode::decode_from_bam_stream(data);
+  return py_decode_NodePath_from_bam_stream_persist(NULL, data);
+}
+#endif  // HAVE_PYTHON
+
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: py_decode_NodePath_from_bam_stream_persist
+//       Access: Published
+//  Description: This wrapper is defined as a global function to suit
+//               pickle's needs.
+////////////////////////////////////////////////////////////////////
+NodePath
+py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data) {
+
+  BamReader *reader = NULL;
+  if (unpickler != NULL) {
+    PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
+    if (py_reader == NULL) {
+      // It's OK if there's no bamReader.
+      PyErr_Clear();
+    } else {
+      DTOOL_Call_ExtractThisPointerForType(py_reader, &Dtool_BamReader, (void **)&reader);
+      Py_DECREF(py_reader);
+    }
+  }
+
+  PT(PandaNode) node = PandaNode::decode_from_bam_stream(data, reader);
   if (node == (PandaNode *)NULL) {
     PyErr_SetString(PyExc_ValueError, "Could not unpack bam stream");
     return NodePath();

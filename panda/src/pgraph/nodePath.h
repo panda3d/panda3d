@@ -172,6 +172,7 @@ PUBLISHED:
   NodePath __copy__() const;
   PyObject *__deepcopy__(PyObject *self, PyObject *memo) const;
   PyObject *__reduce__(PyObject *self) const;
+  PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 #endif
 
   INLINE static NodePath not_found();
@@ -960,6 +961,7 @@ INLINE ostream &operator << (ostream &out, const NodePath &node_path);
 #ifdef HAVE_PYTHON
 BEGIN_PUBLISH
 NodePath py_decode_NodePath_from_bam_stream(const string &data);
+NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data);
 END_PUBLISH
 #endif
 

@@ -30,12 +30,23 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamWriter::
-BamWriter(DatagramSink *sink, const Filename &name) :
+BamWriter(DatagramSink *target, const Filename &name) :
   _filename(name),
-  _target(sink)
+  _target(target)
 {
   ++_writing_seq;
   _next_boc = BOC_adjunct;
+  _needs_init = true;
+
+  // Initialize the next object and PTA ID's.  These start counting at
+  // 1, since 0 is reserved for NULL.
+  _next_object_id = 1;
+  _long_object_id = false;
+  _next_pta_id = 1;
+  _long_pta_id = false;
+
+  _file_endian = bam_endian;
+  _file_texture_mode = bam_texture_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +71,25 @@ BamWriter::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::set_target
+//       Access: Published
+//  Description: Changes the destination of future datagrams written
+//               by the BamWriter.  This also implicitly calls init()
+//               if it has not already been called.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+set_target(DatagramSink *target) {
+  if (_target != NULL) {
+    _target->flush();
+  }
+  _target = target;
+
+  if (_needs_init && _target != NULL) {
+    init();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::init
 //       Access: Published
 //  Description: Initializes the BamWriter prior to writing any
@@ -71,6 +101,10 @@ BamWriter::
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
 init() {
+  nassertr(_target != NULL, false);
+  nassertr(_needs_init, false);
+  _needs_init = false;
+
   // Initialize the next object and PTA ID's.  These start counting at
   // 1, since 0 is reserved for NULL.
   _next_object_id = 1;
@@ -120,6 +154,8 @@ init() {
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
 write_object(const TypedWritable *object) {
+  nassertr(_target != NULL, false);
+
   // Increment the _writing_seq, so we can check for newly stale
   // objects during this operation.
   ++_writing_seq;
@@ -186,6 +222,7 @@ has_object(const TypedWritable *object) const {
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
 flush() {
+  nassertv(_target != NULL);
   _target->flush();
 }
 
@@ -555,6 +592,7 @@ enqueue_object(const TypedWritable *object) {
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
 flush_queue() {
+  nassertr(_target != NULL, false);
   // Each object we write may append more to the queue.
   while (!_object_queue.empty()) {
     const TypedWritable *object = _object_queue.front();

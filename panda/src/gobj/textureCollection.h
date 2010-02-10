@@ -31,8 +31,13 @@ PUBLISHED:
   void operator = (const TextureCollection &copy);
   INLINE ~TextureCollection();
 
-  void add_texture(Texture *node_texture);
-  bool remove_texture(Texture *node_texture);
+#ifdef HAVE_PYTHON
+  TextureCollection(PyObject *sequence);
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
+  void add_texture(Texture *texture);
+  bool remove_texture(Texture *texture);
   void add_textures_from(const TextureCollection &other);
   void remove_textures_from(const TextureCollection &other);
   void remove_duplicate_textures();
@@ -48,6 +53,10 @@ PUBLISHED:
   int size() const;
   INLINE void operator += (const TextureCollection &other);
   INLINE TextureCollection operator + (const TextureCollection &other) const;
+
+  // Method names to satisfy Python's conventions.
+  INLINE void append(Texture *texture);
+  INLINE void extend(const TextureCollection &other);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

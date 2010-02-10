@@ -99,6 +99,7 @@ RenameSet methodRenameDictionary[] = {
     { "operator typecast bool", "__nonzero__",  0 },
     { "__nonzero__"   , "__nonzero__",          0 }, 
     { "__reduce__"    , "__reduce__",           0 },
+    { "__reduce_persist__"    , "__reduce_persist__", 0 },
     { "__copy__"      , "__copy__",             0 },
     { "__deepcopy__"  , "__deepcopy__",         0 },
     { "print"         , "Cprint",               0 },

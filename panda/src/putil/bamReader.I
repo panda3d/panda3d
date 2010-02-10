@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReaderAuxData::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE BamReaderAuxData::
@@ -24,7 +24,7 @@ BamReaderAuxData() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_filename
-//       Access: Public
+//       Access: Published
 //  Description: If a BAM is a file, then the BamReader should
 //               contain the name of the file.  This enables the
 //               reader to interpret pathnames in the BAM as relative
@@ -37,7 +37,7 @@ get_filename() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_loader_options
-//       Access: Public
+//       Access: Published
 //  Description: Returns the LoaderOptions passed to the loader when
 //               the model was requested, if any.
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ get_loader_options() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::set_loader_options
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the LoaderOptions for this BamReader.
 ////////////////////////////////////////////////////////////////////
 INLINE void BamReader::
@@ -58,19 +58,20 @@ set_loader_options(const LoaderOptions &options) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::is_eof
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the reader has reached end-of-file,
 //               false otherwise.  This call is only valid after a
 //               call to read_object().
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamReader::
 is_eof() const {
+  nassertr(_source != NULL, true);
   return _source->is_eof();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_file_major_ver
-//       Access: Public
+//       Access: Published
 //  Description: Returns the major version number of the Bam file
 //               currently being read.
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +82,7 @@ get_file_major_ver() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_file_minor_ver
-//       Access: Public
+//       Access: Published
 //  Description: Returns the minor version number of the Bam file
 //               currently being read.
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +93,7 @@ get_file_minor_ver() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_file_endian
-//       Access: Public
+//       Access: Published
 //  Description: Returns the endian preference indicated by the Bam
 //               file currently being read.  This does not imply that
 //               every number is stored using the indicated
@@ -106,7 +107,7 @@ get_file_endian() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_current_major_ver
-//       Access: Public
+//       Access: Published
 //  Description: Returns the major version number of Bam files
 //               supported by the current code base.  This must match
 //               get_file_major_ver() in order to successfully read a
@@ -119,7 +120,7 @@ get_current_major_ver() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_current_minor_ver
-//       Access: Public
+//       Access: Published
 //  Description: Returns the minor version number of Bam files
 //               supported by the current code base.  This must match
 //               or exceed get_file_minor_ver() in order to
@@ -139,6 +140,7 @@ get_current_minor_ver() const {
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFile *BamReader::
 get_file() {
+  nassertr(_source != NULL, NULL);
   return _source->get_file();
 }
 
@@ -156,6 +158,7 @@ get_file() {
 ////////////////////////////////////////////////////////////////////
 INLINE streampos BamReader::
 get_file_pos() {
+  nassertr(_source != NULL, 0);
   return _source->get_file_pos();
 }
 
@@ -192,6 +195,7 @@ create_factory() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamReader::
 get_datagram(Datagram &datagram) {
+  nassertr(_source != NULL, false);
   if (_source->is_error()) {
     return false;
   }

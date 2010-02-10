@@ -62,13 +62,15 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
   PyObject *__reduce__(PyObject *self) const;
+  PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 #endif
 
   INLINE string encode_to_bam_stream() const;
-  bool encode_to_bam_stream(string &data) const;
+  bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
   static bool decode_raw_from_bam_stream(TypedWritable *&ptr, 
                                          ReferenceCount *&ref_ptr,
-                                         const string &data);
+                                         const string &data,
+                                         BamReader *reader = NULL);
 
 public:
 #ifdef HAVE_PYTHON
@@ -112,6 +114,7 @@ private:
 #ifdef HAVE_PYTHON
 BEGIN_PUBLISH
 PyObject *py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data);
+PyObject *py_decode_TypedWritable_from_bam_stream_persist(PyObject *unpickler, PyObject *this_class, const string &data);
 END_PUBLISH
 #endif
 

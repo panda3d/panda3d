@@ -16,6 +16,13 @@
 
 #include "indent.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"  
+#ifndef CPPPARSER
+extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_Texture;
+#endif  // CPPPARSER
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::Constructor
 //       Access: Published
@@ -46,13 +53,85 @@ operator = (const TextureCollection &copy) {
   _textures = copy._textures;
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::Constructor
+//       Access: Published
+//  Description: This special constructor accepts a Python list of
+//               Textures.  Since this constructor accepts a generic
+//               PyObject *, it should be the last constructor listed
+//               in the class record.
+////////////////////////////////////////////////////////////////////
+TextureCollection::
+TextureCollection(PyObject *sequence) {
+  if (!PySequence_Check(sequence)) {
+    // If passed with a non-sequence, this isn't the right constructor.
+    PyErr_SetString(PyExc_TypeError, "TextureCollection constructor requires a sequence");
+    return;
+  }
+
+  int size = PySequence_Size(sequence);
+  for (int i = 0; i < size; ++i) {
+    PyObject *item = PySequence_GetItem(sequence, i);
+    if (item == NULL) {
+      return;
+    }
+    Texture *tex = NULL;
+    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
+    Py_DECREF(item);
+    if (tex == NULL) {
+      // If one of the items in the sequence is not a Texture, can't
+      // use this constructor.
+      ostringstream stream;
+      stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";
+      string str = stream.str();
+      PyErr_SetString(PyExc_TypeError, str.c_str());
+      return;
+    }
+
+    add_texture(tex);
+  }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *TextureCollection::
+__reduce__(PyObject *self) const {
+  // Here we will return a 4-tuple: (Class, (args), None, iterator),
+  // where iterator is an iterator that will yield successive
+  // Textures.
+
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  // Since a TextureCollection is itself an iterator, we can simply
+  // pass it as the fourth tuple component.
+  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
+  Py_DECREF(this_class);
+  return result;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::add_texture
 //       Access: Published
 //  Description: Adds a new Texture to the collection.
 ////////////////////////////////////////////////////////////////////
 void TextureCollection::
-add_texture(Texture *node_texture) {
+add_texture(Texture *texture) {
   // If the pointer to our internal array is shared by any other
   // TextureCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren TextureCollection
@@ -64,7 +143,7 @@ add_texture(Texture *node_texture) {
     _textures.v() = old_textures.v();
   }
 
-  _textures.push_back(node_texture);
+  _textures.push_back(texture);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,10 +154,10 @@ add_texture(Texture *node_texture) {
 //               not a member of the collection.
 ////////////////////////////////////////////////////////////////////
 bool TextureCollection::
-remove_texture(Texture *node_texture) {
+remove_texture(Texture *texture) {
   int texture_index = -1;
   for (int i = 0; texture_index == -1 && i < (int)_textures.size(); i++) {
-    if (_textures[i] == node_texture) {
+    if (_textures[i] == texture) {
       texture_index = i;
     }
   }

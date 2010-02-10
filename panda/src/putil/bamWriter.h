@@ -72,8 +72,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL BamWriter : public BamEnums {
 PUBLISHED:
-  BamWriter(DatagramSink *sink, const Filename &name = "");
+  BamWriter(DatagramSink *target = NULL, const Filename &name = "");
   ~BamWriter();
+
+  void set_target(DatagramSink *target);
 
   bool init();
   INLINE const Filename &get_filename() const;
@@ -165,6 +167,7 @@ private:
 
   // The destination to write all the output to.
   DatagramSink *_target;
+  bool _needs_init;
 
   friend class TypedWritable;
 };

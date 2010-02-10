@@ -33,6 +33,11 @@ PUBLISHED:
   void operator = (const NodePathCollection &copy);
   INLINE ~NodePathCollection();
 
+#ifdef HAVE_PYTHON
+  NodePathCollection(PyObject *sequence);
+  PyObject *__reduce__(PyObject *self) const;
+#endif
+
   void add_path(const NodePath &node_path);
   bool remove_path(const NodePath &node_path);
   void add_paths_from(const NodePathCollection &other);
@@ -49,6 +54,10 @@ PUBLISHED:
   int size() const;
   INLINE void operator += (const NodePathCollection &other);
   INLINE NodePathCollection operator + (const NodePathCollection &other) const;
+
+  // Method names to satisfy Python's conventions.
+  INLINE void append(const NodePath &node_path);
+  INLINE void extend(const NodePathCollection &other);
 
   // Handy operations on many NodePaths at once.
   INLINE void ls() const;

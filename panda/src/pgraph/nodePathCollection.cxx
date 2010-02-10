@@ -21,6 +21,13 @@
 
 #include "indent.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"  
+#ifndef CPPPARSER
+extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_NodePath;
+#endif  // CPPPARSER
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
 //       Access: Published
@@ -50,6 +57,78 @@ void NodePathCollection::
 operator = (const NodePathCollection &copy) {
   _node_paths = copy._node_paths;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::Constructor
+//       Access: Published
+//  Description: This special constructor accepts a Python list of
+//               NodePaths.  Since this constructor accepts a generic
+//               PyObject *, it should be the last constructor listed
+//               in the class record.
+////////////////////////////////////////////////////////////////////
+NodePathCollection::
+NodePathCollection(PyObject *sequence) {
+  if (!PySequence_Check(sequence)) {
+    // If passed with a non-sequence, this isn't the right constructor.
+    PyErr_SetString(PyExc_TypeError, "NodePathCollection constructor requires a sequence");
+    return;
+  }
+
+  int size = PySequence_Size(sequence);
+  for (int i = 0; i < size; ++i) {
+    PyObject *item = PySequence_GetItem(sequence, i);
+    if (item == NULL) {
+      return;
+    }
+    NodePath *np = NULL;
+    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_NodePath, (void **)&np);
+    Py_DECREF(item);
+    if (np == NULL) {
+      // If one of the items in the sequence is not a NodePath, can't
+      // use this constructor.
+      ostringstream stream;
+      stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
+      string str = stream.str();
+      PyErr_SetString(PyExc_TypeError, str.c_str());
+      return;
+    }
+
+    add_path(*np);
+  }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::__reduce__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+////////////////////////////////////////////////////////////////////
+PyObject *NodePathCollection::
+__reduce__(PyObject *self) const {
+  // Here we will return a 4-tuple: (Class, (args), None, iterator),
+  // where iterator is an iterator that will yield successive
+  // NodePaths.
+
+  // We should return at least a 2-tuple, (Class, (args)): the
+  // necessary class object whose constructor we should call
+  // (e.g. this), and the arguments necessary to reconstruct this
+  // object.
+
+  PyObject *this_class = PyObject_Type(self);
+  if (this_class == NULL) {
+    return NULL;
+  }
+
+  // Since a NodePathCollection is itself an iterator, we can simply
+  // pass it as the fourth tuple component.
+  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
+  Py_DECREF(this_class);
+  return result;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::add_path

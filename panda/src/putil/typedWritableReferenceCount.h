@@ -41,7 +41,7 @@ public:
   virtual ReferenceCount *as_reference_count();
 
 PUBLISHED:
-  static PT(TypedWritableReferenceCount) decode_from_bam_stream(const string &data);
+  static PT(TypedWritableReferenceCount) decode_from_bam_stream(const string &data, BamReader *reader = NULL);
 
 public:
   virtual TypeHandle get_type() const {

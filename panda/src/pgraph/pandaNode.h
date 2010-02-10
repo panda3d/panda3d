@@ -307,7 +307,7 @@ PUBLISHED:
 
 
 PUBLISHED:
-  static PT(PandaNode) decode_from_bam_stream(const string &data);
+  static PT(PandaNode) decode_from_bam_stream(const string &data, BamReader *reader = NULL);
 
 protected:
   class BoundsData;

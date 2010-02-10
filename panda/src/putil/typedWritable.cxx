@@ -25,6 +25,13 @@ LightMutex TypedWritable::_bam_writers_lock;
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"  
+#ifndef CPPPARSER
+extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
+#endif  // CPPPARSER
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedWritable::Destructor
 //       Access: Public, Virtual
@@ -155,9 +162,33 @@ as_reference_count() {
 //       Access: Published
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
+//
+//               This hooks into the native pickle and cPickle
+//               modules, but it cannot properly handle
+//               self-referential BAM objects.
 ////////////////////////////////////////////////////////////////////
 PyObject *TypedWritable::
 __reduce__(PyObject *self) const {
+  return __reduce_persist__(self, NULL);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::__reduce_persist__
+//       Access: Published
+//  Description: This special Python method is implement to provide
+//               support for the pickle module.
+//
+//               This is similar to __reduce__, but it provides
+//               additional support for the missing persistent-state
+//               object needed to properly support self-referential
+//               BAM objects written to the pickle stream.  This hooks
+//               into the pickle and cPickle modules implemented in
+//               direct/src/stdpy.
+////////////////////////////////////////////////////////////////////
+PyObject *TypedWritable::
+__reduce_persist__(PyObject *self, PyObject *pickler) const {
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
   // (e.g. this), and the arguments necessary to reconstruct this
@@ -175,9 +206,21 @@ __reduce__(PyObject *self) const {
   }
   Py_DECREF(method);
 
+  BamWriter *writer = NULL;
+  if (pickler != NULL) {
+    PyObject *py_writer = PyObject_GetAttrString(pickler, "bamWriter");
+    if (py_writer == NULL) {
+      // It's OK if there's no bamWriter.
+      PyErr_Clear();
+    } else {
+      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      Py_DECREF(py_writer);
+    }
+  }
+
   // First, streamify the object, if possible.
   string bam_stream;
-  if (!encode_to_bam_stream(bam_stream)) {
+  if (!encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify object of type " << get_type() << "\n";
     string message = stream.str();
@@ -191,11 +234,28 @@ __reduce__(PyObject *self) const {
     return NULL;
   }
 
-  PyObject *func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStream");
-  if (func == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStream()");
-    Py_DECREF(this_class);
-    return NULL;
+  PyObject *func;
+  if (writer != NULL) {
+    // The modified pickle support: call the "persistent" version of
+    // this function, which receives the unpickler itself as an
+    // additional parameter.
+    func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStreamPersist");
+    if (func == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStreamPersist()");
+      Py_DECREF(this_class);
+      return NULL;
+    }
+
+  } else {
+    // The traditional pickle support: call the non-persistent version
+    // of this function.
+
+    func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStream");
+    if (func == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStream()");
+      Py_DECREF(this_class);
+      return NULL;
+    }
   }
 
   PyObject *result = Py_BuildValue("(O(Os#))", func, this_class, bam_stream.data(), bam_stream.size());
@@ -220,7 +280,7 @@ __reduce__(PyObject *self) const {
 //               of them together.
 ////////////////////////////////////////////////////////////////////
 bool TypedWritable::
-encode_to_bam_stream(string &data) const {
+encode_to_bam_stream(string &data, BamWriter *writer) const {
   data.clear();
   ostringstream stream;
 
@@ -232,17 +292,27 @@ encode_to_bam_stream(string &data) const {
       return false;
     }
     
-    if (!dout.write_header(_bam_header)) {
-      return false;
-    }
+    if (writer == NULL) {
+      // Create our own writer.
     
-    {
+      if (!dout.write_header(_bam_header)) {
+        return false;
+      }
+
       BamWriter writer(&dout, "bam_stream");
       if (!writer.init()) {
         return false;
       }
       
       if (!writer.write_object(this)) {
+        return false;
+      }
+    } else {
+      // Use the existing writer.
+      writer->set_target(&dout);
+      bool result = writer->write_object(this);
+      writer->set_target(NULL);
+      if (!result) {
         return false;
       }
     }
@@ -281,25 +351,26 @@ encode_to_bam_stream(string &data) const {
 ////////////////////////////////////////////////////////////////////
 bool TypedWritable::
 decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
-                           const string &data) {
+                           const string &data, BamReader *reader) {
   istringstream stream(data);
 
   DatagramInputFile din;
   if (!din.open(stream)) {
     return false;
   }
-  
-  string head;
-  if (!din.read_header(head, _bam_header.size())) {
-    return false;
-  }
-  
-  if (head != _bam_header) {
-    return false;
-  }
 
-  // We scope this so we can control when the BamReader destructs.
-  {
+  if (reader == NULL) {
+    // Create a local reader.
+  
+    string head;
+    if (!din.read_header(head, _bam_header.size())) {
+      return false;
+    }
+    
+    if (head != _bam_header) {
+      return false;
+    }
+
     BamReader reader(&din, "bam_stream");
     if (!reader.init()) {
       return false;
@@ -321,7 +392,32 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
     // Protect the pointer from accidental deletion when the BamReader
     // goes away.
     ref_ptr->ref();
+
+  } else {
+    // Use the existing reader.
+    reader->set_source(&din);
+    if (!reader->read_object(ptr, ref_ptr)) {
+      reader->set_source(NULL);
+      return false;
+    }
+    
+    if (!reader->resolve()) {
+      reader->set_source(NULL);
+      return false;
+    }
+    
+    if (ref_ptr == NULL) {
+      // Can't support non-reference-counted objects.
+      reader->set_source(NULL);
+      return false;
+    }
+
+    // This BamReader isn't going away, but we have to balance the
+    // unref() below.
+    ref_ptr->ref();
+    reader->set_source(NULL);
   }
+
 
   // Now decrement the ref count, without deleting the object.  This
   // may reduce the reference count to zero, but that's OK--we trust
@@ -393,10 +489,47 @@ find_global_decode(PyObject *this_class, const char *func_name) {
 //       Access: Published
 //  Description: This wrapper is defined as a global function to suit
 //               pickle's needs.
+//
+//               This hooks into the native pickle and cPickle
+//               modules, but it cannot properly handle
+//               self-referential BAM objects.
 ////////////////////////////////////////////////////////////////////
 PyObject *
 py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data) {
-  // We need the function TypedWritable::decode_from_bam_stream, which
+  return py_decode_TypedWritable_from_bam_stream_persist(NULL, this_class, data);
+}
+#endif  // HAVE_PYTHON
+
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: py_decode_TypedWritable_from_bam_stream_persist
+//       Access: Published
+//  Description: This wrapper is defined as a global function to suit
+//               pickle's needs.
+//
+//               This is similar to
+//               py_decode_TypedWritable_from_bam_stream, but it
+//               provides additional support for the missing
+//               persistent-state object needed to properly support
+//               self-referential BAM objects written to the pickle
+//               stream.  This hooks into the pickle and cPickle
+//               modules implemented in direct/src/stdpy.
+////////////////////////////////////////////////////////////////////
+PyObject *
+py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *this_class, const string &data) {
+
+  PyObject *py_reader = NULL;
+  if (pickler != NULL) {
+    py_reader = PyObject_GetAttrString(pickler, "bamReader");
+    if (py_reader == NULL) {
+      // It's OK if there's no bamReader.
+      PyErr_Clear();
+    }
+  }
+
+  // We need the function PandaNode::decode_from_bam_stream or
+  // TypedWritableReferenceCount::decode_from_bam_stream, which
   // invokes the BamReader to reconstruct this object.  Since we use
   // the specific object's class as the pointer, we get the particular
   // instance of decode_from_bam_stream appropriate to this class.
@@ -406,7 +539,14 @@ py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data
     return NULL;
   }
 
-  PyObject *result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), data.size());
+  PyObject *result;
+  if (py_reader != NULL){
+    result = PyObject_CallFunction(func, (char *)"(s#O)", data.data(), data.size(), py_reader);
+    Py_DECREF(py_reader);
+  } else {
+    result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), data.size());
+  }
+
   if (result == NULL) {
     return NULL;
   }

@@ -43,11 +43,11 @@ as_reference_count() {
 //               on the return value.
 ////////////////////////////////////////////////////////////////////
 PT(TypedWritableReferenceCount) TypedWritableReferenceCount::
-decode_from_bam_stream(const string &data) {
+decode_from_bam_stream(const string &data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (!TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, data)) {
+  if (!TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, data, reader)) {
     return NULL;
   }
 

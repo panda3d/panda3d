@@ -125,8 +125,10 @@ public:
 
 PUBLISHED:
   // The primary interface for a caller.
-  BamReader(DatagramGenerator *generator, const Filename &name = "");
+  BamReader(DatagramGenerator *source = NULL, const Filename &name = "");
   ~BamReader();
+
+  void set_source(DatagramGenerator *source);
 
   bool init();
 
@@ -221,6 +223,7 @@ private:
   static WritableFactory *_factory;
 
   DatagramGenerator *_source;
+  bool _needs_init;
   
   bool _long_object_id;
   bool _long_pta_id;
