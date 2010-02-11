@@ -10,7 +10,7 @@ import wx
 class WxSlider(wx.Slider):
     def __init__(self, parent, id, value, minValue, maxValue,\
                  pos=wx.DefaultPosition, size=wx.DefaultSize,\
-                 style=wx.SL_HORIZONTAL, validator=wx.DefaultValidator, name="slider"):
+                 style=wx.SL_HORIZONTAL, validator=wx.DefaultValidator, name="slider", textSize=(40,20)):
 
         self.maxValue = maxValue
         self.minValue = minValue
@@ -29,7 +29,7 @@ class WxSlider(wx.Slider):
                 wx.StaticText(parent, -1, strMaxValue, (pos[0] + size[0] - len(strMaxValue) * 8 , pos[1]))
                 strValue = "%.2f"%value
                 self.textValue = wx.TextCtrl(parent, -1, strValue,\
-                                             (pos[0] + size[0] /2 - 20, pos[1]), (40, 20),\
+                                             (pos[0] + size[0] /2 - textSize[0]/2, pos[1]), textSize,\
                                              wx.TE_CENTER | wx.TE_PROCESS_ENTER)
 
                 self.textValue.Disable()
