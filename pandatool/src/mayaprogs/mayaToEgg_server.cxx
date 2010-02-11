@@ -286,6 +286,10 @@ run() {
   if (_input_units == DU_invalid) {
     _input_units = converter.get_input_units();
   }
+
+  // Add the command line comment at the top of the egg file
+  append_command_comment(_data);
+
   write_egg_file();
   
   // Clean and out
@@ -297,6 +301,7 @@ run() {
   _force_joints.clear();
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
+  _program_args.clear();
   _data->clear();
   _animation_convert = AC_none;
   _character_name = "";
