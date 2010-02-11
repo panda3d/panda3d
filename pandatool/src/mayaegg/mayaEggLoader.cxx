@@ -754,7 +754,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   vtx._external_index = vert->get_index()-1;
 
   EggVertex::GroupRef::const_iterator gri;
-  double remaining_weight = 1.0;
+  //double remaining_weight = 1.0;
   for (gri = vert->gref_begin(); gri != vert->gref_end(); ++gri) {
     EggGroup *egg_joint = (*gri);
     double membership = egg_joint->get_vertex_membership(vert);
@@ -764,7 +764,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
       mayaloader_cat.warning() << "negative weight value " << membership << " is replaced with 0 on: " << context->get_name() << endl;
       membership = 0.0;
     }
-    remaining_weight -= membership;
+    //remaining_weight -= membership;
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
     vtx._sumWeights += membership; // [gjeon] to be used in normalizing weights
   }
@@ -774,24 +774,24 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
       vtx._weights.push_back(MayaEggWeight(1.0, context));
       vtx._sumWeights == 1.0; // [gjeon] to be used in normalizing weights
     }
-    remaining_weight = 0.0;
-  } else {
+    //remaining_weight = 0.0;
+  }/* else {
     // some soft models came up short of 1.0 on vertex membership
     // add the remainder of the weight on first joint in the membership
-    if ((remaining_weight) > 0.01) {
+        if ((remaining_weight) > 0.01) {
       gri = vert->gref_begin();
       EggGroup *egg_joint = (*gri);
       double membership = egg_joint->get_vertex_membership(vert);
       vtx._weights.push_back(MayaEggWeight(membership+remaining_weight, egg_joint));
-      vtx._sumWeights += (membership + remaining_weight); // [gjeon] to be used in normalizing weights
+      vtx._sumWeights += (membership + remaining_weight);
     }
-  }
+    }*/ //[gjeon] we had better nomarlize weights than add remaining weight to first weight
 
   VertTable::const_iterator vti = _vert_tab.find(vtx);
   if (vti != _vert_tab.end()) {
-    if ((remaining_weight) > 0.01) {
+    /*    if ((remaining_weight) > 0.01) {
       mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
-    }    
+      } */   
     if (mayaloader_cat.is_spam()) {
       ostringstream stream;
       stream << "(" << vti->_pos << " " << vti->_normal << " " << vti->_uv << ")\n";
@@ -811,10 +811,10 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   
   //_vert_count++;
   vtx._index = _vert_count++;
-
+  /*
   if ((remaining_weight) > 0.01) {
     mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vtx._index << endl;
-  }    
+    } */   
 
   _vertexArray.append(MakeMayaPoint(vtx._pos));
   if (vert->has_normal()) {
