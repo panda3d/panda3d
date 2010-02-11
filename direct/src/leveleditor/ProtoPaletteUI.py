@@ -7,38 +7,38 @@ import cPickle as pickl
 from pandac.PandaModules import *
 from ObjectPaletteBase import *
 
-class FileDrop(wx.FileDropTarget):
-    def __init__(self, editor):
-        wx.FileDropTarget.__init__(self)
-        self.editor = editor
+class UniversalDropTarget(wx.PyDropTarget):
+   """Implements drop target functionality to receive files, bitmaps and text"""
+   def __init__(self, editor):
+       wx.PyDropTarget.__init__(self)
+       self.editor = editor
+       self.do = wx.DataObjectComposite()  # the dataobject that gets filled with the appropriate data
+       self.filedo = wx.FileDataObject()
+       self.textdo = wx.TextDataObject()
+       self.bmpdo = wx.BitmapDataObject()
+       self.do.Add(self.filedo)
+       self.do.Add(self.bmpdo)
+       self.do.Add(self.textdo)
+       self.SetDataObject(self.do)
 
-    def OnDropFiles(self, x, y, filenames):
-        for filename in filenames:
-            name = os.path.basename(filename)
+   def OnData(self, x, y, d):
+       """
+       Handles drag/dropping files/text or a bitmap
+       """
+       if self.GetData():
+          df = self.do.GetReceivedFormat().GetType()
+          if df in [wx.DF_UNICODETEXT, wx.DF_TEXT]:
+             text = self.textdo.GetText()
+             self.editor.ui.protoPaletteUI.ChangeHierarchy(text, x, y)
 
-            if self.editor.protoPalette.findItem(name):
-               print 'This model already exists in ProtoPalette!'
-               return
+          elif df == wx.DF_FILENAME:
+               for name in self.filedo.GetFilenames():
+                   self.editor.ui.protoPaletteUI.AquireFile(name)
 
-            modelname = Filename.fromOsSpecific(filename).getFullpath()
-            if modelname.endswith('.mb') or\
-               modelname.endswith('.ma'):
-                self.editor.convertMaya(modelname)
-                return
-            itemData = ObjectBase(name=name, model=modelname, actor=True)
-            self.editor.protoPalette.add(itemData)
+          elif df == wx.DF_BITMAP:
+               bmp = self.bmpdo.GetBitmap()
 
-            newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
-            self.editor.ui.protoPaletteUI.tree.SetItemPyData(newItem, itemData)
-            self.editor.ui.protoPaletteUI.tree.ScrollTo(newItem)
-
-class ProtoPaletteUITextDrop(wx.TextDropTarget):
-    def __init__(self, editor):
-        wx.TextDropTarget.__init__(self)
-        self.editor = editor
-
-    def OnDropText(self, x, y, text):
-        self.editor.ui.protoPaletteUI.ChangeHierarchy(text, x, y)
+       return d  # you must return this
 
 class ProtoPaletteUI(wx.Panel):
     def __init__(self, parent, editor):
@@ -81,12 +81,10 @@ class ProtoPaletteUI(wx.Panel):
         parentSizer.Add(self, 1, wx.EXPAND, 0)
         parent.SetSizer(parentSizer); parent.Layout()
 
-        self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
         self.tree.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnEndLabelEdit)
-        self.tree.Bind(wx.EVT_KILL_FOCUS , self.OnKillFocus)
 
-        self.SetDropTarget(FileDrop(self.editor))
+        self.SetDropTarget(UniversalDropTarget(self.editor))
 
     def traverse(self, parent, itemName):
         # prevent from traversing into self
@@ -133,10 +131,6 @@ class ProtoPaletteUI(wx.Panel):
             if item is None:
                self.addTreeNode(key, parentItem, items)
 
-    def onSelected(self, event):
-        data = self.tree.GetItemPyData(event.GetItem())
-        self.SetDropTarget(ProtoPaletteUITextDrop(self.editor))
-
     def onBeginDrag(self, event):
         item = event.GetItem()
 
@@ -167,10 +161,6 @@ class ProtoPaletteUI(wx.Panel):
         else:
             event.Veto()
             wx.MessageBox("'%s' renaming is not allowed" % self.rootName, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
-
-    def OnKillFocus(self, event):
-        print "Leaving protoUI window..."
-        self.SetDropTarget(FileDrop(self.editor))
 
     def menuAppendGenItems(self):
         for item in self.menuItemsGen:
@@ -262,7 +252,6 @@ class ProtoPaletteUI(wx.Panel):
            item, cookie = self.tree.GetNextChild(parent, cookie)
 
     def ChangeHierarchy(self, itemName, x, y):
-        #import pdb;set_trace()
         parent = self.tree.GetRootItem()
         item = self.traverse(parent, itemName)
         if item is None:
@@ -273,12 +262,15 @@ class ProtoPaletteUI(wx.Panel):
            # prevent draging into itself
            if  dragToItem == item:
                return
+           dragToItemName = self.tree.GetItemText(dragToItem)
+           if isinstance(self.editor.protoPalette.findItem(dragToItemName), ObjectBase):
+              # this is a file node, bailing out
+              return
+
            newItem = self.tree.AppendItem(dragToItem, itemName)
 
            itemObj = self.editor.protoPalette.findItem(itemName)
            if itemObj is not None:
-              dragToItemName = self.tree.GetItemText(dragToItem)
-              
               # reparenting the data objects...
               if dragToItemName == self.rootName:
                  self.editor.protoPalette.add(itemObj)
@@ -287,3 +279,22 @@ class ProtoPaletteUI(wx.Panel):
 
            self.ReParent(item, newItem)
            self.tree.Delete(item)
+
+    def AquireFile(self, filename):
+        name = os.path.basename(filename)
+        
+        if self.editor.protoPalette.findItem(name):
+           print 'This model already exists in ProtoPalette!'
+           return
+        
+        modelname = Filename.fromOsSpecific(filename).getFullpath()
+        if modelname.endswith('.mb') or\
+           modelname.endswith('.ma'):
+            self.editor.convertMaya(modelname)
+            return
+        itemData = ObjectBase(name=name, model=modelname, actor=True)
+        self.editor.protoPalette.add(itemData)
+        
+        newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
+        self.tree.SetItemPyData(newItem, itemData)
+        self.tree.ScrollTo(newItem)
