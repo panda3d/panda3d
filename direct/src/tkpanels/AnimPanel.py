@@ -128,9 +128,17 @@ class AnimPanel(AppShell):
             'toStart', (), None,
             Button, (controlFrame,),
             text = '<<',
-            width = 8,
+            width = 4,
             command = self.resetAllToZero)
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
+        
+        self.toPreviousFrameButton = self.createcomponent(
+            'toPreviousFrame', (), None,
+            Button, (controlFrame,),
+            text = '<',
+            width = 4,
+            command = self.previousFrame)
+        self.toPreviousFrameButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.playButton = self.createcomponent(
             'playButton', (), None,
@@ -145,12 +153,20 @@ class AnimPanel(AppShell):
             text = 'Stop', width = 8,
             command = self.stopActorControls)
         self.stopButton.pack(side = LEFT, expand = 1, fill = X)
+        
+        self.toNextFrameButton = self.createcomponent(
+            'toNextFrame', (), None,
+            Button, (controlFrame,),
+            text = '>',
+            width = 4,
+            command = self.nextFrame)
+        self.toNextFrameButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.toEndButton = self.createcomponent(
             'toEnd', (), None,
             Button, (controlFrame,),
             text = '>>',
-            width = 8,
+            width = 4,
             command = self.resetAllToEnd)
         self.toEndButton.pack(side = LEFT, expand = 1, fill = X)
 
@@ -334,7 +350,15 @@ class AnimPanel(AppShell):
 
     def resetAllToEnd(self):
         for actorControl in self.actorControlList:
-            actorControl.resetToEnd()                        
+            actorControl.resetToEnd()
+    
+    def nextFrame(self):
+        for actorControl in self.actorControlList:
+            actorControl.nextFrame()
+      
+    def previousFrame(self):
+        for actorControl in self.actorControlList:
+            actorControl.previousFrame()
                         
     def setDestroyCallBack(self, callBack):    
         self.destroyCallBack = callBack
@@ -413,6 +437,7 @@ class ActorControl(Pmw.MegaWidget):
                               command = self.resetToZero)
         labelMenu.add_command(label = 'Jump To End Time',
                               command = self.resetToEnd)
+                              
         # Now associate menu with menubutton
         self._label['menu'] = labelMenu
         self._label.pack(side = LEFT, fill = X)
@@ -620,7 +645,22 @@ class ActorControl(Pmw.MegaWidget):
         # This flag forces self.currT to be updated to new value
         self.fOneShot = 1
         self.goToT(self.duration)
-
+        
+    def nextFrame(self):
+        """
+        There needed to be a better way to select an exact frame number
+        as the control slider doesn't have the desired resolution
+        """
+        self.fOneShot = 1
+        self.goToT((self.currT+(1/self.fps))%self.duration)
+    
+    def previousFrame(self):
+        """
+        There needed to be a better way to select an exact frame number
+        as the control slider doesn't have the desired resolution
+        """
+        self.fOneShot = 1
+        self.goToT((self.currT-(1/self.fps))%self.duration)
 
 """
 # EXAMPLE CODE
