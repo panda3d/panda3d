@@ -2363,31 +2363,20 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::encode_full_path_to_bam_stream
+//     Function: NodePath::encode_to_bam_stream
 //       Access: Published
 //  Description: Converts the NodePath object into a single
 //               stream of data using a BamWriter, and returns that
 //               data as a string string.  Returns empty string on
-//               failure.
-//
-//               This is different from NodePath::write_bam_stream()
-//               and PandaNode::encode_to_bam_stream(), in that it
-//               encodes the *entire graph* of all nodes connected to
-//               the NodePath, including all parent nodes and
-//               siblings.  (The other methods only encode this node
-//               and the nodes below it.)  This may be necessary for
-//               correct streaming of related NodePaths and
-//               restoration of instances, etc., but it does mean you
-//               must detach() a node before writing it if you want to
-//               limit the nodes that get written.
+//               failure.  This is similar to write_bam_stream().
 //
 //               This method is used by __reduce__ to handle streaming
 //               of NodePaths to a pickle file.
 ////////////////////////////////////////////////////////////////////
 INLINE string NodePath::
-encode_full_path_to_bam_stream() const {
+encode_to_bam_stream() const {
   string data;
-  if (!encode_full_path_to_bam_stream(data)) {
+  if (!encode_to_bam_stream(data)) {
     return string();
   }
   return data;

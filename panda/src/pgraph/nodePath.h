@@ -869,9 +869,9 @@ PUBLISHED:
   BLOCKING bool write_bam_file(const string &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
 
-  INLINE string encode_full_path_to_bam_stream() const;
-  bool encode_full_path_to_bam_stream(string &data, BamWriter *writer = NULL) const;
-  static NodePath decode_full_path_from_bam_stream(const string &data, BamReader *reader = NULL);
+  INLINE string encode_to_bam_stream() const;
+  bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
+  static NodePath decode_from_bam_stream(const string &data, BamReader *reader = NULL);
 
 private:
   static NodePathComponent *

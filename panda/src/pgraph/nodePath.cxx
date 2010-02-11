@@ -154,7 +154,9 @@ NodePath(const NodePath &parent, PandaNode *child_node,
 
   if (parent.is_empty()) {
     // Special case: constructing a NodePath at the root.
-    _head = PandaNode::attach(NULL, child_node, 0, pipeline_stage, current_thread);
+    _head = PandaNode::get_top_component(child_node, true, 
+                                         pipeline_stage, current_thread);
+
   } else {
     _head = PandaNode::get_component(parent._head, child_node, pipeline_stage,
                                      current_thread);
@@ -282,7 +284,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // We have a non-empty NodePath.
 
   string bam_stream;
-  if (!encode_full_path_to_bam_stream(bam_stream, writer)) {
+  if (!encode_to_bam_stream(bam_stream, writer)) {
     ostringstream stream;
     stream << "Could not bamify " << this;
     string message = stream.str();
@@ -6623,29 +6625,35 @@ write_bam_stream(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::encode_full_path_to_bam_stream
+//     Function: NodePath::encode_to_bam_stream
 //       Access: Published
 //  Description: Converts the NodePath object into a single
 //               stream of data using a BamWriter, and stores that
 //               data in the indicated string.  Returns true on
 //               success, false on failure.
 //
-//               This is different from NodePath::write_bam_stream()
-//               and PandaNode::encode_to_bam_stream(), in that it
-//               encodes the *entire graph* of all nodes connected to
-//               the NodePath, including all parent nodes and
-//               siblings.  (The other methods only encode this node
-//               and the nodes below it.)  This may be necessary for
-//               correct streaming of related NodePaths and
-//               restoration of instances, etc., but it does mean you
-//               must detach() a node before writing it if you want to
-//               limit the nodes that get written.
+//               If the BamWriter is NULL, this behaves the same way
+//               as NodePath::write_bam_stream() and
+//               PandaNode::encode_to_bam_stream(), in the sense that
+//               it only writes this node and all nodes below it.
+//
+//               However, if the BamWriter is not NULL, it behaves
+//               very differently.  In this case, it encodes the
+//               *entire graph* of all nodes connected to the
+//               NodePath, including all parent nodes and siblings.
+//               This is necessary for correct streaming of related
+//               NodePaths and restoration of instances, etc., but it
+//               does mean you must detach() a node before writing it
+//               if you want to limit the nodes that get written.
 //
 //               This method is used by __reduce__ to handle streaming
-//               of NodePaths to a pickle file.
+//               of NodePaths to a pickle file.  The BamWriter case is
+//               used by the direct.stdpy.pickle module, while the
+//               saner, non-BamWriter case is used when the standard
+//               pickle module calls this function.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
+encode_to_bam_stream(string &data, BamWriter *writer) const {
   data.clear();
   ostringstream stream;
 
@@ -6655,6 +6663,7 @@ encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
   }
   
   BamWriter local_writer;
+  bool used_local_writer = false;
   if (writer == NULL) {
     // Create our own writer.
     
@@ -6662,13 +6671,19 @@ encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
       return false;
     }
     writer = &local_writer;
+    used_local_writer = true;
   }
   
   writer->set_target(&dout);
-  
+
+  int num_nodes = get_num_nodes();
+  if (used_local_writer && num_nodes > 1) {
+    // In this case--no BamWriter--we only write the bottom node.
+    num_nodes = 1;
+  }
+
   // Write an initial Datagram to represent the error type and
   // number of nodes.
-  int num_nodes = get_num_nodes();
   Datagram dg;
   dg.add_uint8(_error_type);
   dg.add_int32(num_nodes);
@@ -6677,7 +6692,7 @@ encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
     writer->set_target(NULL);
     return false;
   }
-  
+
   // Now write the nodes, one at a time.
   for (int i = 0; i < num_nodes; ++i) {
     PandaNode *node = get_node(num_nodes - i - 1);
@@ -6694,15 +6709,15 @@ encode_full_path_to_bam_stream(string &data, BamWriter *writer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::decode_full_path_from_bam_stream
+//     Function: NodePath::decode_from_bam_stream
 //       Access: Published, Static
 //  Description: Reads the string created by a previous call to
-//               encode_full_path_to_bam_stream(), and extracts and
+//               encode_to_bam_stream(), and extracts and
 //               returns the NodePath on that string.  Returns NULL on
 //               error.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-decode_full_path_from_bam_stream(const string &data, BamReader *reader) {
+decode_from_bam_stream(const string &data, BamReader *reader) {
   NodePath result;
 
   istringstream stream(data);
@@ -7717,7 +7732,7 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
     }
   }
 
-  return NodePath::decode_full_path_from_bam_stream(data, reader);
+  return NodePath::decode_from_bam_stream(data, reader);
 }
 #endif  // HAVE_PYTHON
 
