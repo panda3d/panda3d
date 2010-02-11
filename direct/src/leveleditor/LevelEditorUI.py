@@ -96,16 +96,24 @@ class LevelEditorUI(WxAppShell):
         menuItem = self.menuEdit.Append(-1, "&Duplicate")
         self.Bind(wx.EVT_MENU, self.onDuplicate, menuItem)
 
-        self.gridSnapMenuItem = self.menuEdit.Append(-1, "&Grid Snap", kind = wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
+        menuItem = self.menuEdit.Append(-1, "&Undo")
+        self.Bind(wx.EVT_MENU, self.editor.actionMgr.undo, menuItem)
+
+        menuItem = self.menuEdit.Append(-1, "&Rndo")
+        self.Bind(wx.EVT_MENU, self.editor.actionMgr.redo, menuItem)
 
         self.menuOptions = wx.Menu()
         self.menuBar.Insert(2, self.menuOptions, "&Options")
 
         self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size")
         self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
-        self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "&Show Panda Objects", kind = wx.ITEM_CHECK)
+
+        self.gridSnapMenuItem = self.menuOptions.Append(-1, "Grid &Snap", kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
+
+        self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "Show &Panda Objects", kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onShowPandaObjects, self.showPandaObjectsMenuItem)
+
         self.hotKeysMenuItem = self.menuOptions.Append(-1, "&Hot Keys")
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
 
@@ -130,15 +138,32 @@ class LevelEditorUI(WxAppShell):
         self.perspView = Viewport.makePerspective(self.viewFrame)
         self.viewFrame.AppendWindow(self.perspView)
 
-        self.leftBarUpFrame = wx.SplitterWindow(self.leftFrame, wx.SP_3D | wx.SP_BORDER)
-        self.leftBarUpPane = wx.Panel(self.leftBarUpFrame)
-        self.leftBarMidPane = wx.Panel(self.leftBarUpFrame)
+        self.leftBarUpPane = wx.Panel(self.leftFrame)
+        self.leftBarUpNB = wx.Notebook(self.leftBarUpPane, style=wx.NB_BOTTOM)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.leftBarUpNB, 1, wx.EXPAND)
+        self.leftBarUpPane.SetSizer(sizer)
+        self.leftBarUpPane0 = wx.Panel(self.leftBarUpNB, -1)
+        self.leftBarUpNB.AddPage(self.leftBarUpPane0, 'Object Palette')
+        self.leftBarUpPane1 = wx.Panel(self.leftBarUpNB, -1)
+        self.leftBarUpNB.AddPage(self.leftBarUpPane1, 'Proto Palette')
         self.leftBarDownPane = wx.Panel(self.leftFrame)
+        self.leftBarDownNB = wx.Notebook(self.leftBarDownPane)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.leftBarDownNB, 1, wx.EXPAND)
+        self.leftBarDownPane.SetSizer(sizer)
+        self.leftBarDownPane0 = wx.Panel(self.leftBarDownNB, -1)
+        self.leftBarDownNB.AddPage(self.leftBarDownPane0, 'Scene Graph')
         self.rightBarUpPane = wx.Panel(self.rightFrame)
         self.rightBarDownPane = wx.Panel(self.rightFrame)
+        self.rightBarDownNB = wx.Notebook(self.rightBarDownPane)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.rightBarDownNB, 1, wx.EXPAND)
+        self.rightBarDownPane.SetSizer(sizer)
+        self.rightBarDownPane0 = wx.Panel(self.rightBarDownNB, -1)
+        self.rightBarDownNB.AddPage(self.rightBarDownPane0, 'Layers')
 
-        self.leftFrame.SplitHorizontally(self.leftBarUpFrame, self.leftBarDownPane)
-        self.leftBarUpFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarMidPane)
+        self.leftFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarDownPane)
         self.rightFrame.SplitHorizontally(self.rightBarUpPane, self.rightBarDownPane)
         self.mainFrame.SplitVertically(self.leftFrame, self.baseFrame, 200)
         self.baseFrame.SplitVertically(self.viewFrame, self.rightFrame, 600)
@@ -149,7 +174,6 @@ class LevelEditorUI(WxAppShell):
         self.perspView.SetDropTarget(PandaTextDropTarget(self.editor, self.perspView))
         
         self.leftFrame.SetSashGravity(0.5)
-        self.leftBarUpFrame.SetSashGravity(0.5)
         self.rightFrame.SetSashGravity(0.5)        
         self.baseFrame.SetSashGravity(1.0)
 
@@ -157,11 +181,11 @@ class LevelEditorUI(WxAppShell):
         sizer.Add(self.mainFrame, 1, wx.EXPAND, 0)
         self.SetSizer(sizer); self.Layout()
 
-        self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane, self.editor)
-        self.protoPaletteUI = ProtoPaletteUI(self.leftBarMidPane, self.editor)
+        self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane0, self.editor)
+        self.protoPaletteUI = ProtoPaletteUI(self.leftBarUpPane1, self.editor)
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
-        self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane, self.editor)
-        self.layerEditorUI = LayerEditorUI(self.rightBarDownPane, self.editor)
+        self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane0, self.editor)
+        self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
 
     def onSetFocus(self):
         print 'wx got focus'

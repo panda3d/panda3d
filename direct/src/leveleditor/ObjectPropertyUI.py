@@ -250,42 +250,54 @@ class ObjectPropertyUI(ScrolledPanel):
         mainSizer.Add(self.propPane, 1, wx.EXPAND, 0)
         self.SetSizer(mainSizer)
 
-        self.propX = ObjectPropUIEntry(self.propPane, 'X')
-        self.propY = ObjectPropUIEntry(self.propPane, 'Y')
-        self.propZ = ObjectPropUIEntry(self.propPane, 'Z')
+        self.nb = wx.Notebook(self.propPane, style=wx.NB_BOTTOM)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.nb, 1, wx.EXPAND)
+        self.propPane.SetSizer(sizer)
 
-        self.propH = ObjectPropUISlider(self.propPane, 'H', 0, 0, 360)
-        self.propP = ObjectPropUISlider(self.propPane, 'P', 0, 0, 360)
-        self.propR = ObjectPropUISlider(self.propPane, 'R', 0, 0, 360)
+        self.transformPane = wx.Panel(self.nb, -1)
+        self.nb.AddPage(self.transformPane, 'Transform')
 
-        self.propSX = ObjectPropUIEntry(self.propPane, 'SX')
-        self.propSY = ObjectPropUIEntry(self.propPane, 'SY')
-        self.propSZ = ObjectPropUIEntry(self.propPane, 'SZ')
+        self.propX = ObjectPropUIEntry(self.transformPane, 'X')
+        self.propY = ObjectPropUIEntry(self.transformPane, 'Y')
+        self.propZ = ObjectPropUIEntry(self.transformPane, 'Z')
+
+        self.propH = ObjectPropUISlider(self.transformPane, 'H', 0, 0, 360)
+        self.propP = ObjectPropUISlider(self.transformPane, 'P', 0, 0, 360)
+        self.propR = ObjectPropUISlider(self.transformPane, 'R', 0, 0, 360)
+
+        self.propSX = ObjectPropUIEntry(self.transformPane, 'SX')
+        self.propSY = ObjectPropUIEntry(self.transformPane, 'SY')
+        self.propSZ = ObjectPropUIEntry(self.transformPane, 'SZ')
 
         transformProps = [self.propX, self.propY, self.propZ, self.propH, self.propP, self.propR,
                        self.propSX, self.propSY, self.propSZ]
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.AddMany(transformProps)
-
+        self.transformPane.SetSizer(sizer)
         for transformProp in transformProps:
             transformProp.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                                    self.editor.objectMgr.onLeaveObjectPropUI,
                                    self.editor.objectMgr.updateObjectTransform)
 
+        self.lookPane = wx.Panel(self.nb, -1)
+        self.nb.AddPage(self.lookPane, 'Look')
+
         objNP = obj[OG.OBJ_NP]
         objRGBA = obj[OG.OBJ_RGBA]
-        self.propCR = ObjectPropUISlider(self.propPane, 'CR', objRGBA[0], 0, 1)
-        self.propCG = ObjectPropUISlider(self.propPane, 'CG', objRGBA[1], 0, 1)
-        self.propCB = ObjectPropUISlider(self.propPane, 'CB', objRGBA[2], 0, 1)        
-        self.propCA = ObjectPropUISlider(self.propPane, 'CA', objRGBA[3], 0, 1) 
+        self.propCR = ObjectPropUISlider(self.lookPane, 'CR', objRGBA[0], 0, 1)
+        self.propCG = ObjectPropUISlider(self.lookPane, 'CG', objRGBA[1], 0, 1)
+        self.propCB = ObjectPropUISlider(self.lookPane, 'CB', objRGBA[2], 0, 1)        
+        self.propCA = ObjectPropUISlider(self.lookPane, 'CA', objRGBA[3], 0, 1) 
         colorProps = [self.propCR, self.propCG, self.propCB, self.propCA]
 
         for colorProp in colorProps:
             colorProp.ui.bindFunc(self.onColorSlider)
 
+        sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.AddMany(colorProps)
-        button = wx.Button(self.propPane, -1, 'Color Picker', (0,0), (140, 20))
+        button = wx.Button(self.lookPane, -1, 'Color Picker', (0,0), (140, 20))
         _colourData = wx.ColourData()
         _colourData.SetColour(wx.Colour(objRGBA[0] * 255, objRGBA[1] * 255, objRGBA[2] * 255))
         button.Bind(wx.EVT_BUTTON, lambda p0=None, p1=_colourData, p2=objRGBA[3] * 255: self.openColorPicker(p0, p1, p2))
@@ -298,7 +310,7 @@ class ObjectPropertyUI(ScrolledPanel):
         objDef = obj[OG.OBJ_DEF]
 
         if objDef.model is not None:
-            propUI = ObjectPropUICombo(self.propPane, 'model', obj[OG.OBJ_MODEL], objDef.models)
+            propUI = ObjectPropUICombo(self.lookPane, 'model', obj[OG.OBJ_MODEL], objDef.models)
             sizer.Add(propUI)            
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
@@ -306,13 +318,19 @@ class ObjectPropertyUI(ScrolledPanel):
                             lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectModelFromUI(p0, p1))
 
         if len(objDef.anims) > 0:
-            propUI = ObjectPropUICombo(self.propPane, 'anim', obj[OG.OBJ_ANIM], objDef.anims)
+            propUI = ObjectPropUICombo(self.lookPane, 'anim', obj[OG.OBJ_ANIM], objDef.anims)
             sizer.Add(propUI)            
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                             self.editor.objectMgr.onLeaveObjectPropUI,
                             lambda p0=None, p1=obj: self.editor.objectMgr.updateObjectAnimFromUI(p0, p1))
 
+        self.lookPane.SetSizer(sizer)
+
+        self.propsPane = wx.Panel(self.nb, -1)
+        self.nb.AddPage(self.propsPane, 'Props')
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        
         for key in objDef.properties.keys():
             propDef = objDef.properties[key]
             propType = propDef[OG.PROP_TYPE]
@@ -320,7 +338,7 @@ class ObjectPropertyUI(ScrolledPanel):
             value = obj[OG.OBJ_PROP].get(key)
 
             if propType == OG.PROP_UI_ENTRY:
-                propUI = ObjectPropUIEntry(self.propPane, key)
+                propUI = ObjectPropUIEntry(self.propsPane, key)
                 propUI.setValue(value)
                 sizer.Add(propUI)
 
@@ -332,7 +350,7 @@ class ObjectPropertyUI(ScrolledPanel):
                 if value is None:
                     continue
 
-                propUI = ObjectPropUISlider(self.propPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
+                propUI = ObjectPropUISlider(self.propsPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
                 sizer.Add(propUI)
 
             elif propType == OG.PROP_UI_SPIN:
@@ -343,14 +361,14 @@ class ObjectPropertyUI(ScrolledPanel):
                 if value is None:
                     continue
 
-                propUI = ObjectPropUISpinner(self.propPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
+                propUI = ObjectPropUISpinner(self.propsPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
                 sizer.Add(propUI)                
 
             elif propType == OG.PROP_UI_CHECK:
                 if value is None:
                     continue
 
-                propUI = ObjectPropUICheck(self.propPane, key, value)
+                propUI = ObjectPropUICheck(self.propsPane, key, value)
                 sizer.Add(propUI)                  
 
             elif propType == OG.PROP_UI_RADIO:
@@ -367,7 +385,7 @@ class ObjectPropertyUI(ScrolledPanel):
 
                     value = str(value)
 
-                propUI = ObjectPropUIRadio(self.propPane, key, value, propRange)
+                propUI = ObjectPropUIRadio(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
             elif propType == OG.PROP_UI_COMBO:
@@ -384,7 +402,7 @@ class ObjectPropertyUI(ScrolledPanel):
 
                     value = str(value)
 
-                propUI = ObjectPropUICombo(self.propPane, key, value, propRange)
+                propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
             else:
@@ -396,6 +414,6 @@ class ObjectPropertyUI(ScrolledPanel):
                             lambda p0=None, p1=obj, p2=key: self.editor.objectMgr.updateObjectProperty(p0, p1, p2))
 
 
-        self.propPane.SetSizer(sizer);
+        self.propsPane.SetSizer(sizer);
         self.Layout()
         self.SetupScrolling(self, scroll_y = True, rate_y = 20)
