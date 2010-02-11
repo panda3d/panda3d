@@ -13,15 +13,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureCollection.h"
-
 #include "indent.h"
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
-#ifndef CPPPARSER
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_Texture;
-#endif  // CPPPARSER
-#endif  // HAVE_PYTHON
+#include "py_panda.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::Constructor
@@ -63,7 +59,11 @@ operator = (const TextureCollection &copy) {
 //               in the class record.
 ////////////////////////////////////////////////////////////////////
 TextureCollection::
-TextureCollection(PyObject *sequence) {
+TextureCollection(PyObject *self, PyObject *sequence) {
+  // We have to pre-initialize self's "this" pointer when we receive
+  // self in the constructor--the caller can't initialize this for us.
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
+
   if (!PySequence_Check(sequence)) {
     // If passed with a non-sequence, this isn't the right constructor.
     PyErr_SetString(PyExc_TypeError, "TextureCollection constructor requires a sequence");
@@ -76,20 +76,17 @@ TextureCollection(PyObject *sequence) {
     if (item == NULL) {
       return;
     }
-    Texture *tex = NULL;
-    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
+    PyObject *result = PyObject_CallMethod(self, (char *)"addTexture", (char *)"O", item);
     Py_DECREF(item);
-    if (tex == NULL) {
-      // If one of the items in the sequence is not a Texture, can't
-      // use this constructor.
+    if (result == NULL) {
+      // Unable to add item--probably it wasn't of the appropriate type.
       ostringstream stream;
-      stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";
+      stream << "Element " << i << " in sequence passed to TextureCollection constructor could not be added";
       string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       return;
     }
-
-    add_texture(tex);
+    Py_DECREF(result);
   }
 }
 #endif  // HAVE_PYTHON

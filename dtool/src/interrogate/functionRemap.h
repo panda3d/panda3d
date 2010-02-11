@@ -126,4 +126,7 @@ private:
   bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };
 
+std::string make_safe_name(const std::string & name);
+
+
 #endif

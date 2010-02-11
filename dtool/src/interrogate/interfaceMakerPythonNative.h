@@ -107,7 +107,7 @@ private:
   void write_ClasseDeclarations(ostream &out ,  ostream *out_h,Object * obj);
   void write_ClasseDetails(ostream &out, Object * obj);
   
-  void do_assert_init(ostream &out, int indent_level, bool constructor) const;
+  void do_assert_init(ostream &out, int &indent_level, bool constructor) const;
 public:
   bool isRemapLegal( FunctionRemap &remap);
   bool isFunctionLegal( Function *func);

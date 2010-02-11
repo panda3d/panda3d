@@ -335,28 +335,6 @@ std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::st
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-std::string make_safe_name(const std::string & name)
-{
-    return InterrogateBuilder::clean_identifier(name);
-
-    /*
-    static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
-        std::string result = name;
-
-        size_t pos = result.find_first_not_of(safe_chars2);
-        while (pos != std::string::npos)
-        {
-                result[pos] = '_';
-                pos = result.find_first_not_of(safe_chars2);
-        }
-
-        return result;
-        */
-}
-
 bool isInplaceFunction(InterfaceMaker::Function *func)
 {
     std::string wname = methodNameFromCppName(func,"");
@@ -2368,6 +2346,24 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   if (remap->_type == FunctionRemap::T_constructor) {
     is_constructor = true;
   }
+  
+  if (is_constructor && (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
+    // If we'll be passing "self" to the constructor, we need to
+    // pre-initialize it here.  Unfortunately, we can't pre-load the
+    // "this" pointer, but the constructor itself can do this.
+    
+    indent(out, indent_level)
+      << "// Pre-initialize self for the constructor\n";
+
+    CPPType *orig_type = remap->_return_type->get_orig_type();
+    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
+    InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+    const InterrogateType &itype = idb->get_type(type_index);    
+    indent(out, indent_level)
+      << "DTool_PyInit_Finalize(self, NULL, &" 
+      << CLASS_PREFEX << make_safe_name(itype.get_scoped_name())
+      << ", false, false);\n";
+  }
 
   // Make one pass through the parameter list.  We will output a
   // one-line temporary variable definition for each parameter, while
@@ -2789,6 +2785,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
     }
   }
+
+  // Close the extra brace opened within do_assert_init().
+  extra_indent_level -= 2;
+  indent(out, extra_indent_level)
+    << "}\n";
 
   if (!extra_param_check.empty()) {
     extra_indent_level-=4;
@@ -3382,7 +3383,20 @@ bool InterfaceMakerPythonNative::isFunctionWithThis( Function *func)
 //               failed while the C++ code was executing, and report
 //               this failure back to Python.
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::do_assert_init(ostream &out, int indent_level, bool constructor) const {
+void InterfaceMakerPythonNative::do_assert_init(ostream &out, int &indent_level, bool constructor) const {
+  // If a method raises TypeError, continue.
+  indent(out, indent_level)
+    << "if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
+  indent(out, indent_level + 2)
+    << "// TypeError raised; continue to next overload type.\n";
+  if (constructor) {
+    indent(out, indent_level + 2)
+      << "delete return_value;\n";
+  }
+  indent(out, indent_level)
+    << "} else {\n";
+  indent_level += 2;
+
   if (watch_asserts) {
     out << "#ifndef NDEBUG\n";
     indent(out, indent_level)
@@ -3393,19 +3407,25 @@ void InterfaceMakerPythonNative::do_assert_init(ostream &out, int indent_level, 
       << "PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());\n";
     indent(out, indent_level + 2)
       << "notify->clear_assert_failed();\n";
-    if(constructor)
-        indent(out, indent_level + 2) << "return -1;\n";
-    else
-        indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
+    if (constructor) {
+      indent(out, indent_level + 2) << "delete return_value;\n";
+      indent(out, indent_level + 2) << "return -1;\n";
+    } else {
+      indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
+    }
+
     indent(out, indent_level)
       << "}\n";
     out << "#endif\n";
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
-    if(constructor)
-        indent(out, indent_level + 2) << "return -1;\n";
-    else
-        indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
+    if (constructor) {
+      indent(out, indent_level + 2) << "delete return_value;\n";
+      indent(out, indent_level + 2) << "return -1;\n";
+    } else {
+      indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
+    }
+
     indent(out, indent_level)
       << "}\n";
   }

@@ -34,7 +34,7 @@ PUBLISHED:
   INLINE ~NodePathCollection();
 
 #ifdef HAVE_PYTHON
-  NodePathCollection(PyObject *sequence);
+  NodePathCollection(PyObject *self, PyObject *sequence);
   PyObject *__reduce__(PyObject *self) const;
 #endif
 

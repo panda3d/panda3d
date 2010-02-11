@@ -77,6 +77,77 @@ PointerToArray(const PointerToArray<Element> &copy) :
 {
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::Constructor
+//       Access: Published
+//  Description: This special constructor accepts a Python list of
+//               elements, or a Python string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+PointerToArray<Element>::
+PointerToArray(PyObject *self, PyObject *sequence) :
+  PointerToArrayBase<Element>((ReferenceCountedVector<Element> *)NULL),
+  _type_handle(get_type_handle(Element))
+{
+  // We have to pre-initialize self's "this" pointer when we receive
+  // self in the constructor--the caller can't initialize this for us.
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
+
+  if (!PySequence_Check(sequence)) {
+    // If passed with a non-sequence, this isn't the right constructor.
+    PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a sequence");
+    return;
+  }
+
+  if (PyString_CheckExact(sequence)) {
+    // If we were passed a Python string, then instead of storing it
+    // character-at-a-time, just load the whole string as a data
+    // buffer.
+    int size = PyString_Size(sequence);
+    if (size % sizeof(Element) != 0) {
+      ostringstream stream;
+      stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
+      string str = stream.str();
+      PyErr_SetString(PyExc_ValueError, str.c_str());
+      return;
+    }
+      
+    int num_elements = size / sizeof(Element);
+    insert(begin(), num_elements, Element());
+
+    // Hope there aren't any constructors or destructors involved
+    // here.
+    if (size != 0) {
+      const char *data = PyString_AsString(sequence);
+      memcpy(p(), data, size);
+    }
+    return;
+  }
+
+  // Now construct the internal list by copying the elements
+  // one-at-a-time from Python.
+  int size = PySequence_Size(sequence);
+  for (int i = 0; i < size; ++i) {
+    PyObject *item = PySequence_GetItem(sequence, i);
+    if (item == NULL) {
+      return;
+    }
+    PyObject *result = PyObject_CallMethod(self, (char *)"pushBack", (char *)"O", item);
+    Py_DECREF(item);
+    if (result == NULL) {
+      // Unable to add item--probably it wasn't of the appropriate type.
+      ostringstream stream;
+      stream << "Element " << i << " in sequence passed to PointerToArray constructor could not be added";
+      string str = stream.str();
+      PyErr_SetString(PyExc_TypeError, str.c_str());
+      return;
+    }
+    Py_DECREF(result);
+  }
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::begin
 //       Access: Public

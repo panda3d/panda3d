@@ -307,7 +307,18 @@ make_wrapper_entry(FunctionIndex function_index) {
       _parameters.erase(_parameters.begin() + 1);
       _flags |= F_explicit_self;
     }
+
+  } else if (_type == T_constructor) {
+    // We also allow "self" to be passed in to a constructor, even
+    // though the constructor doesn't normally accept a this pointer.
+    // But this makes sense to Python programmers.
+    if (_parameters.size() >= 1 && _parameters[0]._name == "self" &&
+        TypeManager::is_pointer_to_PyObject(_parameters[0]._remap->get_orig_type())) {
+      _parameters.erase(_parameters.begin() + 0);
+      _flags |= F_explicit_self;
+    }
   }
+      
 
   if (!_void_return) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_has_return;
@@ -391,24 +402,21 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << _cppfunc->get_local_name(&parser);
     }
 
+    const char *separator = "";
+
     call << "(";
     if (_flags & F_explicit_self) {
       // Pass on the PyObject * that we stripped off above.
-      call << "self";
-      if (_first_true_parameter < (int)_parameters.size()) {
-        call << ", ";
-      }
+      call << separator << "self";
+      separator = ", ";
     }
 
-    int pn = _first_true_parameter;
-    if (pn < (int)_parameters.size()) {
+    for (int pn = _first_true_parameter;
+         pn < (int)_parameters.size();
+         ++pn) {
+      call << separator;
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-      pn++;
-      while (pn < (int)_parameters.size()) {
-        call << ", ";
-        _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-        pn++;
-      }
+      separator = ", ";
     }
     call << ")";
   }
@@ -669,4 +677,27 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+std::string make_safe_name(const std::string & name)
+{
+    return InterrogateBuilder::clean_identifier(name);
+
+    /*
+    static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+        std::string result = name;
+
+        size_t pos = result.find_first_not_of(safe_chars2);
+        while (pos != std::string::npos)
+        {
+                result[pos] = '_';
+                pos = result.find_first_not_of(safe_chars2);
+        }
+
+        return result;
+        */
 }

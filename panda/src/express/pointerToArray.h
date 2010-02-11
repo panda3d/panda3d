@@ -67,6 +67,9 @@
 #include "pandabase.h"
 
 #include "pointerToArrayBase.h"
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
 
 #if defined(WIN32_VC) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
@@ -108,6 +111,11 @@ PUBLISHED:
   INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
+
+#ifdef HAVE_PYTHON
+  PointerToArray(PyObject *self, PyObject *sequence);
+#endif
+
   INLINE size_type size() const;
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
@@ -140,6 +148,10 @@ public:
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
+
+#ifdef HAVE_PYTHON
+  PointerToArray(PyObject *self, PyObject *sequence);
+#endif
 
 public:
   // Duplicating the interface of vector.  The following member
@@ -254,6 +266,7 @@ public:
 PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
+
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;

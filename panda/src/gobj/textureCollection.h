@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE ~TextureCollection();
 
 #ifdef HAVE_PYTHON
-  TextureCollection(PyObject *sequence);
+  TextureCollection(PyObject *self, PyObject *sequence);
   PyObject *__reduce__(PyObject *self) const;
 #endif
 

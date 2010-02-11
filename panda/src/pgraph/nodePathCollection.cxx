@@ -18,15 +18,11 @@
 #include "textureAttrib.h"
 #include "colorScaleAttrib.h"
 #include "colorAttrib.h"
-
 #include "indent.h"
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
-#ifndef CPPPARSER
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_NodePath;
-#endif  // CPPPARSER
-#endif  // HAVE_PYTHON
+#include "py_panda.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
@@ -68,7 +64,11 @@ operator = (const NodePathCollection &copy) {
 //               in the class record.
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
-NodePathCollection(PyObject *sequence) {
+NodePathCollection(PyObject *self, PyObject *sequence) {
+  // We have to pre-initialize self's "this" pointer when we receive
+  // self in the constructor--the caller can't initialize this for us.
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
+
   if (!PySequence_Check(sequence)) {
     // If passed with a non-sequence, this isn't the right constructor.
     PyErr_SetString(PyExc_TypeError, "NodePathCollection constructor requires a sequence");
@@ -81,20 +81,17 @@ NodePathCollection(PyObject *sequence) {
     if (item == NULL) {
       return;
     }
-    NodePath *np = NULL;
-    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_NodePath, (void **)&np);
+    PyObject *result = PyObject_CallMethod(self, (char *)"addPath", (char *)"O", item);
     Py_DECREF(item);
-    if (np == NULL) {
-      // If one of the items in the sequence is not a NodePath, can't
-      // use this constructor.
+    if (result == NULL) {
+      // Unable to add item--probably it wasn't of the appropriate type.
       ostringstream stream;
-      stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
+      stream << "Element " << i << " in sequence passed to NodePathCollection constructor could not be added";
       string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       return;
     }
-
-    add_path(*np);
+    Py_DECREF(result);
   }
 }
 #endif  // HAVE_PYTHON
