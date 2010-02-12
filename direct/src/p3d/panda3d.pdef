@@ -130,10 +130,10 @@ class morepy(package):
            'glob', 'fnmatch', 'linecache', 'shutil', 'dircache',
            'macpath', 'pickle', 'cPickle', 'copy_reg', 'shelve',
            'marshal', 'anydbm', 'whichdb', 'dbm', 'gdbm', 'dbhash',
-           'bsddb', 'dumbdbm', 'zlib', 'gzip', 'bz2',
-           'zipfile', 'tarfile', 'csv', 'ConfigParser', 'robotparser',
-           'netrc', 'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5',
-           'sha', 'os', 'io', 'time', 'optparse', 'getopt', 'logging')
+           'bsddb', 'dumbdbm', 'zlib', 'gzip', 'bz2', 'zipfile',
+           'tarfile', 'csv', 'ConfigParser', 'robotparser', 'netrc',
+           'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5', 'sha', 'os',
+           'io', 'time', 'optparse', 'getopt', 'logging', 'logging.*')
     module('getpass', 'curses', 'curses.textpad', 'curses.wrapper',
            'curses.ascii', 'curses.panel', 'platform', 'errno',
            'ctypes', 'select', 'threading', 'thread',
