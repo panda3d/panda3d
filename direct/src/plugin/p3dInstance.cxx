@@ -296,6 +296,8 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 cleanup() {
+  _failed = true;
+
   if (_auth_session != NULL) {
     _auth_session->shutdown(false);
     p3d_unref_delete(_auth_session);
@@ -375,8 +377,6 @@ cleanup() {
     P3DDownload *download = (*di).second;
     download->cancel();
   }
-
-  _failed = true;
 }
 
 
@@ -1339,7 +1339,7 @@ auth_button_clicked() {
 //       Access: Public
 //  Description: Called to start the game by the user clicking the
 //               green "play" button, or by JavaScript calling
-//               start().
+//               play().
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 play_button_clicked() {
@@ -1349,7 +1349,9 @@ play_button_clicked() {
       // Now we initiate the download.
       _auto_install = true;
       _auto_start = true;
-      ready_to_install();
+      if (get_packages_info_ready()) {
+        ready_to_install();
+      }
 
     } else {
       set_background_image(IT_launch);
@@ -1831,7 +1833,11 @@ void P3DInstance::
 mark_p3d_trusted() {
   nout << "p3d trusted\n";
   // Only call this once.
-  assert(!_p3d_trusted);
+  if (_p3d_trusted) {
+    nout << "mark_p3d_trusted() called twice on " << _fparams.get_p3d_filename()
+         << "\n";
+    return;
+  }
 
   // Extract the application desc file from the p3d file.
   stringstream sstream;
@@ -2759,7 +2765,7 @@ ready_to_install() {
     _total_downloaded = 0;
 
     // Record the time we started the package download, so we can
-    // report downlaodElapsedTime and predict downloadRemainingTime.
+    // report downloadElapsedTime and predict downloadRemainingTime.
 #ifdef _WIN32
     _start_dl_tick = GetTickCount();
 #else

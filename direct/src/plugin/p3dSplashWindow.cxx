@@ -571,6 +571,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
 void P3DSplashWindow::
 button_click_detected() {
   assert(_inst != NULL);
+  nout << "Play button clicked by user\n";
   _inst->splash_button_clicked_sub_thread();
 }
 

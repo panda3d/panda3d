@@ -339,6 +339,7 @@ call_play(P3D_object *params[], int num_params) {
 
   // I guess there's no harm in allowing JavaScript to call play(),
   // with or without explicit scripting authorization.
+  nout << "play() called from JavaScript\n";
 
   if (!_inst->is_trusted()) {
     // Requires authorization.  We allow this only once; beyond that,

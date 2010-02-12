@@ -184,8 +184,10 @@ extract_one(ostream &out, const string &filename) {
 ////////////////////////////////////////////////////////////////////
 int P3DMultifileReader::
 get_num_signatures() const {
-  assert(_is_open);
-  ((P3DMultifileReader *)this)->check_signatures();
+  if (_is_open) {
+    ((P3DMultifileReader *)this)->check_signatures();
+  }
+
   return _signatures.size();
 }
 
