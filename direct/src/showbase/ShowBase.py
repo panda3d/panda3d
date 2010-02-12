@@ -2533,7 +2533,7 @@ class ShowBase(DirectObject.DirectObject):
 class WindowControls:
     def __init__(
             self, win, cam=None, camNode=None, cam2d=None, mouseWatcher=None,
-            mouseKeyboard=None, closeCmd=lambda: 0):
+            mouseKeyboard=None, closeCmd=lambda: 0, grid=None):
         self.win = win
         self.camera = cam
         if camNode is None and cam is not None:
@@ -2543,6 +2543,7 @@ class WindowControls:
         self.mouseWatcher = mouseWatcher
         self.mouseKeyboard = mouseKeyboard
         self.closeCommand = closeCmd
+        self.grid = grid
 
     def __str__(self):
         s = "window = " + str(self.win) + "\n"
