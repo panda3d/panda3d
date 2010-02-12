@@ -99,7 +99,7 @@ class LevelEditorUI(WxAppShell):
         menuItem = self.menuEdit.Append(-1, "&Undo")
         self.Bind(wx.EVT_MENU, self.editor.actionMgr.undo, menuItem)
 
-        menuItem = self.menuEdit.Append(-1, "&Rndo")
+        menuItem = self.menuEdit.Append(-1, "&Redo")
         self.Bind(wx.EVT_MENU, self.editor.actionMgr.redo, menuItem)
 
         self.menuOptions = wx.Menu()
