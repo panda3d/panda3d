@@ -228,7 +228,7 @@ run_python() {
   Py_DECREF(vfsimporter_module);
 
   // Now, the VFSImporter has been registered, which means we can
-  // start importing the rest of the Python modules, where are all
+  // start importing the rest of the Python modules, which are all
   // defined in the multifile.  First, we need to mount the multifile
   // into the VFS.
   PT(Multifile) mf = new Multifile;
