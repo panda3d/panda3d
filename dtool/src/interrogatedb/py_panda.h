@@ -40,7 +40,7 @@
 
 #endif
 
-#ifdef HAVE_PYTHON
+#if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
 #ifdef HAVE_LONG_LONG
 #undef HAVE_LONG_LONG
@@ -557,7 +557,7 @@ PyLongOrInt_FromUnsignedLong(unsigned long value);
 
 EXPCL_DTOOLCONFIG extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
 
-#endif  // HAVE_PYTHON
+#endif  // HAVE_PYTHON && !CPPPARSER
 
 
 #endif // PY_PANDA_H_ 
