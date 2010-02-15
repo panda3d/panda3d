@@ -20,6 +20,7 @@ TypeHandle OdeMass::_type_handle;
 OdeMass::
 OdeMass() : 
   _mass() {
+  dMassSetZero(&_mass);
 }
 
 OdeMass::
@@ -52,12 +53,10 @@ operator = (const OdeMass &copy) {
 
 void OdeMass::
 write(ostream &out, unsigned int indent) const {
-  #ifndef NDEBUG //[
   out.width(indent); 
   out << get_type() \
       << "(mag = " << get_magnitude() \
       << ", center = " << get_center() \
       << ", inertia = " << get_inertial_tensor() \
       << ")";
-  #endif //] NDEBUG
 }

@@ -92,7 +92,6 @@ get_body(int index) const {
 
 void OdeJoint::
 write(ostream &out, unsigned int indent) const {
-  #ifndef NDEBUG //[
   out.width(indent); out << "" << get_type() \
                          << "(id = " << _id \
                          << ", body1 = ";
@@ -113,7 +112,6 @@ write(ostream &out, unsigned int indent) const {
   }
   out << ")";
 
-  #endif //] NDEBUG
 }
 
 OdeJoint::
