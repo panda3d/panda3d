@@ -35,7 +35,7 @@ public:
   void close();
 
   bool extract_all(const string &to_dir, P3DPackage *package, 
-                   P3DPackage::InstallStep *step);
+                   P3DPackage::InstallStepThreaded *step);
 
   bool extract_one(ostream &out, const string &filename);
 

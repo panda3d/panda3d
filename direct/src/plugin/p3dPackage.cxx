@@ -64,6 +64,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   _xconfig = NULL;
   _temp_contents_file = NULL;
 
+  _computed_plan_size = false;
   _info_ready = false;
   _download_size = 0;
   _allow_data_download = false;
@@ -81,7 +82,9 @@ P3DPackage(P3DHost *host, const string &package_name,
 P3DPackage::
 ~P3DPackage() {
   // Tell any pending callbacks that we're no good any more.
-  report_done(false);
+  if (!_ready && !_failed) {
+    report_done(false);
+  }
 
   // Ditto the outstanding instances.
   Instances::iterator ii;
@@ -785,6 +788,7 @@ clear_install_plans() {
   }
 
   _install_plans.clear();
+  _computed_plan_size = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -809,6 +813,7 @@ build_install_plans(TiXmlDocument *doc) {
 
   _install_plans.push_front(InstallPlan());
   InstallPlan &plan = _install_plans.front();
+  _computed_plan_size = false;
 
   bool needs_redownload = false;
   
@@ -910,8 +915,8 @@ build_install_plans(TiXmlDocument *doc) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 follow_install_plans(bool download_finished) {
-  if (!_allow_data_download) {
-    // Not authorized yet.
+  if (!_allow_data_download || _failed) {
+    // Not authorized yet, or something went wrong.
     return;
   }
 
@@ -921,14 +926,25 @@ follow_install_plans(bool download_finished) {
     InstallPlan &plan = _install_plans.front();
     bool plan_failed = false;
 
-    _total_plan_size = 0.0;
-    InstallPlan::iterator si;
-    for (si = plan.begin(); si != plan.end(); ++si) {
-      _total_plan_size += (*si)->get_effort();
+    if (!_computed_plan_size) {
+      _total_plan_size = 0.0;
+      _total_plan_completed = 0.0;
+      InstallPlan::iterator si;
+      for (si = plan.begin(); si != plan.end(); ++si) {
+        double step_effort = (*si)->get_effort();
+        _total_plan_size += step_effort;
+        _total_plan_completed += (*si)->get_progress() * step_effort;
+      }
+      
+      _download_progress = 0.0;
+      if (_total_plan_size > 0.0) {
+        _download_progress = _total_plan_completed / _total_plan_size;
+      }
+      _computed_plan_size = true;
+      nout << "Selected install plan for " << get_package_name()
+           << ": " << _total_plan_completed << " of "
+           << _total_plan_size << "\n";
     }
-
-    _total_plan_completed = 0.0;
-    _download_progress = 0.0;
 
     while (!plan.empty() && !plan_failed) {
       InstallStep *step = plan.front();
@@ -951,6 +967,11 @@ follow_install_plans(bool download_finished) {
         // A callback hook has been attached; we'll come back later.
         return;
 
+      case IT_needs_callback:
+        // We need to install a callback hook and come back later.
+        request_callback();
+        return;
+
       case IT_step_complete:
         // So far, so good.  Go on to the next step.
         _total_plan_completed += _current_step_effort;
@@ -970,10 +991,37 @@ follow_install_plans(bool download_finished) {
     // That plan failed.  Go on to the next plan.
     nout << "Plan failed.\n";
     _install_plans.pop_front();
+    _computed_plan_size = false;
   }
 
   // All plans failed.  Too bad for us.
   report_done(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::st_callback
+//       Access: Private, Static
+//  Description: This function is registered as the callback hook when
+//               a package is in the middle of processing in a
+//               sub-thread.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+st_callback(void *self) {
+  ((P3DPackage *)self)->follow_install_plans(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::request_callback
+//       Access: Private
+//  Description: Requests that follow_install_plans() will be called
+//               again in the future.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+request_callback() {
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    (*ii)->request_callback(&st_callback, this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -984,13 +1032,14 @@ follow_install_plans(bool download_finished) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_progress(P3DPackage::InstallStep *step) {
-  double size = _total_plan_completed + _current_step_effort * step->get_progress();
-  _download_progress = min(size / _total_plan_size, 1.0);
-  //  nout << get_package_name() << " progress " << _download_progress << "\n";
-
-  Instances::iterator ii;
-  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
-    (*ii)->report_package_progress(this, _download_progress);
+  if (_computed_plan_size) {
+    double size = _total_plan_completed + _current_step_effort * step->get_progress();
+    _download_progress = min(size / _total_plan_size, 1.0);
+  
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      (*ii)->report_package_progress(this, _download_progress);
+    }
   }
 }
 
@@ -1022,6 +1071,13 @@ report_info_ready() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
+  // Don't call report_done() twice.
+  if (_ready || _failed) {
+    nout << get_package_name() << ": report_done() called twice\n";
+    _failed = true;
+    return;
+  }
+
   if (success) {
     _info_ready = true;
     _ready = true;
@@ -1492,6 +1548,122 @@ output(ostream &out) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepThreaded::
+InstallStepThreaded(P3DPackage *package, size_t bytes, double factor) :
+  InstallStep(package, bytes, factor)
+{
+  INIT_THREAD(_thread);
+  INIT_LOCK(_thread_lock);
+  _thread_started = false;
+  _thread_token = IT_needs_callback;
+  _thread_bytes_done = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallStepThreaded::
+~InstallStepThreaded() {
+  if (_thread_started) {
+    JOIN_THREAD(_thread);
+    _thread_started = false;
+  }
+  DESTROY_LOCK(_thread_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::do_step
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::InstallToken P3DPackage::InstallStepThreaded::
+do_step(bool download_finished) {
+  // This method is called within the main thread.  It simply checks
+  // the thread status, and returns.
+
+  // Spawn a thread and wait for it to finish.
+  if (!_thread_started) {
+    nout << "Spawning thread to handle " << _package->get_package_name() << "\n";
+    _thread_started = true;
+    SPAWN_THREAD(_thread, thread_main, this);
+  }
+
+  InstallToken token;
+  bool made_progress = false;
+
+  ACQUIRE_LOCK(_thread_lock);
+  token = _thread_token;
+  if (_bytes_done != _thread_bytes_done) {
+    _bytes_done = _thread_bytes_done;
+    made_progress = true;
+  }
+  RELEASE_LOCK(_thread_lock);
+
+  if (made_progress) {
+    report_step_progress();
+  }
+
+  return token;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::thread_main
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepThreaded::
+thread_main() {
+  // This method is called within the sub-thread.  It calls
+  // thread_step() to do its work.
+
+  InstallToken token = IT_needs_callback;
+  do {
+    // Perform the nested step, then update the token.
+    token = thread_step();
+
+    ACQUIRE_LOCK(_thread_lock);
+    _thread_token = token;
+    RELEASE_LOCK(_thread_lock);
+    
+    // Do it again if needed.
+  } while (token == IT_needs_callback);
+
+  // All done.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::thread_set_bytes_done
+//       Access: Public
+//  Description: Should be called from time to time within the
+//               sub-thread to update the number of bytes processed.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepThreaded::
+thread_set_bytes_done(size_t bytes_done) {
+  ACQUIRE_LOCK(_thread_lock);
+  _thread_bytes_done = bytes_done;
+  RELEASE_LOCK(_thread_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::InstallStepThreaded::thread_add_bytes_done
+//       Access: Public
+//  Description: Should be called from time to time within the
+//               sub-thread to update the number of bytes processed.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::InstallStepThreaded::
+thread_add_bytes_done(size_t bytes_done) {
+  ACQUIRE_LOCK(_thread_lock);
+  _thread_bytes_done += bytes_done;
+  RELEASE_LOCK(_thread_lock);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::InstallStepUncompressFile::Constructor
 //       Access: Public
 //  Description: 
@@ -1499,20 +1671,21 @@ output(ostream &out) {
 P3DPackage::InstallStepUncompressFile::
 InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
                           const FileSpec &target, bool verify_target) :
-  InstallStep(package, target.get_size(), _uncompress_factor),
+  InstallStepThreaded(package, target.get_size(), _uncompress_factor),
   _source(source),
   _target(target),
   _verify_target(verify_target)
 {
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::InstallStepUncompressFile::do_step
+//     Function: P3DPackage::InstallStepUncompressFile::thread_step
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::InstallToken P3DPackage::InstallStepUncompressFile::
-do_step(bool download_finished) {
+thread_step() {
   string source_pathname = _package->get_package_dir() + "/" + _source.get_filename();
   string target_pathname = _package->get_package_dir() + "/" + _target.get_filename();
 
@@ -1582,8 +1755,8 @@ do_step(bool download_finished) {
         nout << "Couldn't write entire file to " << target_pathname << "\n";
         return IT_step_failed;
       }
-      _bytes_done += (write_buffer_size - z.avail_out);
-      report_step_progress();
+
+      thread_add_bytes_done(write_buffer_size - z.avail_out);
     }
 
     if (result == Z_STREAM_END) {
@@ -1650,17 +1823,17 @@ output(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 P3DPackage::InstallStepUnpackArchive::
 InstallStepUnpackArchive(P3DPackage *package, size_t unpack_size) :
-  InstallStep(package, unpack_size, _unpack_factor)
+  InstallStepThreaded(package, unpack_size, _unpack_factor)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::InstallStepUnpackArchive::do_step
+//     Function: P3DPackage::InstallStepUnpackArchive::thread_step
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::InstallToken P3DPackage::InstallStepUnpackArchive::
-do_step(bool download_finished) {
+thread_step() {
   string source_pathname = _package->get_archive_file_pathname();
   P3DMultifileReader reader;
 
@@ -1696,18 +1869,18 @@ output(ostream &out) {
 P3DPackage::InstallStepApplyPatch::
 InstallStepApplyPatch(P3DPackage *package, const FileSpec &patchfile,
                       const FileSpec &source, const FileSpec &target) :
-  InstallStep(package, target.get_size(), _patch_factor),
+  InstallStepThreaded(package, target.get_size(), _patch_factor),
   _reader(package->get_package_dir(), patchfile, source, target)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::InstallStepApplyPatch::do_step
+//     Function: P3DPackage::InstallStepApplyPatch::thread_step
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::InstallToken P3DPackage::InstallStepApplyPatch::
-do_step(bool download_finished) {
+thread_step() {
   // Open the patchfile
   if (!_reader.open_read()) {
     _reader.close();
@@ -1716,8 +1889,8 @@ do_step(bool download_finished) {
 
   // Apply the patch.
   while (_reader.step()) {
-    _bytes_done = _reader.get_bytes_written();
-    report_step_progress();
+    size_t bytes_written = _reader.get_bytes_written();
+    thread_set_bytes_done(bytes_written);
   }
 
   // Close and verify.

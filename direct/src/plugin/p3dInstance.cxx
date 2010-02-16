@@ -703,29 +703,46 @@ get_request() {
   _request_pending = !_baked_requests.empty();
 
   if (request != NULL) {
-    if (request->_request_type == P3D_RT_notify) {
-      // Also eval the associated HTML token, if any.
-      string message = request->_request._notify._message;
-      string expression = _fparams.lookup_token(message);
-      nout << "notify: " << message << " " << expression << "\n";
-      if (!expression.empty() && _browser_script_object != NULL) {
-        P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
-        P3D_OBJECT_XDECREF(result);
+    switch (request->_request_type) {
+    case P3D_RT_notify:
+      {
+        // Also eval the associated HTML token, if any.
+        string message = request->_request._notify._message;
+        string expression = _fparams.lookup_token(message);
+        nout << "notify: " << message << " " << expression << "\n";
+        if (!expression.empty() && _browser_script_object != NULL) {
+          P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
+          P3D_OBJECT_XDECREF(result);
+        }
       }
+      break;
 
-    } else if (request->_request_type == P3D_RT_stop) {
-      // We also send an implicit message when Python requests itself
-      // to shutdown.
-      _panda_script_object->set_pyobj(NULL);
-      _panda_script_object->set_string_property("status", "stopped");
-
-      string message = "onpythonstop";
-      string expression = _fparams.lookup_token(message);
-      nout << "notify: " << message << " " << expression << "\n";
-      if (!expression.empty() && _browser_script_object != NULL) {
-        P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
-        P3D_OBJECT_XDECREF(result);
+    case P3D_RT_stop:
+      {
+        // We also send an implicit message when Python requests itself
+        // to shutdown.
+        _panda_script_object->set_pyobj(NULL);
+        _panda_script_object->set_string_property("status", "stopped");
+        
+        string message = "onpythonstop";
+        string expression = _fparams.lookup_token(message);
+        nout << "notify: " << message << " " << expression << "\n";
+        if (!expression.empty() && _browser_script_object != NULL) {
+          P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
+          P3D_OBJECT_XDECREF(result);
+        }
       }
+      break;
+
+    case P3D_RT_callback:
+      {
+        // And when the callback request is extracted, we make the
+        // callback.
+        P3D_callback_func *func = request->_request._callback._func;
+        void *data = request->_request._callback._data;
+        (*func)(data);
+      }
+      break;
     }
   }
   
@@ -843,7 +860,7 @@ finish_request(P3D_request *request, bool handled) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (inst_mgr->validate_instance(request->_instance) == NULL) {
-    nout << "Ignoring unknown request " << request << "\n";
+    //    nout << "Ignoring unknown request " << request << "\n";
     return;
   }
 
@@ -1232,6 +1249,21 @@ request_refresh() {
   P3D_request *request = new P3D_request;
   request->_instance = NULL;
   request->_request_type = P3D_RT_refresh;
+  add_baked_request(request);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::request_callback
+//       Access: Public
+//  Description: Asks the host to make a callback later.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+request_callback(P3D_callback_func *func, void *data) {
+  P3D_request *request = new P3D_request;
+  request->_instance = NULL;
+  request->_request_type = P3D_RT_callback;
+  request->_request._callback._func = func;
+  request->_request._callback._data = data;
   add_baked_request(request);
 }
 

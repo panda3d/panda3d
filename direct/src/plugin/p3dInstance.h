@@ -108,6 +108,7 @@ public:
   void request_stop_sub_thread();
   void request_stop_main_thread();
   void request_refresh();
+  void request_callback(P3D_callback_func *func, void *data);
 
   TiXmlElement *make_xml();
   void splash_button_clicked_sub_thread();

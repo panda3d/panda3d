@@ -766,6 +766,7 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_notify,
   P3D_RT_refresh,
+  P3D_RT_callback,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -804,6 +805,19 @@ typedef struct {
 typedef struct {
 } P3D_request_refresh;
 
+/* A callback request.  The instance wants to yield control
+   temporarily back to JavaScript, to allow JavaScript to maintain
+   interactivity during a long computation, and expects to get control
+   again some short while later (when the callback request is pulled
+   off the queue and the request is handled).  The data within this
+   structure is used internally by the core API and shouldn't be
+   interpreted by the caller. */
+typedef void P3D_callback_func(void *);
+typedef struct {
+  P3D_callback_func *_func;
+  void *_data;
+} P3D_request_callback;
+
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -814,6 +828,7 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_notify _notify;
     P3D_request_refresh _refresh;
+    P3D_request_callback _callback;
   } _request;
 } P3D_request;
 

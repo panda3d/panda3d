@@ -599,26 +599,26 @@ std::string PPInstance::GetP3DFilename( )
     return p3dFilename;
 }
 
-void PPInstance::HandleRequestLoop() 
-{
-    P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
-    while ( p3d_inst != NULL ) 
-    {
-        P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
-        if ( request != NULL ) 
-        {
-            CP3DActiveXCtrl* parent = ( CP3DActiveXCtrl* )(p3d_inst->_user_data);
-            if ( parent )
-            {
-                parent->m_instance.HandleRequest( request );
-            }
-            else
-            {
-                nout << "Error handling P3D request. Instance's user data is not a Control \n";
-            }
+void PPInstance::HandleRequestLoop() {
+  P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
+  while ( p3d_inst != NULL ) {
+    P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
+    if ( request != NULL ) {
+      CP3DActiveXCtrl* parent = ( CP3DActiveXCtrl* )(p3d_inst->_user_data);
+      if ( parent ) {
+        if (!parent->m_instance.HandleRequest( request )) {
+          // If handling the request is meant to yield control
+          // temporarily to JavaScript (e.g. P3D_RT_callback), then do
+          // so now.
+          return;
         }
-        p3d_inst = P3D_check_request_ptr(0.0);
+          
+      } else {
+        nout << "Error handling P3D request. Instance's user data is not a Control \n";
+      }
     }
+    p3d_inst = P3D_check_request_ptr(0.0);
+  }
 }
 
 void PPInstance::HandleRequestGetUrl( void* data )
@@ -663,57 +663,57 @@ void PPInstance::HandleRequestGetUrl( void* data )
     P3D_request_finish_ptr( request, true );
 }
 
-void PPInstance::HandleRequest( P3D_request *request ) 
-{
-    if ( !request ) 
+bool PPInstance::
+HandleRequest( P3D_request *request ) {
+  if ( !request ) {
+    return false;
+  }
+  bool handled = false;
+  bool continue_loop = true;
+  
+  switch ( request->_request_type ) {
+  case P3D_RT_stop:
     {
-        return;
+      P3D_instance_finish_ptr( request->_instance );
+      handled = true;
+      break;
     }
-    bool handled = false;
-
-    switch ( request->_request_type ) 
+  case P3D_RT_get_url:
     {
-        case P3D_RT_stop:
-        {
-            P3D_instance_finish_ptr( request->_instance );
-            handled = true;
-            break;
-        }
-        case P3D_RT_get_url:
-        {
-            if ( !m_handleRequestOnUIThread )
-            {
-                _beginthread( HandleRequestGetUrl, 0, request );
-            }
-            else
-            {
-                HandleRequestGetUrl( request );
-            }
-            handled = true;
+      if ( !m_handleRequestOnUIThread ) {
+        _beginthread( HandleRequestGetUrl, 0, request );
+      } else {
+        HandleRequestGetUrl( request );
+      }
+      handled = true;
+      return true;
+    }
+  case P3D_RT_notify:
+    {
+      CString notification = request->_request._notify._message;
+      if ( notification == "ondownloadbegin" ) {
+        m_handleRequestOnUIThread = false;
+      } else if ( notification == "ondownloadcomplete" ) {
+        m_handleRequestOnUIThread = true;
+      }
+      handled = true;
+      break;
+    }
+  case P3D_RT_callback:
+    {
+      // In the case of a callback, yield control temporarily to JavaScript.
+      continue_loop = false;
+      break;
+    }
+  default:
+    {
+      // Some request types are not handled.
+      break;
+    }
+  };
 
-            return;
-        }
-        case P3D_RT_notify:
-        {
-            CString notification = request->_request._notify._message;
-            if ( notification == "ondownloadbegin" )
-            {
-                m_handleRequestOnUIThread = false;
-            }
-            else if ( notification == "ondownloadcomplete" )
-            {
-                m_handleRequestOnUIThread = true;
-            }
-            handled = true;
-            break;
-        }
-        default:
-        {
-            // Some request types are not handled.
-            break;
-        }
-    };
-    P3D_request_finish_ptr( request, handled );
+  P3D_request_finish_ptr( request, handled );
+  return continue_loop;
 }
 
 ////////////////////////////////////////////////////////////////////

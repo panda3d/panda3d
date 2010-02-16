@@ -666,16 +666,18 @@ stream_as_file(NPStream *stream, const char *fname) {
 //     Function: PPInstance::handle_request
 //       Access: Public
 //  Description: Handles a request from the plugin, forwarding
-//               it to the browser as appropriate.
+//               it to the browser as appropriate.  Returns true if we
+//               should continue the request loop, or false to return
+//               (temporarily) to JavaScript.
 ////////////////////////////////////////////////////////////////////
-void PPInstance::
+bool PPInstance::
 handle_request(P3D_request *request) {
   if (_p3d_inst == NULL || _failed) {
-    return;
+    return false;
   }
   assert(request->_instance == _p3d_inst);
-
   bool handled = false;
+  bool continue_loop = true;
 
   switch (request->_request_type) {
   case P3D_RT_stop:
@@ -717,6 +719,11 @@ handle_request(P3D_request *request) {
     }
     break;
 
+  case P3D_RT_callback:
+    // In the case of a callback, yield control temporarily to JavaScript.
+    continue_loop = false;
+    break;
+
   default:
     // Some request types are not handled.
     nout << "Unhandled request: " << request->_request_type << "\n";
@@ -724,6 +731,7 @@ handle_request(P3D_request *request) {
   };
 
   P3D_request_finish_ptr(request, handled);
+  return continue_loop;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1797,7 +1805,13 @@ handle_request_loop() {
     if (request != (P3D_request *)NULL) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
       assert(inst != NULL);
-      inst->handle_request(request);
+      if (!inst->handle_request(request)) {
+        // If handling the request is meant to yield control
+        // temporarily to JavaScript (e.g. P3D_RT_callback), then do
+        // so now.
+        return;
+      }
+
       if (!is_plugin_loaded()) {
         // Oops, we may have unloaded the plugin as an indirect effect
         // of handling the request.  If so, get out of here.

@@ -74,7 +74,7 @@ protected:
     void add_mirror(std::string mirror_url);
     void choose_random_mirrors(std::vector<std::string> &result, int num_mirrors);
 
-    void HandleRequest( P3D_request *request );
+    bool HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
 
     void set_failed();

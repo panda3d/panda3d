@@ -56,7 +56,7 @@ public:
   void url_notify(const char *url, NPReason reason, void *notifyData);
   void stream_as_file(NPStream *stream, const char *fname);
 
-  void handle_request(P3D_request *request);
+  bool handle_request(P3D_request *request);
   static void generic_browser_call();
 
   bool handle_event(void *event);
