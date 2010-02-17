@@ -441,6 +441,9 @@ compile_parameter(const ShaderArgId  &arg_id,
   if (loc < string::npos) {
     basename = p._id._name.substr(loc + 1);
   }
+
+  // Ignore inputs that are prefixed by two underscores
+  // This is to support geometry shaders correctly.
   if (basename.size() >= 2 && basename.substr(0, 2) == "__") {
     return true;
   }
