@@ -84,6 +84,10 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
 
   m_pluginLoaded = false;
   _failed = false;
+
+  // Ensure this event is initially in the "set" state, in case we
+  // never get a download request before we get a close request.
+  m_eventDownloadStopped.SetEvent( );
 }
 
 PPInstance::~PPInstance(  )
