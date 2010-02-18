@@ -121,6 +121,8 @@ public:
   TexTable         _tex_tab;
   SurfaceTable     _surface_tab;
 
+  vector <MayaEggJoint *> _joint_list;
+
   int _start_frame;
   int _end_frame;
   int _frame_rate;
@@ -501,6 +503,9 @@ MayaEggJoint *MayaEggLoader::MakeJoint(EggGroup *joint, EggGroup *context)
     parent->_children.push_back(result);
   }
   _joint_tab[joint] = result;
+
+  // [gjeon] since _joint_tab is not always properly sorted
+  _joint_list.push_back(result);
 
   return result;
 }
@@ -1809,8 +1814,8 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     mayaloader_cat.spam() << "thickness from joints: " << thickness << endl;
   }
   thickness = thickness * 0.025;
-  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
-    MayaEggJoint *joint = (*ji).second;
+  for (unsigned int i=0; i<_joint_list.size(); i++) {
+    MayaEggJoint *joint = _joint_list[i];
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "creating a joint: " << joint->_egg_joint->get_name() << endl;
     }
