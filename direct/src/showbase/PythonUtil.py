@@ -3343,7 +3343,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 rVal = f(*args,**kwargs)
             finally:
                 __report_indent -= 1
-                if rVal:
+                if rVal is not None:
                     print indent(' -> '+repr(rVal))
                     pass
                 pass
