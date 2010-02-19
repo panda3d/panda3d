@@ -10,6 +10,8 @@ from ObjectPaletteBase import *
 class ProtoPaletteBase(ObjectPaletteBase):
     def __init__(self):
         ObjectPaletteBase.__init__(self)
+        # self.dirname should be defined in inherited class
+        assert self.dirname
 
     def addItems(self):
         if type(protoData) == types.DictType:
