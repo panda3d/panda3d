@@ -204,6 +204,18 @@ class FSM(DirectObject):
         finally:
             self.fsmLock.release()
 
+    def getCurrentStateOrTransition(self):
+        # Returns the current state if we are in a state now, or the
+        # transition we are performing if we are currently within
+        # the enter or exit function for a state.
+        self.fsmLock.acquire()
+        try:
+            if self.state:
+                return self.state
+            return '%s -> %s' % (self.oldState, self.newState)
+        finally:
+            self.fsmLock.release()
+
     def isInTransition(self):
         self.fsmLock.acquire()
         try:
