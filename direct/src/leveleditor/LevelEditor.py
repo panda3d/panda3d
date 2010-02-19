@@ -9,6 +9,7 @@ from LevelEditorBase import *
 from ObjectHandler import *
 from ObjectPalette import *
 from LevelEditorUI import *
+from ProtoPalette import *
 
 class LevelEditor(LevelEditorBase):
     """ Class for Panda3D LevelEditor """ 
@@ -22,6 +23,7 @@ class LevelEditor(LevelEditorBase):
         # connect them in your own LevelEditor class
         self.objectPalette = ObjectPalette()
         self.objectHandler = ObjectHandler(self)
+        self.protoPalette = ProtoPalette()
 
         # LevelEditorUI class must declared after ObjectPalette
         self.ui = LevelEditorUI(self)

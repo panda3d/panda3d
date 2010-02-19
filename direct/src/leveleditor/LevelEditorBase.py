@@ -15,7 +15,6 @@ base = ShowBase(False)
 from ObjectMgr import *
 from FileMgr import *
 from ActionMgr import *
-from ProtoPalette import *
 from MayaConverter import *
 
 class LevelEditorBase(DirectObject):
@@ -27,7 +26,6 @@ class LevelEditorBase(DirectObject):
         self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
         self.actionMgr = ActionMgr()
-        self.protoPalette = ProtoPalette()
 
         # define your own config file in inherited class
         self.settingsFile = None
