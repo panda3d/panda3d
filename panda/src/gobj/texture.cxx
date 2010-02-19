@@ -5738,7 +5738,7 @@ filter_3d_unsigned_short(unsigned char *&p, const unsigned char *&q,
 bool Texture::
 do_squish(Texture::CompressionMode compression, int squish_flags) {
 #ifdef HAVE_SQUISH
-  if (_ram_images.empty()) {
+  if (_ram_images.empty() || _ram_image_compression != CM_off) {
     return false;
   }
 
