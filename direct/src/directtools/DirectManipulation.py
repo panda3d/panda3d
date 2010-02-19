@@ -2,6 +2,7 @@ from direct.showbase.DirectObject import DirectObject
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
+from DirectSelection import SelectionRay
 from direct.task import Task
 import types
 
@@ -11,6 +12,10 @@ class DirectManipulationControl(DirectObject):
         self.objectHandles = ObjectHandles()
         self.hitPt = Point3(0)
         self.prevHit = Vec3(0)
+
+        self.hitPtScale = Point3(0) # [gjeon] to be used in new LE's camera control
+        self.prevHitScale = Vec3(0) # [gjeon] to be used in new LE's camera control
+
         self.rotationCenter = Point3(0)
         self.initScaleMag = 1
         self.manipRef = base.direct.group.attachNewNode('manipRef')
@@ -21,9 +26,11 @@ class DirectManipulationControl(DirectObject):
         self.fSetCoa = 0
         self.fHitInit = 1
         self.fScaleInit = 1
+        self.fScaleInit1 = 1 # [gjeon] to be used in new LE's camera control
         self.fWidgetTop = 0
         self.fFreeManip = 1
-        self.fScaling = 0
+        self.fScaling3D = 0
+        self.fScaling1D = 0
         self.fMovable = 1
         self.mode = None
         self.actionEvents = [
@@ -99,23 +106,28 @@ class DirectManipulationControl(DirectObject):
         if self.fAllowSelectionOnly:
             return
 
-        # Check for a widget hit point
-        entry = base.direct.iRay.pickWidget(skipFlags = SKIP_WIDGET)
-        # Did we hit a widget?
-        if entry:
-            # Yes!
-            self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
-            self.hitPtDist = Vec3(self.hitPt).length()
-            # Constraint determined by nodes name
-            self.constraint = entry.getIntoNodePath().getName()
+        if self.fScaling1D == 0 and\
+           self.fScaling3D == 0:
+
+            # Check for a widget hit point
+            entry = base.direct.iRay.pickWidget(skipFlags = SKIP_WIDGET)
+            # Did we hit a widget?
+            if entry:
+                # Yes!
+                self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
+                self.hitPtDist = Vec3(self.hitPt).length()
+                # Constraint determined by nodes name
+                self.constraint = entry.getIntoNodePath().getName()
+            else:
+                # Nope, off the widget, no constraint
+                self.constraint = None
+                # [gjeon] to prohibit unwanted object movement while direct window doesn't have focus
+                if base.direct.cameraControl.useMayaCamControls and not base.direct.gotControl(modifiers) \
+                   and not self.fAllowMarquee:
+                    return
         else:
-            # Nope, off the widget, no constraint
-            self.constraint = None
-            # [gjeon] to prohibit unwanted object movement while direct window doesn't have focus
-            if base.direct.cameraControl.useMayaCamControls and not base.direct.gotControl(modifiers) \
-               and not self.fAllowMarquee:
-                return
-        
+            entry = None
+            
         if not base.direct.gotAlt(modifiers):
             if entry:
                 # Check to see if we are moving the object
@@ -169,6 +181,8 @@ class DirectManipulationControl(DirectObject):
             self.marquee = None
 
         if base.direct.cameraControl.useMayaCamControls and base.direct.fAlt:
+            return
+        if base.direct.fControl:
             return
 
         endX = base.direct.dr.mouseX
@@ -315,22 +329,33 @@ class DirectManipulationControl(DirectObject):
                     base.direct.select(entry.getIntoNodePath(), base.direct.fShift)
                 else:
                     base.direct.deselectAll()
-        elif self.mode == 'move':
-            self.manipulateObjectCleanup()
+        #elif self.mode == 'move':
+        self.manipulateObjectCleanup()
             
         self.mode = None
 
     def manipulateObjectCleanup(self):
-        if self.fScaling:
+        if self.fScaling3D or self.fScaling1D:
             # We had been scaling, need to reset object handles
-            self.objectHandles.transferObjectHandlesScale()
-            self.fScaling = 0
+            if hasattr(base.direct, 'widget'):
+                base.direct.widget.transferObjectHandlesScale()
+            else:
+                self.objectHandles.transferObjectHandlesScale()
+            self.fScaling3D = 0
+            self.fScaling1D = 0
         base.direct.selected.highlightAll()
-        self.objectHandles.showAllHandles()
+        if hasattr(base.direct, 'widget'):
+            base.direct.widget.showAllHandles()
+        else:
+            self.objectHandles.showAllHandles()
         if base.direct.clusterMode == 'client':
             cluster(
                 'base.direct.manipulationControl.objectHandles.showAllHandles()')
-        self.objectHandles.hideGuides()
+        if hasattr(base.direct, 'widget'):
+            base.direct.widget.hideGuides()
+        else:
+            self.objectHandles.hideGuides()
+
         # Restart followSelectedNodePath task
         self.spawnFollowSelectedNodePathTask()
         messenger.send('DIRECT_manipulateObjectCleanup',
@@ -394,11 +419,20 @@ class DirectManipulationControl(DirectObject):
             self.fSetCoa = 1 - self.fSetCoa
 
             if self.fSetCoa:
-                self.objectHandles.coaModeColor()
+                if hasattr(base.direct, 'widget'):
+                    base.direct.widget.coaModeColor()
+                else:
+                    self.objectHandles.coaModeColor()
             else:
-                self.objectHandles.manipModeColor()
+                if hasattr(base.direct, 'widget'):
+                    base.direct.widget.manipModeColor()
+                else:
+                    self.objectHandles.manipModeColor()
         else:
-            self.objectHandles.disabledModeColor()
+            if hasattr(base.direct, 'widget'):
+                base.direct.widget.disabledModeColor()
+            else:
+                self.objectHandles.disabledModeColor()
 
     def removeManipulateObjectTask(self):
         taskMgr.remove('manipulateObject')
@@ -406,13 +440,22 @@ class DirectManipulationControl(DirectObject):
     def enableWidgetMove(self):
         self.fMovable = 1
         if self.fSetCoa:
-            self.objectHandles.coaModeColor()            
+            if hasattr(base.direct, 'widget'):
+                base.direct.widget.coaModeColor()
+            else:
+                self.objectHandles.coaModeColor()            
         else:
-            self.objectHandles.manipModeColor()
+            if hasattr(base.direct, 'widget'):
+                base.direct.widget.manipModeColor()
+            else:
+                self.objectHandles.manipModeColor()
 
     def disableWidgetMove(self):
         self.fMovable = 0
-        self.objectHandles.disabledModeColor()        
+        if hasattr(base.direct, 'widget'):
+            base.direct.widget.disableModeColor()
+        else:
+            self.objectHandles.disabledModeColor()        
 
     #--------------------------------------------------------------------------
     # Function:   get edit types list for specified objects which indicate
@@ -452,9 +495,14 @@ class DirectManipulationControl(DirectObject):
             # Record undo point
             base.direct.pushUndo(base.direct.selected)
             # Update object handles visibility
-            self.objectHandles.showGuides()
-            self.objectHandles.hideAllHandles()
-            self.objectHandles.showHandle(self.constraint)
+            if hasattr(base.direct, 'widget'):
+                base.direct.widget.showGuides()
+                base.direct.widget.hideAllHandles()
+                base.direct.widget.showHandle(self.constraint)
+            else:
+                self.objectHandles.showGuides()
+                self.objectHandles.hideAllHandles()
+                self.objectHandles.showHandle(self.constraint)
             if base.direct.clusterMode == 'client':
                 oh = 'base.direct.manipulationControl.objectHandles'
                 cluster(oh + '.showGuides()', 0)
@@ -474,6 +522,9 @@ class DirectManipulationControl(DirectObject):
         # reset hit-pt flag
         self.fHitInit = 1
         self.fScaleInit = 1
+        if not self.fScaling1D and\
+           not self.fScaling3D:
+            self.fScaleInit1 = 1
         # record initial offset between widget and camera
         t = Task.Task(self.manipulateObjectTask)
         t.fMouseX = abs(base.direct.dr.mouseX) > 0.9
@@ -490,56 +541,66 @@ class DirectManipulationControl(DirectObject):
         taskMgr.add(t, 'manipulateObject')
 
     def manipulateObjectTask(self, state):
-        # Widget takes precedence
-        if self.constraint:
-            type = self.constraint[2:]
-            if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
-                if type == 'post':
-                    # [gjeon] non-uniform scaling
-                    self.fScaling = 1
-                    self.scale1D(state)
+        if self.fScaling1D:
+            self.scale1D(state)
+        elif self.fScaling3D:
+            self.scale3D(state)
+        else:
+            # Widget takes precedence
+            if self.constraint:
+                type = self.constraint[2:]
+                if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                    if type == 'post':
+                        # [gjeon] non-uniform scaling
+                        self.fScaling1D = 1
+                        self.scale1D(state)
+                    else:
+                        # [gjeon] uniform scaling
+                        self.fScaling3D = 1
+                        self.scale3D(state)                    
                 else:
-                    # [gjeon] uniform scaling
-                    self.fScaling = 1
-                    self.scale3D(state)                    
-            else:
-                if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
-                    self.xlate1D(state)
-                elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
-                    self.xlate2D(state)
-                elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
-                    self.rotate1D(state)
-        # No widget interaction, determine free manip mode
-        elif self.fFreeManip:
-            # If we've been scaling and changed modes, reset object handles
-            if 0 and self.fScaling and (not base.direct.fAlt):
-                self.objectHandles.transferObjectHandlesScale()
-                self.fScaling = 0
-            # Alt key switches to a scaling mode
-            if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
-                self.fScaling = 1
-                self.scale3D(state)
-            # Otherwise, manip mode depends on where you started
-            elif state.fMouseX and state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
-                # In the corner, spin around camera's axis
-                self.rotateAboutViewVector(state)
-            elif state.fMouseX or state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
-                # Mouse started elsewhere in the outer frame, rotate
-                self.rotate2D(state)
-            elif not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
-                # Mouse started in central region, xlate
-                # Mode depends on shift key
-                if base.direct.fShift or base.direct.fControl:
-                    self.xlateCamXY(state)
-                else:
-                    self.xlateCamXZ(state)
+                    if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                        self.xlate1D(state)
+                    elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                        self.xlate2D(state)
+                    elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
+                        self.rotate1D(state)
+            # No widget interaction, determine free manip mode
+            elif self.fFreeManip:
+                # If we've been scaling and changed modes, reset object handles
+                if 0 and (self.fScaling1D or self.fScaling3D) and (not base.direct.fAlt):
+                    if hasattr(base.direct, 'widget'):
+                        base.direct.widget.transferObjectHandleScale()
+                    else:
+                        self.objectHandles.transferObjectHandlesScale()
+
+                    self.fScaling1D = 0
+                    self.fScaling3D = 0
+                # Alt key switches to a scaling mode
+                if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                    self.fScaling3D = 1
+                    self.scale3D(state)
+                # Otherwise, manip mode depends on where you started
+                elif state.fMouseX and state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
+                    # In the corner, spin around camera's axis
+                    self.rotateAboutViewVector(state)
+                elif state.fMouseX or state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                    # Mouse started elsewhere in the outer frame, rotate
+                    self.rotate2D(state)
+                elif not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                    # Mouse started in central region, xlate
+                    # Mode depends on shift key
+                    if base.direct.fShift or base.direct.fControl:
+                        self.xlateCamXY(state)
+                    else:
+                        self.xlateCamXZ(state)
         if self.fSetCoa:
             # Update coa based on current widget position
             base.direct.selected.last.mCoa2Dnp.assign(
                 base.direct.widget.getMat(base.direct.selected.last))
         else:
             # Move the objects with the widget
-            base.direct.selected.moveWrtWidgetAll()
+                base.direct.selected.moveWrtWidgetAll()
         # Continue
         return Task.cont
 
@@ -550,39 +611,45 @@ class DirectManipulationControl(DirectObject):
     def removeTag(self, tag):
         self.unmovableTagList.remove(tag)
 
-    def gridSnapping(self, offset):
-        offsetX = offset.getX()
-        offsetY = offset.getY()
-        offsetZ = offset.getZ()
-        if math.fabs(offsetX) < base.direct.grid.gridSpacing / 2.0:
-            offsetX = 0
+    def gridSnapping(self, nodePath, offset):
+        offsetX = nodePath.getX() + offset.getX()
+        offsetY = nodePath.getY() + offset.getY()
+        offsetZ = nodePath.getZ() + offset.getZ()
+
+        if offsetX < 0.0:
+            signX = -1.0
         else:
-            if offsetX < 0:
-                offsetX = -1 * base.direct.grid.gridSpacing
-            else:
-                offsetX = base.direct.grid.gridSpacing
-
-        if math.fabs(offsetY) < base.direct.grid.gridSpacing / 2.0:
-            offsetY = 0
+            signX = 1.0
+        modX = math.fabs(offsetX) % base.direct.grid.gridSpacing
+        floorX = math.floor(math.fabs(offsetX) / base.direct.grid.gridSpacing)
+        if modX < base.direct.grid.gridSpacing / 2.0:
+            offsetX = signX * floorX * base.direct.grid.gridSpacing
         else:
-            if offsetY < 0:
-                offsetY = -1 * base.direct.grid.gridSpacing
-            else:
-                offsetY = base.direct.grid.gridSpacing                
+            offsetX = signX * (floorX + 1) * base.direct.grid.gridSpacing
 
-        if math.fabs(offsetZ) < base.direct.grid.gridSpacing / 2.0:
-            offsetZ = 0
+        if offsetY < 0.0:
+            signY = -1.0
         else:
-            if offsetZ < 0:
-                offsetZ = -1 * base.direct.grid.gridSpacing
-            else:
-                offsetZ = base.direct.grid.gridSpacing
+            signY = 1.0
+        modY = math.fabs(offsetY) % base.direct.grid.gridSpacing
+        floorY = math.floor(math.fabs(offsetY) / base.direct.grid.gridSpacing)
+        if modY < base.direct.grid.gridSpacing / 2.0:
+            offsetY = signY * floorY * base.direct.grid.gridSpacing
+        else:
+            offsetY = signY * (floorY + 1) * base.direct.grid.gridSpacing
 
-        offset.setX(offsetX)
-        offset.setY(offsetY)
-        offset.setZ(offsetZ)
+        if offsetZ < 0.0:
+            signZ = -1.0
+        else:
+            signZ = 1.0
+        modZ = math.fabs(offsetZ) % base.direct.grid.gridSpacing
+        floorZ = math.floor(math.fabs(offsetZ) / base.direct.grid.gridSpacing)
+        if modZ < base.direct.grid.gridSpacing / 2.0:
+            offsetZ = signZ * floorZ * base.direct.grid.gridSpacing
+        else:
+            offsetZ = signZ * (floorZ + 1) * base.direct.grid.gridSpacing
 
-        return offset
+        return Point3(offsetX, offsetY, offsetZ)
 
     ### WIDGET MANIPULATION METHODS ###
     def xlate1D(self, state):
@@ -601,14 +668,19 @@ class DirectManipulationControl(DirectObject):
             # Move widget to keep hit point as close to mouse as possible
             offset = self.hitPt - self.prevHit
 
-            if self.fGridSnap:
-                offset = self.gridSnapping(offset)
-                
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
                 for widget in base.direct.manipulationControl.widgetList:
-                    widget.setPos(widget, offset)
+                    if self.fGridSnap:
+                        widget.setPos(self.gridSnapping(widget, offset))
+                    else:
+                        widget.setPos(widget, offset)
+                if base.direct.camera.getName() != 'persp':
+                    self.prevHit.assign(self.hitPt)
             else:
-                base.direct.widget.setPos(base.direct.widget, offset)                
+                if self.fGridSnap:
+                    base.direct.widget.setPos(self.gridSnapping(base.direct.widget, offset))
+                else:
+                    base.direct.widget.setPos(base.direct.widget, offset)                
 
     def xlate2D(self, state):
         # Constrained 2D (planar) translation
@@ -617,6 +689,7 @@ class DirectManipulationControl(DirectObject):
         # This point tracks all subsequent mouse movements
         self.hitPt.assign(self.objectHandles.getWidgetIntersectPt(
             base.direct.widget, self.constraint[:1]))
+
         # use it to see how far to move the widget
         if self.fHitInit:
             # First time through just record hit point
@@ -625,14 +698,19 @@ class DirectManipulationControl(DirectObject):
         else:
             offset = self.hitPt - self.prevHit
 
-            if self.fGridSnap:
-                offset = self.gridSnapping(offset)
-
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
                 for widget in base.direct.manipulationControl.widgetList:
-                    widget.setPos(widget, offset)
+                    if self.fGridSnap:
+                        widget.setPos(self.gridSnapping(widget, offset))
+                    else:
+                        widget.setPos(widget, offset)
+                if base.direct.camera.getName() != 'persp':
+                    self.prevHit.assign(self.hitPt)
             else:
-                base.direct.widget.setPos(base.direct.widget, offset)
+                if self.fGridSnap:
+                    base.direct.widget.setPos(self.gridSnapping(base.direct.widget, offset))
+                else:
+                    base.direct.widget.setPos(base.direct.widget, offset)  
 
     def rotate1D(self, state):
         # Constrained 1D rotation about the widget's main axis (X, Y, or Z)
@@ -722,6 +800,7 @@ class DirectManipulationControl(DirectObject):
         # Move widget (and objects) based upon mouse motion
         # Scaled up accordingly based upon widget distance
         dr = base.direct.dr
+
         base.direct.widget.setX(
             base.direct.camera,
             x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near))
@@ -764,6 +843,7 @@ class DirectManipulationControl(DirectObject):
         # The object, however, stays at the same relative point to mouse in X
         vWidget2Camera.setX((dr.nearVec[0] + self.deltaNearX) *
                             (vWidget2Camera[1]/dr.near))
+
         # Move widget
         base.direct.widget.setPos(base.direct.camera, vWidget2Camera)
 
@@ -801,6 +881,38 @@ class DirectManipulationControl(DirectObject):
         relHpr(base.direct.widget, base.direct.camera, 0, 0, -deltaAngle)
 
     def scale1D(self, state):
+        print self.constraint
+        if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
+            self.hitPtScale.assign(self.objectHandles.getMouseIntersectPt())
+
+            if self.fScaleInit1:
+                # First time through just record hit point
+                self.fScaleInit1 = 0
+                self.prevHitScale.assign(self.hitPtScale)
+            else:
+                widgetPos = base.direct.widget.getPos()
+                d0 = (self.prevHitScale - widgetPos).length()
+                d1 = (self.hitPtScale - widgetPos).length()
+                offset = d1 - d0
+                currScale = base.direct.widget.getScale()
+                
+                # Scale factor is ratio current mag with init mag
+                if self.constraint[:1] == 'x':
+                    currScale = Vec3(currScale.getX() + offset, currScale.getY(), currScale.getZ())
+                    if currScale.getX() < 0.0:
+                        currScale.setX(0.01)
+                elif self.constraint[:1] == 'y':
+                    currScale = Vec3(currScale.getX(), currScale.getY() + offset, currScale.getZ())
+                    if currScale.getY() < 0.0:
+                        currScale.setY(0.01)
+                elif self.constraint[:1] == 'z':
+                    currScale = Vec3(currScale.getX(), currScale.getY(), currScale.getZ() + offset)
+                    if currScale.getZ() < 0.0:
+                        currScale.setZ(0.01)
+                base.direct.widget.setScale(currScale)
+                self.prevHitScale.assign(self.hitPtScale)
+            return                
+
         # [gjeon] Constrained 1D scale of the selected node based upon up down mouse motion
         if self.fScaleInit:
             self.fScaleInit = 0
@@ -830,6 +942,27 @@ class DirectManipulationControl(DirectObject):
         base.direct.widget.setScale(currScale)
 
     def scale3D(self, state):
+        if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView:
+            self.hitPtScale.assign(self.objectHandles.getMouseIntersectPt())
+
+            if self.fScaleInit1:
+                # First time through just record hit point
+                self.fScaleInit1 = 0
+                self.prevHitScale.assign(self.hitPtScale)
+            else:
+                widgetPos = base.direct.widget.getPos()
+                d0 = (self.prevHitScale - widgetPos).length()
+                d1 = (self.hitPtScale - widgetPos).length()
+                offset = d1 - d0
+                currScale = base.direct.widget.getScale()
+                currScale += offset
+                if currScale.getX() < 0.0 and\
+                   currScale.getY() < 0.0 and\
+                   currScale.getZ() < 0.0:
+                    currScale = VBase3(0.01, 0.01, 0.01)
+                base.direct.widget.setScale(currScale)
+                self.prevHitScale.assign(self.hitPtScale)
+            return
         # Scale the selected node based upon up down mouse motion
         # Mouse motion from edge to edge results in a factor of 4 scaling
         # From midpoint to edge doubles or halves objects scale
@@ -1328,6 +1461,35 @@ class ObjectHandles(NodePath, DirectObject):
         lines.setName('z-guide')
 
     def getAxisIntersectPt(self, axis):
+        if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
+           base.direct.camera.getName() != 'persp':           
+            # create ray from the camera to detect 3d position
+            iRay = SelectionRay(base.direct.camera)
+            iRay.collider.setFromLens(base.direct.camNode, base.direct.dr.mouseX, base.direct.dr.mouseY)
+            iRay.collideWithBitMask(1)
+            iRay.ct.traverse(base.direct.grid)
+
+            entry = iRay.getEntry(0)
+            hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+
+            # create a temp nodePath to get the position
+            np = NodePath('temp')
+            np.setPos(base.direct.camera, hitPt)
+            self.hitPt.assign(np.getPos())
+            np.remove()
+            del iRay
+            if axis == 'x':
+                # We really only care about the nearest point on the axis
+                self.hitPt.setY(0)
+                self.hitPt.setZ(0)
+            elif axis == 'y':
+                self.hitPt.setX(0)
+                self.hitPt.setZ(0)                
+            elif axis == 'z':
+                self.hitPt.setX(0)
+                self.hitPt.setY(0)                
+            return self.hitPt
+        
         # Calc the xfrom from camera to widget
         mCam2Widget = base.direct.camera.getMat(base.direct.widget)
         lineDir = Vec3(mCam2Widget.xformVec(base.direct.dr.nearVec))
@@ -1372,7 +1534,31 @@ class ObjectHandles(NodePath, DirectObject):
             self.hitPt.setY(0)
         return self.hitPt
 
+    def getMouseIntersectPt(self):
+        # create ray from the camera to detect 3d position
+        iRay = SelectionRay(base.direct.camera)
+        iRay.collider.setFromLens(base.direct.camNode, base.direct.dr.mouseX, base.direct.dr.mouseY)
+        iRay.collideWithBitMask(1)
+        iRay.ct.traverse(base.direct.grid)
+
+        entry = iRay.getEntry(0)
+        hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+
+        # create a temp nodePath to get the position
+        np = NodePath('temp')
+        np.setPos(base.direct.camera, hitPt)
+        resultPt = Point3(0)
+        resultPt.assign(np.getPos())
+        np.remove()
+        del iRay
+        return resultPt
+
     def getWidgetIntersectPt(self, nodePath, plane):
+        if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
+           base.direct.camera.getName() != 'persp':
+            self.hitPt.assign(self.getMouseIntersectPt())
+            return self.hitPt
+        
         # Find out the point of interection of the ray passing though the mouse
         # with the plane containing the 2D xlation or 1D rotation widgets
 
@@ -1399,6 +1585,7 @@ class ObjectHandles(NodePath, DirectObject):
         elif plane == 'z':
             self.hitPt.assign(planeIntersect(
                 lineOrigin, lineDir, ORIGIN, Z_AXIS))
+
         return self.hitPt
 
 

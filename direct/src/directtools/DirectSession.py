@@ -38,6 +38,8 @@ class DirectSession(DirectObject):
         self.fEnabled = 0
         self.fEnabledLight = 0
         self.fScaleWidgetByCam = 0 # [gjeon] flag for scaling widget by distance from the camera
+        self.fIgnoreDirectOnlyKeyMap = 0 # [gjeon] to skip old direct controls in new LE
+
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
@@ -161,6 +163,9 @@ class DirectSession(DirectObject):
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],
             ['DIRECT-delete', self.removeAllSelected],
+            ['DIRECT-Undo', self.undo],
+            ['DIRECT-Redo', self.redo],
+            ['DIRECT-OOBE', self.oobe],
             ]
 
         if base.wantTk:
@@ -207,13 +212,7 @@ class DirectSession(DirectObject):
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
 
-        self.hotKeyMap = {
-            'c': ('Center Camera', 0, 'DIRECT-centerCamIn'),
-            'f': ('Fit on Widget', 0, 'DIRECT-fitOnWidget'),
-            'h': ('Move Camera to ', 0, 'DIRECT-homeCam'),
-            'shift-v': ('Toggle Marker', 0, 'DIRECT-toggleMarkerVis'),
-            'm': ('Move to fit', 0, 'DIRECT-moveToFit'),
-            'n': ('Pick Next COA', 0, 'DIRECT-pickNextCOA'),
+        self.directOnlyKeyMap = {
             'u': ('Orbit Upright Camera', 0, 'DIRECT-orbitUprightCam'),
             'shift-u': ('Upright Camera', 0, 'DIRECT-uprightCam'),
             '1': ('Move Camera to View 1', 0, 'DIRECT-spwanMoveToView-1'),
@@ -231,10 +230,23 @@ class DirectSession(DirectObject):
             'shift-=': ('Zoom In', 0, 'DIRECT-zoomInCam'),
             'shift-_': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
             '-': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
+            'o': ('Toggle OOBE', 0, 'DIRECT-OOBE'),
+            '[': ('DIRECT-Undo', 0, 'DIRECT-Undo'),
+            'shift-[': ('DIRECT-Undo', 0, 'DIRECT-Undo'),
+            ']': ('DIRECT-Redo', 0, 'DIRECT-Redo'),
+            'shift-]': ('DIRECT-Redo', 0, 'DIRECT-Redo'),
+            }
+
+        self.hotKeyMap = {
+            'c': ('Center Camera', 0, 'DIRECT-centerCamIn'),
+            'f': ('Fit on Widget', 0, 'DIRECT-fitOnWidget'),
+            'h': ('Move Camera to ', 0, 'DIRECT-homeCam'),
+            'shift-v': ('Toggle Marker', 0, 'DIRECT-toggleMarkerVis'),
+            'm': ('Move to fit', 0, 'DIRECT-moveToFit'),
+            'n': ('Pick Next COA', 0, 'DIRECT-pickNextCOA'),
             'delete': ('Delete', 0, 'DIRECT-delete'),
             '.': ('Scale Up Widget', 0, 'DIRECT-widgetScaleUp'),
             ',': ('Scale Down Widget', 0, 'DIRECT-widgetScaleDown'),
-
             'page_up': ('Up Ancestry', 'self.upAncestry()', 0),
             'page_down': ('Down Ancestry', 'self.downAncestry()', 0),
             'escape': ('Deselect All', 'self.deselectAll()', 0),
@@ -243,7 +255,6 @@ class DirectSession(DirectObject):
             'control-f': ('Flash', 'self.flash(last)', 0),
             'l': ('Toggle lights', 'self.lights.toggle()', 0),
             'shift-l': ('Toggle COA Lock', 'self.cameraControl.toggleCOALock()', 0),
-            'o': ('Toggle OOBE', 'self.oobe()', 0),
             'p': ('Set Active Parent', 'self.doSetActiveParent()', 0),
             'r': ('Wrt Reparent', 'self.doWrtReparent()', 0),
             'shift-r': ('Reparent', 'self.doReparent()', 0),
@@ -251,10 +262,6 @@ class DirectSession(DirectObject):
             't': ('Toggle Textures', 'base.toggleTexture()', 0),
             'shift-a': ('Toggle Vis all', 'self.selected.toggleVisAll()', 0),
             'w': ('Toggle Wireframe', 'base.toggleWireframe()', 0),
-            '[': ('DIRECT-Undo', 'self.undo()', 0),
-            'shift-[': ('DIRECT-Undo', 'self.undo()', 0),
-            ']': ('DIRECT-Redo', 'DIRECT-self.redo()', 0),
-            'shift-]': ('DIRECT-Redo', 'self.redo()', 0),
             'control-z': ('Undo', 0, 'LE-Undo'),
             'shift-z' : ('Redo', 0, 'LE-Redo'),
             }
@@ -508,6 +515,8 @@ class DirectSession(DirectObject):
                     self.trueCamera = self.camera
                     self.cam = NodePath(winCtrl.camNode)
                     self.camNode = winCtrl.camNode
+                    if hasattr(winCtrl, 'grid'):
+                        base.direct.grid = winCtrl.grid
                     base.direct.dr = base.direct.drList[base.camList.index(NodePath(winCtrl.camNode))]
                     base.direct.iRay = base.direct.dr.iRay
                     base.mouseWatcher = winCtrl.mouseWatcher
@@ -530,7 +539,15 @@ class DirectSession(DirectObject):
                     messenger.send(keyDesc[2])
                 else:  # [gjeon] when we need to call a function
                     eval(keyDesc[1])
-
+        elif input in self.directOnlyKeyMap.keys():
+            if self.fIgnoreDirectOnlyKeyMap:
+                return
+            keyDesc = self.directOnlyKeyMap[input]
+            if len(keyDesc) == 3:
+                if keyDesc[1] == 0: # [gjeon] when we need to send a message
+                    messenger.send(keyDesc[2])
+                else:  # [gjeon] when we need to call a function
+                    eval(keyDesc[1])
         elif input == 'mouse1-up':
             self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
             messenger.send('DIRECT-mouse1Up')

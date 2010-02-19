@@ -2,6 +2,7 @@ from direct.showbase.DirectObject import DirectObject
 from DirectUtil import *
 from DirectGeometry import *
 from DirectGlobals import *
+from DirectSelection import SelectionRay
 from direct.interval.IntervalGlobal import Sequence, Func
 from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
@@ -124,8 +125,8 @@ class DirectCameraControl(DirectObject):
             self.startT= globalClock.getFrameTime()
             self.startF = globalClock.getFrameCount()
             # If the cam is orthogonal, spawn differentTask
-            if (hasattr(base.direct.cam.node(), "getLens") and
-                base.direct.cam.node().getLens().__class__.__name__ == "OrthographicLens"):
+            if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
+               base.direct.camera.getName() != 'persp':
                 self.spawnOrthoZoom()
             else:
                 # Start manipulation
@@ -144,7 +145,12 @@ class DirectCameraControl(DirectObject):
             self.startT= globalClock.getFrameTime()
             self.startF = globalClock.getFrameCount()
             # Start manipulation
-            self.spawnXZTranslate()
+            # If the cam is orthogonal, spawn differentTask
+            if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
+               base.direct.camera.getName() != 'persp':
+                self.spawnOrthoTranslate()
+            else:
+                self.spawnXZTranslate()
             self.altDown = 1
         elif not self.useMayaCamControls:
             # Where are we in the display region?
@@ -231,6 +237,12 @@ class DirectCameraControl(DirectObject):
         # Spawn new task
         taskMgr.add(self.XZTranslateTask, 'manipulateCamera')
 
+    def spawnOrthoTranslate(self):
+        # Kill any existing tasks
+        taskMgr.remove('manipulateCamera')
+        # Spawn new task
+        taskMgr.add(self.OrthoTranslateTask, 'manipulateCamera')
+
     def spawnHPanYZoom(self):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
@@ -279,6 +291,21 @@ class DirectCameraControl(DirectObject):
                               xlateSF))
         return Task.cont
 
+    def OrthoTranslateTask(self, state):
+        # create ray from the camera to detect 3d position
+        iRay = SelectionRay(base.direct.camera)
+        iRay.collider.setFromLens(base.direct.camNode, base.direct.dr.mouseX, base.direct.dr.mouseY)
+        iRay.collideWithBitMask(1)
+        iRay.ct.traverse(base.direct.grid)
+
+        entry = iRay.getEntry(0)
+        hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+        del iRay
+        if hasattr(state, 'prevPt'):
+            base.direct.camera.setPos(base.direct.camera, (state.prevPt - hitPt))
+        state.prevPt = hitPt
+        return Task.cont
+
     def HPanYZoomTask(self, state):
         # If the cam is orthogonal, don't rotate or zoom.
         if (hasattr(base.direct.cam.node(), "getLens") and
@@ -324,6 +351,8 @@ class DirectCameraControl(DirectObject):
         x = base.direct.dr.getWidth()
         y = base.direct.dr.getHeight()
         base.direct.dr.orthoFactor -= factor
+        if base.direct.dr.orthoFactor < 0:
+            base.direct.dr.orthoFactor = 0.0001
         base.direct.dr.updateFilmSize(x, y)
         return Task.cont
     
