@@ -160,18 +160,6 @@ class FSM(DirectObject):
             import weakref
             _debugFsms[name]=weakref.ref(self)
 
-    def __getattr__(self, name):
-        """Provides request_State(*args) alias to request('State', *args)
-        and demand_State(*args) alias to demand('State', *args)."""
-
-        if name.startswith('request_'):
-            return lambda *args, **kwargs: self.request(name[8:], *args, **kwargs)
-        if name.startswith('demand_'):
-            return lambda *args, **kwargs: self.request(name[7:], *args, **kwargs)
-        if name in self.__dict__:
-            return self.__dict__[name]
-        raise AttributeError(name)
-
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
         # by transitioning to the "Off" state.
