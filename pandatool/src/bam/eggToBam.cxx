@@ -289,11 +289,11 @@ run() {
       }
 
       if (_tex_ctex) {
-        tex->set_compression(Texture::CM_on);
 #ifdef HAVE_SQUISH
         if (!tex->compress_ram_image()) {
           nout << "  couldn't compress " << tex->get_name() << "\n";
         }
+        tex->set_compression(Texture::CM_on);
 #else  // HAVE_SQUISH
         tex->set_keep_ram_image(true);
 	bool has_mipmap_levels = (tex->get_num_ram_mipmap_images() > 1);
