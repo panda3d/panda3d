@@ -375,7 +375,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   float dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-    if (cdata->_switch_vector[index].in_range_2(dist2)) { 
+    if (cdata->_switch_vector[index].in_range_2(dist2*cdata->_lod_scale)) { 
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << data._node_path << " at distance " << sqrt(dist2)
@@ -877,6 +877,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     _switch_vector.push_back(sw);
   }
+  _lod_scale = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
