@@ -292,7 +292,6 @@ class ObjectMgr:
     def setObjectTransform(self, uid, xformMat):
         obj = self.findObjectById(uid)
         if obj:
-            print obj[OG.OBJ_NP], xformMat
             obj[OG.OBJ_NP].setMat(xformMat)
         
     def updateObjectColor(self, r, g, b, a, np=None):
@@ -601,6 +600,5 @@ class ObjectMgr:
                 duplicatedNPs.append(newObjNP)
 
         base.direct.deselectAllCB()
-        print duplicatedNPs
         for newNodePath in duplicatedNPs:
             base.direct.select(newNodePath, fMultiSelect = 1, fUndo=0)

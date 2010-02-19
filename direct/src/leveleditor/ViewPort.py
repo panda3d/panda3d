@@ -11,7 +11,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
-from pandac.PandaModules import WindowProperties, OrthographicLens, Point3
+from pandac.PandaModules import WindowProperties, OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 
 HORIZONTAL = wx.SPLIT_HORIZONTAL
@@ -65,6 +65,7 @@ class Viewport(wx.Panel, DirectObject):
     self.camLookAt = None
     self.initialized = False
     self.grid = None
+    self.collPlane = None
     #self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 
   def initialize(self):
@@ -104,7 +105,8 @@ class Viewport(wx.Panel, DirectObject):
                 cam=self.camera,
                 camNode = self.camNode,
                 cam2d=None,
-                mouseKeyboard =mk)
+                mouseKeyboard =mk,
+                grid = self.grid)
     base.setupWindowControls(winCtrl)
 
     self.initialized = True
@@ -114,7 +116,13 @@ class Viewport(wx.Panel, DirectObject):
 
     self.camLens = self.camNode.getLens()
 
+    if self.name in ['top', 'front', 'left']:
+      x = self.ClientSize.GetWidth() * 0.1
+      y = self.ClientSize.GetHeight() * 0.1
+      self.camLens.setFilmSize(x, y)
+
     self.Bind(wx.EVT_SIZE, self.onSize)
+
 ##     self.accept("wheel_down", self.zoomOut)
 ##     self.accept("wheel_up", self.zoomIn)
 ##     self.accept("page_down", self.zoomOut)
@@ -186,13 +194,25 @@ class Viewport(wx.Panel, DirectObject):
     v.grid = DirectGrid(parent=render)
     if name == 'left':
       v.grid.setHpr(0, 0, 90)
+      collPlane = CollisionNode('LeftGridCol')
+      collPlane.addSolid(CollisionPlane(Plane(1, 0, 0, 0)))
+      v.collPlane = NodePath(collPlane)
+      v.collPlane.wrtReparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_leftViewGridBack")
       LE_showInOneCam(v.grid, name)
     elif name == 'front':
       v.grid.setHpr(90, 0, 90)
+      collPlane = CollisionNode('FrontGridCol')
+      collPlane.addSolid(CollisionPlane(Plane(0, -1, 0, 0)))
+      v.collPlane = NodePath(collPlane)      
+      v.collPlane.wrtReparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_frontViewGridBack")
       LE_showInOneCam(v.grid, name)
     else:
+      collPlane = CollisionNode('TopGridCol')
+      collPlane.addSolid(CollisionPlane(Plane(0, 0, 1, 0)))
+      v.collPlane = NodePath(collPlane)
+      v.collPlane.reparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_topViewGridBack")
       LE_showInOneCam(v.grid, name)
     return v
@@ -200,20 +220,24 @@ class Viewport(wx.Panel, DirectObject):
   @staticmethod
   def makePerspective(parent):
     v = Viewport('persp', parent)
-    v.camPos = Point3(-30, -30, 30)
+    v.camPos = Point3(-19, -19, 19)
     v.camLookAt = Point3(0, 0, 0)
 
     v.grid = DirectGrid(parent=render)
+    collPlane = CollisionNode('PerspGridCol')
+    collPlane.addSolid(CollisionPlane(Plane(0, 0, 1, 0)))
+    v.collPlane = NodePath(collPlane)
+    v.collPlane.reparentTo(v.grid)
     #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_perspViewGridBack")
     LE_showInOneCam(v.grid, 'persp')
     return v
   
   @staticmethod
-  def makeLeft(parent): return Viewport.makeOrthographic(parent, 'left', Point3(100, 0, 0))
+  def makeLeft(parent): return Viewport.makeOrthographic(parent, 'left', Point3(600, 0, 0))
   @staticmethod
-  def makeFront(parent): return Viewport.makeOrthographic(parent, 'front', Point3(0, -100, 0))
+  def makeFront(parent): return Viewport.makeOrthographic(parent, 'front', Point3(0, -600, 0))
   @staticmethod
-  def makeTop(parent): return Viewport.makeOrthographic(parent, 'top', Point3(0, 0, 100))
+  def makeTop(parent): return Viewport.makeOrthographic(parent, 'top', Point3(0, 0, 600))
 
 class ViewportMenu(wx.Menu):
   """Represents a menu that appears when right-clicking a viewport."""

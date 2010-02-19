@@ -34,25 +34,27 @@ class PandaTextDropTarget(wx.TextDropTarget):
         # create ray from the camera to detect 3d position
         iRay = SelectionRay(self.view.camera)
         iRay.collider.setFromLens(self.view.camNode, mx, my)
-        iRay.collideWithGeom()
-        iRay.ct.traverse(self.view.grid)
-        entry = iRay.getEntry(0)
-        hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+        iRay.collideWithBitMask(1)
+        iRay.ct.traverse(self.view.collPlane)
 
-        # create a temp nodePath to get the position
-        np = hidden.attachNewNode('temp')
-        np.setPos(self.view.camera, hitPt)
+        if iRay.getNumEntries() > 0:
+            entry = iRay.getEntry(0)
+            hitPt = entry.getSurfacePoint(entry.getFromNodePath())
 
-        # update temp nodePath's HPR and scale with newobj's
-        np.setHpr(newobj.getHpr())
-        np.setScale(newobj.getScale())
+            # create a temp nodePath to get the position
+            np = NodePath('temp')
+            np.setPos(self.view.camera, hitPt)
 
-        # transform newobj to cursor position
-        obj = self.editor.objectMgr.findObjectByNodePath(newobj)
-        action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
-        self.editor.actionMgr.push(action)
-        np.remove()
-        action()
+            # update temp nodePath's HPR and scale with newobj's
+            np.setHpr(newobj.getHpr())
+            np.setScale(newobj.getScale())
+
+            # transform newobj to cursor position
+            obj = self.editor.objectMgr.findObjectByNodePath(newobj)
+            action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
+            self.editor.actionMgr.push(action)
+            np.remove()
+            action()
         del iRay
 
 class LevelEditorUI(WxAppShell):
@@ -292,14 +294,14 @@ class GridSizeUI(wx.Dialog):
 
         wx.StaticBox(panel, -1, 'Grid Size', (5, 5), (235, 80))
 
-        self.gridSizeSlider = WxSlider(panel, -1, float(gridSize), 10.0, 1000.0,
+        self.gridSizeSlider = WxSlider(panel, -1, float(gridSize), 10.0, 100000.0,
                            pos = (10, 25), size=(220, -1),
-                           style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+                           style=wx.SL_HORIZONTAL | wx.SL_LABELS, textSize=(80,20))
         self.gridSizeSlider.Enable()
 
         wx.StaticBox(panel, -1, 'Grid Space', (5, 90), (235, 80))
 
-        self.gridSpacingSlider = WxSlider(panel, -1, float(gridSpacing), 0.01, 20.0,
+        self.gridSpacingSlider = WxSlider(panel, -1, float(gridSpacing), 0.01, 2000.0,
                            pos = (10, 115), size=(220, -1),
                            style=wx.SL_HORIZONTAL | wx.SL_LABELS)
         self.gridSpacingSlider.Enable()

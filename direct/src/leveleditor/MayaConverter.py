@@ -90,13 +90,13 @@ class MayaConverter(wx.Dialog):
 
         if self.isAnim:
             if self.obj:
-                command = 'maya2egg -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
+                command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
                 self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onProcessEnded(p0, p1))
             else:
-                command = 'maya2egg -a model %s -o %s.model.egg'%(mayaFile, mayaFile)
+                command = 'maya2egg -uo ft -a model %s -o %s.model.egg'%(mayaFile, mayaFile)
                 self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onModelProcessEnded(p0, p1))
         else:
-            command = 'maya2egg %s -o %s.egg'%(mayaFile, mayaFile)
+            command = 'maya2egg -uo ft %s -o %s.egg'%(mayaFile, mayaFile)
             self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onProcessEnded(p0, p1))
 
         self.timer = wx.Timer(self, -1)
@@ -113,7 +113,7 @@ class MayaConverter(wx.Dialog):
         for i in self.process.Poll():
             self.output.AppendText(i)        
         self.process = None
-        command = 'maya2egg -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
+        command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
         self.process = Process(self, command, lambda p0 = None, p1=mayaFile: self.onProcessEnded(p0, p1))
 
     def onProcessEnded(self, evt, mayaFile):

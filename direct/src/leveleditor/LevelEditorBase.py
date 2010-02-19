@@ -37,6 +37,7 @@ class LevelEditorBase(DirectObject):
         fTk = 0
         fWx = 0
         base.startDirect(fWantTk = fTk, fWantWx = fWx)
+
         base.closeWindow(base.win)
         base.win = base.winList[3]
 
@@ -101,6 +102,7 @@ class LevelEditorBase(DirectObject):
         base.direct.ignore('DIRECT-delete')
         base.direct.ignore('DIRECT-select')
         base.direct.ignore('DIRECT-preDeselectAll')
+        base.direct.fIgnoreDirectOnlyKeyMap = 1
         
         # [gjeon] do not use the old way of finding current DR
         base.direct.drList.tryToGetCurrentDr = False
@@ -221,7 +223,20 @@ class LevelEditorBase(DirectObject):
         base.direct.deselectAll()
         self.objectMgr.reset()
         self.actionMgr.reset()
-
+        self.ui.perspView.camera.setPos(-19, -19, 19)
+        self.ui.leftView.camera.setPos(600, 0, 0)
+        self.ui.frontView.camera.setPos(0, -600, 0)
+        self.ui.topView.camera.setPos(0, 0, 600)
+        self.resetOrthoCam(self.ui.topView)
+        self.resetOrthoCam(self.ui.frontView)
+        self.resetOrthoCam(self.ui.leftView)
+        
+    def resetOrthoCam(self, view):
+        base.direct.drList[base.camList.index(NodePath(view.camNode))].orthoFactor = 0.1
+        x = view.ClientSize.GetWidth() * 0.1
+        y = view.ClientSize.GetHeight() * 0.1
+        view.camLens.setFilmSize(x, y)
+        
     def save(self):
         if self.currentFile:
             self.fileMgr.saveToFile(self.currentFile)

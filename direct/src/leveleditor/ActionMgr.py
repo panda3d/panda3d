@@ -19,7 +19,6 @@ class ActionMgr:
         self.undoList.append(action)
         if len(self.redoList) > 0:
             self.redoList.pop()
-        print 'current undoList', self.undoList
 
     def undo(self):
         if len(self.undoList) < 1:
@@ -28,7 +27,6 @@ class ActionMgr:
             action = self.undoList.pop()
             self.redoList.append(action)
             action.undo()
-            print 'current redoList', self.redoList
 
     def redo(self):
         if len(self.redoList) < 1:
@@ -37,7 +35,6 @@ class ActionMgr:
             action = self.redoList.pop()
             self.undoList.append(action)
             action.redo()
-            print 'current undoList', self.undoList
 
 class ActionBase(Functor):
     """ Base class for user actions """
