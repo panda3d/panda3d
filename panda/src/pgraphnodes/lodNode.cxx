@@ -176,7 +176,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (cdata->_got_force_switch) {
       in_range = (cdata->_force_switch == index);
     } else {
-      in_range = sw.in_range_2(dist2);
+      in_range = sw.in_range_2(dist2*cdata->_lod_scale);
     }
     
     if (in_range) {

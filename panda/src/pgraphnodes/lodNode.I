@@ -120,6 +120,30 @@ get_num_switches() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LODNode::get_lod_scale
+//       Access: Published
+//  Description: Returns the multiplier for lod distances
+////////////////////////////////////////////////////////////////////
+INLINE float LODNode::
+get_lod_scale() const {
+  CDReader cdata(_cycler);
+  return cdata->_lod_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::set_lod_scale
+//       Access: Published
+//  Description: Sets the multiplier for lod distances. A higher 
+//               value means you'll see farther switchs than normal
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::
+set_lod_scale(float value) {
+  CDWriter cdata(_cycler);
+  cdata->_lod_scale = value;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: LODNode::get_in
 //       Access: Published
 //  Description: Returns the "in" distance of the indicated switch
@@ -274,7 +298,8 @@ CData() :
   _highest(0),
   _got_force_switch(false),
   _force_switch(0),
-  _num_shown(0)
+  _num_shown(0),
+  _lod_scale(1)
 {
 }
 
@@ -292,7 +317,8 @@ CData(const LODNode::CData &copy) :
   _bounds_seq(UpdateSeq::old()),
   _got_force_switch(copy._got_force_switch),
   _force_switch(copy._force_switch),
-  _num_shown(copy._num_shown)
+  _num_shown(copy._num_shown),
+  _lod_scale(copy._lod_scale)
 {
 }
 

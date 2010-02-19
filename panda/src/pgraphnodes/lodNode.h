@@ -69,6 +69,12 @@ PUBLISHED:
   INLINE void force_switch(int index);
   INLINE void clear_force_switch();
 
+  //for performance tuning, increasing this value should improve performance
+  //at the cost of model quality
+  INLINE void set_lod_scale(float value);
+  INLINE float get_lod_scale() const;
+
+
   INLINE void set_center(const LPoint3f &center);
   INLINE const LPoint3f &get_center() const;
 
@@ -173,6 +179,7 @@ private:
     bool _got_force_switch;
     int _force_switch;
     int _num_shown;
+    float _lod_scale;
   };
 
   PipelineCycler<CData> _cycler;
