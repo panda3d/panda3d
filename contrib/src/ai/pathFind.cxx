@@ -1,4 +1,3 @@
-
 // Filename: pathFind.cxx
 // Created by:  Deepak, John, Navin (12Oct09)
 //
@@ -14,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pathFind.h"
+#include "pstrtod.h"
 
 PathFind::PathFind(AICharacter *ai_ch) {
   _ai_char = ai_ch;
@@ -86,11 +86,11 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
       if (fields[0] == "0" && fields[1] == "0") {
         grid_x = atoi(fields[2].c_str());
         grid_y = atoi(fields[3].c_str());
-        l = atof(fields[4].c_str());
-        w = atof(fields[5].c_str());
-        h = atof(fields[6].c_str());
-        position = LVecBase3f(atof(fields[7].c_str()), 
-                    atof(fields[8].c_str()), atof(fields[9].c_str()));
+        l = patof(fields[4].c_str());
+        w = patof(fields[5].c_str());
+        h = patof(fields[6].c_str());
+        position = LVecBase3f(patof(fields[7].c_str()), 
+                    patof(fields[8].c_str()), patof(fields[9].c_str()));
 
         AINode *stage_node = new AINode(grid_x, grid_y, position, w, l, h);
 
