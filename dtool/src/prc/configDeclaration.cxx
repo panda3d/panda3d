@@ -14,6 +14,7 @@
 
 #include "configDeclaration.h"
 #include "configVariableCore.h"
+#include "pstrtod.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -387,7 +388,7 @@ check_double_word(int n) {
 
       const char *nptr = word._str.c_str();
       char *endptr;
-      word._double = strtod(nptr, &endptr);
+      word._double = pstrtod(nptr, &endptr);
 
       if (*endptr == '\0') {
         word._flags |= F_valid_double;
