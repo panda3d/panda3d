@@ -29,6 +29,17 @@ using namespace std;
 
 class ViewCertDialog;
 
+#ifndef STACK_OF
+  // At some point, presumably in 1.0.0, openssl went to the
+  // STACK_OF() macro system to typedef the contents of a stack.
+  // Unfortunately, that new API is different.  We define some macros
+  // here here for backward compatiblity.
+  #define STACK_OF(type) STACK
+  #define sk_X509_push(stack, item) sk_push((stack), (char *)(item))
+  #define sk_X509_free(stack) sk_free(stack)
+  #define sk_X509_new(cmp) sk_new(cmp)
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DCertApp
 // Description : This is the wxApp that drives this application.
@@ -84,7 +95,7 @@ private:
 
   wxString _cert_dir;
   X509 *_cert;
-  STACK *_stack;
+  STACK_OF(X509) *_stack;
 
   wxString _friendly_name;
   int _verify_result;

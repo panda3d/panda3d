@@ -177,7 +177,7 @@ AuthDialog::
     _cert = NULL;
   }
   if (_stack != NULL) { 
-    sk_free(_stack);
+    sk_X509_free(_stack);
     _stack = NULL;
   }
 }
@@ -273,10 +273,10 @@ read_cert_file(const wxString &cert_filename) {
   }
 
   // Build up a STACK of the remaining certificates in the file.
-  _stack = sk_new(NULL);
+  _stack = sk_X509_new(NULL);
   X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
   while (c != NULL) {
-    sk_push(_stack, (char *)c);
+    sk_X509_push(_stack, c);
     c = PEM_read_X509(fp, NULL, NULL, (void *)"");
   }
 

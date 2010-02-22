@@ -164,7 +164,7 @@
   #define USE_PACKAGES wx openssl
   #define TARGET p3dcert
 
-  #define SOURCES p3dCert.cxx
+  #define SOURCES p3dCert.cxx p3dCert.h
   #define OSX_SYS_FRAMEWORKS Carbon
 
 #end bin_target
