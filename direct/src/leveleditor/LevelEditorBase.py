@@ -120,6 +120,7 @@ class LevelEditorBase(DirectObject):
             ('DIRECT_deselectAll', self.deselectAll),
             ('LE-Undo', self.actionMgr.undo),
             ('LE-Redo', self.actionMgr.redo),
+            ('LE-Duplicate', self.objectMgr.duplicateSelected),
             ('DIRECT_manipulateObjectCleanup', self.cleanUpManipulating),
             ])
 

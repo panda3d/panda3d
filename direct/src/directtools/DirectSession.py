@@ -264,6 +264,7 @@ class DirectSession(DirectObject):
             'w': ('Toggle Wireframe', 'base.toggleWireframe()', 0),
             'control-z': ('Undo', 0, 'LE-Undo'),
             'shift-z' : ('Redo', 0, 'LE-Redo'),
+            'control-d': ('Duplicate', 0, 'LE-Duplicate'),
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
