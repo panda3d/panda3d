@@ -11,7 +11,6 @@
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \
-    NoMinMax.h \
     config_physx.h \
     physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
@@ -234,7 +233,6 @@
     physxWheelShapeDesc.cxx \
 
   #define INSTALL_HEADERS \
-    NoMinMax.h \
     config_physx.h \
     physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
