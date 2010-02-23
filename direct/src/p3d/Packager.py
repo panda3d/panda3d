@@ -339,6 +339,10 @@ class Packager:
         def close(self):
             """ Writes out the contents of the current package. """
 
+            if not self.p3dApplication and not self.packager.allowPackages:
+                message = 'Cannot generate packages without an installDir; use -i'
+                raise PackagerError, message
+
             if not self.host:
                 self.host = self.packager.host
 
@@ -629,11 +633,14 @@ class Packager:
 
             print "Generating %s" % (self.packageFilename)
 
-            self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
-            self.packageFullpath.makeDir()
-
             if self.p3dApplication:
+                self.packageFullpath = Filename(self.packager.p3dInstallDir, self.packageFilename)
+                self.packageFullpath.makeDir()
                 self.makeP3dInfo()
+            else:
+                self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
+                self.packageFullpath.makeDir()
+
             self.multifile.repack()
 
             # Also sign the multifile before we close it.
@@ -685,6 +692,10 @@ class Packager:
                 packageDir += '/' + self.platform
             if self.version:
                 packageDir += '/' + self.version
+
+            if not self.packager.allowPackages:
+                message = 'Cannot generate packages without an installDir; use -i'
+                raise PackagerError, message
 
             installPath = Filename(self.packager.installDir, packageDir)
             # Remove any files already in the installPath.
@@ -2144,8 +2155,18 @@ class Packager:
 
         self.currentPackage = None
 
-        # We must have an actual install directory.
-        assert(self.installDir)
+        if self.installDir:
+            # If we were given an install directory, we can build
+            # packages as well as plain p3d files, and it all goes
+            # into the specified directory.
+            self.p3dInstallDir = self.installDir
+            self.allowPackages = True
+        else:
+            # If we don't have an actual install directory, we can
+            # only build p3d files, and we drop them into the current
+            # directory.
+            self.p3dInstallDir = '.'
+            self.allowPackages = False
 
         if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
             raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.'
@@ -2170,9 +2191,10 @@ class Packager:
             if not package.p3dApplication and not package.solo:
                 packageNames.append(package.packageName)
 
-        from PatchMaker import PatchMaker
-        pm = PatchMaker(self.installDir)
-        pm.buildPatches(packageNames = packageNames)
+        if packageNames:
+            from PatchMaker import PatchMaker
+            pm = PatchMaker(self.installDir)
+            pm.buildPatches(packageNames = packageNames)
 
     def readPackageDef(self, packageDef, packageNames = None):
         """ Reads the named .pdef file and constructs the named
@@ -2339,6 +2361,11 @@ class Packager:
 
         package.p3dApplication = p3dApplication
         package.solo = solo
+
+        if not package.p3dApplication and not self.allowPackages:
+            message = 'Cannot generate packages without an installDir; use -i'
+            raise PackagerError, message
+                
         
     def endPackage(self):
         """ Closes the current package specification.  This actually
@@ -3122,6 +3149,10 @@ class Packager:
 
         self.contents = {}
         self.contentsChanged = False
+
+        if not self.allowPackages:
+            # Don't bother.
+            return
 
         contentsFilename = Filename(self.installDir, 'contents.xml')
         doc = TiXmlDocument(contentsFilename.toOsSpecific())
