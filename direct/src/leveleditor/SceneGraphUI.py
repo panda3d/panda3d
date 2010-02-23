@@ -244,7 +244,6 @@ class SceneGraphUI(wx.Panel):
     def delete(self, itemId):
         item = self.traverse(self.root, itemId)
         if item:
-           self.tree.UnselectItem(item)
            self.tree.Delete(item)
 
     def select(self, itemId):
@@ -259,15 +258,17 @@ class SceneGraphUI(wx.Panel):
            self.tree.UnselectItem(item)
 
     def onSelected(self, event):
-        itemId = self.tree.GetItemPyData(event.GetItem())
-        if itemId:
-            obj = self.editor.objectMgr.findObjectById(itemId);
-            if obj:
-                selections = self.tree.GetSelections()
-                if len(selections) > 1:
-                   base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 1, fLEPane = 0)
-                else:
-                   base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 0, fLEPane = 0)
+        item = event.GetItem();
+        if item:
+           itemId = self.tree.GetItemPyData(item)
+           if itemId:
+              obj = self.editor.objectMgr.findObjectById(itemId);
+              if obj:
+                 selections = self.tree.GetSelections()
+                 if len(selections) > 1:
+                    base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 1, fLEPane = 0)
+                 else:
+                    base.direct.select(obj[OG.OBJ_NP], fMultiSelect = 0, fLEPane = 0)
 
     def onBeginDrag(self, event):
         item = event.GetItem()
