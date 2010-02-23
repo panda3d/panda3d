@@ -149,9 +149,10 @@ class AppRunner(DirectObject):
         self.downloadTask = None
 
         # The mount point for the multifile.  For now, this is always
-        # the same, but when we move to multiple-instance sessions, it
-        # may have to be different for each instance.
-        self.multifileRoot = '/mf'
+        # the current working directory, for convenience; but when we
+        # move to multiple-instance sessions, it may have to be
+        # different for each instance.
+        self.multifileRoot = ExecutionEnvironment.getCwd().cStr()
 
         # The "main" object will be exposed to the DOM as a property
         # of the plugin object; that is, document.pluginobject.main in
@@ -447,6 +448,10 @@ class AppRunner(DirectObject):
         # Now set up Python to import this stuff.
         VFSImporter.register()
         sys.path.append(self.multifileRoot)
+
+        # Make sure that $MAIN_DIR is set to the p3d root before we
+        # start executing the code in this file.
+        ExecutionEnvironment.setEnvironmentVariable("MAIN_DIR", Filename(self.multifileRoot).toOsSpecific())
 
         # Put our root directory on the model-path, too.
         getModelPath().appendDirectory(self.multifileRoot)
