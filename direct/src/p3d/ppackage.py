@@ -172,6 +172,14 @@ packageNames = None
 if len(args) > 1:
     packageNames = args[1:]
 
+# Add the directory containing the pdef file itself to sys.path, to
+# help the Packager locate modules where a pathname isn't specified.
+dirname = packageDef.getDirname()
+if dirname:
+    sys.path.append(Filename(dirname).toOsSpecific())
+else:
+    sys.path.append('.')
+
 if universalBinaries:
     if platforms:
         print '\nYou may not specify both -u and -P.\n'
