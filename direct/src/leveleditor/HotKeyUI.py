@@ -137,6 +137,7 @@ class HotKeyPanel(ScrolledPanel):
         self.SetupScrolling(self, scroll_y=True, rate_y=20)
 
     def onEdit(self, evt, key):
+        base.le.ui.wxApp.Unbind(wx.EVT_CHAR)        
         editUI = EditHotKeyDialog(self, -1, 'Edit Hot Key', key)
         editUI.ShowModal()
         editUI.Destroy()
@@ -145,7 +146,7 @@ class HotKeyPanel(ScrolledPanel):
         if sizer is not None:
             sizer.DeleteWindows()
             self.SetSizer(None)
-
+        base.le.ui.wxApp.Bind(wx.EVT_CHAR, base.le.ui.onKeyEvent)
         self.updateUI()
 
 class HotKeyUI(wx.Dialog):
