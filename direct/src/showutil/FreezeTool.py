@@ -18,6 +18,7 @@ except ImportError:
 import direct
 from pandac.PandaModules import *
 from pandac.extension_native_helpers import dll_suffix, dll_ext
+import panda3d
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -1311,6 +1312,22 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
     """ We subclass ModuleFinder here, to add functionality for
     finding the libpandaexpress etc. modules that interrogate
     produces. """
+
+    def __init__(self, *args, **kw):
+        modulefinder.ModuleFinder.__init__(self, *args, **kw)
+
+    def import_module(self, partname, fqname, parent):
+        if parent and parent.__name__ == 'panda3d':
+            # A special case: map a reference to the "panda3d.blah"
+            # module into the appropriate Panda3D dll.
+            m = getattr(panda3d, partname, None)
+            if m:
+                libname = m.__libraries__[-1]
+                partname = libname
+                fqname = libname
+                parent = None
+                
+        return modulefinder.ModuleFinder.import_module(self, partname, fqname, parent)
 
     def find_module(self, name, path, parent=None):
         try:
