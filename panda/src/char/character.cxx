@@ -256,6 +256,17 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   // volume.
   ((Character *)this)->update_to_now();
 
+  // Unfortunately, calling update_to_now() will invalidate the node's
+  // cached bounding volume, which causes a problem when this is
+  // called during the traversal, e.g. due to a ShowBoundsEffect.  As
+  // a hacky fix to work around this, we will force-recompute all of
+  // the bounding volumes of our parent nodes immediately.
+  Parents parents = get_parents();
+  for (int i = 0; i < parents.get_num_parents(); ++i) {
+    PandaNode *parent = parents.get_parent(i);
+    parent->get_bounds();
+  }
+
   return PandaNode::calc_tight_bounds(min_point, max_point, 
                                       found_any, transform, current_thread);
 }
