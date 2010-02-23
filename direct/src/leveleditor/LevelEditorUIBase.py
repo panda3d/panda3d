@@ -70,10 +70,8 @@ class LevelEditorUIBase(WxAppShell):
         if not kw.get('size'):
             kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
         WxAppShell.__init__(self, *args, **kw)        
-
+        self.wxApp.Bind(wx.EVT_CHAR, self.onKeyEvent)
         self.initialize()
-        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-        self.Bind(wx.EVT_KEY_DOWN, self.onSetFocus)
 
     def createMenu(self):
         menuItem = self.menuFile.Insert(0, -1 , "&New")
@@ -184,9 +182,34 @@ class LevelEditorUIBase(WxAppShell):
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
         self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane0, self.editor)
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
-
-    def onSetFocus(self):
-        print 'wx got focus'
+        
+    def onKeyEvent(self, evt):
+        if evt.GetKeyCode() in range(97, 123): # for keys from a to z
+            if evt.GetModifiers() == 4: # when shift is pressed while caps lock is on
+                input = 'shift-%s'%chr(evt.GetKeyCode())
+            else:
+                input = chr(evt.GetKeyCode())
+        elif evt.GetKeyCode() in range(65, 91):
+            if evt.GetModifiers() == 4: # when shift is pressed
+                input = 'shift-%s'%chr(evt.GetKeyCode() + 32)
+            else:
+                input = chr(evt.GetKeyCode() + 32)
+        elif evt.GetKeyCode() in range(1, 27): # for keys from a to z with control
+            input = 'control-%s'%chr(evt.GetKeyCode()+96)
+        elif evt.GetKeyCode() == wx.WXK_DELETE:
+            input = 'delete'
+        elif evt.GetKeyCode() == wx.WXK_ESCAPE:
+            input = 'escape'
+        else:
+            if evt.GetModifiers() == 4:
+                input = 'shift-%s'%chr(evt.GetKeyCode())
+            elif evt.GetModifiers() == 2:
+                input = 'control-%s'%chr(evt.GetKeyCode())
+            else:
+                input = chr(evt.GetKeyCode())
+        if input in base.direct.hotKeyMap.keys():
+            keyDesc = base.direct.hotKeyMap[input]
+            messenger.send(keyDesc[1])
 
     def appInit(self):
         """Overridden from WxAppShell.py."""
