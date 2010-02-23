@@ -166,6 +166,20 @@ class DirectSession(DirectObject):
             ['DIRECT-Undo', self.undo],
             ['DIRECT-Redo', self.redo],
             ['DIRECT-OOBE', self.oobe],
+            ['DIRECT-toggleWidgetVis', self.toggleWidgetVis],
+            ['DIRECT-toggleWireframe', base.toggleWireframe],
+            ['DIRECT-toggleVisAll', self.selected.toggleVisAll],
+            ['DIRECT-toggleTexture', base.toggleTexture],
+            ['DIRECT-upAncestry', self.upAncestry],
+            ['DIRECT-downAncestry', self.downAncestry],
+            ['DIRECT-toggleBackface', base.toggleBackface],
+            ['DIRECT-flash', self.flash],
+            ['DIRECT-toggleLigths', self.lights.toggle],
+            ['DIRECT-toggleCOALock', self.cameraControl.toggleCOALock],
+            ['DIRECT-setActiveParent', self.doSetActiveParent],
+            ['DIRECT-doWrtReparent', self.doWrtReparent],
+            ['DIRECT-doReparent', self.doReparent],
+            ['DIRECT-doSelect', self.doSelect],
             ]
 
         if base.wantTk:
@@ -213,58 +227,58 @@ class DirectSession(DirectObject):
                             ]
 
         self.directOnlyKeyMap = {
-            'u': ('Orbit Upright Camera', 0, 'DIRECT-orbitUprightCam'),
-            'shift-u': ('Upright Camera', 0, 'DIRECT-uprightCam'),
-            '1': ('Move Camera to View 1', 0, 'DIRECT-spwanMoveToView-1'),
-            '2': ('Move Camera to View 2', 0, 'DIRECT-spwanMoveToView-2'),
-            '3': ('Move Camera to View 3', 0, 'DIRECT-spwanMoveToView-3'),
-            '4': ('Move Camera to View 4', 0, 'DIRECT-spwanMoveToView-4'),
-            '5': ('Move Camera to View 5', 0, 'DIRECT-spwanMoveToView-5'),
-            '6': ('Move Camera to View 6', 0, 'DIRECT-spwanMoveToView-6'),
-            '7': ('Move Camera to View 7', 0, 'DIRECT-spwanMoveToView-7'),
-            '8': ('Move Camera to View 8', 0, 'DIRECT-spwanMoveToView-8'),
-            '9': ('Rotate Camera About widget 90 degrees Counterclockwise', 0, 'DIRECT-swingCamAboutWidget-0'),
-            '0': ('Rotate Camera About widget 90 degrees Clockwise', 0, 'DIRECT-swingCamAboutWidget-1'),
-            '`': ('Remove ManipulateCameraTask', 0, 'DIRECT-removeManipulateCameraTask'),
-            '=': ('Zoom In', 0, 'DIRECT-zoomInCam'),
-            'shift-=': ('Zoom In', 0, 'DIRECT-zoomInCam'),
-            'shift-_': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
-            '-': ('Zoom Out', 0, 'DIRECT-zoomOutCam'),
-            'o': ('Toggle OOBE', 0, 'DIRECT-OOBE'),
-            '[': ('DIRECT-Undo', 0, 'DIRECT-Undo'),
-            'shift-[': ('DIRECT-Undo', 0, 'DIRECT-Undo'),
-            ']': ('DIRECT-Redo', 0, 'DIRECT-Redo'),
-            'shift-]': ('DIRECT-Redo', 0, 'DIRECT-Redo'),
+            'u': ('Orbit Upright Camera', 'DIRECT-orbitUprightCam'),
+            'shift-u': ('Upright Camera', 'DIRECT-uprightCam'),
+            '1': ('Move Camera to View 1', 'DIRECT-spwanMoveToView-1'),
+            '2': ('Move Camera to View 2', 'DIRECT-spwanMoveToView-2'),
+            '3': ('Move Camera to View 3', 'DIRECT-spwanMoveToView-3'),
+            '4': ('Move Camera to View 4', 'DIRECT-spwanMoveToView-4'),
+            '5': ('Move Camera to View 5', 'DIRECT-spwanMoveToView-5'),
+            '6': ('Move Camera to View 6', 'DIRECT-spwanMoveToView-6'),
+            '7': ('Move Camera to View 7', 'DIRECT-spwanMoveToView-7'),
+            '8': ('Move Camera to View 8', 'DIRECT-spwanMoveToView-8'),
+            '9': ('Rotate Camera About widget 90 degrees Counterclockwise', 'DIRECT-swingCamAboutWidget-0'),
+            '0': ('Rotate Camera About widget 90 degrees Clockwise', 'DIRECT-swingCamAboutWidget-1'),
+            '`': ('Remove ManipulateCameraTask', 'DIRECT-removeManipulateCameraTask'),
+            '=': ('Zoom In', 'DIRECT-zoomInCam'),
+            'shift-=': ('Zoom In', 'DIRECT-zoomInCam'),
+            'shift-_': ('Zoom Out', 'DIRECT-zoomOutCam'),
+            '-': ('Zoom Out', 'DIRECT-zoomOutCam'),
+            'o': ('Toggle OOBE', 'DIRECT-OOBE'),
+            '[': ('DIRECT-Undo', 'DIRECT-Undo'),
+            'shift-[': ('DIRECT-Undo', 'DIRECT-Undo'),
+            ']': ('DIRECT-Redo', 'DIRECT-Redo'),
+            'shift-]': ('DIRECT-Redo', 'DIRECT-Redo'),
             }
 
         self.hotKeyMap = {
-            'c': ('Center Camera', 0, 'DIRECT-centerCamIn'),
-            'f': ('Fit on Widget', 0, 'DIRECT-fitOnWidget'),
-            'h': ('Move Camera to ', 0, 'DIRECT-homeCam'),
-            'shift-v': ('Toggle Marker', 0, 'DIRECT-toggleMarkerVis'),
-            'm': ('Move to fit', 0, 'DIRECT-moveToFit'),
-            'n': ('Pick Next COA', 0, 'DIRECT-pickNextCOA'),
-            'delete': ('Delete', 0, 'DIRECT-delete'),
-            '.': ('Scale Up Widget', 0, 'DIRECT-widgetScaleUp'),
-            ',': ('Scale Down Widget', 0, 'DIRECT-widgetScaleDown'),
-            'page_up': ('Up Ancestry', 'self.upAncestry()', 0),
-            'page_down': ('Down Ancestry', 'self.downAncestry()', 0),
-            'escape': ('Deselect All', 'self.deselectAll()', 0),
-            'v': ('Toggle Manipulating Widget', 'self.toggleWidgetVis()', 0),
-            'b': ('Toggle Backface', 'base.toggleBackface()', 0),
-            'control-f': ('Flash', 'self.flash(last)', 0),
-            'l': ('Toggle lights', 'self.lights.toggle()', 0),
-            'shift-l': ('Toggle COA Lock', 'self.cameraControl.toggleCOALock()', 0),
-            'p': ('Set Active Parent', 'self.doSetActiveParent()', 0),
-            'r': ('Wrt Reparent', 'self.doWrtReparent()', 0),
-            'shift-r': ('Reparent', 'self.doReparent()', 0),
-            's': ('Select', 'self.doSelect()', 0),
-            't': ('Toggle Textures', 'base.toggleTexture()', 0),
-            'shift-a': ('Toggle Vis all', 'self.selected.toggleVisAll()', 0),
-            'w': ('Toggle Wireframe', 'base.toggleWireframe()', 0),
-            'control-z': ('Undo', 0, 'LE-Undo'),
-            'shift-z' : ('Redo', 0, 'LE-Redo'),
-            'control-d': ('Duplicate', 0, 'LE-Duplicate'),
+            'c': ('Center Camera', 'DIRECT-centerCamIn'),
+            'f': ('Fit on Widget', 'DIRECT-fitOnWidget'),
+            'h': ('Move Camera to ', 'DIRECT-homeCam'),
+            'shift-v': ('Toggle Marker', 'DIRECT-toggleMarkerVis'),
+            'm': ('Move to fit', 'DIRECT-moveToFit'),
+            'n': ('Pick Next COA', 'DIRECT-pickNextCOA'),
+            'delete': ('Delete', 'DIRECT-delete'),
+            '.': ('Scale Up Widget', 'DIRECT-widgetScaleUp'),
+            ',': ('Scale Down Widget', 'DIRECT-widgetScaleDown'),
+            'page_up': ('Up Ancestry', 'DIRECT-upAncestry'),
+            'page_down': ('Down Ancestry', 'DIRECT-downAncestry'),
+            'escape': ('Deselect All', 'deselectAll'),
+            'v': ('Toggle Manipulating Widget', 'DIRECT-toggleWidgetVis'),
+            'b': ('Toggle Backface', 'DIRECT-toggleBackface'),
+            'control-f': ('Flash', 'DIRECT-flash'),
+            'l': ('Toggle lights', 'DIRECT-toggleLigths'),
+            'shift-l': ('Toggle COA Lock', 'DIRECT-toggleCOALock'),
+            'p': ('Set Active Parent', 'DIRECT-setActiveParent'),
+            'r': ('Wrt Reparent', 'DIRECT-doWrtReparent'),
+            'shift-r': ('Reparent', 'DIRECT-doReparent'),
+            's': ('Select', 'DIRECT-doSelect'),
+            't': ('Toggle Textures', 'DIRECT-toggleTexture'),
+            'shift-a': ('Toggle Vis all', 'DIRECT-toggleVisAll'),
+            'w': ('Toggle Wireframe', 'DIRECT-toggleWireframe'),
+            'control-z': ('Undo', 'LE-Undo'),
+            'shift-z' : ('Redo', 'LE-Redo'),
+            'control-d': ('Duplicate', 'LE-Duplicate'),
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
@@ -535,20 +549,12 @@ class DirectSession(DirectObject):
         # Deal with keyboard and mouse input
         if input in self.hotKeyMap.keys():
             keyDesc = self.hotKeyMap[input]
-            if len(keyDesc) == 3:
-                if keyDesc[1] == 0: # [gjeon] when we need to send a message
-                    messenger.send(keyDesc[2])
-                else:  # [gjeon] when we need to call a function
-                    eval(keyDesc[1])
+            messenger.send(keyDesc[1])
         elif input in self.directOnlyKeyMap.keys():
             if self.fIgnoreDirectOnlyKeyMap:
                 return
             keyDesc = self.directOnlyKeyMap[input]
-            if len(keyDesc) == 3:
-                if keyDesc[1] == 0: # [gjeon] when we need to send a message
-                    messenger.send(keyDesc[2])
-                else:  # [gjeon] when we need to call a function
-                    eval(keyDesc[1])
+            messenger.send(keyDesc[1])
         elif input == 'mouse1-up':
             self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
             messenger.send('DIRECT-mouse1Up')
