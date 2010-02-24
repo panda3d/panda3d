@@ -122,6 +122,7 @@ class LevelEditorBase(DirectObject):
             ('LE-Redo', self.actionMgr.redo),
             ('LE-Duplicate', self.objectMgr.duplicateSelected),
             ('DIRECT_manipulateObjectCleanup', self.cleanUpManipulating),
+            ('LE-MakeLive', self.objectMgr.makeSelectedLive),
             ])
 
         # Add all the action events

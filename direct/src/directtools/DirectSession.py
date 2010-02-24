@@ -279,6 +279,7 @@ class DirectSession(DirectObject):
             'control-z': ('Undo', 'LE-Undo'),
             'shift-z' : ('Redo', 'LE-Redo'),
             'control-d': ('Duplicate', 'LE-Duplicate'),
+            'control-l': ('Make Live', 'LE-MakeLive'),
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
