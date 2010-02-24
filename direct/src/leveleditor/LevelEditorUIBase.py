@@ -61,7 +61,8 @@ class PandaTextDropTarget(wx.TextDropTarget):
                 else:
                     hitPt = entry.getSurfacePoint(entry.getFromNodePath())
                     break
-        else:
+
+        if hitPt is None:
             iRay.collideWithBitMask(1)
             iRay.ct.traverse(self.view.collPlane)
             if iRay.getNumEntries() > 0:
@@ -131,10 +132,13 @@ class LevelEditorUIBase(WxAppShell):
         self.menuOptions = wx.Menu()
         self.menuBar.Insert(2, self.menuOptions, "&Options")
 
+        self.showGridMenuItem = self.menuOptions.Append(-1, "&Show Grid", kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.toggleGrid, self.showGridMenuItem)
+
         self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size")
         self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
 
-        self.gridSnapMenuItem = self.menuOptions.Append(-1, "Grid &Snap", kind = wx.ITEM_CHECK)
+        self.gridSnapMenuItem = self.menuOptions.Append(-1, "Grid S&nap", kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
 
         self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "Show &Panda Objects", kind = wx.ITEM_CHECK)
@@ -212,6 +216,8 @@ class LevelEditorUIBase(WxAppShell):
         self.objectPropertyUI = ObjectPropertyUI(self.rightBarUpPane, self.editor)
         self.sceneGraphUI = SceneGraphUI(self.leftBarDownPane0, self.editor)
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
+
+        self.showGridMenuItem.Check(True)
         
     def onKeyEvent(self, evt):
         if evt.GetKeyCode() in range(97, 123): # for keys from a to z
@@ -296,6 +302,16 @@ class LevelEditorUIBase(WxAppShell):
     def onMakeLive(self, evt):
         self.editor.objectMgr.makeSelectedLive()
 
+    def toggleGrid(self, evt):
+        if self.showGridMenuItem.IsChecked():
+            for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
+                if grid.isHidden():
+                    grid.show()
+        else:
+            for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
+                if not grid.isHidden():
+                    grid.hide()
+                
     def toggleGridSnap(self, evt):
         if self.gridSnapMenuItem.IsChecked():
             base.direct.manipulationControl.fGridSnap = 1
