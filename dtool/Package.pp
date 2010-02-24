@@ -23,7 +23,7 @@
 #define PANDA_MINOR_VERSION $[word 2,$[PANDA_VERSION]]
 #define PANDA_SEQUENCE_VERSION $[word 3,$[PANDA_VERSION]]
 #defer PANDA_VERSION_STR $[PANDA_MAJOR_VERSION].$[PANDA_MINOR_VERSION].$[PANDA_SEQUENCE_VERSION]$[if $[not $[PANDA_OFFICIAL_VERSION]],c]
-#defer PANDA_VERSION_SYMBOL panda_version_$[PANDA_MAJOR_VERSION]_$[PANDA_MINOR_VERSION]_$[PANDA_SEQUENCE_VERSION]$[if $[not $[PANDA_OFFICIAL_VERSION]],c]
+#defer PANDA_VERSION_SYMBOL panda_version_$[PANDA_MAJOR_VERSION]_$[PANDA_MINOR_VERSION]
 
 // The panda version as a single number, with three digits reserved
 // for each component.
