@@ -200,7 +200,7 @@ check_fbo() {
     default:
       GLCAT.error() << "UNKNOWN PROBLEM " << status; break;
     }
-    GLCAT.error() << " for " << get_name() << "\n";
+    GLCAT.error(false) << " for " << get_name() << "\n";
     
     glgsg->bind_fbo(0);
     report_my_gl_errors();
