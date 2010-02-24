@@ -23,6 +23,26 @@ INLINE PhysxDebugGeomNode::
 PhysxDebugGeomNode() : GeomNode("debug") {
 
   _scale = 1.0f;
+
+  _vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+
+  // Lines
+  _prim_lines = new GeomLines(Geom::UH_stream);
+  _prim_lines->set_shade_model(Geom::SM_uniform);
+
+  _geom_lines = new Geom(_vdata);
+  _geom_lines->add_primitive(_prim_lines);
+
+  this->add_geom(_geom_lines);
+
+  // Triangles
+  _prim_triangles = new GeomTriangles(Geom::UH_stream);
+  _prim_triangles->set_shade_model(Geom::SM_uniform);
+
+  _geom_triangles = new Geom(_vdata);
+  _geom_triangles->add_primitive(_prim_triangles);
+
+  this->add_geom(_geom_triangles);
 }
 
 ////////////////////////////////////////////////////////////////////

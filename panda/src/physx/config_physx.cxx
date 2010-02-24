@@ -54,6 +54,10 @@
 #include "physxSphericalJoint.h"
 #include "physxTriangleMesh.h"
 #include "physxTriangleMeshShape.h"
+//#include "physxVehicle.h"
+//#include "physxVehicleGears.h"
+//#include "physxVehicleMotor.h"
+//#include "physxWheel.h"
 #include "physxWheelShape.h"
 
 ConfigureDef(config_physx);
@@ -140,6 +144,10 @@ init_libphysx() {
   PhysxSphericalJoint::init_type();
   PhysxTriangleMesh::init_type();
   PhysxTriangleMeshShape::init_type();
+  //PhysxVehicle::init_type();
+  //PhysxVehicleGears::init_type();
+  //PhysxVehicleMotor::init_type();
+  //PhysxWheel::init_type();
   PhysxWheelShape::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();

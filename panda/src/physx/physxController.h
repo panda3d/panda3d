@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  void update(float dt);
+  void update_controller(float dt);
 
   static PhysxController *factory(NxControllerType shapeType);
 

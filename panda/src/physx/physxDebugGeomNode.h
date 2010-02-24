@@ -19,7 +19,10 @@
 #include "pointerTo.h"
 #include "geomNode.h"
 #include "transformState.h"
-#include "lineSegs.h"
+#include "geom.h"
+#include "geomVertexData.h"
+#include "geomLines.h"
+#include "geomTriangles.h"
 
 #include "physx_includes.h"
 
@@ -78,8 +81,13 @@ public:
   void update(NxScene *scenePtr);
 
 private:
-  LineSegs _segs;
   float _scale;
+
+  PT(GeomVertexData) _vdata;
+  PT(Geom) _geom_lines;
+  PT(GeomLines) _prim_lines;
+  PT(Geom) _geom_triangles;
+  PT(GeomTriangles) _prim_triangles;
 
 ////////////////////////////////////////////////////////////////////
 public:

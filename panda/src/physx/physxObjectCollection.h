@@ -42,4 +42,4 @@ private:
 
 #include "physxObjectCollection.I"
 
-#endif // PHYSOBJECTCOLLECTION_H
+#endif // PHYSXOBJECTCOLLECTION_H

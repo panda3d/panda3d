@@ -301,8 +301,14 @@
 
 #endif // CPPPARSER
 
+// PhysxWheelFlag
+#define NX_WF_STEERABLE_INPUT 1<<0
+#define NX_WF_STEERABLE_AUTO 1<<1
+#define NX_WF_AFFECTED_BY_HANDBRAKE 1<<2
+#define NX_WF_ACCELERATED 1<<3
+
 ////////////////////////////////////////////////////////////////////
-//       Class : BamEnums
+//       Class : PhysxEnums
 // Description : This class exists just to provide scoping for the
 //               enums shared by PhysX classes.
 ////////////////////////////////////////////////////////////////////
@@ -601,6 +607,13 @@ PUBLISHED:
     X_up  = NX_X,
     Y_up  = NX_Y,
     Z_up  = NX_Z
+  };
+
+  enum PhysxWheelFlag {
+    WF_steerable_input       = NX_WF_STEERABLE_INPUT,
+    WF_steerable_auto        = NX_WF_STEERABLE_AUTO,
+    WF_affected_by_handbrake = NX_WF_AFFECTED_BY_HANDBRAKE,
+    WF_accelerated           = NX_WF_ACCELERATED
   };
 
   enum PhysxWheelShapeFlag {

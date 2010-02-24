@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE PhysxWheelShapeDesc();
   INLINE ~PhysxWheelShapeDesc();
 
-  INLINE void set_to_default();
+  void set_to_default();
   INLINE bool is_valid() const;
 
   void set_radius(float radius);

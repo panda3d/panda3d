@@ -14,6 +14,9 @@
 
 #include "physxDebugGeomNode.h"
 
+#include "geomVertexFormat.h"
+#include "geomVertexWriter.h"
+
 TypeHandle PhysxDebugGeomNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -35,31 +38,72 @@ update(NxScene *scenePtr) {
     return;
   }
 
-  const NxDebugLine *lines = renderable->getLines();
-  NxU32 n = renderable->getNbLines();
+  GeomVertexWriter vwriter = GeomVertexWriter(_vdata, InternalName::get_vertex());
+  GeomVertexWriter cwriter = GeomVertexWriter(_vdata, InternalName::get_color());
 
-  _segs.reset();
+  int v = 0;
 
-  for (NxU32 i=0; i<n; i++)
+  _prim_lines->clear_vertices();
+  _prim_triangles->clear_vertices();
+
+  // Lines
   {
-    NxF32 b = NxF32((lines[i].color)&0xff) / 255.0f;
-    NxF32 g = NxF32((lines[i].color>>8)&0xff) / 255.0f;
-    NxF32 r = NxF32((lines[i].color>>16)&0xff) / 255.0f;
+    NxU32 n = renderable->getNbLines();
+    const NxDebugLine *lines = renderable->getLines();
 
-    NxVec3 p0 = lines[i].p0;
-    NxVec3 p1 = lines[i].p1;
+    for (NxU32 i=0; i<n; i++)
+    {
+      NxF32 b = NxF32((lines[i].color)&0xff) / 255.0f;
+      NxF32 g = NxF32((lines[i].color>>8)&0xff) / 255.0f;
+      NxF32 r = NxF32((lines[i].color>>16)&0xff) / 255.0f;
 
-    _segs.set_color(r, g, b);
-    _segs.move_to(p0.x, p0.y, p0.z);
-    _segs.draw_to(p1.x, p1.y, p1.z);
+      NxVec3 p0 = lines[i].p0;
+      NxVec3 p1 = lines[i].p1;
+
+      cwriter.add_data4f(r, g, b, 1.0f);
+      vwriter.add_data3f(p0.x, p0.y, p0.z);
+      _prim_lines->add_vertex(v++);
+
+      cwriter.add_data4f(r, g, b, 1.0f);
+      vwriter.add_data3f(p1.x, p1.y, p1.z);
+      _prim_lines->add_vertex(v++);
+    }
+
   }
 
-  GeomNode *node = _segs.create();
-  remove_all_geoms();
-  add_geoms_from(node);
-  delete node;
+  // Triangles
+  {
+    NxU32 n = renderable->getNbTriangles();
+    const NxDebugTriangle *triangles = renderable->getTriangles();
 
-  physx_cat.spam() << "Updated PhysxDebugGeomNode geometry (" << n << " lines)\n";
+    for (NxU32 i=0; i<n; i++)
+    {
+      NxF32 b = NxF32((triangles[i].color)&0xff) / 255.0f;
+      NxF32 g = NxF32((triangles[i].color>>8)&0xff) / 255.0f;
+      NxF32 r = NxF32((triangles[i].color>>16)&0xff) / 255.0f;
+
+      NxVec3 p0 = triangles[i].p0;
+      NxVec3 p1 = triangles[i].p1;
+      NxVec3 p2 = triangles[i].p2;
+
+      cwriter.add_data4f(r, g, b, 1.0f);
+      vwriter.add_data3f(p0.x, p0.y, p0.z);
+      _prim_triangles->add_vertex(v++);
+
+      cwriter.add_data4f(r, g, b, 1.0f);
+      vwriter.add_data3f(p1.x, p1.y, p1.z);
+      _prim_triangles->add_vertex(v++);
+
+      cwriter.add_data4f(r, g, b, 1.0f);
+      vwriter.add_data3f(p2.x, p2.y, p2.z);
+      _prim_triangles->add_vertex(v++);
+    }
+  }
+
+  _prim_lines->close_primitive();
+  _prim_triangles->close_primitive();
+
+  physx_cat.spam() << "Updated PhysxDebugGeomNode geometry\n";
 }
 
 ////////////////////////////////////////////////////////////////////

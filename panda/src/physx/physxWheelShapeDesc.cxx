@@ -15,6 +15,20 @@
 #include "physxWheelShapeDesc.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxWheelShapeDesc::set_to_default
+//       Access: Published
+//  Description: (re)sets the structure to the default.
+////////////////////////////////////////////////////////////////////
+void PhysxWheelShapeDesc::
+set_to_default() {
+
+  _desc.setToDefault();
+
+  _desc.name = "";
+  _desc.localPose = PhysxManager::mat4_to_nxMat34(LMatrix4f::y_to_z_up_mat());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxWheelShapeDesc::set_radius
 //       Access: Published
 //  Description: Radius of shape. Must be positive.

@@ -20,6 +20,8 @@
 #include "physxControllerDesc.h"
 #include "physxSceneStats2.h"
 #include "physxConstraintDominance.h"
+//#include "physxVehicle.h"
+//#include "physxVehicleDesc.h"
 
 TypeHandle PhysxScene::_type_handle;
 
@@ -64,6 +66,11 @@ link(NxScene *scenePtr) {
 ////////////////////////////////////////////////////////////////////
 void PhysxScene::
 unlink() {
+
+  // Destroy vehicles
+  //for (unsigned int i=0; i < _vehicles.size(); i++) {
+  //  _vehicles[i]->release();
+  //}
 
   // Unlink controllers
   NxU32 nControllers = _cm->getNbControllers();
@@ -131,9 +138,12 @@ unlink() {
   }
 
   // Unlink self
+  _cm->purgeControllers();
   NxReleaseControllerManager(_cm);
+
   _ptr->userData = NULL;
   _error_type = ET_released;
+
   PhysxManager::get_global_ptr()->_scenes.remove(this);
 }
 
@@ -172,11 +182,17 @@ simulate(float dt) {
 
   _pcollector_simulate.start();
 
+  // Update all vehicles
+  //for (unsigned int i=0; i < _vehicles.size(); i++) {
+  //  PhysxVehicle *vehicle = _vehicles[i];
+  //  vehicle->update_vehicle(dt);
+  //}
+
   // Update all controllers
   for (NxU32 i=0; i < _cm->getNbControllers(); i++) {
     NxController *controllerPtr = _cm->getController(i);
     PhysxController *controller = (PhysxController *)controllerPtr->getUserData();
-    controller->update(dt);
+    controller->update_controller(dt);
   }
 
   _cm->updateControllers();
@@ -327,7 +343,7 @@ PhysxActor *PhysxScene::
 create_actor(PhysxActorDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(), NULL);
 
   PhysxActor *actor = new PhysxActor();
   nassertr(actor, NULL);
@@ -509,7 +525,7 @@ PhysxMaterial *PhysxScene::
 create_material(PhysxMaterialDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(), NULL);
 
   PhysxMaterial *material = new PhysxMaterial();
   nassertr(material, NULL);
@@ -634,7 +650,7 @@ PhysxController *PhysxScene::
 create_controller(PhysxControllerDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(), NULL);
 
   PhysxController *controller = PhysxController::factory(desc.ptr()->getType());
   nassertr(controller, NULL);
@@ -691,7 +707,7 @@ PhysxJoint *PhysxScene::
 create_joint(PhysxJointDesc &desc) {
 
   nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(), NULL);
 
   PhysxJoint *joint = PhysxJoint::factory(desc.ptr()->getType());
   nassertr(joint, NULL);
@@ -751,7 +767,7 @@ create_force_field(PhysxForceFieldDesc &desc) {
 
   // Create the kernel
   desc.create_kernel(_ptr);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(), NULL);
 
   // Create the force field
   PhysxForceField *field = new PhysxForceField();
@@ -839,6 +855,54 @@ get_force_field_shape_group(unsigned int idx) const {
 
   return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : NULL;
 }
+
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::get_num_vehicles
+//       Access: Published
+//  Description: Returns the number of vehicles in the scene.
+////////////////////////////////////////////////////////////////////
+unsigned int PhysxScene::
+get_num_vehicles() const {
+
+  nassertr(_error_type == ET_ok, -1);
+  return _vehicles.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::create_vehicle
+//       Access: Published
+//  Description: Creates a vehicle in this scene.
+////////////////////////////////////////////////////////////////////
+PhysxVehicle *PhysxScene::
+create_vehicle(PhysxVehicleDesc &desc) {
+
+  nassertr(_error_type == ET_ok, NULL);
+  nassertr(desc.is_valid(), NULL);
+
+  PhysxVehicle *vehicle = new PhysxVehicle();
+  nassertr(vehicle, NULL);
+
+  vehicle->create(this, desc);
+
+  return vehicle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::get_vehicle
+//       Access: Published
+//  Description: Returns the n-th vehicle from the array of all
+//               the vehicles in the scene.
+////////////////////////////////////////////////////////////////////
+PhysxVehicle *PhysxScene::
+get_vehicle(unsigned int idx) const {
+
+  nassertr(_error_type == ET_ok, NULL);
+  nassertr_always(idx < _vehicles.size(), NULL);
+
+  return _vehicles[idx];
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_stats2
@@ -1543,5 +1607,30 @@ get_dominance_group_pair(unsigned int g1, unsigned int g2) {
 
   result.set_dominance(_ptr->getDominanceGroupPair((NxDominanceGroup)g1, (NxDominanceGroup)g2));
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::get_wheel_shape_material
+//       Access: Published
+//  Description: Gets the shared material for all wheel shapes.
+//
+//               If this material is not already created then
+//               calling this method will create the material.
+//
+//               Normally users don't need to call this method. It
+//               is used internally by PhysWheel::create_wheel.
+////////////////////////////////////////////////////////////////////
+PhysxMaterial *PhysxScene::
+get_wheel_shape_material() {
+
+  nassertr(_error_type == ET_ok, NULL);
+
+  if (_wheelShapeMaterial == NULL) {
+    PhysxMaterialDesc materialDesc;
+    materialDesc.set_flag(PhysxMaterialDesc::MF_disable_friction, true);
+    _wheelShapeMaterial = create_material(materialDesc);
+  }
+
+  return _wheelShapeMaterial;
 }
 

@@ -279,12 +279,12 @@ report_scene_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::update
+//     Function: PhysxController::update_controller
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxController::
-update(float dt) {
+update_controller(float dt) {
 
   nassertv(_error_type == ET_ok);
 

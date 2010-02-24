@@ -48,6 +48,8 @@ class PhysxRay;
 class PhysxRaycastHit;
 class PhysxRaycastReport;
 class PhysxSceneStats2;
+//class PhysxVehicle;
+//class PhysxVehicleDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxScene
@@ -128,6 +130,12 @@ PUBLISHED:
   PhysxForceFieldShapeGroup *create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc);
   PhysxForceFieldShapeGroup *get_force_field_shape_group(unsigned int idx) const;
   MAKE_SEQ(get_force_field_shape_groups, get_num_force_field_shape_groups, get_force_field_shape_group);
+
+  // Vehicles
+  //unsigned int get_num_vehicles() const;
+  //PhysxVehicle *create_vehicle(PhysxVehicleDesc &desc);
+  //PhysxVehicle *get_vehicle(unsigned int idx) const;
+  //MAKE_SEQ(get_vehicles, get_num_vehicles, get_vehicle);
 
   // Raycast queries
   bool raycast_any_shape(const PhysxRay &ray,
@@ -212,11 +220,15 @@ public:
   PhysxObjectCollection<PhysxForceField> _forcefields;
   PhysxObjectCollection<PhysxForceFieldShapeGroup> _ffgroups;
   PhysxObjectCollection<PhysxController> _controllers;
+  //PhysxObjectCollection<PhysxVehicle> _vehicles;
+
+  PhysxMaterial *get_wheel_shape_material();
 
 private:
   NxScene *_ptr;
   NxControllerManager *_cm;
   PT(PhysxDebugGeomNode) _debugNode;
+  PT(PhysxMaterial) _wheelShapeMaterial;
 
   PhysxContactReport _contact_report;
   PhysxControllerReport _controller_report;

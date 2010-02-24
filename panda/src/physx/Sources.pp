@@ -71,6 +71,7 @@
     physxJointLimitDesc.I physxJointLimitDesc.h \
     physxJointLimitSoftDesc.I physxJointLimitSoftDesc.h \
     physxKitchen.I physxKitchen.h \
+    physxLinearInterpolationValues.I physxLinearInterpolationValues.h \
     physxManager.I physxManager.h \
     physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
@@ -120,6 +121,10 @@
     physxUtilLib.I physxUtilLib.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
+    #physxVehicleGears.I physxVehicleGears.h \
+    #physxVehicleGearsDesc.I physxVehicleGearsDesc.h \
+    #physxVehicleMotor.I physxVehicleMotor.h \
+    #physxVehicleMotorDesc.I physxVehicleMotorDesc.h \
 
   #define INCLUDED_SOURCES \
     config_physx.cxx \
@@ -182,6 +187,7 @@
     physxJointLimitDesc.cxx \
     physxJointLimitSoftDesc.cxx \
     physxKitchen.cxx \
+    physxLinearInterpolationValues.cxx \
     physxManager.cxx \
     physxMask.cxx \
     physxMaterial.cxx \
@@ -231,6 +237,10 @@
     physxUtilLib.cxx \
     physxWheelShape.cxx \
     physxWheelShapeDesc.cxx \
+    #physxVehicleGears.cxx \
+    #physxVehicleGearsDesc.cxx \
+    #physxVehicleMotor.cxx \
+    #physxVehicleMotorDesc.cxx \
 
   #define INSTALL_HEADERS \
     config_physx.h \
@@ -293,6 +303,7 @@
     physxJointLimitDesc.I physxJointLimitDesc.h \
     physxJointLimitSoftDesc.I physxJointLimitSoftDesc.h \
     physxKitchen.I physxKitchen.h \
+    physxLinearInterpolationValues.I physxLinearInterpolationValues.h \
     physxManager.I physxManager.h \
     physxMask.I physxMask.h \
     physxMaterial.I physxMaterial.h \
@@ -342,6 +353,10 @@
     physxUtilLib.I physxUtilLib.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
+    #physxVehicleGears.I physxVehicleGears.h \
+    #physxVehicleGearsDesc.I physxVehicleGearsDesc.h \
+    #physxVehicleMotor.I physxVehicleMotor.h \
+    #physxVehicleMotorDesc.I physxVehicleMotorDesc.h \
 
   #define IGATESCAN all
 

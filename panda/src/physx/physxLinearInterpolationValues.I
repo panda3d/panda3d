@@ -1,5 +1,5 @@
-// Filename: physxWheelShapeDesc.I
-// Created by:  enn0x (09Nov09)
+// Filename: physxLinearInterpolationValues.I
+// Created by:  enn0x (08Feb10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -13,36 +13,23 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::Constructor
-//       Access: Published
+//     Function: PhysxLinearInterpolationValues::Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxWheelShapeDesc::
-PhysxWheelShapeDesc() : PhysxShapeDesc() {
-
-  set_to_default();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PhysxWheelShapeDesc::
-~PhysxWheelShapeDesc() {
+INLINE PhysxLinearInterpolationValues::
+PhysxLinearInterpolationValues() : _min(0.0f), _max(0.0f), _map() {
 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
+//     Function: PhysxLinearInterpolationValues::Destructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool PhysxWheelShapeDesc::
-is_valid() const {
+INLINE PhysxLinearInterpolationValues::
+~PhysxLinearInterpolationValues() {
 
-  return _desc.isValid();
 }
 
