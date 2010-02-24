@@ -4945,26 +4945,37 @@ def MakeInstallerOSX():
                         if not libdep.startswith("/"):
                             oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
     
-    # Scripts to configure this version of Panda3D (in environment.plist)
+    # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
     oscmd("mkdir -p dstroot/scripts/base/")
     postinstall = open("dstroot/scripts/base/postinstall", "w")
     print >>postinstall, "#!/usr/bin/python"
-    print >>postinstall, "import os, plistlib"
+    print >>postinstall, "import os, sys, plistlib"
     print >>postinstall, "home = os.environ['HOME']"
     print >>postinstall, "if not os.path.isdir(os.path.join(home, '.MacOSX')):"
-    print >>postinstall, "    os.mkdir(os.path.join(home, '.MacOSX'))"
+    print >>postinstall, "    sys.exit()"
     print >>postinstall, "plist = dict()"
     print >>postinstall, "envfile = os.path.join(home, '.MacOSX', 'environment.plist')"
     print >>postinstall, "if os.path.exists(envfile):"
-    print >>postinstall, "    plist = plistlib.readPlist(envfile)"
+    print >>postinstall, "    try:"
+    print >>postinstall, "        plist = plistlib.readPlist(envfile)"
+    print >>postinstall, "    except: sys.exit(0)"
+    print >>postinstall, "else:"
+    print >>postinstall, "    sys.exit(0)"
     print >>postinstall, "paths = {'PATH' : '/Developer/Tools/Panda3D', 'DYLD_LIBRARY_PATH' : '/Developer/Panda3D/lib', 'PYTHONPATH' : '/Developer/Panda3D/lib',"
     print >>postinstall, "         'MAYA_SCRIPT_PATH' : '/Developer/Panda3D/plugins', 'MAYA_PLUG_IN_PATH' : '/Developer/Panda3D/plugins'}"
     print >>postinstall, "for env, path in paths.items():"
-    print >>postinstall, "    if env not in plist:"
-    print >>postinstall, "        plist[env] = path"
-    print >>postinstall, "    elif path not in plist[env]:"
-    print >>postinstall, "        plist[env] = '%s:%s' % (path, plist[env])"
-    print >>postinstall, "plistlib.writePlist(plist, envfile)"
+    print >>postinstall, "    if env in plist:"
+    print >>postinstall, "        paths = plist[env].split(':')"
+    print >>postinstall, "        if '' in paths: paths.remove('')"
+    print >>postinstall, "        if path in paths: paths.remove(path)"
+    print >>postinstall, "        if len(paths) == 0:"
+    print >>postinstall, "            del plist[env]"
+    print >>postinstall, "        else:"
+    print >>postinstall, "            plist[env] = ':'.join(paths)"
+    print >>postinstall, "if len(plist) == 0:"
+    print >>postinstall, "    os.remove(envfile)"
+    print >>postinstall, "else:"
+    print >>postinstall, "    plistlib.writePlist(plist, envfile)"
     postinstall.close()
     postflight = open("dstroot/scripts/base/postflight", "w")
     print >>postflight, "#!/usr/bin/env bash\n"
@@ -4976,7 +4987,8 @@ def MakeInstallerOSX():
     
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
-    oscmd("ln -s /Developer/Tools/Panda3D dstroot/tools/Developer/Panda3D/bin")
+    oscmd("ln -s /Developer/Tools/Panda3D")
+    WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Developer/Tools/Panda3D")
     for base in os.listdir(GetOutputDir()+"/bin"):
         binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
@@ -5109,7 +5121,7 @@ function have16installed() {
     print >>dist, '        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>'
     print >>dist, '    </choice>'
     print >>dist, '    <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg" installKBytes="0" version="1" auth="Root">file:./Contents/Packages/uninstall16.pkg</pkg-ref>'
-    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root" onConclusion="RequireLogout">file:./Contents/Packages/base.pkg</pkg-ref>' % (GetDirectorySize("dstroot/base") / 1024)
+    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>' % (GetDirectorySize("dstroot/base") / 1024)
     print >>dist, '    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>' % (GetDirectorySize("dstroot/tools") / 1024)
     if PkgSkip("PYTHON")==0:
         print >>dist, '    <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/pythoncode.pkg</pkg-ref>' % (GetDirectorySize("dstroot/pythoncode") / 1024)
