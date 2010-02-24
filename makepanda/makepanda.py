@@ -5008,7 +5008,7 @@ def MakeInstallerOSX():
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
         oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/lib/direct")
         oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
-        WriteFile("dstroot/pythoncode/Library/Python/%s/Panda3D.pth" % PV, "/Developer/Panda3D/lib")
+        WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % PV, "/Developer/Panda3D/lib")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/lib/pandac" % GetOutputDir())
         oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/lib/direct")
         oscmd("cp direct/src/ffi/panda3d.py   dstroot/pythoncode/Developer/Panda3D/lib/panda3d.py")
