@@ -86,6 +86,7 @@ class AppRunner(DirectObject):
         self.guiApp = False
         self.interactiveConsole = False
         self.initialAppImport = False
+        self.trueFileIO = False
 
         self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
@@ -456,13 +457,21 @@ class AppRunner(DirectObject):
         # Put our root directory on the model-path, too.
         getModelPath().appendDirectory(self.multifileRoot)
 
-        # Replace the builtin open and file symbols so user code will get
-        # our versions by default, which can open and read files out of
-        # the multifile.
-        __builtin__.file = file.file
-        __builtin__.open = file.open
-        os.listdir = file.listdir
-        os.walk = file.walk
+        if not self.trueFileIO:
+            # Replace the builtin open and file symbols so user code will get
+            # our versions by default, which can open and read files out of
+            # the multifile.
+            __builtin__.file = file.file
+            __builtin__.open = file.open
+            os.listdir = file.listdir
+            os.walk = file.walk
+            os.path.isfile = file.isfile
+            os.path.isdir = file.isdir
+            os.path.exists = file.exists
+            os.path.lexists = file.lexists
+            os.path.getmtime = file.getmtime
+            os.path.getsize = file.getsize
+            sys.modules['glob'] = glob
 
     def __startIfReady(self):
         """ Called internally to start the application. """
@@ -665,6 +674,10 @@ class AppRunner(DirectObject):
             guiApp = self.p3dConfig.Attribute('gui_app')
             if guiApp:
                 self.guiApp = int(guiApp)
+
+            trueFileIO = self.p3dConfig.Attribute('true_file_io')
+            if trueFileIO:
+                self.trueFileIO = int(trueFileIO)
 
         # The interactiveConsole flag can only be set true if the
         # application has allow_python_dev set.
@@ -957,20 +970,6 @@ def dummyAppRunner(tokens = [], argv = None):
     vfs.mount(cwd, appRunner.multifileRoot, vfs.MFReadOnly)
 
     appRunner.initPackedAppEnvironment()
-
-    # Replace some of the standard Python I/O functions with the Panda
-    # variants that are specially crafted to respect the vfs.
-    __builtin__.file = file.file
-    __builtin__.open = file.open
-    os.listdir = file.listdir
-    os.walk = file.walk
-    os.path.isfile = file.isfile
-    os.path.isdir = file.isdir
-    os.path.exists = file.exists
-    os.path.lexists = file.lexists
-    os.path.getmtime = file.getmtime
-    os.path.getsize = file.getsize
-    sys.modules['glob'] = glob
     
     return appRunner
 
