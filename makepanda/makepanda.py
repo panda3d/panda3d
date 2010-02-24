@@ -45,6 +45,7 @@ RTDIST_VERSION="dev"
 RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
+MAJOR_VERSION=None
 OSXTARGET=None
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
@@ -202,6 +203,8 @@ if (VERSION == None):
         VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+
+MAJOR_VERSION = VERSION[:3]
 
 if (RUNTIME or RTDIST):
     PkgDisable("PANDATOOL")
@@ -928,13 +931,13 @@ def CompileLink(dll, obj, opts):
             oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
         
-        if dll.endswith("." + VERSION + ".dylib"):
-            newdll = dll[:-6-len(VERSION)] + "dylib"
+        if dll.endswith("." + MAJOR_VERSION + ".dylib"):
+            newdll = dll[:-6-len(MAJOR_VERSION)] + "dylib"
             if (os.path.isfile(newdll)):
                 os.remove(newdll)
             oscmd("ln -s " + BracketNameWithQuotes(os.path.basename(dll)) + " " + BracketNameWithQuotes(newdll))
-        elif dll.endswith("." + VERSION):
-            newdll = dll[:-len(VERSION)-1]
+        elif dll.endswith("." + MAJOR_VERSION):
+            newdll = dll[:-len(MAJOR_VERSION)-1]
             if (os.path.isfile(newdll)):
                 os.remove(newdll)
             oscmd("ln -s " + BracketNameWithQuotes(os.path.basename(dll)) + " " + BracketNameWithQuotes(newdll))
@@ -1155,10 +1158,10 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (origsuffix==".dll" and "MODULE" not in opts and not sys.platform.startswith("win") and not RTDIST):
             if (sys.platform == "darwin"):
                 if (target.lower().endswith(".dylib")):
-                    target = target[:-5] + VERSION + ".dylib"
+                    target = target[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
             else:
-                target = target + "." + VERSION
+                target = target + "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
