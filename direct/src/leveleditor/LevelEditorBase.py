@@ -150,13 +150,18 @@ class LevelEditorBase(DirectObject):
 
     def handleDelete(self):
         oldSelectedNPs = base.direct.selected.getSelectedAsList()
+        oldUIDs = []
         for oldNP in oldSelectedNPs:
             obj = self.objectMgr.findObjectByNodePath(oldNP)
             if obj:
-               self.ui.sceneGraphUI.delete(obj[OG.OBJ_UID])
+                oldUIDs.append(obj[OG.OBJ_UID])
+
         action = ActionDeleteObj(self)
         self.actionMgr.push(action)
         action()
+
+        for uid in oldUIDs:
+            self.ui.sceneGraphUI.delete(uid)
 
 ##         reply = wx.MessageBox("Do you want to delete selected?", "Delete?",
 ##                               wx.YES_NO | wx.ICON_QUESTION)
