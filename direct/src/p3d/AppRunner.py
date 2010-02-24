@@ -35,7 +35,7 @@ else:
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, initAppForGui
 from pandac import PandaModules
-from direct.stdpy import file
+from direct.stdpy import file, glob
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import AppRunnerGlobal
@@ -406,7 +406,7 @@ class AppRunner(DirectObject):
         exception handler.  This is generally the program's main loop
         when running in a p3d environment (except on unusual platforms
         like the iPhone, which have to hand the main loop off to the
-        OS, and don't use this interface. """
+        OS, and don't use this interface). """
 
         try:
             taskMgr.run()
@@ -478,7 +478,7 @@ class AppRunner(DirectObject):
             # Hang a hook so we know when the window is actually opened.
             self.acceptOnce('window-event', self.__windowEvent)
 
-            # Look for the startup Python file.  This may be a magic
+            # Look for the startup Python file.  This might be a magic
             # filename (like "__main__", or any filename that contains
             # invalid module characters), so we can't just import it
             # directly; instead, we go through the low-level importer.
@@ -958,10 +958,19 @@ def dummyAppRunner(tokens = [], argv = None):
 
     appRunner.initPackedAppEnvironment()
 
+    # Replace some of the standard Python I/O functions with the Panda
+    # variants that are specially crafted to respect the vfs.
     __builtin__.file = file.file
     __builtin__.open = file.open
     os.listdir = file.listdir
     os.walk = file.walk
-
+    os.path.isfile = file.isfile
+    os.path.isdir = file.isdir
+    os.path.exists = file.exists
+    os.path.lexists = file.lexists
+    os.path.getmtime = file.getmtime
+    os.path.getsize = file.getsize
+    sys.modules['glob'] = glob
+    
     return appRunner
 

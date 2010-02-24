@@ -5,7 +5,8 @@ SIMPLE_THREADS model, by avoiding blocking all threads while waiting
 for I/O to complete. """
 
 __all__ = [
-    'file', 'open', 'listdir', 'walk', 'join'
+    'file', 'open', 'listdir', 'walk', 'join',
+    'isfile', 'isdir', 'exists', 'lexists', 'getmtime', 'getsize',
     ]
 
 from pandac import PandaModules as pm
@@ -286,3 +287,28 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
 
 def join(a, b):
     return '%s/%s' % (a, b)
+
+def isfile(path):
+    return _vfs.isRegularFile(pm.Filename.fromOsSpecific(path))
+
+def isdir(path):
+    return _vfs.isDirectory(pm.Filename.fromOsSpecific(path))
+
+def exists(path):
+    return _vfs.exists(pm.Filename.fromOsSpecific(path))
+
+def lexists(path):
+    return _vfs.exists(pm.Filename.fromOsSpecific(path))
+    
+def getmtime(path):
+    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    if not file:
+        raise os.error
+    return file.getTimestamp()
+    
+def getsize(path):
+    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    if not file:
+        raise os.error
+    return file.getFileSize()
+
