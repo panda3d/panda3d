@@ -26,6 +26,8 @@ class ObjectMgr:
         self.lastUidMode = 0
         self.currNodePath = None   
 
+        self.currLiveNP = None
+
     def reset(self):
         base.direct.deselectAllCB()
 
@@ -602,3 +604,15 @@ class ObjectMgr:
         base.direct.deselectAllCB()
         for newNodePath in duplicatedNPs:
             base.direct.select(newNodePath, fMultiSelect = 1, fUndo=0)
+
+    def makeSelectedLive(self):
+        obj = self.findObjectByNodePath(base.direct.selected.last)
+        if obj:
+            if self.currLiveNP:
+                self.currLiveNP.clearColorScale()
+                if self.currLiveNP == obj[OG.OBJ_NP]:
+                    self.currLiveNP = None
+                    return
+
+            self.currLiveNP = obj[OG.OBJ_NP]
+            self.currLiveNP.setColorScale(0, 1, 0, 1)

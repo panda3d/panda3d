@@ -34,17 +34,44 @@ class PandaTextDropTarget(wx.TextDropTarget):
         # create ray from the camera to detect 3d position
         iRay = SelectionRay(self.view.camera)
         iRay.collider.setFromLens(self.view.camNode, mx, my)
-        iRay.collideWithBitMask(1)
-        iRay.ct.traverse(self.view.collPlane)
+        hitPt = None
+        if self.editor.objectMgr.currLiveNP:
+            iRay.collideWithGeom()
+            iRay.ct.traverse(self.editor.objectMgr.currLiveNP)
 
-        if iRay.getNumEntries() > 0:
-            entry = iRay.getEntry(0)
-            hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+            def isEntryBackfacing(iRay, entry):
+                if not entry.hasSurfaceNormal():
+                    # Well, no way to tell.  Assume we're not backfacing.
+                    return 0
 
+                fromNodePath = entry.getFromNodePath()
+                v = Vec3(entry.getSurfacePoint(fromNodePath))
+                n = entry.getSurfaceNormal(fromNodePath)
+                # Convert to camera space for backfacing test
+                p2cam = iRay.collisionNodePath.getParent().getMat(self.view.camera)
+                v = Vec3(p2cam.xformPoint(v))
+                n = p2cam.xformVec(n)
+                # Normalize and check angle between to vectors
+                v.normalize()
+                return v.dot(n) >= 0                
+
+            for entry in iRay.getEntries():
+                if isEntryBackfacing(iRay, entry):
+                    pass
+                else:
+                    hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+                    break
+        else:
+            iRay.collideWithBitMask(1)
+            iRay.ct.traverse(self.view.collPlane)
+            if iRay.getNumEntries() > 0:
+                entry = iRay.getEntry(0)
+                hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+
+        if hitPt:
             # create a temp nodePath to get the position
             np = NodePath('temp')
             np.setPos(self.view.camera, hitPt)
-
             # update temp nodePath's HPR and scale with newobj's
             np.setHpr(newobj.getHpr())
             np.setScale(newobj.getScale())
@@ -91,6 +118,9 @@ class LevelEditorUIBase(WxAppShell):
 
         menuItem = self.menuEdit.Append(-1, "&Duplicate")
         self.Bind(wx.EVT_MENU, self.onDuplicate, menuItem)
+
+        menuItem = self.menuEdit.Append(-1, "Make &Live")
+        self.Bind(wx.EVT_MENU, self.onMakeLive, menuItem)
 
         menuItem = self.menuEdit.Append(-1, "&Undo")
         self.Bind(wx.EVT_MENU, self.editor.actionMgr.undo, menuItem)
@@ -262,6 +292,9 @@ class LevelEditorUIBase(WxAppShell):
 
     def onDuplicate(self, evt):
         self.editor.objectMgr.duplicateSelected()
+
+    def onMakeLive(self, evt):
+        self.editor.objectMgr.makeSelectedLive()
 
     def toggleGridSnap(self, evt):
         if self.gridSnapMenuItem.IsChecked():
