@@ -4987,7 +4987,7 @@ def MakeInstallerOSX():
     
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
-    oscmd("ln -s /Developer/Tools/Panda3D")
+    oscmd("mkdir -p dstroot/tools/etc/paths.d")
     WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Developer/Tools/Panda3D")
     for base in os.listdir(GetOutputDir()+"/bin"):
         binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
@@ -5004,8 +5004,11 @@ def MakeInstallerOSX():
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
     
     if PkgSkip("PYTHON")==0:
+        PV = SDK["PYTHONVERSION"].replace("python", "")
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
         oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/lib/direct")
+        oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
+        WriteFile("dstroot/pythoncode/Library/Python/%s/Panda3D.pth" % PV, "/Developer/Panda3D/lib")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/lib/pandac" % GetOutputDir())
         oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/lib/direct")
         oscmd("cp direct/src/ffi/panda3d.py   dstroot/pythoncode/Developer/Panda3D/lib/panda3d.py")
