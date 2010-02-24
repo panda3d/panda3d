@@ -167,7 +167,7 @@ def makeCHM(outputfile, dirname, title, special = None):
         hhc.write("        <param name=\"Name\" value=\"Main Page\">\n")
         hhc.write("        <param name=\"Local\" value=\"%s\">\n" % urldecode(os.path.join(dirname, "index.html")))
         hhc.write("      </object>\n")
-        for item in parseManualTOC("manual/index.html"):
+        for item in parseManualTOC(dirname + "/index.html"):
             hhc.write(treeToHTML(item, dirname, "      "))
         for i in os.listdir(dirname):
             hhp.write(os.path.join(dirname, i) + "\n")
@@ -211,8 +211,10 @@ def makeCHM(outputfile, dirname, title, special = None):
     hhc.close()
     hhp.close()
     # Now, execute the command to compile the files.
-    if os.path.isdir("C:\Program Files\HTML Help Workshop"):
-        cmd = "\"C:\Program Files\HTML Help Workshop\hhc.exe\" %s.hhp" % base
+    if "PROGRAMFILES" in os.environ and os.path.isdir("%s\\HTML Help Workshop" % os.environ["PROGRAMFILES"]):
+        cmd = "\"%s\\HTML Help Workshop\\hhc.exe\" %s.hhp" % (os.environ["PROGRAMFILES"], base)
+    elif os.path.isdir("C:\Program Files\HTML Help Workshop"):
+        cmd = "\"C:\\Program Files\\HTML Help Workshop\\hhc.exe\" %s.hhp" % base
     else:
         cmd = "hhc \"%s.hhp\"" % base
     print cmd
@@ -256,23 +258,24 @@ if __name__ == "__main__":
         pass
     
     # Now, make CHM's for both the manual and reference, if we have them.
-    if not os.path.isdir("manual"):
-        print "No directory named 'manual' found"
-    else:
-        print "Making CHM file for manual..."
-        if VERSION == None:
-            makeManualCHM("manual.chm", "manual", "Panda3D Manual")
+    for lang in ["python", "cxx"]:
+        if not os.path.isdir("manual-" + lang):
+            print "No directory named 'manual-%s' found" % lang
         else:
-            makeManualCHM("manual-%s.chm" % VERSION, "manual", "Panda3D %s Manual" % VERSION)
-    
-    if not os.path.isdir("reference"):
-        print "No directory named 'reference' found"
-    else:
-        print "Making CHM file for API reference..."
-        if VERSION == None:
-            makeReferenceCHM("reference.chm", "reference", "Panda3D Reference")
+            print "Making CHM file for manual-%s..." % lang
+            if VERSION == None:
+                makeManualCHM("manual-%s.chm" % lang, "manual-" + lang, "Panda3D Manual")
+            else:
+                makeManualCHM("manual-%s-%s.chm" % (VERSION, lang), "manual-" + lang, "Panda3D %s Manual" % VERSION)
+        
+        if not os.path.isdir("reference-" + lang):
+            print "No directory named 'reference-%s' found" % lang
         else:
-            makeReferenceCHM("reference-%s.chm" % VERSION, "reference", "Panda3D %s Reference" % VERSION)
+            print "Making CHM file for reference-%s..." % lang
+            if VERSION == None:
+                makeReferenceCHM("reference-%s.chm" % lang, "reference-" + lang, "Panda3D Reference")
+            else:
+                makeReferenceCHM("reference-%s-%s.chm" % (VERSION, lang), "reference-" + lang, "Panda3D %s Reference" % VERSION)
     
     print "Done!"
 
