@@ -374,6 +374,7 @@ class LevelEditorUIBase(WxAppShell):
     def onDestroy(self, evt):
         self.editor.protoPalette.saveToFile()
         self.editor.saveSettings()
+        self.editor.reset()
 
     def updateGrids(self, newSize, newSpacing):
         self.perspView.grid.gridSize = newSize

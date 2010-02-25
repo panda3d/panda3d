@@ -34,6 +34,8 @@ class FileMgr:
                 f.write(data)
                 f.write('\n')
             f.close()
+            self.editor.updateStatusReadout('Sucessfully saved to %s'%fileName)
+            self.editor.fNeedToSave = False
         except IOError:
             print 'failed to save %s'%fileName
             if f:
@@ -46,5 +48,7 @@ class FileMgr:
         file, pathname, description = imp.find_module(moduleName, [dirname])
         try:
             module = imp.load_module(moduleName, file, pathname, description)
+            self.editor.updateStatusReadout('Sucessfully opened file %s'%fileName)
+            self.editor.fNeedToSave = False
         except:
             print 'failed to load %s'%fileName
