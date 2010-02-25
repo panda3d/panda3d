@@ -974,7 +974,8 @@ class ShowBase(DirectObject.DirectObject):
         xsize, ysize = self.getSize()
         self.pixel2d = self.render2d.attachNewNode(PGTop("pixel2d"))
         self.pixel2d.setPos(-1, 0, 1)
-        self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
+        if xsize > 0 and ysize > 0:
+            self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
     def setupRender2dp(self):
         """
@@ -1046,7 +1047,8 @@ class ShowBase(DirectObject.DirectObject):
         self.pixel2dp = self.render2dp.attachNewNode(PGTop("pixel2dp"))
         self.pixel2dp.node().setStartSort(16384)
         self.pixel2dp.setPos(-1, 0, 1)
-        self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
+        if xsize > 0 and ysize > 0:
+            self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
@@ -2461,8 +2463,9 @@ class ShowBase(DirectObject.DirectObject):
                     # If anybody needs to update their GUI, put a callback on this event
                     messenger.send("aspectRatioChanged")
             
-            self.pixel2d.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
-            self.pixel2dp.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
+            if win.getXSize() > 0 and win.getYSize() > 0:
+                self.pixel2d.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
+                self.pixel2dp.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
 
     def userExit(self):
         # The user has requested we exit the program.  Deal with this.
