@@ -123,6 +123,10 @@ class LevelEditorBase(DirectObject):
             ('LE-Duplicate', self.objectMgr.duplicateSelected),
             ('DIRECT_manipulateObjectCleanup', self.cleanUpManipulating),
             ('LE-MakeLive', self.objectMgr.makeSelectedLive),
+            ('LE-NewScene', self.ui.onNew),
+            ('LE-SaveScene', self.ui.onSave),
+            ('LE-OpenScene', self.ui.onOpen),
+            ('LE-Quit', self.ui.quit),
             ])
 
         # Add all the action events
@@ -286,9 +290,25 @@ class LevelEditorBase(DirectObject):
                 elif line.startswith('gridSpacing'):
                     gridSpacing = float(configLines[i])
                 elif line.startswith('hotKey'):
-                    base.direct.hotKeyMap.update(eval(configLines[i]))
+                    customHotKeyMap = eval(configLines[i])
+                    customHotKeyDict = {}
+                    for hotKey in customHotKeyMap.keys():
+                        desc = customHotKeyMap[hotKey]
+                        customHotKeyDict[desc[1]] = hotKey
+
+                    overriddenKeys = []
+                    for key in base.direct.hotKeyMap.keys():
+                        desc = base.direct.hotKeyMap[key]
+                        if desc[1] in customHotKeyDict.keys():
+                            overriddenKeys.append(key)
+
+                    for key in overriddenKeys:
+                        del base.direct.hotKeyMap[key]
+                            
+                    base.direct.hotKeyMap.update(customHotKeyMap)
 
             self.ui.updateGrids(gridSize, gridSpacing)
+            self.ui.updateMenu()
         except:
             pass
 

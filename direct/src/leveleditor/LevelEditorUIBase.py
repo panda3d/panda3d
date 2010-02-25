@@ -85,8 +85,39 @@ class PandaTextDropTarget(wx.TextDropTarget):
             action()
         del iRay
 
+ID_NEW = 101
+ID_OPEN = 102
+ID_SAVE = 103
+ID_SAVE_AS = 104
+ID_DUPLICATE = 201
+ID_MAKE_LIVE = 202
+ID_UNDO = 203
+ID_REDO = 204
+ID_SHOW_GRID = 301
+ID_GRID_SIZE = 302
+ID_GRID_SNAP = 303
+ID_SHOW_PANDA_OBJECT = 304
+ID_HOT_KEYS = 305
+
 class LevelEditorUIBase(WxAppShell):
     """ Class for Panda3D LevelEditor """ 
+
+    MENU_TEXTS = {
+        ID_NEW : ("&New", "LE-NewScene"),
+        ID_OPEN : ("&Open", "LE-OpenScene"),
+        ID_SAVE : ("&Save", "LE-SaveScene"),
+        ID_SAVE_AS : ("Save &As", None),
+        wx.ID_EXIT : ("&Quit", "LE-Quit"),
+        ID_DUPLICATE : ("&Duplicate", "LE-Duplicate"),
+        ID_MAKE_LIVE : ("Make &Live", "LE-MakeLive"),
+        ID_UNDO : ("&Undo", "LE-Undo"),
+        ID_REDO : ("&Redo", "LE-Redo"),
+        ID_SHOW_GRID : ("&Show Grid", None),
+        ID_GRID_SIZE : ("&Grid Size", None),
+        ID_GRID_SNAP : ("Grid S&nap", None),
+        ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
+        ID_HOT_KEYS : ("&Hot Keys", None),
+        }
     
     def __init__(self, editor, *args, **kw):
         # Create the Wx app
@@ -102,50 +133,64 @@ class LevelEditorUIBase(WxAppShell):
         self.initialize()
 
     def createMenu(self):
-        menuItem = self.menuFile.Insert(0, -1 , "&New")
+        menuItem = self.menuFile.Insert(0, ID_NEW, self.MENU_TEXTS[ID_NEW][0])
         self.Bind(wx.EVT_MENU, self.onNew, menuItem)
         
-        menuItem = self.menuFile.Insert(1, -1 , "&Load")
-        self.Bind(wx.EVT_MENU, self.onLoad, menuItem)
+        menuItem = self.menuFile.Insert(1, ID_OPEN, self.MENU_TEXTS[ID_OPEN][0])
+        self.Bind(wx.EVT_MENU, self.onOpen, menuItem)
 
-        menuItem = self.menuFile.Insert(2, -1 , "&Save")
+        menuItem = self.menuFile.Insert(2, ID_SAVE, self.MENU_TEXTS[ID_SAVE][0])
         self.Bind(wx.EVT_MENU, self.onSave, menuItem)
 
-        menuItem = self.menuFile.Insert(3, -1 , "Save &As")
+        menuItem = self.menuFile.Insert(3, ID_SAVE_AS, self.MENU_TEXTS[ID_SAVE_AS][0])
         self.Bind(wx.EVT_MENU, self.onSaveAs, menuItem)
 
         self.menuEdit = wx.Menu()
         self.menuBar.Insert(1, self.menuEdit, "&Edit")
 
-        menuItem = self.menuEdit.Append(-1, "&Duplicate")
+        menuItem = self.menuEdit.Append(ID_DUPLICATE, self.MENU_TEXTS[ID_DUPLICATE][0])
         self.Bind(wx.EVT_MENU, self.onDuplicate, menuItem)
 
-        menuItem = self.menuEdit.Append(-1, "Make &Live")
+        menuItem = self.menuEdit.Append(ID_MAKE_LIVE, self.MENU_TEXTS[ID_MAKE_LIVE][0])
         self.Bind(wx.EVT_MENU, self.onMakeLive, menuItem)
 
-        menuItem = self.menuEdit.Append(-1, "&Undo")
+        menuItem = self.menuEdit.Append(ID_UNDO, self.MENU_TEXTS[ID_UNDO][0])
         self.Bind(wx.EVT_MENU, self.editor.actionMgr.undo, menuItem)
 
-        menuItem = self.menuEdit.Append(-1, "&Redo")
+        menuItem = self.menuEdit.Append(ID_REDO, self.MENU_TEXTS[ID_REDO][0])
         self.Bind(wx.EVT_MENU, self.editor.actionMgr.redo, menuItem)
 
         self.menuOptions = wx.Menu()
         self.menuBar.Insert(2, self.menuOptions, "&Options")
 
-        self.showGridMenuItem = self.menuOptions.Append(-1, "&Show Grid", kind = wx.ITEM_CHECK)
+        self.showGridMenuItem = self.menuOptions.Append(ID_SHOW_GRID, self.MENU_TEXTS[ID_SHOW_GRID][0], kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.toggleGrid, self.showGridMenuItem)
 
-        self.gridSizeMenuItem = self.menuOptions.Append(-1, "&Grid Size")
+        self.gridSizeMenuItem = self.menuOptions.Append(ID_GRID_SIZE, self.MENU_TEXTS[ID_GRID_SIZE][0])
         self.Bind(wx.EVT_MENU, self.onGridSize, self.gridSizeMenuItem)
 
-        self.gridSnapMenuItem = self.menuOptions.Append(-1, "Grid S&nap", kind = wx.ITEM_CHECK)
+        self.gridSnapMenuItem = self.menuOptions.Append(ID_GRID_SNAP, self.MENU_TEXTS[ID_GRID_SNAP][0], kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.toggleGridSnap, self.gridSnapMenuItem)
 
-        self.showPandaObjectsMenuItem = self.menuOptions.Append(-1, "Show &Panda Objects", kind = wx.ITEM_CHECK)
+        self.showPandaObjectsMenuItem = self.menuOptions.Append(ID_SHOW_PANDA_OBJECT, self.MENU_TEXTS[ID_SHOW_PANDA_OBJECT][0], kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onShowPandaObjects, self.showPandaObjectsMenuItem)
 
-        self.hotKeysMenuItem = self.menuOptions.Append(-1, "&Hot Keys")
+        self.hotKeysMenuItem = self.menuOptions.Append(ID_HOT_KEYS, self.MENU_TEXTS[ID_HOT_KEYS][0])
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
+
+    def updateMenu(self):
+        hotKeyDict = {}
+        for hotKey in base.direct.hotKeyMap.keys():
+            desc = base.direct.hotKeyMap[hotKey]
+            hotKeyDict[desc[1]] = hotKey
+            
+        for id in self.MENU_TEXTS.keys():
+            desc = self.MENU_TEXTS[id]
+            if desc[1]:
+                menuItem = self.menuBar.FindItemById(id)
+                hotKey = hotKeyDict.get(desc[1])
+                if hotKey:
+                    menuItem.SetText(desc[0] + "\t%s"%hotKey)
 
     def createInterface(self):
         self.createMenu()
@@ -273,18 +318,18 @@ class LevelEditorUIBase(WxAppShell):
         self.wxApp.ProcessIdle()
         if task != None: return task.cont
 
-    def onNew(self, evt):
+    def onNew(self, evt=None):
         self.editor.reset()
         self.sceneGraphUI.reset()
         self.layerEditorUI.reset()
 
-    def onLoad(self, evt):
+    def onOpen(self, evt=None):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             self.editor.load(dialog.GetPath())
         dialog.Destroy()
 
-    def onSave(self, evt):
+    def onSave(self, evt=None):
         if self.editor.currentFile is None:
             self.onSaveAs(evt)
         else:
