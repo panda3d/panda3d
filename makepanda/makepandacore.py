@@ -779,7 +779,7 @@ def GetThirdpartyDir():
 ########################################################################
 
 VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
-VC80CRTASSEMBLYRE=re.compile("<dependency>[\t \n]*<dependentAssembly>[\t \n]*<assemblyIdentity[\t \na-zA-Z0-9.'\"=]*name=['\"]Microsoft[.]VC80[.]CRT['\"][\t \na-zA-Z0-9.'\"=/]*>[\t \n]*(</assemblyIdentity>)?[\t \n]*</dependentAssembly>[\t \n]*</dependency>[\t \n]*")
+VC80CRTASSEMBLYRE=re.compile("<dependency>[\t \r\n]*<dependentAssembly>[\t \r\n]*<assemblyIdentity[\t \r\na-zA-Z0-9.'\"=]*name=['\"]Microsoft[.]VC80[.]CRT['\"][\t \r\na-zA-Z0-9.'\"=/]*>[\t \r\n]*(</assemblyIdentity>)?[\t \r\n]*</dependentAssembly>[\t \r\n]*</dependency>[\t \r\n]*")
 VC90CRTVERSION=None
 
 def GetVC90CRTVersion(fn = None):
