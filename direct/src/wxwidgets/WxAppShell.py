@@ -64,7 +64,7 @@ class WxAppShell(wx.Frame):
         # Create the dialog to display about and contact information.
         self.about.ShowModal()
 
-    def quit(self, event):
+    def quit(self, event=None):
         self.onDestroy(event)
 
         # to close Panda
