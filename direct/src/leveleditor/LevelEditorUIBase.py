@@ -55,6 +55,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
                 v.normalize()
                 return v.dot(n) >= 0                
 
+            iRay.sortEntries()
             for entry in iRay.getEntries():
                 if isEntryBackfacing(iRay, entry):
                     pass
