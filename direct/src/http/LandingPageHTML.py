@@ -222,15 +222,27 @@ stylesheet = '''
   border-top: 1px solid #ffffff;
   }
   
-  tbody tr[altColoring] td
+  tbody tr[altColoring="1"] td
   {
   background: LightCyan;
   border-top: 1px solid #ffffff;
   }
   
-  tbody tr[altColoring].odd td
+  tbody tr[altColoring="1"].odd td
   {
   background: PaleTurquoise;
+  border-top: 1px solid #ffffff;
+  }
+  
+  tbody tr[altColoring="2"] td
+  {
+  background: LightSalmon;
+  border-top: 1px solid #ffffff;
+  }
+  
+  tbody tr[altColoring="2"].odd td
+  {
+  background: SandyBrown;
   border-top: 1px solid #ffffff;
   }
   
