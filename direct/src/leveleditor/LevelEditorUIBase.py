@@ -458,9 +458,11 @@ class GridSizeUI(wx.Dialog):
         vbox.Add(okButton, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 5)
 
         self.SetSizer(vbox)
+        base.le.ui.bindKeyEvents(False)
 
     def onApply(self, evt):
         newSize = self.gridSizeSlider.GetValue()
         newSpacing = self.gridSpacingSlider.GetValue()
         self.parent.updateGrids(newSize, newSpacing)
+        base.le.ui.bindKeyEvents(True)
         self.Destroy()
