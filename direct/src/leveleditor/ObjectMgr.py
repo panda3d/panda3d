@@ -32,7 +32,10 @@ class ObjectMgr:
         base.direct.deselectAllCB()
 
         for id in self.objects.keys():
-            self.objects[id][OG.OBJ_NP].removeNode()
+            try:
+                self.objects[id][OG.OBJ_NP].removeNode()
+            except:
+                pass
             del self.objects[id]
 
         for np in self.npIndex.keys():
