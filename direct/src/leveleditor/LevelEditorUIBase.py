@@ -130,8 +130,18 @@ class LevelEditorUIBase(WxAppShell):
         if not kw.get('size'):
             kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
         WxAppShell.__init__(self, *args, **kw)        
-        self.wxApp.Bind(wx.EVT_CHAR, self.onKeyEvent)
+        self.bindKeyEvents(True)
         self.initialize()
+
+    def bindKeyEvents(self, toBind=True):
+        if toBind:
+            self.wxApp.Bind(wx.EVT_CHAR, self.onKeyEvent)
+            self.wxApp.Bind(wx.EVT_KEY_DOWN, self.onKeyDownEvent)
+            self.wxApp.Bind(wx.EVT_KEY_UP, self.onKeyUpEvent)
+        else:
+            self.wxApp.Unbind(wx.EVT_CHAR)
+            self.wxApp.Unbind(wx.EVT_KEY_DOWN)
+            self.wxApp.Unbind(wx.EVT_KEY_UP)
 
     def createMenu(self):
         menuItem = self.menuFile.Insert(0, ID_NEW, self.MENU_TEXTS[ID_NEW][0])
@@ -264,8 +274,29 @@ class LevelEditorUIBase(WxAppShell):
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
 
         self.showGridMenuItem.Check(True)
+
+    def onKeyDownEvent(self, evt):
+        if evt.GetKeyCode() == wx.WXK_ALT:
+            base.direct.fAlt = 1
+        elif evt.GetKeyCode() == wx.WXK_CONTROL:
+            base.direct.fControl = 1
+        elif evt.GetKeyCode() == wx.WXK_SHIFT:
+            base.direct.fShift = 1
+        else:
+            evt.Skip()
+
+    def onKeyUpEvent(self, evt):
+        if evt.GetKeyCode() == wx.WXK_ALT:
+            base.direct.fAlt = 0
+        elif evt.GetKeyCode() == wx.WXK_CONTROL:
+            base.direct.fControl = 0
+        elif evt.GetKeyCode() == wx.WXK_SHIFT:
+            base.direct.fShift = 0
+        else:
+            evt.Skip()
         
     def onKeyEvent(self, evt):
+        input = ''
         if evt.GetKeyCode() in range(97, 123): # for keys from a to z
             if evt.GetModifiers() == 4: # when shift is pressed while caps lock is on
                 input = 'shift-%s'%chr(evt.GetKeyCode())
@@ -287,7 +318,7 @@ class LevelEditorUIBase(WxAppShell):
                 input = 'shift-%s'%chr(evt.GetKeyCode())
             elif evt.GetModifiers() == 2:
                 input = 'control-%s'%chr(evt.GetKeyCode())
-            else:
+            elif evt.GetKeyCode() < 256:
                 input = chr(evt.GetKeyCode())
         if input in base.direct.hotKeyMap.keys():
             keyDesc = base.direct.hotKeyMap[input]

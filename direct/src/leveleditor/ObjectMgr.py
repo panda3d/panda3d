@@ -200,11 +200,11 @@ class ObjectMgr:
         
     def onEnterObjectPropUI(self, event):
         taskMgr.remove('_le_updateObjectUITask')        
-        self.editor.ui.wxApp.Unbind(wx.EVT_CHAR) 
+        self.editor.ui.bindKeyEvents(False)
 
     def onLeaveObjectPropUI(self, event):
         self.spawnUpdateObjectUITask()
-        self.editor.ui.wxApp.Bind(wx.EVT_CHAR, self.editor.ui.onKeyEvent)
+        self.editor.ui.bindKeyEvents(True)
 
     def spawnUpdateObjectUITask(self):
         if self.currNodePath is None:
