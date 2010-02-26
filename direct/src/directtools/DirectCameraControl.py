@@ -100,6 +100,7 @@ class DirectCameraControl(DirectObject):
         # NIK - flag to determine whether to use maya camera controls
         self.useMayaCamControls = 0
         self.altDown = 0
+        self.perspCollPlane = None # [gjeon] used for new LE
 
     def toggleMarkerVis(self):
 ##        if base.direct.cameraControl.coaMarker.isHidden():
@@ -368,6 +369,21 @@ class DirectCameraControl(DirectObject):
     def spawnMouseRotateTask(self):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
+        if self.perspCollPlane:
+            iRay = SelectionRay(base.direct.camera)
+            iRay.collider.setFromLens(base.direct.camNode, 0.0, 0.0)
+            iRay.collideWithBitMask(1)
+            iRay.ct.traverse(self.perspCollPlane)
+            if iRay.getNumEntries() > 0:
+                entry = iRay.getEntry(0)
+                hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+                # create a temp nodePath to get the position
+                np = NodePath('temp')
+                np.setPos(base.direct.camera, hitPt)
+                self.coaMarkerPos = np.getPos()
+                np.remove()
+                self.coaMarker.setPos(self.coaMarkerPos)
+
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
         self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
