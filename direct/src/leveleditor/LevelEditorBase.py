@@ -248,7 +248,9 @@ class LevelEditorBase(DirectObject):
             reply = wx.MessageBox("Do you want to save current scene?", "Save?",
                                wx.YES_NO | wx.ICON_QUESTION)
             if reply == wx.YES:
-                self.ui.onSave()
+                result = self.ui.onSave()
+                if result == False:
+                    return
 
         base.direct.deselectAll()
         self.objectMgr.reset()

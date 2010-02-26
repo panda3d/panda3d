@@ -363,15 +363,19 @@ class LevelEditorUIBase(WxAppShell):
 
     def onSave(self, evt=None):
         if self.editor.currentFile is None:
-            self.onSaveAs(evt)
+            return self.onSaveAs(evt)
         else:
             self.editor.save()
 
     def onSaveAs(self, evt):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.SAVE)
+        result = True
         if dialog.ShowModal() == wx.ID_OK:
             self.editor.saveAs(dialog.GetPath())
+        else:
+            result = False
         dialog.Destroy()
+        return result
 
     def onDuplicate(self, evt):
         self.editor.objectMgr.duplicateSelected()
