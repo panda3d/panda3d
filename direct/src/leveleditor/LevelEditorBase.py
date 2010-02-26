@@ -254,6 +254,7 @@ class LevelEditorBase(DirectObject):
         self.objectMgr.reset()
         self.actionMgr.reset()
         self.ui.perspView.camera.setPos(-19, -19, 19)
+        self.ui.perspView.camera.lookAt(Point3(0, 0, 0))
         self.ui.leftView.camera.setPos(600, 0, 0)
         self.ui.frontView.camera.setPos(0, -600, 0)
         self.ui.topView.camera.setPos(0, 0, 600)
