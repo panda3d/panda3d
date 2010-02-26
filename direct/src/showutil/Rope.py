@@ -52,8 +52,8 @@ class Rope(NodePath):
           'thickness' : the thickness at the vertex, default 1
 
         In order to enable the per-vertex color or thickness, you must
-        call rope.ropeNode.setPerVertexColor() or
-        rope.ropeNode.setPerVertexThickness().
+        call rope.ropeNode.setUseVertexColor(1) or
+        rope.ropeNode.setUseVertexThickness(1).
 
         knots is optional.  If specified, it should be a list of
         floats, and should be of length len(verts) + order.  If it
