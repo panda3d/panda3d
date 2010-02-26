@@ -138,12 +138,11 @@ class ActionDeleteObj(ActionBase):
             print "Undo: deleteObject"
             def restoreObject(uid, parentNP):
                 obj = self.objInfos[uid]
-                objNP = obj[OG.OBJ_NP]
                 objDef = obj[OG.OBJ_DEF]
                 objModel = obj[OG.OBJ_MODEL]
                 objProp = obj[OG.OBJ_PROP]
                 objRGBA = obj[OG.OBJ_RGBA]
-                self.editor.objectMgr.addNewObject(objDef.name,
+                objNP = self.editor.objectMgr.addNewObject(objDef.name,
                                                    uid,
                                                    obj[OG.OBJ_MODEL],
                                                    parentNP)
