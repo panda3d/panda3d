@@ -1359,6 +1359,10 @@ def SdkLocatePython(force_use_sys_executable = False):
             SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
             SDK["PYTHONEXEC"] = sys.executable
+        elif (sys.platform == "darwin"):
+            SDK["PYTHON"] = sysconfig.get_python_inc()
+            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+            SDK["PYTHONEXEC"] = sys.executable
         else:
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
