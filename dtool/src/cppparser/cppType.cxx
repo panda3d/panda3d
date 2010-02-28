@@ -34,6 +34,10 @@ CPPType(const CPPFile &file) :
   CPPDeclaration(file)
 {
   _declaration = (CPPTypeDeclaration *)NULL;
+
+  // This is set true by interrogate when the "forcetype" keyword is
+  // used.
+  _forcetype = false;
 }
 
 ////////////////////////////////////////////////////////////////////

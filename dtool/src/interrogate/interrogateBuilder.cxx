@@ -145,6 +145,7 @@ do_command(const string &command, const string &params) {
       nout << "Unknown type: forcetype " << params << "\n";
     } else {
       type = type->resolve_type(&parser, &parser);
+      type->_forcetype = true;
       _forcetype.insert(type->get_local_name(&parser));
     }
 

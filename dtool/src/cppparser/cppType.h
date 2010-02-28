@@ -77,6 +77,7 @@ public:
   static string get_preferred_name_for(const CPPType *type);
 
   CPPTypeDeclaration *_declaration;
+  bool _forcetype;
 
 protected:
   typedef set<CPPType *, CPPTypeCompare> Types;
