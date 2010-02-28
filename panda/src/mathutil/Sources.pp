@@ -32,6 +32,7 @@
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
     plane.h plane_src.I plane_src.cxx plane_src.h \
+    pta_LMatrix4f.h pta_LVecBase3f.h \
     randomizer.h randomizer.I \
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
@@ -54,6 +55,7 @@
     perlinNoise2.cxx \
     perlinNoise3.cxx \
     plane.cxx \
+    pta_LMatrix4f.cxx pta_LVecBase3f.cxx \
     randomizer.cxx \
     rotate_to.cxx \
     stackedPerlinNoise2.cxx \

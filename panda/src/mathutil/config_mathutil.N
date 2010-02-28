@@ -1,0 +1,27 @@
+forcetype Frustumf
+renametype Frustumf Frustumf
+forcetype Frustumd
+renametype Frustumd Frustumd
+
+noinclude frustum_src.h
+noinclude look_at_src.h
+forcetype Planef
+renametype Planef Planef
+forcetype Planed
+renametype Planed Planed
+
+noinclude plane_src.h
+
+forcetype PointerToBase<ReferenceCountedVector<LMatrix4f> >
+forcetype PointerToArrayBase<LMatrix4f>
+forcetype PointerToArray<LMatrix4f>
+forcetype ConstPointerToArray<LMatrix4f>
+renametype PointerToArray<LMatrix4f> PTALMatrix4f
+renametype ConstPointerToArray<LMatrix4f> CPTALMatrix4f
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase3f> >
+forcetype PointerToArrayBase<LVecBase3f>
+forcetype PointerToArray<LVecBase3f>
+forcetype ConstPointerToArray<LVecBase3f>
+renametype PointerToArray<LVecBase3f> PTALVecBase3f
+renametype ConstPointerToArray<LVecBase3f> CPTALVecBase3f

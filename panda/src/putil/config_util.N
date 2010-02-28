@@ -14,3 +14,17 @@ forcetype DoubleBitMaskNative
 renametype DoubleBitMaskNative DoubleBitMaskNative
 forcetype QuadBitMaskNative
 renametype QuadBitMaskNative QuadBitMaskNative
+
+forcetype PointerToBase<ReferenceCountedVector<double> >
+forcetype PointerToArrayBase<double>
+forcetype PointerToArray<double>
+forcetype ConstPointerToArray<double>
+renametype PointerToArray<double> PTADouble
+renametype ConstPointerToArray<double> CPTADouble
+
+forcetype PointerToBase<ReferenceCountedVector<ushort> >
+forcetype PointerToArrayBase<ushort>
+forcetype PointerToArray<ushort>
+forcetype ConstPointerToArray<ushort>
+renametype PointerToArray<ushort> PTAUshort
+renametype ConstPointerToArray<ushort> CPTAUshort

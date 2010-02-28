@@ -6,6 +6,8 @@
 #include "perlinNoise2.cxx"
 #include "perlinNoise3.cxx"
 #include "plane.cxx"
+#include "pta_LMatrix4f.cxx"
+#include "pta_LVecBase3f.cxx"
 #include "randomizer.cxx"
 #include "rotate_to.cxx"
 #include "stackedPerlinNoise2.cxx"

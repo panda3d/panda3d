@@ -1,5 +1,5 @@
-// Filename: pta_double.h
-// Created by:  drose (10May00)
+// Filename: pta_LVecBase3f.h
+// Created by:  drose (27Feb10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,30 +12,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PTA_DOUBLE_H
-#define PTA_DOUBLE_H
+#ifndef PTA_LVECBASE3F_H
+#define PTA_LVECBASE3F_H
 
 #include "pandabase.h"
-
+#include "luse.h"
 #include "pointerToArray.h"
-#include "vector_double.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PTA_double
-// Description : A pta of doubles.  This class is defined once here,
+//       Class : PTA_LVecBase3f
+// Description : A pta of LVecBase3fs.  This class is defined once here,
 //               and exported to PANDA.DLL; other packages that want
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToBase<ReferenceCountedVector<double> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArrayBase<double>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArray<double>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ConstPointerToArray<double>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3f> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LVecBase3f>)
 
-typedef PointerToArray<double> PTA_double;
-typedef ConstPointerToArray<double> CPTA_double;
+typedef PointerToArray<LVecBase3f> PTA_LVecBase3f;
+typedef ConstPointerToArray<LVecBase3f> CPTA_LVecBase3f;
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

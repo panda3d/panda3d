@@ -1,6 +1,0 @@
-forcetype Planef
-renametype Planef Planef
-forcetype Planed
-renametype Planed Planed
-
-noinclude plane_src.h
