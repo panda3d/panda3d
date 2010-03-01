@@ -69,6 +69,7 @@ public:
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);
 
+  void mark_used();
   void uninstall();
 
   TiXmlElement *make_xml();
@@ -290,6 +291,7 @@ private:
 
   size_t _unpack_size;
   Extracts _extracts;
+  bool _updated;
 
   static const double _download_factor;
   static const double _uncompress_factor;

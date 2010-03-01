@@ -1473,8 +1473,8 @@ void P3DInstance::
 uninstall_host() {
   uninstall_packages();
 
+  // Collect the set of hosts referenced by this instance.
   set<P3DHost *> hosts;
-
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
@@ -1484,6 +1484,7 @@ uninstall_host() {
     }
   }
 
+  // Uninstall all of them.
   set<P3DHost *>::iterator hi;
   for (hi = hosts.begin(); hi != hosts.end(); ++hi) {
     P3DHost *host = (*hi);
@@ -3098,6 +3099,7 @@ report_package_done(P3DPackage *package, bool success) {
       nout << "No <config> entry in image package\n";
       return;
     }
+    package->mark_used();
 
     for (int i = 0; i < (int)IT_none; ++i) {
       if (_image_files[i]._use_standard_image) {
@@ -3129,6 +3131,8 @@ report_package_done(P3DPackage *package, bool success) {
     // failing to download it) means we can finish checking the
     // authenticity of the p3d file.
 
+    package->mark_used();
+
     // Take down the download progress.
     if (_splash_window != NULL) {
       _splash_window->set_install_progress(0.0, true, 0);
@@ -3144,6 +3148,8 @@ report_package_done(P3DPackage *package, bool success) {
   if (package == _p3dcert_package) {
     // Another special case: successfully downloading p3dcert means we
     // can enable the auth button.
+
+    package->mark_used();
 
     // Take down the download progress.
     if (_splash_window != NULL) {

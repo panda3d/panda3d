@@ -13,6 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "find_root_dir.h"
+#include "mkdir_complete.h"
+#include "get_tinyxml.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -37,27 +39,6 @@ DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: check_root_dir
-//  Description: Tests the proposed root dir string for validity.
-//               Returns true if Panda3D can be successfully created
-//               within the dir, false otherwise.
-////////////////////////////////////////////////////////////////////
-static bool
-check_root_dir(const string &root) {
-  // Attempt to make it first, if possible.
-  CreateDirectory(root.c_str(), NULL);
-  
-  bool isdir = false;
-  DWORD results = GetFileAttributes(root.c_str());
-  if (results != -1) {
-    isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
-  }
-  return isdir;
-}
-#endif // _WIN32
-
-#ifdef _WIN32
-////////////////////////////////////////////////////////////////////
 //     Function: get_csidl_dir
 //  Description: A wrapper around SHGetSpecialFolderPath(), to return
 //               the Panda3D directory under the indicated CSIDL
@@ -71,7 +52,7 @@ get_csidl_dir(int csidl) {
     string root = buffer;
     root += string("/Panda3D");
     
-    if (check_root_dir(root)) {
+    if (mkdir_complete(root, cerr)) {
       return root;
     }
   }
@@ -109,12 +90,12 @@ wstr_to_string(string &result, const LPWSTR wstr) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir
-//  Description: Returns the path to the installable Panda3D directory
-//               on the user's machine.
+//     Function: find_root_dir_default
+//  Description: Returns the path to the system-default for the root
+//               directory.  This is where we look first.
 ////////////////////////////////////////////////////////////////////
-string
-find_root_dir() {
+static string
+find_root_dir_default() {
 #ifdef _WIN32
   // First, use IEIsProtectedModeProcess() to determine if we are
   // running in IE's "protected mode" under Vista.
@@ -165,7 +146,7 @@ find_root_dir() {
               CoTaskMemFree(cache_path);
               
               root += string("/Panda3D");
-              if (check_root_dir(root)) {
+              if (mkdir_complete(root, cerr)) {
                 FreeLibrary(shell32);
                 FreeLibrary(ieframe);
                 return root;
@@ -199,7 +180,7 @@ find_root_dir() {
           } else {
             CoTaskMemFree(cache_path);
             root += string("/Panda3D");
-            if (check_root_dir(root)) {
+            if (mkdir_complete(root, cerr)) {
               FreeLibrary(ieframe);
               return root;
             }
@@ -236,7 +217,7 @@ find_root_dir() {
   if (GetTempPath(buffer_size, buffer) != 0) {
     root = buffer;
     root += string("Panda3D");
-    if (check_root_dir(root)) {
+    if (mkdir_complete(root, cerr)) {
       return root;
     }
   }
@@ -273,3 +254,42 @@ find_root_dir() {
   return ".";
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_root_dir
+//  Description: Returns the path to the installable Panda3D directory
+//               on the user's machine.
+////////////////////////////////////////////////////////////////////
+string
+find_root_dir() {
+  string root = find_root_dir_default();
+
+  // Now look for a config.xml file in that directory, which might
+  // redirect us elsewhere.
+  string config_filename = root + "/config.xml";
+  TiXmlDocument doc(config_filename);
+  if (!doc.LoadFile()) {
+    // No config.xml found, or not valid xml.
+    return root;
+  }
+
+  TiXmlElement *xconfig = doc.FirstChildElement("config");
+  if (xconfig == NULL) {
+    // No <config> element within config.xml.
+    return root;
+  }
+
+  const char *new_root = xconfig->Attribute("root_dir");
+  if (new_root == NULL || *new_root == '\0') {
+    // No root_dir specified.
+    return root;
+  }
+
+  if (!mkdir_complete(new_root, cerr)) {
+    // The specified root_dir wasn't valid.
+    return root;
+  }
+
+  // We've been redirected to another location.  Respect that.
+  return new_root;
+}

@@ -615,6 +615,21 @@ get_host(const string &host_url) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::forget_host
+//       Access: Public
+//  Description: Removes the indicated host from the cache.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+forget_host(P3DHost *host) {
+  const string &host_url = host->get_host_url();
+  
+  // Hmm, this is a memory leak.  But we allow it to remain, since
+  // it's an unusual circumstance (uninstalling), and it's safer to
+  // leak than to risk a floating pointer.
+  _hosts.erase(host_url);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_unique_id
 //       Access: Public
 //  Description: Returns a number used to uniquify different
@@ -1395,8 +1410,9 @@ nt_thread_run() {
         P3DInstance *inst = (*ni);
         assert(inst != NULL);
         P3D_request_ready_func *func = inst->get_request_ready_func();
-        assert(func != NULL);
-        (*func)(inst);
+        if (func != NULL) {
+          (*func)(inst);
+        }
       }
       _notify_ready.acquire();
     }

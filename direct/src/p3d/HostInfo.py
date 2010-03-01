@@ -4,6 +4,7 @@ from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import time
+import shutil
 
 class HostInfo:
     """ This class represents a particular download host serving up
@@ -35,8 +36,8 @@ class HostInfo:
         the default is perPlatform = True. """
         
         assert appRunner or rootDir or hostDir
-        
-        self.hostUrl = hostUrl
+
+        self.__setHostUrl(hostUrl)
         self.appRunner = appRunner
         self.rootDir = rootDir
         if rootDir is None and appRunner:
@@ -47,18 +48,6 @@ class HostInfo:
         self.perPlatform = perPlatform
         if perPlatform is None:
             self.perPlatform = asMirror
-
-        # hostUrlPrefix is the host URL, but it is guaranteed to end
-        # with a slash.
-        self.hostUrlPrefix = hostUrl
-        if self.hostUrlPrefix[-1] != '/':
-            self.hostUrlPrefix += '/'
-
-        # downloadUrlPrefix is the URL prefix that should be used for
-        # everything other than the contents.xml file.  It might be
-        # the same as hostUrlPrefix, but in the case of an
-        # https-protected hostUrl, it will be the cleartext channel.
-        self.downloadUrlPrefix = self.hostUrlPrefix
 
         # Initially false, this is set true when the contents file is
         # successfully read.
@@ -81,6 +70,27 @@ class HostInfo:
         # This is a dictionary of packages by (name, version).  It
         # will be filled in when the contents file is read.
         self.packages = {}
+
+    def __setHostUrl(self, hostUrl):
+        """ Assigns self.hostUrl, and related values. """
+        self.hostUrl = hostUrl
+
+        if self.hostUrl is None:
+            # A special case: the URL will be set later.
+            self.hostUrlPrefix = None
+            self.downloadUrlPrefix = None
+        else:
+            # hostUrlPrefix is the host URL, but it is guaranteed to end
+            # with a slash.
+            self.hostUrlPrefix = hostUrl
+            if self.hostUrlPrefix[-1] != '/':
+                self.hostUrlPrefix += '/'
+
+            # downloadUrlPrefix is the URL prefix that should be used for
+            # everything other than the contents.xml file.  It might be
+            # the same as hostUrlPrefix, but in the case of an
+            # https-protected hostUrl, it will be the cleartext channel.
+            self.downloadUrlPrefix = self.hostUrlPrefix
 
     def downloadContentsFile(self, http, redownload = False):
         """ Downloads the contents.xml file for this particular host,
@@ -213,10 +223,14 @@ class HostInfo:
             return False
 
         # Look for our own entry in the hosts table.
-        self.__findHostXml(xcontents)
+        if self.hostUrl:
+            self.__findHostXml(xcontents)
+        else:
+            assert self.hostDir
+            self.__findHostXmlForHostDir(xcontents)
 
         if not self.hostDir:
-            self.__determineHostDir(None)
+            self.hostDir = self.__determineHostDir(None, self.hostUrl)
 
         # Get the list of packages available for download and/or import.
         xpackage = xcontents.FirstChildElement('package')
@@ -275,6 +289,36 @@ class HostInfo:
             
             xhost = xhost.NextSiblingElement('host')
 
+    def __findHostXmlForHostDir(self, xcontents):
+        """ Looks for the <host> or <alt_host> entry in the
+        contents.xml that corresponds to the host dir that we read the
+        contents.xml from.  This is used when reading a contents.xml
+        file found on disk, as opposed to downloading it from a
+        site. """
+        
+        xhost = xcontents.FirstChildElement('host')
+        while xhost:
+            url = xhost.Attribute('url')
+            hostDirBasename = xhost.Attribute('host_dir')
+            hostDir = self.__determineHostDir(hostDirBasename, url)
+            if hostDir == self.hostDir:
+                self.__setHostUrl(url)
+                self.readHostXml(xhost)
+                return
+
+            xalthost = xhost.FirstChildElement('alt_host')
+            while xalthost:
+                url = xalthost.Attribute('url')
+                hostDirBasename = xalthost.Attribute('host_dir')
+                hostDir = self.__determineHostDir(hostDirBasename, url)
+                if hostDir == self.hostDir:
+                    self.__setHostUrl(url)
+                    self.readHostXml(xalthost)
+                    return
+                xalthost = xalthost.NextSiblingElement('alt_host')
+            
+            xhost = xhost.NextSiblingElement('host')
+
     def readHostXml(self, xhost):
         """ Reads a <host> or <alt_host> entry and applies the data to
         this object. """
@@ -284,7 +328,8 @@ class HostInfo:
             self.descriptiveName = descriptiveName
 
         hostDirBasename = xhost.Attribute('host_dir')
-        self.__determineHostDir(hostDirBasename)
+        if not self.hostDir:
+            self.hostDir = self.__determineHostDir(hostDirBasename, self.hostUrl)
 
         # Get the "download" URL, which is the source from which we
         # download everything other than the contents.xml file.
@@ -381,29 +426,85 @@ class HostInfo:
 
         return packages
 
-    def __determineHostDir(self, hostDirBasename):
+    def getAllPackages(self):
+        """ Returns a list of all available packages provided by this
+        host. """
+
+        result = []
+
+        items = self.packages.items()
+        items.sort()
+        for key, platforms in items:
+            if self.perPlatform:
+                # If we maintain a different answer per platform,
+                # return all of them.
+                pitems = platforms.items()
+                pitems.sort()
+                for pkey, package in pitems:
+                    result.append(package)
+            else:
+                # If we maintain a a host for the current platform
+                # only (e.g. a client copy), then return only the
+                # current platform, or no particular platform.
+                package = platforms.get(PandaSystem.getPlatform(), None)
+                if not package:
+                    package = platforms.get(None, None)
+
+                if package:
+                    result.append(package)
+
+        return result
+
+    def deletePackages(self, packages):
+        """ Removes all of the indicated packages from the disk,
+        uninstalling them and deleting all of their files.  The
+        packages parameter must be a list of one or more PackageInfo
+        objects, for instance as returned by getPackage().  Returns
+        the list of packages that were NOT found. """
+
+        packages = packages[:]
+        
+        for key, platforms in self.packages.items():
+            for platform, package in platforms.items():
+                if package in packages:
+                    self.__deletePackageFiles(package)
+                    del platforms[platform]
+                    packages.remove(package)
+
+            if not platforms:
+                # If we've removed all the platforms for a given
+                # package, remove the key from the toplevel map.
+                del self.packages[key]
+
+        return packages
+
+    def __deletePackageFiles(self, package):
+        """ Called by deletePackage(), this actually removes the files
+        for the indicated package. """
+
+        self.notify.info("Deleting package %s: %s" % (package.packageName, package.getPackageDir()))
+        shutil.rmtree(package.getPackageDir().toOsSpecific(), True)
+
+    def __determineHostDir(self, hostDirBasename, hostUrl):
         """ Hashes the host URL into a (mostly) unique directory
         string, which will be the root of the host's install tree.
-        Stores the resulting path, as a Filename, in self.hostDir.
+        Returns the resulting path, as a Filename.
 
         This code is duplicated in C++, in
         P3DHost::determine_host_dir(). """
 
-        if self.hostDir:
-            return
-
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
-            self.hostDir = self.rootDir + '/hosts'
+            hostDir = self.rootDir.cStr() + '/hosts'
             for component in hostDirBasename.split('/'):
                 if component:
                     if component[0] == '.':
                         # Forbid ".foo" or "..".
                         component = 'x' + component
-                    self.hostDir += '/'
-                    self.hostDir += component
-            return
+                    hostDir += '/'
+                    hostDir += component
+            return Filename(hostDir)
 
         hostDir = 'hosts/'
 
@@ -414,22 +515,22 @@ class HostInfo:
         # We could use URLSpec, but we do it by hand instead, to make
         # it more likely that our hash code will exactly match the
         # similar logic in P3DHost.
-        p = self.hostUrl.find('://')
+        p = hostUrl.find('://')
         if p != -1:
             start = p + 3
-            end = self.hostUrl.find('/', start)
+            end = hostUrl.find('/', start)
             # Now start .. end is something like "username@host:port".
 
-            at = self.hostUrl.find('@', start)
+            at = hostUrl.find('@', start)
             if at != -1 and at < end:
                 start = at + 1
 
-            colon = self.hostUrl.find(':', start)
+            colon = hostUrl.find(':', start)
             if colon != -1 and colon < end:
                 end = colon
 
             # Now start .. end is just the hostname.
-            hostname = self.hostUrl[start : end]
+            hostname = hostUrl[start : end]
 
         # Now build a hash string of the whole URL.  We'll use MD5 to
         # get a pretty good hash, with a minimum chance of collision.
@@ -450,7 +551,8 @@ class HostInfo:
             keepHash = keepHash / 2;
 
         md = HashVal()
-        md.hashString(self.hostUrl)
+        md.hashString(hostUrl)
         hostDir += md.asHex()[:keepHash * 2]
 
-        self.hostDir = Filename(self.rootDir, hostDir)
+        hostDir = Filename(self.rootDir, hostDir)
+        return hostDir

@@ -108,6 +108,7 @@ public:
   void wait_request(double timeout);
 
   P3DHost *get_host(const string &host_url);
+  void forget_host(P3DHost *host);
 
   inline int get_num_instances() const;
 

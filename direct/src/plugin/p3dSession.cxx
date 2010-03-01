@@ -958,6 +958,8 @@ start_p3dpython(P3DInstance *inst) {
     _env += string("_ROOT=");
     _env += package->get_package_dir();
     _env += '\0';
+
+    package->mark_used();
   }
 
   // Check for a few tokens that have special meaning at this level.

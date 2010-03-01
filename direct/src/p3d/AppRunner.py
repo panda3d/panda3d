@@ -12,6 +12,7 @@ runp3d.py for a command-line tool to invoke this module.
 import sys
 import os
 import types
+import shutil
 import __builtin__
 
 if 'VFSImporter' in sys.modules:
@@ -33,7 +34,7 @@ else:
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, initAppForGui
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, initAppForGui, TiXmlDocument
 from pandac import PandaModules
 from direct.stdpy import file, glob
 from direct.task.TaskManagerGlobal import taskMgr
@@ -41,6 +42,9 @@ from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import AppRunnerGlobal
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.p3d.HostInfo import HostInfo
+from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
+from direct.p3d.InstalledHostData import InstalledHostData
+from direct.p3d.InstalledPackageData import InstalledPackageData
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
 from direct.p3d.JavaScript import UndefinedObject, Undefined, ConcreteStruct, BrowserObject
@@ -66,6 +70,11 @@ class AppRunner(DirectObject):
     development purposes.  """
 
     notify = directNotify.newCategory("AppRunner")
+
+    ConfigBasename = 'config.xml'
+
+    # Default values for parameters that are absent from the config file:
+    maxDiskUsage = 1073741824  # 1 GB
     
     def __init__(self):
         DirectObject.__init__(self)
@@ -344,6 +353,63 @@ class AppRunner(DirectObject):
             self.hosts[hostUrl] = host
         return host
 
+    def getHostWithDir(self, hostDir):
+        """ Returns the HostInfo object that corresponds to the
+        indicated on-disk host directory.  This would be used when
+        reading a host directory from disk, instead of downloading it
+        from a server.  Supply the full path to the host directory, as
+        a Filename.  Returns None if the contents.xml in the indicated
+        host directory cannot be read or doesn't seem consistent. """
+
+        host = HostInfo(None, hostDir = hostDir, appRunner = self)
+        if not host.readContentsFile():
+            # Couldn't read the contents.xml file
+            return None
+
+        if not host.hostUrl:
+            # The contents.xml file there didn't seem to indicate the
+            # same host directory.
+            return None
+
+        host2 = self.hosts.get(host.hostUrl)
+        if host2 is None:
+            # No such host already; store this one.
+            self.hosts[host.hostUrl] = host
+            return host
+
+        if host2.hostDir != host.hostDir:
+            # Hmm, we already have that host somewhere else.
+            return None
+
+        # We already have that host, and it's consistent.
+        return host2
+
+    def deletePackages(self, packages):
+        """ Removes all of the indicated packages from the disk,
+        uninstalling them and deleting all of their files.  The
+        packages parameter must be a list of one or more PackageInfo
+        objects, for instance as returned by getHost().getPackage().
+        Returns the list of packages that were NOT found. """
+
+        for hostUrl, host in self.hosts.items():
+            packages = host.deletePackages(packages)
+
+            if not host.packages:
+                # If that's all of the packages for this host, delete
+                # the host directory too.
+                del self.hosts[hostUrl]
+                self.__deleteHostFiles(host)
+                
+        return packages
+
+    def __deleteHostFiles(self, host):
+        """ Called by deletePackages(), this removes all the files for
+        the indicated host (for which we have presumably already
+        removed all of the packages). """
+
+        self.notify.info("Deleting host %s: %s" % (host.hostUrl, host.hostDir))
+        shutil.rmtree(host.hostDir.toOsSpecific(), True)
+
     def freshenFile(self, host, fileSpec, localPathname):
         """ Ensures that the localPathname is the most current version
         of the file defined by fileSpec, as offered by host.  If not,
@@ -391,6 +457,114 @@ class AppRunner(DirectObject):
             return False
 
         return True
+
+    def scanInstalledPackages(self):
+        """ Scans the hosts and packages already installed locally on
+        the system.  Returns a list of InstalledHostData objects, each
+        of which contains a list of InstalledPackageData objects. """
+
+        result = []
+        hostsFilename = Filename(self.rootDir, 'hosts')
+        hostsDir = ScanDirectoryNode(hostsFilename)
+        for dirnode in hostsDir.nested:
+            host = self.getHostWithDir(dirnode.pathname)
+            hostData = InstalledHostData(host, dirnode)
+
+            if host:
+                for package in host.getAllPackages():
+                    packageDir = package.getPackageDir()
+                    if not packageDir.exists():
+                        continue
+
+                    subdir = dirnode.extractSubdir(packageDir)
+                    if not subdir:
+                        # This package, while defined by the host, isn't installed
+                        # locally; ignore it.
+                        continue
+
+                    packageData = InstalledPackageData(package, subdir)
+                    hostData.packages.append(packageData)
+
+            # Now that we've examined all of the packages for the host,
+            # anything left over is junk.
+            for subdir in dirnode.nested:
+                packageData = InstalledPackageData(None, subdir)
+                hostData.packages.append(packageData)
+
+            result.append(hostData)
+
+        return result
+
+    def readConfigXml(self):
+        """ Reads the config.xml file that may be present in the root
+        directory. """
+
+        if not hasattr(PandaModules, 'TiXmlDocument'):
+            return
+
+        filename = Filename(self.rootDir, self.ConfigBasename)
+        doc = TiXmlDocument(filename.toOsSpecific())
+        if not doc.LoadFile():
+            return
+
+        xconfig = doc.FirstChildElement('config')
+        if xconfig:
+            maxDiskUsage = xconfig.Attribute('max_disk_usage')
+            try:
+                self.maxDiskUsage = int(maxDiskUsage or '')
+            except ValueError:
+                pass
+            
+
+    def checkDiskUsage(self):
+        """ Checks the total disk space used by all packages, and
+        removes old packages if necessary. """
+
+        totalSize = 0
+        hosts = self.scanInstalledPackages()
+        for hostData in hosts:
+            for packageData in hostData.packages:
+                totalSize += packageData.totalSize
+        self.notify.info("Total Panda3D disk space used: %s MB" % (
+            (totalSize + 524288) / 1048576))
+        self.notify.info("Configured max usage is: %s MB" % (
+            (self.maxDiskUsage + 524288) / 1048576))
+        if totalSize <= self.maxDiskUsage:
+            # Still within budget; no need to clean up anything.
+            return
+
+        # OK, we're over budget.  Now we have to remove old packages.
+        usedPackages = []
+        for hostData in hosts:
+            for packageData in hostData.packages:
+                if packageData.package and packageData.package.installed:
+                    # Don't uninstall any packages we're currently using.
+                    continue
+                
+                usedPackages.append((packageData.lastUse, packageData))
+
+        # Sort the packages into oldest-first order.
+        usedPackages.sort()
+
+        # Delete packages until we free up enough space.
+        packages = []
+        for lastUse, packageData in usedPackages:
+            if totalSize <= self.maxDiskUsage:
+                break
+            totalSize -= packageData.totalSize
+
+            if packageData.package:
+                packages.append(packageData.package)
+            else:
+                # If it's an unknown package, just delete it directly.
+                print "Deleting unknown package %s" % (packageData.pathname)
+                shutil.rmtree(packageData.pathname.toOsSpecific(), True)
+
+        packages = self.deletePackages(packages)
+        if packages:
+            print "Unable to delete %s packages" % (len(packages))
+        
+        return
 
     def stop(self):
         """ This method can be called by JavaScript to stop the
@@ -472,6 +646,8 @@ class AppRunner(DirectObject):
             os.path.getmtime = file.getmtime
             os.path.getsize = file.getsize
             sys.modules['glob'] = glob
+
+        self.checkDiskUsage()
 
     def __startIfReady(self):
         """ Called internally to start the application. """
@@ -556,6 +732,10 @@ class AppRunner(DirectObject):
 
         # The "super mirror" URL, generally used only by panda3d.exe.
         self.superMirrorUrl = superMirrorUrl
+
+        # Now that we have rootDir, we can read the config file.
+        self.readConfigXml()
+        
 
     def addPackageInfo(self, name, platform, version, hostUrl, hostDir = None):
         """ Called by the browser for each one of the "required"

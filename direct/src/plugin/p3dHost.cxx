@@ -395,6 +395,26 @@ get_package_desc_file(FileSpec &desc_file,              // out
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::forget_package
+//       Access: Public
+//  Description: Removes the indicated package from the cache of
+//               packages known by this host.  This is invoked from
+//               the Python side by AppRunner.deletePackages(), so
+//               that we remove the package before deleting its files.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+forget_package(P3DPackage *package, const string &alt_host) {
+  string key = package->get_package_name() + "_" + package->get_package_version();
+
+  PackageMap &package_map = _packages[alt_host];
+
+  // Hmm, this is a memory leak.  But we allow it to remain, since
+  // it's an unusual circumstance (uninstalling), and it's safer to
+  // leak than to risk a floating pointer.
+  package_map.erase(key);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::migrate_package
 //       Access: Public
 //  Description: This is called by P3DPackage when it migrates from
@@ -494,6 +514,7 @@ uninstall() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->delete_directory_recursively(_host_dir);
+  inst_mgr->forget_host(this);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
 from pandac import PandaModules
 from direct.p3d.FileSpec import FileSpec
+from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
 from direct.showbase import VFSImporter
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
@@ -8,6 +9,7 @@ import os
 import sys
 import random
 import time
+import copy
 
 class PackageInfo:
 
@@ -31,6 +33,8 @@ class PackageInfo:
     stepFailed = 2
     restartDownload = 3
     stepContinue = 4
+
+    UsageBasename = 'usage.xml'
 
     class InstallStep:
         """ This class is one step of the installPlan list; it
@@ -116,6 +120,11 @@ class PackageInfo:
         # This is set true when the package has been "installed",
         # meaning it's been added to the paths and all.
         self.installed = False
+
+        # This is set true when the package has been updated in this
+        # session, but not yet written to usage.xml.
+        self.updated = False
+        self.diskSpace = None
 
     def getPackageDir(self):
         """ Returns the directory in which this package is installed.
@@ -493,6 +502,7 @@ class PackageInfo:
         contents = self.__scanDirectoryRecursively(self.getPackageDir()) 
         self.__removeFileFromList(contents, self.descFileBasename)
         self.__removeFileFromList(contents, self.compressedArchive.filename)
+        self.__removeFileFromList(contents, self.UsageBasename)
         if not self.asMirror:
             self.__removeFileFromList(contents, self.uncompressedArchive.filename)
             for file in self.extracts:
@@ -507,6 +517,7 @@ class PackageInfo:
             self.notify.info("Removing %s" % (filename))
             pathname = Filename(self.getPackageDir(), filename)
             pathname.unlink()
+            self.updated = True
 
         if self.asMirror:
             return self.compressedArchive.quickVerify(self.getPackageDir(), notify = self.notify)
@@ -681,6 +692,8 @@ class PackageInfo:
         packageDir.  Yields one of stepComplete, stepFailed, 
         restartDownload, or stepContinue. """
 
+        self.updated = True
+
         if not urlbase:
             urlbase = self.descFileDirname + '/' + fileSpec.filename
 
@@ -817,6 +830,8 @@ class PackageInfo:
         operation.  Yields one of stepComplete, stepFailed, 
         restartDownload, or stepContinue. """
 
+        self.updated = True
+
         origPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         patchPathname = Filename(self.getPackageDir(), patchfile.file.filename)
         result = Filename.temporary('', 'patch_')
@@ -856,6 +871,8 @@ class PackageInfo:
         """ Turns the compressed archive into the uncompressed
         archive.  Yields one of stepComplete, stepFailed, 
         restartDownload, or stepContinue. """
+
+        self.updated = True
 
         sourcePathname = Filename(self.getPackageDir(), self.compressedArchive.filename)
         targetPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
@@ -904,6 +921,8 @@ class PackageInfo:
             # Nothing to extract.
             self.hasPackage = True
             yield self.stepComplete; return
+
+        self.updated = True
 
         mfPathname = Filename(self.getPackageDir(), self.uncompressedArchive.filename)
         self.notify.info("Unpacking %s" % (mfPathname))
@@ -1026,4 +1045,94 @@ class PackageInfo:
         self.installed = True
         appRunner.installedPackages.append(self)
 
+        self.markUsed()
+
         return True
+
+    def __measureDiskSpace(self):
+        """ Returns the amount of space used by this package, in
+        bytes, as determined by examining the actual contents of the
+        package directory and its subdirectories. """
+
+        thisDir = ScanDirectoryNode(self.getPackageDir(), ignoreUsageXml = True)
+        diskSpace = thisDir.getTotalSize()
+        self.notify.info("Package %s uses %s MB" % (
+            self.packageName, (diskSpace + 524288) / 1048576))
+        return diskSpace
+
+    def markUsed(self):
+        """ Marks the package as having been used.  This is normally
+        called automatically by installPackage(). """
+
+        if not hasattr(PandaModules, 'TiXmlDocument'):
+            return
+
+        if self.updated:
+            # If we've just installed a new version of the package,
+            # re-measure the actual disk space used.
+            self.diskSpace = self.__measureDiskSpace()
+
+        filename = Filename(self.getPackageDir(), self.UsageBasename)
+        doc = TiXmlDocument(filename.toOsSpecific())
+        if not doc.LoadFile():
+            decl = TiXmlDeclaration("1.0", "utf-8", "")
+            doc.InsertEndChild(decl)
+            
+        xusage = doc.FirstChildElement('usage')
+        if not xusage:
+            doc.InsertEndChild(TiXmlElement('usage'))
+            xusage = doc.FirstChildElement('usage')
+
+        now = int(time.time())
+        
+        count = xusage.Attribute('count_app')
+        try:
+            count = int(count or '')
+        except ValueError:
+            count = 0
+            xusage.SetAttribute('first_use', str(now))
+        count += 1
+        xusage.SetAttribute('count_app', str(count))
+
+        xusage.SetAttribute('last_use', str(now))
+
+        if self.updated:
+            xusage.SetAttribute('last_update', str(now))
+            self.updated = False
+        else:
+            # Since we haven't changed the disk space, we can just
+            # read it from the previous xml file.
+            diskSpace = xusage.Attribute('disk_space')
+            try:
+                diskSpace = int(diskSpace or '')
+            except ValueError:
+                # Unless it wasn't set already.
+                self.diskSpace = self.__measureDiskSpace()
+
+        xusage.SetAttribute('disk_space', str(self.diskSpace))
+
+        # Write the file to a temporary filename, then atomically move
+        # it to its actual filename, to avoid race conditions when
+        # updating this file.
+        tfile = Filename.temporary(self.getPackageDir().cStr(), '.xml')
+        if doc.SaveFile(tfile.toOsSpecific()):
+            tfile.renameTo(filename)
+        
+    def getUsage(self):
+        """ Returns the xusage element that is read from the usage.xml
+        file, or None if there is no usage.xml file. """
+
+        if not hasattr(PandaModules, 'TiXmlDocument'):
+            return None
+
+        filename = Filename(self.getPackageDir(), self.UsageBasename)
+        doc = TiXmlDocument(filename.toOsSpecific())
+        if not doc.LoadFile():
+            return None
+            
+        xusage = doc.FirstChildElement('usage')
+        if not xusage:
+            return None
+
+        return copy.copy(xusage)
+    

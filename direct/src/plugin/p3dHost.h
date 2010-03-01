@@ -59,6 +59,7 @@ public:
                              const string &package_name,
                              const string &package_version);
 
+  void forget_package(P3DPackage *package, const string &alt_host = "");
   void migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host);
 
   void choose_random_mirrors(vector<string> &result, int num_mirrors);

@@ -72,6 +72,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   _failed = false;
   _active_download = NULL;
   _saved_download = NULL;
+  _updated = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,6 +212,70 @@ remove_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::mark_used
+//       Access: Public
+//  Description: Marks this package as having been "used", for
+//               accounting purposes.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+mark_used() {
+  // Unlike the Python variant of this function, we don't mess around
+  // with updating the disk space or anything.
+  string filename = get_package_dir() + "/usage.xml";
+  TiXmlDocument doc(filename);
+  if (!doc.LoadFile()) {
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+    doc.LinkEndChild(decl);
+  }
+
+  TiXmlElement *xusage = doc.FirstChildElement("usage");
+  if (xusage == NULL) {
+    xusage = new TiXmlElement("usage");
+    doc.LinkEndChild(xusage);
+  }
+
+  time_t now = time(NULL);
+  int count = 0;
+  xusage->Attribute("count_runtime", &count);
+  if (count == 0) {
+    xusage->SetAttribute("first_use", now);
+  }
+
+  ++count;
+  xusage->SetAttribute("count_runtime", count);
+  xusage->SetAttribute("last_use", now);
+
+  if (_updated) {
+    // If we've updated the package, we're no longer sure what its
+    // disk space is.  Remove that from the XML file, so that the
+    // Python code can recompute it later.
+    xusage->RemoveAttribute("disk_space");
+    xusage->SetAttribute("last_update", now);
+  }
+
+  // Write the file to a temporary filename, then atomically move it
+  // to its actual filename, to avoid race conditions.
+  ostringstream strm;
+  strm << get_package_dir() << "/usage_";
+#ifdef _WIN32
+  strm << GetCurrentProcessId();
+#else
+  strm << getpid();
+#endif
+  strm << ".xml";
+  string tfile = strm.str();
+
+  unlink(tfile.c_str());
+  if (doc.SaveFile(tfile)) {
+    if (rename(tfile.c_str(), filename.c_str()) != 0) {
+      // If rename failed, remove the original file first.
+      unlink(filename.c_str());
+      rename(tfile.c_str(), filename.c_str());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::uninstall
 //       Access: Public
 //  Description: Removes the package directory and all its contents
@@ -247,6 +312,9 @@ uninstall() {
   _ready = false;
   _failed = false;
   _allow_data_download = false;
+
+  // Make sure the host forgets us too.
+  _host->forget_package(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -707,6 +775,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
 
   inst_mgr->remove_file_from_list(contents, _desc_file_basename);
   inst_mgr->remove_file_from_list(contents, _uncompressed_archive.get_filename());
+  inst_mgr->remove_file_from_list(contents, "usage.xml");
   Extracts::iterator ei;
   for (ei = _extracts.begin(); ei != _extracts.end(); ++ei) {
     inst_mgr->remove_file_from_list(contents, (*ei).get_filename());
@@ -727,6 +796,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     chmod(pathname.c_str(), 0644);
 #endif
     unlink(pathname.c_str());
+    _updated = true;
   }
 
   // Verify the uncompressed archive.
@@ -1509,6 +1579,7 @@ do_step(bool download_finished) {
 
   if (_download->get_download_success()) {
     // The Download object has already validated the hash.
+    _package->_updated = true;
     return IT_step_complete;
 
   } else if (_download->get_download_terminated()) {
@@ -1801,6 +1872,7 @@ thread_step() {
   unlink(source_pathname.c_str());
 
   // All done uncompressing.
+  _package->_updated = true;
   return IT_step_complete;
 }
 
@@ -1847,6 +1919,7 @@ thread_step() {
     return IT_step_failed;
   }
 
+  _package->_updated = true;
   return IT_step_complete;
 }
 
@@ -1901,6 +1974,7 @@ thread_step() {
     return IT_step_failed;
   }
 
+  _package->_updated = true;
   return IT_step_complete;
 }
 
