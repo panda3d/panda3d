@@ -410,6 +410,9 @@ class AppRunner(DirectObject):
         self.notify.info("Deleting host %s: %s" % (host.hostUrl, host.hostDir))
         shutil.rmtree(host.hostDir.toOsSpecific(), True)
 
+        self.sendRequest('forget_package', host.hostUrl, '', '')
+        
+
     def freshenFile(self, host, fileSpec, localPathname):
         """ Ensures that the localPathname is the most current version
         of the file defined by fileSpec, as offered by host.  If not,

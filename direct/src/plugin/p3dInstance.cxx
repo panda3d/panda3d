@@ -743,6 +743,28 @@ get_request() {
         (*func)(data);
       }
       break;
+
+    case P3D_RT_forget_package:
+      {
+        // We're being asked to forget a particular package.
+        const char *host_url = request->_request._forget_package._host_url;
+        const char *package_name = request->_request._forget_package._package_name;
+        const char *package_version = request->_request._forget_package._package_version;
+        if (package_version == NULL) {
+          package_version = "";
+        }
+
+        P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+        P3DHost *host = inst_mgr->get_host(host_url);
+        if (package_name != NULL) {
+          P3DPackage *package = host->get_package(package_name, package_version);
+          host->forget_package(package);
+        } else {
+          // If a NULL package name is given, forget the whole host.
+          inst_mgr->forget_host(host);
+        }
+      }
+      break;
     }
   }
   
@@ -869,18 +891,38 @@ finish_request(P3D_request *request, bool handled) {
     break;
 
   case P3D_RT_get_url:
-    free((char *)request->_request._get_url._url);
-    request->_request._get_url._url = NULL;
+    if (request->_request._get_url._url != NULL) {
+      free((char *)request->_request._get_url._url);
+      request->_request._get_url._url = NULL;
+    }
     break;
 
   case P3D_RT_notify:
-    free((char *)request->_request._notify._message);
-    request->_request._notify._message = NULL;
+    if (request->_request._notify._message != NULL) {
+      free((char *)request->_request._notify._message);
+      request->_request._notify._message = NULL;
+    }
+    break;
+
+  case P3D_RT_forget_package:
+    if (request->_request._forget_package._host_url != NULL) {
+      free((char *)request->_request._forget_package._host_url);
+      request->_request._forget_package._host_url = NULL;
+    }
+    if (request->_request._forget_package._package_name != NULL) {
+      free((char *)request->_request._forget_package._package_name);
+      request->_request._forget_package._package_name = NULL;
+    }
+    if (request->_request._forget_package._package_version != NULL) {
+      free((char *)request->_request._forget_package._package_version);
+      request->_request._forget_package._package_version = NULL;
+    }
     break;
   }
 
   p3d_unref_delete(((P3DInstance *)request->_instance));
   request->_instance = NULL;
+
   delete request;
 }
 
@@ -2244,6 +2286,27 @@ make_p3d_request(TiXmlElement *xrequest) {
       request = new P3D_request;
       request->_instance = NULL;
       request->_request_type = P3D_RT_stop;
+
+    } else if (strcmp(rtype, "forget_package") == 0) {
+      const char *host_url = xrequest->Attribute("host_url");
+      if (host_url != NULL) {
+        // A Python-level request to remove a package from the cache.
+        request = new P3D_request;
+        request->_instance = NULL;
+        request->_request_type = P3D_RT_forget_package;
+        request->_request._forget_package._host_url = strdup(host_url);
+        request->_request._forget_package._package_name = NULL;
+        request->_request._forget_package._package_version = NULL;
+
+        const char *package_name = xrequest->Attribute("package_name");
+        const char *package_version = xrequest->Attribute("package_version");
+        if (package_name != NULL) {
+          request->_request._forget_package._package_name = strdup(package_name);
+          if (package_version != NULL) {
+            request->_request._forget_package._package_version = strdup(package_version);
+          }
+        }
+      }
 
     } else {
       nout << "Ignoring request of type " << rtype << "\n";

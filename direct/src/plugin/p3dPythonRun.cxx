@@ -1080,6 +1080,25 @@ py_request_func(PyObject *args) {
     xrequest->SetAttribute("object_id", object_id);
     write_xml(_pipe_write, &doc, nout);
 
+  } else if (strcmp(request_type, "forget_package") == 0) {
+    // A request to the instance to drop a particular package (or
+    // host) from the cache.
+    const char *host_url;
+    const char *package_name;
+    const char *package_version;
+    if (!PyArg_ParseTuple(extra_args, "sss", &host_url, &package_name, &package_version)) {
+      return NULL;
+    }
+
+    xrequest->SetAttribute("host_url", host_url);
+    if (*package_name) {
+      xrequest->SetAttribute("package_name", package_name);
+      if (*package_version) {
+        xrequest->SetAttribute("package_version", package_version);
+      }
+    }
+    write_xml(_pipe_write, &doc, nout);
+
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
     PyErr_SetString(PyExc_ValueError, message.c_str());

@@ -622,6 +622,8 @@ get_host(const string &host_url) {
 void P3DInstanceManager::
 forget_host(P3DHost *host) {
   const string &host_url = host->get_host_url();
+
+  nout << "Forgetting host " << host_url << "\n";
   
   // Hmm, this is a memory leak.  But we allow it to remain, since
   // it's an unusual circumstance (uninstalling), and it's safer to

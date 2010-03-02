@@ -1290,7 +1290,8 @@ rt_thread_run() {
 //     Function: P3DSession::rt_handle_request
 //       Access: Private
 //  Description: Processes a single request or notification received
-//               from an instance.
+//               from an instance.  This method runs in the read
+//               thread.
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {

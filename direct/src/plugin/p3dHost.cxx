@@ -405,6 +405,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
 void P3DHost::
 forget_package(P3DPackage *package, const string &alt_host) {
   string key = package->get_package_name() + "_" + package->get_package_version();
+  nout << "Forgetting package " << key << "\n";
 
   PackageMap &package_map = _packages[alt_host];
 

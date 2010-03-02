@@ -485,6 +485,9 @@ class HostInfo:
         self.notify.info("Deleting package %s: %s" % (package.packageName, package.getPackageDir()))
         shutil.rmtree(package.getPackageDir().toOsSpecific(), True)
 
+        if self.appRunner:
+            self.appRunner.sendRequest('forget_package', self.hostUrl, package.packageName, package.packageVersion or '')
+
     def __determineHostDir(self, hostDirBasename, hostUrl):
         """ Hashes the host URL into a (mostly) unique directory
         string, which will be the root of the host's install tree.
