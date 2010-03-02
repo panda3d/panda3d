@@ -278,7 +278,16 @@ ConfigVariableBool fullscreen
 ("fullscreen", false);
 
 ConfigVariableBool undecorated
-("undecorated", false);
+("undecorated", false,
+ PRC_DESC("This specifies the default value of the 'undecorated' window "
+          "property.  When this is true, the default window is created "
+          "without a title bar or resizable border."));
+
+ConfigVariableBool win_fixed_size
+("win-fixed-size", false,
+ PRC_DESC("This specifies the default value of the 'fixed_size' window "
+          "property.  When this is true, the default window is created "
+          "without a resizable border."));
 
 ConfigVariableBool cursor_hidden
 ("cursor-hidden", false);

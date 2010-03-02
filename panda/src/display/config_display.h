@@ -68,6 +68,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_origin;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool fullscreen;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool undecorated;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_fixed_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool cursor_hidden;
 extern EXPCL_PANDA_DISPLAY ConfigVariableFilename icon_filename;
 extern EXPCL_PANDA_DISPLAY ConfigVariableFilename cursor_filename;

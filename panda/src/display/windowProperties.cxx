@@ -74,6 +74,7 @@ get_config_properties() {
 
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
+  props.set_fixed_size(win_fixed_size);
   props.set_cursor_hidden(cursor_hidden);
   if (!icon_filename.empty()) {
     props.set_icon_filename(icon_filename);
