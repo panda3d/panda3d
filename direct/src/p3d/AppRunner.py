@@ -12,7 +12,6 @@ runp3d.py for a command-line tool to invoke this module.
 import sys
 import os
 import types
-import shutil
 import __builtin__
 
 if 'VFSImporter' in sys.modules:
@@ -408,7 +407,7 @@ class AppRunner(DirectObject):
         removed all of the packages). """
 
         self.notify.info("Deleting host %s: %s" % (host.hostUrl, host.hostDir))
-        shutil.rmtree(host.hostDir.toOsSpecific(), True)
+        self.rmtree(host.hostDir)
 
         self.sendRequest('forget_package', host.hostUrl, '', '')
         
@@ -561,7 +560,7 @@ class AppRunner(DirectObject):
             else:
                 # If it's an unknown package, just delete it directly.
                 print "Deleting unknown package %s" % (packageData.pathname)
-                shutil.rmtree(packageData.pathname.toOsSpecific(), True)
+                self.rmtree(packageData.pathname())
 
         packages = self.deletePackages(packages)
         if packages:
@@ -605,6 +604,22 @@ class AppRunner(DirectObject):
                 self.exceptionHandler()
             else:
                 raise
+
+    def rmtree(self, filename):
+        """ This is like shutil.rmtree(), but it can remove read-only
+        files on Windows.  It receives a Filename, the root directory
+        to delete. """
+        if filename.isDirectory():
+            for child in os.listdir(filename.toOsSpecific()):
+                self.rmtree(Filename(filename, child))
+            try:
+                os.chmod(filename.toOsSpecific(), 777)
+                os.rmdir(filename.toOsSpecific())
+            except OSError:
+                print "could not remove directory %s" % (filename)
+        else:
+            if not filename.unlink():
+                print "could not delete %s" % (filename)
 
     def setSessionId(self, sessionId):
         """ This message should come in at startup. """

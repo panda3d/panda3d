@@ -4,7 +4,6 @@ from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import time
-import shutil
 
 class HostInfo:
     """ This class represents a particular download host serving up
@@ -482,10 +481,10 @@ class HostInfo:
         """ Called by deletePackage(), this actually removes the files
         for the indicated package. """
 
-        self.notify.info("Deleting package %s: %s" % (package.packageName, package.getPackageDir()))
-        shutil.rmtree(package.getPackageDir().toOsSpecific(), True)
-
         if self.appRunner:
+            self.notify.info("Deleting package %s: %s" % (package.packageName, package.getPackageDir()))
+            self.appRunner.rmtree(package.getPackageDir())
+
             self.appRunner.sendRequest('forget_package', self.hostUrl, package.packageName, package.packageVersion or '')
 
     def __determineHostDir(self, hostDirBasename, hostUrl):
