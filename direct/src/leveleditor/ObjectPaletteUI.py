@@ -4,6 +4,22 @@ Defines ObjectPalette tree UI
 import wx
 import cPickle as pickle
 
+class ObjectPaletteTreeCtrl(wx.TreeCtrl):
+    def __init__(self, parent):
+        wx.TreeCtrl.__init__(self, parent)
+        
+        self.paletteUI = parent
+
+    def OnCompareItems(self, item1, item2):
+        data1 = self.GetItemText(item1)
+        data2 = self.GetItemText(item2)
+        if self.paletteUI.opSort == self.paletteUI.opSortAlpha:
+           return cmp(data1, data2)
+        else:
+           index1 = self.paletteUI.palette.dataKeys.index(data1)
+           index2 = self.paletteUI.palette.dataKeys.index(data2)
+           return cmp(index1, index2)
+
 class ObjectPaletteUI(wx.Panel):
     def __init__(self, parent, editor):
         wx.Panel.__init__(self, parent)
@@ -11,10 +27,9 @@ class ObjectPaletteUI(wx.Panel):
         self.editor = editor
 
         self.palette = self.editor.objectPalette
-        self.tree = wx.TreeCtrl(self)
+        self.tree = ObjectPaletteTreeCtrl(self)
         root = self.tree.AddRoot('Objects')
         self.addTreeNodes(root, self.palette.dataStruct, self.palette.dataKeys)
-        self.SortTreeNodes(root)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -23,6 +38,20 @@ class ObjectPaletteUI(wx.Panel):
         parentSizer = wx.BoxSizer(wx.VERTICAL)
         parentSizer.Add(self, 1, wx.EXPAND, 0)
         parent.SetSizer(parentSizer); parent.Layout()
+
+        self.opSortAlpha = "Sort Alphabetical Order"
+        self.opSortOrig  = "Sort Original Order"
+        self.opSort = self.opSortOrig
+
+        self.menuItems = list()
+        self.menuItems.append(self.opSortAlpha)
+        self.menuItems.append(self.opSortOrig)
+
+        self.popupmenu = wx.Menu()
+        for item in self.menuItems:
+            menuItem = self.popupmenu.Append(-1, item)
+            self.Bind(wx.EVT_MENU, self.onPopupItemSelected, menuItem)
+        self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
 
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
@@ -93,3 +122,17 @@ class ObjectPaletteUI(wx.Panel):
             tds = wx.DropSource(self.tree)
             tds.SetData(tdo)
             tds.DoDragDrop(True)
+
+    def onShowPopup(self, event):
+        pos = event.GetPosition()
+        pos = self.ScreenToClient(pos)
+        self.PopupMenu(self.popupmenu, pos)
+
+    def onPopupItemSelected(self, event):
+        menuItem = self.popupmenu.FindItemById(event.GetId())
+        text = menuItem.GetText()
+        if text == self.opSortAlpha:
+           self.opSort = self.opSortAlpha
+        elif text == self.opSortOrig:
+           self.opSort = self.opSortOrig
+        self.SortTreeNodes(self.tree.GetRootItem())
