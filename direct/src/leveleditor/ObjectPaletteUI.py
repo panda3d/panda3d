@@ -14,6 +14,7 @@ class ObjectPaletteUI(wx.Panel):
         self.tree = wx.TreeCtrl(self)
         root = self.tree.AddRoot('Objects')
         self.addTreeNodes(root, self.palette.dataStruct)
+        self.SortTreeNodes(root)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -68,6 +69,16 @@ class ObjectPaletteUI(wx.Panel):
             item = self.traverse(parentItem, key)
             if item is None:
                newItem = self.addTreeNode(key, parentItem, items)
+
+    def SortTreeNodes(self, parent):
+        self.tree.SortChildren(parent)
+        item, cookie = self.tree.GetFirstChild(parent)
+        while item:
+              if self.tree.ItemHasChildren(item):
+                 self.SortTreeNodes(item)
+
+              # continue iteration to the next child
+              item, cookie = self.tree.GetNextChild(parent, cookie)
 
     def onSelected(self, event):
         pass
