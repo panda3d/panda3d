@@ -1886,6 +1886,33 @@ scan_directory(vector_string &contents) const {
 #endif
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::scan_directory
+//       Access: Published
+//  Description: This variant on scan_directory returns a Python list
+//               of strings on success, or None on failure.
+////////////////////////////////////////////////////////////////////
+PyObject *Filename::
+scan_directory() const {
+  vector_string contents;
+  if (!scan_directory(contents)) {
+    PyObject *result = Py_None;
+    Py_INCREF(result);
+    return result;
+  }
+
+  PyObject *result = PyList_New(contents.size());
+  for (size_t i = 0; i < contents.size(); ++i) {
+    const string &filename = contents[i];
+    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
+    PyList_SET_ITEM(result, i, str);
+  }
+
+  return result;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read
 //       Access: Published

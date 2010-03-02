@@ -181,6 +181,9 @@ PUBLISHED:
   int find_on_searchpath(const DSearchPath &searchpath);
   
   bool scan_directory(vector_string &contents) const;
+#ifdef HAVE_PYTHON
+  PyObject *scan_directory() const;
+#endif 
 
   bool open_read(ifstream &stream) const;
   bool open_write(ofstream &stream, bool truncate = true) const;
