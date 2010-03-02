@@ -203,6 +203,8 @@ PUBLISHED:
   bool copy_to(const Filename &other) const;
 
   bool make_dir() const;
+  bool mkdir() const;
+  bool rmdir() const;
 
   // Comparison operators are handy.
   INLINE bool operator == (const string &other) const;

@@ -2576,9 +2576,9 @@ make_dir() const {
     Filename component(dirname.substr(0, slash));
     string os_specific = component.to_os_specific();
 #ifndef WIN32_VC
-    mkdir(os_specific.c_str(), 0777);
+    ::mkdir(os_specific.c_str(), 0777);
 #else
-    mkdir(os_specific.c_str());
+    ::mkdir(os_specific.c_str());
 #endif
     slash = dirname.find('/', slash + 1);
   }
@@ -2587,9 +2587,54 @@ make_dir() const {
   Filename component(dirname);
   string os_specific = component.to_os_specific();
 #ifndef WIN32_VC
-  int result = mkdir(os_specific.c_str(), 0777);
+  int result = ::mkdir(os_specific.c_str(), 0777);
 #else
-  int result = mkdir(os_specific.c_str());
+  int result = ::mkdir(os_specific.c_str());
+#endif
+
+  return (result == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::mkdir
+//       Access: Published
+//  Description: Creates the directory named by this filename.  Unlike
+//               make_dir(), this assumes that the Filename contains
+//               the directory name itself.  Also, parent directories
+//               are not automatically created; this function fails if
+//               any parent directory is missing.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+mkdir() const {
+  string os_specific = to_os_specific();
+#ifndef WIN32_VC
+  int result = ::mkdir(os_specific.c_str(), 0777);
+#else
+  int result = ::mkdir(os_specific.c_str());
+#endif
+
+  return (result == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::rmdir
+//       Access: Published
+//  Description: The inverse of mkdir(): this removes the directory
+//               named by this Filename, if it is in fact a directory.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+rmdir() const {
+  string os_specific = to_os_specific();
+
+  int result = ::rmdir(os_specific.c_str());
+
+#ifdef WIN32
+  if (result != 0) {
+    // Windows may require the directory to be writable before we can
+    // remove it.
+    chmod(os_specific.c_str(), 0777);
+    result = ::rmdir(os_specific.c_str());
+  }
 #endif
 
   return (result == 0);
