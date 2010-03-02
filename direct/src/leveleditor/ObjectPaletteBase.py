@@ -32,6 +32,7 @@ class ObjectPaletteBase:
         self.rootName = '_root'
         self.data = {}
         self.dataStruct = {}
+        self.dataKeys = []
         self.populate()
 
     def insertItem(self, item, parentName):
@@ -49,6 +50,7 @@ class ObjectPaletteBase:
 
         self.dataStruct[item.name] = parentName
         self.data[item.name] = item
+        self.dataKeys.append(item.name)
 
     def add(self, item, parentName = None):
         if type(item) == str:

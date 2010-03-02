@@ -13,7 +13,7 @@ class ObjectPaletteUI(wx.Panel):
         self.palette = self.editor.objectPalette
         self.tree = wx.TreeCtrl(self)
         root = self.tree.AddRoot('Objects')
-        self.addTreeNodes(root, self.palette.dataStruct)
+        self.addTreeNodes(root, self.palette.dataStruct, self.palette.dataKeys)
         self.SortTreeNodes(root)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -63,9 +63,8 @@ class ObjectPaletteUI(wx.Panel):
 
         return newItem
 
-    def addTreeNodes(self, parentItem, items):
-        #import pdb;set_trace()
-        for key in items.keys():
+    def addTreeNodes(self, parentItem, items, itemKeys):
+        for key in itemKeys:
             item = self.traverse(parentItem, key)
             if item is None:
                newItem = self.addTreeNode(key, parentItem, items)
