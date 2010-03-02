@@ -750,6 +750,11 @@ do_fullscreen_resize(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 do_fullscreen_switch() {
+  if (!do_fullscreen_enable()) {
+    // Couldn't get fullscreen.
+    return false;
+  }
+
   DWORD window_style = make_style(true);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
@@ -758,10 +763,9 @@ do_fullscreen_switch() {
   if (!calculate_metrics(true, window_style, metrics, has_origin)){
     return false;
   }
+
   SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, metrics.width, metrics.height,
     SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-  do_fullscreen_enable();
-
   return true;
 }
 
