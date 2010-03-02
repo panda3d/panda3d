@@ -610,12 +610,9 @@ class AppRunner(DirectObject):
         files on Windows.  It receives a Filename, the root directory
         to delete. """
         if filename.isDirectory():
-            for child in os.listdir(filename.toOsSpecific()):
+            for child in filename.scanDirectory():
                 self.rmtree(Filename(filename, child))
-            try:
-                os.chmod(filename.toOsSpecific(), 777)
-                os.rmdir(filename.toOsSpecific())
-            except OSError:
+            if not filename.rmdir():
                 print "could not remove directory %s" % (filename)
         else:
             if not filename.unlink():
