@@ -44,7 +44,7 @@ ConfigVariableBool glx_get_os_address
           "if glxGetProcAddress() cannot be used for some reason."));
 
 ConfigVariableBool glx_support_pbuffer
-("glx-support-pbuffer", false,
+("glx-support-pbuffer", true,
  PRC_DESC("Set this true to enable the use of X pbuffer-based offscreen "
           "buffers, if available.  This is usually preferred over "
           "pixmap-based buffers, but not all drivers support them."));
