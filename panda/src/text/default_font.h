@@ -19,8 +19,8 @@
 
 #if defined(COMPILE_IN_DEFAULT_FONT) && !defined(CPPPARSER)
 
-extern const unsigned char default_font_data[];
-extern const int default_font_size;
+extern EXPCL_PANDA_TEXT const unsigned char default_font_data[];
+extern EXPCL_PANDA_TEXT const int default_font_size;
 
 #endif  // HAVE_FREETYPE && COMPILE_IN_DEFAULT_FONT && !CPPPARSER
 
