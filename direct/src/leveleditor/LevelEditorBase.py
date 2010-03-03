@@ -152,6 +152,7 @@ class LevelEditorBase(DirectObject):
         taskMgr.doMethodLater(5, self.updateStatusReadoutTimeouts, 'updateStatus')
 
         self.loadSettings()
+        self.reset()
         
     def removeNodePathHook(self, nodePath):
         if nodePath is None:
