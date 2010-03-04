@@ -173,6 +173,79 @@ class ActionDeleteObj(ActionBase):
             self.hierarchy = {}
             self.objInfos = {}            
 
+class ActionDeleteObjById(ActionBase):
+    """ Action class for deleting object """
+
+    def __init__(self, editor, uid):
+        self.editor = editor
+        function = self.editor.objectMgr.removeObjectById
+        self.uid = uid
+        ActionBase.__init__(self, function, self.uid)
+        self.hierarchy = {}
+        self.objInfos = {}
+        self.objTransforms = {}
+
+    def saveStatus(self):
+        def saveObjStatus(uid_np, isUID=False):
+            if isUID:
+                obj = self.editor.objectMgr.findObjectById(uid_np)
+            else:
+                obj = self.editor.objectMgr.findObjectByNodePath(uid_np)                
+            if obj:
+                uid = obj[OG.OBJ_UID]
+                objNP = obj[OG.OBJ_NP]
+                self.objInfos[uid] = obj
+                self.objTransforms[uid] = objNP.getMat()
+                parentNP = objNP.getParent()
+                if parentNP == render:
+                    self.hierarchy[uid] = None
+                else:
+                    parentObj = self.editor.objectMgr.findObjectByNodePath(parentNP)
+                    if parentObj:
+                        self.hierarchy[uid] = parentObj[OG.OBJ_UID]
+
+                for child in objNP.getChildren():
+                    if child.hasTag('OBJRoot'):
+                        saveObjStatus(child)
+
+        saveObjStatus(self.uid, True)
+
+    def undo(self):
+        if len(self.hierarchy.keys()) == 0 or\
+           len(self.objInfos.keys()) == 0:
+            print "Can't undo this deletion"
+        else:
+            print "Undo: deleteObjectById"
+            def restoreObject(uid, parentNP):
+                obj = self.objInfos[uid]
+                objDef = obj[OG.OBJ_DEF]
+                objModel = obj[OG.OBJ_MODEL]
+                objProp = obj[OG.OBJ_PROP]
+                objRGBA = obj[OG.OBJ_RGBA]
+                objNP = self.editor.objectMgr.addNewObject(objDef.name,
+                                                   uid,
+                                                   obj[OG.OBJ_MODEL],
+                                                   parentNP)
+                self.editor.objectMgr.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid)
+                self.editor.objectMgr.updateObjectProperties(uid, objProp)
+                objNP.setMat(self.objTransforms[uid])
+
+            while (len(self.hierarchy.keys()) > 0):
+                for uid in self.hierarchy.keys():
+                    if self.hierarchy[uid] is None:
+                        parentNP = None
+                        restoreObject(uid, parentNP)
+                        del self.hierarchy[uid]
+                    else:
+                        parentObj = self.editor.objectMgr.findObjectById(self.hierarchy[uid])
+                        if parentObj:
+                            parentNP = parentObj[OG.OBJ_NP]
+                            restoreObject(uid, parentNP)
+                            del self.hierarchy[uid]
+
+            self.hierarchy = {}
+            self.objInfos = {}            
+
 class ActionChangeHierarchy(ActionBase):
      """ Action class for changing Scene Graph Hierarchy """
 

@@ -153,6 +153,20 @@ class ObjectMgr:
                 self.editor.fNeedToSave = True
         return newobj
 
+    def removeObjectById(self, uid):
+        obj = self.findObjectById(uid)
+        nodePath = obj[OG.OBJ_NP]
+        del self.objects[uid]
+        del self.npIndex[nodePath]
+
+        # remove children also
+        for child in nodePath.getChildren():
+            if child.hasTag('OBJRoot'):
+                self.removeObjectByNodePath(child)
+        nodePath.remove()
+
+        self.editor.fNeedToSave = True        
+
     def removeObjectByNodePath(self, nodePath):
         uid = self.npIndex.get(nodePath)
         if uid:
