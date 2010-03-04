@@ -111,6 +111,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
           _win_height = atoi(value.c_str());
         } else if (keyword == "root_dir") {
           root_dir = value;
+        } else if (keyword == "verify_contents") {
+          _verify_contents = (bool) atoi(value.c_str());
         }
       }
       curstr = "";
