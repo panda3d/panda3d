@@ -265,8 +265,8 @@ class Audio3DManager:
         # to which it is attached
         if self.listener_target:
             pos = self.listener_target.getPos(self.root)
-            forward = self.listener_target.getRelativeVector(self.root, VBase3(0,1,0))
-            up = self.listener_target.getRelativeVector(self.root, VBase3(0,0,1))
+            forward = self.listener_target.getRelativeVector(self.root, Vec3.forward())
+            up = self.listener_target.getRelativeVector(self.root, Vec3.up())
             vel = self.getListenerVelocity()
             self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2]) 
         else:
