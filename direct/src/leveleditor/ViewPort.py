@@ -5,7 +5,7 @@ Originally written by pro-rsoft,
 Modified by gjeon.
 """
 
-__all__ = ["Viewport", "ViewportManager", "ViewportMenu"]
+__all__ = ["Viewport", "ViewportManager"]
 
 from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
@@ -66,7 +66,6 @@ class Viewport(wx.Panel, DirectObject):
     self.initialized = False
     self.grid = None
     self.collPlane = None
-    #self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 
   def initialize(self):
     self.Update()
@@ -154,17 +153,15 @@ class Viewport(wx.Panel, DirectObject):
             break
       
   def onRightDown(self, evt = None):
-    print "RightDown captured by wx"
     """Invoked when the viewport is right-clicked."""
-    menu = ViewportMenu(self)
     if evt == None:
       mpos = wx.GetMouseState()
       mpos = self.ScreenToClient((mpos.x, mpos.y))
     else:
       mpos = evt.GetPosition()
     self.Update()
-    self.PopupMenu(menu, mpos)
-    menu.Destroy()
+    #self.PopupMenu(self.menu, mpos)
+    #self.menu.Destroy()
   
   def zoomOut(self):
     self.camera.setY(self.camera, -MOUSE_ZOO_SPEED)
@@ -238,34 +235,4 @@ class Viewport(wx.Panel, DirectObject):
   def makeFront(parent): return Viewport.makeOrthographic(parent, 'front', Point3(0, -600, 0))
   @staticmethod
   def makeTop(parent): return Viewport.makeOrthographic(parent, 'top', Point3(0, 0, 600))
-
-class ViewportMenu(wx.Menu):
-  """Represents a menu that appears when right-clicking a viewport."""
-  def __init__(self, viewport):
-    wx.Menu.__init__(self)
-    self.viewport = viewport
-    self.addItem("&Refresh", self.viewport.Update)
-    self.addItem("&Background Color...", self.onChooseColor)
-  
-  def addItem(self, name, call = None, id = None):
-    if id == None: id = wx.NewId()
-    item = wx.MenuItem(self, id, name)
-    self.AppendItem(item)
-    if call != None:
-      self.Bind(wx.EVT_MENU, call, item)
-  
-  def onChooseColor(self, evt = None):
-    """Change the background color of the viewport."""
-    data = wx.ColourData()
-    bgcolor = self.viewport.win.getClearColor()
-    bgcolor = bgcolor[0] * 255.0, bgcolor[1] * 255.0, bgcolor[2] * 255.0
-    data.SetColour(bgcolor)
-    dlg = wx.ColourDialog(self, data)
-    try:
-      if dlg.ShowModal() == wx.ID_OK:
-        data = dlg.GetColourData().GetColour()
-        data = data[0] / 255.0, data[1] / 255.0, data[2] / 255.0
-        self.viewport.win.setClearColor(*data)
-    finally:
-      dlg.Destroy()
 

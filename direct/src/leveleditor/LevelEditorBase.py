@@ -130,6 +130,7 @@ class LevelEditorBase(DirectObject):
             ('LE-SaveScene', self.ui.onSave),
             ('LE-OpenScene', self.ui.onOpen),
             ('LE-Quit', self.ui.quit),
+            ('DIRECT-mouse3', self.handleMouse3),
             ])
 
         # Add all the action events
@@ -168,6 +169,12 @@ class LevelEditorBase(DirectObject):
             else:
                 __builtins__['last'] = None
             base.direct.selected.last = None
+
+    def handleMouse3(self, modifiers):
+        if base.direct.fAlt or modifiers == 4:
+            return
+
+        self.ui.onRightDown()
 
     def handleDelete(self):
         oldSelectedNPs = base.direct.selected.getSelectedAsList()

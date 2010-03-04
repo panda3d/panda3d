@@ -126,6 +126,7 @@ class LevelEditorUIBase(WxAppShell):
         self.wxApp.SetAppName("Panda3D LevelEditor")
         self.wxApp.SetClassName("P3DLevelEditor")
         self.editor = editor
+        self.menu = ViewportMenu()
 
         if not kw.get('size'):
             kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
@@ -274,6 +275,16 @@ class LevelEditorUIBase(WxAppShell):
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
 
         self.showGridMenuItem.Check(True)
+
+    def onRightDown(self, evt=None):
+        """Invoked when the viewport is right-clicked."""
+        if evt == None:
+            mpos = wx.GetMouseState()
+            mpos = self.ScreenToClient((mpos.x, mpos.y))
+        else:
+            mpos = evt.GetPosition()
+
+        self.PopupMenu(self.menu, mpos)
 
     def onKeyDownEvent(self, evt):
         if evt.GetKeyCode() == wx.WXK_ALT:
@@ -470,3 +481,16 @@ class GridSizeUI(wx.Dialog):
         self.parent.updateGrids(newSize, newSpacing)
         base.le.ui.bindKeyEvents(True)
         self.Destroy()
+
+class ViewportMenu(wx.Menu):
+  """Represents a menu that appears when right-clicking a viewport."""
+  def __init__(self):
+    wx.Menu.__init__(self)
+  
+  def addItem(self, name, call = None, id = None):
+    if id == None: id = wx.NewId()
+    item = wx.MenuItem(self, id, name)
+    self.AppendItem(item)
+    if call != None:
+        self.Bind(wx.EVT_MENU, call, item)
+  
