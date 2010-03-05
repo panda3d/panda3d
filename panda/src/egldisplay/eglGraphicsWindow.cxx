@@ -827,7 +827,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
         size_hints_p->height = properties.get_y_size();
         size_hints_p->flags |= USSize;
 
-        if (properties.has_fixed_size()) {
+        if (properties.get_fixed_size()) {
           size_hints_p->min_width = properties.get_x_size();
           size_hints_p->min_height = properties.get_y_size();
           size_hints_p->max_width = properties.get_x_size();
