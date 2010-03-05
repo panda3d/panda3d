@@ -1366,13 +1366,10 @@ def SdkLocatePython(force_use_sys_executable = False):
                 SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
             else:
                 SDK["PYTHONEXEC"] = sys.executable
-    elif (sys.platform == "darwin"):
-        SDK["PYTHONEXEC"] = sys.executable
+    elif (os.path.islink(sys.executable)):
+        SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
     else:
-        if (os.path.islink(sys.executable)):
-            SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
-        else:
-            SDK["PYTHONEXEC"] = sys.executable
+        SDK["PYTHONEXEC"] = sys.executable
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
