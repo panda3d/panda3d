@@ -348,7 +348,11 @@ class Installer:
         debfile.write(datatargz.str)
         if (len(datatargz.str) & 1): debfile.write("\x0A")
         debfile.close()
-        shutil.rmtree(tempdir.toOsSpecific())
+        try:
+            base.appRunner.rmtree(tempdir)
+        except:
+            try: shutil.rmtree(tempdir.toOsSpecific())
+            except: pass
 
     def buildAPP(self, output, platform):
         
@@ -659,5 +663,9 @@ class Installer:
         os.system(cmd)
 
         nsifile.unlink()
-        shutil.rmtree(rootDir.toOsSpecific())
+        try:
+            base.appRunner.rmtree(rootDir)
+        except:
+            try: shutil.rmtree(rootDir.toOsSpecific())
+            except: pass
         return output
