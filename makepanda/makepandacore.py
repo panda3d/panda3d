@@ -1359,18 +1359,20 @@ def SdkLocatePython(force_use_sys_executable = False):
             SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
             SDK["PYTHONEXEC"] = sys.executable
-        elif (sys.platform == "darwin"):
-            SDK["PYTHON"] = sysconfig.get_python_inc()
-            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-            SDK["PYTHONEXEC"] = sys.executable
         else:
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-            SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+            if (os.path.islink(sys.executable)):
+                SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+            else:
+                SDK["PYTHONEXEC"] = sys.executable
     elif (sys.platform == "darwin"):
         SDK["PYTHONEXEC"] = sys.executable
     else:
-        SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+        if (os.path.islink(sys.executable)):
+            SDK["PYTHONEXEC"] = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+        else:
+            SDK["PYTHONEXEC"] = sys.executable
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
