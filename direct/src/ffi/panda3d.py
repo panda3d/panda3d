@@ -55,8 +55,6 @@ class panda3d_import_manager:
         # modified to locate all of the dynamic libraries.
         target = None
         filename = "libpandaexpress" + cls.dll_suffix
-        if cls.sys.platform == "win32":
-            filename += "_d"
         for dir in cls.sys.path + [cls.sys.prefix]:
             lib = cls.os.path.join(dir, filename)
             for dll_ext in cls.dll_exts:
