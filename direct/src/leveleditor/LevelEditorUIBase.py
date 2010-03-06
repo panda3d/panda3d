@@ -126,7 +126,7 @@ class LevelEditorUIBase(WxAppShell):
         self.wxApp.SetAppName("Panda3D LevelEditor")
         self.wxApp.SetClassName("P3DLevelEditor")
         self.editor = editor
-        self.menu = ViewportMenu()
+        self.contextMenu = ViewportMenu()
 
         if not kw.get('size'):
             kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
@@ -283,8 +283,8 @@ class LevelEditorUIBase(WxAppShell):
             mpos = self.ScreenToClient((mpos.x, mpos.y))
         else:
             mpos = evt.GetPosition()
-
-        self.PopupMenu(self.menu, mpos)
+        base.direct.fMouse3 = 0
+        self.PopupMenu(self.contextMenu, mpos)
 
     def onKeyDownEvent(self, evt):
         if evt.GetKeyCode() == wx.WXK_ALT:
@@ -445,6 +445,10 @@ class LevelEditorUIBase(WxAppShell):
         hotKeyUI.ShowModal()
         hotKeyUI.Destroy()
 
+    def buildContextMenu(self, nodePath):
+        for menuItem in self.contextMenu.GetMenuItems():
+            self.contextMenu.RemoveItem(menuItem)
+
 class GridSizeUI(wx.Dialog):
     def __init__(self, parent, id, title, gridSize, gridSpacing):
         wx.Dialog.__init__(self, parent, id, title, size=(250, 240))
@@ -483,14 +487,22 @@ class GridSizeUI(wx.Dialog):
         self.Destroy()
 
 class ViewportMenu(wx.Menu):
-  """Represents a menu that appears when right-clicking a viewport."""
-  def __init__(self):
-    wx.Menu.__init__(self)
+    """Represents a menu that appears when right-clicking a viewport."""
+    def __init__(self):
+        wx.Menu.__init__(self)
   
-  def addItem(self, name, call = None, id = None):
-    if id == None: id = wx.NewId()
-    item = wx.MenuItem(self, id, name)
-    self.AppendItem(item)
-    if call != None:
-        self.Bind(wx.EVT_MENU, call, item)
-  
+    def addItem(self, name, parent = None, call = None, id = None):
+        if id == None: id = wx.NewId()
+        if parent == None: parent = self
+        item = wx.MenuItem(parent, id, name)
+        parent.AppendItem(item)
+        if call != None:
+            self.Bind(wx.EVT_MENU, call, item)
+
+    def addMenu(self, name, parent = None, id = None):
+        if id == None: id = wx.NewId()
+        subMenu = wx.Menu()
+        if parent == None: parent = self
+        parent.AppendMenu(id, name, subMenu)
+        return subMenu
+

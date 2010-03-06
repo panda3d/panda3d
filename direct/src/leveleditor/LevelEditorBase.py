@@ -240,7 +240,8 @@ class LevelEditorBase(DirectObject):
               if obj:
                  self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
         self.objectMgr.selectObject(nodePath, fLEPane)
-
+        self.ui.buildContextMenu(nodePath)
+        
     def deselectAll(self, np=None):
         if len(base.direct.selected.getSelectedAsList()) ==0:
             return
