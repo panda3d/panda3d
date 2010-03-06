@@ -647,7 +647,7 @@ setup_minimal(float width, int num_lines) {
   clear_cursor_def();
 
   LineSegs ls;
-  ls.set_color(0.0f, 0.0f, 0.0f, 1.0f);
+  ls.set_color(text_node->get_text_color());
   ls.move_to(0.0f, 0.0f, -0.15f * line_height);
   ls.draw_to(0.0f, 0.0f, 0.70f * line_height);
   get_cursor_def().attach_new_node(ls.create());

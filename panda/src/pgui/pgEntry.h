@@ -98,7 +98,7 @@ PUBLISHED:
   INLINE void set_blink_rate(float blink_rate);
   INLINE float get_blink_rate() const;
 
-  INLINE const NodePath &get_cursor_def();
+  INLINE NodePath get_cursor_def();
   INLINE void clear_cursor_def();
 
   INLINE void set_cursor_keys_active(bool flag);

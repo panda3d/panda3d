@@ -305,7 +305,7 @@ get_blink_rate() const {
 //               the cursor.  You can attach suitable cursor geometry
 //               to this node.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodePath &PGEntry:: 
+INLINE NodePath PGEntry:: 
 get_cursor_def() {
   LightReMutexHolder holder(_lock);
   return _cursor_def;
