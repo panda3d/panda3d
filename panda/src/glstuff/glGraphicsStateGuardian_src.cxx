@@ -5110,7 +5110,6 @@ gl_get_error() const {
 bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
-#ifndef NDEBUG
   while ((CLP(max_errors) < 0 || error_count < CLP(max_errors)) &&
          (error_code != GL_NO_ERROR)) {
     GLCAT.error()
@@ -5121,7 +5120,6 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
     error_count++;
   }
 
-#endif
   return (error_code == GL_NO_ERROR);
 }
 
@@ -8461,7 +8459,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                      bool one_page_only, int z,
                      Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
-  report_my_gl_errors();
+  clear_my_gl_errors();
 
   if (texture_target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
@@ -8675,7 +8673,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
     // Did that fail?  If it did, we'll immediately try again, this
     // time loading the texture from scratch.
-    GLenum error_code = GLP(GetError)();
+    GLenum error_code = gl_get_error();
     if (error_code != GL_NO_ERROR) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -8701,12 +8699,13 @@ upload_texture_image(CLP(TextureContext) *gtc,
 #ifndef OPENGLES_2
       if ((external_format == GL_DEPTH_STENCIL_EXT) && get_supports_depth_stencil()) {
         GLP(TexImage2D)(page_target, 0, GL_DEPTH_STENCIL_EXT,
-                        width, height, 0,
+                        width, height, 0, GL_DEPTH_STENCIL_EXT, 
 #ifdef OPENGLES_1
-                        GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_OES, NULL);
+                        GL_UNSIGNED_INT_24_8_OES, 
 #else
-                        GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
+                        GL_UNSIGNED_INT_24_8_EXT, 
 #endif  // OPENGLES_1
+                        NULL);
       } else {
 #endif  // OPENGLES_2
         GLP(TexImage2D)(page_target, 0, internal_format,
@@ -8809,7 +8808,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
     // Report the error message explicitly if the GL texture creation
     // failed.
-    GLenum error_code = GLP(GetError)();
+    GLenum error_code = gl_get_error();
     if (error_code != GL_NO_ERROR) {
       GLCAT.error()
         << "GL texture creation failed for " << tex->get_name()
@@ -8948,7 +8947,7 @@ get_texture_memory_size(Texture *tex) {
   GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
   bool has_mipmaps = is_mipmap_filter(minfilter);
 
-  report_my_gl_errors();
+  clear_my_gl_errors();
 
   GLint internal_format;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
@@ -8959,7 +8958,7 @@ get_texture_memory_size(Texture *tex) {
     GLP(GetTexLevelParameteriv)(page_target, 0,
                                 GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
 
-    GLenum error_code = GLP(GetError)();
+    GLenum error_code = gl_get_error();
     if (error_code != GL_NO_ERROR) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -9117,7 +9116,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     depth = 6;
   }
 #endif
-  report_my_gl_errors();
+  clear_my_gl_errors();
 
   if (width <= 0 || height <= 0 || depth <= 0) {
     GLCAT.error()
@@ -9131,7 +9130,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #endif  // OPENGLES
 
   // Make sure we were able to query those parameters properly.
-  GLenum error_code = GLP(GetError)();
+  GLenum error_code = gl_get_error();
   if (error_code != GL_NO_ERROR) {
     GLCAT.error()
       << "Unable to query texture parameters for " << tex->get_name()
@@ -9442,16 +9441,14 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   }
 
   // Now see if we were successful.
-  if (_track_errors) {
-    GLenum error_code = GLP(GetError)();
-    if (error_code != GL_NO_ERROR) {
-      GLCAT.error()
-        << "Unable to extract texture for " << *tex
-        << ", mipmap level " << n
-        << " : " << get_error_string(error_code) << "\n";
-      nassertr(false, false);
-      return false;
-    }
+  GLenum error_code = gl_get_error();
+  if (error_code != GL_NO_ERROR) {
+    GLCAT.error()
+      << "Unable to extract texture for " << *tex
+      << ", mipmap level " << n
+      << " : " << get_error_string(error_code) << "\n";
+    nassertr(false, false);
+    return false;
   }
   return true;
 #endif  // OPENGLES

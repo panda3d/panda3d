@@ -260,6 +260,8 @@ public:
 
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
+  INLINE static bool clear_errors(int line, const char *source_file);
+  INLINE void clear_my_errors(int line, const char *source_file);
 
   INLINE const string &get_gl_vendor() const;
   INLINE const string &get_gl_renderer() const;

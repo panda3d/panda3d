@@ -61,15 +61,8 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
 
-#ifndef NDEBUG
-#define report_gl_errors() \
-  CLP(GraphicsStateGuardian)::report_errors(__LINE__, __FILE__)
-#else
-#define report_gl_errors()
-#endif
-
-// We have to define this whether NDEBUG is defined or not, to prevent
-// syntax errors.  Not to worry; the function itself does nothing in
-// NDEBUG mode.
 #define report_my_gl_errors() \
   report_my_errors(__LINE__, __FILE__)
+
+#define clear_my_gl_errors() \
+  clear_my_errors(__LINE__, __FILE__)

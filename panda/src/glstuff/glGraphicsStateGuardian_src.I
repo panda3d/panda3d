@@ -46,7 +46,7 @@ INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
   if (_track_errors) {
-    GLenum error_code = gl_get_error();
+    GLenum error_code = GLP(GetError)();
     if (error_code != GL_NO_ERROR) {
       if (!report_errors_loop(line, source_file, error_code, _error_count)) {
         panic_deactivate();
@@ -54,6 +54,50 @@ report_my_errors(int line, const char *source_file) {
     }
   }
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::clear_errors
+//       Access: Public, Static
+//  Description: This works like report_errors(), except that it
+//               always runs, even in the NDEBUG case.
+//
+//               It is designed to be called when it is important to
+//               clear the error stack (for instance, because we want
+//               to be able to reliably check the result of some
+//               upcoming GL operation).
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+clear_errors(int line, const char *source_file) {
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    int error_count = 0;
+    return report_errors_loop(line, source_file, error_code, error_count);
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::clear_my_errors
+//       Access: Public
+//  Description: This works like report_my_errors(), except that it
+//               always runs, even in the NDEBUG case (but not when
+//               _track_errors is false), and it never calls
+//               panic_deactivate().  It is designed to be called when
+//               it is important to clear the error stack (for
+//               instance, because we want to be able to reliably
+//               check the result of some upcoming GL operation).
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+clear_my_errors(int line, const char *source_file) {
+  if (_track_errors) {
+    GLenum error_code = GLP(GetError)();
+    if (error_code != GL_NO_ERROR) {
+      int error_count = 0;
+      report_errors_loop(line, source_file, error_code, error_count);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
