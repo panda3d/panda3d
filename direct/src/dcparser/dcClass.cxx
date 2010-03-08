@@ -287,7 +287,9 @@ get_num_inherited_fields() const {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
 
-    nassertr(is_bogus_class() || !_inherited_fields.empty(), 0);
+    // This assertion causes trouble when we are only parsing an
+    // incomplete DC file.
+    //nassertr(is_bogus_class() || !_inherited_fields.empty(), 0);
     return (int)_inherited_fields.size();
 
   } else {
