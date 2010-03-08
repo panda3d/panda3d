@@ -443,7 +443,7 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("OPENGL", "/usr/X11R6/include")
 
-    if (platform.uname()[1]=="pcbsd"):
+    if (os.path.exists("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
      

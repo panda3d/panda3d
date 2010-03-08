@@ -1178,7 +1178,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 incdir = sorted(glob.glob("/usr/include/" + i))[-1]
             elif (len(glob.glob("/usr/local/include/" + i)) > 0):
                 incdir = sorted(glob.glob("/usr/local/include/" + i))[-1]
-            elif (platform.uname()[1]=="pcbsd" and len(glob.glob("/usr/PCBSD/local/include/" + i)) > 0):
+            elif (os.path.isdir("/usr/PCBSD") and len(glob.glob("/usr/PCBSD/local/include/" + i)) > 0):
                 incdir = sorted(glob.glob("/usr/PCBSD/local/include/" + i))[-1]
             else:
                 have_pkg = False
@@ -1629,7 +1629,7 @@ def CheckLinkerLibraryPath():
             os.environ["DYLD_LIBRARY_PATH"] = builtlib
      
     # Workaround around compile issue on PCBSD
-    if (platform.uname()[1]=="pcbsd"):
+    if (os.path.exists("/usr/PCBSD")):
         os.environ["LD_LIBRARY_PATH"] += ":/usr/PCBSD/local/lib"
 
 ########################################################################
