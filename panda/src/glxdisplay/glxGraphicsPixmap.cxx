@@ -75,7 +75,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == (GraphicsStateGuardian *)NULL ||
+      _glx_pixmap == None) {
     return false;
   }
 
@@ -179,11 +180,17 @@ open_buffer() {
     // If the old gsg has the wrong pixel format, create a
     // new one that shares with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
-    if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+    if (!glxgsg->_context_has_pixmap || 
+        !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
       glxgsg->choose_pixel_format(_fb_properties, _display, glx_pipe->get_screen(), false, true);
       _gsg = glxgsg;
     }
+  }
+
+  if (!glxgsg->_context_has_pixmap) {
+    // Hmm, the GSG we created won't work.
+    return false;
   }
 
   XVisualInfo *visual_info = glxgsg->_visual;
@@ -214,16 +221,13 @@ open_buffer() {
     return false;
   }
 
-#ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig) {
     // Use the FBConfig to create the pixmap.
-    _glx_pixmap = glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, NULL);
-  } else
-#endif  // HAVE_GLXFBCONFIG
-    {
-      // Use the XVisual to create the pixmap.
-      _glx_pixmap = glXCreateGLXPixmap(_display, visual_info, _x_pixmap);
-    }
+    _glx_pixmap = glxgsg->_glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, NULL);
+  } else {
+    // Use the XVisual to create the pixmap.
+    _glx_pixmap = glXCreateGLXPixmap(_display, visual_info, _x_pixmap);
+  }
 
   if (_glx_pixmap == None) {
     glxdisplay_cat.error()

@@ -39,6 +39,14 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _visual=0;
   _visuals=0;
   _fbconfig=0;
+  _context_has_pbuffer = false;
+  _context_has_pixmap = false;
+  _slow = false;
+
+  _supports_swap_control = false;
+  _supports_fbconfig = false;
+  _supports_pbuffer = false;
+  _uses_sgix_pbuffer = false;
   
   if (share_with != (glxGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();
@@ -48,6 +56,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _libgl_handle = NULL;
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
+  _temp_xwindow = (Window)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +66,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
+  destroy_temp_xwindow();
   if (_visuals != (XVisualInfo *)NULL) {
     XFree(_visuals);
   }
@@ -71,7 +81,7 @@ glxGraphicsStateGuardian::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::get_properties
-//       Access: Private
+//       Access: Public
 //  Description: Gets the FrameBufferProperties to match the
 //               indicated visual.
 ////////////////////////////////////////////////////////////////////
@@ -131,87 +141,86 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::get_properties_advanced
-//       Access: Private
+//       Access: Public
 //  Description: Gets the FrameBufferProperties to match the
 //               indicated GLXFBConfig
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 get_properties_advanced(FrameBufferProperties &properties, 
-                        bool &pbuffer_supported, bool &pixmap_supported,
-                        bool &slow, fbconfig config) {
-
+                        bool &context_has_pbuffer, bool &context_has_pixmap,
+                        bool &slow, GLXFBConfig config) {
   properties.clear();
 
-#ifdef HAVE_GLXFBCONFIG
-  // Now update our framebuffer_mode and bit depth appropriately.
-  int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
-    alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-    depth_size, stencil_size, samples, drawable_type, caveat;
-  
-  glXGetFBConfigAttrib(_display, config, GLX_RGBA, &render_mode);
-  glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
-  glXGetFBConfigAttrib(_display, config, GLX_STEREO, &stereo);
-  glXGetFBConfigAttrib(_display, config, GLX_RED_SIZE, &red_size);
-  glXGetFBConfigAttrib(_display, config, GLX_GREEN_SIZE, &green_size);
-  glXGetFBConfigAttrib(_display, config, GLX_BLUE_SIZE, &blue_size);
-  glXGetFBConfigAttrib(_display, config, GLX_ALPHA_SIZE, &alpha_size);
-  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_RED_SIZE, &ared_size);
-  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_GREEN_SIZE, &agreen_size);
-  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_BLUE_SIZE, &ablue_size);
-  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
-  glXGetFBConfigAttrib(_display, config, GLX_DEPTH_SIZE, &depth_size);
-  glXGetFBConfigAttrib(_display, config, GLX_STENCIL_SIZE, &stencil_size);
-  glXGetFBConfigAttrib(_display, config, GLX_SAMPLES, &samples);
-  glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
-  glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
-
-  pbuffer_supported = false;
-  if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
-    pbuffer_supported = true;
+  if (_supports_fbconfig) {
+    // Now update our framebuffer_mode and bit depth appropriately.
+    int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
+      alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
+      depth_size, stencil_size, samples, drawable_type, caveat;
+    
+    _glXGetFBConfigAttrib(_display, config, GLX_RGBA, &render_mode);
+    _glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
+    _glXGetFBConfigAttrib(_display, config, GLX_STEREO, &stereo);
+    _glXGetFBConfigAttrib(_display, config, GLX_RED_SIZE, &red_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_GREEN_SIZE, &green_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_BLUE_SIZE, &blue_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_ALPHA_SIZE, &alpha_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_ACCUM_RED_SIZE, &ared_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_ACCUM_GREEN_SIZE, &agreen_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_ACCUM_BLUE_SIZE, &ablue_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_DEPTH_SIZE, &depth_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_STENCIL_SIZE, &stencil_size);
+    _glXGetFBConfigAttrib(_display, config, GLX_SAMPLES, &samples);
+    _glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
+    _glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
+    
+    context_has_pbuffer = false;
+    if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
+      context_has_pbuffer = true;
+    }
+    
+    context_has_pixmap = false;
+    if ((drawable_type & GLX_PIXMAP_BIT)!=0) {
+      context_has_pixmap = true;
+    }
+    
+    slow = false;
+    if (caveat == GLX_SLOW_CONFIG) {
+      slow = true;
+    }
+    
+    if ((drawable_type & GLX_WINDOW_BIT)==0) {
+      // We insist on having a context that will support an onscreen window.
+      return;
+    }
+    
+    if (double_buffer) {
+      properties.set_back_buffers(1);
+    }
+    if (stereo) {
+      properties.set_stereo(1);
+    }
+    if (render_mode) {
+      properties.set_rgb_color(1);
+    } else {
+      properties.set_indexed_color(1);
+    }
+    properties.set_color_bits(red_size+green_size+blue_size);
+    properties.set_stencil_bits(stencil_size);
+    properties.set_depth_bits(depth_size);
+    properties.set_alpha_bits(alpha_size);
+    properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
+    properties.set_multisamples(samples);
+    
+    // Set both hardware and software bits, indicating not-yet-known.
+    properties.set_force_software(1);
+    properties.set_force_hardware(1);
   }
-
-  pixmap_supported = false;
-  if ((drawable_type & GLX_PIXMAP_BIT)!=0) {
-    pixmap_supported = true;
-  }
-  
-  slow = false;
-  if (caveat == GLX_SLOW_CONFIG) {
-    slow = true;
-  }
-
-  if ((drawable_type & GLX_WINDOW_BIT)==0) {
-    // We insist on having a context that will support an onscreen window.
-    return;
-  }
-  
-  if (double_buffer) {
-    properties.set_back_buffers(1);
-  }
-  if (stereo) {
-    properties.set_stereo(1);
-  }
-  if (render_mode) {
-    properties.set_rgb_color(1);
-  } else {
-    properties.set_indexed_color(1);
-  }
-  properties.set_color_bits(red_size+green_size+blue_size);
-  properties.set_stencil_bits(stencil_size);
-  properties.set_depth_bits(depth_size);
-  properties.set_alpha_bits(alpha_size);
-  properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
-  properties.set_multisamples(samples);
-
-  // Set both hardware and software bits, indicating not-yet-known.
-  properties.set_force_software(1);
-  properties.set_force_hardware(1);
-#endif // HAVE_GLXFBCONFIG
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::choose_pixel_format
-//       Access: Private
+//       Access: Public
 //  Description: Selects a visual or fbconfig for all the windows
 //               and buffers that use this gsg.  Also creates the GL
 //               context and obtains the visual.
@@ -229,8 +238,51 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _visuals = 0;
   _fbprops.clear();
 
-#ifdef HAVE_GLXFBCONFIG  
-  //// Choose best format available using GLXFBConfig
+  // First, attempt to create a context using the XVisual interface.
+  // We need this before we can query the FBConfig interface, because
+  // we need an OpenGL context to get the required extension function
+  // pointers.
+  choose_visual(properties);
+  if (_context == NULL) {
+    // No good.
+    return;
+  }
+
+  // Now we have to initialize the context so we can query its
+  // capabilities and extensions.  This also means creating a
+  // temporary window, so we have something to bind the context to and
+  // make it current.
+  init_temp_context();
+
+  if (!_supports_fbconfig) {
+    // We have a good OpenGL context, but it doesn't support the
+    // FBConfig interface, so we'll stop there.
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug()
+        <<" No FBConfig supported; using XVisual only.\n";
+
+      glxdisplay_cat.debug()
+        << _fbprops << "\n";
+
+      // By convention, every indirect XVisual that can render to a
+      // window can also render to a GLXPixmap.  Direct visuals we're
+      // not as sure about.
+      _context_has_pixmap = !glXIsDirect(_display, _context);
+
+      // Pbuffers aren't supported at all with the XVisual interface.
+      _context_has_pbuffer = false;
+    }
+    return;
+  }
+
+  // The OpenGL context supports the FBConfig interface, so we can use
+  // that more advanced interface to choose the actual window format
+  // we'll use.  FBConfig provides for more options than the older
+  // XVisual interface, so we'd much rather use it if it's available.
+
+  int best_quality = 0;
+  int best_result = 0;
+  FrameBufferProperties best_props;
 
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
@@ -242,35 +294,38 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attrib_list[n++] = GLX_DRAWABLE_TYPE;
   attrib_list[n++] = GLX_DONT_CARE;
   attrib_list[n] = (int)None;
-
+  
   int num_configs = 0;
   GLXFBConfig *configs =
-    glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
+    _glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
 
-  int best_quality = 0;
-  int best_result = 0;
-  FrameBufferProperties best_props;
+  // Now that we're done querying the first context, we don't need it
+  // anymore.  Clear it so we can create our actual OpenGL context.
+  glXDestroyContext(_display, _context);
+  _context = (GLXContext)NULL;
+  destroy_temp_xwindow();
   
   if (configs != 0) {
     for (int i = 0; i < num_configs; ++i) {
       FrameBufferProperties fbprops;
-      bool pbuffer_supported, pixmap_supported, slow;
-      get_properties_advanced(fbprops, pbuffer_supported, pixmap_supported,
+      bool context_has_pbuffer, context_has_pixmap, slow;
+      get_properties_advanced(fbprops, context_has_pbuffer, context_has_pixmap,
                               slow, configs[i]);
-      // We're not protecting this code by an is_debug() check, because if we do,
-      // some weird compiler bug appears and somehow makes the quality always 0.
-      const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
-      const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
+      // We're not protecting this code by an is_debug() check,
+      // because if we do, some weird compiler bug appears and somehow
+      // makes the quality always 0.
+      const char *pbuffertext = context_has_pbuffer ? " (pbuffer)" : "";
+      const char *pixmaptext = context_has_pixmap ? " (pixmap)" : "";
       const char *slowtext = slow ? " (slow)" : "";
       glxdisplay_cat.debug()
         << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
       int quality = fbprops.get_quality(properties);
       if ((quality > 0)&&(slow)) quality -= 10000000;
-
-      if (need_pbuffer && !pbuffer_supported) {
+      
+      if (need_pbuffer && !context_has_pbuffer) {
         continue;
       }
-      if (need_pixmap && !pixmap_supported) {
+      if (need_pixmap && !context_has_pixmap) {
         continue;
       }
       
@@ -281,17 +336,31 @@ choose_pixel_format(const FrameBufferProperties &properties,
       }
     }
   }
-  
+
   if (best_quality > 0) {
     _fbconfig = configs[best_result];
     _context = 
-      glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
-                          GL_TRUE);
+      _glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
+                           GL_TRUE);
     if (_context) {
-      _visuals = glXGetVisualFromFBConfig(_display, _fbconfig);
+      _visuals = _glXGetVisualFromFBConfig(_display, _fbconfig);
       _visual = _visuals;
+
       if (_visual) {
-        _fbprops = best_props;
+        get_properties_advanced(_fbprops, _context_has_pbuffer, _context_has_pixmap,
+                                _slow, _fbconfig);
+
+        // hack?
+        //init_temp_context();
+
+        if (glxdisplay_cat.is_debug()) {
+          glxdisplay_cat.debug()
+            << "Selected context " << best_result << "\n";
+          glxdisplay_cat.debug()
+            << "context_has_pbuffer = " << _context_has_pbuffer
+            << ", context_has_pixmap = " << _context_has_pixmap << "\n";
+        }
+
         return;
       }
     }
@@ -303,40 +372,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _visual = 0;
     _visuals = 0;
   }
-#endif // HAVE_GLXFBCONFIG
-  
-  if (need_pbuffer) {
-    // The xvisual interface cannot create pbuffers.
-    return;
-  }
 
-  // Scan available visuals.
-  int nvisuals=0;
-  _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
-  if (_visuals != 0) {
-    for (int i=0; i<nvisuals; i++) {
-      FrameBufferProperties fbprops;
-      get_properties(fbprops, _visuals+i);
-      int quality = fbprops.get_quality(properties);
-      if (quality > best_quality) {
-        best_quality = quality;
-        best_result = i;
-        best_props = fbprops;
-      }
-    }
-  }
-  
-  if (best_quality > 0) {
-    _visual = _visuals+best_result;
-    _context = glXCreateContext(_display, _visual, None, GL_TRUE);    
-    if (_context) {
-      _fbprops = best_props;
-      return;
-    }
-  }
-
-  glxdisplay_cat.error() <<
-    "Could not find a usable pixel format.\n";
+  glxdisplay_cat.info()
+    << "No suitable FBConfig contexts available.\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,6 +403,108 @@ reset() {
     // Set the video-sync setting up front, if we have the extension
     // that supports it.
     _glXSwapIntervalSGI(sync_video ? 1 : 0);
+  }
+
+  if (glx_support_fbconfig) {
+    if (glx_is_at_least_version(1, 3)) {
+      // If we have glx 1.3 or better, we have the FBConfig interface.
+      _supports_fbconfig = true;
+      
+      _glXChooseFBConfig = 
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glX", "ChooseFBConfig");
+      _glXCreateNewContext = 
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glX", "CreateNewContext");
+      _glXGetVisualFromFBConfig = 
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glX", "GetVisualFromFBConfig");
+      _glXGetFBConfigAttrib = 
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glX", "GetFBConfigAttrib");
+      _glXCreatePixmap = 
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glX", "CreatePixmap");
+      
+      if (_glXChooseFBConfig == NULL ||
+          _glXCreateNewContext == NULL ||
+          _glXGetVisualFromFBConfig == NULL ||
+          _glXGetFBConfigAttrib == NULL ||
+          _glXCreatePixmap == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_fbconfig extension, but does not define all functions.\n";
+        _supports_fbconfig = false;
+      }
+    } else if (has_extension("GLX_SGIX_fbconfig")) {
+      // Or maybe we have the old SGIX extension for FBConfig.  This is
+      // the same, but the function names are different--we just remap
+      // them to the same function pointers.
+      _supports_fbconfig = true;
+      
+      _glXChooseFBConfig = 
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glX", "ChooseFBConfigSGIX");
+      _glXCreateNewContext = 
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glX", "CreateContextWithConfigSGIX");
+      _glXGetVisualFromFBConfig = 
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glX", "GetVisualFromFBConfigSGIX");
+      _glXGetFBConfigAttrib = 
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glX", "GetFBConfigAttribSGIX");
+      _glXCreatePixmap = 
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glX", "CreateGLXPixmapWithConfigSGIX");
+      
+      if (_glXChooseFBConfig == NULL ||
+          _glXCreateNewContext == NULL ||
+          _glXGetVisualFromFBConfig == NULL ||
+          _glXGetFBConfigAttrib == NULL ||
+          _glXCreatePixmap == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_SGIX_fbconfig extension, but does not define all functions.\n";
+        _supports_fbconfig = false;
+      }
+    }
+    
+    if (glx_is_at_least_version(1, 3)) {
+      // If we have glx 1.3 or better, we have the PBuffer interface.
+      _supports_pbuffer = true;
+      _uses_sgix_pbuffer = false;
+      
+      _glXCreatePbuffer = 
+        (PFNGLXCREATEPBUFFERPROC)get_extension_func("glX", "CreatePbuffer");
+      _glXCreateGLXPbufferSGIX = NULL;
+      _glXDestroyPbuffer = 
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glX", "DestroyPbuffer");
+      if (_glXCreatePbuffer == NULL ||
+          _glXDestroyPbuffer == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_pbuffer extension, but does not define all functions.\n";
+        _supports_pbuffer = false;
+      }
+      
+    } else if (has_extension("GLX_SGIX_pbuffer")) {
+      // Or maybe we have the old SGIX extension for PBuffers.
+      _uses_sgix_pbuffer = true;
+      
+      // CreatePbuffer has a different form between SGIX and 1.3,
+      // however, so we must treat it specially.  But we can use the
+      // same function pointer for DestroyPbuffer.
+      _glXCreatePbuffer = NULL;
+      _glXCreateGLXPbufferSGIX = 
+        (PFNGLXCREATEGLXPBUFFERSGIXPROC)get_extension_func("glX", "CreateGLXPbufferSGIX");
+      _glXDestroyPbuffer = 
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glX", "DestroyGLXPbufferSGIX");
+      if (_glXCreateGLXPbufferSGIX == NULL ||
+          _glXDestroyPbuffer == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_SGIX_pbuffer extension, but does not define all functions.\n";
+        _supports_pbuffer = false;
+      }
+    }
+  }
+
+
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
+      << "supports_swap_control = " << _supports_swap_control << "\n";
+    glxdisplay_cat.debug()
+      << "supports_fbconfig = " << _supports_fbconfig << "\n";
+    glxdisplay_cat.debug()
+      << "supports_pbuffer = " << _supports_pbuffer
+      << " sgix = " << _uses_sgix_pbuffer << "\n";
   }
 
   // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
@@ -602,5 +742,92 @@ show_glx_server_string(const string &name, int id) {
       glgsg_cat.debug()
         << name << " (server) = " << (const char *)text << "\n";
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::choose_visual
+//       Access: Private
+//  Description: Selects a visual for this gsg.  This may be called
+//               initially, to create the first context needed in
+//               order to create the fbconfig.  On successful return,
+//               _visual and _context will be filled in with a
+//               non-NULL value.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+choose_visual(const FrameBufferProperties &properties) {
+  int best_quality = 0;
+  int best_result = 0;
+  FrameBufferProperties best_props;
+
+  // Scan available visuals.
+  int nvisuals = 0;
+  _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
+  if (_visuals != 0) {
+    for (int i = 0; i < nvisuals; i++) {
+      FrameBufferProperties fbprops;
+      get_properties(fbprops, _visuals + i);
+      int quality = fbprops.get_quality(properties);
+      if (quality > best_quality) {
+        best_quality = quality;
+        best_result = i;
+        best_props = fbprops;
+      }
+    }
+  }
+  
+  if (best_quality > 0) {
+    _visual = _visuals + best_result;
+    _context = glXCreateContext(_display, _visual, None, GL_TRUE);    
+    if (_context) {
+      _fbprops = best_props;
+      return;
+    }
+  }
+
+  glxdisplay_cat.error() 
+    << "Could not find a usable pixel format.\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::init_temp_context
+//       Access: Private
+//  Description: Initializes the context created in choose_visual() by
+//               creating a temporary window and binding the context
+//               to that window.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+init_temp_context() {
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_V(x11_pipe, get_pipe());
+  Window root_window = x11_pipe->get_root();
+
+  destroy_temp_xwindow();
+
+  _temp_xwindow = XCreateWindow
+    (_display, root_window, 0, 0, 1, 1,
+     0, _visual->depth, InputOutput,
+     _visual->visual, 0, NULL);
+  if (_temp_xwindow == (Window)NULL) {
+    glxdisplay_cat.error()
+      << "Could not create temporary window for context\n";
+    return;
+  }
+
+  glXMakeCurrent(_display, _temp_xwindow, _context);
+  reset();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::destroy_temp_xwindow
+//       Access: Private
+//  Description: Destroys the temporary unmapped window created by
+//               init_temp_context().
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+destroy_temp_xwindow() {
+  if (_temp_xwindow != (Window)NULL) {
+    XDestroyWindow(_display, _temp_xwindow);
+    _temp_xwindow = (Window)NULL;
   }
 }

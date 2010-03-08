@@ -46,10 +46,7 @@ protected:
   virtual bool open_window();
 
 private:
-
-#ifdef HAVE_GLXFBCONFIG
   virtual void setup_colormap(GLXFBConfig fbconfig);
-#endif  // HAVE_GLXFBCONFIG
   virtual void setup_colormap(XVisualInfo *visual);
   
 public:

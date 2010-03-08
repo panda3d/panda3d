@@ -119,7 +119,7 @@ make_output(const string &name,
 
   if (retry == 1) {
     if ((host==0)||
-  //        (!gl_support_fbo)||
+        (!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
       return NULL;
@@ -152,34 +152,33 @@ make_output(const string &name,
                                 flags, gsg, host);
   }
 
-#ifdef HAVE_GLXFBCONFIG
   // Third thing to try: a glxGraphicsBuffer
-  
-  if (retry == 2) {
-    if (!glx_support_pbuffer) {
-      return NULL;
-    }
-
-    if (((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)||
-        ((flags&BF_resizeable)!=0)||
-        ((flags&BF_size_track_host)!=0)) {
-      return NULL;
-    }
-
-    if (!support_rtt) {
-      if (((flags&BF_rtt_cumulative)!=0)||
-          ((flags&BF_can_bind_every)!=0)) {
-        // If we require Render-to-Texture, but can't be sure we
-        // support it, bail.
+  if (glxgsg == NULL || glxgsg->_supports_fbconfig) {
+    if (retry == 2) {
+      if (!glx_support_pbuffer) {
         return NULL;
       }
+      
+      if (((flags&BF_require_parasite)!=0)||
+          ((flags&BF_require_window)!=0)||
+          ((flags&BF_resizeable)!=0)||
+          ((flags&BF_size_track_host)!=0)) {
+        return NULL;
+      }
+      
+      if (!support_rtt) {
+        if (((flags&BF_rtt_cumulative)!=0)||
+            ((flags&BF_can_bind_every)!=0)) {
+          // If we require Render-to-Texture, but can't be sure we
+          // support it, bail.
+          return NULL;
+        }
+      }
+      
+      return new glxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                   flags, gsg, host);
     }
-
-    return new glxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
-                                 flags, gsg, host);
   }
-#endif  // HAVE_GLXFBCONFIG
 
   // Third thing to try: a glxGraphicsPixmap.
   if (retry == 3) {

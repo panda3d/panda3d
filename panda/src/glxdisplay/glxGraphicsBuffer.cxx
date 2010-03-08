@@ -21,10 +21,6 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
-#ifdef HAVE_GLXFBCONFIG
-// This whole class doesn't make sense unless we have the GLXFBConfig
-// and associated GLXPbuffer interfaces available.
-
 TypeHandle glxGraphicsBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +72,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == (GraphicsStateGuardian *)NULL ||
+      _pbuffer == None) {
     return false;
   }
 
@@ -140,15 +137,19 @@ void glxGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     glXMakeCurrent(_display, None, NULL);
+
+    if (_pbuffer != None) {
+      glxGraphicsStateGuardian *glxgsg;
+      DCAST_INTO_V(glxgsg, _gsg);
+      glxgsg->_glXDestroyPbuffer(_display, _pbuffer);
+      _pbuffer = None;
+    }
+    
     _gsg.clear();
     _active = false;
   }
 
-  if (_pbuffer != None) {
-    glXDestroyPbuffer(_display, _pbuffer);
-    _pbuffer = None;
-  }
-
+  _pbuffer = None;
   _is_valid = false;
 }
 
@@ -175,43 +176,47 @@ open_buffer() {
     // If the old gsg has the wrong pixel format, create a
     // new one that shares with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
-    if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+
+    if (!glxgsg->_context_has_pbuffer || 
+        !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+      // We need a new pixel format, and hence a new GSG.
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
       glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true, false);
       _gsg = glxgsg;
     }
   }
   
-  if (glxgsg->_fbconfig == None) {
-    // If we didn't use an fbconfig to create the GSG, we can't create
-    // a PBuffer.
+  if (glxgsg->_fbconfig == None || glxgsg->_context_has_pbuffer) {
+    // If we didn't use an fbconfig to create the GSG, or it doesn't
+    // support buffers, we can't create a PBuffer.
     return false;
   }
 
+  nassertr(glxgsg->_supports_pbuffer, false);
+
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
-  int n=0;
+  int n = 0;
 
-#ifdef HAVE_OFFICIAL_GLXFBCONFIG
-  // The official GLX 1.3 version passes in the size in the attrib
-  // list.
-  attrib_list[n++] = GLX_PBUFFER_WIDTH;
-  attrib_list[n++] = _x_size;
-  attrib_list[n++] = GLX_PBUFFER_HEIGHT;
-  attrib_list[n++] = _y_size;
-
-  nassertr(n < max_attrib_list, false);
-  attrib_list[n] = (int)None;
-  _pbuffer = glXCreatePbuffer(glxgsg->_display, glxgsg->_fbconfig,
-                              attrib_list);
-
-#else
-  // The SGI version passed in the size in the parameter list.
-  nassertr(n < max_attrib_list, false);
-  attrib_list[n] = (int)None;
-  _pbuffer = glXCreateGLXPbufferSGIX(glxgsg->_display, glxgsg->_fbconfig,
-                                     _x_size, _y_size, attrib_list);
-#endif
+  if (glxgsg->_uses_sgix_pbuffer) {
+    // The SGI version passed in the size in the parameter list.
+    nassertr(n < max_attrib_list, false);
+    attrib_list[n] = (int)None;
+    _pbuffer = glxgsg->_glXCreateGLXPbufferSGIX(glxgsg->_display, glxgsg->_fbconfig,
+                                                _x_size, _y_size, attrib_list);
+  } else {
+    // The official GLX 1.3 version passes in the size in the attrib
+    // list.
+    attrib_list[n++] = GLX_PBUFFER_WIDTH;
+    attrib_list[n++] = _x_size;
+    attrib_list[n++] = GLX_PBUFFER_HEIGHT;
+    attrib_list[n++] = _y_size;
+    
+    nassertr(n < max_attrib_list, false);
+    attrib_list[n] = (int)None;
+    _pbuffer = glxgsg->_glXCreatePbuffer(glxgsg->_display, glxgsg->_fbconfig,
+                                         attrib_list);
+  }
 
   if (_pbuffer == None) {
     glxdisplay_cat.error()
@@ -235,6 +240,3 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
-
-
-#endif  // HAVE_GLXFBCONFIG

@@ -16,6 +16,7 @@
 #include "glxGraphicsBuffer.h"
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsPixmap.h"
+#include "glxGraphicsBuffer.h"
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
@@ -43,6 +44,19 @@ ConfigVariableBool glx_get_os_address
           "addresses of extension functions.  This will be done only "
           "if glxGetProcAddress() cannot be used for some reason."));
 
+ConfigVariableBool gl_support_fbo
+("gl-support-fbo", true,
+ PRC_DESC("Configure this false if your GL's implementation of "
+          "EXT_framebuffer_object is broken.  The system might still be "
+          "able to create buffers using pbuffers or the like."));
+
+ConfigVariableBool glx_support_fbconfig
+("glx-support-fbconfig", true,
+ PRC_DESC("Set this true to enable the use of the advanced FBConfig "
+          "interface (as opposed to the older XVisual interface) "
+          "if it is available, to select a graphics visual and "
+          "create an OpenGL context."));
+
 ConfigVariableBool glx_support_pbuffer
 ("glx-support-pbuffer", true,
  PRC_DESC("Set this true to enable the use of X pbuffer-based offscreen "
@@ -53,9 +67,7 @@ ConfigVariableBool glx_support_pixmap
 ("glx-support-pixmap", false,
  PRC_DESC("Set this true to enable the use of X pixmap-based offscreen "
           "buffers.  This is false by default because pixmap-based buffers "
-          "are usually slower than pbuffer-based buffers, and because at "
-          "least one driver is known to crash (crash!) when it attempts "
-          "to create a pixmap-based buffer."));
+          "are usually slower than pbuffer-based buffers."));
 
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +91,7 @@ init_libglxdisplay() {
 #endif  // HAVE_GLXFBCONFIG
   glxGraphicsPipe::init_type();
   glxGraphicsPixmap::init_type();
+  glxGraphicsBuffer::init_type();
   glxGraphicsWindow::init_type();
   glxGraphicsStateGuardian::init_type();
 

@@ -408,8 +408,8 @@ make_output(GraphicsPipe *pipe,
             << "  got: " << window->get_fb_properties() << "\n";
         }
       } else {
-        display_cat.error()
-          << "Window wouldn't open; abandoning window.\n";
+        display_cat.info()
+          << window->get_type() << " wouldn't open; abandoning.\n";
       }
 
       // No good; delete the window and keep trying.

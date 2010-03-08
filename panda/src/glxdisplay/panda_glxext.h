@@ -1,5 +1,5 @@
-#ifndef __glxext_h_
-#define __glxext_h_
+#ifndef panda__glxext_h_
+#define panda__glxext_h_
 
 #ifdef __cplusplus
 extern "C" {

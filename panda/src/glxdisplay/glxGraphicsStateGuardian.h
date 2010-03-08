@@ -20,6 +20,9 @@
 #include "glgsg.h"
 #include "glxGraphicsPipe.h"
 
+// Don't pick up the system glxext.h; use our own, which is better.
+#define __glxext_h_
+
 #include <GL/glx.h>
 
 #if defined(GLX_VERSION_1_4)
@@ -39,7 +42,7 @@ extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 
 // This must be included after we have included glgsg.h (which
 // includes gl.h).
-#include "glxext.h"
+#include "panda_glxext.h"
 
 // drose: the version of GL/glx.h that ships with Fedora Core 2 seems
 // to define GLX_VERSION_1_4, but for some reason does not define
@@ -69,17 +72,11 @@ typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-#ifdef HAVE_GLXFBCONFIG
-  typedef GLXFBConfig fbconfig;
-#else
-  typedef int         fbconfig;
-#endif
-
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties, XVisualInfo *visual);
   void get_properties_advanced(FrameBufferProperties &properties,
-                               bool &pbuffer_supported, bool &pixmap_supported,
-                               bool &slow, fbconfig config);
+                               bool &context_has_pbuffer, bool &pixmap_supported,
+                               bool &slow, GLXFBConfig config);
   void choose_pixel_format(const FrameBufferProperties &properties, 
                            Display *_display,
                            int _screen,
@@ -100,12 +97,29 @@ public:
   int _screen;
   XVisualInfo *_visual;
   XVisualInfo *_visuals;
-  fbconfig _fbconfig;
+
+  GLXFBConfig _fbconfig;
   FrameBufferProperties _fbprops;
+  bool _context_has_pbuffer;  // true if the particular fbconfig supports pbuffers
+  bool _context_has_pixmap;
+  bool _slow;
 
 public:
   bool _supports_swap_control;
   PFNGLXSWAPINTERVALSGIPROC _glXSwapIntervalSGI;
+
+  bool _supports_fbconfig;
+  PFNGLXCHOOSEFBCONFIGPROC _glXChooseFBConfig;
+  PFNGLXCREATENEWCONTEXTPROC _glXCreateNewContext;
+  PFNGLXGETVISUALFROMFBCONFIGPROC _glXGetVisualFromFBConfig;
+  PFNGLXGETFBCONFIGATTRIBPROC _glXGetFBConfigAttrib;
+  PFNGLXCREATEPIXMAPPROC _glXCreatePixmap;
+
+  bool _supports_pbuffer;  // true if the interface is available.
+  bool _uses_sgix_pbuffer;
+  PFNGLXCREATEPBUFFERPROC _glXCreatePbuffer;
+  PFNGLXCREATEGLXPBUFFERSGIXPROC _glXCreateGLXPbufferSGIX;
+  PFNGLXDESTROYPBUFFERPROC _glXDestroyPbuffer;
 
 protected:
   virtual void gl_flush() const;
@@ -119,13 +133,16 @@ private:
   void *get_system_func(const char *name);
   void show_glx_client_string(const string &name, int id);
   void show_glx_server_string(const string &name, int id);
-
+  void choose_visual(const FrameBufferProperties &properties);
+  void init_temp_context();
+  void destroy_temp_xwindow();
 
   int _glx_version_major, _glx_version_minor;
 
   void *_libgl_handle;
   bool _checked_get_proc_address;
   PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
+  Window _temp_xwindow;
 
 public:
   static TypeHandle get_class_type() {

@@ -28,6 +28,8 @@ extern EXPCL_PANDAGL void init_libglxdisplay();
 extern ConfigVariableBool glx_get_proc_address;
 extern ConfigVariableBool glx_get_os_address;
 
+extern ConfigVariableBool gl_support_fbo;
+extern ConfigVariableBool glx_support_fbconfig;
 extern ConfigVariableBool glx_support_pbuffer;
 extern ConfigVariableBool glx_support_pixmap;
 
