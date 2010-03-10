@@ -52,8 +52,10 @@ class ProtoPaletteUI(wx.Panel):
                   validator=wx.DefaultValidator, name="treeCtrl")
         self.rootName = "Proto Objects"
         self.root = self.tree.AddRoot(self.rootName)
-        self.addTreeNodes(self.root, self.palette.dataStruct)
-        
+
+        self.dataKeys = self.palette.dataStruct.keys()[:]
+        self.addTreeNodes(self.root, self.palette.rootName, self.palette.dataStruct, self.dataKeys)
+
         self.editorTxt = "Proto Objects Editor"
 
         self.opAdd    = "Add Group"
@@ -109,27 +111,21 @@ class ProtoPaletteUI(wx.Panel):
               item, cookie = self.tree.GetNextChild(parent, cookie)
         return None
 
-    def addTreeNode(self, itemText, parentItem, items):
-        newItem = wx.TreeItemId
-        parentText = items[itemText]
-        if parentText == self.palette.rootName:
-           newItem = self.tree.AppendItem(parentItem, itemText)
-           self.tree.SetItemPyData(newItem, itemText)
-        else:
-           item = self.traverse(parentItem, parentText)
-           if item is None:
-              item = self.addTreeNode(parentText, parentItem, items)
+    def addTreeNodes(self, parentItem, parentItemName, items, itemKeys):
+        roots = []
+        rootItems = []
+        #import pdb;set_trace()
+        for key in itemKeys:
+            if parentItemName == items[key]:
+               roots.append(key)
+        for root in roots:
+            newItem = self.tree.AppendItem(parentItem, root)
+            self.tree.SetItemPyData(newItem, root)
+            rootItems.append(newItem)
+            itemKeys.remove(root)
+        for rootItem in rootItems:
+            self.addTreeNodes(rootItem, self.tree.GetItemText(rootItem), items, itemKeys)
 
-           newItem = self.tree.AppendItem(item, itemText)
-           self.tree.SetItemPyData(newItem, itemText)
-
-        return newItem
-
-    def addTreeNodes(self, parentItem, items):
-        for key in items.keys():
-            item = self.traverse(parentItem, key)
-            if item is None:
-               self.addTreeNode(key, parentItem, items)
 
     def onBeginDrag(self, event):
         item = event.GetItem()
