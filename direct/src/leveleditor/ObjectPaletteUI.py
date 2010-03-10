@@ -3,22 +3,7 @@ Defines ObjectPalette tree UI
 """
 import wx
 import cPickle as pickle
-
-class ObjectPaletteTreeCtrl(wx.TreeCtrl):
-    def __init__(self, parent):
-        wx.TreeCtrl.__init__(self, parent)
-        
-        self.paletteUI = parent
-
-    def OnCompareItems(self, item1, item2):
-        data1 = self.GetItemText(item1)
-        data2 = self.GetItemText(item2)
-        if self.paletteUI.opSort == self.paletteUI.opSortAlpha:
-           return cmp(data1, data2)
-        else:
-           index1 = self.paletteUI.palette.dataKeys.index(data1)
-           index2 = self.paletteUI.palette.dataKeys.index(data2)
-           return cmp(index1, index2)
+from PaletteTreeCtrl import *
 
 class ObjectPaletteUI(wx.Panel):
     def __init__(self, parent, editor):
@@ -27,10 +12,9 @@ class ObjectPaletteUI(wx.Panel):
         self.editor = editor
 
         self.palette = self.editor.objectPalette
-        self.tree = ObjectPaletteTreeCtrl(self)
-        root = self.tree.AddRoot('Objects')
+        self.tree = PaletteTreeCtrl(self, treeStyle=wx.TR_DEFAULT_STYLE, rootName='Objects')
         self.dataKeys = self.palette.dataKeys[:]
-        self.addTreeNodes(root, self.palette.rootName, self.palette.dataStruct, self.dataKeys)
+        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, self.dataKeys)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -55,67 +39,9 @@ class ObjectPaletteUI(wx.Panel):
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
 
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
-        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
-
-    def traverse(self, parent, itemText):
-        if itemText == self.tree.GetItemText(parent):
-           return parent
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-              # if the item was found - return it
-              if itemText == self.tree.GetItemText(item):
-                 return item
-
-              # the tem was not found - checking if it has children
-              if self.tree.ItemHasChildren(item):
-                 # item has children - delving into it
-                 child = self.traverse(item, itemText)
-                 if child is not None:
-                    return child
-
-              # continue iteration to the next child
-              item, cookie = self.tree.GetNextChild(parent, cookie)
-        return None
-
-    def addTreeNodes(self, parentItem, parentItemName, items, itemKeys):
-        roots = []
-        rootItems = []
-        #import pdb;set_trace()
-        for key in itemKeys:
-            if parentItemName == items[key]:
-               roots.append(key)
-        for root in roots:
-            newItem = self.tree.AppendItem(parentItem, root)
-            self.tree.SetItemPyData(newItem, root)
-            rootItems.append(newItem)
-            itemKeys.remove(root)
-        for rootItem in rootItems:
-            self.addTreeNodes(rootItem, self.tree.GetItemText(rootItem), items, itemKeys)
-
-    def SortTreeNodes(self, parent):
-        self.tree.SortChildren(parent)
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-              if self.tree.ItemHasChildren(item):
-                 self.SortTreeNodes(item)
-
-              # continue iteration to the next child
-              item, cookie = self.tree.GetNextChild(parent, cookie)
 
     def onSelected(self, event):
         pass
-
-    def onBeginDrag(self, event):
-        item = event.GetItem()
-
-        if item != self.tree.GetRootItem(): # prevent dragging root item
-            text = self.tree.GetItemText(item)
-            print "Starting drag'n'drop with %s..." % repr(text)
-
-            tdo = wx.TextDataObject(text)
-            tds = wx.DropSource(self.tree)
-            tds.SetData(tdo)
-            tds.DoDragDrop(True)
 
     def onShowPopup(self, event):
         pos = event.GetPosition()
@@ -129,4 +55,14 @@ class ObjectPaletteUI(wx.Panel):
            self.opSort = self.opSortAlpha
         elif text == self.opSortOrig:
            self.opSort = self.opSortOrig
-        self.SortTreeNodes(self.tree.GetRootItem())
+        self.tree.SortTreeNodes(self.tree.GetRootItem())
+
+    def compareItems(self, item1, item2):
+        data1 = self.tree.GetItemText(item1)
+        data2 = self.tree.GetItemText(item2)
+        if self.opSort == self.opSortAlpha:
+           return cmp(data1, data2)
+        else:
+           index1 = self.palette.dataKeys.index(data1)
+           index2 = self.palette.dataKeys.index(data2)
+        return cmp(index1, index2)

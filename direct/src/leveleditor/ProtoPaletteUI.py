@@ -5,7 +5,7 @@ import wx
 import os
 import cPickle as pickl
 from pandac.PandaModules import *
-from ObjectPaletteBase import *
+from PaletteTreeCtrl import *
 
 class UniversalDropTarget(wx.PyDropTarget):
    """Implements drop target functionality to receive files, bitmaps and text"""
@@ -29,7 +29,7 @@ class UniversalDropTarget(wx.PyDropTarget):
           df = self.do.GetReceivedFormat().GetType()
           if df in [wx.DF_UNICODETEXT, wx.DF_TEXT]:
              text = self.textdo.GetText()
-             self.editor.ui.protoPaletteUI.ChangeHierarchy(text, x, y)
+             self.editor.ui.protoPaletteUI.tree.ChangeHierarchy(text, x, y)
 
           elif df == wx.DF_FILENAME:
                for name in self.filedo.GetFilenames():
@@ -46,25 +46,28 @@ class ProtoPaletteUI(wx.Panel):
 
         self.editor = editor
         self.palette = self.editor.protoPalette
-        #self.tree = wx.TreeCtrl(self)
-        self.tree = wx.TreeCtrl(self, id=-1, pos=wx.DefaultPosition,
-                  size=wx.DefaultSize, style=wx.TR_EDIT_LABELS|wx.TR_DEFAULT_STYLE,
-                  validator=wx.DefaultValidator, name="treeCtrl")
-        self.rootName = "Proto Objects"
-        self.root = self.tree.AddRoot(self.rootName)
+        self.tree = PaletteTreeCtrl(self, treeStyle=wx.TR_EDIT_LABELS|wx.TR_DEFAULT_STYLE, rootName="Proto Objects")
 
         self.dataKeys = self.palette.dataStruct.keys()[:]
-        self.addTreeNodes(self.root, self.palette.rootName, self.palette.dataStruct, self.dataKeys)
+        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, self.dataKeys)
 
         self.editorTxt = "Proto Objects Editor"
+
+        self.opSortAlpha = "Sort Alphabetical Order"
+        self.opSortOrig  = "Sort Original Order"
+        self.opSort = self.opSortOrig
 
         self.opAdd    = "Add Group"
         self.opDelete = "Delete"
 
         self.menuItemsGen = list()
+        self.menuItemsGen.append(self.opSortAlpha)
+        self.menuItemsGen.append(self.opSortOrig)
         self.menuItemsGen.append(self.opAdd)
 
         self.menuItemsSel = list()
+        self.menuItemsSel.append(self.opSortAlpha)
+        self.menuItemsSel.append(self.opSortOrig)
         self.menuItemsSel.append(self.opAdd)
         self.menuItemsSel.append(self.opDelete)
 
@@ -83,67 +86,20 @@ class ProtoPaletteUI(wx.Panel):
         parentSizer.Add(self, 1, wx.EXPAND, 0)
         parent.SetSizer(parentSizer); parent.Layout()
 
-        self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
+        self.tree.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnBeginLabelEdit)
         self.tree.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnEndLabelEdit)
 
         self.SetDropTarget(UniversalDropTarget(self.editor))
 
-    def traverse(self, parent, itemName):
-        # prevent from traversing into self
-        if itemName == self.tree.GetItemText(parent):
-           return parent
-
-        # main loop - serching for an item with an itemId
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-              # if the item was found - return it
-              if itemName == self.tree.GetItemText(item):
-                 return item
-
-              # the tem was not found - checking if it has children
-              if self.tree.ItemHasChildren(item):
-                 # item has children - delving into it
-                 child = self.traverse(item, itemName)
-                 if child is not None:
-                    return child
-
-              # continue iteration to the next child
-              item, cookie = self.tree.GetNextChild(parent, cookie)
-        return None
-
-    def addTreeNodes(self, parentItem, parentItemName, items, itemKeys):
-        roots = []
-        rootItems = []
-        #import pdb;set_trace()
-        for key in itemKeys:
-            if parentItemName == items[key]:
-               roots.append(key)
-        for root in roots:
-            newItem = self.tree.AppendItem(parentItem, root)
-            self.tree.SetItemPyData(newItem, root)
-            rootItems.append(newItem)
-            itemKeys.remove(root)
-        for rootItem in rootItems:
-            self.addTreeNodes(rootItem, self.tree.GetItemText(rootItem), items, itemKeys)
-
-
-    def onBeginDrag(self, event):
-        item = event.GetItem()
-
-        if item != self.tree.GetRootItem(): # prevent dragging root item
-            text = self.tree.GetItemText(item)
-            print "Starting drag'n'drop with %s..." % repr(text)
-
-            tdo = wx.TextDataObject(text)
-            tds = wx.DropSource(self.tree)
-            tds.SetData(tdo)
-            tds.DoDragDrop(True)
+    def OnBeginLabelEdit(self, event):
+        self.editor.ui.bindKeyEvents(False)
 
     def OnEndLabelEdit(self, event):
+        #import pdb;set_trace()
         item = event.GetItem()
         if item != self.tree.GetRootItem():
             newLabel = event.GetLabel()
-            if self.traverse(self.tree.GetRootItem(), newLabel) is None:
+            if self.tree.traverse(self.tree.GetRootItem(), newLabel) is None:
                oldLabel = self.tree.GetItemText(item)
                if isinstance(self.editor.protoPalette.findItem(oldLabel), ObjectBase):
                   event.Veto()
@@ -156,7 +112,9 @@ class ProtoPaletteUI(wx.Panel):
                wx.MessageBox("There is already an item labled '%s'" % newLabel, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
         else:
             event.Veto()
-            wx.MessageBox("'%s' renaming is not allowed" % self.rootName, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+            wx.MessageBox("'%s' renaming is not allowed" % self.tree.rootName, self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+        self.editor.ui.bindKeyEvents(True)
+
 
     def menuAppendGenItems(self):
         for item in self.menuItemsGen:
@@ -178,7 +136,7 @@ class ProtoPaletteUI(wx.Panel):
         hitItem, flags = self.tree.HitTest(pos)
         if hitItem.IsOk():
            itemText = self.tree.GetItemText(hitItem)
-           if itemText != self.rootName:
+           if itemText != self.tree.rootName:
               self.menuAppendSelItems()
            else:
               self.menuAppendGenItems()
@@ -193,88 +151,13 @@ class ProtoPaletteUI(wx.Panel):
         if text == self.opAdd:
            self.AddGroup()
         elif text == self.opDelete:
-           self.Delete()
-
-    def AddGroup(self):
-        #import pdb;set_trace()
-        parent = self.tree.GetSelection()
-        if parent is None:
-            parent = self.root
-
-        i = 1
-        namestr = "Group%s"%(i)
-        found = self.traverse(self.root, namestr)
-        while found:
-              i = i + 1
-              namestr = "Group%s"%(i)
-              found = self.traverse(self.root, namestr)
-
-        newItem = self.tree.AppendItem(parent, namestr)
-        itemData = ObjectGen(name=namestr)
-        parentName = self.tree.GetItemText(parent)
-        if parentName == self.rootName:
-           self.editor.protoPalette.add(itemData)
-        else:
-           self.editor.protoPalette.add(itemData, parentName)
-        self.tree.SetItemPyData(newItem, itemData)
-        #uid = self.editor.objectMgr.genUniqueId()
-
-        self.tree.Expand(self.root)
-        self.tree.ScrollTo(newItem)
-
-    def Delete(self):
-        item = self.tree.GetSelection()
-        itemText = self.tree.GetItemText(item)
-        if item and itemText != self.rootName:
-           self.tree.Delete(item)
-           self.editor.protoPalette.delete(itemText)
-
-    def ReParent(self, parent, newParent):
-        # main loop - iterating over item's children
-        item, cookie = self.tree.GetFirstChild(parent)
-        while item:
-           itemName = self.tree.GetItemText(item)
-           itemData = self.tree.GetItemPyData(item)
-
-           newItem = self.tree.AppendItem(newParent, itemName)
-           self.tree.SetItemPyData(newItem, itemData)
-
-           # if an item had children, we need to re-parent them as well
-           if self.tree.ItemHasChildren(item):
-              # recursing...
-              self.ReParent(item, newItem, )
-
-           # continue iteration to the next child
-           item, cookie = self.tree.GetNextChild(parent, cookie)
-
-    def ChangeHierarchy(self, itemName, x, y):
-        parent = self.tree.GetRootItem()
-        item = self.traverse(parent, itemName)
-        if item is None:
-           return
-
-        dragToItem, flags = self.tree.HitTest(wx.Point(x, y))
-        if dragToItem.IsOk():
-           # prevent draging into itself
-           if  dragToItem == item:
-               return
-           dragToItemName = self.tree.GetItemText(dragToItem)
-           if isinstance(self.editor.protoPalette.findItem(dragToItemName), ObjectBase):
-              # this is a file node, bailing out
-              return
-
-           newItem = self.tree.AppendItem(dragToItem, itemName)
-
-           itemObj = self.editor.protoPalette.findItem(itemName)
-           if itemObj is not None:
-              # reparenting the data objects...
-              if dragToItemName == self.rootName:
-                 self.editor.protoPalette.add(itemObj)
-              else:
-                 self.editor.protoPalette.add(itemObj, dragToItemName)
-
-           self.ReParent(item, newItem)
-           self.tree.Delete(item)
+           self.DeleteSelected()
+        elif text == self.opSortAlpha:
+           self.opSort = self.opSortAlpha
+           self.tree.SortTreeNodes(self.tree.GetRootItem())
+        elif text == self.opSortOrig:
+           self.opSort = self.opSortOrig
+           self.tree.SortTreeNodes(self.tree.GetRootItem())
 
     def AquireFile(self, filename):
         name = os.path.basename(filename)
@@ -290,7 +173,18 @@ class ProtoPaletteUI(wx.Panel):
             return
         itemData = ObjectBase(name=name, model=modelname, actor=True)
         self.editor.protoPalette.add(itemData)
-        
+
         newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
         self.tree.SetItemPyData(newItem, itemData)
         self.tree.ScrollTo(newItem)
+
+    def compareItems(self, item1, item2):
+        data1 = self.tree.GetItemText(item1)
+        data2 = self.tree.GetItemText(item2)
+        if self.opSort == self.opSortAlpha:
+           return cmp(data1, data2)
+        else:
+           items = self.palette.data.keys()[:]
+           index1 = items.index(data1)
+           index2 = items.index(data2)
+        return cmp(index1, index2)
