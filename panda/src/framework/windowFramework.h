@@ -136,9 +136,9 @@ public:
   INLINE BackgroundType get_background_type() const;
 
   static TextFont *get_shuttle_controls_font();
+  NodePath make_camera();
 
 protected:
-  NodePath make_camera();
   void setup_lights();
 
 private:

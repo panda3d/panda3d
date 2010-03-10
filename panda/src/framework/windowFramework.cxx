@@ -1131,7 +1131,7 @@ get_shuttle_controls_font() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::make_camera
-//       Access: Protected
+//       Access: Public
 //  Description: Makes a new 3-d camera for the window.
 ////////////////////////////////////////////////////////////////////
 NodePath WindowFramework::
