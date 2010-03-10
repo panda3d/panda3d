@@ -29,7 +29,8 @@ class ObjectPaletteUI(wx.Panel):
         self.palette = self.editor.objectPalette
         self.tree = ObjectPaletteTreeCtrl(self)
         root = self.tree.AddRoot('Objects')
-        self.addTreeNodes(root, self.palette.dataStruct, self.palette.dataKeys)
+        self.dataKeys = self.palette.dataKeys[:]
+        self.addTreeNodes(root, self.palette.rootName, self.palette.dataStruct, self.dataKeys)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -76,27 +77,20 @@ class ObjectPaletteUI(wx.Panel):
               item, cookie = self.tree.GetNextChild(parent, cookie)
         return None
 
-    def addTreeNode(self, itemText, parentItem, items):
-        newItem = wx.TreeItemId
-        parentText = items[itemText]
-        if parentText == self.palette.rootName:
-           newItem = self.tree.AppendItem(parentItem, itemText)
-           self.tree.SetItemPyData(newItem, itemText)
-        else:
-           item = self.traverse(parentItem, parentText)
-           if item is None:
-              item = self.addTreeNode(parentText, parentItem, items)
-
-           newItem = self.tree.AppendItem(item, itemText)
-           self.tree.SetItemPyData(newItem, itemText)
-
-        return newItem
-
-    def addTreeNodes(self, parentItem, items, itemKeys):
+    def addTreeNodes(self, parentItem, parentItemName, items, itemKeys):
+        roots = []
+        rootItems = []
+        #import pdb;set_trace()
         for key in itemKeys:
-            item = self.traverse(parentItem, key)
-            if item is None:
-               newItem = self.addTreeNode(key, parentItem, items)
+            if parentItemName == items[key]:
+               roots.append(key)
+        for root in roots:
+            newItem = self.tree.AppendItem(parentItem, root)
+            self.tree.SetItemPyData(newItem, root)
+            rootItems.append(newItem)
+            itemKeys.remove(root)
+        for rootItem in rootItems:
+            self.addTreeNodes(rootItem, self.tree.GetItemText(rootItem), items, itemKeys)
 
     def SortTreeNodes(self, parent):
         self.tree.SortChildren(parent)
