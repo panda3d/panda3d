@@ -128,7 +128,7 @@ instead of:
 
 Resist using brand-new C++ features that are not broadly supported by
 compilers.  One of our goals in Panda is ease of distribution to a
-wide range of platform; this goal is thwarted if only a few compilers
+wide range of platforms; this goal is thwarted if only a few compilers
 may be used.
 
 
