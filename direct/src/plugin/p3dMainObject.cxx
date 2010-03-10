@@ -447,17 +447,14 @@ call_read_log(P3D_object *params[], int num_params) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMainObject::read_log
 //       Access: Private
-//  Description: The generic log-reader function.
+//  Description: log-reader meta function that handles reading
+//               previous log files in addition to the present one
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
 read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string log_directory = inst_mgr->get_log_directory();
-
-  ifstream log(log_pathname.c_str(), ios::in);
-  if (!log) {
-    return inst_mgr->new_undefined_object();
-  }
+  ostringstream log_data;
 
   // Check the first parameter, if any--if given, it specifies the
   // last n bytes to retrieve.
@@ -465,57 +462,92 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   if (num_params > 0) {
     tail_bytes = (size_t)max(P3D_OBJECT_GET_INT(params[0]), 0);
   }
-
   // Check the second parameter, if any--if given, it specifies the
   // first n bytes to retrieve.
   size_t head_bytes = 0;
   if (num_params > 1) {
     head_bytes = (size_t)max(P3D_OBJECT_GET_INT(params[1]), 0);
   }
-
-  // Check if we want data from previous logs
-  const char log_sep_line_char = '-';
-  const int log_sep_line_chars = 80;
-  const int log_sep_filename_chars = 256;
-  const int log_sep_bytes = log_sep_line_chars + log_sep_filename_chars + 16;
+  // Check the third parameter, if any--if given, it specifies the
+  // last n bytes to retrieve from previous copies of this file.
   size_t tail_bytes_prev = 0;
-  vector<string> log_basenames_prev;
   if (num_params > 2) {
-    // Determine the base of the log file names
     tail_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[2]), 0);
-    if (tail_bytes_prev > 0) {
-      string log_basename = log_pathname;
-      size_t slash = log_basename.rfind('/');
-      if (slash != string::npos) {
-        log_basename = log_basename.substr(slash + 1);
-      }
-#ifdef _WIN32
-      slash = log_basename.rfind('\\');
-      if (slash != string::npos) {
-        log_basename = log_basename.substr(slash + 1);
-      }
-#endif  // _WIN32
-      string log_basename_curr = log_basename;
-      int dash = log_basename.rfind("-");
-      if (dash != string::npos) {
-        log_basename = log_basename.substr(0, dash+1);
+  }
 
-        // Find matching files
-        vector<string> all_logs;
-        inst_mgr->scan_directory(log_directory, all_logs);
-        for (int i=0; i<(int)all_logs.size(); ++i) {
-          if ((all_logs[i].size() > 4) &&
-              (all_logs[i].find(log_basename) == 0) &&
-              (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
-            if (all_logs[i] != log_basename_curr) {
-              //log_basenames_prev.push_back(all_logs[i]);
-              //reverse order
-              log_basenames_prev.insert(log_basenames_prev.begin(), all_logs[i]);
-            }
-          }
-        }
+  // Read the log data from the primary file
+  read_log_file(log_pathname, tail_bytes, head_bytes, log_data);
+
+  // Read data from previous logs if requested
+  if (tail_bytes_prev > 0) {
+    // Determine the base of the log file names
+    string log_basename = log_pathname;
+    size_t slash = log_basename.rfind('/');
+    if (slash != string::npos) {
+      log_basename = log_basename.substr(slash + 1);
+    }
+#ifdef _WIN32
+    slash = log_basename.rfind('\\');
+    if (slash != string::npos) {
+      log_basename = log_basename.substr(slash + 1);
+    }
+#endif  // _WIN32
+    string log_basename_primary = log_basename;
+    int dash = log_basename.rfind("-");
+    if (dash != string::npos) {
+      log_basename = log_basename.substr(0, dash+1);
+    } else {
+      int dotLog = log_basename.rfind(".log");
+      if (dotLog != string::npos) {
+        log_basename = log_basename.substr(0, dotLog);
+        log_basename += "-";
       }
     }
+
+    // Find matching files
+    vector<string> all_logs;
+    inst_mgr->scan_directory(log_directory, all_logs);
+    for (int i=(int)all_logs.size()-1; i>=0; --i) {
+      if ((all_logs[i].find(log_basename) == 0) &&
+          (all_logs[i] != log_basename_primary) && 
+          (all_logs[i].size() > 4) &&
+          (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
+        read_log_file((log_directory+all_logs[i]), tail_bytes_prev, 0, log_data);
+      }
+    }
+  }
+
+  P3D_object *result = new P3DStringObject(log_data.str().c_str(), log_data.tellp());
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::read_log_file
+//       Access: Private
+//  Description: The generic log-reader function.
+////////////////////////////////////////////////////////////////////
+void P3DMainObject::
+read_log_file(const string &log_pathname, 
+              size_t tail_bytes, size_t head_bytes, 
+              ostringstream &log_data) {
+  
+  // Get leaf name
+  string log_leafname = log_pathname;
+  size_t slash = log_leafname.rfind('/');
+  if (slash != string::npos) {
+    log_leafname = log_leafname.substr(slash + 1);
+  }
+#ifdef _WIN32
+  slash = log_leafname.rfind('\\');
+  if (slash != string::npos) {
+    log_leafname = log_leafname.substr(slash + 1);
+  }
+#endif  // _WIN32
+
+  // load file
+  ifstream log(log_pathname.c_str(), ios::in);
+  if (!log) {
+    return;
   }
 
   // Get the size of the file.
@@ -525,94 +557,77 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
        << " bytes, tail_bytes = " << tail_bytes << ", head_bytes = "
        << head_bytes << "\n";
 
-  size_t return_size = file_size;
-  string separator;
-
+  // Check if we are getting the full file
+  size_t full_bytes = 0;
   if (file_size <= head_bytes + tail_bytes) {
     // We will return the entire log.
-    head_bytes = file_size;
+    full_bytes = file_size;
+    head_bytes = 0;
     tail_bytes = 0;
-    return_size = file_size;
-
-  } else if (head_bytes == 0) {
-    // We will be returning the tail of the log only.
-    return_size = tail_bytes;
-
-  } else if (tail_bytes == 0) {
-    // We will be returning the head of the log only.
-    return_size = head_bytes;
-
-  } else {
-    // We will be excising the middle part of the log.
-    separator = "\n\n**** truncated ****\n\n";
-    return_size = head_bytes + separator.size() + tail_bytes;
   }
 
-  // We will need additional space for data from previous logs
-  if ((tail_bytes_prev > 0) && (log_basenames_prev.size() > 0)) {
-      int extra_bytes_per_prev_log = tail_bytes_prev + log_sep_bytes;
-      return_size += log_basenames_prev.size() * extra_bytes_per_prev_log;
-  }
-
-  nout << "allocating " << return_size << " bytes to return.\n";
-  char *buffer = new char[return_size];
+  // Allocate a temp buffer to hold file data
+  size_t buffer_bytes = full_bytes + head_bytes + tail_bytes + 1;
+  nout << "allocating " << buffer_bytes << " bytes to read from file.\n";
+  char *buffer = new char[buffer_bytes];
   if (buffer == NULL) {
-    return NULL;
+    return;
   }
 
-  char *bp = buffer;
+  // Render log file header to log_data
+  log_data << "=======================================";
+  log_data << "=======================================" << "\n";
+  log_data << "== PandaLog-" << log_pathname << "\n";
+
+  // Render log data if full file is to be fetched
+  if (full_bytes > 0) {
+    log.seekg(0, ios::beg);
+    log.read(buffer, full_bytes);
+    buffer[log.gcount()] = NULL;
+    log_data << "== PandaLog-" << "Full Start";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
+    log_data << buffer;
+    log_data << "== PandaLog-" << "Full End";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
+  }
+
+  // Render log data if head bytes are to be fetched
   if (head_bytes > 0) {
     log.seekg(0, ios::beg);
-    log.read(bp, head_bytes);
-    bp += log.gcount();
+    log.read(buffer, head_bytes);
+    buffer[log.gcount()] = NULL;
+    log_data << "== PandaLog-" << "Head Start";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
+    log_data << buffer << "\n";
+    log_data << "== PandaLog-" << "Head End";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
   }
 
-  if (!separator.empty()) {
-    memcpy(bp, separator.data(), separator.length());
-    bp += separator.length();
+  // Render separator if head & tail bytes are to be fetched
+  if ((head_bytes > 0) && (tail_bytes > 0)) {
+    log_data << "== PandaLog-" << "truncated";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
   }
 
+  // Render log data if tail bytes are to be fetched
   if (tail_bytes > 0) {
     log.seekg(file_size - tail_bytes, ios::beg);
-    log.read(bp, tail_bytes);
-    bp += log.gcount();
+    log.read(buffer, tail_bytes);
+    buffer[log.gcount()] = NULL;
+    log_data << "== PandaLog-" << "Tail Start";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
+    log_data << buffer;
+    log_data << "== PandaLog-" << "Tail End";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
   }
 
-  // add data for previous logs
-  if ((tail_bytes_prev > 0) && (log_basenames_prev.size() > 0)) {
-    string log_sep_line = "\n";
-    for (int c=0; c<log_sep_line_chars; ++c) {
-        log_sep_line += log_sep_line_char;
-    }
-    log_sep_line += "\n";
-    for (int i=0; i<(int)log_basenames_prev.size(); ++i) {
-      ifstream log_prev((log_directory+log_basenames_prev[i]).c_str(), ios::in);
-      if (log_prev) {
-        // Insert file separator
-        string log_sep = "\n"+log_sep_line+log_basenames_prev[i]+log_sep_line+"\n";
-        assert(log_sep.length() <= (unsigned)log_sep_bytes); 
-        memcpy(bp, log_sep.data(), log_sep.length());
-        bp += log_sep.length();
-        // Insert prev file data
-        log_prev.seekg(0, ios::end);
-        size_t file_size = (size_t)log_prev.tellg();
-        size_t data_size = tail_bytes_prev;
-        if (data_size > file_size) {
-          data_size = file_size;
-        }
-        log_prev.seekg(file_size - data_size, ios::beg);
-        log_prev.read(bp, data_size);
-        bp += log_prev.gcount();
-      }
-    }
-  }
+  // Render log file footer to log_data
+  //log_data << "=======================================";
+  //log_data << "=======================================" << "\n";
 
-  assert(bp <= buffer + return_size);
-
-  P3D_object *result = new P3DStringObject(buffer, bp - buffer);
+  // cleanup
   delete[] buffer;
-  
-  return result;
+  buffer = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
