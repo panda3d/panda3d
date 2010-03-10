@@ -286,7 +286,8 @@ class LevelEditorBase(DirectObject):
 
     def saveAs(self, fileName):
         self.fileMgr.saveToFile(fileName)
-
+        self.currentFile = fileName
+        
     def load(self, fileName):
         self.reset()
         self.fileMgr.loadFromFile(fileName)
