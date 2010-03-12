@@ -148,7 +148,7 @@ class MayaConverter(wx.Dialog):
 
         self.editor.protoPalette.add(itemData)
 
-        newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
+        newItem = self.editor.ui.protoPaletteUI.tree.AppendItem(self.editor.ui.protoPaletteUI.tree.root, name)
         self.editor.ui.protoPaletteUI.tree.SetItemPyData(newItem, itemData)
         self.editor.ui.protoPaletteUI.tree.ScrollTo(newItem)
             

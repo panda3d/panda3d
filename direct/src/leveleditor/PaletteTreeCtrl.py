@@ -10,7 +10,7 @@ class PaletteTreeCtrl(wx.TreeCtrl):
         wx.TreeCtrl.__init__(self, parent, style=treeStyle)
 
         self.rootName = rootName
-        self.AddRoot(self.rootName)
+        self.root = self.AddRoot(self.rootName)
 
         self.paletteUI = parent
 

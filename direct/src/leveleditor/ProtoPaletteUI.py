@@ -149,9 +149,9 @@ class ProtoPaletteUI(wx.Panel):
         menuItem = self.popupmenu.FindItemById(event.GetId())
         text = menuItem.GetText()
         if text == self.opAdd:
-           self.AddGroup()
+           self.tree.AddGroup()
         elif text == self.opDelete:
-           self.DeleteSelected()
+           self.tree.DeleteSelected()
         elif text == self.opSortAlpha:
            self.opSort = self.opSortAlpha
            self.tree.SortTreeNodes(self.tree.GetRootItem())
@@ -174,7 +174,7 @@ class ProtoPaletteUI(wx.Panel):
         itemData = ObjectBase(name=name, model=modelname, actor=True)
         self.editor.protoPalette.add(itemData)
 
-        newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.root, name)
+        newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.tree.root, name)
         self.tree.SetItemPyData(newItem, itemData)
         self.tree.ScrollTo(newItem)
 
