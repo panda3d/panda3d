@@ -259,6 +259,7 @@ class SceneGraphUIBase(wx.Panel):
         if item:
            if not self.tree.IsSelected(item):
               self.tree.SelectItem(item)
+              self.tree.EnsureVisible(item)
 
     def changeLabel(self, itemId, newName):
         item = self.traverse(self.root, itemId)
