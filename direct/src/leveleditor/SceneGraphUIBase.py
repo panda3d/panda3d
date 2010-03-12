@@ -44,6 +44,7 @@ class SceneGraphUIBase(wx.Panel):
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
         self.tree.Bind(wx.EVT_TREE_BEGIN_DRAG, self.onBeginDrag)
 
+        self.currItem = None
         self.currObj = None
         self.menu = wx.Menu()
         self.populateMenu()
@@ -309,6 +310,7 @@ class SceneGraphUIBase(wx.Panel):
         item, flags = self.tree.HitTest(pos)
         if not item.IsOk():
             return
+        self.currItem = item
         itemId = self.tree.GetItemPyData(item)
         if not itemId:
             return
@@ -317,6 +319,10 @@ class SceneGraphUIBase(wx.Panel):
             self.PopupMenu(self.menu, pos)
 
     def populateMenu(self):
+        menuitem = self.menu.Append(-1, 'Expand All')
+        self.Bind(wx.EVT_MENU, self.onExpandAllChildren, menuitem)
+        menuitem = self.menu.Append(-1, 'Collapse All')
+        self.Bind(wx.EVT_MENU, self.onCollapseAllChildren, menuitem)
         menuitem = self.menu.Append(-1, 'Delete')
         self.Bind(wx.EVT_MENU, self.onDelete, menuitem)
         self.populateExtraMenu()
@@ -324,6 +330,14 @@ class SceneGraphUIBase(wx.Panel):
     def populateExtraMenu(self):
         # You should implement this in subclass
         raise NotImplementedError('populateExtraMenu() must be implemented in subclass')
+
+    def onCollapseAllChildren(self, evt=None):
+        if self.currItem:
+            self.tree.CollapseAllChildren(self.currItem)
+
+    def onExpandAllChildren(self, evt=None):
+        if self.currItem:
+            self.tree.ExpandAllChildren(self.currItem)
 
     def onDelete(self, evt=None):
         if self.currObj is None:
