@@ -45,7 +45,11 @@ FrameRateMeter(const string &name) : TextNode(name) {
 
   // The top of the visible frame is 80% of the line height, based on
   // the calculation within TextAssembler.
-  float height = get_font()->get_line_height() * 0.8;
+  float height = 1.0f;
+  TextFont *font = get_font();
+  if (font != NULL){ 
+    height = font->get_line_height() * 0.8;
+  }
 
   set_align(A_right);
   set_transform(LMatrix4f::scale_mat(frame_rate_meter_scale) * 
