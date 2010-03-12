@@ -84,6 +84,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
             self.editor.actionMgr.push(action)
             np.remove()
             action()
+        iRay.collisionNodePath.removeNode()
         del iRay
 
 ID_NEW = 101
@@ -361,10 +362,12 @@ class LevelEditorUIBase(WxAppShell):
         self.wxApp.ProcessIdle()
         if task != None: return task.cont
 
-    def onNew(self, evt=None):
-        self.editor.reset()
+    def reset(self):
         self.sceneGraphUI.reset()
         self.layerEditorUI.reset()
+
+    def onNew(self, evt=None):
+        self.editor.reset()
 
     def onOpen(self, evt=None):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)

@@ -125,7 +125,10 @@ class SceneGraphUIBase(wx.Panel):
         else:
             parent = self.traverse(self.root, parentObj[OG.OBJ_UID])
 
-        namestr = "%s_%s"%(obj[OG.OBJ_DEF].name, obj[OG.OBJ_UID])
+        name = NodePath(item).getName()
+        if not name:
+            name = ' '
+        namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, name, obj[OG.OBJ_UID])
         newItem = self.tree.AppendItem(parent, namestr)
         self.tree.SetItemPyData(newItem, obj[OG.OBJ_UID])
         
@@ -256,6 +259,17 @@ class SceneGraphUIBase(wx.Panel):
         if item:
            if not self.tree.IsSelected(item):
               self.tree.SelectItem(item)
+
+    def changeLabel(self, itemId, newName):
+        item = self.traverse(self.root, itemId)
+        if item:
+            obj = self.editor.objectMgr.findObjectById(itemId)
+            if obj is None:
+                return
+
+            obj[OG.OBJ_NP].setName(newName)
+            namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, newName, obj[OG.OBJ_UID])            
+            self.tree.SetItemText(item, namestr)
 
     def deSelect(self, itemId):
         item =  self.traverse(self.root, itemId)

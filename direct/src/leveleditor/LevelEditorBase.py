@@ -30,6 +30,7 @@ class LevelEditorBase(DirectObject):
         self.fileMgr = FileMgr(self)
         self.actionMgr = ActionMgr()
 
+        self.NPParent = render
         # define your own config file in inherited class
         self.settingsFile = None
         
@@ -262,6 +263,7 @@ class LevelEditorBase(DirectObject):
                     return
 
         base.direct.deselectAll()
+        self.ui.reset()
         self.objectMgr.reset()
         self.actionMgr.reset()
         self.ui.perspView.camera.setPos(-19, -19, 19)

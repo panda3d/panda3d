@@ -2,14 +2,14 @@
 Defines ObjectMgr
 """
 
-import os, time, wx
+import os, time, wx, types
 
 from direct.task import Task
 from direct.actor.Actor import Actor
 from pandac.PandaModules import *
 from ActionMgr import *
 import ObjectGlobals as OG
-
+from ObjectPaletteBase import ObjectGen
 class ObjectMgr:
     """ ObjectMgr will create, manage, update objects in the scene """
     
@@ -64,10 +64,10 @@ class ObjectMgr:
             self.lastUidMod = 0
         return newUid
 
-    def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True):
+    def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True, nodePath=None):
         """ function to add new obj to the scene """
         if parent is None:
-            parent = render
+            parent = self.editor.NPParent
 
         if self.editor:
             objDef = self.editor.objectPalette.findItem(typeName)
@@ -79,38 +79,44 @@ class ObjectMgr:
                 objDef = base.protoPalette.findItem(typeName)
         newobj = None
         if objDef and type(objDef) != dict:
-            if objDef.createFunction:
-                funcName = objDef.createFunction[OG.FUNC_NAME]
-                funcArgs = objDef.createFunction[OG.FUNC_ARGS]
-                if funcName.startswith('.'):
-                    # when it's using default objectHandler
-                    if self.editor:
-                        func = Functor(eval("base.le.objectHandler%s"%funcName))
-                    else: # when loaded outside of LE
-                        func = Functor(eval("base.objectHandler%s"%funcName))                        
+            if nodePath is None:
+                if objDef.createFunction:
+                    funcName = objDef.createFunction[OG.FUNC_NAME]
+                    funcArgs = objDef.createFunction[OG.FUNC_ARGS]
+                    if type(funcName) == types.StringType:
+                        if funcName.startswith('.'):
+                            # when it's using default objectHandler
+                            if self.editor:
+                                func = Functor(eval("self.editor.objectHandler%s"%funcName))
+                            else: # when loaded outside of LE
+                                func = Functor(eval("base.objectHandler%s"%funcName))                        
+                        else:
+                            # when it's not using default objectHandler, whole name of the handling obj
+                            # should be included in function name
+                            func = Functor(eval(funcName))
+                    else:
+                        func = funcName
+                    # create new obj using function and keyword arguments defined in ObjectPalette
+                    newobj = func(**funcArgs)
+                elif objDef.actor:
+                    if model is None:
+                        model = objDef.model
+                    try:
+                        newobj = Actor(model)
+                    except:
+                        newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
+                elif objDef.model is not None:
+                    # since this obj is simple model let's load the model
+                    if model is None:
+                        model = objDef.model
+                    try:
+                        newobj = loader.loadModel(model)
+                    except:
+                        newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
                 else:
-                    # when it's not using default objectHandler, whole name of the handling obj
-                    # should be included in function name
-                    func = Functor(eval(funcName))
-
-                # create new obj using function and keyword arguments defined in ObjectPalette
-                newobj = func(**funcArgs)
-            elif objDef.actor:
-                if model is None:
-                    model = objDef.model
-                try:
-                    newobj = Actor(model)
-                except:
-                    newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
-            elif objDef.model is not None:
-                # since this obj is simple model let's load the model
-                if model is None:
-                    model = objDef.model
-                try:
-                    newobj = loader.loadModel(model)
-                except:
-                    newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
-
+                    newobj = hidden.attachNewNode(objDef.name)
+            else:
+                newobj = nodePath
             i = 0
             for i in range(len(objDef.anims)):
                 animFile = objDef.anims[i]
@@ -499,16 +505,20 @@ class ObjectMgr:
                     kwargs[key] = funcArgs[key]
                     undoKwargs[key] = funcArgs[key]
 
-            if funcName.startswith('.'):
-                if self.editor:
-                    func = Functor(eval("base.le.objectHandler%s"%funcName), **kwargs)
-                    undoFunc = Functor(eval("base.le.objectHandler%s"%funcName), **undoKwargs)
-                else: # when loaded outside of LE
-                    func = Functor(eval("base.objectHandler%s"%funcName), **kwargs)
-                    undoFunc = Functor(eval("base.objectHandler%s"%funcName), **undoKwargs)                    
+            if type(funcName) == types.StringType:
+                if funcName.startswith('.'):
+                    if self.editor:
+                        func = Functor(eval("self.editor.objectHandler%s"%funcName), **kwargs)
+                        undoFunc = Functor(eval("self.editor.objectHandler%s"%funcName), **undoKwargs)
+                    else: # when loaded outside of LE
+                        func = Functor(eval("base.objectHandler%s"%funcName), **kwargs)
+                        undoFunc = Functor(eval("base.objectHandler%s"%funcName), **undoKwargs)                    
+                else:
+                    func = Functor(eval(funcName), **kwargs)
+                    undoFunc = Functor(eval(funcName), **undoKwargs)
             else:
-                func = Functor(eval(funcName), **kwargs)
-                undoFunc = Functor(eval(funcName), **undoKwargs)
+                func = Functor(funcName, **kwargs)
+                undoFunc = Functor(funcName, **undoKwargs)
                 
             # finally call update function
             #func(**kwargs)
