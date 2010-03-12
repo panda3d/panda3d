@@ -301,6 +301,7 @@ class DirectCameraControl(DirectObject):
 
         entry = iRay.getEntry(0)
         hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+        iRay.collisionNodePath.removeNode()
         del iRay
         if hasattr(state, 'prevPt'):
             base.direct.camera.setPos(base.direct.camera, (state.prevPt - hitPt))
@@ -383,6 +384,9 @@ class DirectCameraControl(DirectObject):
                 self.coaMarkerPos = np.getPos()
                 np.remove()
                 self.coaMarker.setPos(self.coaMarkerPos)
+
+            iRay.collisionNodePath.removeNode()
+            del iRay
 
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
