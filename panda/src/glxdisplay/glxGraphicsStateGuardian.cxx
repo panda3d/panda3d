@@ -57,6 +57,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
   _temp_xwindow = (Window)NULL;
+  _temp_colormap = (Colormap)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +236,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _context = 0;
   _fbconfig = 0;
   _visual = 0;
-  _visuals = 0;
+  if (_visuals != (XVisualInfo *)NULL) {
+    XFree(_visuals);
+    _visuals = NULL;
+  }
+
   _fbprops.clear();
 
   // First, attempt to create a context using the XVisual interface.
@@ -343,6 +348,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
       _glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
                            GL_TRUE);
     if (_context) {
+      if (_visuals != (XVisualInfo *)NULL) {
+        XFree(_visuals);
+        _visuals = NULL;
+      }
       _visuals = _glXGetVisualFromFBConfig(_display, _fbconfig);
       _visual = _visuals;
 
@@ -761,6 +770,10 @@ choose_visual(const FrameBufferProperties &properties) {
   FrameBufferProperties best_props;
 
   // Scan available visuals.
+  if (_visuals != (XVisualInfo *)NULL) {
+    XFree(_visuals);
+    _visuals = NULL;
+  }
   int nvisuals = 0;
   _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
   if (_visuals != 0) {
@@ -804,10 +817,19 @@ init_temp_context() {
 
   destroy_temp_xwindow();
 
+  // Assume everyone uses TrueColor or DirectColor these days.
+  Visual *visual = _visual->visual;
+  nassertv(visual->c_class == DirectColor || visual->c_class == TrueColor);
+  _temp_colormap = XCreateColormap(_display, root_window,
+                                   visual, AllocNone);
+  XSetWindowAttributes wa;
+  wa.colormap = _temp_colormap;
+  unsigned long attrib_mask = CWColormap;
+
   _temp_xwindow = XCreateWindow
-    (_display, root_window, 0, 0, 1, 1,
+    (_display, root_window, 0, 0, 100, 100,
      0, _visual->depth, InputOutput,
-     _visual->visual, 0, NULL);
+     visual, attrib_mask, &wa);
   if (_temp_xwindow == (Window)NULL) {
     glxdisplay_cat.error()
       << "Could not create temporary window for context\n";
@@ -829,5 +851,9 @@ destroy_temp_xwindow() {
   if (_temp_xwindow != (Window)NULL) {
     XDestroyWindow(_display, _temp_xwindow);
     _temp_xwindow = (Window)NULL;
+  }
+  if (_temp_colormap != (Colormap)NULL) {
+    XFreeColormap(_display, _temp_colormap);
+    _temp_colormap = (Colormap)NULL;
   }
 }

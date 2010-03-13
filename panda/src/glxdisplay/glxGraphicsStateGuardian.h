@@ -143,6 +143,7 @@ private:
   bool _checked_get_proc_address;
   PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
   Window _temp_xwindow;
+  Colormap _temp_colormap;
 
 public:
   static TypeHandle get_class_type() {
