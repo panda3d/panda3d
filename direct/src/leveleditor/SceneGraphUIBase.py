@@ -325,6 +325,8 @@ class SceneGraphUIBase(wx.Panel):
         self.Bind(wx.EVT_MENU, self.onCollapseAllChildren, menuitem)
         menuitem = self.menu.Append(-1, 'Delete')
         self.Bind(wx.EVT_MENU, self.onDelete, menuitem)
+        menuitem = self.menu.Append(-1, 'Rename')
+        self.Bind(wx.EVT_MENU, self.onRename, menuitem)
         self.populateExtraMenu()
 
     def populateExtraMenu(self):
@@ -348,3 +350,16 @@ class SceneGraphUIBase(wx.Panel):
         self.editor.actionMgr.push(action)
         action()
         self.delete(uid)
+
+    def onRename(self, evt=None):
+        if self.currObj is None:
+            return
+
+        self.editor.ui.bindKeyEvents(False)
+        dialog = wx.TextEntryDialog(None, '', 'Input new name', defaultValue=self.currObj[OG.OBJ_NP].getName())
+        if dialog.ShowModal() == wx.ID_OK:
+            newName = dialog.GetValue()
+        dialog.Destroy()
+        self.editor.ui.bindKeyEvents(True)
+        self.currObj[OG.OBJ_NP].setName(newName)
+        self.changeLabel(self.currObj[OG.OBJ_UID], newName)
