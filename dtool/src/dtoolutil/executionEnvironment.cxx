@@ -505,7 +505,7 @@ read_args() {
     for (uint32_t i = 0; i < ic; ++i) {
       const char *buffer = _dyld_get_image_name(i);
       const char *tail = strrchr(buffer, '/');
-      if (tail && (strcmp(tail,"/libp3dtool." PANDA_VERSION_STR ".dylib")==0)) {
+      if (tail && (strcmp(tail,"/libp3dtool." PANDA_ABI_VERSION_STR ".dylib")==0)) {
         _dtool_name = buffer;
       } else if (tail && (strcmp(tail,"/libp3dtool.dylib")==0)) {
         _dtool_name = buffer;
