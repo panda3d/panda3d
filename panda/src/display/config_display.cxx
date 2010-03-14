@@ -350,6 +350,10 @@ ConfigVariableBool framebuffer_stencil
 ("framebuffer-stencil", false,
  PRC_DESC("True if FM_stencil should be added to the default framebuffer "
           "properties, which requests an stencil buffer if possible."));
+ConfigVariableBool framebuffer_accum
+("framebuffer-accum", false,
+ PRC_DESC("True if FM_accum should be added to the default framebuffer "
+          "properties, which requests an accumulator buffer if possible."));
 ConfigVariableBool framebuffer_stereo
 ("framebuffer-stereo", false,
  PRC_DESC("True if FM_stereo should be added to the default framebuffer "
@@ -368,6 +372,9 @@ ConfigVariableInt alpha_bits
 ConfigVariableInt stencil_bits
 ("stencil-bits", 0,
  PRC_DESC("The minimum number of stencil buffer bits requested."));
+ConfigVariableInt accum_bits
+("accum-bits", 0,
+ PRC_DESC("The minimum number of accumulator buffer bits requested."));
 ConfigVariableInt multisamples
 ("multisamples", 0,
  PRC_DESC("The minimum number of samples requested."));

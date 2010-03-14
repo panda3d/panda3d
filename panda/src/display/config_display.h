@@ -84,11 +84,13 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_multisample;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_depth;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_alpha;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stencil;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_accum;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stereo;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt depth_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt color_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt alpha_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt accum_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
 

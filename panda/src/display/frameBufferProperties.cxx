@@ -112,6 +112,9 @@ get_default() {
   if (framebuffer_stencil) {
     default_props.set_stencil_bits(1);
   }
+  if (framebuffer_accum) {
+    default_props.set_accum_bits(1);
+  }
   if (framebuffer_multisample) {
     default_props.set_multisamples(1);
   }
@@ -129,6 +132,9 @@ get_default() {
   }
   if (stencil_bits > 0) {
     default_props.set_stencil_bits(stencil_bits);
+  }
+  if (accum_bits > 0) {
+    default_props.set_accum_bits(accum_bits);
   }
   if (multisamples > 0) {
     default_props.set_multisamples(multisamples);
