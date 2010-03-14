@@ -468,7 +468,7 @@ read_args() {
     char buffer[buffer_size];
     DWORD size = GetModuleFileName(dllhandle, buffer, buffer_size);
     if (size != 0) {
-      Filename tmp = Filename::from_os_specific(string(buffer,size));
+      Filename tmp = Filename::from_os_specific(string(buffer, size));
       tmp.make_true_case();
       _dtool_name = tmp;
     }
@@ -487,11 +487,11 @@ read_args() {
     char buffer[PATH_MAX];
     buffer[0] = 0;
     maps.getline(buffer, PATH_MAX);
-    char *tail = strrchr(buffer,'/');
-    char *head = strchr(buffer,'/');
-    if (tail && head && (strcmp(tail,"/libp3dtool.so." PANDA_VERSION_STR)==0)) {
+    char *tail = strrchr(buffer, '/');
+    char *head = strchr(buffer, '/');
+    if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0)) {
       _dtool_name = head;
-    } else if (tail && head && (strcmp(tail,"/libp3dtool.so")==0)) {
+    } else if (tail && head && (strcmp(tail, "/libp3dtool.so") == 0)) {
       _dtool_name = head;
     }
   }

@@ -57,6 +57,12 @@ $[cdefine PANDA_NUMERIC_VERSION]
    out from CVS by the builder). */
 # define PANDA_VERSION_STR "$[PANDA_VERSION_STR]"
 
+/* This is the version of the Panda3D ABI expressed as a string.
+   This usually means the major and minor version. It should be the
+   same for Panda3D versions that are supposed to be backward
+   ABI compatible with each other. */
+# define PANDA_ABI_VERSION_STR "$[PANDA_MAJOR_VERSION].$[PANDA_MINOR_VERSION]"
+
 /* This is a string indicating who has provided this distribution. */
 # define PANDA_DISTRIBUTOR "$[PANDA_DISTRIBUTOR]"
 

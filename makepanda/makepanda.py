@@ -892,6 +892,7 @@ def CompileLink(dll, obj, opts):
                 cmd = 'g++ -undefined dynamic_lookup'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
                 else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
+                cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared'
@@ -1516,6 +1517,7 @@ PANDAVERSION_H="""
 #define PANDA_VERSION $NVERSION
 #define PANDA_NUMERIC_VERSION $NVERSION
 #define PANDA_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
+#define PANDA_ABI_VERSION_STR "$VERSION1.$VERSION2"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR "$RTDIST_VERSION"
 #define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
@@ -1526,6 +1528,7 @@ PANDAVERSION_H_RUNTIME="""
 #define PANDA_MINOR_VERSION 0
 #define PANDA_SEQUENCE_VERSION 0
 #define PANDA_VERSION_STR "0.0.0"
+#define PANDA_ABI_VERSION_STR "0.0"
 #define P3D_PLUGIN_MAJOR_VERSION $VERSION1
 #define P3D_PLUGIN_MINOR_VERSION $VERSION2
 #define P3D_PLUGIN_SEQUENCE_VERSION $VERSION3
