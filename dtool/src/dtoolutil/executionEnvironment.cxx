@@ -489,9 +489,9 @@ read_args() {
     maps.getline(buffer, PATH_MAX);
     char *tail = strrchr(buffer, '/');
     char *head = strchr(buffer, '/');
-    if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0)) {
-      _dtool_name = head;
-    } else if (tail && head && (strcmp(tail, "/libp3dtool.so") == 0)) {
+    if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
+                      || strcmp(tail, "/libp3dtool.dylib") == 0
+                      || strcmp(tail, "/libdtool.dylib") == 0)) {
       _dtool_name = head;
     }
   }
@@ -505,9 +505,9 @@ read_args() {
     for (uint32_t i = 0; i < ic; ++i) {
       const char *buffer = _dyld_get_image_name(i);
       const char *tail = strrchr(buffer, '/');
-      if (tail && (strcmp(tail,"/libp3dtool." PANDA_ABI_VERSION_STR ".dylib")==0)) {
-        _dtool_name = buffer;
-      } else if (tail && (strcmp(tail,"/libp3dtool.dylib")==0)) {
+      if (tail && (strcmp(tail, "/libp3dtool." PANDA_ABI_VERSION_STR ".dylib") == 0
+                || strcmp(tail, "/libp3dtool.dylib") == 0
+                || strcmp(tail, "/libdtool.dylib") == 0)) {
         _dtool_name = buffer;
       }
     }
