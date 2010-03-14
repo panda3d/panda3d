@@ -891,8 +891,9 @@ def CompileLink(dll, obj, opts):
             if (sys.platform == "darwin"):
                 cmd = 'g++ -undefined dynamic_lookup'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
-                else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
-                cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
+                else:
+                    cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
+                    cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared'
