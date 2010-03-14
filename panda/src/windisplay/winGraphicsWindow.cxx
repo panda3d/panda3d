@@ -2304,21 +2304,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
         (dm.dmBitsPerPel == bpp)) {
-      // cout << "[FS FOUND] " << dwWidth << "x" << dwHeight << "@" << bpp << endl;
-      // We want to modify the current DEVMODE rather than using a fresh one in order
-      // to work around a Windows 7 bug.
-      ZeroMemory(&dm, sizeof(dm));
-      dm.dmSize = sizeof(dm);
-      if (0 != EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)){
-        dm.dmPelsWidth = dwWidth;
-        dm.dmPelsHeight = dwHeight;
-        dm.dmBitsPerPel = bpp;
-        return true;
-      } else {
-        windisplay_cat.error() 
-          << "Couldn't retrieve active device mode.\n";
-        return false;
-      }
+      return true;
     }
     modenum++;
   }
