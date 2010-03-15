@@ -154,11 +154,11 @@ get_properties_advanced(FrameBufferProperties &properties,
 
   if (_supports_fbconfig) {
     // Now update our framebuffer_mode and bit depth appropriately.
-    int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
+    int render_type, double_buffer, stereo, red_size, green_size, blue_size,
       alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
       depth_size, stencil_size, samples, drawable_type, caveat;
     
-    _glXGetFBConfigAttrib(_display, config, GLX_RGBA, &render_mode);
+    _glXGetFBConfigAttrib(_display, config, GLX_RENDER_TYPE, &render_type);
     _glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
     _glXGetFBConfigAttrib(_display, config, GLX_STEREO, &stereo);
     _glXGetFBConfigAttrib(_display, config, GLX_RED_SIZE, &red_size);
@@ -201,9 +201,11 @@ get_properties_advanced(FrameBufferProperties &properties,
     if (stereo) {
       properties.set_stereo(1);
     }
-    if (render_mode) {
+    
+    if ((render_type & GLX_RGBA_BIT)!=0) {
       properties.set_rgb_color(1);
-    } else {
+    }
+    if ((render_type & GLX_COLOR_INDEX_BIT)!=0) {
       properties.set_indexed_color(1);
     }
     properties.set_color_bits(red_size+green_size+blue_size);
@@ -311,22 +313,21 @@ choose_pixel_format(const FrameBufferProperties &properties,
   destroy_temp_xwindow();
   
   if (configs != 0) {
-    for (int i = 0; i < num_configs; ++i) {
+    bool context_has_pbuffer, context_has_pixmap, slow;
+    int quality, i;
+    for (i = 0; i < num_configs; ++i) {
       FrameBufferProperties fbprops;
-      bool context_has_pbuffer, context_has_pixmap, slow;
       get_properties_advanced(fbprops, context_has_pbuffer, context_has_pixmap,
                               slow, configs[i]);
-      // We're not protecting this code by an is_debug() check,
-      // because if we do, some weird compiler bug appears and somehow
-      // makes the quality always 0.
-      const char *pbuffertext = context_has_pbuffer ? " (pbuffer)" : "";
-      const char *pixmaptext = context_has_pixmap ? " (pixmap)" : "";
-      const char *slowtext = slow ? " (slow)" : "";
-      glxdisplay_cat.debug()
-        << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
-      int quality = fbprops.get_quality(properties);
+      quality = fbprops.get_quality(properties);
       if ((quality > 0)&&(slow)) quality -= 10000000;
-      
+      if (glxdisplay_cat.is_debug()) {
+        const char *pbuffertext = context_has_pbuffer ? " (pbuffer)" : "";
+        const char *pixmaptext = context_has_pixmap ? " (pixmap)" : "";
+        const char *slowtext = slow ? " (slow)" : "";
+        glxdisplay_cat.debug()
+          << i << ": " << fbprops << "quality=" << quality << pbuffertext << pixmaptext << slowtext << "\n";
+      }
       if (need_pbuffer && !context_has_pbuffer) {
         continue;
       }
