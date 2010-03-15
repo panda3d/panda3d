@@ -148,7 +148,9 @@ def parseopts(args):
                     if (option=="--no-"+pkg.lower()):
                         PkgDisable(pkg)
                         break
-            anything = 1
+            if  (option=="--everything" or option.startswith("--use-")
+              or option=="--nothing" or option.startswith("--no-")):
+              anything = 1
     except: usage(0)
     if (anything==0): usage(0)
     if (RTDIST and RUNTIME):
