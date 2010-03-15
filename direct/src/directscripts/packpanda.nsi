@@ -148,7 +148,7 @@ Section "${SMDIRECTORY}" SecCore
             File /r "${PANDA}\pandac\input\*"
             SetOutPath $INSTDIR\bin
             File /r "${PANDA}\bin\*.exe"
-            File /r "${PANDA}\bin\*.p3d"
+            File /nonfatal /r "${PANDA}\bin\*.p3d"
             SetOutPath $INSTDIR\lib
             File /r /x *.exp "${PANDA}\lib\*"
             SetOutPath $INSTDIR\include
