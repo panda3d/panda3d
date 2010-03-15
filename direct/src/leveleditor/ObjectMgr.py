@@ -601,7 +601,12 @@ class ObjectMgr:
         objRGBA = obj[OG.OBJ_RGBA]
 
         if parent is None:
-            parent = nodePath.getParent()
+            parentNP = nodePath.getParent()
+            parentObj = self.findObjectByNodePath(parentNP)
+            if parentObj is None:
+                parent = parentNP
+            else:
+                parent = parentObj[OG.OBJ_NP]
 
         newObjNP = self.addNewObject(objDef.name, parent=parent, fSelectObject = False)
 
