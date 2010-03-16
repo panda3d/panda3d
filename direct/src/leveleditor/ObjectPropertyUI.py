@@ -242,7 +242,7 @@ class ObjectPropertyUI(ScrolledPanel):
         if self.lastColorPickerPos:
             self.colorPicker.SetPosition(self.lastColorPickerPos)
         
-    def updateProps(self, obj):
+    def updateProps(self, obj, movable=True):
         self.clearPropUI()
         
         self.propPane = wx.Panel(self)
@@ -280,6 +280,10 @@ class ObjectPropertyUI(ScrolledPanel):
             transformProp.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
                                    self.editor.objectMgr.onLeaveObjectPropUI,
                                    self.editor.objectMgr.updateObjectTransform)
+
+        if not movable:
+            for transformProp in transformProps:
+                transformProp.ui.Disable()
 
         self.lookPane = wx.Panel(self.nb, -1)
         self.nb.AddPage(self.lookPane, 'Look')

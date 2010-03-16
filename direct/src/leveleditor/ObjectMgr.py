@@ -218,7 +218,7 @@ class ObjectMgr:
     def updateObjectPropertyUI(self, obj):
         objDef = obj[OG.OBJ_DEF]
         objProp = obj[OG.OBJ_PROP]
-        self.editor.ui.objectPropertyUI.updateProps(obj)
+        self.editor.ui.objectPropertyUI.updateProps(obj, objDef.movable)
         self.editor.fNeedToSave = True
         
     def onEnterObjectPropUI(self, event):
