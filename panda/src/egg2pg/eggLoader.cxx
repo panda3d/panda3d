@@ -1405,7 +1405,8 @@ make_texture_stage(const EggTexture *egg_tex) {
       egg_tex->get_combine_mode(EggTexture::CC_alpha) == EggTexture::CM_unspecified &&
 
       !egg_tex->has_priority() &&
-      egg_tex->get_multitexture_sort() == 0) {
+      egg_tex->get_multitexture_sort() == 0 &&
+      !egg_tex->get_saved_result()) {
     return TextureStage::get_default();
   }
 
