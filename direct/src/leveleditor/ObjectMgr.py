@@ -215,6 +215,12 @@ class ObjectMgr:
         if fLEPane == 0:
            self.editor.ui.sceneGraphUI.select(obj[OG.OBJ_UID])
 
+        if not obj[OG.OBJ_DEF].movable:
+            if base.direct.widget.fActive:
+                base.direct.widget.toggleWidget()
+
+            
+
     def updateObjectPropertyUI(self, obj):
         objDef = obj[OG.OBJ_DEF]
         objProp = obj[OG.OBJ_PROP]

@@ -104,6 +104,7 @@ class LevelEditorBase(DirectObject):
         base.direct.ignore('DIRECT-delete')
         base.direct.ignore('DIRECT-select')
         base.direct.ignore('DIRECT-preDeselectAll')
+        base.direct.ignore('DIRECT-toggleWidgetVis')
         base.direct.fIgnoreDirectOnlyKeyMap = 1
         
         # [gjeon] do not use the old way of finding current DR
@@ -132,6 +133,7 @@ class LevelEditorBase(DirectObject):
             ('LE-OpenScene', self.ui.onOpen),
             ('LE-Quit', self.ui.quit),
             ('DIRECT-mouse3', self.handleMouse3),
+            ('DIRECT-toggleWidgetVis', self.toggleWidget),
             ])
 
         # Add all the action events
@@ -170,6 +172,13 @@ class LevelEditorBase(DirectObject):
             else:
                 __builtins__['last'] = None
             base.direct.selected.last = None
+
+    def toggleWidget(self):
+        if self.objectMgr.currNodePath:
+            obj = self.objectMgr.findObjectByNodePath(self.objectMgr.currNodePath)
+            if obj and not obj[OG.OBJ_DEF].movable:
+                return
+        base.direct.toggleWidgetVis()
 
     def handleMouse3(self, modifiers):
         if base.direct.fAlt or modifiers == 4:
