@@ -1453,7 +1453,7 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
-        plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
+        plugin_config["PANDA_PACKAGE_HOST_URL"] = "https://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
@@ -1523,7 +1523,7 @@ PANDAVERSION_H="""
 #define PANDA_ABI_VERSION_STR "$VERSION1.$VERSION2"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR "$RTDIST_VERSION"
-#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
+#define PANDA_PACKAGE_HOST_URL "https://runtime.panda3d.org/"
 """
 
 PANDAVERSION_H_RUNTIME="""
@@ -1538,7 +1538,7 @@ PANDAVERSION_H_RUNTIME="""
 #define P3D_PLUGIN_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR ""
-#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
+#define PANDA_PACKAGE_HOST_URL "https://runtime.panda3d.org/"
 """
 
 CHECKPANDAVERSION_CXX="""
