@@ -177,7 +177,7 @@ fetch_packet() {
 //               some samples.  If we encounter the end of the
 //               stream, we synthesize silence.
 ////////////////////////////////////////////////////////////////////
-void FfmpegAudioCursor::
+bool FfmpegAudioCursor::
 reload_buffer() {
 
 
@@ -187,7 +187,7 @@ reload_buffer() {
       _buffer_head = 0;
       _buffer_tail = _buffer_size;
       memset(_buffer, 0, _buffer_size * 2);
-      return;
+      return true;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
 #if LIBAVCODEC_VERSION_INT < 3414272
@@ -209,20 +209,23 @@ reload_buffer() {
       movies_debug("avcodec_decode_audio3 returned " << len);
       av_free_packet(&pkt); // Not sure about this
 #endif
-      if (len <= 0) {
-        break;
+      if (len < 0) {
+        return false;
+      } else if (len == 0){
+        return true;
       }
       _packet_data += len;
       _packet_size -= len;
       if (bufsize > 0) {
         _buffer_head = 0;
         _buffer_tail = (bufsize/2);
-        return;
+        return true;
       }
     } else {
       fetch_packet();
     }
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,15 +284,13 @@ read_samples(int n, PN_int16 *data) {
 
   int desired = n * _audio_channels;
 
-  // give up after 100 tries to fetch data
-  int give_up_after = 100;
-
-  while (desired && give_up_after > 0) {
+  while (desired > 0) {
 
     if (_buffer_head == _buffer_tail) {
-      reload_buffer();
-      give_up_after --;
-      movies_debug("reload_buffer will give up in "<<give_up_after);
+      if(!reload_buffer()){
+        break;
+      }
+      movies_debug("read_samples() Desired samples: " << desired << " N:" << n);
     }
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;
