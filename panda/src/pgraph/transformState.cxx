@@ -1758,7 +1758,7 @@ do_invert_compose(const TransformState *other) const {
   // _inv_mat has been allocated and filled in.
   nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
 
-  if (is_2d()) {
+  if (is_2d() && other->is_2d()) {
     const LMatrix4f &i = *_inv_mat;
     LMatrix3f inv3(i(0, 0), i(0, 1), i(0, 3),
                    i(1, 0), i(1, 1), i(1, 3),
