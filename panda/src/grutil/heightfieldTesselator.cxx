@@ -186,9 +186,9 @@ generate() {
       generate_square(root,scale,x*size,y*size,true);
     }
   }
-  delete _vertex_index;
-  delete _dirty_vertices;
-  delete _triangle_totals;
+  delete[] _vertex_index;
+  delete[] _dirty_vertices;
+  delete[] _triangle_totals;
   _vertex_index =0;
   _dirty_vertices =0;
   _triangle_totals =0;
