@@ -101,8 +101,11 @@ def WriteKeysFile(fname, info):
 
 def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
-    PPATH=get_python_lib(1)
-    PEXEC=os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+    PPATH = get_python_lib(1)
+    if os.path.islink(sys.executable):
+        PEXEC = os.path.join(os.path.dirname(sys.executable), os.readlink(sys.executable))
+    else:
+        PEXEC = sys.executable
     oscmd("mkdir -p "+destdir+prefix+"/bin")
     oscmd("mkdir -p "+destdir+prefix+"/include")
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d")
