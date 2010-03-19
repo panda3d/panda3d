@@ -18,6 +18,7 @@ PROP_UI_RADIO = '_PropUIRadio'
 PROP_UI_CHECK = '_PropUICheckBox'
 PROP_UI_SLIDE = '_PropUISlider'
 PROP_UI_SPIN = '_PropUISpinner'
+PROP_UI_BLIND = '_PropUIBlind'
 
 # index for property definition
 PROP_TYPE = 0
@@ -40,6 +41,7 @@ PROP_INT = 0 # int type value
 PROP_BOOL = 1 # bool type value
 PROP_FLOAT = 2 # float type value
 PROP_STR = 3 # string type value
+PROP_BLIND = 4 # blind type value
 
 TYPE_CONV = {PROP_INT: int, PROP_BOOL: bool, PROP_FLOAT: float, PROP_STR: str}
 

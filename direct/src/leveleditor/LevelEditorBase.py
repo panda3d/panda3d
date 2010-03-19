@@ -14,7 +14,6 @@ from direct.gui.DirectGui import *
 
 base = ShowBase(False)
 
-from ObjectMgr import *
 from FileMgr import *
 from ActionMgr import *
 from MayaConverter import *
@@ -26,7 +25,7 @@ class LevelEditorBase(DirectObject):
         self.currentFile = None
         self.fNeedToSave = False
         self.actionEvents = []
-        self.objectMgr = ObjectMgr(self)
+        #self.objectMgr = ObjectMgr(self)
         self.fileMgr = FileMgr(self)
         self.actionMgr = ActionMgr()
 
