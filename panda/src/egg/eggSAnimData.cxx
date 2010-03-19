@@ -39,7 +39,9 @@ optimize() {
     }
 
     // Ok, all the rows had the same value.  Collapse them.
-    _data.erase(_data.begin() + 1, _data.end());
+	if(!_data.empty()){
+		_data.erase(_data.begin() + 1, _data.end());
+	}
   }
 }
 
