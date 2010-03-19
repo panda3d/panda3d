@@ -74,6 +74,8 @@ private:
   bool scan_up_from(Filename &result, const Filename &dir, 
                     const Filename &suffix) const;
 
+  void config_initialized();
+
   typedef vector<ConfigPage *> Pages;
   Pages _implicit_pages;
   Pages _explicit_pages;

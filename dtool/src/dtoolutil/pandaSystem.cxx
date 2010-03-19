@@ -32,6 +32,11 @@ PandaSystem() :
   _systems(get_class_type())
 {
   _system_names_dirty = false;
+
+  // These are settable via Config.prc, but only in development
+  // (!NDEBUG) mode, and only if they are not already defined.
+  _package_version_string = PANDA_PACKAGE_VERSION_STR;
+  _package_host_url = PANDA_PACKAGE_HOST_URL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +86,11 @@ get_version_string() {
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_package_version_string() {
+#ifdef NDEBUG
   return PANDA_PACKAGE_VERSION_STR;
+#else
+  return get_global_ptr()->_package_version_string;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +111,11 @@ get_package_version_string() {
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_package_host_url() {
+#ifdef NDEBUG
   return PANDA_PACKAGE_HOST_URL;
+#else
+  return get_global_ptr()->_package_host_url;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -446,4 +459,44 @@ reset_system_names() {
   }
   
   _system_names_dirty = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::set_package_version_string
+//       Access: Private
+//  Description: Loads the value returned by
+//               get_package_version_string().  This is intended to be
+//               called by ConfigPageManager to preload the value from
+//               the panda-package-version config variable, for
+//               developer's convenience.  This has no effect if the
+//               PANDA_PACKAGE_VERSION_STR configure variable is
+//               defined at compilation time.  This also has no effect
+//               in NDEBUG mode.
+////////////////////////////////////////////////////////////////////
+void PandaSystem::
+set_package_version_string(const string &package_version_string) {
+  _package_version_string = PANDA_PACKAGE_VERSION_STR;
+  if (_package_version_string.empty()) {
+    _package_version_string = package_version_string;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::set_package_host_url
+//       Access: Private
+//  Description: Loads the value returned by
+//               get_package_host_url().  This is intended to be
+//               called by ConfigPageManager to preload the value from
+//               the panda-package-host-url config variable, for
+//               developer's convenience.  This has no effect if the
+//               PANDA_PACKAGE_HOST_URL configure variable is defined
+//               at compilation time.  This also has no effect in
+//               NDEBUG mode.
+////////////////////////////////////////////////////////////////////
+void PandaSystem::
+set_package_host_url(const string &package_host_url) {
+  _package_host_url = PANDA_PACKAGE_HOST_URL;
+  if (_package_host_url.empty()) {
+    _package_host_url = package_host_url;
+  }
 }
