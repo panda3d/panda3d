@@ -92,7 +92,7 @@ def Functor(function, *args, **kArgs):
 
 class Functor:
     def __init__(self, function, *args, **kargs):
-        assert hasattr(function, '__call__'), "function should be a callable obj"
+        assert callable(function), "function should be a callable obj"
         self._function = function
         self._args = args
         self._kargs = kargs
@@ -117,7 +117,7 @@ class Functor:
         _kargs.update(kargs)
         return self._function(*(self._args + args), **_kargs)
 
-    # this method is used in place of __call__ if we are recording creation stacks
+    # this methoxd is used in place of __call__ if we are recording creation stacks
     def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
         try:
             return self._do__call__(*args, **kargs)
