@@ -1,5 +1,7 @@
 // Filename: mayaShaderColorDef.cxx
 // Created by:  drose (12Apr03)
+// Modified 19Mar10 by ETC PandaSE team (see
+//   header comment for mayaToEgg.cxx for details)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -264,7 +266,7 @@ get_panda_uvset_name() {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
+find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, Filename _texture_out_dir, bool trans) {
   RGBColorf color_gain;
   if (get_vec3f_attribute(color, "colorGain", color_gain)) {
     color_gain[0] = color_gain[0] > 1.0 ? 1.0 : color_gain[0];
@@ -299,6 +301,23 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
           << " which is a directory; clearing.\n";
         _has_texture = false;
         set_string_attribute(color, "fileTextureName", "");
+      }
+      // create directory, copy texture, modify texture filename
+      if (_texture_copy) {
+        if (_texture_out_dir[_texture_out_dir.length()-1] != '/')
+          _texture_out_dir+="/";
+        _texture_out_dir.make_dir();
+        Filename texture_copy_filename=Filename(_texture_out_dir, _texture_filename.get_basename());
+        if (_texture_filename.copy_to(texture_copy_filename)) {       
+          _texture_filename=texture_copy_filename;
+        }
+        else {
+          maya_cat.warning()
+              <<"unable to copy texture files from "<<_texture_filename.get_dirname()
+              <<" to "<<_texture_out_dir<<"\n"
+              <<"make sure you have the access right to the assigned directory\n"
+              <<"the output egg file will adapt to the original texture files' path\n";
+        }
       }
     }
 
@@ -337,7 +356,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
       image_plug.connectedTo(image_pa, true, false);
       
       for (size_t i = 0; i < image_pa.length(); i++) {
-        find_textures_legacy(shader, image_pa[0].node());
+        find_textures_legacy(shader, image_pa[0].node(), _texture_copy, _texture_out_dir);
       }
     }
 
@@ -444,7 +463,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
             maya_cat.debug() << pl.name().asChar() << " next:connectedTo: " << pla_name << endl;
           }
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
-          color_p->find_textures_legacy(shader, pla[j].node());
+          color_p->find_textures_legacy(shader, pla[j].node(), _texture_copy, _texture_out_dir);
           color_p->_blend_type = bt;
           size_t loc = color_p->_texture_name.find('.',0);
           if (loc != string::npos) {
@@ -458,7 +477,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
           if (maya_cat.is_debug()) {
             maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
           }
-          find_textures_legacy(shader, pla[j].node());
+          find_textures_legacy(shader, pla[j].node(), _texture_copy, _texture_out_dir);
           _texture_name.assign(pla[j].name().asChar());
           _blend_type = bt;
           size_t loc = _texture_name.find('.',0);
@@ -500,7 +519,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
 //               to the provided MayaShaderColorList.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha) {
+find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug,bool _texture_copy, Filename _texture_out_dir, bool is_alpha) {
 
   MPlugArray outplugs;
   inplug.connectedTo(outplugs, true, false);
@@ -539,6 +558,24 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     
     def->_color_object = new MObject(source);
     def->_texture_filename = Filename::from_os_specific(filename);
+    // create directory, copy texture, modify texture filename
+    if (_texture_copy) {
+      if (_texture_out_dir[_texture_out_dir.length()-1] != '/') {
+        _texture_out_dir+="/";
+	  }	
+      _texture_out_dir.make_dir();
+      Filename texture_copy_filename=Filename(_texture_out_dir, def->_texture_filename.get_basename());
+      if (def->_texture_filename.copy_to(texture_copy_filename)) {       
+        def->_texture_filename=texture_copy_filename;
+      }
+      else {
+        maya_cat.warning()
+          <<"unable to copy texture files from "<<def->_texture_filename.get_dirname()
+          <<" to "<<_texture_out_dir<<"\n"
+          <<"make sure you have the access right to the assigned directory\n"
+          <<"the output egg file will adapt to the original texture files' path\n";
+      }
+    }
     def->_texture_name = sourceFn.name().asChar();
 
     get_vec2f_attribute(source, "coverage",       def->_coverage);
@@ -583,7 +620,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
       image_plug.connectedTo(image_pa, true, false);
       
       for (size_t i = 0; i < image_pa.length(); i++) {
-        find_textures_modern(shadername, list, image_pa[0], is_alpha);
+        find_textures_modern(shadername, list, image_pa[0], _texture_copy, _texture_out_dir, is_alpha);
       }
     }
     
@@ -635,7 +672,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
         return;
       }
       size_t before = list.size();
-      find_textures_modern(shadername, list, color, is_alpha);
+      find_textures_modern(shadername, list, color, _texture_copy, _texture_out_dir, is_alpha);
       int blendValue;
       blend.getValue(blendValue);
       for (size_t sub=before; sub<list.size(); sub++) {
@@ -652,7 +689,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
 
   if (source.apiType() == MFn::kReverse) {
     MPlug input_plug = sourceFn.findPlug("input");
-    find_textures_modern(shadername, list, input_plug, is_alpha);
+    find_textures_modern(shadername, list, input_plug, _texture_copy, _texture_out_dir, is_alpha);
     return;
   }
   

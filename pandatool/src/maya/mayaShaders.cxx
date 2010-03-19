@@ -1,5 +1,8 @@
 // Filename: mayaShaders.cxx
 // Created by:  drose (11Feb00)
+// Modified 19Mar10 by ETC PandaSE team (add a 
+//   texture copy flag in shader -- see
+//   header comment for mayaToEgg.cxx for details)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -53,10 +56,9 @@ MayaShaders::
 //  Description: Extracts the shader assigned to the indicated node.
 ////////////////////////////////////////////////////////////////////
 MayaShader *MayaShaders::
-find_shader_for_node(MObject node) {
+find_shader_for_node(MObject node, bool _texture_copy, Filename _tout_dir, bool _legacy_shader) {
   MStatus status;
   MFnDependencyNode node_fn(node);
-
   // Look on the instObjGroups attribute for shading engines.
   MObject iog_attr = node_fn.attribute("instObjGroups", &status);
   if (!status) {
@@ -88,7 +90,8 @@ find_shader_for_node(MObject node) {
   for (i = 0; i < iog_pa.length(); i++) {
     MObject engine = iog_pa[i].node();
     if (engine.hasFn(MFn::kShadingEngine)) {
-      return find_shader_for_shading_engine(engine);
+      // add the texture copy flag here
+      return find_shader_for_shading_engine(engine, _texture_copy, _tout_dir, _legacy_shader);
     }
   }
 
@@ -142,9 +145,8 @@ bind_uvsets(MObject mesh) {
 //               encountered the indicated engine.
 ////////////////////////////////////////////////////////////////////
 MayaShader *MayaShaders::
-find_shader_for_shading_engine(MObject engine) {
+find_shader_for_shading_engine(MObject engine, bool _texture_copy, Filename _tout_dir, bool _legacy_shader) {
   MFnDependencyNode engine_fn(engine);
-
   // See if we have already decoded this engine.
   string engine_name = engine_fn.name().asChar();
   Shaders::const_iterator si = _shaders.find(engine_name);
@@ -154,7 +156,8 @@ find_shader_for_shading_engine(MObject engine) {
 
   // All right, this is a newly encountered shading engine.  Create a
   // new MayaShader object to represent it.
-  MayaShader *shader = new MayaShader(engine);
+  // adding texture flag as parameter
+  MayaShader *shader = new MayaShader(engine, _texture_copy, _tout_dir, _legacy_shader);
   shader->bind_uvsets(_file_to_uvset);
   
   // Record this for the future.

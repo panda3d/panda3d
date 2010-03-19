@@ -1,5 +1,8 @@
 // Filename: mayaToEggConverter.cxx
 // Created by:  drose (10Nov99)
+// Modified 19Mar10 by ETC PandaSE team
+//   Added set_vertex_color_modern to fix Phong shader bug; also see
+//   header comment for mayaToEgg.cxx for more details
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -97,6 +100,9 @@ MayaToEggConverter(const string &program_name) :
   _always_show_vertex_color = maya_default_vertex_color;
   _keep_all_uvsets = false;
   _round_uvs = false;
+  _texture_copy = false;
+  _legacy_shader = false;
+
   _transform_type = TT_model;
 }
 
@@ -122,6 +128,8 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _always_show_vertex_color(copy._always_show_vertex_color),
   _keep_all_uvsets(copy._keep_all_uvsets),
   _round_uvs(copy._round_uvs),
+  _texture_copy(copy._texture_copy),
+  _legacy_shader(copy._legacy_shader),
   _transform_type(copy._transform_type)
 {
 }
@@ -594,6 +602,7 @@ convert_maya() {
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
 open_api(bool revert_directory) {
+
   if (_maya == (MayaApi *)NULL || !_maya->is_valid()) {
 	  //maya to egg converter only needs a read license.
 	  //only egg2maya need write lisences.
@@ -823,7 +832,13 @@ convert_hierarchy(EggGroupNode *egg_root) {
   if (_keep_all_uvsets) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
-
+  // give some feedback about whether special options are on
+  if (_texture_copy) {
+    mayaegg_cat.info() << "will copy textures to" <<_texture_out_dir<< endl;
+  }
+  if (_legacy_shader) {
+    mayaegg_cat.info() << "will disable modern Phong shader path. using legacy" << endl;
+  }
   _tree.clear_egg(get_egg_data(), egg_root, NULL, NULL);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
@@ -930,6 +945,7 @@ process_model_node(MayaNodeDesc *node_desc) {
         << "\n";
     }
     /*
+ 
     MFnLight light (dag_path, &status);
     if ( !status ) {
       status.perror("MFnLight constructor");
@@ -1263,8 +1279,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       << surface.numSpansInV()
       << "\n";
   }
-
-  MayaShader *shader = _shaders.find_shader_for_node(surface.object());
+  MayaShader *shader = _shaders.find_shader_for_node(surface.object(), _texture_copy, _texture_out_dir, _legacy_shader);
 
   if (_polygon_output) {
     // If we want polygon output only, tesselate the NURBS and output
@@ -1713,8 +1728,7 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
       egg_curve->add_vertex(vpool->create_unique_vertex(vert));
     }
   }
-
-  MayaShader *shader = _shaders.find_shader_for_node(curve.object());
+  MayaShader *shader = _shaders.find_shader_for_node(curve.object(), _texture_copy, _texture_out_dir, _legacy_shader);
   if (shader != (MayaShader *)NULL) {
     set_shader_attributes(*egg_curve, *shader);
   }
@@ -1837,14 +1851,16 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 
   _shaders.bind_uvsets(mesh.object());
-
+  
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
 
     egg_poly->set_bface_flag(double_sided);
 
-    // Determine the shader for this particular polygon.
+    // Determine the MayaShader for this particular polygon. 
+    // There appears to be two diverging paths for any Maya node with a Material (MayaShader) on it
+    // This next bit kicks us out into mayaShader et al. to pull textures and everything else. 
     MayaShader *shader = NULL;
     int index = pi.index();
     nassertv(index >= 0 && index < (int)poly_shader_indices.length());
@@ -1854,9 +1870,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
       MObject engine = shaders[shader_index];
       shader =
-        _shaders.find_shader_for_shading_engine(engine);
-
-    } else if (default_shader != (MayaShader *)NULL) {
+        _shaders.find_shader_for_shading_engine(engine, _texture_copy, _texture_out_dir, _legacy_shader); //head out to the other classes
+      //does this mean if we didn't find a Maya shader give it a default value anyway?
+    } else if (default_shader != (MayaShader *)NULL) { 
       shader = default_shader;
     }
 
@@ -2017,28 +2033,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         if (mayaegg_cat.is_spam()) {
           mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
         }
-        if (pi.hasColor()) {
-          MColor c;
-          status = pi.getColor(c, i);
-          if (!status) {
-            status.perror("MItMeshPolygon::getColor");
-          } else {
-            // I saw instances where the color components exceeded 1.0
-            // so lets clamp the values to 0 to 1
-            c /= 1.0;
-            // The vertex color is a color scale that modifies the
-            // polygon color, not an override that replaces it.
-            vert.set_color(Colorf(c.r * poly_color[0], c.g * poly_color[1],
-                                  c.b * poly_color[2], c.a * poly_color[3]));
-
-            if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "maya_color = " << c.r << " " << c.g << " " << c.b << " " << c.a << endl;
-              mayaegg_cat.spam() << "vert_color = " << vert.get_color() << endl;
-            }
-          }
-        } else {
-          vert.set_color(poly_color);
-        }
+        set_vertex_color(vert,pi,i,shader,poly_color);
       }
 
       vert.set_external_index(pi.vertexIndex(i, &status));
@@ -2614,9 +2609,9 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
 
       if (color_def->_has_texture) {
         // If we have a texture on color, apply it as the filename.
-        if (mayaegg_cat.is_debug()) {
-          mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
-        }
+        //if (mayaegg_cat.is_debug()) {
+          //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
+        //}
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
         Filename fullpath, outpath;
         _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
@@ -2667,7 +2662,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                                              fullpath, outpath);
             tex.set_alpha_filename(outpath);
             tex.set_alpha_fullpath(fullpath);
-          } 
+          }
         } else {
           // If there is no transparency texture specified, we don't
           // have any transparency, so tell the egg format to ignore any
@@ -3098,5 +3093,85 @@ string_transform_type(const string &arg) {
     return TT_none;
   } else {
     return TT_invalid;
+  }
+}
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::MayaToEggConverter::set_vertex_color
+//       Access: Private
+//  Description: Checks to see if we're using legacy or modern
+//               shaders and based on the result, it passes
+//               the vertex color calculations off to either
+//               the legacy or modern vertex color functions.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color) {
+    if (shader->_legacy_mode) {
+      set_vertex_color_legacy(vert, pi, vert_index, shader, color);
+    } else {
+      set_vertex_color_modern(vert, pi, vert_index, shader, color);
+    }
+}
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::MayaToEggConverter::set_vertex_color_legacy
+//       Access: Private
+//  Description: Calls set_color on an EggVertex, determining the
+//               correct color values, based on the shader, vert_color
+//               Maya's vertex & flat color(s).  This is the original 
+//               implementation that works only on Lambert shaders/materials
+//               in Maya.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color){
+  if (pi.hasColor()) {
+    MColor c;
+    MStatus status = pi.getColor(c, vert_index);
+    if (!status) {
+      status.perror("MItMeshPolygon::getColor");
+    } else {
+      // I saw instances where the color components exceeded 1.0
+      // so lets clamp the values to 0 to 1
+      c /= 1.0;
+      // The vertex color is a color scale that modifies the
+      // polygon color, not an override that replaces it.
+      vert.set_color(Colorf(c.r * color[0], c.g * color[1], c.b * color[2], c.a * color[3]));
+
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam() << "maya_color = " << c.r << " " << c.g << " " << c.b << " " << c.a << endl;
+        mayaegg_cat.spam() << "vert_color = " << vert.get_color() << endl;
+      }
+    }
+  } else {
+    vert.set_color(color);
+  }
+
+}
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::MayaToEggConverter::set_vertex_color_modern
+//       Access: Private
+//  Description: Calls set_color on an EggVertex, determining the
+//               correct color values, based on the shader, vert_color
+//               Maya's vertex & flat color(s).  This implementation
+//               is designed to work specifically with Phong materials
+//               or shaders.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color) {
+  // If there's an explicit vertex color, output it.
+  if (pi.hasColor(vert_index)) {
+    MColor c;
+    MStatus status = pi.getColor(c, vert_index);
+    if (status) {
+      vert.set_color(Colorf(c.r, c.g, c.b, c.a));
+      return;
+    }
+  }
+  
+  // If there's no explicit color, use flat color, or white on a textured model.
+  if (shader->_color_maps.empty()) {
+    const Colord &c = shader->_flat_color;
+    vert.set_color(Colorf((float)c[0], (float)c[1], (float)c[2], (float)c[3]));
+  } else {
+    //there's no explicit color anywhere, must be textured (or blank)
+    vert.set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }

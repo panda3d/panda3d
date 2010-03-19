@@ -1,6 +1,33 @@
 // Filename: mayaToEgg.cxx
 // Created by:  drose (15Feb00)
 //
+// Additional Maintenance by the PandaSE team
+// Carnegie Mellon Entertainment Technology Center
+// Spring '10
+// Team Members:
+// Deepak Chandraskeran - producer / programmer
+// Andrew Gartner - programmer/technical artist
+// Federico Perazzi - programmer
+// Shuying Feng - programmer
+// Wei-Feng Huang - programmer
+// (Egger additions by Andrew Gartner and Wei-Feng Huang)
+// The egger can now support vertex color in a variety
+// of combinations with flat color and file color textures
+// (see set_vertex_color).  Also, there are two new 
+// command line options "legacy-shaders" and "texture-copy".
+// The first treats any Maya material/shader as if it were 
+// a legacy shader. Passing it through the legacy codepath.
+// This feature was originally intended to fix a bug where
+// flat-color was being ignored in the modern (Phong) codepath
+// However, with the new vertex and flat color functions it
+// may not be necessary.  Still, until the newer color functions
+// have been tried and tested more, the feature has been left in
+// to anticipate any problems that may arise. The texture copy
+// feature was added to provide a way to resolve build path issues
+// and can support both relative and absolute paths. The feature
+// will copy any file maps/textures to the specified directory
+// and update the egg file accordingly.
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -88,6 +115,12 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_round_uvs);
 
   add_option
+    ("copytex","dir",0,
+    "copy the textures to a ""Textures"" sub directory relative to the written out egg file."
+    """dir"" is a sub directory in the same format as those used by -pr, etc." ,
+     &MayaToEgg::dispatch_filename, &_texture_copy, &_texture_out_dir);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -145,6 +178,12 @@ MayaToEgg() :
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
 
+  add_option
+    ("legacy-shaders", "", 0,
+     "Use this flag to turn off modern (Phong) shader generation"
+     "and treat all shaders as if they were Lamberts (legacy).",
+     &MayaToEgg::dispatch_none, &_legacy_shader);
+
   // Unfortunately, the Maya API doesn't allow us to differentiate
   // between relative and absolute pathnames--everything comes out as
   // an absolute pathname, even if it is stored in the Maya file as a
@@ -181,6 +220,11 @@ run() {
   // directory.
   if (_got_output_filename) {
     _output_filename.make_absolute();
+    //conjunct the relative output path with output file's dir weifengh
+    if (_texture_out_dir.is_local()) {
+      Filename tempdir = _output_filename.get_dirname() + "/";
+      _texture_out_dir = tempdir + _texture_out_dir;
+    }
   }
 
   nout << "Initializing Maya.\n";
@@ -200,6 +244,9 @@ run() {
   converter._keep_all_uvsets = _keep_all_uvsets;
   converter._round_uvs = _round_uvs;
   converter._transform_type = _transform_type;
+  converter._texture_copy = _texture_copy;
+  converter._texture_out_dir = _texture_out_dir;
+  converter._legacy_shader = _legacy_shader;
 
   vector_string::const_iterator si;
   if (!_subroots.empty()) {
