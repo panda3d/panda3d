@@ -220,7 +220,7 @@
 // to invoke a particular instance of Panda.
 //
 
-  #define BUILD_TARGET $[and $[PANDA_PACKAGE_HOST_URL],$[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES tinyxml python openssl cg
   #define TARGET p3dpython
 
@@ -268,7 +268,7 @@
 // the desktop.)
 //
 
-  #define BUILD_TARGET $[and $[PANDA_PACKAGE_HOST_URL],$[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
   #define USE_PACKAGES tinyxml python openssl
   #define TARGET p3dpythonw
   #define EXTRA_CDEFS NON_CONSOLE
@@ -314,7 +314,7 @@
 // desparation fallback in case forking fails for some reason.
 //
 
-  #define BUILD_TARGET $[and $[PANDA_PACKAGE_HOST_URL],$[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES tinyxml python openssl cg
   #define TARGET libp3dpython
   #define LIB_PREFIX

@@ -584,7 +584,7 @@ class AppRunner(DirectObject):
             else:
                 # If it's an unknown package, just delete it directly.
                 print "Deleting unknown package %s" % (packageData.pathname)
-                self.rmtree(packageData.pathname())
+                self.rmtree(packageData.pathname)
 
         packages = self.deletePackages(packages)
         if packages:

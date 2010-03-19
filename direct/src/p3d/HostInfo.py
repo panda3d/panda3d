@@ -74,7 +74,7 @@ class HostInfo:
         """ Assigns self.hostUrl, and related values. """
         self.hostUrl = hostUrl
 
-        if self.hostUrl is None:
+        if not self.hostUrl:
             # A special case: the URL will be set later.
             self.hostUrlPrefix = None
             self.downloadUrlPrefix = None
