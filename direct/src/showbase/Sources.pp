@@ -39,7 +39,3 @@
   #define SOURCES extend_frozen.c
 #end lib_target
 
-#if $[CTPROJS]
-  #define INSTALL_SCRIPTS ppython
-#endif
-
