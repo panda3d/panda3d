@@ -106,10 +106,10 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     def __repr__(self):
         outStr = 'DistancePhasedObject('
-        outStr += '%s' % `self.getName()`
+        outStr += '%s' % repr(self.getName())
         for param, value in zip(('phaseParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask', 'fromCollideNode'),
                                 ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()','None')):
-            outStr += eval('(\', ' + param + ' = %s\' % `self.' + param + '`,\'\')[self.' + param + ' == ' + value + ']')
+            outStr += eval('(\', ' + param + ' = %s\' % repr(self.' + param + '),\'\')[self.' + param + ' == ' + value + ']')
         outStr += ')'
         return outStr
 
@@ -287,10 +287,10 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
     def __repr__(self):
         outStr = 'BufferedDistancePhasedNode('
-        outStr += '%s' % `self.getName()`
+        outStr += '%s' % repr(self.getName())
         for param, value in zip(('bufferParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask', 'fromCollideNode'),
                                 ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()', 'None')):
-            outStr += eval('(\', ' + param + ' = %s\' % `self.' + param + '`,\'\')[self.' + param + ' == ' + value + ']')
+            outStr += eval('(\', ' + param + ' = %s\' % repr(self.' + param + '),\'\')[self.' + param + ' == ' + value + ']')
         outStr += ')'
         return outStr
 

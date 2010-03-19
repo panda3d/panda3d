@@ -26,7 +26,7 @@ class DirectRadamec(DirectObject):
         if base.direct.deviceManager == None:
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
-        self.name = 'Radamec-' + `DirectRadamec.radamecCount`
+        self.name = 'Radamec-' + repr(DirectRadamec.radamecCount)
         DirectRadamec.radamecCount += 1
         # Get analogs
         self.device = device

@@ -30,7 +30,7 @@ from pandac.PandaModules import *
 # Initialize icon directory
 ICONDIR = ConfigVariableSearchPath('model-path').findFile(Filename('icons')).toOsSpecific()
 if not os.path.isdir(ICONDIR):
-    raise RuntimeError, "can't find DIRECT icon directory (%s)" % `ICONDIR`
+    raise RuntimeError, "can't find DIRECT icon directory (%s)" % repr(ICONDIR)
 
 class TreeNode:
 

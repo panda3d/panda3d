@@ -559,7 +559,7 @@ class ManifestSpecification:
         # with a getter
         if (self.intValue != None):
             indent(file, 0, '# Manifest: ' + self.name + '\n')
-            indent(file, 0, (self.name + ' = ' + `self.intValue` + '\n'))
+            indent(file, 0, (self.name + ' = ' + repr(self.intValue) + '\n'))
             indent(file, 0, '\n')
 
         elif self.definition:

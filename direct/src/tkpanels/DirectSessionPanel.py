@@ -216,7 +216,7 @@ class DirectSessionPanel(AppShell):
         Label(drFrame, text = 'Display Region',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
-        nameList = map(lambda x: 'Display Region ' + `x`,
+        nameList = map(lambda x: 'Display Region ' + repr(x),
                        range(len(base.direct.drList)))
         self.drMenu = Pmw.ComboBox(
             drFrame, labelpos = W, label_text = 'Display Region:',
@@ -725,7 +725,7 @@ class DirectSessionPanel(AppShell):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + `nodePath.id()`
+            dictName = name + '-' + repr(nodePath.id())
         if not dict.has_key(dictName):
             # Update combo box to include new item
             names.append(dictName)

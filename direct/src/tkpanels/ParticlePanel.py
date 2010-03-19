@@ -1239,7 +1239,7 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
@@ -1267,7 +1267,7 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
@@ -1900,7 +1900,7 @@ class ParticlePanel(AppShell):
             frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
 
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationTextureWidget(parent, anim, `frameNum`))
+                self.createSpriteAnimationTextureWidget(parent, anim, repr(frameNum)))
         else:
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STTexture
@@ -1908,7 +1908,7 @@ class ParticlePanel(AppShell):
             frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
 
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationTextureWidget(parent, anim, `frameNum`))
+                self.createSpriteAnimationTextureWidget(parent, anim, repr(frameNum)))
         parent.pack(fill=BOTH, expand=1)
     def addRendererSpriteAnimationFromNode(self):
         ren = self.particles.getRenderer()
@@ -1921,7 +1921,7 @@ class ParticlePanel(AppShell):
             frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
 
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationNodeWidget(parent, anim, `frameNum`))
+                self.createSpriteAnimationNodeWidget(parent, anim, repr(frameNum)))
         else:
             animId = len([x for x in self.rendererSpriteAnimationWidgetList if x and x.valid])
             anim = SpriteAnim.STFromNode
@@ -1929,7 +1929,7 @@ class ParticlePanel(AppShell):
             frameNum = len([x for x in self.rendererSpriteAnimationWidgetList if x])
 
             self.rendererSpriteAnimationWidgetList.append(
-                self.createSpriteAnimationNodeWidget(parent, anim, `frameNum`))
+                self.createSpriteAnimationNodeWidget(parent, anim, repr(frameNum)))
         parent.pack(fill=BOTH, expand=1)
 
     def toggleRendererSpriteXScale(self):
@@ -2055,12 +2055,12 @@ class ParticlePanel(AppShell):
 
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Constant'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
             self.rendererSegmentWidgetList.append(
                 self.createConstantInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Constant'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
             self.rendererSegmentWidgetList.append(
                 self.createConstantInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
@@ -2075,12 +2075,12 @@ class ParticlePanel(AppShell):
             
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Linear'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
             self.rendererSegmentWidgetList.append(
                 self.createLinearInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Linear'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
             self.rendererSegmentWidgetList.append(
                 self.createLinearInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
@@ -2095,12 +2095,12 @@ class ParticlePanel(AppShell):
             
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Stepwave'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
             self.rendererSegmentWidgetList.append(
                 self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Stepwave'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
             self.rendererSegmentWidgetList.append(
                 self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
@@ -2115,12 +2115,12 @@ class ParticlePanel(AppShell):
             
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Sinusoid'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
             self.rendererSegmentWidgetList.append(
                 self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererSegmentWidgetList)`+':Sinusoid'
+            segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
             self.rendererSegmentWidgetList.append(
                 self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
@@ -2375,7 +2375,7 @@ class ParticlePanel(AppShell):
         if frame.valid:
             strVar.set(anim.getTexSource())
         else:
-            strVar.set('Base model path: ' + `getModelPath().getValue()`)
+            strVar.set('Base model path: ' + repr(getModelPath().getValue()))
 
         def checkForTexture(strVar = strVar):
             tex = loader.loadTexture(strVar.get())
@@ -2406,7 +2406,7 @@ class ParticlePanel(AppShell):
         if frame.valid:
             mStrVar.set(anim.getModelSource())
         else:
-            mStrVar.set('Base model path: ' + `getModelPath().getValue()`)
+            mStrVar.set('Base model path: ' + repr(getModelPath().getValue()))
 
         mlf = lf
 
@@ -2460,9 +2460,9 @@ class ParticlePanel(AppShell):
 
         for anim in [ren.getAnim(x) for x in range(ren.getNumAnims())]:
             if(anim.getSourceType() == SpriteAnim.STTexture):
-                w = self.createSpriteAnimationTextureWidget(self.rendererSpriteAnimationFrame, anim, `len(self.rendererSpriteAnimationWidgetList)`)
+                w = self.createSpriteAnimationTextureWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
             else:
-                w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame, anim, `len(self.rendererSpriteAnimationWidgetList)`)
+                w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
             self.rendererSpriteAnimationWidgetList.append(w)
 
     # set animation info from panel into renderer
@@ -2476,11 +2476,11 @@ class ParticlePanel(AppShell):
             widget = self.rendererSpriteAnimationWidgetList[x]
             if(widget and widget.valid):
                 if(widget.animSourceType == SpriteAnim.STTexture):
-                    texSource = self.getVariable('Sprite Renderer', `x` + ' Anim Texture').get()
+                    texSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Texture').get()
                     ren.addTextureFromFile(texSource)
                 else:
-                    modelSource = self.getVariable('Sprite Renderer', `x` + ' Anim Model').get()
-                    nodeSource = self.getVariable('Sprite Renderer', `x` + ' Anim Node').get()
+                    modelSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Model').get()
+                    nodeSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Node').get()
                     ren.addTextureFromNode(modelSource, nodeSource)
 
     ## FORCEGROUP COMMANDS ##
@@ -2667,7 +2667,7 @@ class ParticlePanel(AppShell):
                                       count, force):
         def setVec(vec, f = force):
             f.setVector(vec[0], vec[1], vec[2])
-        forceName = 'Vector Force-' + `count`
+        forceName = 'Vector Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         vec = force.getLocalVector()
@@ -2679,7 +2679,7 @@ class ParticlePanel(AppShell):
 
     def createLinearRandomForceWidget(self, forcePage, pageName, count,
                                 force, type):
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createForceActiveWidget(frame, pageName, forceName, force)
@@ -2688,7 +2688,7 @@ class ParticlePanel(AppShell):
                                         count, force):
         def setCoef(coef, f = force):
             f.setCoef(coef)
-        forceName = 'Friction Force-' + `count`
+        forceName = 'Friction Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createFloater(frame, pageName, forceName + ' Coef',
@@ -2699,7 +2699,7 @@ class ParticlePanel(AppShell):
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
-        forceName = 'Vortex Force-' + `count`
+        forceName = 'Vortex Force-' + repr(count)
         def setCoef(coef, f = force):
             f.setCoef(coef)
         def setLength(length, f = force):
@@ -2738,7 +2738,7 @@ class ParticlePanel(AppShell):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
         def setRadius(radius, f = force):
             f.setRadius(radius)
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         var = self.createOptionMenu(

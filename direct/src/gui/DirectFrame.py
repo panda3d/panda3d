@@ -62,7 +62,7 @@ class DirectFrame(DirectGuiWidget):
             textList = self['text']
         # Create/destroy components
         for i in range(self['numStates']):
-            component = 'text' + `i`
+            component = 'text' + repr(i)
             # If fewer items specified than numStates,
             # just repeat last item
             try:
@@ -106,7 +106,7 @@ class DirectFrame(DirectGuiWidget):
             
         # Create/destroy components
         for i in range(self['numStates']):
-            component = 'geom' + `i`
+            component = 'geom' + repr(i)
             # If fewer items specified than numStates,
             # just repeat last item
             try:
@@ -154,7 +154,7 @@ class DirectFrame(DirectGuiWidget):
                 imageList = arg
         # Create/destroy components
         for i in range(self['numStates']):
-            component = 'image' + `i`
+            component = 'image' + repr(i)
             # If fewer items specified than numStates,
             # just repeat last item
             try:

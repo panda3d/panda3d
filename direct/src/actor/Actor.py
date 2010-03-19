@@ -476,7 +476,7 @@ class Actor(DirectObject, NodePath):
             print 'LOD:', lodName
             for partName, bundle, animInfo in lodInfo:
                 print '  Part:', partName
-                print '  Bundle:', `bundle`
+                print '  Bundle:', repr(bundle)
                 for animName, file, animControl in animInfo:
                     print '    Anim:', animName
                     print '      File:', file

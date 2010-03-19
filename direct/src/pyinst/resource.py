@@ -243,7 +243,7 @@ class dirresource(resource):
                         self._contents.append(rsrc)
             except ValueError, e:
                 raise RuntimeError, "Can't make resource from %s\n ValueError: %s" \
-                      % (os.path.join(self.path, fnm), `e.args`)
+                      % (os.path.join(self.path, fnm), repr(e.args))
         return self._contents
     def asFilter(self):
         return tocfilter.DirFilter([self.path])

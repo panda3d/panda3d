@@ -263,7 +263,7 @@ class ClusterClient(DirectObject.DirectObject):
         
     def getNodePathFindCmd(self, nodePath):
         import string
-        pathString = `nodePath`
+        pathString = repr(nodePath)
         index = string.find(pathString, '/')
         if index != -1:
             rootName = pathString[:index]
@@ -274,7 +274,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def getNodePathName(self, nodePath):
         import string
-        pathString = `nodePath`
+        pathString = repr(nodePath)
         index = string.find(pathString, '/')
         if index != -1:
             name = pathString[index+1:]

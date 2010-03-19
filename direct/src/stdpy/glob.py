@@ -47,7 +47,7 @@ def iglob(pathname):
             yield os.path.join(dirname, name)
 
 # These 2 helper functions non-recursively glob inside a literal directory.
-# They return a list of basenames. `glob1` accepts a pattern while `glob0`
+# They return a list of basenames. repr(glob1) accepts a pattern while `glob0`
 # takes a literal basename (so it only has to check for its existence).
 
 def glob1(dirname, pattern):
@@ -66,7 +66,7 @@ def glob1(dirname, pattern):
 
 def glob0(dirname, basename):
     if basename == '':
-        # `os.path.split()` returns an empty basename for paths ending with a
+        # repr(os.path.split()) returns an empty basename for paths ending with a
         # directory separator.  'q*x/' should match only directories.
         if file.isdir(dirname):
             return [basename]

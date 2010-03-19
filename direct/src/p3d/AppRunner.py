@@ -721,7 +721,7 @@ class AppRunner(DirectObject):
 
             __import__(moduleName)
             main = sys.modules[moduleName]
-            if hasattr(main, 'main') and callable(main.main):
+            if hasattr(main, 'main') and hasattr(main.main, '__call__'):
                 main.main(self)
 
             # Now clear this flag.

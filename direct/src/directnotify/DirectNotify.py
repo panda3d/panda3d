@@ -48,7 +48,7 @@ class DirectNotify:
         Make a new notify category named categoryName. Return new category
         if no such category exists, else return existing category
         """
-        if (not self.__categories.has_key(categoryName)):
+        if (categoryName not in self.__categories):
             self.__categories[categoryName] = Notifier.Notifier(categoryName, logger)
             self.setDconfigLevel(categoryName)
         return (self.getCategory(categoryName))

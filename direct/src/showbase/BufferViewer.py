@@ -282,7 +282,7 @@ class BufferViewer(DirectObject):
             win = base.graphicsEngine.getWindow(iwin)
             for itex in range(win.countTextures()):
                 tex = win.getTexture(itex)
-                if (include.has_key(tex)) and (exclude.has_key(tex)==0):
+                if (tex in include) and (tex not in exclude):
                     if (tex.getTextureType() == Texture.TTCubeMap):
                         for face in range(6):
                             self.cardmaker.setUvRangeCube(face)
@@ -347,9 +347,9 @@ class BufferViewer(DirectObject):
 
         if (float(self.sizex)==0.0) and (float(self.sizey)==0.0):
             sizey = int(0.4266666667 * base.win.getYSize())
-            sizex = (sizey * aspectx) / aspecty
-            v_sizey = (base.win.getYSize() - (rows-1) - (rows*2)) / rows
-            v_sizex = (v_sizey * aspectx) / aspecty
+            sizex = (sizey * aspectx) // aspecty
+            v_sizey = (base.win.getYSize() - (rows-1) - (rows*2)) // rows
+            v_sizex = (v_sizey * aspectx) // aspecty
             if (v_sizey < sizey) or (v_sizex < sizex):
                 sizey = v_sizey
                 sizex = v_sizex
@@ -361,15 +361,15 @@ class BufferViewer(DirectObject):
             if (h_sizex < 1.0):
                 h_sizex = 1.0
 
-            h_sizey = (h_sizex * aspecty) / aspectx
+            h_sizey = (h_sizex * aspecty) // aspectx
             if (h_sizey < sizey) or (h_sizex < sizex):
                 sizey = h_sizey
                 sizex = h_sizex
         else:
             sizex = int(self.sizex * 0.5 * base.win.getXSize())
             sizey = int(self.sizey * 0.5 * base.win.getYSize())
-            if (sizex == 0): sizex = (sizey*aspectx) / aspecty
-            if (sizey == 0): sizey = (sizex*aspecty) / aspectx
+            if (sizex == 0): sizex = (sizey*aspectx) // aspecty
+            if (sizey == 0): sizey = (sizex*aspecty) // aspectx
 
         # Convert from pixels to render2d-units.
         fsizex = (2.0 * sizex) / float(base.win.getXSize())        

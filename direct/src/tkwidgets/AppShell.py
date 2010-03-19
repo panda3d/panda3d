@@ -84,7 +84,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.parent.title(self['title'])
         # Create unique id
         AppShell.panelCount += 1
-        self.id = self.appname + '-' + `AppShell.panelCount`
+        self.id = self.appname + '-' + repr(AppShell.panelCount)
         # Create a dictionary in the widgetDict to hold this panel's widgets
         self.widgetDict = widgetDict[self.id] = {}
         # And one to hold this panel's variables

@@ -59,7 +59,7 @@ if sys.platform == "win32":
         os.environ["PATH"] = target + ";" + path
 
 def Dtool_PreloadDLL(module):
-    if (sys.modules.has_key(module)):
+    if module in sys.modules:
         return
 
     # Search for the appropriate directory.

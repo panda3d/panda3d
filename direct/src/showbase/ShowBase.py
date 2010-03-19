@@ -2359,7 +2359,7 @@ class ShowBase(DirectObject.DirectObject):
         t.frameIndex = 0  # Frame 0 is not captured.
         t.numFrames = int(duration * fps)
         t.source = source
-        t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format
+        t.outputString = namePrefix + '_%0' + repr(sd) + 'd.' + format
         t.setUponDeath(lambda state: globalClock.setMode(ClockObject.MNormal))
 
     def _movieTask(self, state):

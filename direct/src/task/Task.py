@@ -370,7 +370,7 @@ class TaskManager:
     def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath):
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
-        elif callable(funcOrTask):
+        elif hasattr(funcOrTask, '__call__'):
             task = PythonTask(funcOrTask)
         else:
             self.notify.error(

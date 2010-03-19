@@ -297,7 +297,7 @@ def inspectorFor(anObject):
     else:
         print "Can't find an inspector for " + typeName
         inspectorName = 'Inspector'
-    inspector = eval(inspectorName + '(anObject)')
+    inspector = globals()[inspectorName](anObject)
     return inspector
 
 def initializeInspectorMap():
@@ -351,7 +351,7 @@ class Inspector:
         keys.sort()
         for each in keys:
             self._partsList.append(each)
-            #if not callable(eval('self.object.' + each)):
+            #if not hasattr(getattr(self.object, each), '__call__'):
             #    self._partsList.append(each)  
 
     def initializePartNames(self):
@@ -373,7 +373,7 @@ class Inspector:
     def stringForPartNumber(self, partNumber):
         object = self.partNumber(partNumber)
         doc = None
-        if callable(object):
+        if hasattr(object, '__call__'):
             try:
                 doc = object.__doc__
             except:
@@ -389,7 +389,7 @@ class Inspector:
             return self.object
         else:
             part = self.privatePartNumber(partNumber)
-            return eval('self.object.' + part)
+            return getattr(self.object, part)
 
     def inspectorFor(self, part):
         return inspectorFor(part)
@@ -461,7 +461,7 @@ class DictionaryInspector(Inspector):
         if self.object.has_key(key):
             return self.object[key]
         else:
-            return eval('self.object.' + key)
+            return getattr(self.object, key)
         
 class SequenceInspector(Inspector):
     def initializePartsList(self):
@@ -477,7 +477,7 @@ class SequenceInspector(Inspector):
         if type(index) == IntType:
             return self.object[index]
         else:
-            return eval('self.object.' + index)
+            return getattr(self.object, index)
     
 class SliceInspector(Inspector):
     def namedParts(self):

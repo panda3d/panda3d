@@ -111,7 +111,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.postPoints = []
         self.pointSetDict = {}
         self.pointSetCount = 0
-        self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
+        self.pointSetName = self.name + '-ps-' + repr(self.pointSetCount)
         # User callback to call before recording point
         self.samplingMode = 'Continuous'
         self.preRecordFunc = None
@@ -774,7 +774,7 @@ class MopathRecorder(AppShell, DirectObject):
         taskMgr.remove(self.name + '-curveEditTask')
 
     def createNewPointSet(self):
-        self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
+        self.pointSetName = self.name + '-ps-' + repr(self.pointSetCount)
         # Update dictionary and record pointer to new point set
         self.pointSet = self.pointSetDict[self.pointSetName] = []
         # Update combo box
@@ -1247,7 +1247,7 @@ class MopathRecorder(AppShell, DirectObject):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + `nodePath.id()`
+            dictName = name + '-' + repr(nodePath.id())
         if not dict.has_key(dictName):
             # Update combo box to include new item
             names.append(dictName)
@@ -1616,7 +1616,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Use first directory in model path
         mPath = getModelPath()
         if mPath.getNumDirectories() > 0:
-            if `mPath.getDirectory(0)` == '.':
+            if repr(mPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = mPath.getDirectory(0).toOsSpecific()
@@ -1655,7 +1655,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Use first directory in model path
         mPath = getModelPath()
         if mPath.getNumDirectories() > 0:
-            if `mPath.getDirectory(0)` == '.':
+            if repr(mPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = mPath.getDirectory(0).toOsSpecific()

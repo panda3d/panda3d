@@ -409,7 +409,7 @@ class DirectBoundingBox:
         return '%.2f %.2f %.2f' % (vec[0], vec[1], vec[2])
 
     def __repr__(self):
-        return (`self.__class__` +
+        return (repr(self.__class__) +
                 '\nNodePath:\t%s\n' % self.nodePath.getName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +

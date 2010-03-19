@@ -27,7 +27,7 @@ class CTOC:
                                                   s[p:p+entrylen]) 
       nmlen = slen - entrylen 
       p = p + entrylen
-      (nm,) = struct.unpack(`nmlen`+'s', s[p:p+nmlen])
+      (nm,) = struct.unpack(repr(nmlen)+'s', s[p:p+nmlen])
       p = p + nmlen 
       self.data.append((dpos, dlen, ulen, flag, typcd, nm[:-1]))
 
@@ -37,7 +37,7 @@ class CTOC:
 ##    rslt = []
 ##    for (dpos, dlen, ulen, flag, typcd, nm) in self.data:
 ##      nmlen = len(nm) + 1     # add 1 for a '\0'
-##      rslt.append(struct.pack(self.ENTRYSTRUCT+`nmlen`+'s',
+##      rslt.append(struct.pack(self.ENTRYSTRUCT+repr(nmlen)+'s',
 ##        nmlen+entrylen, dpos, dlen, ulen, flag, typcd, nm+'\0'))
 ##    return string.join(rslt, '')
 ##

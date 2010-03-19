@@ -85,7 +85,7 @@ class DirectDialog(DirectFrame):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('dialogName',        'DirectDialog_' + `DirectDialog.PanelIndex`,  DGG.INITOPT),
+            ('dialogName',        'DirectDialog_' + repr(DirectDialog.PanelIndex),  DGG.INITOPT),
             # Default position is slightly forward in Y, so as not to
             # intersect the near plane, which is incorrectly set to 0
             # in DX for some reason.
@@ -123,7 +123,7 @@ class DirectDialog(DirectFrame):
         DirectFrame.__init__(self, parent)
 
         #if not self['dialogName']:
-        #    self['dialogName'] = 'DirectDialog_' + `DirectDialog.PanelIndex`
+        #    self['dialogName'] = 'DirectDialog_' + repr(DirectDialog.PanelIndex)
 
         # Clean up any previously existing panel with the same unique
         # name.  We don't allow any two panels with the same name to
@@ -142,7 +142,7 @@ class DirectDialog(DirectFrame):
         self.buttonList = []
         index = 0
         for i in range(self.numButtons):
-            name = 'Button' + `i`
+            name = 'Button' + repr(i)
             try:
                 text = self['buttonTextList'][i]
             except IndexError:

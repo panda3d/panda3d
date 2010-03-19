@@ -220,7 +220,7 @@ def doErrorCheck():
     if (not codeLibs):
         FFIConstants.notify.error('You must specify one or more libraries to generate code from')
     else:
-        FFIConstants.notify.debug('Generating code for: ' + `codeLibs`)
+        FFIConstants.notify.debug('Generating code for: ' + repr(codeLibs))
         FFIConstants.CodeModuleNameList = codeLibs
 
 def generateNativeWrappers():

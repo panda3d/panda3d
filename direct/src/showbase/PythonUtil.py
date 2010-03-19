@@ -92,7 +92,7 @@ def Functor(function, *args, **kArgs):
 
 class Functor:
     def __init__(self, function, *args, **kargs):
-        assert callable(function), "function should be a callable obj"
+        assert hasattr(function, '__call__'), "function should be a callable obj"
         self._function = function
         self._args = args
         self._kargs = kargs
@@ -316,7 +316,7 @@ def traceFunctionCall(frame):
     if co.co_flags & 4: n = n+1
     if co.co_flags & 8: n = n+1
     r=''
-    if dict.has_key('self'):
+    if 'self' in dict:
         r = '%s.'%(dict['self'].__class__.__name__,)
     r+="%s("%(f.f_code.co_name,)
     comma=0 # formatting, whether we should type a comma.
@@ -331,7 +331,7 @@ def traceFunctionCall(frame):
             comma=1
         r+=name
         r+='='
-        if dict.has_key(name):
+        if name in dict:
             v=str(dict[name])
             if len(v)>2000:
                 # r+="<too big for debug>"
@@ -507,13 +507,13 @@ def _pdir(obj, str = None, width = None,
         keys = aproposKeys + privateKeys + remainingKeys
     else:
         keys = aproposKeys + remainingKeys
-    format = '%-' + `maxWidth` + 's'
+    format = '%-' + repr(maxWidth) + 's'
     for key in keys:
         value = dict[key]
-        if callable(value):
-            strvalue = `Signature(value)`
+        if hasattr(value, '__call__'):
+            strvalue = repr(Signature(value))
         else:
-            strvalue = `value`
+            strvalue = repr(value)
         if fTruncate:
             # Cut off line (keeping at least 1 char)
             strvalue = strvalue[:max(1, lineWidth - maxWidth)]
@@ -569,7 +569,7 @@ def _getcode(f):
     try:
         return codedict[type(f)](f)
     except KeyError:
-        if callable(f): # eg, built-in functions and methods
+        if hasattr(f, '__call__'): # eg, built-in functions and methods
             # raise ValueError, "type %s not supported yet." % type(f)
             return f.__name__, None
         else:
@@ -599,9 +599,9 @@ class Signature:
     def full_arglist(self):
         base = list(self.ordinary_args())
         x = self.special_args()
-        if x.has_key('positional'):
+        if 'positional' in x:
             base.append(x['positional'])
-        if x.has_key('keyword'):
+        if 'keyword' in x:
             base.append(x['keyword'])
         return base
     def defaults(self):
@@ -620,13 +620,13 @@ class Signature:
             specials = self.special_args()
             l = []
             for arg in self.ordinary_args():
-                if defaults.has_key(arg):
+                if arg in defaults:
                     l.append(arg + '=' + str(defaults[arg]))
                 else:
                     l.append(arg)
-            if specials.has_key('positional'):
+            if 'positional' in specials:
                 l.append('*' + specials['positional'])
-            if specials.has_key('keyword'):
+            if 'keyword' in specials:
                 l.append('**' + specials['keyword'])
             return "%s(%s)" % (self.name, string.join(l, ', '))
         else:
@@ -1432,12 +1432,12 @@ class ParamObj:
         def getDefaultValue(cls, param):
             cls._compileDefaultParams()
             dv = cls._Params[param]
-            if callable(dv):
+            if hasattr(dv, '__call__'):
                 dv = dv()
             return dv
         @classmethod
         def _compileDefaultParams(cls):
-            if cls.__dict__.has_key('_Params'):
+            if '_Params' in cls.__dict__:
                 # we've already compiled the defaults for this class
                 return
             bases = list(cls.__bases__)
@@ -1447,7 +1447,7 @@ class ParamObj:
             for c in (bases + [cls]):
                 # make sure this base has its dict of param defaults
                 c._compileDefaultParams()
-                if c.__dict__.has_key('Params'):
+                if 'Params' in c.__dict__:
                     # apply this class' default param values to our dict
                     cls._Params.update(c.Params)
         def __repr__(self):
@@ -1778,16 +1778,16 @@ class POD:
         # as the default value itself; we need a way to specify that the
         # callable *is* the default value and not a default-value creation
         # function
-        if callable(dv):
+        if hasattr(dv, '__call__'):
             dv = dv()
         return dv
     @classmethod
     def _compileDefaultDataSet(cls):
-        if cls.__dict__.has_key('_DataSet'):
+        if '_DataSet' in cls.__dict__:
             # we've already compiled the defaults for this class
             return
         # create setters & getters for this class
-        if cls.__dict__.has_key('DataSet'):
+        if 'DataSet' in cls.__dict__:
             for name in cls.DataSet:
                 setterName = getSetterName(name)
                 if not hasattr(cls, setterName):
@@ -2454,7 +2454,7 @@ def printListEnumGen(l):
     n = len(l)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     format = '%0' + '%s' % digits + 'i:%s'
     for i in range(len(l)):
         print format % (i, l[i])
@@ -2796,7 +2796,7 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     n = len(items)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     digits = digits
     format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     first = True
@@ -2820,7 +2820,7 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     n = len(items)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     digits = digits
     format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     snip = '<SNIP>'
@@ -2849,7 +2849,7 @@ def getNumberedTypedSortedStringWithReferrersGen(items, maxLen=10000, numPrefix=
     n = len(items)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     digits = digits
     format = numPrefix + '%0' + '%s' % digits + 'i:%s @ %s \t%s'
     snip = '<SNIP>'
@@ -2885,7 +2885,7 @@ def printNumberedTyped(items, maxLen=5000):
     n = len(items)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s \t%s'
     for i in xrange(len(items)):
@@ -2900,7 +2900,7 @@ def printNumberedTypesGen(items, maxLen=5000):
     n = len(items)
     while n > 0:
         digits += 1
-        n /= 10
+        n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s'
     for i in xrange(len(items)):
@@ -3283,8 +3283,8 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 rArgs = []
 
             if 'args' in types:
-                rArgs += [`x`+', ' for x in args[1:]] + \
-                         [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
+                rArgs += [repr(x)+', ' for x in args[1:]] + \
+                         [ x + ' = ' + '%s, ' % repr(y) for x,y in kwargs.items()]
             
             if not rArgs:
                 rArgs = '()'
@@ -3469,7 +3469,7 @@ def logMethodCalls(cls):
         raise 'logMethodCalls: class \'%s\' must have a notify' % cls.__name__
     for name in dir(cls):
         method = getattr(cls, name)
-        if callable(method):
+        if hasattr(method, '__call__'):
             def getLoggedMethodCall(method):
                 def __logMethodCall__(obj, *args, **kArgs):
                     s = '%s(' % method.__name__
@@ -3710,8 +3710,8 @@ class MiniLog:
                ('*'*50, self.name, '-'*50, '\n'.join(self.lines), '*'*50)
     
     def enterFunction(self, funcName, *args, **kw):
-        rArgs = [`x`+', ' for x in args] + \
-                [ x + ' = ' + '%s, ' % `y` for x,y in kw.items()]
+        rArgs = [repr(x)+', ' for x in args] + \
+                [ x + ' = ' + '%s, ' % repr(y) for x,y in kw.items()]
             
         if not rArgs:
             rArgs = '()'
@@ -3786,13 +3786,13 @@ def formatTimeCompact(seconds):
     result = ''
     a = int(seconds)
     seconds = a % 60
-    a /= 60
+    a //= 60
     if a > 0:
         minutes = a % 60
-        a /= 60
+        a //= 60
         if a > 0:
             hours = a % 24
-            a /= 24
+            a //= 24
             if a > 0:
                 days = a
                 result += '%sd' % days
@@ -3819,13 +3819,13 @@ def formatTimeExact(seconds):
     result = ''
     a = int(seconds)
     seconds = a % 60
-    a /= 60
+    a //= 60
     if a > 0:
         minutes = a % 60
-        a /= 60
+        a //= 60
         if a > 0:
             hours = a % 24
-            a /= 24
+            a //= 24
             if a > 0:
                 days = a
                 result += '%sd' % days
@@ -3963,16 +3963,16 @@ def startSuperLog(customFunction = None):
         def trace_dispatch(a,b,c):
             if(b=='call' and a.f_code.co_name != '?' and a.f_code.co_name.find("safeRepr")<0):
                 vars = dict(a.f_locals)
-                if(vars.has_key('self')):
+                if 'self' in vars:
                     del vars['self']
-                if(vars.has_key('__builtins__')):
+                if '__builtins__' in vars:
                     del vars['__builtins__']
                 for i in vars:
                     vars[i] = safeReprTypeOnFail(vars[i]) 
-                if(customFunction):
+                if customFunction:
                     superLogFile.write( "before = %s"%customFunction())
                 superLogFile.write( "%s(%s):%s:%s\n"%(a.f_code.co_filename.split("\\")[-1],a.f_code.co_firstlineno, a.f_code.co_name, vars))
-                if(customFunction):
+                if customFunction:
                     superLogFile.write( "after = %s"%customFunction())
                 return trace_dispatch
         sys.settrace(trace_dispatch)

@@ -26,7 +26,7 @@ class DirectFastrak(DirectObject):
             base.direct.deviceManager = DirectDeviceManager()
 
         # Set name
-        self.name = 'Fastrak-' + `DirectFastrak.fastrakCount`
+        self.name = 'Fastrak-' + repr(DirectFastrak.fastrakCount)
         self.deviceNo = DirectFastrak.fastrakCount
         DirectFastrak.fastrakCount += 1
 
@@ -64,5 +64,5 @@ class DirectFastrak(DirectObject):
         self.trackerPos = Vec3(3.280839895013123 * pos[2],
                                3.280839895013123 * pos[1],
                                3.280839895013123 * pos[0])
-        self.notify.debug("Tracker(%d) Pos = %s" % (self.deviceNo, `self.trackerPos`))
+        self.notify.debug("Tracker(%d) Pos = %s" % (self.deviceNo, repr(self.trackerPos)))
 

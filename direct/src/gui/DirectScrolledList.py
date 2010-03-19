@@ -385,7 +385,7 @@ class DirectScrolledList(DirectFrame):
         if item in self["items"]:
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
-            if (hasattr(item, 'destroy') and callable(item.destroy)):
+            if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
                 item.destroy()
             self["items"].remove(item)
             if type(item) != type(''):
@@ -432,7 +432,7 @@ class DirectScrolledList(DirectFrame):
             item = self['items'][0]
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
-            if (hasattr(item, 'destroy') and callable(item.destroy)):
+            if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
                 item.destroy()
             self["items"].remove(item)
             if type(item) != type(''):

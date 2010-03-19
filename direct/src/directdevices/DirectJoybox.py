@@ -46,7 +46,7 @@ class DirectJoybox(DirectObject):
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
         DirectJoybox.joyboxCount += 1
-        self.name = 'Joybox-' + `DirectJoybox.joyboxCount`
+        self.name = 'Joybox-' + repr(DirectJoybox.joyboxCount)
         # Get buttons and analogs
         self.device = device
         self.analogs = base.direct.deviceManager.createAnalogs(self.device)
@@ -130,7 +130,7 @@ class DirectJoybox(DirectObject):
     def getRefCS(self):
         return self.refCS
     def getEventName(self, index):
-        return self.name + '-button-' + `index`
+        return self.name + '-button-' + repr(index)
     def setXyzMultiplier(self, multiplier):
         DirectJoybox.xyzMultiplier = multiplier
     def getXyzMultiplier(self):

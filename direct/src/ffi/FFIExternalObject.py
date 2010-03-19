@@ -75,7 +75,7 @@ class FFIExternalObject:
             for base in thisClass.__bases__:
                 res = self.getLineageInternal(base, targetBaseClass, chain+[base])
                 if res:
-                    # FFIConstants.notify.debug('getLineageInternal: found path: ' + `res`)
+                    # FFIConstants.notify.debug('getLineageInternal: found path: ' + repr(res))
                     return res
             # Not found anywhere
             return 0
@@ -172,7 +172,7 @@ class FFIExternalObject:
         downcastChain = DowncastMap.get((fromClass, toClass))
         if downcastChain == None:
             downcastChain = self.getDowncastFunctions(toClass, fromClass)
-            #FFIConstants.notify.debug('downcast: computed downcast chain: ' + `downcastChain`)
+            #FFIConstants.notify.debug('downcast: computed downcast chain: ' + repr(downcastChain))
             # Store it for next time
             DowncastMap[(fromClass, toClass)] = downcastChain
         newObject = self
@@ -217,7 +217,7 @@ class FFIExternalObject:
         except AssertionError, e:
             raise AssertionError, e
         except:
-            baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
+            baseRepr = ('[' + self.__class__.__name__ + ' at: ' + repr(self.this) + ']')
         # In any case, return the baseRepr
         return baseRepr
 
@@ -225,7 +225,7 @@ class FFIExternalObject:
         # This is a more complete version of printing which shows the object type
         # and pointer, plus the output from write() or output() whichever is defined
         # Print this info for all objects
-        baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
+        baseRepr = ('[' + self.__class__.__name__ + ' at: ' + repr(self.this) + ']')
         # Lots of Panda classes have an write or output function defined that takes an Ostream
         # We create a LineStream for the write or output function to write to, then we extract
         # the string out of it and return it as our repr

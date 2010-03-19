@@ -56,7 +56,7 @@ class lTOC(UserList.UserList):
                     raise ValueError, "can't make filter from %s", repr(filter)
             else:
                 raise ValueError, "can't make filter from %s", repr(filter)
-        print " added filter", `self.filters[-1]`             
+        print " added filter", repr(self.filters[-1])             
             
    
 if __name__ == '__main__':

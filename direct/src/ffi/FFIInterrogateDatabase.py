@@ -219,10 +219,10 @@ def getTypeName(typeIndex, scoped=0):
         else:
             name = name + string.capitalize(nameComponents[i][0]) + nameComponents[i][1:]
 
-    FFIConstants.notify.debug('typeIndex: ' + `typeIndex` + ' typeName: ' + typeName + ' has name: ' + name)
+    FFIConstants.notify.debug('typeIndex: ' + repr(typeIndex) + ' typeName: ' + typeName + ' has name: ' + name)
 
     if not name:
-        FFIConstants.notify.warning('typeIndex: ' + `typeIndex` + ' typeName: ' + typeName + ' has no name')
+        FFIConstants.notify.warning('typeIndex: ' + repr(typeIndex) + ' typeName: ' + typeName + ' has no name')
         name = "UnnamedType"
 
     return name
@@ -262,7 +262,7 @@ class FFIInterrogateDatabase:
             return  self.constructClassTypeDescriptor(typeIndex)
         
         else:
-            raise 'A type in the interrogate database was not recognized: '+ `typeIndex`
+            raise 'A type in the interrogate database was not recognized: '+ repr(typeIndex)
     
     def constructPrimitiveTypeDescriptor(self, typeIndex):
         if self.isDefinedType(typeIndex):
@@ -478,7 +478,7 @@ class FFIInterrogateDatabase:
                 name =  FFIRename.nonClassNameFromCppName(
                     interrogate_wrapper_parameter_name(functionIndex, argIndex))
             else:
-                name = ('parameter' + `argIndex`)
+                name = ('parameter' + repr(argIndex))
             descriptor = self.constructDescriptor(
                 interrogate_wrapper_parameter_type(functionIndex, argIndex))
             

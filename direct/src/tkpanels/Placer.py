@@ -509,7 +509,7 @@ class Placer(AppShell):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + `nodePath.id()`
+            dictName = name + '-' + repr(nodePath.id())
         if not dict.has_key(dictName):
             # Update combo box to include new item
             names.append(dictName)

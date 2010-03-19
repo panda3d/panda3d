@@ -171,7 +171,7 @@ class EnumTypeDescriptor(PrimitiveTypeDescriptor):
         on = 1
         """
         for key in self.values.keys():
-            indent(file, nesting, key + ' = ' + `self.values[key]` + '\n')
+            indent(file, nesting, key + ' = ' + repr(self.values[key]) + '\n')
 
 
 class DerivedTypeDescriptor(BaseTypeDescriptor):

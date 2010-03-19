@@ -284,10 +284,10 @@ class FullExeTarget(ArchiveTarget):
 
     def gather(self):
         for script in self.script:
-            #print "FullExeTarget.gather: script is", `script`
+            #print "FullExeTarget.gather: script is", repr(script)
             rsrc = resource.makeresource(script, self.pathprefix)
             rsrc = resource.scriptresource(rsrc.name, rsrc.path)
-            #print " resource is", `rsrc`
+            #print " resource is", repr(rsrc)
             self.toc.merge(rsrc.binaries)
         ArchiveTarget.gather(self)
         if not self.zlib:
@@ -490,7 +490,7 @@ def main(opts, args):
                 break
         else:       #no break - couldn't find anything to build
             names = map(lambda x: getattr(x, 'name'), targets)
-            raise RuntimeError, "circular dependencies in %s" % `names`
+            raise RuntimeError, "circular dependencies in %s" % repr(names)
         targets = filter(None, targets)
 
 def run(file):

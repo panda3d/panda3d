@@ -45,11 +45,11 @@ class Module:
         self.__code__ = None
 
     def __repr__(self):
-        s = "Module(%s" % `self.__name__`
+        s = "Module(%s" % repr(self.__name__)
         if self.__file__ is not None:
-            s = s + ", %s" % `self.__file__`
+            s = s + ", %s" % repr(self.__file__)
         if self.__path__ is not None:
-            s = s + ", %s" % `self.__path__`
+            s = s + ", %s" % repr(self.__path__)
         s = s + ")"
         return s
 
@@ -410,7 +410,7 @@ def test():
     if debug > 1:
         print "path:"
         for item in path:
-            print "   ", `item`
+            print "   ", repr(item)
 
     # Create the module finder and turn its crank
     mf = ModuleFinder(path, debug, exclude)

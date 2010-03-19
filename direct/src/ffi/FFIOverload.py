@@ -281,19 +281,19 @@ class FFIMethodArgumentTreeCollection:
             for tree in trees:
                 # If this is the first case, output an if clause
                 if (i == 0):
-                    indent(file, nesting+2, 'if (numArgs == ' + `numArgs` + '):\n')
+                    indent(file, nesting+2, 'if (numArgs == ' + repr(numArgs) + '):\n')
                 # If this is a subsequent first case, output an elif clause
                 else:
-                    indent(file, nesting+2, 'elif (numArgs == ' + `numArgs` + '):\n')
+                    indent(file, nesting+2, 'elif (numArgs == ' + repr(numArgs) + '):\n')
                 tree.setup()
                 tree.traverse(file, nesting+1, 0)
 
         # If the overloaded function got all the way through the if statements
         # it must have had the wrong number or type of arguments
         indent(file, nesting+2, "else:\n")
-        indent(file, nesting+3, "raise TypeError, 'Invalid number of arguments: ' + `numArgs` + ', expected one of: ")
+        indent(file, nesting+3, "raise TypeError, 'Invalid number of arguments: ' + repr(numArgs) + ', expected one of: ")
         for numArgs in numArgsKeys:
-            indent(file, 0, (`numArgs` + ' '))
+            indent(file, 0, (repr(numArgs) + ' '))
         indent(file, 0, "'\n")
 
         self.outputOverloadedMethodFooter(file, nesting)
@@ -428,17 +428,17 @@ class FFIMethodArgumentTree:
                 else:
                     # Otherwise, we'll check the particular type of
                     # the object.
-                    condition = '(isinstance(_args[' + `level` + '], ' + typeName + '))'
+                    condition = '(isinstance(_args[' + repr(level) + '], ' + typeName + '))'
                     # Legal types for a float parameter include int and long.
                     if (typeName == 'FloatType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], IntType))')
-                        condition += (' or (isinstance(_args[' + `level` + '], LongType))')
+                        condition += (' or (isinstance(_args[' + repr(level) + '], IntType))')
+                        condition += (' or (isinstance(_args[' + repr(level) + '], LongType))')
                     # Legal types for a long parameter include int.
                     elif (typeName == 'LongType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], IntType))')
+                        condition += (' or (isinstance(_args[' + repr(level) + '], IntType))')
                     # Legal types for an int parameter include long.
                     elif (typeName == 'IntType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], LongType))')
+                        condition += (' or (isinstance(_args[' + repr(level) + '], LongType))')
 
                 indent(file, nesting+2, 'if ' + condition + ':\n')
 
@@ -452,7 +452,7 @@ class FFIMethodArgumentTree:
 
         # Output an else clause if one of the trees had arguments
         if oneTreeHasArgs:
-            indent(file, nesting+2, "raise TypeError, 'Invalid argument " + `level` + ", expected one of: ")
+            indent(file, nesting+2, "raise TypeError, 'Invalid argument " + repr(level) + ", expected one of: ")
             for name in typeNameList:
                 indent(file, 0, ('<' + name + '> '))
             indent(file, 0, "'\n")

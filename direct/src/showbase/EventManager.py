@@ -112,7 +112,7 @@ class EventManager:
             # Do not print the new frame debug, it is too noisy!
             if (EventManager.notify.getDebug() and eventName != 'NewFrame'):
                 EventManager.notify.debug('received C++ event named: ' + eventName +
-                                          ' parameters: ' + `paramList`)
+                                          ' parameters: ' + repr(paramList))
             # **************************************************************
             # ******** Duplicate any changes in processEventPstats *********
             # **************************************************************
@@ -149,7 +149,7 @@ class EventManager:
             # Do not print the new frame debug, it is too noisy!
             if (EventManager.notify.getDebug() and eventName != 'NewFrame'):
                 EventManager.notify.debug('received C++ event named: ' + eventName +
-                                          ' parameters: ' + `paramList`)
+                                          ' parameters: ' + repr(paramList))
             # Send the event, we used to send it with the event 
             # name as a parameter, but now you can use extraArgs for that
             # ********************************************************

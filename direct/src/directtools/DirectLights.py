@@ -60,19 +60,19 @@ class DirectLights(NodePath):
         type = type.lower()
         if type == 'ambient':
             self.ambientCount += 1
-            light = AmbientLight('ambient-' + `self.ambientCount`)
+            light = AmbientLight('ambient-' + repr(self.ambientCount))
             light.setColor(VBase4(.3, .3, .3, 1))
         elif type == 'directional':
             self.directionalCount += 1
-            light = DirectionalLight('directional-' + `self.directionalCount`)
+            light = DirectionalLight('directional-' + repr(self.directionalCount))
             light.setColor(VBase4(1))
         elif type == 'point':
             self.pointCount += 1
-            light = PointLight('point-' + `self.pointCount`)
+            light = PointLight('point-' + repr(self.pointCount))
             light.setColor(VBase4(1))
         elif type == 'spot':
             self.spotCount += 1
-            light = Spotlight('spot-' + `self.spotCount`)
+            light = Spotlight('spot-' + repr(self.spotCount))
             light.setColor(VBase4(1))
             light.setLens(PerspectiveLens())
         else:
