@@ -106,6 +106,12 @@ Options:
      instead of the system library.  This is particularly useful for
      cross-compilation.  At the moment, this is supported only on OSX.
 
+  -H
+     Treats a packager.setHost() call in the pdef file as if it were
+     merely a call to packager.addHost().  This allows producing a
+     package for an alternate host than its normally configured host,
+     which is sometimes useful in development.
+
   -h
      Display this help
 """
@@ -129,10 +135,11 @@ signParams = []
 allowPythonDev = False
 universalBinaries = False
 systemRoot = None
+ignoreSetHost = False
 platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Hh')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -157,6 +164,8 @@ for opt, arg in opts:
         platforms.append(arg)
     elif opt == '-R':
         systemRoot = arg
+    elif opt == '-H':
+        ignoreSetHost = True
         
     elif opt == '-h':
         usage(0)
@@ -200,6 +209,7 @@ for platform in platforms:
     packager.signParams = signParams
     packager.allowPythonDev = allowPythonDev
     packager.systemRoot = systemRoot
+    packager.ignoreSetHost = ignoreSetHost
 
     try:
         packager.setup()

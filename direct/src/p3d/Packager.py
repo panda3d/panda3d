@@ -1851,6 +1851,11 @@ class Packager:
         # Particularly useful on OSX to reference the universal SDK.
         self.systemRoot = None
 
+        # Set this true to treat setHost() the same as addHost(), thus
+        # ignoring any request to specify a particular download host,
+        # e.g. for testing and development.
+        self.ignoreSetHost = False
+
         # The download URL at which these packages will eventually be
         # hosted.
         self.hosts = {}
@@ -2065,7 +2070,9 @@ class Packager:
         """ Specifies the URL that will ultimately host these
         contents. """
 
-        self.host = host
+        if not self.ignoreSetHost:
+            self.host = host
+            
         self.addHost(host, downloadUrl = downloadUrl,
                      descriptiveName = descriptiveName, hostDir = hostDir,
                      mirrors = mirrors)
