@@ -88,7 +88,7 @@ class Inspector:
         keys.sort()
         for each in keys:
             self._partsList.append(each)
-            #if not hasattr(getattr(self.object, each), '__call__'):
+            #if not callable(getattr(self.object, each)):
             #    self._partsList.append(each)  
 
     def initializePartNames(self):
@@ -110,7 +110,7 @@ class Inspector:
     def stringForPartNumber(self, partNumber):
         object = self.partNumber(partNumber)
         doc = None
-        if hasattr(object, '__call__'):
+        if callable(object):
             try:
                 doc = object.__doc__
             except:

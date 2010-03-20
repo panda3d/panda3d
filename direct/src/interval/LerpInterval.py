@@ -57,7 +57,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         # parameter.
 
         for param in params:
-            if hasattr(param, '__call__'):
+            if callable(param):
                 return 1
         return 0
 
@@ -67,7 +67,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         # a callable functor, calls it; otherwise, uses the param
         # directly.
         if param != None:
-            if hasattr(param, '__call__'):
+            if callable(param):
                 func(param())
             else:
                 func(param)

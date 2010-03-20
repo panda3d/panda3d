@@ -117,7 +117,7 @@ class Functor:
         _kargs.update(kargs)
         return self._function(*(self._args + args), **_kargs)
 
-    # this methoxd is used in place of __call__ if we are recording creation stacks
+    # this method is used in place of __call__ if we are recording creation stacks
     def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
         try:
             return self._do__call__(*args, **kargs)
@@ -510,7 +510,7 @@ def _pdir(obj, str = None, width = None,
     format = '%-' + repr(maxWidth) + 's'
     for key in keys:
         value = dict[key]
-        if hasattr(value, '__call__'):
+        if callable(value):
             strvalue = repr(Signature(value))
         else:
             strvalue = repr(value)

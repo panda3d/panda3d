@@ -106,7 +106,7 @@ class ProjectileInterval(Interval):
         def doIndirections(*items):
             result = []
             for item in items:
-                if hasattr(item, '__call__'):
+                if callable(item):
                     item = item()
                 result.append(item)
             return result
