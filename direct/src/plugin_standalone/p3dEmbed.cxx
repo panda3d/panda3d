@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 P3DEmbed::
 P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
-  // Since the Pand3DBase constructor no longer assigns _root_dir, we
+  // Since the Panda3DBase constructor no longer assigns _root_dir, we
   // have to do it here.
   _root_dir = find_root_dir();
 }
@@ -134,8 +134,11 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   read.close();
 
   // Make the root directory absolute
-  Filename root_dir_f(root_dir);
-  root_dir_f.make_absolute(f.get_dirname());
+  if (!root_dir.empty()) {
+    Filename root_dir_f(root_dir);
+    root_dir_f.make_absolute(f.get_dirname());
+    _root_dir = root_dir_f.to_os_specific();
+  }
 
   // Initialize the core API by directly assigning all of the function
   // pointers.
@@ -197,7 +200,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // function pointers.  This will also call P3D_initialize().
   if (!init_plugin("", _host_url, _verify_contents, _this_platform, 
                    _log_dirname, _log_basename, true, _console_environment,
-                   root_dir_f.to_os_specific(), cerr)) {
+                   _root_dir, cerr)) {
     cerr << "Unable to launch core API\n";
     return 1;
   }
