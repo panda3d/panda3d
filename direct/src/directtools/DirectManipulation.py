@@ -453,7 +453,7 @@ class DirectManipulationControl(DirectObject):
     def disableWidgetMove(self):
         self.fMovable = 0
         if hasattr(base.direct, 'widget'):
-            base.direct.widget.disableModeColor()
+            base.direct.widget.disabledModeColor()
         else:
             self.objectHandles.disabledModeColor()        
 
