@@ -391,23 +391,29 @@ release_resources(GSG *gsg) {
     return;
   }
   if (_glsl_program != 0) {
-    if (!_glsl_vshader != 0) {
+    if (_glsl_vshader != 0) {
       gsg->_glDetachShader(_glsl_program, _glsl_vshader);
-      gsg->_glDeleteShader(_glsl_vshader);
-      _glsl_vshader = 0;
     }
-    if (!_glsl_fshader != 0) {
+    if (_glsl_fshader != 0) {
       gsg->_glDetachShader(_glsl_program, _glsl_fshader);
-      gsg->_glDeleteShader(_glsl_fshader);
-      _glsl_fshader = 0;
     }
-    if (!_glsl_gshader != 0) {
+    if (_glsl_gshader != 0) {
       gsg->_glDetachShader(_glsl_program, _glsl_gshader);
-      gsg->_glDeleteShader(_glsl_gshader);
-      _glsl_gshader = 0;
     }
     gsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
+  }
+  if (_glsl_vshader != 0) {
+    gsg->_glDeleteShader(_glsl_vshader);
+    _glsl_vshader = 0;
+  }
+  if (_glsl_fshader != 0) {
+    gsg->_glDeleteShader(_glsl_fshader);
+    _glsl_fshader = 0;
+  }
+  if (_glsl_gshader != 0) {
+    gsg->_glDeleteShader(_glsl_gshader);
+    _glsl_gshader = 0;
   }
   
   gsg->report_my_gl_errors();
@@ -873,7 +879,7 @@ glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
     info_log = (char *) malloc(length);
     gsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0) {
-      GLCAT.error(false) << info_log;
+      GLCAT.error(false) << info_log << "\n";
     }
   }
   delete[] info_log;
@@ -896,7 +902,7 @@ glsl_report_program_errors(GSG *gsg, unsigned int program) {
     info_log = (char *) malloc(length);
     gsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0) {
-      GLCAT.error(false) << info_log;
+      GLCAT.error(false) << info_log << "\n";
     }
   }
   delete[] info_log;
