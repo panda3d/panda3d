@@ -57,7 +57,7 @@ PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
   "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","OPENGL",
   "OSMESA","X11","XF86DGA","XRANDR","PHYSX",
-  "PANDATOOL","CONTRIB",
+  "PANDATOOL","CONTRIB","AWESOMIUM"
 ])
 
 CheckPandaSourceTree()
@@ -400,6 +400,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec-51-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat-50-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil-49-panda.lib")
+    if (PkgSkip("AWESOMIUM")==0):   LibName("AWESOMIUM",   GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
     if (PkgSkip("SWSCALE")==0):  PkgDisable("SWSCALE")
     if (PkgSkip("WX")==0):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
@@ -641,7 +642,7 @@ def CompileCxx(obj,src,opts):
         cmd = "cl "
         if (platform.architecture()[0]=="64bit"):
             cmd += "/favor:blend "
-        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c"
+        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 /Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
@@ -1824,6 +1825,7 @@ CopyAllHeaders('panda/src/pnmtext')
 CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
 CopyAllHeaders('panda/src/vision')
+CopyAllHeaders('panda/src/awesomium')
 CopyAllHeaders('panda/src/tform')
 CopyAllHeaders('panda/src/collide')
 CopyAllHeaders('panda/src/parametrics')
@@ -2745,6 +2747,28 @@ if (not RUNTIME):
   TargetAdd('libp3vision.dll', input='libp3vision_module.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
+
+#
+# DIRECTORY: panda/src/awesomium
+#
+if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
+  OPTS=['DIR:panda/src/awesomium', 'BUILDING:PANDAAWESOMIUM',  'AWESOMIUM']
+  TargetAdd('pandaawesomium_composite1.obj', opts=OPTS, input='pandaawesomium_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/awesomium', ["*.h", "*_composite1.cxx"])
+  TargetAdd('libawesomium.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libawesomium.in', opts=['IMOD:p3awesomium', 'ILIB:libawesomium', 'SRCDIR:panda/src/awesomium'])
+  TargetAdd('libawesomium_igate.obj', input='libawesomium.in', opts=["DEPENDENCYONLY"])
+  
+  TargetAdd('libp3awesomium_module.obj', input='libawesomium.in')
+  TargetAdd('libp3awesomium_module.obj', opts=OPTS)
+  TargetAdd('libp3awesomium_module.obj', opts=['IMOD:p3awesomium', 'ILIB:libp3awesomium'])
+
+  TargetAdd('libp3awesomium.dll', input='pandaawesomium_composite1.obj')
+  TargetAdd('libp3awesomium.dll', input='libawesomium_igate.obj')
+  TargetAdd('libp3awesomium.dll', input='libp3awesomium_module.obj')
+  TargetAdd('libp3awesomium.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3awesomium.dll', opts=OPTS)
+
 
 #
 # DIRECTORY: panda/src/skel
@@ -4503,6 +4527,7 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandafx.dll')
   TargetAdd('PandaModules.py', input='libp3direct.dll')
   TargetAdd('PandaModules.py', input='libp3vision.dll')
+  TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("ODE")==0):
