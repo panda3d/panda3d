@@ -26,6 +26,8 @@ class PandaTextDropTarget(wx.TextDropTarget):
         action = ActionAddNewObj(self.editor, text)
         self.editor.actionMgr.push(action)
         newobj = action()
+        if newobj is None:
+            return
 
         # change window coordinate to mouse coordinate
         mx = 2 * (x/float(self.view.ClientSize.GetWidth()) - 0.5)
@@ -284,6 +286,7 @@ class LevelEditorUIBase(WxAppShell):
             mpos = self.ScreenToClient((mpos.x, mpos.y))
         else:
             mpos = evt.GetPosition()
+
         base.direct.fMouse3 = 0
         self.PopupMenu(self.contextMenu, mpos)
 

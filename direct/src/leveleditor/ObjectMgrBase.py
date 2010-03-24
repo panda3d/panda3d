@@ -80,6 +80,8 @@ class ObjectMgrBase:
                 objDef = base.protoPalette.findItem(typeName)
         newobj = None
         if objDef and type(objDef) != dict:
+            if not hasattr(objDef, 'createFunction'):
+                return newobj
             if nodePath is None:
                 if objDef.createFunction:
                     funcName = objDef.createFunction[OG.FUNC_NAME]
