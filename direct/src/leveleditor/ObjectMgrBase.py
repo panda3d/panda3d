@@ -513,6 +513,9 @@ class ObjectMgrBase:
                         undoKwargs[key] = obj
                         objProp[propName] = val
                         kwargs[key] = obj
+                    elif funcArgs[key] == OG.ARG_NOLOADING:
+                        kwargs[key] = fSelectObject
+                        undoKwargs[key] = fSelectObject
                     else:
                         kwargs[key] = funcArgs[key]
                         undoKwargs[key] = funcArgs[key]

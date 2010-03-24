@@ -49,3 +49,4 @@ TYPE_CONV = {PROP_INT: int, PROP_BOOL: bool, PROP_FLOAT: float, PROP_STR: str}
 ARG_NAME = '_arg_name'
 ARG_VAL = '_arg_val' # value from UI
 ARG_OBJ = '_arg_object' # obj information data structure
+ARG_NOLOADING = '_arg_noloading' # to indicate this call is not from loading a scene
