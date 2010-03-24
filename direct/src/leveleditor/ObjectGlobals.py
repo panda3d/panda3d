@@ -45,6 +45,7 @@ PROP_BLIND = 4 # blind type value
 
 TYPE_CONV = {PROP_INT: int, PROP_BOOL: bool, PROP_FLOAT: float, PROP_STR: str}
 
-# these dynamic args should be used in update function declaration
+# these dynamic args should be used in create / update function declaration
+ARG_NAME = '_arg_name'
 ARG_VAL = '_arg_val' # value from UI
 ARG_OBJ = '_arg_object' # obj information data structure

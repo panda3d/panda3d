@@ -2,7 +2,7 @@
 Defines ObjectMgrBase
 """
 
-import os, time, wx, types
+import os, time, wx, types, copy
 
 from direct.task import Task
 from direct.actor.Actor import Actor
@@ -65,7 +65,7 @@ class ObjectMgrBase:
             self.lastUidMod = 0
         return newUid
 
-    def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True, nodePath=None):
+    def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True, nodePath=None, nameStr=None):
         """ function to add new obj to the scene """
         if parent is None:
             parent = self.editor.NPParent
@@ -83,7 +83,13 @@ class ObjectMgrBase:
             if nodePath is None:
                 if objDef.createFunction:
                     funcName = objDef.createFunction[OG.FUNC_NAME]
-                    funcArgs = objDef.createFunction[OG.FUNC_ARGS]
+                    funcArgs = copy.deepcopy(objDef.createFunction[OG.FUNC_ARGS])
+
+                    for pair in funcArgs.items():
+                        if pair[1] == OG.ARG_NAME:
+                            funcArgs[pair[0]] = nameStr
+                            break;
+
                     if type(funcName) == types.StringType:
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
@@ -586,7 +592,12 @@ class ObjectMgrBase:
                     else:
                         animStr = "None"
 
-                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, fSelectObject=False)"%(uid, objDef.name, uid, modelStr, parentStr, animStr))
+                    if objDef.named:
+                        nameStr = "'%s'"%np.getName()
+                    else:
+                        nameStr = "None"
+
+                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, '%s', False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
