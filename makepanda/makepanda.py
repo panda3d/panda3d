@@ -400,7 +400,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec-51-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat-50-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil-49-panda.lib")
-    if (PkgSkip("AWESOMIUM")==0):   LibName("AWESOMIUM",   GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
+    if (PkgSkip("AWESOMIUM")==0):LibName("AWESOMIUM",   GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
     if (PkgSkip("SWSCALE")==0):  PkgDisable("SWSCALE")
     if (PkgSkip("WX")==0):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
@@ -437,6 +437,7 @@ if (COMPILER=="MSVC"):
         AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
 
 if (COMPILER=="LINUX"):
+    PkgDisable("AWESOMIUM")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
     if (sys.platform == "darwin"):
