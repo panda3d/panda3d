@@ -148,6 +148,7 @@ get_sound(const string &file_name, bool, int) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
+  audio_info("Reading "<<path);
   audio_debug("  resolved file_name is '"<<path<<"'");
 
   PT(SoundData) sd;
