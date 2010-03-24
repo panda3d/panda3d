@@ -12,6 +12,7 @@ panda3d_modules = {
     "vision"      : "libp3vision",
     "physx"       : "libpandaphysx",
     "ai"          : "libpandaai",
+    "awesomium"   : "libp3awesomium",
 }
 
 class panda3d_import_manager:
