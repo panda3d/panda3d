@@ -413,9 +413,14 @@ class LevelEditorUIBase(WxAppShell):
     def toggleGridSnap(self, evt):
         if self.gridSnapMenuItem.IsChecked():
             base.direct.manipulationControl.fGridSnap = 1
+            for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
+                grid.fXyzSnap = 1
+
         else:
             base.direct.manipulationControl.fGridSnap = 0            
-
+            for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
+                grid.fXyzSnap = 0
+            
     def onGridSize(self, evt):
         gridSizeUI = GridSizeUI(self, -1, 'Change Grid Size', self.perspView.grid.gridSize, self.perspView.grid.gridSpacing)
         gridSizeUI.ShowModal()
