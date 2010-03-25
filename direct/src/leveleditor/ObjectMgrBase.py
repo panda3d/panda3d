@@ -613,13 +613,21 @@ class ObjectMgrBase:
 
     def getSaveData(self):
         self.saveData = []
+        self.getPreSaveData()
         self.traverse(render)
-        self.getExtraSaveData()
+        self.getPostSaveData()
         return self.saveData
 
-    def getExtraSaveData(self):
+    def getPreSaveData(self):
         """
-        if there are additional data to be saved
+        if there are additional data to be saved before main data
+        you can override this function to populate data
+        """
+        pass
+
+    def getPostSaveData(self):
+        """
+        if there are additional data to be saved after main data
         you can override this function to populate data
         """
         pass
