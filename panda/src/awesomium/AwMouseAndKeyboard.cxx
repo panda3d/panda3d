@@ -18,25 +18,31 @@
 
 TypeHandle AwMouseAndKeyboard::_type_handle;
 
-AwMouseAndKeyboard::AwMouseAndKeyboard(GraphicsWindow *window, int device, const string &name):
-MouseAndKeyboard(window,device,name)
+AwMouseAndKeyboard::AwMouseAndKeyboard(const string &name):
+DataNode(name)
 {
-	//do nothing
+  _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
+  _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 }
 
 
 void AwMouseAndKeyboard::do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input, DataNodeTransmit &output){
 
-	MouseAndKeyboard::do_transmit_data(trav,input,output);
+  if (input.has_data(_button_events_input)) {
+    const ButtonEventList *button_events;
+    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+	
+    int num_events = button_events->get_num_events();
+    for (int i = 0; i < num_events; i++) {
+      const ButtonEvent &be = button_events->get_event(i);
+      string event_name = be._button.get_name();
+	  printf("Button Event! : %s with code %i and index %i ", event_name.c_str(), be._keycode, be._button.get_index());
+	  if(be._type == ButtonEvent::T_down) printf("down");
+	  if(be._type == ButtonEvent::T_repeat) printf("repeat");
+	  if(be._type == ButtonEvent::T_up) printf("up");
+	  if(be._type == ButtonEvent::T_resume_down) printf("T_resume_down");
+	  printf("\n");
+	}
+  }
 
-		int num_events = _button_events->get_num_events();
-		for (int i = 0; i < num_events; i++) {
-			const ButtonEvent &be = _button_events->get_event(i);
-			string event_name = be._button.get_name();
-			printf("Button pressed: %s ", event_name);
-			if(be._type == ButtonEvent::T_down ) printf(" down ");
-			if(be._type == ButtonEvent::T_repeat ) printf(" repeat ");
-			if(be._type == ButtonEvent::T_resume_down ) printf(" resume down ");
-			if(be._type == ButtonEvent::T_resume_down ) printf(" up ");
-		}
 }

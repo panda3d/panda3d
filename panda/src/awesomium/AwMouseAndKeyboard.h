@@ -25,9 +25,15 @@
 //       Class : AwMouseAndKeyboard
 // Description : Thin wrappings arround WebCore.h
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAAWESOMIUM AwMouseAndKeyboard : public MouseAndKeyboard {
+class EXPCL_PANDAAWESOMIUM AwMouseAndKeyboard : public DataNode {
+//member data data
+protected:	
+  // inputs adn output indices... initialized in constructor
+  int _button_events_input;
+  int _button_events_output;
+
 PUBLISHED:
-  AwMouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
+  AwMouseAndKeyboard(const string &name);
 
 protected:
   // Inherited from DataNode
@@ -42,7 +48,7 @@ public:
   static void init_type() {
     MouseAndKeyboard::init_type();
     register_type(_type_handle, "AwMouseAndKeyboard",
-                  MouseAndKeyboard::get_class_type());
+                  DataNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
