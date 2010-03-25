@@ -568,7 +568,6 @@ class ObjectMgrBase:
         """
         Trasverse scene graph to gather data for saving
         """
-        
         for child in parent.getChildren():
             if child.hasTag('OBJRoot'):
                 obj = self.findObjectByNodePath(child)
@@ -602,7 +601,7 @@ class ObjectMgrBase:
                     else:
                         nameStr = "None"
 
-                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, '%s', False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
+                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
@@ -615,7 +614,15 @@ class ObjectMgrBase:
     def getSaveData(self):
         self.saveData = []
         self.traverse(render)
+        self.getExtraSaveData()
         return self.saveData
+
+    def getExtraSaveData(self):
+        """
+        if there are additional data to be saved
+        you can override this function to populate data
+        """
+        pass
 
     def duplicateObject(self, nodePath, parent=None):
         obj = self.findObjectByNodePath(nodePath)
