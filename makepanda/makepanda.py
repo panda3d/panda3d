@@ -4519,7 +4519,7 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
 # Run genpycode
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and not RUNTIME):
   # We're phasing out the concept of PandaModules, so do not
   # add new libraries here. See direct/src/ffi/panda3d.py
   TargetAdd('PandaModules.py', input='libpandaexpress.dll')
@@ -4528,9 +4528,10 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandafx.dll')
   TargetAdd('PandaModules.py', input='libp3direct.dll')
   TargetAdd('PandaModules.py', input='libp3vision.dll')
-  TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
+  if (PkgSkip("AWESOMIUM")== 0):
+    TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
 
