@@ -40,6 +40,7 @@ PhysxManager() {
   else {
     physx_cat.error() << "Error when setting up the PhysX subsystem: "
                       << get_sdk_error_string(error) << endl;
+    _sdk = NULL;
   }
 
   nassertv_always(error == NXCE_NO_ERROR);
@@ -106,7 +107,12 @@ get_global_ptr() {
     _global_ptr = new PhysxManager;
   }
 
-  return _global_ptr;
+  if (_global_ptr->_sdk == NULL) {
+    return NULL;
+  }
+  else {
+    return _global_ptr;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
