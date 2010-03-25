@@ -379,7 +379,8 @@ class LevelEditorUIBase(WxAppShell):
         dialog.Destroy()
 
     def onSave(self, evt=None):
-        if self.editor.currentFile is None:
+        if self.editor.currentFile is None or\
+           not self.editor.currentFile.endswith('.py'):
             return self.onSaveAs(evt)
         else:
             self.editor.save()
