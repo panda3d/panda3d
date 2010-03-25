@@ -1,5 +1,5 @@
-// Filename: physxScene.I
-// Created by:  enn0x (14Sep09)
+// Filename: physxVehicle.I
+// Created by:  enn0x (23Mar10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,55 +15,45 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
+//     Function: PhysxVehicle::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-PhysxScene() : PhysxObject() {
+INLINE PhysxVehicle::
+PhysxVehicle() : PhysxObject() {
 
-  _debugNode = new PhysxDebugGeomNode();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
+//     Function: PhysxVehicle::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-~PhysxScene() {
+INLINE PhysxVehicle::
+~PhysxVehicle() {
 
-  _debugNode = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxVehicle::ls
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
+INLINE void PhysxVehicle::
 ls() const {
 
   ls(nout);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxVehicle::ls
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
+INLINE void PhysxVehicle::
 ls(ostream &out, int indent_level) const {
 
   indent(out, indent_level) << get_type().get_name()
                             << " (at 0x" << this << ")\n";
-
-  _materials.ls(out, indent_level);
-  _actors.ls(out, indent_level);
-  _joints.ls(out, indent_level);
-  _forcefields.ls(out, indent_level);
-  _ffgroups.ls(out, indent_level);
-  _controllers.ls(out, indent_level);
-  _vehicles.ls(out, indent_level);
 }
 

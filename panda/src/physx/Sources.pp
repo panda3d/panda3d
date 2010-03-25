@@ -119,12 +119,12 @@
     physxTriangleMeshShapeDesc.I physxTriangleMeshShapeDesc.h \
     physxTriggerReport.I physxTriggerReport.h \
     physxUtilLib.I physxUtilLib.h \
+    physxVehicle.I physxVehicle.h \
+    physxVehicleDesc.I physxVehicleDesc.h \
+    physxWheel.I physxWheel.h \
+    physxWheelDesc.I physxWheel.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
-    #physxVehicleGears.I physxVehicleGears.h \
-    #physxVehicleGearsDesc.I physxVehicleGearsDesc.h \
-    #physxVehicleMotor.I physxVehicleMotor.h \
-    #physxVehicleMotorDesc.I physxVehicleMotorDesc.h \
 
   #define INCLUDED_SOURCES \
     config_physx.cxx \
@@ -235,12 +235,12 @@
     physxTriangleMeshShapeDesc.cxx \
     physxTriggerReport.cxx \
     physxUtilLib.cxx \
+    physxVehicle.cxx \
+    physxVehicleDesc.cxx \
+    physxWheel.cxx \
+    physxWheelDesc.cxx \
     physxWheelShape.cxx \
     physxWheelShapeDesc.cxx \
-    #physxVehicleGears.cxx \
-    #physxVehicleGearsDesc.cxx \
-    #physxVehicleMotor.cxx \
-    #physxVehicleMotorDesc.cxx \
 
   #define INSTALL_HEADERS \
     config_physx.h \
@@ -351,12 +351,12 @@
     physxTriangleMeshShapeDesc.I physxTriangleMeshShapeDesc.h \
     physxTriggerReport.I physxTriggerReport.h \
     physxUtilLib.I physxUtilLib.h \
+    physxVehicle.I physxVehicle.h \
+    physxVehicleDesc.I physxVehicleDesc.h \
+    physxWheel.I physxWheel.h \
+    physxWheelDesc.I physxWheel.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
-    #physxVehicleGears.I physxVehicleGears.h \
-    #physxVehicleGearsDesc.I physxVehicleGearsDesc.h \
-    #physxVehicleMotor.I physxVehicleMotor.h \
-    #physxVehicleMotorDesc.I physxVehicleMotorDesc.h \
 
   #define IGATESCAN all
 

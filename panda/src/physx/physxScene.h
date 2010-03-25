@@ -48,8 +48,8 @@ class PhysxRay;
 class PhysxRaycastHit;
 class PhysxRaycastReport;
 class PhysxSceneStats2;
-//class PhysxVehicle;
-//class PhysxVehicleDesc;
+class PhysxVehicle;
+class PhysxVehicleDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxScene
@@ -132,10 +132,10 @@ PUBLISHED:
   MAKE_SEQ(get_force_field_shape_groups, get_num_force_field_shape_groups, get_force_field_shape_group);
 
   // Vehicles
-  //unsigned int get_num_vehicles() const;
-  //PhysxVehicle *create_vehicle(PhysxVehicleDesc &desc);
-  //PhysxVehicle *get_vehicle(unsigned int idx) const;
-  //MAKE_SEQ(get_vehicles, get_num_vehicles, get_vehicle);
+  unsigned int get_num_vehicles() const;
+  PhysxVehicle *create_vehicle(PhysxVehicleDesc &desc);
+  PhysxVehicle *get_vehicle(unsigned int idx) const;
+  MAKE_SEQ(get_vehicles, get_num_vehicles, get_vehicle);
 
   // Raycast queries
   bool raycast_any_shape(const PhysxRay &ray,
@@ -220,7 +220,7 @@ public:
   PhysxObjectCollection<PhysxForceField> _forcefields;
   PhysxObjectCollection<PhysxForceFieldShapeGroup> _ffgroups;
   PhysxObjectCollection<PhysxController> _controllers;
-  //PhysxObjectCollection<PhysxVehicle> _vehicles;
+  PhysxObjectCollection<PhysxVehicle> _vehicles;
 
   PhysxMaterial *get_wheel_shape_material();
 

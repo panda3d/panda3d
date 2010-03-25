@@ -20,8 +20,8 @@
 #include "physxControllerDesc.h"
 #include "physxSceneStats2.h"
 #include "physxConstraintDominance.h"
-//#include "physxVehicle.h"
-//#include "physxVehicleDesc.h"
+#include "physxVehicle.h"
+#include "physxVehicleDesc.h"
 
 TypeHandle PhysxScene::_type_handle;
 
@@ -67,10 +67,10 @@ link(NxScene *scenePtr) {
 void PhysxScene::
 unlink() {
 
-  // Destroy vehicles
-  //for (unsigned int i=0; i < _vehicles.size(); i++) {
-  //  _vehicles[i]->release();
-  //}
+  // Unlink vehicles
+  for (unsigned int i=0; i < _vehicles.size(); i++) {
+    _vehicles[i]->release();
+  }
 
   // Unlink controllers
   NxU32 nControllers = _cm->getNbControllers();
@@ -183,10 +183,10 @@ simulate(float dt) {
   _pcollector_simulate.start();
 
   // Update all vehicles
-  //for (unsigned int i=0; i < _vehicles.size(); i++) {
-  //  PhysxVehicle *vehicle = _vehicles[i];
-  //  vehicle->update_vehicle(dt);
-  //}
+  for (unsigned int i=0; i < _vehicles.size(); i++) {
+    PhysxVehicle *vehicle = _vehicles[i];
+    vehicle->update_vehicle(dt);
+  }
 
   // Update all controllers
   for (NxU32 i=0; i < _cm->getNbControllers(); i++) {
@@ -856,7 +856,6 @@ get_force_field_shape_group(unsigned int idx) const {
   return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : NULL;
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_num_vehicles
 //       Access: Published
@@ -902,7 +901,6 @@ get_vehicle(unsigned int idx) const {
 
   return _vehicles[idx];
 }
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_stats2

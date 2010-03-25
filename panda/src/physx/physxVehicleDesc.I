@@ -1,5 +1,5 @@
-// Filename: physxScene.I
-// Created by:  enn0x (14Sep09)
+// Filename: physxVehicleDesc.I
+// Created by:  enn0x (23Mar10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -13,57 +13,46 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
+//     Function: PhysxVehicleDesc::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-PhysxScene() : PhysxObject() {
+INLINE PhysxVehicleDesc::
+PhysxVehicleDesc() {
 
-  _debugNode = new PhysxDebugGeomNode();
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
+//     Function: PhysxVehicleDesc::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-~PhysxScene() {
+INLINE PhysxVehicleDesc::
+~PhysxVehicleDesc() {
 
-  _debugNode = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxVehicleDesc::set_to_default
 //       Access: Published
-//  Description: 
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls() const {
+INLINE void PhysxVehicleDesc::
+set_to_default() {
 
-  ls(nout);
+  // TODO
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxVehicleDesc::is_valid
 //       Access: Published
-//  Description: 
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls(ostream &out, int indent_level) const {
+INLINE bool PhysxVehicleDesc::
+is_valid() const {
 
-  indent(out, indent_level) << get_type().get_name()
-                            << " (at 0x" << this << ")\n";
-
-  _materials.ls(out, indent_level);
-  _actors.ls(out, indent_level);
-  _joints.ls(out, indent_level);
-  _forcefields.ls(out, indent_level);
-  _ffgroups.ls(out, indent_level);
-  _controllers.ls(out, indent_level);
-  _vehicles.ls(out, indent_level);
+  return true;
 }
 
