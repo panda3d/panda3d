@@ -3105,7 +3105,7 @@ string_transform_type(const string &arg) {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color) {
-    if (shader->_legacy_mode) {
+    if (shader == (MayaShader *)NULL || shader->_legacy_mode) {
       set_vertex_color_legacy(vert, pi, vert_index, shader, color);
     } else {
       set_vertex_color_modern(vert, pi, vert_index, shader, color);
