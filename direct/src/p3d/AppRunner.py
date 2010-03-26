@@ -73,7 +73,7 @@ class AppRunner(DirectObject):
     ConfigBasename = 'config.xml'
 
     # Default values for parameters that are absent from the config file:
-    maxDiskUsage = 1073741824  # 1 GB
+    maxDiskUsage = 2048 * 1048576  # 2 GB
     
     def __init__(self):
         DirectObject.__init__(self)
