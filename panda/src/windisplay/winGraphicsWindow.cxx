@@ -723,9 +723,10 @@ do_fullscreen_resize(int x_size, int y_size) {
   if (chg_result != DISP_CHANGE_SUCCESSFUL) {
     windisplay_cat.error()
       << "resize ChangeDisplaySettings failed (error code: " 
-      << chg_result << ") for specified res (" << x_size << " x "
-      << y_size << " x " << dwFullScreenBitDepth << "), " 
-      << dm.dmDisplayFrequency << "Hz\n";
+      << chg_result << ") for specified res: "
+      << dm.dmPelsWidth << " x " << dm.dmPelsHeight
+      << " x " << dm.dmBitsPerPel << ", " 
+      << dm.dmDisplayFrequency << " Hz\n";
     return false;
   }
 
@@ -1065,11 +1066,14 @@ do_fullscreen_enable() {
   if (chg_result != DISP_CHANGE_SUCCESSFUL) {
     windisplay_cat.error()
       << "ChangeDisplaySettings failed (error code: "
-      << chg_result << ") for specified res (" << dwWidth
-      << " x " << dwHeight << " x " << dwFullScreenBitDepth
-      << "), " << _fullscreen_display_mode.dmDisplayFrequency  << "Hz\n";
+      << chg_result << ") for specified res: "
+      << dm.dmPelsWidth << " x " << dm.dmPelsHeight
+      << " x " << dm.dmBitsPerPel << ", " 
+      << dm.dmDisplayFrequency << " Hz\n";
     return false;
   }
+
+  _fullscreen_display_mode = dm;
 
   _properties.set_origin(0, 0);
   _properties.set_size(dwWidth, dwHeight);
@@ -1360,7 +1364,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           {
             // When a fullscreen window goes active, it automatically gets
             // un-minimized.
-            ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
+            int chg_result =
+              ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
+            if (chg_result != DISP_CHANGE_SUCCESSFUL) {
+              const DEVMODE &dm = _fullscreen_display_mode;
+              windisplay_cat.error()
+                << "restore ChangeDisplaySettings failed (error code: " 
+                << chg_result << ") for specified res: "
+                << dm.dmPelsWidth << " x " << dm.dmPelsHeight
+                << " x " << dm.dmBitsPerPel << ", " 
+                << dm.dmDisplayFrequency << " Hz\n";
+            }
+
             GdiFlush();
             SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
             fullscreen_restored(properties);
