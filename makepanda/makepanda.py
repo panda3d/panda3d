@@ -676,7 +676,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
             if int(platform.mac_ver()[0][3]) >= 6:
-                cmd += " -arch x86_64 -arch i386"
+                cmd += " -arch i386" # 64-bits doesn't work well yet
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
@@ -757,7 +757,8 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
         cmd += ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
+    #FIXME: allow 64-bits on OSX
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit") and (sys.platform!="darwin"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
@@ -918,7 +919,7 @@ def CompileLink(dll, obj, opts):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
             if int(platform.mac_ver()[0][3]) >= 6:
-                cmd += " -arch x86_64 -arch i386"
+                cmd += " -arch i386" # 64-bits doesn't work well yet
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
