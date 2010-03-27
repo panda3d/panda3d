@@ -17,7 +17,7 @@
     parametrics \
     pnmimagetypes pnmimage \
     pnmtext text tform lerp putil \
-    audio pgui pandabase helix
+    audio pgui pandabase
 
 #define LOCAL_LIBS \
   downloader express pandabase
