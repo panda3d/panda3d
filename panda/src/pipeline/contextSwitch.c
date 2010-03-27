@@ -30,7 +30,11 @@
 /* We'd prefer to use getcontext() / setcontext() to portably change
    execution contexts within C code.  That's what these library
    functions are designed for. */
+#ifdef __APPLE__
+#include <sys/ucontext.h>
+#else
 #include <ucontext.h>
+#endif
 
 struct ThreadContext {
   ucontext_t _ucontext;
