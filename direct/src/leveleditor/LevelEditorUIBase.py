@@ -93,15 +93,23 @@ ID_NEW = 101
 ID_OPEN = 102
 ID_SAVE = 103
 ID_SAVE_AS = 104
+
 ID_DUPLICATE = 201
 ID_MAKE_LIVE = 202
 ID_UNDO = 203
 ID_REDO = 204
+
 ID_SHOW_GRID = 301
 ID_GRID_SIZE = 302
 ID_GRID_SNAP = 303
 ID_SHOW_PANDA_OBJECT = 304
 ID_HOT_KEYS = 305
+
+ID_FOUR_VIEW = 401
+ID_TOP_VIEW = 402
+ID_FRONT_VIEW = 403
+ID_LEFT_VIEW = 404
+ID_PERSP_VIEW = 405
 
 class LevelEditorUIBase(WxAppShell):
     """ Class for Panda3D LevelEditor """ 
@@ -121,6 +129,11 @@ class LevelEditorUIBase(WxAppShell):
         ID_GRID_SNAP : ("Grid S&nap", None),
         ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
         ID_HOT_KEYS : ("&Hot Keys", None),
+        ID_FOUR_VIEW : ("Four Views", None),
+        ID_TOP_VIEW : ("Top View", None),        
+        ID_FRONT_VIEW : ("Front View", None),
+        ID_LEFT_VIEW : ("Left View", None),
+        ID_PERSP_VIEW : ("Persp View", None),
         }
     
     def __init__(self, editor, *args, **kw):
@@ -193,6 +206,24 @@ class LevelEditorUIBase(WxAppShell):
         self.hotKeysMenuItem = self.menuOptions.Append(ID_HOT_KEYS, self.MENU_TEXTS[ID_HOT_KEYS][0])
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
 
+        self.menuView = wx.Menu()
+        self.menuBar.Insert(3, self.menuView, "&View")
+
+        menuItem = self.menuView.AppendRadioItem(ID_FOUR_VIEW, self.MENU_TEXTS[ID_FOUR_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=-1:self.onViewChange(p0, p1), menuItem)
+
+        menuItem = self.menuView.AppendRadioItem(ID_TOP_VIEW, self.MENU_TEXTS[ID_TOP_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=0:self.onViewChange(p0, p1), menuItem)
+
+        menuItem = self.menuView.AppendRadioItem(ID_FRONT_VIEW, self.MENU_TEXTS[ID_FRONT_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=1:self.onViewChange(p0, p1), menuItem)
+
+        menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
+
+        menuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), menuItem)
+        
     def updateMenu(self):
         hotKeyDict = {}
         for hotKey in base.direct.hotKeyMap.keys():
@@ -278,6 +309,9 @@ class LevelEditorUIBase(WxAppShell):
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
 
         self.showGridMenuItem.Check(True)
+
+    def onViewChange(self, evt, viewIdx):
+        self.viewFrame.SetExpanded(viewIdx)
 
     def onRightDown(self, evt=None):
         """Invoked when the viewport is right-clicked."""
