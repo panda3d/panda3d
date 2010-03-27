@@ -219,7 +219,7 @@ class LevelEditorUIBase(WxAppShell):
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=1:self.onViewChange(p0, p1), menuItem)
 
         menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChage(p0, p1), menuItem)
 
         menuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), menuItem)
@@ -311,6 +311,13 @@ class LevelEditorUIBase(WxAppShell):
         self.showGridMenuItem.Check(True)
 
     def onViewChange(self, evt, viewIdx):
+        for i in range(4):
+            if viewIdx >=0 and\
+               i != viewIdx:
+                base.winList[i].setActive(0)
+            else:
+                base.winList[i].setActive(1)
+
         self.viewFrame.SetExpanded(viewIdx)
 
     def onRightDown(self, evt=None):
