@@ -17,11 +17,14 @@
 #include "physxConvexMeshDesc.h"
 #include "physxTriangleMesh.h"
 #include "physxTriangleMeshDesc.h"
-#include "physxClothMesh.h"
-#include "physxClothMeshDesc.h"
 #include "physxFileStream.h"
 #include "physxMemoryReadBuffer.h"
 #include "physxMemoryWriteBuffer.h"
+
+#if NX_USE_CLOTH_API
+#include "physxClothMesh.h"
+#include "physxClothMeshDesc.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::set_cooking_params
@@ -85,6 +88,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
   return _cooking->NxCookTriangleMesh(meshDesc.get_desc(), stream);
 }
 
+#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_cloth_mesh
 //       Access: Published
@@ -93,6 +97,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
 bool PhysxKitchen::
 cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 
+
   nassertr_always(!filename.empty(), false);
   nassertr_always(filename.touch(), false);
   nassertr_always(meshDesc.is_valid(), false);
@@ -100,6 +105,7 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
   PhysxFileStream stream = PhysxFileStream(filename, false);
   return _cooking->NxCookClothMesh(meshDesc.get_desc(), stream);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_convex_mesh
@@ -157,6 +163,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
   return mesh;
 }
 
+#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_cloth_mesh
 //       Access: Published
@@ -184,4 +191,5 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
   return mesh;
 }
+#endif
 

@@ -15,13 +15,21 @@
 #include "physxMeshPool.h"
 #include "physxConvexMesh.h"
 #include "physxTriangleMesh.h"
+
+#if NX_USE_CLOTH_API
 #include "physxClothMesh.h"
+#endif
+
 #include "physxFileStream.h"
 #include "virtualFileSystem.h"
 
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
+
+#if NX_USE_CLOTH_API
 PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
+#endif
+
 //PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
 
 ////////////////////////////////////////////////////////////////////
@@ -123,6 +131,7 @@ load_triangle_mesh(const Filename &fn) {
   return mesh;
 }
 
+#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::load_cloth_mesh
 //       Access: Published
@@ -161,6 +170,7 @@ load_cloth_mesh(const Filename &fn) {
 
   return mesh;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::release_convex_mesh
@@ -200,6 +210,7 @@ release_triangle_mesh(PhysxTriangleMesh *mesh) {
   return false;
 }
 
+#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::release_cloth_mesh
 //       Access: Published
@@ -218,6 +229,7 @@ release_cloth_mesh(PhysxClothMesh *mesh) {
 
   return false;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::list_content
@@ -265,6 +277,7 @@ list_contents(ostream &out) {
     }
   }
 
+#if NX_USE_CLOTH_API
   // Cloth meshes
   {
     ClothMeshes::const_iterator it;
@@ -277,6 +290,7 @@ list_contents(ostream &out) {
           << " references)\n";
     }
   }
+#endif
 
   // Summary
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
@@ -287,7 +301,9 @@ list_contents(ostream &out) {
   out << "  Total number of triangle meshes: " << sdk->getNbTriangleMeshes() 
       << " created, " << _triangle_meshes.size() << " registred\n";
 
+#if NX_USE_CLOTH_API
   out << "  Total number of cloth meshes: " << sdk->getNbClothMeshes() 
       << " created, " << _cloth_meshes.size() << " registred\n";
+#endif
 }
 

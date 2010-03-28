@@ -20,6 +20,7 @@
 #include "physxObject.h"
 #include "physx_includes.h"
 
+#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxClothMesh
 // Description : 
@@ -71,5 +72,6 @@ private:
 };
 
 #include "physxClothMesh.I"
+#endif
 
 #endif // PHYSXCLOTHMESH_H

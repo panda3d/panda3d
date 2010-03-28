@@ -24,8 +24,11 @@ class PhysxConvexMesh;
 class PhysxConvexMeshDesc;
 class PhysxTriangleMesh;
 class PhysxTriangleMeshDesc;
+
+#if NX_USE_CLOTH_API
 class PhysxClothMesh;
 class PhysxClothMeshDesc;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxKitchen
@@ -40,12 +43,15 @@ PUBLISHED:
   void set_cooking_params(float skinWidth, bool hintCollisionSpeed);
 
   bool cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename);
-  bool cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filename);
-  bool cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename);
-
   PhysxConvexMesh *cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc);
+
+  bool cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filename);
   PhysxTriangleMesh *cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc);
+
+#if NX_USE_CLOTH_API
+  bool cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename);
   PhysxClothMesh *cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc);
+#endif
 
 private:
   NxCookingInterface *_cooking;
