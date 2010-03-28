@@ -17,6 +17,8 @@
 #include "physxConvexMeshDesc.h"
 #include "physxTriangleMesh.h"
 #include "physxTriangleMeshDesc.h"
+#include "physxClothMesh.h"
+#include "physxClothMeshDesc.h"
 #include "physxFileStream.h"
 #include "physxMemoryReadBuffer.h"
 #include "physxMemoryWriteBuffer.h"
@@ -84,6 +86,22 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxKitchen::cook_cloth_mesh
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool PhysxKitchen::
+cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
+
+  nassertr_always(!filename.empty(), false);
+  nassertr_always(filename.touch(), false);
+  nassertr_always(meshDesc.is_valid(), false);
+
+  PhysxFileStream stream = PhysxFileStream(filename, false);
+  return _cooking->NxCookClothMesh(meshDesc.get_desc(), stream);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_convex_mesh
 //       Access: Published
 //  Description: 
@@ -132,6 +150,34 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
   nassertr(mesh, NULL);
 
   NxTriangleMesh *meshPtr = sdk->createTriangleMesh(PhysxMemoryReadBuffer(buffer.data));
+  nassertr(meshPtr, NULL);
+
+  mesh->link(meshPtr);
+
+  return mesh;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxKitchen::cook_cloth_mesh
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxClothMesh *PhysxKitchen::
+cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
+
+  nassertr_always(meshDesc.is_valid(), false);
+
+  PhysxMemoryWriteBuffer buffer;
+  bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), buffer);
+  nassertr(status, NULL);
+
+  NxPhysicsSDK *sdk = NxGetPhysicsSDK();
+  nassertr(sdk, NULL);
+
+  PhysxClothMesh *mesh = new PhysxClothMesh();
+  nassertr(mesh, NULL);
+
+  NxClothMesh *meshPtr = sdk->createClothMesh(PhysxMemoryReadBuffer(buffer.data));
   nassertr(meshPtr, NULL);
 
   mesh->link(meshPtr);

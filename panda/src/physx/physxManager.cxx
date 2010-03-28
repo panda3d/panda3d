@@ -272,6 +272,30 @@ get_triangle_mesh(unsigned int idx) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_num_cloth_meshes
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int PhysxManager::
+get_num_cloth_meshes() {
+
+  return _sdk->getNbClothMeshes();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_cloth_mesh
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxClothMesh *PhysxManager::
+get_cloth_mesh(unsigned int idx) {
+
+  nassertr_always(idx < _sdk->getNbClothMeshes(), NULL);
+
+  return (PhysxClothMesh *)_cloth_meshes[idx];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::is_hardware_available
 //       Access: Published
 //  Description: Returns TRUE if a physcis hardware is available

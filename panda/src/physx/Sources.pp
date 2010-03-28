@@ -30,6 +30,8 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxClothMesh.I physxClothMesh.h \
+    physxClothMeshDesc.I physxClothMeshDesc.h \
     physxConstraintDominance.I physxConstraintDominance.h \
     physxContactPair.I physxContactPair.h \
     physxContactPoint.I physxContactPoint.h \
@@ -146,6 +148,8 @@
     physxCapsuleForceFieldShapeDesc.cxx \
     physxCapsuleShape.cxx \
     physxCapsuleShapeDesc.cxx \
+    physxClothMesh.cxx \
+    physxClothMeshDesc.cxx \
     physxConstraintDominance.cxx \
     physxContactPair.cxx \
     physxContactPoint.cxx \
@@ -262,6 +266,8 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxClothMesh.I physxClothMesh.h \
+    physxClothMeshDesc.I physxClothMeshDesc.h \
     physxConstraintDominance.I physxConstraintDominance.h \
     physxContactPair.I physxContactPair.h \
     physxContactPoint.I physxContactPoint.h \

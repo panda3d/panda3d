@@ -15,12 +15,13 @@
 #include "physxMeshPool.h"
 #include "physxConvexMesh.h"
 #include "physxTriangleMesh.h"
+#include "physxClothMesh.h"
 #include "physxFileStream.h"
 #include "virtualFileSystem.h"
 
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
-//PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
+PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
 //PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
 
 ////////////////////////////////////////////////////////////////////
@@ -123,6 +124,45 @@ load_triangle_mesh(const Filename &fn) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxMeshPool::load_cloth_mesh
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PhysxClothMesh *PhysxMeshPool::
+load_cloth_mesh(const Filename &fn) {
+
+  if (!check_filename(fn)) return NULL;
+
+  PhysxClothMesh *mesh;
+
+  ClothMeshes::iterator it = _cloth_meshes.find(fn);
+  if (it == _cloth_meshes.end()) {
+    // Not found; load mesh.
+    NxClothMesh *meshPtr;
+    PhysxFileStream stream = PhysxFileStream(fn, true);
+
+    mesh = new PhysxClothMesh();
+    nassertr_always(mesh, NULL);
+
+    NxPhysicsSDK *sdk = NxGetPhysicsSDK();
+    nassertr_always(sdk, NULL);
+
+    meshPtr = sdk->createClothMesh(stream);
+    nassertr_always(meshPtr, NULL);
+
+    mesh->link(meshPtr);
+
+    _cloth_meshes.insert(ClothMeshes::value_type(fn, mesh));
+  }
+  else {
+    // Found; return previously loaded mesh.
+    mesh = (*it).second;
+  }
+
+  return mesh;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::release_convex_mesh
 //       Access: Published
 //  Description:
@@ -161,13 +201,22 @@ release_triangle_mesh(PhysxTriangleMesh *mesh) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::list_content
+//     Function: PhysxMeshPool::release_cloth_mesh
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void PhysxMeshPool::
-list_contents() {
-  list_contents( nout );
+bool PhysxMeshPool::
+release_cloth_mesh(PhysxClothMesh *mesh) {
+
+  ClothMeshes::iterator it;
+  for (it=_cloth_meshes.begin(); it != _cloth_meshes.end(); ++it) {
+    if (mesh == (*it).second) {
+      _cloth_meshes.erase(it);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,7 +225,17 @@ list_contents() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxMeshPool::
-list_contents( ostream &out ) {
+list_contents() {
+  list_contents(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxMeshPool::list_content
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PhysxMeshPool::
+list_contents(ostream &out) {
 
   out << "PhysX mesh pool contents:\n";
 
@@ -206,6 +265,19 @@ list_contents( ostream &out ) {
     }
   }
 
+  // Cloth meshes
+  {
+    ClothMeshes::const_iterator it;
+    for (it=_cloth_meshes.begin(); it != _cloth_meshes.end(); ++it) {
+      Filename fn = (*it).first;
+      PhysxClothMesh *mesh = (*it).second;
+
+      out << "  " << fn.get_fullpath()
+          << " (cloth mesh, " << mesh->ptr()->getReferenceCount() 
+          << " references)\n";
+    }
+  }
+
   // Summary
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
 
@@ -214,5 +286,8 @@ list_contents( ostream &out ) {
 
   out << "  Total number of triangle meshes: " << sdk->getNbTriangleMeshes() 
       << " created, " << _triangle_meshes.size() << " registred\n";
+
+  out << "  Total number of cloth meshes: " << sdk->getNbClothMeshes() 
+      << " created, " << _cloth_meshes.size() << " registred\n";
 }
 
