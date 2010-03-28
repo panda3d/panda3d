@@ -71,11 +71,9 @@ PUBLISHED:
   PhysxTriangleMesh *get_triangle_mesh(unsigned int idx);
   MAKE_SEQ(get_triangle_meshes, get_num_triangle_meshes, get_triangle_mesh);
 
-#if NX_USE_CLOTH_API
   unsigned int get_num_cloth_meshes();
   PhysxClothMesh *get_cloth_mesh(unsigned int idx);
   MAKE_SEQ(get_cloth_meshes, get_num_cloth_meshes, get_cloth_mesh);
-#endif
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;
@@ -87,10 +85,7 @@ public:
   PhysxObjectCollection<PhysxHeightField> _heightfields;
   PhysxObjectCollection<PhysxConvexMesh> _convex_meshes;
   PhysxObjectCollection<PhysxTriangleMesh> _triangle_meshes;
-
-#if NX_USE_CLOTH_API
   PhysxObjectCollection<PhysxClothMesh> _cloth_meshes;
-#endif
 
   INLINE static NxVec3 vec3_to_nxVec3(const LVector3f &v);
   INLINE static LVector3f nxVec3_to_vec3(const NxVec3 &v);

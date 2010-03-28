@@ -22,6 +22,7 @@
 #include "physxCapsuleController.h"
 #include "physxCapsuleForceFieldShape.h"
 #include "physxCapsuleShape.h"
+#include "physxClothMesh.h"
 #include "physxContactPair.h"
 #include "physxContactPoint.h"
 #include "physxController.h"
@@ -57,10 +58,6 @@
 #include "physxVehicle.h"
 #include "physxWheel.h"
 #include "physxWheelShape.h"
-
-#if NX_USE_CLOTH_API
-#include "physxClothMesh.h"
-#endif
 
 ConfigureDef(config_physx);
 NotifyCategoryDef(physx, "");
@@ -121,6 +118,7 @@ init_libphysx() {
   PhysxCapsuleController::init_type();
   PhysxCapsuleForceFieldShape::init_type();
   PhysxCapsuleShape::init_type();
+  PhysxClothMesh::init_type();
   PhysxContactPair::init_type();
   PhysxContactPoint::init_type();
   PhysxController::init_type();
@@ -156,10 +154,6 @@ init_libphysx() {
   PhysxVehicle::init_type();
   PhysxWheel::init_type();
   PhysxWheelShape::init_type();
-
-#if NX_USE_CLOTH_API
-  PhysxClothMesh::init_type();
-#endif
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("PhysX");

@@ -22,7 +22,6 @@
 
 #include "physx_includes.h"
 
-#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxClothMeshDesc
 // Description :
@@ -54,6 +53,5 @@ private:
 };
 
 #include "physxClothMeshDesc.I"
-#endif
 
 #endif // PHYSXCLOTHMESHDESC_H

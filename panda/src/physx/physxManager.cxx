@@ -271,7 +271,6 @@ get_triangle_mesh(unsigned int idx) {
   return (PhysxTriangleMesh *)_triangle_meshes[idx];
 }
 
-#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::get_num_cloth_meshes
 //       Access: Published
@@ -295,7 +294,6 @@ get_cloth_mesh(unsigned int idx) {
 
   return (PhysxClothMesh *)_cloth_meshes[idx];
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::is_hardware_available

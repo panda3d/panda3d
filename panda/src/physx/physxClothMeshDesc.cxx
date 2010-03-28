@@ -19,8 +19,6 @@
 #include "geomNode.h"
 #include "geomVertexReader.h"
 
-#if NX_USE_CLOTH_API
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxClothMeshDesc::set_num_vertices
 //       Access: Published
@@ -222,6 +220,4 @@ set_from_node_path(const NodePath &np) {
   _desc.numTriangles = numTriangles;
   _desc.triangles = _triangles;
 }
-
-#endif
 

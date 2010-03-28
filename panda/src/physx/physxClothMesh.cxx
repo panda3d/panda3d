@@ -15,8 +15,6 @@
 #include "physxClothMesh.h"
 #include "physxMeshPool.h"
 
-#if NX_USE_CLOTH_API
-
 TypeHandle PhysxClothMesh::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +73,4 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-
-#endif
 

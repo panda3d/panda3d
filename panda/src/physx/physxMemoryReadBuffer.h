@@ -23,7 +23,7 @@
 //       Class : PhysxMemoryReadBuffer
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class PhysxMemoryReadBuffer : public NxStream {
+class EXPCL_PANDAPHYSX PhysxMemoryReadBuffer : public NxStream {
 
 public:
   PhysxMemoryReadBuffer(const NxU8 *data);

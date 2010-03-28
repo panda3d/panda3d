@@ -20,11 +20,8 @@
 #include "physxFileStream.h"
 #include "physxMemoryReadBuffer.h"
 #include "physxMemoryWriteBuffer.h"
-
-#if NX_USE_CLOTH_API
 #include "physxClothMesh.h"
 #include "physxClothMeshDesc.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::set_cooking_params
@@ -88,7 +85,6 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filena
   return _cooking->NxCookTriangleMesh(meshDesc.get_desc(), stream);
 }
 
-#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_cloth_mesh
 //       Access: Published
@@ -105,7 +101,6 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
   PhysxFileStream stream = PhysxFileStream(filename, false);
   return _cooking->NxCookClothMesh(meshDesc.get_desc(), stream);
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_convex_mesh
@@ -163,7 +158,6 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
   return mesh;
 }
 
-#if NX_USE_CLOTH_API
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::cook_cloth_mesh
 //       Access: Published
@@ -174,8 +168,8 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
   nassertr_always(meshDesc.is_valid(), false);
 
-  PhysxMemoryWriteBuffer buffer;
-  bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), buffer);
+  PhysxMemoryWriteBuffer wbuffer;
+  bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), wbuffer);
   nassertr(status, NULL);
 
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
@@ -184,12 +178,12 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
   PhysxClothMesh *mesh = new PhysxClothMesh();
   nassertr(mesh, NULL);
 
-  NxClothMesh *meshPtr = sdk->createClothMesh(PhysxMemoryReadBuffer(buffer.data));
+  PhysxMemoryReadBuffer rbuffer(wbuffer.data);
+  NxClothMesh *meshPtr = sdk->createClothMesh(rbuffer);
   nassertr(meshPtr, NULL);
 
   mesh->link(meshPtr);
 
   return mesh;
 }
-#endif
 

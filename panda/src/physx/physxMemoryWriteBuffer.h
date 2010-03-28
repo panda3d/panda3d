@@ -23,7 +23,7 @@
 //       Class : PhysxMemoryWriteBuffer
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class PhysxMemoryWriteBuffer : public NxStream {
+class EXPCL_PANDAPHYSX PhysxMemoryWriteBuffer : public NxStream {
 
 public:
   PhysxMemoryWriteBuffer();
