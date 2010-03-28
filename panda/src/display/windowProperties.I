@@ -758,9 +758,11 @@ clear_z_order() {
 //               more interested in how fast the mouse is moving,
 //               rather than precisely where the pointer is hovering.
 //
-//               This has no effect on Windows and Linux, which do not
-//               have this concept; but is important to do on OSX to
-//               properly enable a smooth FPS-style mouselook mode.
+//               This has no effect on Windows, which does not
+//               have this concept; but is important to do on OSX
+//               and Unix/X11 to properly enable a smooth FPS-style
+//               mouselook mode.  On Unix/X11, this requires the
+//               Xxf86dga extension to be available.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_mouse_mode(MouseMode mode) {
