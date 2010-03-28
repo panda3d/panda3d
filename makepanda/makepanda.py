@@ -765,8 +765,8 @@ def CompileIgate(woutd,wsrc,opts):
     optlevel=GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
     if (optlevel==2): cmd += ' -D_DEBUG'
-    if (optlevel==3): cmd += ' -DFORCE_INLINING'
-    if (optlevel==4): cmd += ' -DNDEBUG -DFORCE_INLINING'
+    if (optlevel==3): pass
+    if (optlevel==4): cmd += ' -DNDEBUG'
     cmd += ' -oc ' + woutc + ' -od ' + woutd
     cmd += ' -fnames -string -refcount -assert -python-native'
     cmd += ' -S' + GetOutputDir() + '/include/parser-inc'
