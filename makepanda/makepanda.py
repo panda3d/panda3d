@@ -760,7 +760,7 @@ def CompileIgate(woutd,wsrc,opts):
     #FIXME: allow 64-bits on OSX
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit") and (sys.platform!="darwin"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit" or sys.platform=="darwin"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
