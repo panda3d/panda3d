@@ -278,6 +278,9 @@
 // Do we have <linux/input.h> ? This enables us to use raw mouse input.
 #define PHAVE_LINUX_INPUT_H
 
+// Do we have <stdint.h>?
+#define PHAVE_STDINT_H 1
+
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 

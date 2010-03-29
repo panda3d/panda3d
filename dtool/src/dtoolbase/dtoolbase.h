@@ -162,6 +162,10 @@
 #include <sys/time.h>
 #endif
 
+#ifdef PHAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 #ifdef CPPPARSER
 #include <stdtypedefs.h>
 #endif
@@ -289,7 +293,9 @@
 
 /* Try to determine if we're compiling in a 64-bit mode. */
 
-#if defined(_LP64)
+#ifdef __WORDSIZE
+#define NATIVE_WORDSIZE __WORDSIZE
+#elif defined(_LP64)
 #define NATIVE_WORDSIZE 64
 #else
 #define NATIVE_WORDSIZE 32

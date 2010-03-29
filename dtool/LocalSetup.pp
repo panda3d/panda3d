@@ -626,6 +626,9 @@ $[cdefine PHAVE_UCONTEXT_H]
 /* Do we have <linux/input.h> ? This enables us to use raw mouse input. */
 $[cdefine PHAVE_LINUX_INPUT_H]
 
+/* Do we have <stdint.h>? */
+$[cdefine PHAVE_STDINT_H]
+
 /* Do we have RTTI (and <typeinfo>)? */
 $[cdefine HAVE_RTTI]
 

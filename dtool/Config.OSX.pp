@@ -281,6 +281,9 @@
 // definitions.
 #define USE_STL_ALLOCATOR 1
 
+// Do we have <stdint.h>?
+#define PHAVE_STDINT_H 1
+
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .dylib
 #define STATIC_LIB_EXT .a

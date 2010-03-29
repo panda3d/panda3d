@@ -157,6 +157,9 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
+// Do we have <stdint.h>?
+#define PHAVE_STDINT_H
+
 // MSVC7 does support the latest STL allocator definitions.
 #define USE_STL_ALLOCATOR 1
 

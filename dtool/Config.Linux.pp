@@ -324,6 +324,9 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
+// Do we have <stdint.h>?
+#define PHAVE_STDINT_H 1
+
 // We need 64-bit file i/o
 #define __USE_LARGEFILE64 1
 
