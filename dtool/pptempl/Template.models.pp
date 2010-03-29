@@ -395,7 +395,10 @@ $[TAB]$[MAYA2EGG] $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $
     #define source $[MAYA_PREFIX]$[anim]$[MAYA_EXTENSION]
     #define begin 0
     #define end
-    #if $[$[anim]_frames]
+    #if $[$[CHAR_NAME]_$[anim]_frames]
+      #set begin $[word 1,$[$[CHAR_NAME]_$[anim]_frames]]
+      #set end $[word 2,$[$[CHAR_NAME]_$[anim]_frames]]
+    #elif $[$[anim]_frames]
       #set begin $[word 1,$[$[anim]_frames]]
       #set end $[word 2,$[$[anim]_frames]]
     #endif
