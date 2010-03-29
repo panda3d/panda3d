@@ -21,7 +21,7 @@
 // the various numeric types for unsigned and signed numbers of
 // various widths.
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(CPPPARSER)
 typedef signed __int8  PN_int8;
 typedef signed __int16 PN_int16;
 typedef signed __int32 PN_int32;
