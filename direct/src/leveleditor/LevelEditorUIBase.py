@@ -338,6 +338,18 @@ class LevelEditorUIBase(WxAppShell):
             base.direct.fControl = 1
         elif evt.GetKeyCode() == wx.WXK_SHIFT:
             base.direct.fShift = 1
+        elif evt.GetKeyCode() == wx.WXK_UP:
+            messenger.send('arrow_up')
+        elif evt.GetKeyCode() == wx.WXK_DOWN:
+            messenger.send('arrow_down')
+        elif evt.GetKeyCode() == wx.WXK_LEFT:
+            messenger.send('arrow_left')
+        elif evt.GetKeyCode() == wx.WXK_RIGHT:
+            messenger.send('arrow_right')
+        elif evt.GetKeyCode() == wx.WXK_PAGEUP:
+            messenger.send('page_up')
+        elif evt.GetKeyCode() == wx.WXK_PAGEDOWN:
+            messenger.send('page_down')
         else:
             evt.Skip()
 
@@ -348,6 +360,18 @@ class LevelEditorUIBase(WxAppShell):
             base.direct.fControl = 0
         elif evt.GetKeyCode() == wx.WXK_SHIFT:
             base.direct.fShift = 0
+        elif evt.GetKeyCode() == wx.WXK_UP:
+            messenger.send('arrow_up-up')
+        elif evt.GetKeyCode() == wx.WXK_DOWN:
+            messenger.send('arrow_down-up')
+        elif evt.GetKeyCode() == wx.WXK_LEFT:
+            messenger.send('arrow_left-up')
+        elif evt.GetKeyCode() == wx.WXK_RIGHT:
+            messenger.send('arrow_right-up')
+        elif evt.GetKeyCode() == wx.WXK_PAGEUP:
+            messenger.send('page_up-up')
+        elif evt.GetKeyCode() == wx.WXK_PAGEDOWN:
+            messenger.send('page_down-up')
         else:
             evt.Skip()
         

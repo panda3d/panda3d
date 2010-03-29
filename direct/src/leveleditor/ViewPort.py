@@ -95,9 +95,9 @@ class Viewport(wx.Panel, DirectObject):
 
     self.camNode.setCameraMask(LE_CAM_MASKS[self.name])
 
-    bt = base.setupMouse(self.win, True)
-    bt.node().setPrefix('_le_%s_'%self.name[:3])    
-    mw = bt.getParent()
+    self.bt = base.setupMouse(self.win, True)
+    self.bt.node().setPrefix('_le_%s_'%self.name[:3])    
+    mw = self.bt.getParent()
     mk = mw.getParent()
     winCtrl = WindowControls(
                 self.win, mouseWatcher=mw,
