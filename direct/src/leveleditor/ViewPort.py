@@ -226,6 +226,8 @@ class Viewport(wx.Panel, DirectObject):
     v.grid = DirectGrid(parent=render)
     collPlane = CollisionNode('PerspGridCol')
     collPlane.addSolid(CollisionPlane(Plane(0, 0, 1, 0)))
+    oldBitmask = collPlane.getIntoCollideMask()
+    collPlane.setIntoCollideMask(BitMask32.bit(21)|oldBitmask)
     v.collPlane = NodePath(collPlane)
     v.collPlane.reparentTo(v.grid)
     #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_perspViewGridBack")
