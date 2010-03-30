@@ -66,7 +66,10 @@ class PandaTextDropTarget(wx.TextDropTarget):
                     break
 
         if hitPt is None:
-            iRay.collideWithBitMask(1)
+            if self.view.name == 'persp':
+                iRay.collideWithBitMask(1)
+            else:
+                iRay.collideWithBitMask(BitMask32.bit(21))
             iRay.ct.traverse(self.view.collPlane)
             if iRay.getNumEntries() > 0:
                 entry = iRay.getEntry(0)

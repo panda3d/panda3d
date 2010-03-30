@@ -296,7 +296,8 @@ class DirectCameraControl(DirectObject):
         # create ray from the camera to detect 3d position
         iRay = SelectionRay(base.direct.camera)
         iRay.collider.setFromLens(base.direct.camNode, base.direct.dr.mouseX, base.direct.dr.mouseY)
-        iRay.collideWithBitMask(1)
+        #iRay.collideWithBitMask(1)
+        iRay.collideWithBitMask(BitMask32.bit(21))
         iRay.ct.traverse(base.direct.grid)
 
         entry = iRay.getEntry(0)

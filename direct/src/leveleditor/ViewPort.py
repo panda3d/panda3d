@@ -193,6 +193,7 @@ class Viewport(wx.Panel, DirectObject):
       v.grid.setHpr(0, 0, 90)
       collPlane = CollisionNode('LeftGridCol')
       collPlane.addSolid(CollisionPlane(Plane(1, 0, 0, 0)))
+      collPlane.setIntoCollideMask(BitMask32.bit(21))
       v.collPlane = NodePath(collPlane)
       v.collPlane.wrtReparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_leftViewGridBack")
@@ -201,6 +202,7 @@ class Viewport(wx.Panel, DirectObject):
       v.grid.setHpr(90, 0, 90)
       collPlane = CollisionNode('FrontGridCol')
       collPlane.addSolid(CollisionPlane(Plane(0, -1, 0, 0)))
+      collPlane.setIntoCollideMask(BitMask32.bit(21))
       v.collPlane = NodePath(collPlane)      
       v.collPlane.wrtReparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_frontViewGridBack")
@@ -208,6 +210,7 @@ class Viewport(wx.Panel, DirectObject):
     else:
       collPlane = CollisionNode('TopGridCol')
       collPlane.addSolid(CollisionPlane(Plane(0, 0, 1, 0)))
+      collPlane.setIntoCollideMask(BitMask32.bit(21))
       v.collPlane = NodePath(collPlane)
       v.collPlane.reparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_topViewGridBack")
