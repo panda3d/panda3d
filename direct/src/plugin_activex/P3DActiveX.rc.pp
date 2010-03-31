@@ -81,7 +81,9 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "FileDescription", "Panda3D Game Engine Plug-in $[P3D_PLUGIN_VERSION_STR]\0"
+            Value "CompanyName", "$[PANDA_DISTRIBUTOR]"
             VALUE "FileVersion", "$[P3D_PLUGIN_DLL_DOT_VERSION]"
+            VALUE "InternalName", "P3DActiveX.ocx"
             VALUE "LegalTrademarks", "\0"
             VALUE "FileOpenName", "Panda3D applet\0"
             VALUE "OLESelfRegister", "\0"
