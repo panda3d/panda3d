@@ -225,7 +225,7 @@ private:
 
   void clear_install_plans();
   void build_install_plans(TiXmlDocument *doc);
-  void follow_install_plans(bool download_finished);
+  void follow_install_plans(bool download_finished, bool plan_failed);
   static void st_callback(void *self);
   void request_callback();
 

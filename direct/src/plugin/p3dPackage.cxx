@@ -138,7 +138,7 @@ activate_download() {
     // Otherwise, if we've already got the desc file, then start the
     // download.
     if (_info_ready) {
-      follow_install_plans(true);
+      follow_install_plans(true, false);
     }
   }
 }
@@ -835,7 +835,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
       report_info_ready();
     } else {
       // We've already been authorized to start downloading, so do it.
-      follow_install_plans(true);
+      follow_install_plans(true, false);
     }
   }
 }
@@ -979,12 +979,17 @@ build_install_plans(TiXmlDocument *doc) {
 //     Function: P3DPackage::follow_install_plans
 //       Access: Private
 //  Description: Performs the next step in the current install plan.
+//
 //               If download_finished is false, there is a pending
 //               download that has not fully completed yet; otherwise,
 //               download_finished should be set true.
+//
+//               If plan_failed is false, it means that the
+//               top-of-stack plan is still good; if true, the
+//               top-of-stack plan has failed and should be removed.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-follow_install_plans(bool download_finished) {
+follow_install_plans(bool download_finished, bool plan_failed) {
   if (!_allow_data_download || _failed) {
     // Not authorized yet, or something went wrong.
     return;
@@ -994,7 +999,6 @@ follow_install_plans(bool download_finished) {
     // Pull the next step off the current plan.
 
     InstallPlan &plan = _install_plans.front();
-    bool plan_failed = false;
 
     if (!_computed_plan_size) {
       _total_plan_size = 0.0;
@@ -1062,6 +1066,9 @@ follow_install_plans(bool download_finished) {
     nout << "Plan failed.\n";
     _install_plans.pop_front();
     _computed_plan_size = false;
+
+    // The next plan is (so far as we know) still good.
+    plan_failed = false;
   }
 
   // All plans failed.  Too bad for us.
@@ -1077,7 +1084,7 @@ follow_install_plans(bool download_finished) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 st_callback(void *self) {
-  ((P3DPackage *)self)->follow_install_plans(false);
+  ((P3DPackage *)self)->follow_install_plans(false, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1397,7 +1404,7 @@ download_progress() {
     break;
 
   case DT_install_step:
-    _package->follow_install_plans(false);
+    _package->follow_install_plans(false, false);
     break;
   }
 }
@@ -1493,7 +1500,7 @@ resume_download_finished(bool success) {
     break;
 
   case DT_install_step:
-    _package->follow_install_plans(true);
+    _package->follow_install_plans(true, !success);
     break;
   }
 }
