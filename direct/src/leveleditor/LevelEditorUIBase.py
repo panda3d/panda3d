@@ -444,6 +444,7 @@ class LevelEditorUIBase(WxAppShell):
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.py", wx.OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             self.editor.load(dialog.GetPath())
+            self.editor.setTitleWithFilename(dialog.GetPath())
         dialog.Destroy()
 
     def onSave(self, evt=None):
@@ -458,6 +459,7 @@ class LevelEditorUIBase(WxAppShell):
         result = True
         if dialog.ShowModal() == wx.ID_OK:
             self.editor.saveAs(dialog.GetPath())
+            self.editor.setTitleWithFilename(dialog.GetPath())
         else:
             result = False
         dialog.Destroy()

@@ -157,6 +157,14 @@ class LevelEditorBase(DirectObject):
         self.loadSettings()
         self.reset()
         
+    def setTitleWithFilename(self, filename=""):
+        import pdb;pdb.set_trace()
+        title = self.ui.appname
+        if filename != "":
+           filenameshort = os.path.basename(filename)
+           title = title + " (%s)"%filenameshort
+        self.ui.SetLabel(title)
+
     def removeNodePathHook(self, nodePath):
         if nodePath is None:
             return
@@ -283,6 +291,7 @@ class LevelEditorBase(DirectObject):
         self.resetOrthoCam(self.ui.frontView)
         self.resetOrthoCam(self.ui.leftView)
         self.fNeedToSave = False
+        self.setTitleWithFilename()
         
     def resetOrthoCam(self, view):
         base.direct.drList[base.camList.index(NodePath(view.camNode))].orthoFactor = 0.1
