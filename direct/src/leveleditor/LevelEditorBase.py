@@ -158,7 +158,6 @@ class LevelEditorBase(DirectObject):
         self.reset()
         
     def setTitleWithFilename(self, filename=""):
-        import pdb;pdb.set_trace()
         title = self.ui.appname
         if filename != "":
            filenameshort = os.path.basename(filename)
