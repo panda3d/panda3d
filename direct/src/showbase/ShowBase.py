@@ -948,25 +948,41 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dRight = aspectRatio
 
         self.a2dTopCenter = self.aspect2d.attachNewNode("a2dTopCenter")
+        self.a2dTopCenterNs = self.aspect2d.attachNewNode("a2dTopCenterNS")
         self.a2dBottomCenter = self.aspect2d.attachNewNode("a2dBottomCenter")
+        self.a2dBottomCenterNs = self.aspect2d.attachNewNode("a2dBottomCenterNS")
         self.a2dLeftCenter = self.aspect2d.attachNewNode("a2dLeftCenter")
+        self.a2dLeftCenterNs = self.aspect2d.attachNewNode("a2dLeftCenterNS")
         self.a2dRightCenter = self.aspect2d.attachNewNode("a2dRightCenter")
+        self.a2dRightCenterNs = self.aspect2d.attachNewNode("a2dRightCenterNS")
 
         self.a2dTopLeft = self.aspect2d.attachNewNode("a2dTopLeft")
+        self.a2dTopLeftNs = self.aspect2d.attachNewNode("a2dTopLeftNS")
         self.a2dTopRight = self.aspect2d.attachNewNode("a2dTopRight")
+        self.a2dTopRightNs = self.aspect2d.attachNewNode("a2dTopRightNS")
         self.a2dBottomLeft = self.aspect2d.attachNewNode("a2dBottomLeft")
+        self.a2dBottomLeftNs = self.aspect2d.attachNewNode("a2dBottomLeftNS")
         self.a2dBottomRight = self.aspect2d.attachNewNode("a2dBottomRight")
+        self.a2dBottomRightNs = self.aspect2d.attachNewNode("a2dBottomRightNS")
 
         # Put the nodes in their places
         self.a2dTopCenter.setPos(0, 0, self.a2dTop)
+        self.a2dTopCenterNs.setPos(0, 0, self.a2dTop)
         self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
+        self.a2dBottomCenterNs.setPos(0, 0, self.a2dBottom)
         self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
+        self.a2dLeftCenterNs.setPos(self.a2dLeft, 0, 0)
         self.a2dRightCenter.setPos(self.a2dRight, 0, 0)
+        self.a2dRightCenterNs.setPos(self.a2dRight, 0, 0)
 
         self.a2dTopLeft.setPos(self.a2dLeft, 0, self.a2dTop)
+        self.a2dTopLeftNs.setPos(self.a2dLeft, 0, self.a2dTop)
         self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
+        self.a2dTopRightNs.setPos(self.a2dRight, 0, self.a2dTop)
         self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
+        self.a2dBottomLeftNs.setPos(self.a2dLeft, 0, self.a2dBottom)
         self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+        self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)
         
         # This special root, pixel2d, uses units in pixels that are relative
         # to the window. The upperleft corner of the window is (0, 0),
@@ -2440,6 +2456,7 @@ class ShowBase(DirectObject.DirectObject):
                         self.a2dpLeft = -aspectRatio
                         self.a2dpRight = aspectRatio                        
 
+
                     # Reposition the aspect2d marker nodes
                     self.a2dTopCenter.setPos(0, 0, self.a2dTop)
                     self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
@@ -2449,6 +2466,16 @@ class ShowBase(DirectObject.DirectObject):
                     self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
                     self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
                     self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+
+                    # Reposition the aspect2d marker nodes
+                    self.a2dTopCenterNs.setPos(0, 0, self.a2dTop)
+                    self.a2dBottomCenterNs.setPos(0, 0, self.a2dBottom)
+                    self.a2dLeftCenterNs.setPos(self.a2dLeft, 0, 0)
+                    self.a2dRightCenterNs.setPos(self.a2dRight, 0, 0)                    
+                    self.a2dTopLeftNs.setPos(self.a2dLeft, 0, self.a2dTop)
+                    self.a2dTopRightNs.setPos(self.a2dRight, 0, self.a2dTop)
+                    self.a2dBottomLeftNs.setPos(self.a2dLeft, 0, self.a2dBottom)
+                    self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)                    
 
                     # Reposition the aspect2dp marker nodes
                     self.a2dpTopCenter.setPos(0, 0, self.a2dpTop)

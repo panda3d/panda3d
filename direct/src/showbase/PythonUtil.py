@@ -1,3 +1,4 @@
+
 """Undocumented Module"""
 
 __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
@@ -53,6 +54,8 @@ from StringIO import StringIO
 import marshal
 import ElementTree as ET
 from HTMLParser import HTMLParser
+
+__report_indent = 3
 
 from direct.directutil import Verify
 # Don't import libpandaexpressModules, which doesn't get built until
@@ -2580,6 +2583,159 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
+baseLine = {}
+
+def baseLineCheck():
+    global baseLine
+    import gc
+    obj = gc.get_objects()
+    baseLine = {}
+    for i in obj:
+        baseLine[str(itype(i))] = 0
+    for i in obj:
+        baseLine[str(itype(i))] += 1
+
+def diffSinceBaseLine():
+    import copy
+    import gc
+    obj = gc.get_objects()    
+    since = copy.deepcopy(baseLine)
+    for i in obj:
+        since.setdefault(str(itype(i)), 0)
+    for i in obj:
+        since[str(itype(i))] -= 1
+    for i in since.keys():
+        if not since[i]:
+            del since[i]
+        else:
+            since[i] = abs(since[i])
+
+    final = [(since[x],x) for x in since]
+    final.sort()
+    final.reverse()
+    for i in final:
+        print i
+
+    final = []
+    since = []
+
+
+# Recursively expand slist's objects
+# into olist, using seen to track
+# already processed objects.
+def _getr(slist, olist, seen):
+  for e in slist:
+    if id(e) in seen:
+      continue
+    seen[id(e)] = None
+    olist.append(e)
+    tl = gc.get_referents(e)
+    if tl:
+      _getr(tl, olist, seen)
+
+# The public function.
+def get_all_objects():
+  """Return a list of all live Python
+  objects, not including the list itself."""
+  gcl = gc.get_objects()
+  olist = []
+  seen = {}
+  # Just in case:
+  seen[id(gcl)] = None
+  seen[id(olist)] = None
+  seen[id(seen)] = None
+  # _getr does the real work.
+  _getr(gcl, olist, seen)
+  return olist    
+
+def getIdList():
+    baseList = get_all_objects()
+    idList = {}
+    for i in baseList:
+        idList[id(i)] = i
+
+    return idList
+
+
+ftype = None
+
+def getTree(obj):
+    global ftype
+    if not ftype:
+        ftype = itype(sys._getframe())
+    objId = id(obj)
+    obj = None
+    idList = getIdList()
+    objList = [objId]
+    objTree = {objId:{}}
+    r_add_chain(objId, objList, objTree[objId], idList, 0 )
+    
+    return convertTree(objTree, idList)
+
+def convertTree(objTree, idList):
+    newTree = {}
+    for key in objTree.keys():
+        obj = (idList[key],)
+        newTree[obj] = {}
+        r_convertTree(objTree[key], newTree[obj], idList)
+    return newTree
+
+def r_convertTree(oldTree, newTree, idList):
+    for key in oldTree.keys():
+        
+        obj = idList.get(key)
+        if(not obj):
+            continue
+        obj = str(obj)[:100]
+        
+        newTree[obj] = {}
+        r_convertTree(oldTree[key], newTree[obj], idList)        
+
+
+def pretty_print(tree):
+    for name in tree.keys():
+        print name
+        r_pretty_print(tree[name], 0)
+        
+            
+
+def r_pretty_print(tree, num):
+    num+=1
+    for name in tree.keys():
+        print "  "*num,name
+        r_pretty_print(tree[name],num)
+        
+def r_add_chain(objId, objList, objTree, idList, num):
+    num+=1
+    obj = idList.get(objId)
+    if(not obj):
+        return
+    
+    refList = gc.get_referrers(obj)
+    for ref in refList:
+        refId = id(ref)
+        if ref == __builtins__:
+            continue
+        if ref == objList:
+            continue
+        if refId in objList:
+            continue
+        if(ref == idList):
+            continue
+        if(itype(ref) == ftype):
+            continue
+        if(itype(ref) == itype(sys)):
+            continue
+
+        objList.append(refId)
+        
+        objTree[refId] = {}
+    refList = None
+    for refId in objTree:
+        r_add_chain(refId, objList, objTree[refId], idList, num)
+                    
+        
+    
 def tagRepr(obj, tag):
     """adds a string onto the repr output of an instance"""
     def reprWithTag(oldRepr, tag, self):
@@ -3969,11 +4125,16 @@ def startSuperLog(customFunction = None):
                     del vars['__builtins__']
                 for i in vars:
                     vars[i] = safeReprTypeOnFail(vars[i]) 
+
                 if customFunction:
-                    superLogFile.write( "before = %s"%customFunction())
+                    superLogFile.write( "before = %s\n"%customFunction())
+
                 superLogFile.write( "%s(%s):%s:%s\n"%(a.f_code.co_filename.split("\\")[-1],a.f_code.co_firstlineno, a.f_code.co_name, vars))
+
                 if customFunction:
-                    superLogFile.write( "after = %s"%customFunction())
+                    superLogFile.write( "after = %s\n"%customFunction())
+
+
                 return trace_dispatch
         sys.settrace(trace_dispatch)
       
