@@ -1415,7 +1415,7 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
   bool first_plane = true;
 
   for (int i = 0; i < num_planes; i++) {
-    NodePath plane_path = cpa->get_on_plane(0);
+    NodePath plane_path = cpa->get_on_plane(i);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
       CPT(TransformState) new_transform = 
