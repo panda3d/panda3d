@@ -148,6 +148,11 @@ OpenALAudioManager() {
     audio_3d_set_distance_factor(audio_distance_factor);
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
   }
+    
+  audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+  audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+  audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+
 }
 
 ////////////////////////////////////////////////////////////////////
