@@ -143,12 +143,14 @@ OpenALAudioManager() {
     alcMakeContextCurrent(_context);
     alc_audio_errcheck("alcMakeContextCurrent(_context)",_device);
 
+
     // set 3D sound characteristics as they are given in the configrc
     audio_3d_set_doppler_factor(audio_doppler_factor);
     audio_3d_set_distance_factor(audio_distance_factor);
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
   }
-    
+
+  audio_cat->debug() << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;    
   audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
   audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
   audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
@@ -951,9 +953,11 @@ cleanup() {
       _context = NULL;
 
       if (_device) {
+        audio_debug("Going to try to close openAL");
         alcCloseDevice(_device);
         //alc_audio_errcheck("alcCloseDevice(_device)",_device);
         _device = NULL;
+        audio_debug("openAL Closed");
       }
 
       _openal_active = false;
