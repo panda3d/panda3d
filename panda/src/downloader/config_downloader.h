@@ -38,8 +38,6 @@ extern ConfigVariableDouble decompressor_step_time;
 extern ConfigVariableDouble extractor_step_time;
 extern ConfigVariableInt patcher_buffer_size;
 
-extern ConfigVariableList expected_ssl_server;
-
 extern ConfigVariableBool http_proxy_tunnel;
 extern ConfigVariableDouble http_connect_timeout;
 extern ConfigVariableDouble http_timeout;

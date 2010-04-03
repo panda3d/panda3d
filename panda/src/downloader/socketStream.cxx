@@ -62,7 +62,7 @@ do_receive_datagram(Datagram &dg) {
   }
   if (_data_expected == 0) {
     // Read the first two bytes: the datagram length.
-    while (_data_so_far.length() < _tcp_header_size) {
+    while ((int)_data_so_far.length() < _tcp_header_size) {
       int ch = _istream->get();
       if (_istream->eof() || _istream->fail()) {
         _istream->clear();

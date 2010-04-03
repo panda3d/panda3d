@@ -64,9 +64,6 @@ ConfigVariableInt patcher_buffer_size
            "Patcher::run().  Increasing this may help the Patcher "
            "perform more work before returning."));
 
-ConfigVariableList expected_ssl_server
-("expected-ssl-server");
-
 ConfigVariableBool http_proxy_tunnel
 ("http-proxy-tunnel", false,
  PRC_DESC("This specifies the default value for HTTPChannel::set_proxy_tunnel().  "

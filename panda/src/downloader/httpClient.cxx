@@ -137,6 +137,25 @@ HTTPClient() {
     ("http-client-certificate-passphrase", "",
      PRC_DESC("This specifies the passphrase to use to decode the certificate named "
               "by http-client-certificate-filename."));
+
+
+  ConfigVariableList http_preapproved_server_certificate_filename
+    ("http-preapproved-server-certificate-filename",
+     PRC_DESC("This specifies a server hostname:port combination, followed by "
+              "at least one space, and the name of a PEM file that contains "
+              "an SSL certificate that we expect this server to offer.  If "
+              "it does, we will accept the cert without further question, "
+              "even if the cert does not match any known certificate "
+              "authorities.  This option may appear multiple times."));
+
+  ConfigVariableList http_preapproved_server_certificate_name
+    ("http-preapproved-server-certificate-name",
+     PRC_DESC("This specifies a server hostname:port combination, followed by "
+              "at least one space, and a string describing the subject name "
+              "of an SSL certificate we expect this server to offer.  If it "
+              "it does, we will accept the cert, but only if it also matches "
+              "a known certificate authority.  This option may appear "
+              "multiple times."));
   
   _http_version = HTTPEnum::HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
@@ -167,6 +186,23 @@ HTTPClient() {
   _client_certificate_loaded = false;
   _client_certificate_pub = NULL;
   _client_certificate_priv = NULL;
+
+  int num_server_certs = http_preapproved_server_certificate_filename.get_num_unique_values();
+  int si;
+  for (si = 0; si < num_server_certs; si++) {
+    string cert_line = http_preapproved_server_certificate_filename.get_unique_value(si);
+    string a, b;
+    split_whitespace(a, b, cert_line);
+    add_preapproved_server_certificate_filename(URLSpec(a, true), b);
+  }
+
+  num_server_certs = http_preapproved_server_certificate_name.get_num_unique_values();
+  for (si = 0; si < num_server_certs; si++) {
+    string cert_line = http_preapproved_server_certificate_name.get_unique_value(si);
+    string a, b;
+    split_whitespace(a, b, cert_line);
+    add_preapproved_server_certificate_name(URLSpec(a, true), b);
+  }
 
   // The first time we create an HTTPClient, we must initialize the
   // OpenSSL library.  The OpenSSLWrapper object does that.
@@ -901,6 +937,150 @@ load_client_certificate() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_preapproved_server_certificate_filename
+//       Access: Published
+//  Description: Adds the certificate defined in the indicated PEM
+//               filename as a "pre-approved" certificate for the
+//               indicated server, defined by the hostname and port
+//               (only) from the given URL.
+//
+//               If the server offers this particular certificate on a
+//               secure connection, it will be accepted without
+//               question.  This is particularly useful for
+//               communicating with a server using a known self-signed
+//               certificate.
+//
+//               See also the similar
+//               add_preapproved_server_certificate_pem(), and the
+//               weaker add_preapproved_server_certificate_name().
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &filename) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  string pem;
+
+  if (!vfs->read_file(filename, pem, true)) {
+    // Could not find or read file.
+    downloader_cat.warning()
+      << "Could not read " << filename << ".\n";
+    return false;
+  }
+
+  return add_preapproved_server_certificate_pem(url, pem);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_preapproved_server_certificate_pem
+//       Access: Published
+//  Description: Adds the certificate defined in the indicated data
+//               string, formatted as a PEM block, as a "pre-approved"
+//               certificate for the indicated server, defined by the
+//               hostname and port (only) from the given URL.
+//
+//               If the server offers this particular certificate on a
+//               secure connection, it will be accepted without
+//               question.  This is particularly useful for
+//               communicating with a server using a known self-signed
+//               certificate.
+//
+//               See also the similar
+//               add_preapproved_server_certificate_filename(), and
+//               the weaker add_preapproved_server_certificate_name().
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
+  // Create an in-memory BIO to read the "file" from the memory
+  // buffer, and call the low-level routine to read the
+  // cert from the BIO.
+  BIO *mbio = BIO_new_mem_buf((void *)pem.data(), pem.length());
+      
+  ERR_clear_error();
+  X509 *cert = PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+  BIO_free(mbio);
+
+  if (cert == NULL) {
+    downloader_cat.warning()
+      << "Could not parse PEM data\n";
+    return false;
+  }
+
+  string server_and_port = url.get_server_and_port();
+  PreapprovedServerCerts::iterator psci = 
+    _preapproved_server_certs.insert(PreapprovedServerCerts::value_type(server_and_port, PreapprovedServerCert())).first;
+
+  PreapprovedServerCert &psc = (*psci).second;
+  psc._certs.push_back(cert);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_preapproved_server_certificate_name
+//       Access: Published
+//  Description: Adds the certificate *name* only, as a "pre-approved"
+//               certificate name for the indicated server, defined by
+//               the hostname and port (only) from the given URL.
+//
+//               This is a weaker function than
+//               add_preapproved_server_certificate_filename().  This
+//               checks only the subject name of the certificate,
+//               without checking for a particular certificate by key.
+//               This means that a variety of server certificates may
+//               match the indicated name.
+//
+//               Because this is a weaker verification, it only
+//               applies to server certificates that are signed by a
+//               recognized certificate authority.  Thus, it cannot be
+//               used to pre-approve self-signed certificates, but it
+//               can be used to accept a server certificate offered by
+//               a different hostname than the one in the cert itself.
+//
+//               The certificate name should be formatted in the form
+//               /type0=value0/type1=value1/type2=...
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+add_preapproved_server_certificate_name(const URLSpec &url, const string &name) {
+  X509_NAME *cert_name = parse_x509_name(name);
+  if (cert_name == NULL) {
+    downloader_cat.warning()
+      << "Could not parse certificate name " << name << "\n";
+    return false;
+  }
+
+  string server_and_port = url.get_server_and_port();
+  PreapprovedServerCerts::iterator psci = 
+    _preapproved_server_certs.insert(PreapprovedServerCerts::value_type(server_and_port, PreapprovedServerCert())).first;
+
+  PreapprovedServerCert &psc = (*psci).second;
+  psc._cert_names.push_back(cert_name);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_preapproved_server_certificates
+//       Access: Published
+//  Description: Removes all preapproved server certificates for the
+//               indicated server and port.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_preapproved_server_certificates(const URLSpec &url) {
+  string server_and_port = url.get_server_and_port();
+  _preapproved_server_certs.erase(server_and_port);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_all_preapproved_server_certificates
+//       Access: Published
+//  Description: Removes all preapproved server certificates for all
+//               servers.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_all_preapproved_server_certificates() {
+  _preapproved_server_certs.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_http_version_string
 //       Access: Published
 //  Description: Returns the current HTTP version setting as a string,
@@ -1083,6 +1263,72 @@ get_ssl_ctx() {
   SSL_CTX_set_cert_store(_ssl_ctx, sslw->get_x509_store());
 
   return _ssl_ctx;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::check_preapproved_server_certificate
+//       Access: Private
+//  Description: Checks to see if the indicated certificate is on the
+//               pre-approved list for the indicated server's URL.
+//
+//               If the full cert itself (including its key) is on the
+//               pre-approved list, sets both cert_preapproved and
+//               cert_name_preapproved to true.
+//
+//               If the full cert is not on the pre-approved list, but
+//               its name matches a name on the pre-approved list,
+//               sets cert_name_preapproved to true, and
+//               cert_preapproved to false.
+//
+//               Otherwise, sets both values to false.  This doesn't
+//               mean the cert is necessarily invalid, just that it
+//               wasn't on the pre-approved list (which is usually
+//               empty anyway).
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
+                                     bool &cert_preapproved, bool &cert_name_preapproved) const {
+  cert_preapproved = false;
+  cert_name_preapproved = false;
+
+  string server_and_port = url.get_server_and_port();
+  PreapprovedServerCerts::const_iterator psci = 
+    _preapproved_server_certs.find(server_and_port);
+
+  if (psci == _preapproved_server_certs.end()) {
+    // No preapproved certs defined for this server.
+    return;
+  }
+
+  const PreapprovedServerCert &psc = (*psci).second;
+
+  // See if we have an exact match on the cert itself.
+  ServerCerts::const_iterator sci;
+  for (sci = psc._certs.begin(); sci != psc._certs.end(); ++sci) {
+    if (X509_cmp(cert, *sci) == 0) {
+      cert_preapproved = true;
+      cert_name_preapproved = true;
+      downloader_cat.info()
+        << "Server certificate is pre-approved.\n";
+      return;
+    }
+  }
+
+  // OK, look for a match on the cert's name only.
+  X509_NAME *subject = X509_get_subject_name(cert);
+  ServerCertNames::const_iterator scni;
+  for (scni = psc._cert_names.begin(); scni != psc._cert_names.end(); ++scni) {
+    X509_NAME *cert_name = (*scni);
+    if (x509_name_subset(cert_name, subject)) {
+      downloader_cat.info()
+        << "Server certificate name is pre-approved.\n";
+      cert_name_preapproved = true;
+      return;
+    }
+  }
+
+  // Didn't find any match.
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1421,6 +1667,65 @@ parse_x509_name(const string &source) {
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::x509_name_subset
+//       Access: Private, Static
+//  Description: Returns true if name_a is a subset of name_b: each
+//               property of name_a is defined in name_b, and the
+//               defined value is equivalent to that of name_a.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
+  int count_a = X509_NAME_entry_count(name_a);
+  for (int ai = 0; ai < count_a; ai++) {
+    X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
+
+    int bi = X509_NAME_get_index_by_OBJ(name_b, na->object, -1);
+    if (bi < 0) {
+      // This entry in name_a is not defined in name_b.
+      return false;
+    }
+
+    X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
+    if (na->value->length != nb->value->length ||
+        memcmp(na->value->data, nb->value->data, na->value->length) != 0) {
+      // This entry in name_a doesn't match that of name_b.
+      return false;
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::split_whitespace
+//       Access: Private, Static
+//  Description: Puts the first word of c into a, and the remainder
+//               into b.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+split_whitespace(string &a, string &b, const string &c) {
+  size_t p = 0;
+
+  // Skip initial whitespace
+  while (p < c.length() && isspace(c[p])) {
+    ++p;
+  }
+
+  // Find the length of the first word
+  size_t q = p;
+  while (p < c.length() && !isspace(c[p])) {
+    ++p;
+  }
+
+  a = c.substr(q, p - q);
+
+  // Skip whitespace between words
+  while (p < c.length() && isspace(c[p])) {
+    ++p;
+  }
+  b = c.substr(p);
+}
+
 #if defined(SSL_097) && !defined(NDEBUG)
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::ssl_msg_callback
@@ -1484,5 +1789,23 @@ ssl_msg_callback(int write_p, int version, int content_type,
   downloader_cat.debug() << describe.str();
 }
 #endif  // defined(SSL_097) && !defined(NDEBUG)
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::PreapprovedServerCert::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+HTTPClient::PreapprovedServerCert::
+~PreapprovedServerCert() {
+  ServerCerts::const_iterator sci;
+  for (sci = _certs.begin(); sci != _certs.end(); ++sci) {
+    X509_free(*sci);
+  }
+
+  ServerCertNames::const_iterator scni;
+  for (scni = _cert_names.begin(); scni != _cert_names.end(); ++scni) {
+    X509_NAME_free(*scni);
+  }
+}
 
 #endif  // HAVE_OPENSSL

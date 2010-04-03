@@ -98,6 +98,12 @@ PUBLISHED:
   INLINE void set_client_certificate_passphrase(const string &passphrase);
   bool load_client_certificate();
 
+  bool add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &filename);
+  bool add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem);
+  bool add_preapproved_server_certificate_name(const URLSpec &url, const string &name);
+  void clear_preapproved_server_certificates(const URLSpec &url);
+  void clear_all_preapproved_server_certificates();
+
   INLINE void set_http_version(HTTPEnum::HTTPVersion version);
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
   string get_http_version_string() const;
@@ -131,6 +137,9 @@ public:
   SSL_CTX *get_ssl_ctx();
 
 private:
+  void check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
+                                            bool &cert_preapproved, bool &cert_name_preapproved) const;
+
   bool get_proxies_for_scheme(const string &scheme, 
                               pvector<URLSpec> &proxies) const;
 
@@ -146,6 +155,9 @@ private:
   void unload_client_certificate();
 
   static X509_NAME *parse_x509_name(const string &source);
+  static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
+
+  static void split_whitespace(string &a, string &b, const string &c);
 
 #if defined(SSL_097) && !defined(NDEBUG)
   static void ssl_msg_callback(int write_p, int version, int content_type,
@@ -187,6 +199,19 @@ private:
   bool _client_certificate_loaded;
   X509 *_client_certificate_pub;
   EVP_PKEY *_client_certificate_priv;
+
+  typedef pvector<X509 *> ServerCerts;
+  typedef pvector<X509_NAME *> ServerCertNames;
+  class PreapprovedServerCert {
+  public:
+    ~PreapprovedServerCert();
+
+    ServerCerts _certs;
+    ServerCertNames _cert_names;
+  };
+
+  typedef pmap<string, PreapprovedServerCert> PreapprovedServerCerts;
+  PreapprovedServerCerts _preapproved_server_certs;
 
   static PT(HTTPClient) _global_ptr;
 

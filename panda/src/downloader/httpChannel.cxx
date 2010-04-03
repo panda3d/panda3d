@@ -1626,90 +1626,91 @@ run_ssl_handshake() {
   _bio->set_bio(_sbio);
   _sbio = NULL;
 
+  X509 *cert = SSL_get_peer_certificate(ssl);
+  if (cert == (X509 *)NULL) {
+    downloader_cat.info()
+      << "No certificate was presented by server.\n";
+
+    // This shouldn't be possible, per the SSL specs.
+    _status_entry._status_code = SC_ssl_invalid_server_certificate;
+    _state = S_failure;
+    return false;
+  }
+  
+  X509_NAME *subject = X509_get_subject_name(cert);
+  if (downloader_cat.is_debug()) {
+    string org_name = get_x509_name_component(subject, NID_organizationName);
+    string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
+    string common_name = get_x509_name_component(subject, NID_commonName);
+    
+    downloader_cat.debug()
+      << "Server is " << common_name << " from " << org_unit_name
+      << " / " << org_name << "\n";
+
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "Received certificate from server:\n" << flush;
+      X509_print_fp(stderr, cert);
+      fflush(stderr);
+    }
+  }
+
+  bool cert_preapproved = false;
+  bool cert_name_preapproved = false;
+  check_preapproved_server_certificate(cert, cert_preapproved, cert_name_preapproved);
+
   // Now verify the server certificate is valid.
   long verify_result = SSL_get_verify_result(ssl);
+  bool cert_valid = true;
+
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
       << "Expired certificate from " << _request.get_url().get_server_and_port() << "\n";
-    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
-      _status_entry._status_code = SC_ssl_invalid_server_certificate;
-      _state = S_failure;
-      return false;
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) { 
+      cert_valid = false;
     }
 
   } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
     downloader_cat.info()
       << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
-    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
-      _status_entry._status_code = SC_ssl_invalid_server_certificate;
-      _state = S_failure;
-      return false;
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) {
+      cert_valid = false;
     }
 
   } else if (verify_result == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
              verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
     downloader_cat.info()
       << "Self-signed certificate from " << _request.get_url().get_server_and_port() << "\n";
-    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
-      _status_entry._status_code = SC_ssl_self_signed_server_certificate;
-      _state = S_failure;
-      return false;
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
+      cert_valid = false;
     }
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
       << "Unable to verify identity of " << _request.get_url().get_server_and_port()
       << ", verify error code " << verify_result << "\n";
-    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
-      _status_entry._status_code = SC_ssl_invalid_server_certificate;
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
+      cert_valid = false;
+    }
+  }
+  
+  if (!cert_valid) {
+    _status_entry._status_code = SC_ssl_invalid_server_certificate;
+    _state = S_failure;
+    return false;
+  }
+  
+  if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_name_preapproved) {
+    // Check that the server is someone we expected to be talking
+    // to.
+    if (!validate_server_name(cert)) {
+      _status_entry._status_code = SC_ssl_unexpected_server;
       _state = S_failure;
       return false;
     }
   }
-
-  X509 *cert = SSL_get_peer_certificate(ssl);
-  if (cert == (X509 *)NULL) {
-    downloader_cat.info()
-      << "No certificate was presented by server.\n";
-    // This shouldn't be possible, per the SSL specs.
-    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
-      _status_entry._status_code = SC_ssl_invalid_server_certificate;
-      _state = S_failure;
-      return false;
-    }
-
-  } else {
-    if (downloader_cat.is_debug()) {
-      downloader_cat.debug()
-        << "Received certificate from server:\n" << flush;
-      X509_print_fp(stderr, cert);
-      fflush(stderr);
-    }
-
-    X509_NAME *subject = X509_get_subject_name(cert);
-
-    if (downloader_cat.is_debug()) {
-      string org_name = get_x509_name_component(subject, NID_organizationName);
-      string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
-      string common_name = get_x509_name_component(subject, NID_commonName);
-      
-      downloader_cat.debug()
-        << "Server is " << common_name << " from " << org_unit_name
-        << " / " << org_name << "\n";
-    }
-
-    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
-      // Check that the server is someone we expected to be talking
-      // to.
-      if (!validate_server_name(cert)) {
-        _status_entry._status_code = SC_ssl_unexpected_server;
-        _state = S_failure;
-        return false;
-      }
-    }
-      
-    X509_free(cert);
-  }
+  
+  X509_free(cert);
 
   _state = S_ready;
   return false;
@@ -3345,6 +3346,34 @@ certificate signing
 */
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::check_preapproved_server_certificate
+//       Access: Private
+//  Description: Checks to see if the indicated certificate is on the
+//               pre-approved list for the current server.
+//
+//               If the full cert itself (including its key) is on the
+//               pre-approved list, sets both cert_preapproved and
+//               cert_name_preapproved to true.
+//
+//               If the full cert is not on the pre-approved list, but
+//               its name matches a name on the pre-approved list,
+//               sets cert_name_preapproved to true, and
+//               cert_preapproved to false.
+//
+//               Otherwise, sets both values to false.  This doesn't
+//               mean the cert is necessarily invalid, just that it
+//               wasn't on the pre-approved list (which is usually
+//               empty anyway).
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved, 
+                                     bool &cert_name_preapproved) const {
+  return _client->check_preapproved_server_certificate(_request.get_url(),
+                                                       cert, cert_preapproved,
+                                                       cert_name_preapproved);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::validate_server_name
 //       Access: Private
 //  Description: Returns true if the name in the cert matches the
@@ -3479,35 +3508,6 @@ get_x509_name_component(X509_NAME *name, int nid) {
 
   ASN1_STRING *data = X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i));
   return string((char *)data->data, data->length);  
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::x509_name_subset
-//       Access: Private, Static
-//  Description: Returns true if name_a is a subset of name_b: each
-//               property of name_a is defined in name_b, and the
-//               defined value is equivalent to that of name_a.
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
-  int count_a = X509_NAME_entry_count(name_a);
-  for (int ai = 0; ai < count_a; ai++) {
-    X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
-
-    int bi = X509_NAME_get_index_by_OBJ(name_b, na->object, -1);
-    if (bi < 0) {
-      // This entry in name_a is not defined in name_b.
-      return false;
-    }
-
-    X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
-    if (na->value->length != nb->value->length ||
-        memcmp(na->value->data, nb->value->data, na->value->length) != 0) {
-      // This entry in name_a doesn't match that of name_b.
-      return false;
-    }
-  }
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
