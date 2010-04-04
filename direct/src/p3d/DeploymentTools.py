@@ -653,13 +653,14 @@ class Installer:
         nsi.close()
 
         options = ["V2"]
-        cmd = makensis
+        cmd = "\"" + makensis + "\""
         for o in options:
             if sys.platform.startswith("win"):
                 cmd += " /" + o
             else:
                 cmd += " -" + o
         cmd += " " + nsifile.toOsSpecific()
+        print cmd
         os.system(cmd)
 
         nsifile.unlink()
