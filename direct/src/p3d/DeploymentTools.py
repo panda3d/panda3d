@@ -27,7 +27,7 @@ class Standalone:
         
         hostDir = Filename(Filename.getTempDirectory(), 'pdeploy/')
         hostDir.makeDir()
-        self.host = HostInfo(PandaSystem.getPackageHostUrl(), hostDir = hostDir, asMirror = False, perPlatform = True)
+        self.host = HostInfo(PandaSystem.getPackageHostUrl(), appRunner = base.appRunner, hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
         if not self.host.readContentsFile():
@@ -193,7 +193,7 @@ class Installer:
         if not self.includeRequires:
             return
         
-        host = HostInfo(self.hostUrl, rootDir = rootDir, asMirror = True, perPlatform = False)
+        host = HostInfo(self.hostUrl, appRunner = base.appRunner, rootDir = rootDir, asMirror = True, perPlatform = False)
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 Installer.notify.error("couldn't read host")
@@ -209,7 +209,7 @@ class Installer:
                 continue
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
-        host = HostInfo(self.standalone.host.hostUrl, rootDir = rootDir, asMirror = False, perPlatform = False)
+        host = HostInfo(self.standalone.host.hostUrl, appRunner = base.appRunner, rootDir = rootDir, asMirror = False, perPlatform = False)
         if not host.readContentsFile():
             if not host.downloadContentsFile(self.http):
                 Installer.notify.error("couldn't read host")
