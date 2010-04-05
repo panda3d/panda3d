@@ -531,6 +531,32 @@ class LevelEditorUIBase(WxAppShell):
         for menuItem in self.contextMenu.GetMenuItems():
             self.contextMenu.RemoveItem(menuItem)
 
+        self.contextMenu.addItem('Replace This', call=lambda\
+                                 p0=None, p1=False:self.replaceObject(p0, p1))
+
+        self.contextMenu.addItem('Replace All', call=lambda\
+                                 p0=None, p1=True:self.replaceObject(p0, p1))
+        self.contextMenu.AppendSeparator()
+
+    def replaceObject(self, evt, all=False):
+        currObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
+        if currObj is None:
+            print 'No valid object is selected for replacement'
+            return
+
+        targetType = self.editor.ui.objectPaletteUI.getSelected()
+        if targetType is None:
+            print 'No valid target type is selected for replacement'
+            return
+
+        if all:
+            typeName = currObj[OG.OBJ_DEF].name
+            objs = self.editor.objectMgr.findObjectsByTypeName(typeName)
+            for obj in objs:
+                self.editor.objectMgr.replaceObjectWithTypeName(obj, targetType)
+        else:
+            self.editor.objectMgr.replaceObjectWithTypeName(currObj, targetType)
+
 class GridSizeUI(wx.Dialog):
     def __init__(self, parent, id, title, gridSize, gridSpacing):
         wx.Dialog.__init__(self, parent, id, title, size=(250, 240))
