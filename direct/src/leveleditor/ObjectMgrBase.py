@@ -204,6 +204,15 @@ class ObjectMgrBase:
         else:
             return self.objects[uid]
 
+    def findObjectsByTypeName(self, typeName):
+        results = []
+        for uid in self.objects.keys():
+            obj = self.objects[uid]
+            if obj[OG.OBJ_DEF].name == typeName:
+                results.append(obj)
+
+        return results
+
     def deselectAll(self):
         self.currNodePath = None
         taskMgr.remove('_le_updateObjectUITask')
@@ -227,8 +236,6 @@ class ObjectMgrBase:
         if not obj[OG.OBJ_DEF].movable:
             if base.direct.widget.fActive:
                 base.direct.widget.toggleWidget()
-
-            
 
     def updateObjectPropertyUI(self, obj):
         objDef = obj[OG.OBJ_DEF]
@@ -703,3 +710,17 @@ class ObjectMgrBase:
 
             self.currLiveNP = obj[OG.OBJ_NP]
             self.currLiveNP.setColorScale(0, 1, 0, 1)
+
+    def replaceObjectWithTypeName(self, obj, typeName):
+        uid = obj[OG.OBJ_UID]
+        objNP = obj[OG.OBJ_NP]
+        mat = objNP.getMat()
+        parentObj = self.findObjectByNodePath(objNP.getParent())
+        if parentObj:
+            parentNP = parentObj[OG.OBJ_NP]
+        else:
+            parentNP = None
+        self.removeObjectById(uid)
+        self.editor.ui.sceneGraphUI.delete(uid)
+        newobj = self.addNewObject(typeName, uid, parent=parentNP, fSelectObject=False)
+        newobj.setMat(mat)
