@@ -1470,6 +1470,10 @@ class ObjectHandles(NodePath, DirectObject):
             iRay.collideWithBitMask(BitMask32.bit(21))
             iRay.ct.traverse(base.direct.grid)
 
+            if iRay.getNumEntries() == 0:
+                del iRay
+                return self.hitPt
+
             entry = iRay.getEntry(0)
             hitPt = entry.getSurfacePoint(entry.getFromNodePath())
 
@@ -1543,6 +1547,10 @@ class ObjectHandles(NodePath, DirectObject):
         iRay.collideWithBitMask(BitMask32.bit(21))
         iRay.ct.traverse(base.direct.grid)
 
+        if iRay.getNumEntries() == 0:
+            del iRay
+            return Point3(0)
+        
         entry = iRay.getEntry(0)
         hitPt = entry.getSurfacePoint(entry.getFromNodePath())
 
