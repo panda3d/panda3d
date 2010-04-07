@@ -104,7 +104,7 @@ p() const {
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
 operator = (To *ptr) {
-  reassign(ptr);
+  this->reassign(ptr);
   return *this;
 }
 
@@ -116,7 +116,7 @@ operator = (To *ptr) {
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
 operator = (const PointerTo<T> &copy) {
-  reassign((const PointerToBase<T> &)copy);
+  this->reassign((const PointerToBase<T> &)copy);
   return *this;
 }
 
@@ -226,7 +226,7 @@ p() const {
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
 operator = (const To *ptr) {
-  reassign((To *)ptr);
+  this->reassign((To *)ptr);
   return *this;
 }
 
@@ -238,7 +238,7 @@ operator = (const To *ptr) {
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
 operator = (const PointerTo<T> &copy) {
-  reassign((const PointerToBase<T> &)copy);
+  this->reassign((const PointerToBase<T> &)copy);
   return *this;
 }
 
@@ -250,6 +250,6 @@ operator = (const PointerTo<T> &copy) {
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
 operator = (const ConstPointerTo<T> &copy) {
-  reassign((const PointerToBase<T> &)copy);
+  this->reassign((const PointerToBase<T> &)copy);
   return *this;
 }

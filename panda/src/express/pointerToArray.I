@@ -249,7 +249,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 reserve(TYPENAME PointerToArray<Element>::size_type n) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new ReferenceCountedVector<Element>(_type_handle));
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   ((To *)(this->_void_ptr))->reserve(n);
 }
@@ -263,7 +263,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 resize(TYPENAME PointerToArray<Element>::size_type n) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new ReferenceCountedVector<Element>(_type_handle));
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   ((To *)(this->_void_ptr))->resize(n);
 }
@@ -323,7 +323,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new ReferenceCountedVector<Element>(_type_handle));
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
     position = end();
   }
   nassertr(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -340,7 +340,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 insert(iterator position, size_type n, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new ReferenceCountedVector<Element>(_type_handle));
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
     position = end();
   }
   nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -416,7 +416,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 push_back(const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new ReferenceCountedVector<Element>(_type_handle));
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   ((To *)(this->_void_ptr))->push_back(x);
 }
@@ -676,7 +676,7 @@ get_void_ptr() const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 set_void_ptr(void *p) {
-  reassign((To *)p);
+  ((PointerToArray<Element> *)this)->reassign((To *)p);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -735,7 +735,7 @@ node_unref() const {
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
 operator = (ReferenceCountedVector<Element> *ptr) {
-  reassign(ptr);
+  ((PointerToArray<Element> *)this)->reassign(ptr);
   return *this;
 }
 
@@ -748,7 +748,7 @@ template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
 operator = (const PointerToArray<Element> &copy) {
   _type_handle = copy._type_handle;
-  reassign(copy);
+  ((PointerToArray<Element> *)this)->reassign(copy);
   return *this;
 }
 
@@ -762,7 +762,7 @@ operator = (const PointerToArray<Element> &copy) {
 template<class Element>
 INLINE void PointerToArray<Element>::
 clear() {
-  reassign((ReferenceCountedVector<Element> *)NULL);
+  ((PointerToArray<Element> *)this)->reassign((ReferenceCountedVector<Element> *)NULL);
 }
 
 
@@ -1167,7 +1167,7 @@ node_unref() const {
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
 operator = (ReferenceCountedVector<Element> *ptr) {
-  reassign(ptr);
+  ((ConstPointerToArray<Element> *)this)->reassign(ptr);
   return *this;
 }
 
@@ -1180,7 +1180,7 @@ template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
 operator = (const PointerToArray<Element> &copy) {
   _type_handle = copy._type_handle;
-  reassign(copy);
+  ((ConstPointerToArray<Element> *)this)->reassign(copy);
   return *this;
 }
 
@@ -1193,7 +1193,7 @@ template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
 operator = (const ConstPointerToArray<Element> &copy) {
   _type_handle = copy._type_handle;
-  reassign(copy);
+  ((ConstPointerToArray<Element> *)this)->reassign(copy);
   return *this;
 }
 
@@ -1207,7 +1207,7 @@ operator = (const ConstPointerToArray<Element> &copy) {
 template<class Element>
 INLINE void ConstPointerToArray<Element>::
 clear() {
-  reassign((ReferenceCountedVector<Element> *)NULL);
+  ((ConstPointerToArray<Element> *)this)->reassign((ReferenceCountedVector<Element> *)NULL);
 }
 
 #endif  // CPPPARSER

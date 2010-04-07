@@ -590,6 +590,9 @@ do_remove(AsyncTask *task) {
       removed = true;
       cleanup_task(task, false, false);
     }
+    
+  default:
+    break;
   }
 
   return removed;

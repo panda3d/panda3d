@@ -86,7 +86,7 @@ TexturePeeker(Texture *tex) {
     _get_component = Texture::get_unsigned_short;
     break;
 
-  case Texture::T_float:
+  default:
     // Not supported.
     _image.clear();
     return;
@@ -95,10 +95,6 @@ TexturePeeker(Texture *tex) {
   switch (_format) {
   case Texture::F_depth_stencil:
   case Texture::F_depth_component:
-  case Texture::F_color_index:
-    // Not supported.
-    _image.clear();
-    return;
 
   case Texture::F_red:
     _get_texel = get_texel_r;
@@ -143,7 +139,11 @@ TexturePeeker(Texture *tex) {
   case Texture::F_rgba32:
     _get_texel = get_texel_rgba;
     break;
-  }    
+  default:
+    // Not supported.
+    _image.clear();
+    return;
+  }
 }
 
 

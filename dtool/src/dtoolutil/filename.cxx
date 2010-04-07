@@ -1198,7 +1198,7 @@ to_os_specific() const {
     return convert_pathname(standard.get_fullpath());
   }
 #else // WIN32
-  return standard;
+  return standard.c_str();
 #endif // WIN32
 }
 
@@ -2432,7 +2432,7 @@ touch() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 chdir() const {
-  Filename os_specific = to_os_specific();
+  string os_specific = to_os_specific();
   return (::chdir(os_specific.c_str()) >= 0);
 }
 

@@ -95,6 +95,8 @@
 #define _WIN32_WINNT 0x0502
 
 #ifdef HAVE_PYTHON
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
 #include "pyconfig.h"
 #endif
 

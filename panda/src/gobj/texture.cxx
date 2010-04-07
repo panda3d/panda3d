@@ -611,6 +611,9 @@ estimate_texture_memory() const {
   case Texture::F_rgba32:
     bpp = 16;
     break;
+
+  default:
+    break;
   }
 
   size_t bytes = pixels * bpp;
@@ -1377,6 +1380,9 @@ write(ostream &out, int indent_level) const {
   case T_float:
     out << " floats";
     break;
+
+  default:
+    break;
   }
 
   out << ", ";
@@ -1389,6 +1395,15 @@ write(ostream &out, int indent_level) const {
     break;
   case F_depth_component:
     out << "depth_component";
+    break;
+  case F_depth_component16:
+    out << "depth_component16";
+    break;
+  case F_depth_component24:
+    out << "depth_component24";
+    break;
+  case F_depth_component32:
+    out << "depth_component32";
     break;
 
   case F_rgba:
@@ -3539,6 +3554,9 @@ do_compress_ram_image(Texture::CompressionMode compression,
     case CM_dxt5:
       squish_flags |= squish::kDxt5;
       break;
+
+    default:
+      break;
     }
 
     if (squish_flags != 0) {
@@ -3556,6 +3574,9 @@ do_compress_ram_image(Texture::CompressionMode compression,
 
       case QL_best:
         squish_flags |= squish::kColourIterativeClusterFit;
+        break;
+
+      default:
         break;
       }
 
@@ -3591,6 +3612,9 @@ do_uncompress_ram_image() {
 
     case CM_dxt5:
       squish_flags |= squish::kDxt5;
+      break;
+
+    default:
       break;
     }
 
@@ -3896,6 +3920,9 @@ do_set_format(Texture::Format format) {
   case F_color_index:
   case F_depth_stencil:
   case F_depth_component:
+  case F_depth_component16:
+  case F_depth_component24:
+  case F_depth_component32:
   case F_red:
   case F_green:
   case F_blue:
@@ -3950,6 +3977,10 @@ do_set_component_type(Texture::ComponentType component_type) {
 
   case T_float:
     _component_width = 4;
+    break;
+
+  case T_unsigned_int_24_8:
+    //FIXME: I have no idea...
     break;
   }
 }
@@ -6356,6 +6387,8 @@ operator << (ostream &out, Texture::ComponentType ct) {
     return out << "unsigned_short";
   case Texture::T_float:
     return out << "float";
+  case Texture::T_unsigned_int_24_8:
+    return out << "unsigned_int_24_8";
   }
 
   return out << "(**invalid Texture::ComponentType(" << (int)ct << ")**)";
@@ -6372,6 +6405,12 @@ operator << (ostream &out, Texture::Format f) {
     return out << "depth_stencil";
   case Texture::F_depth_component:
     return out << "depth_component";
+  case Texture::F_depth_component16:
+    return out << "depth_component16";
+  case Texture::F_depth_component24:
+    return out << "depth_component24";
+  case Texture::F_depth_component32:
+    return out << "depth_component32";
   case Texture::F_color_index:
     return out << "color_index";
   case Texture::F_red:

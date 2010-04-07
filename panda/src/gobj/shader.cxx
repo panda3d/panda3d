@@ -203,14 +203,13 @@ cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-cp_errchk_parameter_ptr(ShaderArgInfo &p)
-{
-  switch(p._class) {
+cp_errchk_parameter_ptr(ShaderArgInfo &p) {
+  switch (p._class) {
   case SAC_scalar: return true;
   case SAC_vector: return true;
   case SAC_matrix: return true;
   case SAC_array:
-    switch(p._subclass){
+    switch (p._subclass){
     case SAC_scalar: return true;
     case SAC_vector: return true;
     case SAC_matrix: return true;
@@ -491,7 +490,7 @@ void Shader::recurse_parameters(CGparameter parameter,
     CGenum vbl = cgGetParameterVariability(parameter);
   
     if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)){
-      switch(cgGetParameterType(parameter)) {
+      switch (cgGetParameterType(parameter)) {
         case CG_STRUCT:
           recurse_parameters(
             cgGetFirstStructParameter(parameter),type,success); break;
@@ -1133,7 +1132,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       ShaderTexSpec bind;
       bind._id = arg_id;
       bind._name = kinputname;
-      bind._desired_type=Texture::TT_1d_texture;
+      bind._desired_type = Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1141,7 +1140,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       ShaderTexSpec bind;
       bind._id = arg_id;
       bind._name = kinputname;
-      bind._desired_type=Texture::TT_2d_texture;
+      bind._desired_type = Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1149,7 +1148,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       ShaderTexSpec bind;
       bind._id = arg_id;
       bind._name = kinputname;
-      bind._desired_type=Texture::TT_3d_texture;
+      bind._desired_type = Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1200,7 +1199,7 @@ cg_parameter_type(CGparameter p) {
   switch (cgGetParameterClass(p)) {
   case CG_PARAMETERCLASS_SCALAR: return SAT_scalar;
   case CG_PARAMETERCLASS_VECTOR:
-    switch(cgGetParameterColumns(p)){
+    switch (cgGetParameterColumns(p)){
     case 1:  return SAT_vec1;
     case 2:  return SAT_vec2;
     case 3:  return SAT_vec3;
@@ -1208,9 +1207,9 @@ cg_parameter_type(CGparameter p) {
     default: return SAT_unknown;
     } 
   case CG_PARAMETERCLASS_MATRIX:
-    switch(cgGetParameterRows(p)){
+    switch (cgGetParameterRows(p)){
     case 1:
-      switch(cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)){
       case 1:  return SAT_mat1x1;
       case 2:  return SAT_mat1x2;
       case 3:  return SAT_mat1x3;
@@ -1218,7 +1217,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 2:
-      switch(cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)){
       case 1:  return SAT_mat2x1;
       case 2:  return SAT_mat2x2;
       case 3:  return SAT_mat2x3;
@@ -1226,7 +1225,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 3:
-      switch(cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)){
       case 1:  return SAT_mat3x1;
       case 2:  return SAT_mat3x2;
       case 3:  return SAT_mat3x3;
@@ -1234,7 +1233,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 4:
-      switch(cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)){
       case 1:  return SAT_mat4x1;
       case 2:  return SAT_mat4x2;
       case 3:  return SAT_mat4x3;
@@ -1244,7 +1243,7 @@ cg_parameter_type(CGparameter p) {
     default: return SAT_unknown;
     }
   case CG_PARAMETERCLASS_SAMPLER:
-    switch(cgGetParameterType(p)){
+    switch (cgGetParameterType(p)){
     case CG_SAMPLER1D:   return Shader::SAT_sampler1d;
     case CG_SAMPLER2D:   return Shader::SAT_sampler2d;
     case CG_SAMPLER3D:   return Shader::SAT_sampler3d;
@@ -1327,7 +1326,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
 
   int active, ultimate;
 
-  switch(type) {
+  switch (type) {
   case ST_vertex:
     active   = caps._active_vprofile;
     ultimate = caps._ultimate_vprofile;
@@ -1342,6 +1341,10 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     active   = caps._active_gprofile;
     ultimate = caps._ultimate_gprofile;
     break;
+
+  case ST_none:
+    active   = CG_PROFILE_UNKNOWN;
+    ultimate = CG_PROFILE_UNKNOWN;
   };
 
   cgGetError();
@@ -1662,9 +1665,9 @@ cg_analyze_shader(const ShaderCaps &caps) {
 ////////////////////////////////////////////////////////////////////
 CGprogram Shader::
 cg_program_from_shadertype(ShaderType type) {
-  CGprogram prog = 0;
+  CGprogram prog;
 
-  switch(type) {
+  switch (type) {
     case ST_vertex:
       prog = _cg_vprogram;
       break;
@@ -1676,6 +1679,9 @@ cg_program_from_shadertype(ShaderType type) {
     case ST_geometry:
       prog = _cg_gprogram;
       break;
+
+    default:
+      prog = 0;
   };
 
   return prog;

@@ -42,7 +42,7 @@ Filename(const char *filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const Filename &copy) :
-  _filename(copy._filename),
+  _filename(copy._filename.c_str()),
   _dirname_end(copy._dirname_end),
   _basename_start(copy._basename_start),
   _basename_end(copy._basename_end),
@@ -269,7 +269,7 @@ operator + (const string &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string Filename::
 get_fullpath() const {
-  return _filename;
+  return _filename.c_str();
 }
 
 ////////////////////////////////////////////////////////////////////
