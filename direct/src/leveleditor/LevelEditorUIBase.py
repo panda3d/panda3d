@@ -79,6 +79,11 @@ class PandaTextDropTarget(wx.TextDropTarget):
             # create a temp nodePath to get the position
             np = NodePath('temp')
             np.setPos(self.view.camera, hitPt)
+
+            if base.direct.manipulationControl.fGridSnap:
+                snappedPos = self.view.grid.computeSnapPoint(np.getPos())
+                np.setPos(snappedPos)
+            
             # update temp nodePath's HPR and scale with newobj's
             np.setHpr(newobj.getHpr())
             np.setScale(newobj.getScale())
