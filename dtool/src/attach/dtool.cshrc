@@ -13,6 +13,8 @@ setenv CTEMACS_BACKHIGHLIGHT blue
 if ( $OS == "Linux" ) then
   set path = ( /bin /bin /usr/bin /sbin /usr/sbin /usr/bin/X11 \
              /usr/etc /usr/local/bin /var/local/bin ~/bin )
+else if ( $OS == "Darwin" ) then
+  set path = ( /bin /usr/bin /sbin /usr/sbin /usr/local/bin ~/bin $path )
 else if ( $OS == "IRIX64" ) then
   set path = ( /var/local/bin ~/bin /usr/local/prman/bin \
              /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
