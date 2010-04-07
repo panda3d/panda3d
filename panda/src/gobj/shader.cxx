@@ -469,10 +469,9 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::recurse_parameters
+//     Function: Shader::cg_recurse_parameters
 //       Access: Public
 //  Description: 
-//               
 ////////////////////////////////////////////////////////////////////
 void Shader::cg_recurse_parameters(CGparameter parameter, 
     const ShaderType& type, bool& success) {
@@ -492,7 +491,7 @@ void Shader::cg_recurse_parameters(CGparameter parameter,
     if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)){
       switch (cgGetParameterType(parameter)) {
         case CG_STRUCT:
-          recurse_parameters(
+          cg_recurse_parameters(
             cgGetFirstStructParameter(parameter),type,success); break;
         
         case CG_ARRAY:
