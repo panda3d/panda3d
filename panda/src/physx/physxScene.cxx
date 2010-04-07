@@ -22,6 +22,8 @@
 #include "physxConstraintDominance.h"
 #include "physxVehicle.h"
 #include "physxVehicleDesc.h"
+#include "physxCloth.h"
+#include "physxClothDesc.h"
 
 TypeHandle PhysxScene::_type_handle;
 
@@ -29,6 +31,8 @@ PStatCollector PhysxScene::_pcollector_fetch_results("App:PhysX:Fetch Results");
 PStatCollector PhysxScene::_pcollector_update_transforms("App:PhysX:Update Transforms");
 PStatCollector PhysxScene::_pcollector_debug_renderer("App:PhysX:Debug Renderer");
 PStatCollector PhysxScene::_pcollector_simulate("App:PhysX:Simulate");
+PStatCollector PhysxScene::_pcollector_cloth("App:PhysX:Cloth");
+//PStatCollector PhysxScene::_pcollector_softbody("App:PhysX:Softbody");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::link
@@ -123,8 +127,25 @@ unlink() {
     group->unlink();
   }
 
-  // Unlink cloths TODO
-  // Unlink softbodies TODO
+  // Unlink cloths
+  NxCloth **cloths = _ptr->getCloths();
+  NxU32 nCloths = _ptr->getNbCloths();
+
+  for (NxU32 i=0; i < nCloths; i++) {
+    PhysxCloth *cloth = (PhysxCloth *)cloths[i]->userData;
+    cloth->unlink();
+  }
+
+  // Unlink softbodies
+/*
+  NxSoftBody **sbs = _ptr->getSoftBodies();
+  NxU32 nSbs = _ptr->getNbSoftBodies();
+
+  for (NxU32 i=0; i < nSbs; i++) {
+    PhysxSoftBody *sb = (PhysxSoftBody *)sb[i]->userData;
+    sb->unlink();
+  }
+*/
 
   // Unlink materials
   NxMaterial *materials[5];
@@ -253,6 +274,28 @@ fetch_results() {
   _pcollector_debug_renderer.stop();
 
   nassertv(_ptr->isWritable());
+
+  // Update cloth nodes
+  _pcollector_cloth.start();
+
+  NxCloth **cloths = _ptr->getCloths();
+  for (NxU32 i=0; i < _ptr->getNbCloths(); i++) {
+    PT(PhysxCloth) cloth = (PhysxCloth *)cloths[i]->userData;
+    cloth->update();
+  }
+
+  _pcollector_cloth.stop();
+
+  // Update softbody nodes
+/*
+  _pcollector_softbody.start();
+  NxSoftBody **softbodies = _ptr->getSoftBodies();
+  for (NxU32 i=0; i < _ptr->getNbSoftBodies(); i++) {
+    PT(PhysxSoftBody) softbody = (PhysxSoftBody *)softbodies[i]->userData;
+    softbody->update();
+  }
+  _pcollector_softbody.stop();
+*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -854,6 +897,65 @@ get_force_field_shape_group(unsigned int idx) const {
   }
 
   return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::get_num_cloths
+//       Access: Published
+//  Description: Gets the number of cloths in the scene.
+////////////////////////////////////////////////////////////////////
+unsigned int PhysxScene::
+get_num_cloths() const {
+
+  nassertr(_error_type == ET_ok, -1);
+  return _ptr->getNbCloths();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::create_cloth
+//       Access: Published
+//  Description: Creates a cloth in this scene.
+////////////////////////////////////////////////////////////////////
+PhysxCloth *PhysxScene::
+create_cloth(PhysxClothDesc &desc) {
+
+  nassertr(_error_type == ET_ok, NULL);
+
+  PhysxCloth *cloth = new PhysxCloth();
+  nassertr(cloth, NULL);
+
+  NxCloth *clothPtr = _ptr->createCloth(desc._desc);
+  nassertr(clothPtr, NULL);
+
+  cloth->link(clothPtr);
+
+  // TODO:
+
+  // Allocate buffers in the cloth's geom node (PhysxMeshNode)
+  //NxU32 numVertices = 0;
+  //NxU32 numTriangles = 0;
+  //desc.get_mesh_numbers(numVertices, numTriangles);
+  //cloth->get_cloth_node()->allocate(numVertices, numTriangles, cloth);
+
+  return cloth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::get_cloth
+//       Access: Published
+//  Description: Returns the n-th cloth from the array of
+//               all the cloths in the scene.
+////////////////////////////////////////////////////////////////////
+PhysxCloth *PhysxScene::
+get_cloth(unsigned int idx) const {
+
+  nassertr(_error_type == ET_ok, NULL);
+  nassertr_always(idx < _ptr->getNbCloths(), NULL);
+
+  NxCloth **cloths = _ptr->getCloths();
+  NxCloth *clothPtr = cloths[idx];
+
+  return (PhysxCloth *)(clothPtr->userData);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -22,13 +22,14 @@ INLINE PhysxClothMeshDesc::
 PhysxClothMeshDesc() {
 
   _desc.flags = 0;
-  _desc.pointStrideBytes = 5*sizeof(NxReal);
+  _desc.pointStrideBytes = sizeof(NxVec3);
   _desc.triangleStrideBytes = 3*sizeof(NxU32);
   _desc.points = NULL;
   _desc.triangles = NULL;
 
   _points = NULL;
   _triangles = NULL;
+  _texcoords = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +47,10 @@ INLINE PhysxClothMeshDesc::
   if (_triangles) {
     delete [] _triangles;
   }
+
+  if (_texcoords) {
+    delete [] _texcoords;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,5 +62,34 @@ INLINE bool PhysxClothMeshDesc::
 is_valid() const {
 
   return _desc.isValid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxClothMeshDesc::get_desc
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const NxClothMeshDesc &PhysxClothMeshDesc::
+get_desc() const {
+
+  return _desc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxClothMeshDesc::get_texcoords
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const plist<LPoint2f> PhysxClothMeshDesc::
+get_texcoords() const {
+
+  plist<LPoint2f> texcoords;
+
+  for (unsigned int i=0; i < _desc.numVertices; i++) {
+    LPoint2f uv = _texcoords[i];
+    texcoords.push_back(uv);
+  }
+
+  return texcoords;
 }
 

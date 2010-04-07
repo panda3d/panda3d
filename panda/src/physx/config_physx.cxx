@@ -22,7 +22,9 @@
 #include "physxCapsuleController.h"
 #include "physxCapsuleForceFieldShape.h"
 #include "physxCapsuleShape.h"
+#include "physxCloth.h"
 #include "physxClothMesh.h"
+#include "physxClothNode.h"
 #include "physxContactPair.h"
 #include "physxContactPoint.h"
 #include "physxController.h"
@@ -118,7 +120,9 @@ init_libphysx() {
   PhysxCapsuleController::init_type();
   PhysxCapsuleForceFieldShape::init_type();
   PhysxCapsuleShape::init_type();
+  PhysxCloth::init_type();
   PhysxClothMesh::init_type();
+  PhysxClothNode::init_type();
   PhysxContactPair::init_type();
   PhysxContactPoint::init_type();
   PhysxController::init_type();

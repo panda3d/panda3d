@@ -1,5 +1,5 @@
-// Filename: physxScene.I
-// Created by:  enn0x (14Sep09)
+// Filename: physxCloth.I
+// Created by:  enn0x (30Mar10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,57 +15,47 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
+//     Function: PhysxCloth::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-PhysxScene() : PhysxObject() {
+INLINE PhysxCloth::
+PhysxCloth() : PhysxObject() {
 
-  _debugNode = new PhysxDebugGeomNode();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
+//     Function: PhysxCloth::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-~PhysxScene() {
+INLINE PhysxCloth::
+~PhysxCloth() {
 
-  _debugNode = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxCloth::ls
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
+INLINE void PhysxCloth::
 ls() const {
 
   ls(nout);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxCloth::ls
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
+INLINE void PhysxCloth::
 ls(ostream &out, int indent_level) const {
 
   indent(out, indent_level) << get_type().get_name()
-                            << " (at 0x" << this << ")\n";
-
-  _materials.ls(out, indent_level);
-  _actors.ls(out, indent_level);
-  _joints.ls(out, indent_level);
-  _forcefields.ls(out, indent_level);
-  _ffgroups.ls(out, indent_level);
-  _controllers.ls(out, indent_level);
-  _vehicles.ls(out, indent_level);
-  _cloths.ls(out, indent_level);
-  //_softbodies.ls(out, indent_level);
+                            << " (at 0x" << this << ")";
+  //out << " N:0x" << _node;
+  out << "\n";
 }
 

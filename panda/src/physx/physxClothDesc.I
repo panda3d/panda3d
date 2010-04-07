@@ -1,5 +1,5 @@
-// Filename: physxScene.I
-// Created by:  enn0x (14Sep09)
+// Filename: physxClothDesc.I
+// Created by:  enn0x (30Mar10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,57 +15,45 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
+//     Function: PhysxClothDesc::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-PhysxScene() : PhysxObject() {
+INLINE PhysxClothDesc::
+PhysxClothDesc() {
 
-  _debugNode = new PhysxDebugGeomNode();
+  _desc.name = "";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
+//     Function: PhysxClothDesc::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-~PhysxScene() {
+INLINE PhysxClothDesc::
+~PhysxClothDesc() {
 
-  _debugNode = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxClothDesc::set_to_default
 //       Access: Published
-//  Description: 
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls() const {
+INLINE void PhysxClothDesc::
+set_to_default() {
 
-  ls(nout);
+  _desc.setToDefault();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxClothDesc::is_valid
 //       Access: Published
-//  Description: 
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls(ostream &out, int indent_level) const {
+INLINE bool PhysxClothDesc::
+is_valid() const {
 
-  indent(out, indent_level) << get_type().get_name()
-                            << " (at 0x" << this << ")\n";
-
-  _materials.ls(out, indent_level);
-  _actors.ls(out, indent_level);
-  _joints.ls(out, indent_level);
-  _forcefields.ls(out, indent_level);
-  _ffgroups.ls(out, indent_level);
-  _controllers.ls(out, indent_level);
-  _vehicles.ls(out, indent_level);
-  _cloths.ls(out, indent_level);
-  //_softbodies.ls(out, indent_level);
+  return _desc.isValid();
 }
 

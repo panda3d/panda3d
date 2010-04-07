@@ -19,6 +19,7 @@
 #include "lpoint3.h"
 #include "lpoint2.h"
 #include "nodePath.h"
+#include "plist.h"
 
 #include "physx_includes.h"
 
@@ -35,7 +36,8 @@ PUBLISHED:
   INLINE bool is_valid() const;
 
   void set_num_vertices(unsigned int n);
-  void set_vertex(unsigned int idx, const LPoint3f &vert, const LPoint2f &texcoord);
+  void set_vertex(unsigned int idx,
+                  const LPoint3f &vert, const LPoint2f &texcoord);
 
   void set_num_triangles(unsigned int n);
   void set_triangle(unsigned int idx,
@@ -44,12 +46,15 @@ PUBLISHED:
   void set_from_node_path(const NodePath &np);
 
 public:
-  const NxClothMeshDesc &get_desc() const;
+  INLINE const NxClothMeshDesc &get_desc() const;
+  INLINE const plist<LPoint2f> get_texcoords() const;
 
 private:
-  NxReal *_points;
-  NxU32 *_triangles;
   NxClothMeshDesc _desc;
+  NxVec3 *_points;
+  NxU32 *_triangles;
+
+  LPoint2f *_texcoords;
 };
 
 #include "physxClothMeshDesc.I"

@@ -50,6 +50,8 @@ class PhysxRaycastReport;
 class PhysxSceneStats2;
 class PhysxVehicle;
 class PhysxVehicleDesc;
+class PhysxCloth;
+class PhysxClothDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxScene
@@ -130,6 +132,12 @@ PUBLISHED:
   PhysxForceFieldShapeGroup *create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc);
   PhysxForceFieldShapeGroup *get_force_field_shape_group(unsigned int idx) const;
   MAKE_SEQ(get_force_field_shape_groups, get_num_force_field_shape_groups, get_force_field_shape_group);
+
+  // Cloths
+  unsigned int get_num_cloths() const;
+  PhysxCloth *create_cloth(PhysxClothDesc &desc);
+  PhysxCloth *get_cloth(unsigned int idx) const;
+  MAKE_SEQ(get_cloths, get_num_cloths, get_cloth);
 
   // Vehicles
   unsigned int get_num_vehicles() const;
@@ -221,6 +229,7 @@ public:
   PhysxObjectCollection<PhysxForceFieldShapeGroup> _ffgroups;
   PhysxObjectCollection<PhysxController> _controllers;
   PhysxObjectCollection<PhysxVehicle> _vehicles;
+  PhysxObjectCollection<PhysxCloth> _cloths;
 
   PhysxMaterial *get_wheel_shape_material();
 
@@ -238,6 +247,8 @@ private:
   static PStatCollector _pcollector_update_transforms;
   static PStatCollector _pcollector_debug_renderer;
   static PStatCollector _pcollector_simulate;
+  static PStatCollector _pcollector_cloth;
+  //static PStatCollector _pcollector_softbody;
 
 ////////////////////////////////////////////////////////////////////
 public:

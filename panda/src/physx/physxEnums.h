@@ -141,6 +141,26 @@
 #define NX_BP_TYPE_SAP_SINGLE 0
 #define NX_BP_TYPE_SAP_MULTI 1
 
+// PhysxClothFlag
+#define NX_CLF_PRESSURE 1<<0
+#define NX_CLF_STATIC 1<<1
+#define NX_CLF_DISABLE_COLLISION 1<<2
+#define NX_CLF_SELFCOLLISION 1<<3
+#define NX_CLF_VISUALIZATION 1<<4
+#define NX_CLF_GRAVITY 1<<5
+#define NX_CLF_BENDING 1<<6
+#define NX_CLF_BENDING_ORTHO 1<<7
+#define NX_CLF_DAMPING 1<<8
+#define NX_CLF_COLLISION_TWOWAY 1<<9
+#define NX_CLF_TRIANGLE_COLLISION 1<<11
+#define NX_CLF_TEARABLE 1<<12
+#define NX_CLF_HARDWARE 1<<13
+#define NX_CLF_COMDAMPING 1<<14
+#define NX_CLF_VALIDBOUNDS 1<<15
+#define NX_CLF_FLUID_COLLISION 1<<16
+#define NX_CLF_DISABLE_DYNAMIC_CCD 1<<17
+#define NX_CLF_ADHERE 1<<18
+
 // PhysxContactPairFlag
 #define NX_IGNORE_PAIR 1<<0
 #define NX_NOTIFY_ON_START_TOUCH 1<<1
@@ -290,6 +310,11 @@
 #define NX_Y 2
 #define NX_Z 3
 
+// PhysxVertexAttachmentStatus
+#define NX_CLOTH_VERTEX_ATTACHMENT_NONE 0
+#define NX_CLOTH_VERTEX_ATTACHMENT_GLOBAL 1
+#define NX_CLOTH_VERTEX_ATTACHMENT_SHAPE 2
+
 // PhysxWheelShapeFlag
 #define NX_WF_WHEEL_AXIS_CONTACT_NORMAL 1<<0
 #define NX_WF_INPUT_LAT_SLIPVELOCITY 1<<1
@@ -438,6 +463,27 @@ PUBLISHED:
   enum PhysxBroadPhaseType {
     BPT_sap_single = NX_BP_TYPE_SAP_SINGLE,
     BPT_sap_multi  = NX_BP_TYPE_SAP_MULTI
+  };
+
+  enum PhysxClothFlag {
+    CLF_pressure            = NX_CLF_PRESSURE,
+    CLF_static              = NX_CLF_STATIC,
+    CLF_disable_collision   = NX_CLF_DISABLE_COLLISION,
+    CLF_selfcollision       = NX_CLF_SELFCOLLISION,
+    CLF_visualization       = NX_CLF_VISUALIZATION,
+    CLF_gravity             = NX_CLF_GRAVITY,
+    CLF_bending             = NX_CLF_BENDING,
+    CLF_bending_ortho       = NX_CLF_BENDING_ORTHO,
+    CLF_damping             = NX_CLF_DAMPING,
+    CLF_collision_twoway    = NX_CLF_COLLISION_TWOWAY,
+    CLF_triangle_collision  = NX_CLF_TRIANGLE_COLLISION,
+    CLF_tearable            = NX_CLF_TEARABLE,
+    CLF_hardware            = NX_CLF_HARDWARE,
+    CLF_comdamping          = NX_CLF_COMDAMPING,
+    CLF_validbounds         = NX_CLF_VALIDBOUNDS,
+    CLF_fluid_collision     = NX_CLF_FLUID_COLLISION,
+    CLF_disable_dynamic_ccd = NX_CLF_DISABLE_DYNAMIC_CCD,
+    CLF_adhere              = NX_CLF_ADHERE
   };
 
   enum PhysxContactPairFlag {
@@ -607,6 +653,12 @@ PUBLISHED:
     X_up  = NX_X,
     Y_up  = NX_Y,
     Z_up  = NX_Z
+  };
+
+  enum PhysxVertexAttachmentStatus {
+    VAS_none   = NX_CLOTH_VERTEX_ATTACHMENT_NONE,
+    VAS_global = NX_CLOTH_VERTEX_ATTACHMENT_GLOBAL,
+    VAS_shape  = NX_CLOTH_VERTEX_ATTACHMENT_SHAPE
   };
 
   enum PhysxWheelFlag {

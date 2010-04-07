@@ -32,14 +32,22 @@
 void PhysxClothMeshDesc::
 set_num_vertices(unsigned int numVertices) {
 
+  // Vertices
   if (_desc.points) {
     delete [] _points;
   }
 
-  _points = new NxReal[5 * numVertices];
+  _points = new NxVec3[numVertices];
 
   _desc.numVertices = numVertices;
   _desc.points = _points;
+
+  // Texture coordinates
+  if (_texcoords) {
+    delete [] _texcoords;
+  }
+
+  _texcoords = new LPoint2f[numVertices];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,12 +61,8 @@ set_vertex(unsigned int idx, const LPoint3f &vert, const LPoint2f &texcoord) {
 
   nassertv(_desc.numVertices > idx);
 
-  idx = 5 * idx;
-  _points[idx]     = vert.get_x();
-  _points[idx + 1] = vert.get_y();
-  _points[idx + 2] = vert.get_z();
-  _points[idx + 3] = texcoord.get_x();
-  _points[idx + 4] = texcoord.get_y();
+  _points[idx] = PhysxManager::point3_to_nxVec3(vert);
+  _texcoords[idx] = texcoord;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,17 +103,6 @@ set_triangle(unsigned int idx,
   _triangles[idx]     = i1;
   _triangles[idx + 1] = i2;
   _triangles[idx + 2] = i3;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::get_desc
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-const NxClothMeshDesc &PhysxClothMeshDesc::
-get_desc() const {
-
-  return _desc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,17 +175,16 @@ set_from_node_path(const NodePath &np) {
   NxU32 numVertices = dataVertices.size();
   NxU32 numTriangles = dataIndices.size() / 3;
 
-  _points = new NxReal[5 * numVertices];
+  _points = new NxVec3[numVertices];
   _triangles = new NxU32[3 * numTriangles];
+  _texcoords = new LPoint2f[numVertices];
 
   i = 0;
   pvector<LPoint3f>::const_iterator vit;
   for (vit=dataVertices.begin(); vit!=dataVertices.end(); vit++) {
     LPoint3f v = *vit;
 
-    _points[5*i]   = v.get_x();
-    _points[5*i+1] = v.get_y();
-    _points[5*i+2] = v.get_z();
+    _points[i] = PhysxManager::point3_to_nxVec3(v);
     i++;
   }
 
@@ -201,8 +193,7 @@ set_from_node_path(const NodePath &np) {
   for (tcit=dataTexcoords.begin(); tcit!=dataTexcoords.end(); tcit++) {
     LPoint2f tc = *tcit;
 
-    _points[5*i+3] = tc.get_x();
-    _points[5*i+4] = tc.get_y();
+    _texcoords[i]   = tc;
     i++;
   }
 
