@@ -8,3 +8,4 @@
 #include "shaderGenerator.cxx"
 #include "spotlight.cxx"
 #include "switchNode.cxx"
+#include "uvScrollNode.cxx"
