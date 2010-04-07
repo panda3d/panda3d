@@ -1,5 +1,7 @@
 // Filename: nodePath.h
 // Created by:  drose (25Feb02)
+// Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
+//   for set_shader_input)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -27,6 +29,13 @@
 #include "referenceCount.h"
 #include "pnotify.h"
 #include "typedObject.h"
+#include "pta_float.h"
+#include "pta_double.h"
+#include "pta_LMatrix4f.h"
+#include "pta_LMatrix3f.h"
+#include "pta_LVecBase4f.h"
+#include "pta_LVecBase3f.h"
+#include "pta_LVecBase2f.h"
 
 class NodePathCollection;
 class FindApproxPath;
@@ -596,15 +605,42 @@ PUBLISHED:
   void set_shader_off(int priority = 0);
   void set_shader_auto(int priority = 0);
   void clear_shader();
+  
   void set_shader_input(const ShaderInput *inp);
   void set_shader_input(InternalName *id, Texture *tex,       int priority=0);
   void set_shader_input(InternalName *id, const NodePath &np, int priority=0);
-  void set_shader_input(InternalName *id, const LVector4f &v, int priority=0);
-  void set_shader_input(InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_float &v, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_double &v, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_LVecBase4f &v, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_LVecBase3f &v, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_LVecBase2f &v, int priority=0);
+  void set_shader_input(InternalName *id, const PTA_LMatrix4f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const PTA_LMatrix3f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const LVecBase4f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const LVecBase3f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const LVecBase2f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const LMatrix4f &v, int priority=0); 
+  void set_shader_input(InternalName *id, const LMatrix3f &v, int priority=0);
+  void set_shader_input(InternalName *id, double  n1=0, double n2=0, double n3=0, 
+      double n4=1, int priority=0);
+
   void set_shader_input(const string &id, Texture *tex,       int priority=0);
   void set_shader_input(const string &id, const NodePath &np, int priority=0);
-  void set_shader_input(const string &id, const LVector4f &v, int priority=0);
-  void set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1, int priority=0);
+  void set_shader_input(const string &id, const PTA_float &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_double &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase4f &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase3f &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase2f &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LMatrix4f &v, int priority=0);
+  void set_shader_input(const string &id, const PTA_LMatrix3f &v, int priority=0);
+  void set_shader_input(const string &id, const LVecBase4f &v, int priority=0); 
+  void set_shader_input(const string &id, const LVecBase3f &v, int priority=0); 
+  void set_shader_input(const string &id, const LVecBase2f &v, int priority=0); 
+  void set_shader_input(const string &id, const LMatrix4f &v, int priority=0); 
+  void set_shader_input(const string &id, const LMatrix3f &v, int priority=0); 
+  void set_shader_input(const string &id, double  n1=0, double n2=0, double n3=0, 
+      double n4=1, int priority=0);
+  
   void clear_shader_input(InternalName *id);
   void clear_shader_input(const string &id);
   void set_instance_count(int instance_count);

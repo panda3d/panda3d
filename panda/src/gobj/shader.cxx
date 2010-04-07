@@ -1,6 +1,6 @@
 // Filename: shader.cxx
 // Created by: jyelon (01Sep05)
-//
+// Updated by: fperazzi, PandaSE(06Apr10)
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -37,33 +37,67 @@ ShaderUtilization Shader::_shader_utilization = SUT_UNSPECIFIED;
 //               of the specified parameter.
 ////////////////////////////////////////////////////////////////////
 void Shader::
-cp_report_error(ShaderArgInfo &p, const string &msg) {
+cp_report_error(ShaderArgInfo &p, const string &msg) { 
+  
   string vstr;
-  if (p._varying) vstr = "varying ";
-  else            vstr = "uniform ";
+  if (p._varying) {
+    vstr = "varying ";
+  } else {
+    vstr = "uniform ";
+  }
 
   string dstr = "unknown ";
-  if (p._direction == SAD_in)    dstr = "in ";
-  if (p._direction == SAD_out)   dstr = "out ";
-  if (p._direction == SAD_inout) dstr = "inout ";
+  if (p._direction == SAD_in) {
+    dstr = "in ";
+  } else if (p._direction == SAD_out) {
+    dstr = "out ";
+  } else if (p._direction == SAD_inout) {
+    dstr = "inout ";
+  }
 
   string tstr = "invalid ";
   switch (p._type) {
-  case SAT_float1: tstr = "float1 "; break;
-  case SAT_float2: tstr = "float2 "; break;
-  case SAT_float3: tstr = "float3 "; break;
-  case SAT_float4: tstr = "float4 "; break;
-  case SAT_float4x4: tstr = "float4x4 "; break;
-  case SAT_sampler1d: tstr = "sampler1d "; break;
-  case SAT_sampler2d: tstr = "sampler2d "; break;
-  case SAT_sampler3d: tstr = "sampler3d "; break;
-  case SAT_samplercube: tstr = "samplercube "; break;
-  case SAT_unknown: tstr = "unknown "; break;
+  case SAT_scalar:      tstr = "scalar "; break; 
+  case SAT_vec1:        tstr = "vec1 "; break;     
+  case SAT_vec2:        tstr = "vec2 "; break;        
+  case SAT_vec3:        tstr = "vec3 "; break;        
+  case SAT_vec4:        tstr = "vec4 "; break;        
+  case SAT_mat1x1:      tstr = "mat1x1 "; break;      
+  case SAT_mat1x2:      tstr = "mat1x2 "; break;      
+  case SAT_mat1x3:      tstr = "mat1x3 "; break;      
+  case SAT_mat1x4:      tstr = "mat1x4 "; break;      
+  case SAT_mat2x1:      tstr = "mat2x1 "; break;      
+  case SAT_mat2x2:      tstr = "mat2x2 "; break;      
+  case SAT_mat2x3:      tstr = "mat2x3 "; break;      
+  case SAT_mat2x4:      tstr = "mat2x4 "; break;      
+  case SAT_mat3x1:      tstr = "mat3x1 "; break;      
+  case SAT_mat3x2:      tstr = "mat3x2 "; break;      
+  case SAT_mat3x3:      tstr = "mat3x3 "; break;       
+  case SAT_mat3x4:      tstr = "mat3x4 "; break;       
+  case SAT_mat4x1:      tstr = "mat4x1 "; break;       
+  case SAT_mat4x2:      tstr = "mat4x2 "; break;       
+  case SAT_mat4x3:      tstr = "mat4x3 "; break;       
+  case SAT_mat4x4:      tstr = "mat4x4 "; break;      
+  case SAT_sampler1d:   tstr = "sampler1d "; break;  
+  case SAT_sampler2d:   tstr = "sampler2d "; break;   
+  case SAT_sampler3d:   tstr = "sampler3d "; break;   
+  case SAT_samplercube: tstr = "samplercube "; break; 
+  default:              tstr = "unknown "; break; 
   }
+  
+  string cstr = "invalid";
+  switch (p._class) {
+  case SAC_scalar:  cstr = "scalar "; break;              
+  case SAC_vector:  cstr = "vector "; break;       
+  case SAC_matrix:  cstr = "matrix "; break;        
+  case SAC_sampler: cstr = "sampler "; break;       
+  case SAC_array:   cstr = "array "; break;       
+  default:          cstr = "unknown ";break; 
+  }    
 
   Filename fn = get_filename(p._id._type);
-  p._cat->error() << fn << ": " << msg << " (" <<
-    vstr << dstr << tstr << p._id._name << ")\n";
+  p._cat->error() << fn << ": " << vstr << dstr << tstr << 
+    p._id._name << ": " << msg << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,19 +182,48 @@ cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 {
   int nfloat;
   switch (p._type) {
-  case SAT_float1: nfloat = 1; break;
-  case SAT_float2: nfloat = 2; break;
-  case SAT_float3: nfloat = 3; break;
-  case SAT_float4: nfloat = 4; break;
-  case SAT_float4x4: nfloat = 16; break;
+  case SAT_scalar: nfloat = 1; break;
+  case SAT_vec2: nfloat = 2; break;
+  case SAT_vec3: nfloat = 3; break;
+  case SAT_vec4: nfloat = 4; break;
+  case SAT_mat4x4: nfloat = 16; break;
   default: nfloat = 0; break;
   }
   if ((nfloat < lo)||(nfloat > hi)) {
-    string msg = "wrong type for parameter: should be float";
+    string msg = "wrong type for parameter:";
     cp_report_error(p, msg);
     return false;
   }
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cp_errchk_parameter_ptr
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Shader::
+cp_errchk_parameter_ptr(ShaderArgInfo &p)
+{
+  switch(p._class) {
+  case SAC_scalar: return true;
+  case SAC_vector: return true;
+  case SAC_matrix: return true;
+  case SAC_array:
+    switch(p._subclass){
+    case SAC_scalar: return true;
+    case SAC_vector: return true;
+    case SAC_matrix: return true;
+    default:
+      string msg = "unsupported array subclass."; 
+      cp_report_error(p,msg);
+      return false;
+    }
+  default:
+    string msg = "unsupported class.";
+    cp_report_error(p,msg);
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -352,9 +415,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_plight_x)||
       (inp == SMO_slight_x)||
       (inp == SMO_satten_x)||
-      (inp == SMO_clipplane_x)||
       (inp == SMO_mat_constant_x)||
       (inp == SMO_vec_constant_x)||
+      (inp == SMO_clipplane_x)||
       (inp == SMO_view_x_to_view)||
       (inp == SMO_view_to_view_x)||
       (inp == SMO_apiview_x_to_view)||
@@ -407,6 +470,59 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Shader::recurse_parameters
+//       Access: Public
+//  Description: 
+//               
+////////////////////////////////////////////////////////////////////
+void Shader::recurse_parameters(CGparameter parameter, 
+    const ShaderType& type, bool& success) {
+
+  if (parameter == 0)
+    return;
+
+  do {
+    int                arg_dim[]    = {1,0,0};
+    ShaderArgDir       arg_dir      = cg_parameter_dir(parameter);
+    ShaderArgType      arg_type     = cg_parameter_type(parameter);
+    ShaderArgClass     arg_class    = cg_parameter_class(parameter);
+    ShaderArgClass     arg_subclass = arg_class;
+
+    CGenum vbl = cgGetParameterVariability(parameter);
+  
+    if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)){
+      switch(cgGetParameterType(parameter)) {
+        case CG_STRUCT:
+          recurse_parameters(
+            cgGetFirstStructParameter(parameter),type,success); break;
+        
+        case CG_ARRAY:
+          arg_type     = cg_parameter_type(cgGetFirstStructParameter(parameter));
+          arg_subclass = cg_parameter_class(cgGetFirstStructParameter(parameter));
+
+          arg_dim[0]  = cgGetArraySize(parameter,0); 
+
+          //Uncomment this to parse the array[n] as n separeted elements
+          //recurse_program_parameters(
+          //  cgGetFirstStructParameter(parameter),type,success); break;
+
+        default:{
+          arg_dim[1] = cgGetParameterRows(parameter);
+          arg_dim[2] = cgGetParameterColumns(parameter);
+          
+          ShaderArgId id;
+          id._name = cgGetParameterName(parameter);
+          id._type  = type;
+          id._seqno = -1;
+          success &= compile_parameter(id, arg_class, arg_subclass, arg_type, 
+              arg_dir, (vbl == CG_VARYING), arg_dim, gobj_cat.get_safe_ptr()); break;
+        }
+      }
+    }
+  } while((parameter = cgGetNextParameter(parameter))!= 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Shader::compile_parameter
 //       Access: Public
 //  Description: Analyzes a parameter and decides how to
@@ -418,14 +534,19 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 //               an error message onto the error messages.
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-compile_parameter(const ShaderArgId  &arg_id,
-                  ShaderArgType       arg_type,
-                  ShaderArgDir        arg_direction,
-                  bool                arg_varying,
-                  NotifyCategory     *arg_cat)
+compile_parameter(const ShaderArgId        &arg_id,
+                  const ShaderArgClass     &arg_class,
+                  const ShaderArgClass     &arg_subclass,
+                  const ShaderArgType      &arg_type,
+                  const ShaderArgDir       &arg_direction,
+                  bool                      arg_varying,
+                  int                      *arg_dim,
+                  NotifyCategory           *arg_cat)
 {
   ShaderArgInfo p;
   p._id         = arg_id;
+  p._class      = arg_class;
+  p._subclass   = arg_subclass;
   p._type       = arg_type;
   p._direction  = arg_direction;
   p._varying    = arg_varying;
@@ -437,28 +558,24 @@ compile_parameter(const ShaderArgId  &arg_id,
   // It could be inside a struct, strip off
   // everything before the last dot.
   size_t loc = p._id._name.find_last_of('.');
+  
   string basename (p._id._name);
-  if (loc < string::npos) {
+  string struct_name  ("");
+  
+  if (loc < string::npos) { 
     basename = p._id._name.substr(loc + 1);
+    struct_name =  p._id._name.substr(0,loc+1);
   }
-
-  // Ignore inputs that are prefixed by two underscores
-  // This is to support geometry shaders correctly.
-  if (basename.size() >= 2 && basename.substr(0, 2) == "__") {
-    return true;
-  }
-
+  
   // Split it at the underscores.
   vector_string pieces;
   tokenize(basename, pieces, "_");
 
-  if (pieces.size() < 2) {
-    cp_report_error(p, "invalid parameter name");
-    return false;
+  if (basename.size() >= 2 && basename.substr(0, 2) == "__") {
+    return true;
   }
 
   // Implement vtx parameters - the varying kind.
-
   if (pieces[0] == "vtx") {
     if ((!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_varying(p)) ||
@@ -919,88 +1036,6 @@ compile_parameter(const ShaderArgId  &arg_id,
     return true;
   }
 
-  // Keywords to access constants.
-
-  if (pieces[0] == "k") {
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p)))
-      return false;
-    // In the case of k-parameters, we allow underscores in the name.
-    PT(InternalName) kinputname = InternalName::make(basename.substr(2));
-    switch (p._type) {
-    case SAT_float1:
-    case SAT_float2:
-    case SAT_float3:
-    case SAT_float4: {
-      ShaderMatSpec bind;
-      bind._id = arg_id;
-      switch (p._type) {
-      case SAT_float1: bind._piece = SMP_row3x1; break;
-      case SAT_float2: bind._piece = SMP_row3x2; break;
-      case SAT_float3: bind._piece = SMP_row3x3; break;
-      case SAT_float4: bind._piece = SMP_row3; break;
-      }
-      bind._func = SMF_first;
-      bind._part[0] = SMO_vec_constant_x;
-      bind._arg[0] = kinputname;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
-      cp_optimize_mat_spec(bind);
-      _mat_spec.push_back(bind);
-      break;
-    }
-    case SAT_float4x4: {
-      ShaderMatSpec bind;
-      bind._id = arg_id;
-      bind._piece = SMP_whole;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_mat_constant_x;
-      bind._arg[0] = kinputname;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
-      cp_optimize_mat_spec(bind);
-      _mat_spec.push_back(bind);
-      break;
-    }
-    case SAT_sampler1d: {
-      ShaderTexSpec bind;
-      bind._id = arg_id;
-      bind._name = kinputname;
-      bind._desired_type=Texture::TT_1d_texture;
-      _tex_spec.push_back(bind);
-      break;
-    }
-    case SAT_sampler2d: {
-      ShaderTexSpec bind;
-      bind._id = arg_id;
-      bind._name = kinputname;
-      bind._desired_type=Texture::TT_2d_texture;
-      _tex_spec.push_back(bind);
-      break;
-    }
-    case SAT_sampler3d: {
-      ShaderTexSpec bind;
-      bind._id = arg_id;
-      bind._name = kinputname;
-      bind._desired_type=Texture::TT_3d_texture;
-      _tex_spec.push_back(bind);
-      break;
-    }
-    case SAT_samplercube: {
-      ShaderTexSpec bind;
-      bind._id = arg_id;
-      bind._name = kinputname;
-      bind._desired_type = Texture::TT_cube_map;
-      _tex_spec.push_back(bind);
-      break;
-    }
-    default:
-      cp_report_error(p, "Invalid type for a k-parameter");
-      return false;
-    }
-    return true;
-  }
-
   // Keywords to fetch texture parameter data.
 
   if (pieces[0] == "texpad") {
@@ -1053,6 +1088,89 @@ compile_parameter(const ShaderArgId  &arg_id,
     return true; // Cg handles this automatically.
   }
 
+  // Fetch uniform parameters without prefix
+  
+  if ((!cp_errchk_parameter_in(p)) ||
+      (!cp_errchk_parameter_uniform(p))) {
+    return false;
+  }
+  bool k_prefix  = false;
+  
+  // solve backward compatibility issue
+  if (pieces[0] == "k") {
+    k_prefix = true;
+    basename = basename.substr(2);
+  }
+  
+  PT(InternalName) kinputname = InternalName::make(struct_name + basename);
+  
+  switch (p._class) {
+  case SAC_vector:
+  case SAC_matrix:
+  case SAC_scalar:
+  case SAC_array: {
+    if (!cp_errchk_parameter_ptr(p))
+      return false;
+  
+    ShaderPtrSpec bind;
+    bind._id      = arg_id;
+    bind._arg     = kinputname;
+    bind._info    = p;
+    bind._dep[0]  = SSD_general | SSD_shaderinputs;
+    bind._dep[1]  = SSD_general | SSD_NONE;
+
+    memcpy(bind._dim,arg_dim,sizeof(int)*3);
+
+    // if dim[0] = -1,  glShaderContext will not check the param size
+    if (k_prefix) bind._dim[0] = -1;
+    _ptr_spec.push_back(bind);
+    return true;
+  }
+
+  case SAC_sampler: {
+    switch (p._type) {
+    case SAT_sampler1d: {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = kinputname;
+      bind._desired_type=Texture::TT_1d_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler2d: {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = kinputname;
+      bind._desired_type=Texture::TT_2d_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler3d: {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = kinputname;
+      bind._desired_type=Texture::TT_3d_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_samplercube: {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_cube_map;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    default:
+      cp_report_error(p, "invalid type for non-prefix parameter");
+      return false;
+    }
+  }
+  default:
+    cp_report_error(p, "invalid class for non-prefix parameter");
+    return false;
+  }
+
   cp_report_error(p, "unrecognized parameter name");
   return false;
 }
@@ -1078,17 +1196,79 @@ clear_parameters() {
 ////////////////////////////////////////////////////////////////////
 Shader::ShaderArgType Shader::
 cg_parameter_type(CGparameter p) {
-  switch (cgGetParameterType(p)) {
-  case CG_FLOAT1:      return Shader::SAT_float1;
-  case CG_FLOAT2:      return Shader::SAT_float2;
-  case CG_FLOAT3:      return Shader::SAT_float3;
-  case CG_FLOAT4:      return Shader::SAT_float4;
-  case CG_FLOAT4x4:    return Shader::SAT_float4x4;
-  case CG_SAMPLER1D:   return Shader::SAT_sampler1d;
-  case CG_SAMPLER2D:   return Shader::SAT_sampler2d;
-  case CG_SAMPLER3D:   return Shader::SAT_sampler3d;
-  case CG_SAMPLERCUBE: return Shader::SAT_samplercube;
-  default:           return Shader::SAT_unknown;
+  
+  switch (cgGetParameterClass(p)) {
+  case CG_PARAMETERCLASS_SCALAR: return SAT_scalar;
+  case CG_PARAMETERCLASS_VECTOR:
+    switch(cgGetParameterColumns(p)){
+    case 1:  return SAT_vec1;
+    case 2:  return SAT_vec2;
+    case 3:  return SAT_vec3;
+    case 4:  return SAT_vec4;
+    default: return SAT_unknown;
+    } 
+  case CG_PARAMETERCLASS_MATRIX:
+    switch(cgGetParameterRows(p)){
+    case 1:
+      switch(cgGetParameterColumns(p)){
+      case 1:  return SAT_mat1x1;
+      case 2:  return SAT_mat1x2;
+      case 3:  return SAT_mat1x3;
+      case 4:  return SAT_mat1x4;
+      default: return SAT_unknown;
+      }
+    case 2:
+      switch(cgGetParameterColumns(p)){
+      case 1:  return SAT_mat2x1;
+      case 2:  return SAT_mat2x2;
+      case 3:  return SAT_mat2x3;
+      case 4:  return SAT_mat2x4;
+      default: return SAT_unknown;
+      }
+    case 3:
+      switch(cgGetParameterColumns(p)){
+      case 1:  return SAT_mat3x1;
+      case 2:  return SAT_mat3x2;
+      case 3:  return SAT_mat3x3;
+      case 4:  return SAT_mat3x4;
+      default: return SAT_unknown;
+      }
+    case 4:
+      switch(cgGetParameterColumns(p)){
+      case 1:  return SAT_mat4x1;
+      case 2:  return SAT_mat4x2;
+      case 3:  return SAT_mat4x3;
+      case 4:  return SAT_mat4x4;
+      default: return SAT_unknown;
+      }
+    default: return SAT_unknown;
+    }
+  case CG_PARAMETERCLASS_SAMPLER:
+    switch(cgGetParameterType(p)){
+    case CG_SAMPLER1D:   return Shader::SAT_sampler1d;
+    case CG_SAMPLER2D:   return Shader::SAT_sampler2d;
+    case CG_SAMPLER3D:   return Shader::SAT_sampler3d;
+    case CG_SAMPLERCUBE: return Shader::SAT_samplercube;
+    default: return SAT_unknown;
+    }
+  case CG_PARAMETERCLASS_ARRAY: return SAT_unknown;
+  default: return SAT_unknown;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cg_parameter_class
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+Shader::ShaderArgClass Shader::cg_parameter_class(CGparameter p) {
+  switch (cgGetParameterClass(p)) {
+  case CG_PARAMETERCLASS_SCALAR:  return Shader::SAC_scalar;
+  case CG_PARAMETERCLASS_VECTOR:  return Shader::SAC_vector;
+  case CG_PARAMETERCLASS_MATRIX:  return Shader::SAC_matrix;
+  case CG_PARAMETERCLASS_SAMPLER: return Shader::SAC_sampler;
+  case CG_PARAMETERCLASS_ARRAY:   return Shader::SAC_array;
+  default:                        return Shader::SAC_unknown;           
   }
 }
 
@@ -1148,20 +1328,20 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
   int active, ultimate;
 
   switch(type) {
-    case ST_vertex:
-      active   = caps._active_vprofile;
-      ultimate = caps._ultimate_vprofile;
-      break;
+  case ST_vertex:
+    active   = caps._active_vprofile;
+    ultimate = caps._ultimate_vprofile;
+    break;
 
-    case ST_fragment:
-      active   = caps._active_fprofile;
-      ultimate = caps._ultimate_fprofile;
-      break;
+  case ST_fragment:
+    active   = caps._active_fprofile;
+    ultimate = caps._ultimate_fprofile;
+    break;
 
-    case ST_geometry:
-      active   = caps._active_gprofile;
-      ultimate = caps._ultimate_gprofile;
-      break;
+  case ST_geometry:
+    active   = caps._active_gprofile;
+    ultimate = caps._ultimate_gprofile;
+    break;
   };
 
   cgGetError();
@@ -1285,24 +1465,8 @@ bool Shader::
 cg_analyze_entry_point(CGprogram prog, ShaderType type) {
   CGparameter parameter;
   bool success = true;
-  for (parameter = cgGetFirstLeafParameter(prog, CG_PROGRAM);
-       parameter != 0;
-       parameter = cgGetNextLeafParameter(parameter)) {
-    CGenum vbl = cgGetParameterVariability(parameter);
 
-    if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
-      ShaderArgId id;
-      id._name = cgGetParameterName(parameter);
-
-      id._type  = type;
-      id._seqno = -1;
-      success &= compile_parameter(id,
-                                   cg_parameter_type(parameter),
-                                   cg_parameter_dir(parameter),
-                                   (vbl == CG_VARYING),
-                                   gobj_cat.get_safe_ptr());
-    }
-  }
+  recurse_parameters(cgGetFirstParameter(prog, CG_PROGRAM),type,success);
   return success;
 }
 
@@ -1387,6 +1551,11 @@ cg_analyze_shader(const ShaderCaps &caps) {
   }
   for (int i=0; i<(int)_var_spec.size(); i++) {
     _var_spec[i]._id._seqno = seqno++;
+  }
+
+  for (int i=0; i<(int)_ptr_spec.size(); i++) {
+    _ptr_spec[i]._id._seqno = seqno++; 
+    _ptr_spec[i]._info._id = _ptr_spec[i]._id;
   }
 
   // DEBUG: output the generated program
@@ -1580,8 +1749,9 @@ cg_compile_for(const ShaderCaps &caps,
   int n_mat = (int)_mat_spec.size();
   int n_tex = (int)_tex_spec.size();
   int n_var = (int)_var_spec.size();
+  int n_ptr = (int)_ptr_spec.size();
 
-  map.resize(n_mat + n_tex + n_var);
+  map.resize(n_mat + n_tex + n_var + n_ptr);
 
   for (int i=0; i<n_mat; i++) {
     const ShaderArgId &id = _mat_spec[i]._id;
@@ -1606,9 +1776,14 @@ cg_compile_for(const ShaderCaps &caps,
       map[id._seqno] = 0;
     }
   }
+  for (int i=0; i<n_ptr; i++) { 
+    const ShaderArgId &id = _ptr_spec[i]._id;
+    
+    CGprogram prog = cg_program_from_shadertype(id._type);  // CG2 CHANGE
+    map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
+  }
 
   // Transfer ownership of the compiled shader.
-
   ctx = _cg_context;
   vprogram = _cg_vprogram;
   fprogram = _cg_fprogram;

@@ -1,6 +1,6 @@
 // Filename: shader.I
 // Heavily Modified:  jyelon (Sep05)
-//
+// Updated by: fperazzi, PandaSE(06Apr10)
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -45,10 +45,10 @@ get_filename(const ShaderType &type) const {
 //       Access: Public
 //  Description: Return the Shader's text for the given shader type.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &Shader::
+INLINE const string Shader::
 get_text(const ShaderType &type) const {
   if (_text->_separate) {
-    nassertr(type != ST_none || !_text->_shared.empty(), _text->_shared);
+    nassertr(type != ST_none || !_text->_shared.empty(), "");
     switch (type) {
       case ST_vertex:
         return _text->_vertex;
@@ -161,4 +161,282 @@ operator == (const ShaderCaps &other) const {
   }
 #endif
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(): 
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(NULL),
+  _type(SPT_unknown),
+  _updated(true),
+  _size(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_float& ptr):
+  _pta_float(ptr),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_double& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(ptr),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_double),
+  _updated(true),
+  _size(ptr.size())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LMatrix4f& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(ptr),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size()*16)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LMatrix3f& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(ptr),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size()*9)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase4f& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(ptr),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size()*4)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase3f& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(ptr),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size()*3)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase2f& ptr):
+  _pta_float(PTA_float::empty_array(0)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(ptr),
+  _ptr(ptr.p()),
+  _type(SPT_float),
+  _updated(true),
+  _size(ptr.size()*2)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase4f& lvec4):
+  _pta_float(PTA_float::empty_array(4)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _type(SPT_float),
+  _updated(true),
+  _size(4)
+{
+  _ptr = _pta_float.p();
+  memcpy(_pta_float, lvec4._v.data, sizeof(lvec4._v.data));
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase3f& lvec3):
+  _pta_float(PTA_float::empty_array(3)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _type(SPT_float),
+  _updated(true),
+  _size(3)
+{
+  _ptr = _pta_float.p();
+  memcpy(_pta_float, lvec3._v.data, sizeof(lvec3._v.data));
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase2f& lvec2):
+  _pta_float(PTA_float::empty_array(2)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _type(SPT_double),
+  _updated(true),
+  _size(2)
+{
+  _ptr = _pta_float.p();
+  memcpy(_pta_float,lvec2._v.data, sizeof(lvec2._v.data));
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LMatrix4f& lmat4):
+  _pta_float(PTA_float::empty_array(16)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _type(SPT_float),
+  _updated(true),
+  _size(16)
+{
+  _ptr = _pta_float.p();
+  memcpy(_pta_float,lmat4._m.data, sizeof(lmat4._m.data));
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LMatrix3f& lmat3):
+  _pta_float(PTA_float::empty_array(9)),
+  _pta_double(PTA_double::empty_array(0)),
+  _pta_lmat4f(PTA_LMatrix4f::empty_array(0)),
+  _pta_lmat3f(PTA_LMatrix3f::empty_array(0)),
+  _pta_lvec4f(PTA_LVecBase4f::empty_array(0)),
+  _pta_lvec3f(PTA_LVecBase3f::empty_array(0)),
+  _pta_lvec2f(PTA_LVecBase2f::empty_array(0)),
+  _type(SPT_float),
+  _updated(true),
+  _size(9)
+{
+  _ptr = _pta_float.p();
+  memcpy(_pta_float,lmat3._m.data, sizeof(lmat3._m.data));
 }

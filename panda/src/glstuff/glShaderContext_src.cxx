@@ -1,5 +1,7 @@
 // Filename: glShaderContext_src.cxx
 // Created by: jyelon (01Sep05)
+// Updated by: fperazzi, PandaSE (06Apr10) (updated CLP with note that some
+//   parameter types only supported under Cg)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -517,6 +519,105 @@ issue_parameters(GSG *gsg, int altered) {
 
   if (!valid()) {
     return;
+  }
+
+  // Iterate through _ptr parameters
+  for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
+    if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
+      if (_shader->get_language() == Shader::SL_GLSL){ 
+        GLCAT.error() << _shader->_ptr_spec[i]._id._name << ": parameter type supported only in Cg\n";
+        release_resources(gsg);
+        return;
+      }
+#ifdef HAVE_CG
+      else if (_shader->get_language() == Shader::SL_Cg) {
+        const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
+        Shader::ShaderPtrData* _ptr_data = 
+          const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
+        
+        if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
+          release_resources(gsg);
+          return;
+        }
+        //check if the data must be shipped to the GPU
+        /*if (!_ptr_data->_updated)
+          continue;
+        _ptr_data->_updated = false;*/
+
+        //Check if the size of the shader input and _ptr_data match
+        int input_size = _ptr._dim[0] * _ptr._dim[1] * _ptr._dim[2];
+
+        // dimension is negative only if the parameter had the (deprecated)k_ prefix.
+        if ((input_size != _ptr_data->_size) && (_ptr._dim[0] > 0)) { 
+          GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected " 
+            <<  input_size <<" got " <<  _ptr_data->_size << "\n";
+          release_resources(gsg);
+          return;
+        }
+        CGparameter p = _cg_parameter_map[_ptr._id._seqno];
+        
+        switch(_ptr_data->_type) {
+          case Shader::SPT_float:
+            switch(_ptr._info._class) {
+              case Shader::SAC_scalar: cgSetParameter1fv(p,(float*)_ptr_data->_ptr); continue;
+              case Shader::SAC_vector:
+                switch(_ptr._info._type) {
+                  case Shader::SAT_vec1: cgSetParameter1fv(p,(float*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec2: cgSetParameter2fv(p,(float*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec3: cgSetParameter3fv(p,(float*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec4: cgSetParameter4fv(p,(float*)_ptr_data->_ptr); continue;
+                }
+              case Shader::SAC_matrix: cgGLSetMatrixParameterfr(p,(float*)_ptr_data->_ptr); continue;
+              case Shader::SAC_array: {
+                switch(_ptr._info._subclass) {
+                  case Shader::SAC_scalar: 
+                    cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                  case Shader::SAC_vector:
+                    switch(_ptr._dim[2]) {
+                      case 1: cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                      case 2: cgGLSetParameterArray2f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                      case 3: cgGLSetParameterArray3f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                      case 4: cgGLSetParameterArray4f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                    }
+                  case Shader::SAC_matrix:
+                    cgGLSetMatrixParameterArrayfr(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                }
+              } 
+            }
+          case Shader::SPT_double:
+            switch(_ptr._info._class) {
+              case Shader::SAC_scalar: cgSetParameter1dv(p,(double*)_ptr_data->_ptr); continue;
+              case Shader::SAC_vector:
+                switch(_ptr._info._type) {
+                  case Shader::SAT_vec1: cgSetParameter1dv(p,(double*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec2: cgSetParameter2dv(p,(double*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec3: cgSetParameter3dv(p,(double*)_ptr_data->_ptr); continue;
+                  case Shader::SAT_vec4: cgSetParameter4dv(p,(double*)_ptr_data->_ptr); continue;
+                }
+              case Shader::SAC_matrix: cgGLSetMatrixParameterdr(p,(double*)_ptr_data->_ptr); continue;
+              case Shader::SAC_array: {
+                switch(_ptr._info._subclass) {
+                  case Shader::SAC_scalar: 
+                    cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                  case Shader::SAC_vector:
+                    switch(_ptr._dim[2]) {
+                      case 1: cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                      case 2: cgGLSetParameterArray2d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                      case 3: cgGLSetParameterArray3d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                      case 4: cgGLSetParameterArray4d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                    }
+                  case Shader::SAC_matrix:
+                    cgGLSetMatrixParameterArraydr(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                }
+              } 
+            }
+          default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
+                   release_resources(gsg); 
+                   return;
+        }
+      }
+#endif
+    }
   }
 
   //FIXME: this could be much faster if we used deferred parameter setting.

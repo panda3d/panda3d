@@ -1,5 +1,6 @@
 // Filename: graphicsStateGuardian.h
 // Created by:  drose (02Feb99)
+// Updated by: fperazzi, PandaSE (06Apr10) (added fetch_ptr_parameter)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -224,7 +225,8 @@ public:
   
   const LMatrix4f *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
   const LMatrix4f *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4f &t);
-  
+  const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
+
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 

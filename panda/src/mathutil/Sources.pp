@@ -32,7 +32,8 @@
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
     plane.h plane_src.I plane_src.cxx plane_src.h \
-    pta_LMatrix4f.h pta_LVecBase3f.h \
+    pta_LMatrix4f.h pta_LMatrix3f.h pta_LVecBase3f.h \
+    pta_LVecBase4f.h pta_LVecBase2f.h \
     randomizer.h randomizer.I \
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
@@ -55,7 +56,8 @@
     perlinNoise2.cxx \
     perlinNoise3.cxx \
     plane.cxx \
-    pta_LMatrix4f.cxx pta_LVecBase3f.cxx \
+    pta_LMatrix4f.cxx pta_LMatrix3f.cxx pta_LVecBase3f.cxx \
+    pta_LVecBase4f.cxx pta_LVecBase2f.cxx \
     randomizer.cxx \
     rotate_to.cxx \
     stackedPerlinNoise2.cxx \
@@ -69,6 +71,8 @@
     boundingPlane.I boundingPlane.h \
     boundingSphere.I boundingSphere.h boundingVolume.I \
     boundingVolume.h config_mathutil.h fftCompressor.h \
+    pta_LMatrix4f.h pta_LMatrix3f.h pta_LVecBase3f.h \
+    pta_LVecBase4f.h pta_LVecBase2f.h \
     finiteBoundingVolume.h frustum.h frustum_src.I frustum_src.h \
     geometricBoundingVolume.I geometricBoundingVolume.h look_at.h \
     look_at_src.I look_at_src.h \

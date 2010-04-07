@@ -1,6 +1,6 @@
 // Filename: shader.h
-// Created by:  jyelon (01Sep05)
-//
+// Created by: jyelon (01Sep05)
+// Updated by: fperazzi, PandaSE(06Apr10)
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -20,20 +20,29 @@
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
 #include "internalName.h"
+#include "pta_float.h"
+#include "pta_double.h"
+#include "pta_LMatrix4f.h"
+#include "pta_LMatrix3f.h"
+#include "pta_LVecBase4f.h"
+#include "pta_LVecBase3f.h"
+#include "pta_LVecBase2f.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a 
 // whole.  Instead, I'll just excerpt some opaque declarations.
-typedef struct _CGcontext *CGcontext;
-typedef struct _CGprogram *CGprogram;
+typedef struct _CGcontext   *CGcontext;
+typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Shader
-//      Summary: 
+//      Summary: The Shader class is meant to select the Shader Language,
+//               select the available profile, compile the shader, and 
+//               finally compile and store the shader parameters  
+//               in the appropriate structure.
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_PANDA_GOBJ Shader: public TypedReferenceCount {
 
 PUBLISHED:
@@ -43,6 +52,7 @@ PUBLISHED:
     SL_Cg,
     SL_GLSL
   };
+
   enum ShaderType {
     ST_none = 0,
     ST_vertex,
@@ -56,7 +66,7 @@ PUBLISHED:
   static PT(Shader) make(const ShaderLanguage &lang, const string &vertex, const string &fragment, const string &geometry = "");
 
   INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
-  INLINE const string &get_text(const ShaderType &type = ST_none) const;
+  INLINE const string get_text(const ShaderType &type = ST_none) const;
   INLINE const bool get_error_flag() const;
   INLINE const ShaderLanguage get_language() const;
 
@@ -97,7 +107,7 @@ public:
     
     SMO_mat_constant_x,
     SMO_vec_constant_x,
-    
+
     SMO_world_to_view,
     SMO_view_to_world,
 
@@ -127,19 +137,44 @@ public:
     
     SMO_INVALID
   };
-
-  enum ShaderArgType {
-    SAT_float1,
-    SAT_float2,
-    SAT_float3,
-    SAT_float4,
-    SAT_float4x4,
+  
+  enum ShaderArgClass { 
+    SAC_scalar,
+    SAC_vector,
+    SAC_matrix,
+    SAC_sampler,
+    SAC_array,
+    SAC_unknown,
+  };
+  
+  enum ShaderArgType { 
+    SAT_scalar,     
+    SAT_vec1,       
+    SAT_vec2,       
+    SAT_vec3,       
+    SAT_vec4,       
+    SAT_mat1x1,   
+    SAT_mat1x2,  
+    SAT_mat1x3, 
+    SAT_mat1x4,
+    SAT_mat2x1,
+    SAT_mat2x2,   
+    SAT_mat2x3,  
+    SAT_mat2x4, 
+    SAT_mat3x1, 
+    SAT_mat3x2, 
+    SAT_mat3x3,   
+    SAT_mat3x4,  
+    SAT_mat4x1,  
+    SAT_mat4x2,  
+    SAT_mat4x3,  
+    SAT_mat4x4,
     SAT_sampler1d,
     SAT_sampler2d,
-    SAT_sampler3d,
+    SAT_sampler3d, 
     SAT_samplercube,
-    SAT_unknown,
-  };
+    SAT_unknown
+};
 
   enum ShaderArgDir {
     SAD_in,
@@ -185,13 +220,62 @@ public:
     SMF_transform_slight,
     SMF_first,
   };
-
+ 
   struct ShaderArgId {
     string     _name;
     ShaderType _type;
     int        _seqno;
-  };
+  }; 
   
+  struct ShaderArgInfo {  
+    ShaderArgId       _id;
+    ShaderArgClass    _class;
+    ShaderArgClass    _subclass;
+    ShaderArgType     _type;      
+    ShaderArgDir      _direction;
+    bool              _varying;
+    NotifyCategory   *_cat;
+  };
+ 
+  enum ShaderPtrType {
+    SPT_float,
+    SPT_double,
+    SPT_unknown
+  };  
+  
+  // Container structure for data of parameters ShaderPtrSpec.
+  struct ShaderPtrData{
+  public:
+    ShaderPtrType _type;
+    int           _size; //number of elements vec3[4]=12
+    bool          _updated;
+    void*         _ptr; 
+
+  private:
+    PTA_float         _pta_float;
+    PTA_double        _pta_double;
+    PTA_LVecBase4f    _pta_lvec4f;
+    PTA_LVecBase3f    _pta_lvec3f;
+    PTA_LVecBase2f    _pta_lvec2f;
+    PTA_LMatrix4f     _pta_lmat4f;
+    PTA_LMatrix3f     _pta_lmat3f;
+
+  public:
+    INLINE ShaderPtrData();
+    INLINE ShaderPtrData(const PTA_float& ptr);
+    INLINE ShaderPtrData(const PTA_double& ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase4f& ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase3f& ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase2f& ptr);
+    INLINE ShaderPtrData(const PTA_LMatrix4f& mat);
+    INLINE ShaderPtrData(const PTA_LMatrix3f& mat);
+    INLINE ShaderPtrData(const LVecBase4f& vec);
+    INLINE ShaderPtrData(const LVecBase3f& vec);
+    INLINE ShaderPtrData(const LVecBase2f& vec);
+    INLINE ShaderPtrData(const LMatrix4f& mat);
+    INLINE ShaderPtrData(const LMatrix3f& mat);
+  };
+
   struct ShaderMatSpec {
     ShaderArgId       _id;
     ShaderMatFunc     _func;
@@ -216,13 +300,13 @@ public:
     PT(InternalName)  _name;
     int               _append_uv;
   };
-
-  struct ShaderArgInfo {
+  
+  struct ShaderPtrSpec { 
     ShaderArgId       _id;
-    ShaderArgType     _type;
-    ShaderArgDir      _direction;
-    bool              _varying;
-    NotifyCategory   *_cat;
+    int               _dim[3]; //n_elements,rows,cols
+    int               _dep[2];
+    PT(InternalName)  _arg;
+    ShaderArgInfo     _info;
   };
 
   struct ShaderCaps {
@@ -270,6 +354,7 @@ public:
   void cp_report_error(ShaderArgInfo &arg, const string &msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
   bool cp_errchk_parameter_in(ShaderArgInfo &arg);
+  bool cp_errchk_parameter_ptr(ShaderArgInfo &p); 
   bool cp_errchk_parameter_varying(ShaderArgInfo &arg);
   bool cp_errchk_parameter_uniform(ShaderArgInfo &arg);
   bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
@@ -285,11 +370,18 @@ public:
   int cp_dependency(ShaderMatInput inp);
   void cp_optimize_mat_spec(ShaderMatSpec &spec);
   
-  bool compile_parameter(const ShaderArgId    &arg_id,
-                         ShaderArgType         arg_type,
-                         ShaderArgDir          arg_direction,
-                         bool                  arg_varying,
-                         NotifyCategory       *arg_cat);
+  void recurse_parameters(CGparameter parameter, 
+                          const ShaderType& type, 
+                          bool& success);
+  
+  bool compile_parameter(const ShaderArgId        &arg_id, 
+                         const ShaderArgClass     &arg_class,
+                         const ShaderArgClass     &arg_subclass,
+                         const ShaderArgType      &arg_type,
+                         const ShaderArgDir       &arg_direction,
+                         bool                      arg_varying,
+                         int                      *arg_dim,
+                         NotifyCategory           *arg_cat);
 
   void clear_parameters();
 
@@ -298,8 +390,9 @@ public:
 
 #ifdef HAVE_CG
  private:
-  ShaderArgType cg_parameter_type(CGparameter p);
-  ShaderArgDir  cg_parameter_dir(CGparameter p);
+  ShaderArgClass    cg_parameter_class(CGparameter p); 
+  ShaderArgType     cg_parameter_type(CGparameter p);
+  ShaderArgDir      cg_parameter_dir(CGparameter p);
 
   CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_vertex);
 
@@ -338,6 +431,7 @@ public:
 #endif
 
  public:
+  pvector <ShaderPtrSpec> _ptr_spec; 
   pvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;

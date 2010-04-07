@@ -1,5 +1,6 @@
 // Filename: graphicsStateGuardian.cxx
 // Created by:  drose (02Feb99)
+// Updated by: fperazzi, PandaSE (06Apr10) (added fetch_ptr_parameter)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -895,7 +896,7 @@ compute_distance_to(const LPoint3f &point) const {
 const LMatrix4f *GraphicsStateGuardian::
 fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3f v;
-
+  
   if (altered & spec._dep[0]) {
     const LMatrix4f *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0]);
     if (t != &spec._cache[0]) {
@@ -1248,6 +1249,16 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     // should never get here
     return &LMatrix4f::ident_mat();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::fetch_ptr_parameter
+//       Access: Public
+//  Description: Return a pointer to struct ShaderPtrData
+////////////////////////////////////////////////////////////////////
+const Shader::ShaderPtrData *GraphicsStateGuardian::
+  fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec){
+    return (_target_shader->get_shader_input_ptr(spec._arg));
 }
 
 ////////////////////////////////////////////////////////////////////
