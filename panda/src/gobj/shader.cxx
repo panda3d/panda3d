@@ -474,7 +474,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 //  Description: 
 //               
 ////////////////////////////////////////////////////////////////////
-void Shader::recurse_parameters(CGparameter parameter, 
+void Shader::cg_recurse_parameters(CGparameter parameter, 
     const ShaderType& type, bool& success) {
 
   if (parameter == 0)
@@ -1469,7 +1469,7 @@ cg_analyze_entry_point(CGprogram prog, ShaderType type) {
   CGparameter parameter;
   bool success = true;
 
-  recurse_parameters(cgGetFirstParameter(prog, CG_PROGRAM),type,success);
+  cg_recurse_parameters(cgGetFirstParameter(prog, CG_PROGRAM),type,success);
   return success;
 }
 

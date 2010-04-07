@@ -369,10 +369,12 @@ public:
                           ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
   void cp_optimize_mat_spec(ShaderMatSpec &spec);
-  
-  void recurse_parameters(CGparameter parameter, 
+
+#ifdef HAVE_CG
+  void cg_recurse_parameters(CGparameter parameter, 
                           const ShaderType& type, 
                           bool& success);
+#endif
   
   bool compile_parameter(const ShaderArgId        &arg_id, 
                          const ShaderArgClass     &arg_class,
