@@ -334,6 +334,6 @@ operator = (const WeakPointerTo<T> &copy) {
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const WeakConstPointerTo<T> &copy) {
-  ((WeakConstPointerTo<T> *)this)->assign((const PointerToBase<T> &)copy);
+  ((WeakConstPointerTo<T> *)this)->reassign((const PointerToBase<T> &)copy);
   return *this;
 }
