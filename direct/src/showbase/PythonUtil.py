@@ -12,7 +12,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'closestDestAngle2', 'closestDestAngle', 'binaryRepr', 'profileFunc',
 'profiled', 'startProfile', 'printProfile', 'getSetterName',
 'getSetter', 'Functor', 'Stack', 'Queue', 'ParamObj', 
-'POD', 'bound', 'lerp', 'average', 'addListsByValue',
+'POD', 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
 'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
 'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
 'findPythonModule', 'describeException', 'mostDerivedLast',
@@ -1872,6 +1872,7 @@ def bound(value, bound1, bound2):
         return min(max(value, bound2), bound1)
     else:
         return min(max(value, bound1), bound2)
+clamp = bound
 
 def lerp(v0, v1, t):
     """
@@ -4301,6 +4302,7 @@ __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
 __builtin__.bound = bound
+__builtin__.clamp = clamp
 __builtin__.lerp = lerp
 __builtin__.notNone = notNone
 __builtin__.clampScalar = clampScalar
