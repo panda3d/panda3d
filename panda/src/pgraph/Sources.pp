@@ -106,7 +106,6 @@
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
-    uvScrollNode.I uvScrollNode.h \
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h
 
@@ -204,7 +203,6 @@
     textureStageCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
-    uvScrollNode.cxx \
     weakNodePath.cxx \
     workingNodePath.cxx
 
@@ -300,7 +298,6 @@
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
-    uvScrollNode.I uvScrollNode.h \
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h
 

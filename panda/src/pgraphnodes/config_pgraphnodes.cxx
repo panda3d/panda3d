@@ -31,6 +31,7 @@
 #include "shaderGenerator.h"
 #include "spotlight.h"
 #include "switchNode.h"
+#include "uvScrollNode.h"
 
 #include "dconfig.h"
 
@@ -90,6 +91,7 @@ init_libpgraphnodes() {
   ShaderGenerator::init_type();
   Spotlight::init_type();
   SwitchNode::init_type();
+  UvScrollNode::init_type();
 
   AmbientLight::register_with_read_factory();
   CallbackNode::register_with_read_factory();
@@ -103,4 +105,5 @@ init_libpgraphnodes() {
   SequenceNode::register_with_read_factory();
   Spotlight::register_with_read_factory();
   SwitchNode::register_with_read_factory();
+  UvScrollNode::register_with_read_factory();
 }
