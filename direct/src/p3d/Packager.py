@@ -108,7 +108,7 @@ class Packager:
             """ Returns true if this file should be excluded or
             skipped, false otherwise. """
 
-            if self.newName in package.skipFilenames:
+            if self.newName.lower() in package.skipFilenames:
                 return True
 
             if not self.explicit:
@@ -754,9 +754,10 @@ class Packager:
                 # Don't bother, it's already here.
                 return None
 
-            if file.newName in self.targetFilenames:
+            lowerName = file.newName.lower()
+            if lowerName in self.targetFilenames:
                 # Another file is already in the same place.
-                file2 = self.targetFilenames[file.newName]
+                file2 = self.targetFilenames[lowerName]
                 self.packager.notify.warning(
                     "%s is shadowing %s" % (file2.filename, file.filename))
                 return None
@@ -769,7 +770,7 @@ class Packager:
                 return None
             
             self.files.append(file)
-            self.targetFilenames[file.newName] = file
+            self.targetFilenames[lowerName] = file
             return file
 
         def excludeFile(self, filename):
@@ -850,6 +851,7 @@ class Packager:
                 for filename in filenames:
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
+                    filename.makeTrueCase()
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
@@ -1430,7 +1432,7 @@ class Packager:
             while xcomponent:
                 name = xcomponent.Attribute('filename')
                 if name:
-                    self.targetFilenames[name] = True
+                    self.targetFilenames[name.lower()] = True
                 xcomponent = xcomponent.NextSiblingElement('component')
 
             self.moduleNames = {}
@@ -1589,7 +1591,7 @@ class Packager:
             # We have to copy the image into the plugin tree somewhere.
             newName = self.importedMapsDir + '/' + filename.getBasename()
             uniqueId = 0
-            while newName in self.targetFilenames:
+            while newName.lower() in self.targetFilenames:
                 uniqueId += 1
                 newName = '%s/%s_%s.%s' % (
                     self.importedMapsDir, filename.getBasenameWoExtension(),
@@ -1827,10 +1829,10 @@ class Packager:
 
             if package not in self.requires:
                 self.requires.append(package)
-                for filename in package.targetFilenames.keys():
-                    ext = Filename(filename).getExtension()
+                for lowerName in package.targetFilenames.keys():
+                    ext = Filename(lowerName).getExtension()
                     if ext not in self.packager.nonuniqueExtensions:
-                        self.skipFilenames[filename] = True
+                        self.skipFilenames[lowerName] = True
                 for moduleName, mdef in package.moduleNames.items():
                     self.skipModules[moduleName] = mdef
 
