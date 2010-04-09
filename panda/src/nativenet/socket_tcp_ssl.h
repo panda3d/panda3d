@@ -315,7 +315,7 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
     while ((l=ERR_get_error_line_data(&file,&line,&data,&flags)) != 0)
     {
         ERR_error_string_n(l, buf, sizeof( buf) );
-        BIO_snprintf(buf2, sizeof(buf2), "***%lu:%s:%s:%d:%s\n", es, buf,file, line, (flags & ERR_TXT_STRING) ? data : "NoText");
+        BIO_snprintf(buf2, sizeof(buf2), "***%lu:%s:%s:%d:%s\n", (unsigned long) es, buf,file, line, (flags & ERR_TXT_STRING) ? data : "NoText");
         nativenet_cat.warning()
           << "Socket_TCP_SSL::DetailErrorFormat->[" << buf2 << "]\n";
     }
