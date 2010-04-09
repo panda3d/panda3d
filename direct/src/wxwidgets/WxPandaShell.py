@@ -62,8 +62,8 @@ class WxPandaShell(WxAppShell):
         menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
 
-        menuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), menuItem)
+        self.perspViewMenuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
+        self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), self.perspViewMenuItem)
 
     def createInterface(self):
         self.createMenu()
@@ -113,6 +113,10 @@ class WxPandaShell(WxAppShell):
         if base.trackball != None:
           base.trackball.node().setPos(0, 30, 0)
           base.trackball.node().setHpr(0, 15, 0)
+
+        # to make persp view as default
+        self.perspViewMenuItem.Toggle()
+        self.onViewChange(None, 3)
 
         # initializing direct
         if self.fStartDirect:
