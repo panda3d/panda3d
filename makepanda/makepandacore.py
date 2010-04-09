@@ -218,7 +218,7 @@ def oscmd(cmd, ignoreError = False):
         if (GetVerbose() and res != 0):
             print GetColor("red") + "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig) + GetColor()
         if (sig == signal.SIGINT):
-            raise KeyboardInterrupt
+            exit("keyboard interrupt")
         # Don't ask me where the 35584 or 34304 come from...
         if (sig == signal.SIGSEGV or res == 35584 or res == 34304):
             if (LocateBinary("gdb") and GetVerbose()):
