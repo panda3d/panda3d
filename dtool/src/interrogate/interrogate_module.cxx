@@ -79,8 +79,7 @@ upcase_string(const string &str) {
 }
 */
 
-int write_python_table_native(ostream &out) 
-{
+int write_python_table_native(ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"
@@ -88,57 +87,46 @@ int write_python_table_native(ostream &out)
 
   int count = 0;
 
-  std::set<std::string >    Libraries;
-
+  std::set<std::string > Libraries;
 
 //  out << "extern \"C\" {\n";
 
   // Walk through all of the Python functions.
   int num_functions = interrogate_number_of_functions();
   int fi;
-  for (fi = 0; fi < num_functions; fi++) 
-  {
+  for (fi = 0; fi < num_functions; fi++) {
     FunctionIndex function_index = interrogate_get_function(fi);
 
     // Consider only those that belong in the module we asked for.
     if (interrogate_function_has_module_name(function_index) &&
-        module_name == interrogate_function_module_name(function_index)) 
-    {
+        module_name == interrogate_function_module_name(function_index)) {
         // if it has a library name add it to set of libraries
         if(interrogate_function_has_library_name(function_index))
             Libraries.insert(interrogate_function_library_name(function_index));
     }
   }
 
-  for(int ti = 0; ti < interrogate_number_of_types(); ti++)
-  {
+  for(int ti = 0; ti < interrogate_number_of_types(); ti++) {
     TypeIndex thetype  = interrogate_get_type(ti);
-    if(interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype))
-    {
+    if(interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
         if(interrogate_type_has_library_name(thetype))
             Libraries.insert(interrogate_type_library_name(thetype));
     }
   }
 
-
-
   std::set<std::string >::iterator ii;
-  for(ii = Libraries.begin(); ii != Libraries.end(); ii++)
-  {
+  for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
       printf("Referencing Library %s\n",(*ii).c_str());
-      out << "extern  LibrayDef "<< *ii << "_moddef ;\n";
+      out << "extern LibrayDef "<< *ii << "_moddef ;\n";
   }
 
-
-
-
-      out << "#ifdef _WIN32\n"
+  out << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
       << "#else\n"
       << "extern \"C\" void init" << library_name << "();\n"
       << "#endif\n\n"
-
       << "void init" << library_name << "() \n{\n";
+  
   if (track_interpreter) {
     out << "    in_interpreter = 1;\n";
   }
@@ -156,11 +144,7 @@ int write_python_table_native(ostream &out)
   return count;
 }
 
-
-
-
-int write_python_table(ostream &out) 
-{
+int write_python_table(ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"
@@ -256,8 +240,7 @@ int write_python_table(ostream &out)
   return count;
 }
 
-int main(int argc, char *argv[]) 
-{
+int main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   int flag;
@@ -338,12 +321,10 @@ int main(int argc, char *argv[])
   }
 
   // Now output the table.
-  if (!output_code_filename.empty()) 
-  {
+  if (!output_code_filename.empty()) {
     pofstream output_code;
 
-    if (!output_code_filename.open_write(output_code)) 
-    {
+    if (!output_code_filename.open_write(output_code)) {
       nout << "Unable to write to " << output_code_filename << "\n";
     } else {
 
