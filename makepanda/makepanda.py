@@ -2120,7 +2120,7 @@ if (not RUNTIME):
 # DIRECTORY: dtool/src/prckeys/
 #
 
-if (PkgSkip("OPENSSL")==0 and not RUNTIME):
+if (PkgSkip("OPENSSL")==0 and not RUNTIME and not RTDIST):
   OPTS=['DIR:dtool/src/prckeys', 'OPENSSL']
   TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
   TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
