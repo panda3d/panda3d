@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob,getpass
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob,getpass,signal
 from distutils import sysconfig
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r",".plist",".idl"]
@@ -179,7 +179,7 @@ def exit(msg = ""):
     sys.stderr.flush()
     if (threading.currentThread() == MAINTHREAD):
         SaveDependencyCache()
-        MoveAwayConflictingFiles()
+        MoveBackConflictingFiles()
         print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
         print msg
         print GetColor("red") + "Build terminated." + GetColor()
@@ -214,12 +214,19 @@ def oscmd(cmd, ignoreError = False):
         res = os.spawnl(os.P_WAIT, exe, cmd)
     else:
         res = os.system(cmd)
-        if (res == 11):
+        sig = res & 0x7F
+        if (GetVerbose() and res != 0):
+            print GetColor("red") + "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig) + GetColor()
+        if (sig == signal.SIGINT):
+            raise KeyboardInterrupt
+        # Don't ask me where the 35584 or 34304 come from...
+        if (sig == signal.SIGSEGV or res == 35584 or res == 34304):
             if (LocateBinary("gdb") and GetVerbose()):
                 print GetColor("red") + "Received SIGSEGV, retrieving traceback..." + GetColor()
                 os.system("gdb -batch -ex 'handle SIG33 pass nostop noprint' -ex 'set pagination 0' -ex 'run' -ex 'bt full' -ex 'info registers' -ex 'thread apply all backtrace' -ex 'quit' --args %s < /dev/null" % cmd)
             else:
                 print GetColor("red") + "Received SIGSEGV" + GetColor()
+            exit("")
     if res != 0 and not ignoreError:
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
