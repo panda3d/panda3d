@@ -332,7 +332,7 @@ class ObjectPropertyUI(ScrolledPanel):
         self.lookPane.SetSizer(sizer)
 
         self.propsPane = wx.Panel(self.nb, -1)
-        self.nb.AddPage(self.propsPane, 'Props')
+        self.nb.AddPage(self.propsPane, 'Properties')
         sizer = wx.BoxSizer(wx.VERTICAL)
         
         for key in objDef.properties.keys():
