@@ -91,6 +91,12 @@ MayaToEggServer() :
      &MayaToEggServer::dispatch_none, &_round_uvs);
 
   add_option
+    ("copytex","dir",0,
+    "copy the textures to a ""Textures"" sub directory relative to the written out egg file."
+    """dir"" is a sub directory in the same format as those used by -pr, etc." ,
+     &MayaToEggServer::dispatch_filename, &_texture_copy, &_texture_out_dir);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -147,6 +153,12 @@ MayaToEggServer() :
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEggServer::dispatch_count, NULL, &_verbose);
+
+  add_option
+    ("legacy-shaders", "", 0,
+     "Use this flag to turn off modern (Phong) shader generation"
+     "and treat all shaders as if they were Lamberts (legacy).",
+     &MayaToEggServer::dispatch_none, &_legacy_shader);
 
   // Unfortunately, the Maya API doesn't allow us to differentiate
   // between relative and absolute pathnames--everything comes out as
@@ -211,6 +223,11 @@ run() {
   // directory.
   if (_got_output_filename) {
     _output_filename.make_absolute();
+    //conjunct the relative output path with output file's dir weifengh
+    if (_texture_out_dir.is_local()) {
+      Filename tempdir = _output_filename.get_dirname() + "/";
+      _texture_out_dir = tempdir + _texture_out_dir;
+    }
   }
 
   // So our relative path names come out correctly
@@ -226,6 +243,9 @@ run() {
   converter._keep_all_uvsets = _keep_all_uvsets;
   converter._round_uvs = _round_uvs;
   converter._transform_type = _transform_type;
+  converter._texture_copy = _texture_copy;
+  converter._texture_out_dir = _texture_out_dir;
+  converter._legacy_shader = _legacy_shader;
 
   vector_string::const_iterator si;
   if (!_subroots.empty()) {
@@ -301,12 +321,18 @@ run() {
   _force_joints.clear();
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
+  _normals_mode = NM_preserve;
+  _normals_threshold = 0.0;
+  _got_tbnall = false;
+  _got_tbnauto = false;
+  _got_transform = false;
+  _coordinate_system = CS_yup_right;
+  _noabs = false;
   _program_args.clear();
   _data->clear();
   _animation_convert = AC_none;
   _character_name = "";
   dummy->clear();
-
 }
 
 ////////////////////////////////////////////////////////////////////
