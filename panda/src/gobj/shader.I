@@ -45,10 +45,10 @@ get_filename(const ShaderType &type) const {
 //       Access: Public
 //  Description: Return the Shader's text for the given shader type.
 ////////////////////////////////////////////////////////////////////
-INLINE const string Shader::
+INLINE const string &Shader::
 get_text(const ShaderType &type) const {
   if (_text->_separate) {
-    nassertr(type != ST_none || !_text->_shared.empty(), "");
+    nassertr(type != ST_none || !_text->_shared.empty(), _text->_shared);
     switch (type) {
       case ST_vertex:
         return _text->_vertex;

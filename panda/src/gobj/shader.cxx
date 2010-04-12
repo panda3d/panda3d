@@ -468,6 +468,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
   spec._dep[1] = cp_dependency(spec._part[1]);
 }
 
+#ifdef HAVE_CG
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cg_recurse_parameters
 //       Access: Public
@@ -519,6 +520,7 @@ void Shader::cg_recurse_parameters(CGparameter parameter,
     }
   } while((parameter = cgGetNextParameter(parameter))!= 0);
 }
+#endif  // HAVE_CG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::compile_parameter
