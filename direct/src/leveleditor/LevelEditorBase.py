@@ -5,14 +5,9 @@ You should write your own LevelEditor class inheriting this.
 Refer LevelEditor.py for example.
 """
 
-from pandac.PandaModules import *
-from direct.showbase.ShowBase import *
 from direct.showbase.DirectObject import *
-from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from direct.gui.DirectGui import *
-
-base = ShowBase(False)
 
 from FileMgr import *
 from ActionMgr import *
@@ -30,85 +25,12 @@ class LevelEditorBase(DirectObject):
         self.actionMgr = ActionMgr()
 
         self.NPParent = render
+
         # define your own config file in inherited class
-        self.settingsFile = None
+        self.settingsFile = None        
         
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
-        fTk = 0
-        fWx = 0
-        base.startDirect(fWantTk = fTk, fWantWx = fWx)
-
-        base.closeWindow(base.win)
-        base.win = base.winList[3]
-
-        base.direct.disableMouseEvents()
-        newMouseEvents = map(lambda x: "_le_per_%s"%x, base.direct.mouseEvents) +\
-                         map(lambda x: "_le_fro_%s"%x, base.direct.mouseEvents) +\
-                         map(lambda x: "_le_lef_%s"%x, base.direct.mouseEvents) +\
-                         map(lambda x: "_le_top_%s"%x, base.direct.mouseEvents)
-        base.direct.mouseEvents = newMouseEvents
-        base.direct.enableMouseEvents()
-
-        base.direct.disableKeyEvents()
-        keyEvents = map(lambda x: "_le_per_%s"%x, base.direct.keyEvents) +\
-                         map(lambda x: "_le_fro_%s"%x, base.direct.keyEvents) +\
-                         map(lambda x: "_le_lef_%s"%x, base.direct.keyEvents) +\
-                         map(lambda x: "_le_top_%s"%x, base.direct.keyEvents)
-        base.direct.keyEvents = keyEvents
-        base.direct.enableKeyEvents()
-
-        base.direct.disableModifierEvents()
-        modifierEvents = map(lambda x: "_le_per_%s"%x, base.direct.modifierEvents) +\
-                         map(lambda x: "_le_fro_%s"%x, base.direct.modifierEvents) +\
-                         map(lambda x: "_le_lef_%s"%x, base.direct.modifierEvents) +\
-                         map(lambda x: "_le_top_%s"%x, base.direct.modifierEvents)
-        base.direct.modifierEvents = modifierEvents
-        base.direct.enableModifierEvents()
-
-        base.direct.cameraControl.lockRoll = True
-        base.direct.setFScaleWidgetByCam(1)
-
-        unpickables = [
-            "z-guide",
-            "y-guide",
-            "x-guide",
-            "x-disc-geom",
-            "x-ring-line",
-            "x-post-line",
-            "y-disc-geom",
-            "y-ring-line",
-            "y-post-line",
-            "z-disc-geom",
-            "z-ring-line",
-            "z-post-line",
-            "centerLines",
-            "majorLines",
-            "minorLines",
-            "Sphere",]
-
-        for unpickable in unpickables:
-            base.direct.addUnpickable(unpickable)
-
-        base.direct.manipulationControl.optionalSkipFlags |= SKIP_UNPICKABLE
-        base.direct.manipulationControl.fAllowMarquee = 1
-        base.direct.manipulationControl.supportMultiView()
-        base.direct.cameraControl.useMayaCamControls = 1
-        base.direct.cameraControl.perspCollPlane = self.ui.perspView.collPlane
-        for widget in base.direct.manipulationControl.widgetList:
-            widget.setBin('gui-popup', 0)
-            widget.setDepthTest(0)
-
-        # [gjeon] to intercept messages here
-        base.direct.ignore('DIRECT-delete')
-        base.direct.ignore('DIRECT-select')
-        base.direct.ignore('DIRECT-preDeselectAll')
-        base.direct.ignore('DIRECT-toggleWidgetVis')
-        base.direct.fIgnoreDirectOnlyKeyMap = 1
-        
-        # [gjeon] do not use the old way of finding current DR
-        base.direct.drList.tryToGetCurrentDr = False
-
         # specifiy what obj can be 'selected' as objects
         base.direct.selected.addTag('OBJRoot')
 

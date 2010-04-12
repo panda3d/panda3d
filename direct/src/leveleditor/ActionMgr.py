@@ -86,11 +86,14 @@ class ActionAddNewObj(ActionBase):
         else:
             print "Undo: addNewObject"
             obj = self.editor.objectMgr.findObjectByNodePath(self.result)
-            self.uid = obj[OG.OBJ_UID]
-            self.editor.ui.sceneGraphUI.delete(self.uid)
-            base.direct.deselect(self.result)
-            base.direct.removeNodePath(self.result)
-            self.result = None
+            if obj:
+                self.uid = obj[OG.OBJ_UID]
+                self.editor.ui.sceneGraphUI.delete(self.uid)
+                base.direct.deselect(self.result)
+                base.direct.removeNodePath(self.result)
+                self.result = None
+            else:
+                print "Can't undo this add"
 
 class ActionDeleteObj(ActionBase):
     """ Action class for deleting object """

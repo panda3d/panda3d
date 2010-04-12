@@ -1,12 +1,12 @@
-import wx
-import os
-from wx.lib.agw import fourwaysplitter as FWS
+## import wx
+## import os
+## from wx.lib.agw import fourwaysplitter as FWS
 
 from pandac.PandaModules import *
-from direct.wxwidgets.WxAppShell import *
+from direct.wxwidgets.WxPandaShell import *
 from direct.directtools.DirectSelection import SelectionRay
 
-from ViewPort import *
+#from ViewPort import *
 from ObjectPaletteUI import *
 from ObjectPropertyUI import *
 from SceneGraphUI import *
@@ -113,50 +113,30 @@ ID_GRID_SNAP = 303
 ID_SHOW_PANDA_OBJECT = 304
 ID_HOT_KEYS = 305
 
-ID_FOUR_VIEW = 401
-ID_TOP_VIEW = 402
-ID_FRONT_VIEW = 403
-ID_LEFT_VIEW = 404
-ID_PERSP_VIEW = 405
-
-class LevelEditorUIBase(WxAppShell):
+class LevelEditorUIBase(WxPandaShell):
     """ Class for Panda3D LevelEditor """ 
+    def __init__(self, editor):
+        self.MENU_TEXTS.update({
+            ID_NEW : ("&New", "LE-NewScene"),
+            ID_OPEN : ("&Open", "LE-OpenScene"),
+            ID_SAVE : ("&Save", "LE-SaveScene"),
+            ID_SAVE_AS : ("Save &As", None),
+            wx.ID_EXIT : ("&Quit", "LE-Quit"),
+            ID_DUPLICATE : ("&Duplicate", "LE-Duplicate"),
+            ID_MAKE_LIVE : ("Make &Live", "LE-MakeLive"),
+            ID_UNDO : ("&Undo", "LE-Undo"),
+            ID_REDO : ("&Redo", "LE-Redo"),
+            ID_SHOW_GRID : ("&Show Grid", None),
+            ID_GRID_SIZE : ("&Grid Size", None),
+            ID_GRID_SNAP : ("Grid S&nap", None),
+            ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
+            ID_HOT_KEYS : ("&Hot Keys", None),
+            })
 
-    MENU_TEXTS = {
-        ID_NEW : ("&New", "LE-NewScene"),
-        ID_OPEN : ("&Open", "LE-OpenScene"),
-        ID_SAVE : ("&Save", "LE-SaveScene"),
-        ID_SAVE_AS : ("Save &As", None),
-        wx.ID_EXIT : ("&Quit", "LE-Quit"),
-        ID_DUPLICATE : ("&Duplicate", "LE-Duplicate"),
-        ID_MAKE_LIVE : ("Make &Live", "LE-MakeLive"),
-        ID_UNDO : ("&Undo", "LE-Undo"),
-        ID_REDO : ("&Redo", "LE-Redo"),
-        ID_SHOW_GRID : ("&Show Grid", None),
-        ID_GRID_SIZE : ("&Grid Size", None),
-        ID_GRID_SNAP : ("Grid S&nap", None),
-        ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
-        ID_HOT_KEYS : ("&Hot Keys", None),
-        ID_FOUR_VIEW : ("Four Views", None),
-        ID_TOP_VIEW : ("Top View", None),        
-        ID_FRONT_VIEW : ("Front View", None),
-        ID_LEFT_VIEW : ("Left View", None),
-        ID_PERSP_VIEW : ("Persp View", None),
-        }
-    
-    def __init__(self, editor, *args, **kw):
-        # Create the Wx app
-        self.wxApp = wx.App(redirect = False)
-        self.wxApp.SetAppName("Panda3D LevelEditor")
-        self.wxApp.SetClassName("P3DLevelEditor")
         self.editor = editor
+        WxPandaShell.__init__(self, fStartDirect=True)        
         self.contextMenu = ViewportMenu()
-
-        if not kw.get('size'):
-            kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
-        WxAppShell.__init__(self, *args, **kw)        
         self.bindKeyEvents(True)
-        self.initialize()
 
     def bindKeyEvents(self, toBind=True):
         if toBind:
@@ -214,24 +194,8 @@ class LevelEditorUIBase(WxAppShell):
         self.hotKeysMenuItem = self.menuOptions.Append(ID_HOT_KEYS, self.MENU_TEXTS[ID_HOT_KEYS][0])
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
 
-        self.menuView = wx.Menu()
-        self.menuBar.Insert(3, self.menuView, "&View")
+        WxPandaShell.createMenu(self)
 
-        menuItem = self.menuView.AppendRadioItem(ID_FOUR_VIEW, self.MENU_TEXTS[ID_FOUR_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=-1:self.onViewChange(p0, p1), menuItem)
-
-        menuItem = self.menuView.AppendRadioItem(ID_TOP_VIEW, self.MENU_TEXTS[ID_TOP_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=0:self.onViewChange(p0, p1), menuItem)
-
-        menuItem = self.menuView.AppendRadioItem(ID_FRONT_VIEW, self.MENU_TEXTS[ID_FRONT_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=1:self.onViewChange(p0, p1), menuItem)
-
-        menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
-
-        menuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
-        self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), menuItem)
-        
     def updateMenu(self):
         hotKeyDict = {}
         for hotKey in base.direct.hotKeyMap.keys():
@@ -247,27 +211,8 @@ class LevelEditorUIBase(WxAppShell):
                     menuItem.SetText(desc[0] + "\t%s"%hotKey)
 
     def createInterface(self):
-        self.createMenu()
+        WxPandaShell.createInterface(self)
         
-        self.mainFrame = wx.SplitterWindow(self, style = wx.SP_3D | wx.SP_BORDER)
-        self.leftFrame = wx.SplitterWindow(self.mainFrame, style = wx.SP_3D | wx.SP_BORDER)
-        self.baseFrame = wx.SplitterWindow(self.mainFrame, style = wx.SP_3D | wx.SP_BORDER)
-        self.viewFrame = FWS.FourWaySplitter(self.baseFrame, style=wx.SP_LIVE_UPDATE)
-        self.rightFrame = wx.SplitterWindow(self.baseFrame, style = wx.SP_3D | wx.SP_BORDER)
-
-        self.topView = Viewport.makeTop(self.viewFrame)
-        self.viewFrame.AppendWindow(self.topView)
-
-        self.frontView = Viewport.makeFront(self.viewFrame)
-        self.viewFrame.AppendWindow(self.frontView)
-
-        self.leftView = Viewport.makeLeft(self.viewFrame)
-        self.viewFrame.AppendWindow(self.leftView)
-
-        self.perspView = Viewport.makePerspective(self.viewFrame)
-        self.viewFrame.AppendWindow(self.perspView)
-
-        self.leftBarUpPane = wx.Panel(self.leftFrame)
         self.leftBarUpNB = wx.Notebook(self.leftBarUpPane, style=wx.NB_BOTTOM)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.leftBarUpNB, 1, wx.EXPAND)
@@ -276,15 +221,14 @@ class LevelEditorUIBase(WxAppShell):
         self.leftBarUpNB.AddPage(self.leftBarUpPane0, 'Object Palette')
         self.leftBarUpPane1 = wx.Panel(self.leftBarUpNB, -1)
         self.leftBarUpNB.AddPage(self.leftBarUpPane1, 'Proto Palette')
-        self.leftBarDownPane = wx.Panel(self.leftFrame)
+
         self.leftBarDownNB = wx.Notebook(self.leftBarDownPane)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.leftBarDownNB, 1, wx.EXPAND)
         self.leftBarDownPane.SetSizer(sizer)
         self.leftBarDownPane0 = wx.Panel(self.leftBarDownNB, -1)
         self.leftBarDownNB.AddPage(self.leftBarDownPane0, 'Scene Graph')
-        self.rightBarUpPane = wx.Panel(self.rightFrame)
-        self.rightBarDownPane = wx.Panel(self.rightFrame)
+
         self.rightBarDownNB = wx.Notebook(self.rightBarDownPane)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.rightBarDownNB, 1, wx.EXPAND)
@@ -292,23 +236,13 @@ class LevelEditorUIBase(WxAppShell):
         self.rightBarDownPane0 = wx.Panel(self.rightBarDownNB, -1)
         self.rightBarDownNB.AddPage(self.rightBarDownPane0, 'Layers')
 
-        self.leftFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarDownPane)
-        self.rightFrame.SplitHorizontally(self.rightBarUpPane, self.rightBarDownPane)
-        self.mainFrame.SplitVertically(self.leftFrame, self.baseFrame, 200)
-        self.baseFrame.SplitVertically(self.viewFrame, self.rightFrame, 600)
-        
         self.topView.SetDropTarget(PandaTextDropTarget(self.editor, self.topView))
         self.frontView.SetDropTarget(PandaTextDropTarget(self.editor, self.frontView))
         self.leftView.SetDropTarget(PandaTextDropTarget(self.editor, self.leftView))
         self.perspView.SetDropTarget(PandaTextDropTarget(self.editor, self.perspView))
-        
-        self.leftFrame.SetSashGravity(0.5)
-        self.rightFrame.SetSashGravity(0.5)        
-        self.baseFrame.SetSashGravity(1.0)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.mainFrame, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.rightBarDownPane.Layout()
+        self.Layout()
 
         self.objectPaletteUI = ObjectPaletteUI(self.leftBarUpPane0, self.editor)
         self.protoPaletteUI = ProtoPaletteUI(self.leftBarUpPane1, self.editor)
@@ -317,16 +251,6 @@ class LevelEditorUIBase(WxAppShell):
         self.layerEditorUI = LayerEditorUI(self.rightBarDownPane0, self.editor)
 
         self.showGridMenuItem.Check(True)
-
-    def onViewChange(self, evt, viewIdx):
-        for i in range(4):
-            if viewIdx >=0 and\
-               i != viewIdx:
-                base.winList[i].setActive(0)
-            else:
-                base.winList[i].setActive(1)
-
-        self.viewFrame.SetExpanded(viewIdx)
 
     def onRightDown(self, evt=None):
         """Invoked when the viewport is right-clicked."""
@@ -411,32 +335,6 @@ class LevelEditorUIBase(WxAppShell):
         if input in base.direct.hotKeyMap.keys():
             keyDesc = base.direct.hotKeyMap[input]
             messenger.send(keyDesc[1])
-
-    def appInit(self):
-        """Overridden from WxAppShell.py."""
-        # Create a new event loop (to overide default wxEventLoop)
-        self.evtLoop = wx.EventLoop()
-        self.oldLoop = wx.EventLoop.GetActive()
-        wx.EventLoop.SetActive(self.evtLoop)
-        taskMgr.add(self.wxStep, "evtLoopTask")
-
-    def initialize(self):
-        """Initializes the viewports and editor."""
-        self.Update()
-        ViewportManager.updateAll()
-        self.wxStep()
-        ViewportManager.initializeAll()
-        # Position the camera
-        if base.trackball != None:
-          base.trackball.node().setPos(0, 30, 0)
-          base.trackball.node().setHpr(0, 15, 0)
-
-    def wxStep(self, task = None):
-        """A step in the WX event loop. You can either call this yourself or use as task."""
-        while self.evtLoop.Pending():
-          self.evtLoop.Dispatch()
-        self.wxApp.ProcessIdle()
-        if task != None: return task.cont
 
     def reset(self):
         self.sceneGraphUI.reset()
