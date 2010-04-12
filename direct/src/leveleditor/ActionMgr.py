@@ -149,8 +149,8 @@ class ActionDeleteObj(ActionBase):
                                                    uid,
                                                    obj[OG.OBJ_MODEL],
                                                    parentNP)
-                self.editor.objectMgr.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid)
-                self.editor.objectMgr.updateObjectProperties(uid, objProp)
+                self.editor.objectMgr.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], objNP)
+                self.editor.objectMgr.updateObjectProperties(objNP, objProp)
                 objNP.setMat(self.objTransforms[uid])
 
             while (len(self.hierarchy.keys()) > 0):
@@ -229,8 +229,8 @@ class ActionDeleteObjById(ActionBase):
                                                    uid,
                                                    obj[OG.OBJ_MODEL],
                                                    parentNP)
-                self.editor.objectMgr.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid)
-                self.editor.objectMgr.updateObjectProperties(uid, objProp)
+                self.editor.objectMgr.updateObjectColor(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], objNP)
+                self.editor.objectMgr.updateObjectProperties(objNP, objProp)
                 objNP.setMat(self.objTransforms[uid])
 
             while (len(self.hierarchy.keys()) > 0):
