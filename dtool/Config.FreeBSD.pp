@@ -27,6 +27,7 @@
 #if $[eq $[USE_COMPILER], GCC]
   #define CC gcc
   #define CXX g++
+  #define AR ar
 
   // gcc might run into template limits on some parts of Panda.
   // I upped this from 25 to build on OS X (GCC 3.3) -- skyler.
@@ -34,6 +35,7 @@
 #else
   #define CC cc
   #define CXX CC
+  #define AR ar
 #endif
 
 // FreeBSD doesn't (yet) have any funny architecture flags.
@@ -102,8 +104,8 @@
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#defer STATIC_LIB_C ar cru $[target] $[sources]
-#defer STATIC_LIB_C++ ar cru $[target] $[sources]
+#defer STATIC_LIB_C $[AR] cru $[target] $[sources]
+#defer STATIC_LIB_C++ $[AR] cru $[target] $[sources]
 
 // How to run ranlib, if necessary, after generating a static library.
 // $[target] is the name of the library.  Set this to the empty string
