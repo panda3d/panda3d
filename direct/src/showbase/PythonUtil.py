@@ -4283,6 +4283,32 @@ if __debug__:
     assert s.c[0].text == 'testComment'
     del s
 
+def repeatableRepr(obj):
+    if type(obj) is types.DictType:
+        keys = obj.keys()
+        keys.sort()
+        s = '{'
+        for i in xrange(len(keys)):
+            key = keys[i]
+            s += repeatableRepr(key)
+            s += ': '
+            s += repeatableRepr(obj[key])
+            if i < (len(keys)-1):
+                s += ', '
+        s += '}'
+        return s
+    elif type(obj) is type(set()):
+        l = []
+        for item in obj:
+            l.append(item)
+        l.sort()
+        return repeatableRepr(l)
+    return repr(obj)
+
+if __debug__:
+    assert repeatableRepr({1: 'a', 2: 'b'}) == repeatableRepr({2: 'b', 1: 'a'})
+    assert repeatableRepr(set([1,2,3])) == repeatableRepr(set([3,2,1]))
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -4342,3 +4368,4 @@ __builtin__.configIsToday = configIsToday
 __builtin__.typeName = typeName
 __builtin__.safeTypeName = safeTypeName
 __builtin__.histogramDict = histogramDict
+__builtin__.repeatableRepr = repeatableRepr
