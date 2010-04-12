@@ -29,13 +29,14 @@ class WxAppShell(wx.Frame):
             kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
         wx.Frame.__init__(self, None, -1, *args, **kw)
 
+        self._logWin = None
         # Initialize the application
         self.appInit()
-
         self.__createInterface()
         self.Show()
         
     def __createInterface(self):
+        self.__createLogWin()
         self.__createMenuBar()
         self.__createAboutBox()
         # Add binding for panel cleanup code
@@ -46,6 +47,14 @@ class WxAppShell(wx.Frame):
         #
         self.createMenuBar()
         self.createInterface()
+
+    def __createLogWin(self, evt=None):
+        # to bypass wx.Log
+        if self._logWin:
+            self._logWin.Destroy()
+        self._logWin = wx.Frame(None)
+        self._logWin.Bind(wx.EVT_CLOSE, self.__createLogWin)
+        wx.Log.SetActiveTarget(wx.LogTextCtrl(wx.TextCtrl(self._logWin, style=wx.TE_MULTILINE)))
 
     def __createMenuBar(self):
         self.menuBar = wx.MenuBar()
@@ -103,4 +112,3 @@ class WxAppShell(wx.Frame):
 
         menuItem = self.menuHelp.Append(wx.ID_ABOUT, "&About...")
         self.Bind(wx.EVT_MENU, self.showAbout, menuItem)
-
