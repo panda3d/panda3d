@@ -591,6 +591,9 @@ private:
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, 
                                                        const DDSHeader &header, 
                                                        int n, istream &in);
+  static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, 
+                                                         const DDSHeader &header, 
+                                                         int n, istream &in);
   static PTA_uchar read_dds_level_dxt1(Texture *tex, 
                                        const DDSHeader &header, 
                                        int n, istream &in);
