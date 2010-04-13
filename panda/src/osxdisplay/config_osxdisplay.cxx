@@ -37,6 +37,13 @@ ConfigVariableBool show_resize_box
           "window would completely hide any resize control drawn by the "
           "OS.  Set this variable false to allow this control to be hidden."));
 
+ConfigVariableBool osx_support_gl_buffer
+("osx-support-gl-buffer", false,
+ PRC_DESC("Set this true to support use of GLBuffers on OSX.  This is false by "
+          "default because there appear to be some prevalent driver issues with GLBuffers "
+          "that cause program crashes.  Offscreen buffers can still be created as "
+          "AGLPbuffers, if supported by the driver."));
+
 ConfigVariableBool osx_disable_event_loop
 ("osx-disable-event-loop", false,
  PRC_DESC("Set this true to disable the window event loop for the Panda "

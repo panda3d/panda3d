@@ -256,6 +256,9 @@ make_output(const string &name,
   // Second thing to try: a glGraphicsBuffer
   
   if (retry == 1) {
+    if (!osx_support_gl_buffer) {
+      return NULL;
+    }
     if ((host==0)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
