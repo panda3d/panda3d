@@ -121,7 +121,7 @@ class ObjectMgrBase:
                     try:
                         newobj = loader.loadModel(model)
                     except:
-                        newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath())
+                        newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
                 else:
                     newobj = hidden.attachNewNode(objDef.name)
             else:
@@ -371,7 +371,9 @@ class ObjectMgrBase:
             objRGBA = obj[OG.OBJ_RGBA]
             
             # load new model
-            newobj = loader.loadModel(model)
+            newobj = loader.loadModel(model, okMissing=True)
+            if newobj is None:
+                return
             newobj.setTag('OBJRoot','1')
 
             # reparent children
