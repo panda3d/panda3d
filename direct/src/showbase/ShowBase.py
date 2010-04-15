@@ -2534,6 +2534,9 @@ class ShowBase(DirectObject.DirectObject):
     def getRepository(self):
         return None
 
+    def getAxes(self):
+        return loader.loadModel("models/misc/xyzAxis.bam")
+
     def __doStartDirect(self):
         if self.__directStarted:
             return
