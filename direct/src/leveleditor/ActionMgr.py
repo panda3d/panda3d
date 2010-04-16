@@ -51,6 +51,7 @@ class ActionBase(Functor):
     def _do__call__(self, *args, **kargs):
         self.saveStatus()
         self.result = Functor._do__call__(self, *args, **kargs)
+        self.postCall()
         return self.result
 
     def redo(self):
@@ -59,6 +60,10 @@ class ActionBase(Functor):
 
     def saveStatus(self):
         # save object status for undo here
+        pass
+
+    def postCall(self):
+        # implement post process here
         pass
         
     def undo(self):
@@ -73,6 +78,11 @@ class ActionAddNewObj(ActionBase):
         ActionBase.__init__(self, function, *args, **kargs)
         self.uid = None
 
+    def postCall(self):
+        obj = self.editor.objectMgr.findObjectByNodePath(self.result)
+        if obj:
+            self.uid = obj[OG.OBJ_UID]
+
     def redo(self):
         if self.uid is None:
             print "Can't redo this add"        
@@ -85,12 +95,15 @@ class ActionAddNewObj(ActionBase):
             print "Can't undo this add"
         else:
             print "Undo: addNewObject"
-            obj = self.editor.objectMgr.findObjectByNodePath(self.result)
+            if self.uid:
+                obj = self.editor.objectMgr.findObjectById(self.uid)
+            else:
+                obj = self.editor.objectMgr.findObjectByNodePath(self.result)
             if obj:
                 self.uid = obj[OG.OBJ_UID]
                 self.editor.ui.sceneGraphUI.delete(self.uid)
-                base.direct.deselect(self.result)
-                base.direct.removeNodePath(self.result)
+                base.direct.deselect(obj[OG.OBJ_NP])
+                base.direct.removeNodePath(obj[OG.OBJ_NP])
                 self.result = None
             else:
                 print "Can't undo this add"
