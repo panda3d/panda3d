@@ -11,6 +11,11 @@ from ActionMgr import *
 import ObjectGlobals as OG
 from ObjectPaletteBase import ObjectGen
 
+# python wrapper around a panda.NodePath object
+class PythonNodePath(NodePath):
+    def __init__(self,node):
+        NodePath.NodePath.__init__(self,node)
+
 class ObjectMgrBase:
     """ ObjectMgr will create, manage, update objects in the scene """
     
@@ -119,9 +124,14 @@ class ObjectMgrBase:
                     if model is None:
                         model = objDef.model
                     try:
-                        newobj = loader.loadModel(model)
+                        newobjModel = loader.loadModel(model)
                     except:
-                        newobj = loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
+                        newobjModel = loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
+                    if newobjModel:
+                        newobj = PythonNodePath(newobjModel)
+                    else:
+                        newobj = None
+                        
                 else:
                     newobj = hidden.attachNewNode(objDef.name)
             else:
@@ -371,9 +381,10 @@ class ObjectMgrBase:
             objRGBA = obj[OG.OBJ_RGBA]
             
             # load new model
-            newobj = loader.loadModel(model, okMissing=True)
-            if newobj is None:
+            newobjModel = loader.loadModel(model, okMissing=True)
+            if newobjModel is None:
                 return
+            newobj = PythonNodePath(newobjModel)
             newobj.setTag('OBJRoot','1')
 
             # reparent children
@@ -494,7 +505,7 @@ class ObjectMgrBase:
                                    fSelectObject=(propType != OG.PROP_UI_SLIDE)
                                    )
 
-    def updateObjectPropValue(self, obj, propName, val, fSelectObject=False):
+    def updateObjectPropValue(self, obj, propName, val, fSelectObject=False, fUndo=True):
         """
         Update object property value and
         call update function if defined.         
@@ -556,7 +567,8 @@ class ObjectMgrBase:
             func = None
             undoFunc = None
         action = ActionUpdateObjectProp(self.editor, fSelectObject, obj, propName, val, oldVal, func, undoFunc)
-        self.editor.actionMgr.push(action)
+        if fUndo:
+            self.editor.actionMgr.push(action)
         action()
 
         if self.editor:

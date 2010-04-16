@@ -427,13 +427,13 @@ class ObjectPropertyUI(ScrolledPanel):
                     dynamicRangeKey = obj[OG.OBJ_PROP].get(propDynamicKey)
 
                 if dynamicRangeKey is None:
-                    obj[OG.OBJ_PROP][key] = propDef[OG.PROP_DEFAULT]
+                    self.editor.objectMgr.updateObjectPropValue(obj, key, propDef[OG.PROP_DEFAULT], fUndo=False)
                     continue
 
                 propRange = propDef[OG.PROP_RANGE].get(dynamicRangeKey)
 
                 if propRange is None:
-                    obj[OG.OBJ_PROP][key] = propDef[OG.PROP_DEFAULT]
+                    self.editor.objectMgr.updateObjectPropValue(obj, key, propDef[OG.PROP_DEFAULT], fUndo=False)
                     continue
 
                 if value is None:
@@ -447,8 +447,8 @@ class ObjectPropertyUI(ScrolledPanel):
 
                 if value not in propRange:
                     value = propRange[0]
-                    obj[OG.OBJ_PROP][key] = value
-
+                    self.editor.objectMgr.updateObjectPropValue(obj, key, value, fUndo=False)
+                    
                 propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
