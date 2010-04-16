@@ -2,6 +2,7 @@
 // Created by:  drose (25Feb02)
 // Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
 //   for set_shader_input)
+// Updated by: weifengh, PandaSE(15Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -604,6 +605,7 @@ PUBLISHED:
   void set_shader(const Shader *sha, int priority = 0);
   void set_shader_off(int priority = 0);
   void set_shader_auto(int priority = 0);
+  void set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority=0);
   void clear_shader();
   
   void set_shader_input(const ShaderInput *inp);

@@ -2,6 +2,7 @@
 // Created by: jyelon (01Sep05)
 // Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
 //   for set_shader_input)
+// Updated by: weifengh, PandaSE(15Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -55,10 +56,18 @@ PUBLISHED:
   INLINE bool               auto_shader() const;
   INLINE int                get_shader_priority() const;
   INLINE int                get_instance_count() const;
-  
+  INLINE bool               auto_normal_on() const;
+  INLINE bool               auto_glow_on() const;
+  INLINE bool               auto_gloss_on() const;
+  INLINE bool               auto_ramp_on() const;
+  INLINE bool               auto_shadow_on() const;
+
   CPT(RenderAttrib) set_shader(const Shader *s, int priority=0) const;
   CPT(RenderAttrib) set_shader_off(int priority=0) const;
   CPT(RenderAttrib) set_shader_auto(int priority=0) const;
+
+  CPT(RenderAttrib) set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority=0) const;
+
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs
   CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
@@ -136,6 +145,13 @@ private:
   int         _flags;
   int         _has_flags;
   int         _instance_count;
+
+  bool        _auto_normal_on;
+  bool        _auto_glow_on;
+  bool        _auto_gloss_on;
+  bool        _auto_ramp_on;
+  bool        _auto_shadow_on;
+
   typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
   Inputs _inputs;
 

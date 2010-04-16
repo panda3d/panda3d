@@ -1,5 +1,6 @@
 // Filename: shaderGenerator.cxx
 // Created by: jyelon (15Dec07)
+// Updated by: weifengh, PandaSE(15Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -427,6 +428,15 @@ analyze_renderstate(const RenderState *rs) {
     _need_world_position = true;
   }
 
+  const ShaderAttrib *shader_attrib = DCAST(ShaderAttrib, rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  if (shader_attrib->auto_shader()) {
+    _auto_normal_on = shader_attrib->auto_normal_on();
+    _auto_glow_on   = shader_attrib->auto_glow_on();
+    _auto_gloss_on  = shader_attrib->auto_gloss_on();
+    _auto_ramp_on   = shader_attrib->auto_ramp_on();
+    _auto_shadow_on = shader_attrib->auto_shadow_on();
+  }
+
   // Check for unimplemented features and issue warnings.
   const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
   if (!fog->is_off()) {
@@ -474,6 +484,12 @@ clear_analysis() {
   _need_world_normal = false;
   _need_eye_position = false;
   _need_eye_normal = false;
+  _auto_normal_on = false;
+  _auto_glow_on   = false;
+  _auto_gloss_on  = false;
+  _auto_ramp_on   = false;
+  _auto_shadow_on = false;
+
   _alights.clear();
   _dlights.clear();
   _plights.clear();
@@ -682,7 +698,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float3 l_eyevec,\n";
   }
   if (_lighting) {
-    if (_map_index_normal >= 0) {
+    if (_map_index_normal >= 0 && _auto_normal_on) {
       // If we had a height map and it used the same stage, that means we already have those inputs.
       if (_map_index_normal != _map_index_height) {
         ntangent_vreg = alloc_vreg();
@@ -695,7 +711,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t out float4 l_tangent : " << ntangent_freg << ",\n";
       text << "\t out float4 l_binormal : " << nbinormal_freg << ",\n";
     }
-    if (_shadows) {
+    if (_shadows && _auto_shadow_on) {
       for (int i=0; i<(int)_dlights.size(); i++) {
         if (_dlights[i]->_shadow_caster) {
           text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
@@ -737,13 +753,13 @@ synthesize_shader(const RenderState *rs) {
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
   }
-  if (_lighting && (_map_index_normal >= 0)) {
+  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
     text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_tangent" << _map_index_normal << ".xyz);\n";
     text << "\t l_tangent.w = 0;\n";
     text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_binormal" << _map_index_normal << ".xyz);\n";
     text << "\t l_binormal.w = 0;\n";
   }
-  if (_shadows) {
+  if (_shadows && _auto_shadow_on) {
     text << "\t float4x4 biasmat = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f};\n";
     for (int i=0; i<(int)_dlights.size(); i++) {
       if (_dlights[i]->_shadow_caster) {
@@ -791,7 +807,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
   }
-  if (_lighting && (_map_index_normal >= 0)) {
+  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
     text << "\t in float3 l_tangent : " << ntangent_freg << ",\n";
     text << "\t in float3 l_binormal : " << nbinormal_freg << ",\n";
   }
@@ -801,7 +817,7 @@ synthesize_shader(const RenderState *rs) {
     }
     for (int i=0; i<(int)_dlights.size(); i++) {
       text << "\t uniform float4x4 dlight_dlight" << i << "_rel_view,\n";
-      if (_shadows && _dlights[i]->_shadow_caster) {
+      if (_shadows && _dlights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
           text << "\t uniform sampler2DShadow k_dlighttex" << i << ",\n";
         } else {
@@ -816,7 +832,7 @@ synthesize_shader(const RenderState *rs) {
     for (int i=0; i<(int)_slights.size(); i++) {
       text << "\t uniform float4x4 slight_slight" << i << "_rel_view,\n";
       text << "\t uniform float4   satten_slight" << i << ",\n";
-      if (_shadows && _slights[i]->_shadow_caster) {
+      if (_shadows && _slights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
           text << "\t uniform sampler2DShadow k_slighttex" << i << ",\n";
         } else {
@@ -942,7 +958,7 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   if (_lighting) {
-    if (_map_index_normal >= 0) {
+    if (_map_index_normal >= 0 && _auto_normal_on) {
       text << "\t // Translate tangent-space normal in map to view-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
       text << "\t l_eye_normal.xyz *= tsnormal.z;\n";
@@ -962,7 +978,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t // Begin view-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
     text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;";
-    if (_shadows) {
+    if (_shadows && _auto_shadow_on) {
       text << "\t float lshad;\n";
     }
     if (_separate_ambient_diffuse) {
@@ -1000,7 +1016,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
       text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
       text << "\t lcolor *= saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
-      if (_shadows && _dlights[i]->_shadow_caster) {
+      if (_shadows && _dlights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r;\n";
         } else {
@@ -1062,7 +1078,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
-      if (_shadows && _slights[i]->_shadow_caster) {
+      if (_shadows && _slights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_slighttex" << i << ", l_slightcoord" << i << ").r;\n";
         } else {
@@ -1086,44 +1102,45 @@ synthesize_shader(const RenderState *rs) {
         text << "\t tot_specular += lspec;\n";
       }
     }
-
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-    switch (light_ramp->get_mode()) {
-    case LightRampAttrib::LRT_single_threshold:
-      {
-        float t = light_ramp->get_threshold(0);
-        float l0 = light_ramp->get_level(0);
-        text << "\t // Single-threshold light ramp\n";
-        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-        text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
-        text << "\t tot_diffuse = tot_diffuse * lr_scale;\n";
-        break;
-      }
-    case LightRampAttrib::LRT_double_threshold:
-      {
-        float t0 = light_ramp->get_threshold(0);
-        float t1 = light_ramp->get_threshold(1);
-        float l0 = light_ramp->get_level(0);
-        float l1 = light_ramp->get_level(1);
-        float l2 = light_ramp->get_level(2);
-        text << "\t // Double-threshold light ramp\n";
-        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-        text << "\t float lr_out = " << l0 << "\n";
-        text << "\t if (lr_in > " << t0 << ") lr_out=" << l1 << ";\n";
-        text << "\t if (lr_in > " << t1 << ") lr_out=" << l2 << ";\n";
-        text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
-        break;
+    if(_auto_ramp_on) {
+      switch (light_ramp->get_mode()) {
+      case LightRampAttrib::LRT_single_threshold:
+        {
+          float t = light_ramp->get_threshold(0);
+          float l0 = light_ramp->get_level(0);
+          text << "\t // Single-threshold light ramp\n";
+          text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+          text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
+          text << "\t tot_diffuse = tot_diffuse * lr_scale;\n";
+          break;
+        }
+      case LightRampAttrib::LRT_double_threshold:
+        {
+          float t0 = light_ramp->get_threshold(0);
+          float t1 = light_ramp->get_threshold(1);
+          float l0 = light_ramp->get_level(0);
+          float l1 = light_ramp->get_level(1);
+          float l2 = light_ramp->get_level(2);
+          text << "\t // Double-threshold light ramp\n";
+          text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+          text << "\t float lr_out = " << l0 << "\n";
+          text << "\t if (lr_in > " << t0 << ") lr_out=" << l1 << ";\n";
+          text << "\t if (lr_in > " << t1 << ") lr_out=" << l2 << ";\n";
+          text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
+          break;
+        }
       }
     }
     text << "\t // Begin view-space light summation\n";
     if (_have_emission) {
-      if (_map_index_glow >= 0) {
+      if (_map_index_glow >= 0 && _auto_glow_on) {
         text << "\t result = attr_material[2] * saturate(2 * (tex" << _map_index_glow << ".a - 0.5));\n";
       } else {
         text << "\t result = attr_material[2];\n";
       }
     } else {
-      if (_map_index_glow >= 0) {
+      if (_map_index_glow >= 0 && _auto_glow_on) {
         text << "\t result = saturate(2 * (tex" << _map_index_glow << ".a - 0.5));\n";
       } else {
         text << "\t result = float4(0,0,0,0);\n";
@@ -1269,14 +1286,14 @@ synthesize_shader(const RenderState *rs) {
   }
 
   if (_out_primary_glow) {
-    if (_map_index_glow >= 0) {
+    if (_map_index_glow >= 0 && _auto_glow_on) {
       text << "\t result.a = tex" << _map_index_glow << ".a;\n";
     } else {
       text << "\t result.a = 0.5;\n";
     }
   }
   if (_out_aux_glow) {
-    if (_map_index_glow >= 0) {
+    if (_map_index_glow >= 0 && _auto_glow_on) {
       text << "\t o_aux.a = tex" << _map_index_glow << ".a;\n";
     } else {
       text << "\t o_aux.a = 0.5;\n";
@@ -1288,25 +1305,26 @@ synthesize_shader(const RenderState *rs) {
       if (_material->has_specular()) {
         text << "\t tot_specular *= attr_material[3];\n";
       }
-      if (_map_index_gloss >= 0) {
+      if (_map_index_gloss >= 0 && _auto_gloss_on) {
         text << "\t tot_specular *= tex" << _map_index_gloss << ".a;\n";
       }
       text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
   }
-
-  const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-  switch (light_ramp->get_mode()) {
-  case LightRampAttrib::LRT_hdr0:
-    text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
-    break;
-  case LightRampAttrib::LRT_hdr1:
-    text << "\t result.rgb = (result*result + result) / (result*result + result + 1);\n";
-    break;
-  case LightRampAttrib::LRT_hdr2:
-    text << "\t result.rgb = result / (result + 1);\n";
-    break;
-  default: break;
+  if(_auto_ramp_on) {
+    const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
+    switch (light_ramp->get_mode()) {
+    case LightRampAttrib::LRT_hdr0:
+      text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
+      break;
+    case LightRampAttrib::LRT_hdr1:
+      text << "\t result.rgb = (result*result + result) / (result*result + result + 1);\n";
+      break;
+    case LightRampAttrib::LRT_hdr2:
+      text << "\t result.rgb = result / (result + 1);\n";
+      break;
+    default: break;
+    }
   }
 
   // The multiply is a workaround for a radeon driver bug.

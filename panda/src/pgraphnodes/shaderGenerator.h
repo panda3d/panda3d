@@ -1,5 +1,6 @@
 // Filename: shaderGenerator.h
 // Created by: jyelon (15Dec07)
+// Updated by: weifengh, PandaSE(15Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -141,6 +142,11 @@ protected:
   bool _need_world_normal;
   bool _need_eye_position;
   bool _need_eye_normal;
+  bool _auto_normal_on;
+  bool _auto_glow_on;
+  bool _auto_gloss_on;
+  bool _auto_ramp_on;
+  bool _auto_shadow_on;
 
   void analyze_renderstate(const RenderState *rs);
   void clear_analysis();

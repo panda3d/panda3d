@@ -1,5 +1,6 @@
 // Filename: shaderAttrib.I
 // Created by:  sshodhan (10Jul04)
+// Updated by: weifengh, PandaSE(15Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -26,7 +27,12 @@ ShaderAttrib() :
   _has_shader(false),
   _flags(0),
   _has_flags(0),
-  _instance_count(0)
+  _instance_count(0),
+  _auto_normal_on(false),
+  _auto_glow_on(false),
+  _auto_gloss_on(false),
+  _auto_ramp_on(false),
+  _auto_shadow_on(false) 
 {
 }
 
@@ -44,7 +50,12 @@ ShaderAttrib(const ShaderAttrib &copy) :
   _flags(copy._flags),
   _has_flags(copy._has_flags),
   _instance_count(copy._instance_count),
-  _inputs(copy._inputs)
+  _inputs(copy._inputs),
+  _auto_normal_on(copy._auto_normal_on),
+  _auto_glow_on(copy._auto_glow_on),
+  _auto_gloss_on(copy._auto_gloss_on),
+  _auto_ramp_on(copy._auto_ramp_on),
+  _auto_shadow_on(copy._auto_shadow_on)
 {
 }
 
@@ -102,3 +113,53 @@ get_flag(int index) const {
   return (_flags & (1<<index)) ? true:false;
 }
 
+//weifengh
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_normal_on
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_normal_on() const {
+  return _auto_normal_on;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_glow_on
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_glow_on() const {
+  return _auto_glow_on;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_gloss_on
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_gloss_on() const {
+  return _auto_gloss_on;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_ramp_on
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_ramp_on() const {
+  return _auto_ramp_on;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_shadow_on
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_shadow_on() const {
+  return _auto_shadow_on;
+}

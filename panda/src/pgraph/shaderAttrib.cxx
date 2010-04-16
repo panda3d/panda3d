@@ -2,6 +2,8 @@
 // Created by:  sshodhan (10Jul04)
 // Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
 //   for set_shader_input)
+// Updated by: weifengh, PandaSE(15Apr10) (added overload for
+//   set_shader_auto)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -97,6 +99,12 @@ set_shader_off(int priority) const {
   result->_shader = NULL;
   result->_shader_priority = priority;
   result->_auto_shader = false;
+  result->_auto_normal_on = false;
+  result->_auto_glow_on = false;
+  result->_auto_gloss_on = false;
+  result->_auto_ramp_on = false;
+  result->_auto_shadow_on = false;
+
   result->_has_shader = true;
   return return_new(result);
 }
@@ -113,6 +121,42 @@ set_shader_auto(int priority) const {
   result->_shader_priority = priority;
   result->_auto_shader = true;
   result->_has_shader = true;
+  result->_auto_normal_on = true;
+  result->_auto_glow_on = true;
+  result->_auto_gloss_on = true;
+  result->_auto_ramp_on = true;
+  result->_auto_shadow_on = true;
+  return return_new(result);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::set_shader_auto
+//       Access: Published
+//  Description: Set auto shader with control over whether to keep
+//               normal, glow, etc., on or off (e.g., all on via
+//               "normal-on","glow-on","gloss-on","ramp-on","shadow-on")
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority) const {
+  
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  result->_shader = NULL;
+  result->_shader_priority = priority;
+  result->_auto_shader = true;
+  result->_has_shader = true;
+  string cleanedFlag;
+
+  cleanedFlag = downcase(normal_on);
+  result->_auto_normal_on = (cleanedFlag == "normal_on");
+  cleanedFlag = downcase(glow_on);
+  result->_auto_glow_on = (cleanedFlag == "glow_on");
+  cleanedFlag = downcase(gloss_on);
+  result->_auto_gloss_on = (cleanedFlag == "gloss_on");
+  cleanedFlag = downcase(ramp_on);
+  result->_auto_ramp_on = (cleanedFlag == "ramp_on");
+  cleanedFlag = downcase(shadow_on);
+  result->_auto_shadow_on = (cleanedFlag == "shadow_on");
+
   return return_new(result);
 }
 
@@ -128,6 +172,11 @@ clear_shader() const {
   result->_shader_priority = 0;
   result->_auto_shader = false;
   result->_has_shader = false;
+  result->_auto_normal_on = false;
+  result->_auto_glow_on = false;
+  result->_auto_gloss_on = false;
+  result->_auto_ramp_on = false;
+  result->_auto_shadow_on = false;
   return return_new(result);
 }
 
@@ -723,7 +772,22 @@ compare_to_impl(const RenderAttrib *other) const {
   if (this->_instance_count != that->_instance_count) {
     return (this->_instance_count < that->_instance_count) ? -1 : 1;
   }
-  
+  if (this->_auto_normal_on != that->_auto_normal_on) {
+    return (this->_auto_normal_on < that->_auto_normal_on) ? -1 : 1;
+  }
+  if (this->_auto_glow_on != that->_auto_glow_on) {
+    return (this->_auto_glow_on < that->_auto_glow_on) ? -1 : 1;
+  }
+  if (this->_auto_gloss_on != that->_auto_gloss_on) {
+    return (this->_auto_gloss_on < that->_auto_gloss_on) ? -1 : 1;
+  }
+  if (this->_auto_ramp_on != that->_auto_ramp_on) {
+    return (this->_auto_ramp_on < that->_auto_ramp_on) ? -1 : 1;
+  }
+  if (this->_auto_shadow_on != that->_auto_shadow_on) {
+    return (this->_auto_shadow_on < that->_auto_shadow_on) ? -1 : 1;
+  }
+
   Inputs::const_iterator i1 = this->_inputs.begin();
   Inputs::const_iterator i2 = that->_inputs.begin();
   while ((i1 != this->_inputs.end()) && (i2 != that->_inputs.end())) {
@@ -761,6 +825,11 @@ compose_impl(const RenderAttrib *other) const {
       attr->_shader_priority = over->_shader_priority;
       attr->_auto_shader = over->_auto_shader;
       attr->_has_shader = over->_has_shader;
+      attr->_auto_normal_on = over->_auto_normal_on;
+      attr->_auto_glow_on = over->_auto_glow_on;
+      attr->_auto_gloss_on = over->_auto_gloss_on;
+      attr->_auto_ramp_on = over->_auto_ramp_on;
+      attr->_auto_shadow_on = over->_auto_shadow_on;
     }
   }
   // Update the shader-data portion.
