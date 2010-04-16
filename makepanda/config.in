@@ -87,7 +87,7 @@ hardware-animated-vertices #f
 
 # Enable the model-cache, but only for models, not textures.
 
-model-cache-dir $USER_APPDATA/.panda3d/cache
+model-cache-dir $HOME/.panda3d/cache
 model-cache-textures #f
 
 # This option specifies the default profiles for Cg shaders.

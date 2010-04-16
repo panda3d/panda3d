@@ -1705,16 +1705,16 @@ else:
   configprc=ReadFile("makepanda/config.in")
 
 if (sys.platform.startswith("win")):
-    configprc = configprc.replace(".panda3d","Panda3D-%s" % VERSION)
+    configprc = configprc.replace("$HOME/.panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
 else:
-    configprc = configprc.replace("aux-display pandadx9","")
-    configprc = configprc.replace("aux-display pandadx8","")
+    configprc = configprc.replace("aux-display pandadx9", "")
+    configprc = configprc.replace("aux-display pandadx8", "")
 
 if (sys.platform == "darwin"):
-    configprc = configprc.replace(".panda3d","Library/Caches/Panda3D-%s" % VERSION)
+    configprc = configprc.replace(".panda3d/cache", "Library/Caches/Panda3D-%s" % MAJOR_VERSION)
     
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
-    configprc = configprc.replace("p3openal_audio","p3fmod_audio")
+    configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
