@@ -60,6 +60,10 @@ class ObjectPaletteBase:
         else:
            self.insertItem(item, parentName)
 
+    def addHidden(self, item):
+        if hasattr(item, 'name'):
+            self.data[item.name] = item        
+
     def deleteStruct(self, name, deleteItems):
         try:
            item = self.data.pop(name)
