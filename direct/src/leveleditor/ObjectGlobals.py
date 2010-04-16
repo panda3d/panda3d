@@ -19,6 +19,7 @@ PROP_UI_CHECK = '_PropUICheckBox'
 PROP_UI_SLIDE = '_PropUISlider'
 PROP_UI_SPIN = '_PropUISpinner'
 PROP_UI_BLIND = '_PropUIBlind'
+PROP_UI_COMBO_DYNAMIC = '_PropUIComboBoxDynamic'
 
 # index for property definition
 PROP_TYPE = 0
@@ -26,6 +27,10 @@ PROP_DATATYPE = 1
 PROP_FUNC = 2
 PROP_DEFAULT = 3
 PROP_RANGE = 4
+PROP_DYNAMIC_KEY = 5
+
+# key value constant for dynamic props
+PROP_MODEL = '_PropModel'
 
 # index for slider UI
 RANGE_MIN = 0

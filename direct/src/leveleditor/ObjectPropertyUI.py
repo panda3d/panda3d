@@ -170,6 +170,7 @@ class ObjectPropertyUI(ScrolledPanel):
         self.editor = editor
         self.colorPicker = None
         self.lastColorPickerPos = None
+        self.lastPropTab = None
         ScrolledPanel.__init__(self, parent)
 
         parentSizer = wx.BoxSizer(wx.VERTICAL)
@@ -181,6 +182,7 @@ class ObjectPropertyUI(ScrolledPanel):
     def clearPropUI(self):
         sizer = self.GetSizer()
         if sizer is not None:
+            self.lastPropTab = self.nb.GetCurrentPage().GetName()
             sizer.Remove(self.propPane)
             self.propPane.Destroy()
             self.SetSizer(None)
@@ -255,7 +257,7 @@ class ObjectPropertyUI(ScrolledPanel):
         sizer.Add(self.nb, 1, wx.EXPAND)
         self.propPane.SetSizer(sizer)
 
-        self.transformPane = wx.Panel(self.nb, -1)
+        self.transformPane = wx.Panel(self.nb, -1, name='Transform')
         self.nb.AddPage(self.transformPane, 'Transform')
 
         self.propX = ObjectPropUIEntry(self.transformPane, 'X')
@@ -285,7 +287,7 @@ class ObjectPropertyUI(ScrolledPanel):
             for transformProp in transformProps:
                 transformProp.ui.Disable()
 
-        self.lookPane = wx.Panel(self.nb, -1)
+        self.lookPane = wx.Panel(self.nb, -1, name='Look')
         self.nb.AddPage(self.lookPane, 'Look')
 
         objNP = obj[OG.OBJ_NP]
@@ -331,11 +333,16 @@ class ObjectPropertyUI(ScrolledPanel):
 
         self.lookPane.SetSizer(sizer)
 
-        self.propsPane = wx.Panel(self.nb, -1)
+        self.propsPane = wx.Panel(self.nb, -1, name='Properties')
         self.nb.AddPage(self.propsPane, 'Properties')
         sizer = wx.BoxSizer(wx.VERTICAL)
-        
+
+        propNames = objDef.orderedProperties[:]
         for key in objDef.properties.keys():
+            if key not in propNames:
+                propNames.append(key)
+
+        for key in propNames:
             propDef = objDef.properties[key]
             propType = propDef[OG.PROP_TYPE]
             propDataType = propDef[OG.PROP_DATATYPE]
@@ -409,6 +416,42 @@ class ObjectPropertyUI(ScrolledPanel):
                 propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
+            elif propType == OG.PROP_UI_COMBO_DYNAMIC:
+                if len(propDef) <= OG.PROP_DYNAMIC_KEY:
+                    continue
+                
+                propDynamicKey = propDef[OG.PROP_DYNAMIC_KEY]
+                if propDynamicKey == OG.PROP_MODEL:
+                    dynamicRangeKey = obj[OG.OBJ_MODEL]
+                else:
+                    dynamicRangeKey = obj[OG.OBJ_PROP].get(propDynamicKey)
+
+                if dynamicRangeKey is None:
+                    obj[OG.OBJ_PROP][key] = propDef[OG.PROP_DEFAULT]
+                    continue
+
+                propRange = propDef[OG.PROP_RANGE].get(dynamicRangeKey)
+
+                if propRange is None:
+                    obj[OG.OBJ_PROP][key] = propDef[OG.PROP_DEFAULT]
+                    continue
+
+                if value is None:
+                    continue
+
+                if propDataType != OG.PROP_STR:
+                    for i in range(len(propRange)):
+                        propRange[i] = str(propRange[i])
+
+                    value = str(value)
+
+                if value not in propRange:
+                    value = propRange[0]
+                    obj[OG.OBJ_PROP][key] = value
+
+                propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
+                sizer.Add(propUI)
+
             else:
                 # unspported property type
                 continue
@@ -421,3 +464,10 @@ class ObjectPropertyUI(ScrolledPanel):
         self.propsPane.SetSizer(sizer);
         self.Layout()
         self.SetupScrolling(self, scroll_y = True, rate_y = 20)
+        if self.lastPropTab == 'Transform':
+            self.nb.SetSelection(0)
+        elif self.lastPropTab == 'Look':
+            self.nb.SetSelection(1)
+        elif self.lastPropTab == 'Properties':
+            self.nb.SetSelection(2)
+            
