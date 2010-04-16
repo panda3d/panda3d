@@ -315,7 +315,7 @@ class ObjectPropertyUI(ScrolledPanel):
 
         objDef = obj[OG.OBJ_DEF]
 
-        if objDef.model is not None:
+        if objDef.model is not None and len(objDef.models) > 0:
             propUI = ObjectPropUICombo(self.lookPane, 'model', obj[OG.OBJ_MODEL], objDef.models)
             sizer.Add(propUI)            
 
