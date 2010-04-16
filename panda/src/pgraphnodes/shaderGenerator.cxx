@@ -1,6 +1,9 @@
 // Filename: shaderGenerator.cxx
 // Created by: jyelon (15Dec07)
 // Updated by: weifengh, PandaSE(15Apr10)
+// Updated by: agartner, PandaSE(16Apr10) - bug fix to synthesize_shader;
+// TextureStage::M_modulate (before this, separate textures formatted as
+// alpha wiped color off resulting rgb)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -1215,9 +1218,36 @@ synthesize_shader(const RenderState *rs) {
     TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
     case TextureStage::M_modulate:
+      //if the format of the texture is RGB, we simply multiply results
+      //RGB by the texture's RGB
+      if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_rgb){
+        text << "\t result.rgb *= tex" << i << ";\n";
+      }
+      //if it's an RGBA texture...multiply by the whole set of values (R,G,B,A) together
+      //NOTE: if you want an RGBA map as an additional transparency map then this
+      //will not work correctly. You must store the transparency information either in the alpha channel
+      //of the color map, or use a separate alpha may with no color info at all (thus it gets treated as
+      //as F_alpha, not F_RGBA). Also, you can store the alpha map file inside a standard RGB map by
+      //using the same prefix for both textures.  This is equivalent to RGBA.
+      else if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_rgba){
+        text << "\t result.rgba *= tex" << i << ";\n";
+      }
+      //if it's an alpha formatted texture (ie. an alpha or mask in a separate texture Ref) then 
+      //multiply the alpha channels only. That way color of the result is preserved
+      else if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_alpha){
+        text << "\t result.a *= tex" << i << ".a;\n";
+      }
+      break;
     case TextureStage::M_modulate_glow:
     case TextureStage::M_modulate_gloss:
-      text << "\t result *= tex" << i << ";\n";
+      //in the case of glow or spec we currently see the specularity evenly across the surface
+      //even if transparency or masking is present
+      //not sure if this is desired behavior or not.
+      //*MOST* would construct a spec map based off of
+      //what is/isn't seen based on the mask/transparency
+      //this may have to be left alone for now
+      //agartner
+      text << "\t result.rgb *= tex" << i << ";\n";
       break;
     case TextureStage::M_decal:
       text << "\t result.rgb = lerp(result, tex" << i << ", tex" << i << ".a).rgb;\n";
