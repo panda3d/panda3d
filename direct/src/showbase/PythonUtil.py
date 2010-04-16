@@ -4363,7 +4363,7 @@ class bp:
     nameInfos = {}
     lastBp = None
     
-    def __init__(self, name=None, grp=None, cfg=None, frameCount=1):
+    def __init__(self, name=None, grp=None, cfg=None, iff=True):
         #check early out conditions
         if not bpEnabled:
             return
@@ -4374,6 +4374,7 @@ class bp:
         self.grp = grp
         bp.grpInfos.setdefault(grp, {})
         self.cfg = cfg
+        self.iff = iff
 
         #cache this as the latest bp
         bp.lastBp = self
@@ -4429,7 +4430,7 @@ class bp:
     
     def shouldBreak(self,iff=True):
         #check easy early out
-        if not iff:
+        if not self.iff or not iff:
             return False
 
         #check disabled conditions
@@ -4465,8 +4466,9 @@ class bp:
         self.displayContextHint()
         self.bpdb.set_trace(frameCount=frameCount+1)
 
+
 class bpStub:
-    def __init__(self,name,grp=None,cfg=None,frameCount=1):
+    def __init__(self,name,grp=None,cfg=None,iff=True):
         pass
     def prettyName(self, name=None, grp=None, cfg=None, q=0):
         return '(bp Disabled)'
@@ -4556,8 +4558,7 @@ def bpDecorator(name=None,grp=None,cfg=None,iff=True,frameCount=1):
             dgrp = grp
             dcfg = cfg
             dbp = bp(name=dname,grp=dgrp,cfg=dcfg)
-            if dbp.shouldBreak(iff=iff):
-                dbp.doBreak(frameCount=frameCount+1)
+            dbp.maybeBreak(iff=iff,frameCount=frameCount+1)
             f_result = f(*args, **kwds)
             return f_result
             
@@ -4569,12 +4570,11 @@ def bpDecorator(name=None,grp=None,cfg=None,iff=True,frameCount=1):
         
     return decorator
 
-
 def bpGroup(*args, **kArgs):
-    groupBp = bp(*(args), **kArgs)
     argsCopy = args[:]
     def functor(*cArgs, **ckArgs):
-        return bp(*(cArgs), **kArgs)
+        kArgs.update(ckArgs)
+        return bp(*(cArgs), **kArgs).maybeBreak(frameCount=kArgs.get('frameCount',1)+1)
     return functor
 
 
