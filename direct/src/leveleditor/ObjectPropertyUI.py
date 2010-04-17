@@ -361,6 +361,9 @@ class ObjectPropertyUI(ScrolledPanel):
                 if value is None:
                     continue
 
+                if propDataType != OG.PROP_FLOAT:
+                    value = float(value)
+
                 propUI = ObjectPropUISlider(self.propsPane, key, value, propRange[OG.RANGE_MIN], propRange[OG.RANGE_MAX])
                 sizer.Add(propUI)
 
