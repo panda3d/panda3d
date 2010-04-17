@@ -233,7 +233,9 @@ class ObjectMgrBase:
         obj = self.findObjectByNodePath(nodePath)
         if obj is None:
             return
+        self.selectObjectCB(obj, fLEPane)
 
+    def selectObjectCB(self, obj, fLEPane):
         self.currNodePath = obj[OG.OBJ_NP]
         self.objectsLastXform[obj[OG.OBJ_UID]] = Mat4(self.currNodePath.getMat())
         # [gjeon] to connect transform UI with nodepath's transform
@@ -383,6 +385,7 @@ class ObjectMgrBase:
             # load new model
             newobjModel = loader.loadModel(model, okMissing=True)
             if newobjModel is None:
+                print "Can't load model %s"%model
                 return
             newobj = PythonNodePath(newobjModel)
             newobj.setTag('OBJRoot','1')
