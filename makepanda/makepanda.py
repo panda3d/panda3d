@@ -243,6 +243,9 @@ if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME):
 if (RTDIST or RUNTIME) and (PkgSkip("TINYXML")):
     exit("Cannot build rtdist or runtime without tinyxml")
 
+if (RTDIST) and (PkgSkip("JPEG")):
+    exit("Cannot build rtdist without jpeg")
+
 if (RUNTIME):
     SetLinkAllStatic(True)
 
