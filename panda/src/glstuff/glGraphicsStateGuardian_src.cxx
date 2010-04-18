@@ -4305,6 +4305,7 @@ do_issue_shader(bool state_has_changed) {
       context->bind(this);
       _current_shader = shader;
       _current_shader_context = context;
+      context->issue_parameters(this, Shader::SSD_shaderinputs);
     } else {
 #ifdef OPENGLES_2
       context->bind(this, false);
