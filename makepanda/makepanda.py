@@ -246,6 +246,9 @@ if (RTDIST or RUNTIME) and (PkgSkip("TINYXML")):
 if (RTDIST) and (PkgSkip("JPEG")):
     exit("Cannot build rtdist without jpeg")
 
+if (RTDIST) and (PkgSkip("WX")):
+    exit("Cannot build rtdist without wx")
+
 if (RUNTIME):
     SetLinkAllStatic(True)
 
