@@ -6,7 +6,10 @@ from pandac.PandaModules import *
 from direct.showbase.ShowBase import *
 from direct.directtools.DirectGlobals import *
 
-base = ShowBase(False)
+try:
+    base
+except NameError:
+    base = ShowBase(False)
 
 from WxAppShell import *
 from ViewPort import *
