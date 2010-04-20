@@ -63,7 +63,7 @@ PkgListSet(["PYTHON",                                  # Language bindings
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX",                                        # Toolkit support
   "OSMESA", "X11", "XF86DGA", "XRANDR",                # Unix platform support
-  "PANDATOOL", "TINYXML",                              # Toolchain                             
+  "PANDATOOL", "TINYXML", "PVIEW", "DEPLOYTOOLS",      # Toolchain                             
   "CONTRIB"                                            # Experimental
 ])
 
@@ -2886,7 +2886,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME):
+if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
   OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
@@ -2933,7 +2933,7 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME):
 # DIRECTORY: panda/src/downloadertools/
 #
 
-if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME):
+if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
   OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
@@ -3288,7 +3288,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/testbed/
 #
 
-if (not RTDIST and not RUNTIME):
+if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
   OPTS=['DIR:panda/src/testbed']
   TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
   TargetAdd('pview.exe', input='pview_pview.obj')
