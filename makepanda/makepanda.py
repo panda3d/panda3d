@@ -99,6 +99,7 @@ def usage(problem):
     print "  --threads N       (use the multithreaded build system. see manual)"
     print "  --osxtarget N     (the OSX version number to build for (OSX only))"
     print "  --override \"O=V\"  (override dtool_config/prc option value)"
+    print "  --static          (builds libraries for static linking)"
     print ""
     for pkg in PkgListGet():
         p = pkg.lower()
@@ -119,7 +120,8 @@ def parseopts(args):
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
-        "version=","lzma","no-python","threads=","outputdir=","override="]
+        "version=","lzma","no-python","threads=","outputdir=","override=",
+        "static"]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -146,6 +148,7 @@ def parseopts(args):
                 if (len(VERSION.split(".")) != 3): raise "usage"
             elif (option=="--lzma"): COMPRESSOR="lzma"
             elif (option=="--override"): AddOverride(value.strip())
+            elif (option=="--static"): SetLinkAllStatic(True)
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
