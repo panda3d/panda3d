@@ -51,13 +51,20 @@ OSXTARGET=None
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
-PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
-  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
-  "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE","WX",
-  "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","SWSCALE","FCOLLADA","GTK2","OPENGL",
-  "OSMESA","X11","XF86DGA","XRANDR","PHYSX",
-  "PANDATOOL","CONTRIB","AWESOMIUM"
+PkgListSet(["PYTHON",                                  # Language bindings
+  "OPENGL"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
+  "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
+  "ODE", "PHYSX",                                      # Physics
+  "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
+  ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA",       # 3D Formats support
+  "VRPN", "OPENSSL",                                   # Transport
+  "FFTW", "SWSCALE",                                   # Algorithm helpers
+  "ARTOOLKIT", "OPENCV", "DIRECTCAM",                  # Augmented Reality
+  "NPAPI", "AWESOMIUM",                                # Browser embedding
+  "GTK2", "WX",                                        # Toolkit support
+  "OSMESA", "X11", "XF86DGA", "XRANDR",                # Unix platform support
+  "PANDATOOL", "TINYXML",                              # Toolchain                             
+  "CONTRIB"                                            # Experimental
 ])
 
 CheckPandaSourceTree()
@@ -3294,7 +3301,7 @@ if (not RTDIST and not RUNTIME):
 # DIRECTORY: panda/src/tinydisplay/
 #
 
-if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgSkip("X11")==0)):
+if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgSkip("X11")==0) and PkgSkip("TINYDISPLAY")==0):
   OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
   TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
   TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
