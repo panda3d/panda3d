@@ -2887,7 +2887,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 #
 
 if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME):
-  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI']
+  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
   TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
@@ -2934,7 +2934,7 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME):
 #
 
 if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME):
-  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI']
+  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
   TargetAdd('multify.exe', input=['multify_multify.obj'])
