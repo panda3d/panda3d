@@ -4309,10 +4309,9 @@ if __debug__:
     assert repeatableRepr({1: 'a', 2: 'b'}) == repeatableRepr({2: 'b', 1: 'a'})
     assert repeatableRepr(set([1,2,3])) == repeatableRepr(set([3,2,1]))
 
-#bpdb - breakpoint debugging system
-#kanpatel
-bpEnabled = True
+#bpdb - breakpoint debugging system (kanpatel - 04/2010)
 class BpDb:
+    enabled = True
     lastBp = None
 
     def set_trace(self, frameCount=1):
@@ -4361,80 +4360,43 @@ class BpDb:
         print '    _ua                  unalias these commands from pdb'
 
     @staticmethod
+    def verifyEnabled():
+        try:
+            bpdb.enabled = __dev__
+            bpdb.enabled = config.GetBool('force-breakpoints', bpdb.enabled)
+        except:
+            pass
+        return bpdb.enabled
+
+    @staticmethod
     def bp(name=None, grp=None, cfg=None, iff=True, frameCount=1):
-        bpi = bp(name=name, grp=grp, cfg=cfg, iff=iff)
+        if not bpdb.enabled or not bpdb.verifyEnabled():
+            return
+            
+        bpi = bp(name=name, grp=grp, cfg=cfg, iff=iff,frameCount=frameCount+1)
         bpi.maybeBreak(frameCount=frameCount+1)
 
     @staticmethod
     def bpCall(name=None,grp=None,cfg=None,iff=True,frameCount=1,onEnter=1,onExit=0):
         def decorator(f):
             return f
-        
-        try:
-            if not (__dev__ or ConfigVariableBool('force-breakpoint', 0).getValue()):
-                return decorator
 
-            #default cfg to module name
-            #TBD: should 1 be used instead of frameCount below?
-            decoratingModule = inspect.getmodule(inspect.stack()[frameCount][0])
-            #inspect.stack()[-2][0].f_globals
-            moduleName = decoratingModule.__name__
-            if cfg is None and moduleName != '__main__':
-                #get only leaf module name
-                moduleName = moduleName.split()[-1] 
-                #prune 'Distributed' and 'AI/UD/OV'
-                if moduleName.find("Distributed") != -1:
-                    moduleName = moduleName[len("Distributed"):]
-                    moduleLen = len(moduleName)
-                    if moduleLen > 2:
-                        for suffix in ['AI','UD','OV']:
-                            suffixPos = moduleName.rfind(suffix)
-                            if suffixPos == moduleLen - 2:
-                                moduleName = moduleName[:moduleLen-2]
-                                break
-                cfg = moduleName
-
-            # determine whether we should use the decorator
-            # based on the value of dConfigParam.
-            if cfg:
-                dConfigParamList = []
-                dConfigParams = choice(isinstance(cfg, (list,tuple)), cfg, (cfg,))
-                dConfigParamList = [param for param in dConfigParams \
-                                    if ConfigVariableBool('want-breakpoint-%s' % (param,), 0).getValue()]
-
-                if not dConfigParamList:
-                    return decorator
-
-            #default grp to context name
-            if grp is None:
-                for i in range(frameCount, len(inspect.stack())):#frameCount or 0?
-                    decoratingContexts = inspect.stack()[i][4]
-                    if not decoratingContexts:
-                        continue
-                    contextTokens = decoratingContexts[0].split()
-                    if contextTokens[0] in ['class','def'] and len(contextTokens) > 1:
-                        decoratingContexts[0] = decoratingContexts[0].replace('(',' ').replace(':',' ')
-                        contextTokens = decoratingContexts[0].split()
-                        className = contextTokens[1]
-                        grp = className
-                        break
-
-        except NameError,e:
-            assert not "Error generating breakpoint decoration for function or method."
+        if not bpdb.enabled or not bpdb.verifyEnabled():
             return decorator
         
+        bpi = bp(name=name, grp=grp, cfg=cfg, iff=iff, frameCount=frameCount+1)
+        if bpi.disabled:
+            return decorator
+
         def decorator(f):
             def wrap(*args, **kwds):
                 #create our bp object
-                dname = name or f.__name__
-                dgrp = grp
-                dcfg = cfg
-                dbp = bp(name=dname,grp=dgrp,cfg=dcfg)
+                bpi.name = name or f.__name__
                 if onEnter:
-                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Entering ')
+                    bpi.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Calling ')
                 f_result = f(*args, **kwds)
                 if onExit:
-                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Exited ')
+                    bpi.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Exited ')
                 return f_result
                 
             wrap.func_name = f.func_name
@@ -4447,6 +4409,11 @@ class BpDb:
         
     @staticmethod
     def group(*args, **kArgs):
+        if not bpdb.enabled or not bpdb.verifyEnabled():
+            def functor(*cArgs, **ckArgs):
+                return
+            return functor
+        
         argsCopy = args[:]
         def functor(*cArgs, **ckArgs):
             ckArgs.update(kArgs)
@@ -4454,37 +4421,78 @@ class BpDb:
             return bpdb.bp(*(cArgs), **ckArgs)
         return functor
 
-    if not bpEnabled:
-        @staticmethod
-        def brk(*args, **kArgs):
-            return
-            
-        @staticmethod
-        def brkDec(*args, **kArgs):
-            def decorator(f):
-                return f
-            return decorator
-
-        @staticmethod
-        def group(*args, **kArgs):
-            def functor(*cArgs, **ckArgs):
-                return
-            return functor
 
 class bp:
     grpInfos = {}
     nameInfos = {}
     
-    def __init__(self, name=None, grp=None, cfg=None, iff=True):
+    def __init__(self, name=None, grp=None, cfg=None, iff=True, frameCount=1):
         #check early out conditions
-        if not bpEnabled:
+        self.disabled = False
+        if not bpdb.enabled:
+            self.disabled = True
             return
+        
+        #default cfg to module name
+        callingModule = inspect.getmodule(inspect.stack()[frameCount][0])
+        moduleName = callingModule.__name__
+        if cfg is None and moduleName != '__main__':
+            #get only leaf module name
+            moduleName = moduleName.split()[-1] 
+            #prune 'Distributed' and 'AI/UD/OV'
+            if moduleName.find("Distributed") != -1:
+                moduleName = moduleName[len("Distributed"):]
+                moduleLen = len(moduleName)
+                if moduleLen > 2:
+                    for suffix in ['AI','UD','OV']:
+                        suffixPos = moduleName.rfind(suffix)
+                        if suffixPos == moduleLen - 2:
+                            moduleName = moduleName[:moduleLen-2]
+                            break
+            cfg = moduleName
+
+        # determine whether we should this bp is active
+        # based on the value of cfg.
+        if cfg:
+            dConfigParamList = []
+            dConfigParams = choice(isinstance(cfg, (list,tuple)), cfg, (cfg,))
+            dConfigParamList = [param for param in dConfigParams \
+                                if ConfigVariableBool('want-breakpoint-%s' % (param,), 0).getValue()]
+            if not dConfigParamList:
+                self.disabled = True
+                return
+
+        #default grp to context name
+        if grp is None:
+            #look for class
+            for i in range(frameCount, len(inspect.stack())):
+                callingContexts = inspect.stack()[i][4]
+                if not callingContexts:
+                    continue
+                #print i, callingContexts
+                contextTokens = callingContexts[0].split()
+                if contextTokens[0] in ['class','def'] and len(contextTokens) > 1:
+                    callingContexts[0] = callingContexts[0].replace('(',' ').replace(':',' ')
+                    contextTokens = callingContexts[0].split()
+                    className = contextTokens[1]
+                    grp = className
+                    break
+            #look for self
+            if grp is None:
+                slf = inspect.stack()[frameCount][0].f_locals.get('self')
+                if slf:
+                    className = slf.__class__.__name__
+                    grp = className
+
+        #default name to line number
+        if name is None:
+            if frameCount < len(inspect.stack()):
+                lineno = inspect.stack()[frameCount][2]
+                name = lineno
 
         #store this breakpoint's settings
         self.name = name
-        bp.nameInfos.setdefault(name, {})
         self.grp = grp
-        bp.grpInfos.setdefault(grp, {})
         self.cfg = cfg
         self.iff = iff
 
@@ -4495,9 +4503,19 @@ class bp:
     def prettyName(name=None, grp=None, cfg=None, q=0):
         prettyName = ''
         prettyName += choice(q, "'", '')
-        prettyName += choice(cfg, '%s::'%(cfg,), '')
-        prettyName += choice(grp, '%s.'%(grp,), '')
-        prettyName += choice(name, '%s'%(name,), '')
+        if cfg:
+            prettyName += '%s'%(cfg,)
+            if grp or name:
+                prettyName += '::'
+        if grp:
+            prettyName += '%s'%(grp,)
+        if name:
+            if isinstance(name, int):
+                prettyName += '(%s)'%(name,)
+            elif grp:
+                prettyName += '.%s'%(name,)
+            else:
+                prettyName += '%s'%(name,)
         prettyName += choice(q, "'", '')
         return prettyName
 
@@ -4523,7 +4541,7 @@ class bp:
         self.grpInfos.setdefault(grp, {})
         newEnabled = not self.grpInfos[grp].get('enabled', True)
         self.grpInfos[grp]['enabled'] = newEnabled
-        print '%s is now %s.'%(self.prettyName(grp,q=1),choice(newEnabled,'enabled','disabled'),)
+        print 'group %s is now %s.'%(self.prettyName(grp,q=1),choice(newEnabled,'enabled','disabled'),)
 
     def ignore(self, ignoreCount=0, name=None):
         name = name or self.name
@@ -4542,8 +4560,14 @@ class bp:
     
     def shouldBreak(self,iff=True):
         #check easy early out
+        if self.disabled:
+            return False
         if not self.iff or not iff:
             return False
+
+        #make sure we exist
+        bp.grpInfos.setdefault(self.grp, {})
+        bp.nameInfos.setdefault(self.name, {})
 
         #check disabled conditions
         if not bp.grpInfos[self.grp].get('enabled', True):
@@ -4569,6 +4593,10 @@ class bp:
         return True
         
     def doBreak(self, frameCount=1,displayPrefix=''):
+        #make sure we exist
+        bp.grpInfos.setdefault(self.grp, {})
+        bp.nameInfos.setdefault(self.name, {})
+
         #accumulate hit count
         if 'lifetime' in bp.nameInfos[self.name]:
             bp.nameInfos[self.name]['lifetime'] -= 1
