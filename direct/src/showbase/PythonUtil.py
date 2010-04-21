@@ -4313,6 +4313,7 @@ if __debug__:
 class BpDb:
     enabled = True
     lastBp = None
+    grpInfos = {}
 
     def set_trace(self, frameCount=1):
         #find usefule frame
@@ -4338,13 +4339,13 @@ class BpDb:
         self.makeAlias('_h', 'bpdb.displayHelp()')
         self.makeAlias('_ua', 'bpdb.removeAliases()')
 
-    def makeAlias(self, name, cmd):
-        self.aliases[name] = cmd
-        self.pdb.do_alias('%s %s'%(name,cmd))
+    def makeAlias(self, aliasName, aliasCmd):
+        self.aliases[aliasName] = aliasCmd
+        self.pdb.do_alias('%s %s'%(aliasName,aliasCmd))
 
     def removeAliases(self):
-        for name in self.aliases.iterkeys():
-            self.pdb.do_unalias(name)
+        for aliasName in self.aliases.iterkeys():
+            self.pdb.do_unalias(aliasName)
         self.aliases = {}
         print '(bpdb aliases removed)'
 
@@ -4352,10 +4353,10 @@ class BpDb:
         print 'You may use normal pdb commands plus the following:'
         #print '    cmd  [param <def>]  [cmd] does )this( with [param] (default is def)'
         #print '    -----------------------------------------------------------------------'
-        print '    _i   [n <0>, name=<curr>]  set ignore count for breakpoint [name] to [n]'
-        print '    _t   [name <curr>]   toggle breakpoint name [name]'
-        print '    _tg  [grp  <curr>]   toggle breakpoint group [grp]'
-        print '    _z   [name <curr>]   clear all settings for breakpoint [name]'
+        print '    _i   [n <0> [, name=<curr>]] set ignore count for bp [name] to [n]'
+        print '    _t   [name <curr>]   toggle bp [name]'
+        print '    _tg  [grp  <curr>]   toggle bp group [grp]'
+        print '    _z   [name <curr>]   clear all settings for bp [name]'
         print '    _h                   displays this usage help'
         print '    _ua                  unalias these commands from pdb'
 
@@ -4369,34 +4370,34 @@ class BpDb:
         return bpdb.enabled
 
     @staticmethod
-    def bp(name=None, grp=None, cfg=None, iff=True, frameCount=1):
+    def bp(id=None, grp=None, cfg=None, iff=True, frameCount=1):
         if not bpdb.enabled or not bpdb.verifyEnabled():
             return
             
-        bpi = bp(name=name, grp=grp, cfg=cfg, iff=iff,frameCount=frameCount+1)
+        bpi = bp(id=id, grp=grp, cfg=cfg, iff=iff,frameCount=frameCount+1)
         bpi.maybeBreak(frameCount=frameCount+1)
 
     @staticmethod
-    def bpCall(name=None,grp=None,cfg=None,iff=True,frameCount=1,onEnter=1,onExit=0):
+    def bpCall(id=None,grp=None,cfg=None,iff=True,frameCount=1,onEnter=1,onExit=0):
         def decorator(f):
             return f
 
         if not bpdb.enabled or not bpdb.verifyEnabled():
             return decorator
         
-        bpi = bp(name=name, grp=grp, cfg=cfg, iff=iff, frameCount=frameCount+1)
+        bpi = bp(id=id, grp=grp, cfg=cfg, iff=iff, frameCount=frameCount+1)
         if bpi.disabled:
             return decorator
 
         def decorator(f):
             def wrap(*args, **kwds):
                 #create our bp object
-                bpi.name = name or f.__name__
+                dbp = bp(id=id or f.__name__, grp=bpi.grp, cfg=bpi.cfg, iff=iff, frameCount=frameCount+1)
                 if onEnter:
-                    bpi.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Calling ')
+                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Calling ')
                 f_result = f(*args, **kwds)
                 if onExit:
-                    bpi.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Exited ')
+                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Exited ')
                 return f_result
                 
             wrap.func_name = f.func_name
@@ -4408,7 +4409,7 @@ class BpDb:
         return decorator
         
     @staticmethod
-    def group(*args, **kArgs):
+    def bpGroup(*args, **kArgs):
         if not bpdb.enabled or not bpdb.verifyEnabled():
             def functor(*cArgs, **ckArgs):
                 return
@@ -4423,33 +4424,32 @@ class BpDb:
 
 
 class bp:
-    grpInfos = {}
-    nameInfos = {}
-    
-    def __init__(self, name=None, grp=None, cfg=None, iff=True, frameCount=1):
+    def __init__(self, id=None, grp=None, cfg=None, iff=True, frameCount=1):
         #check early out conditions
         self.disabled = False
         if not bpdb.enabled:
             self.disabled = True
             return
         
-        #default cfg to module name
+        moduleName = None
         callingModule = inspect.getmodule(inspect.stack()[frameCount][0])
-        moduleName = callingModule.__name__
-        if cfg is None and moduleName != '__main__':
+        if callingModule.__name__ != '__main__':
             #get only leaf module name
-            moduleName = moduleName.split()[-1] 
-            #prune 'Distributed' and 'AI/UD/OV'
-            if moduleName.find("Distributed") != -1:
-                moduleName = moduleName[len("Distributed"):]
-                moduleLen = len(moduleName)
-                if moduleLen > 2:
-                    for suffix in ['AI','UD','OV']:
-                        suffixPos = moduleName.rfind(suffix)
-                        if suffixPos == moduleLen - 2:
-                            moduleName = moduleName[:moduleLen-2]
-                            break
+            moduleName = callingModule.__name__.split()[-1] 
+
+        #default cfg to stripped module name
+        if cfg is None and moduleName:
             cfg = moduleName
+            #prune 'Distributed' and 'AI/UD/OV'
+            if cfg.find("Distributed") != -1:
+                cfg = cfg[len("Distributed"):]
+                cfgLen = len(cfg)
+                if cfg > 2:
+                    for suffix in ['AI','UD','OV']:
+                        suffixPos = cfg.rfind(suffix)
+                        if suffixPos == cfg - 2:
+                            cfg = cfg[:cfgLen-2]
+                            break
 
         # determine whether we should this bp is active
         # based on the value of cfg.
@@ -4457,7 +4457,7 @@ class bp:
             dConfigParamList = []
             dConfigParams = choice(isinstance(cfg, (list,tuple)), cfg, (cfg,))
             dConfigParamList = [param for param in dConfigParams \
-                                if ConfigVariableBool('want-breakpoint-%s' % (param,), 0).getValue()]
+                                if ConfigVariableBool('want-bp-%s' % (param,), 0).getValue()]
             if not dConfigParamList:
                 self.disabled = True
                 return
@@ -4483,15 +4483,32 @@ class bp:
                 if slf:
                     className = slf.__class__.__name__
                     grp = className
+            #default to module
+            if grp is None:
+                grp = moduleName                
 
         #default name to line number
-        if name is None:
+        if id is None:
+            def byteOffsetToLineno(code, byte):
+                # Returns the source line number corresponding to the given byte
+                # offset into the indicated Python code module.
+                import array
+                lnotab = array.array('B', code.co_lnotab)
+                line   = code.co_firstlineno
+                for i in range(0, len(lnotab), 2):
+                    byte -= lnotab[i]
+                    if byte <= 0:
+                        return line
+                    line += lnotab[i+1]
+                return line
+
             if frameCount < len(inspect.stack()):
-                lineno = inspect.stack()[frameCount][2]
-                name = lineno
+                frame = inspect.stack()[frameCount][0]
+                lineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
+                id = lineno
 
         #store this breakpoint's settings
-        self.name = name
+        self.id = id
         self.grp = grp
         self.cfg = cfg
         self.iff = iff
@@ -4500,59 +4517,96 @@ class bp:
         bpdb.lastBp = self
 
     @staticmethod
-    def prettyName(name=None, grp=None, cfg=None, q=0):
+    def prettyName(id=None, grp=None, cfg=None, q=0):
         prettyName = ''
         prettyName += choice(q, "'", '')
         if cfg:
             prettyName += '%s'%(cfg,)
-            if grp or name:
+            if grp or id:
                 prettyName += '::'
         if grp:
             prettyName += '%s'%(grp,)
-        if name:
-            if isinstance(name, int):
-                prettyName += '(%s)'%(name,)
+        if id:
+            if isinstance(id, int):
+                prettyName += '(%s)'%(id,)
             elif grp:
-                prettyName += '.%s'%(name,)
+                prettyName += '.%s'%(id,)
             else:
-                prettyName += '%s'%(name,)
+                prettyName += '%s'%(id,)
         prettyName += choice(q, "'", '')
         return prettyName
 
     def displayContextHint(self, displayPrefix=''):
-        contextString = displayPrefix + self.prettyName(name=self.name,grp=self.grp,cfg=self.cfg)
+        contextString = displayPrefix + self.prettyName(id=self.id,grp=self.grp,cfg=self.cfg)
         dashes = '-'*max(0, (80 - len(contextString) - 4) / 2)
         print '<%s %s %s>'%(dashes,contextString,dashes)
+    
+    def makeIdGrp(self, id, grp):
+        bpdb.grpInfos.setdefault(grp, {'__settings__':{},})
+        bpdb.grpInfos[grp].setdefault(id, {})
 
-    def enable(self, enabled=True, name=None):
-        name = name or self.name
-        self.nameInfos.setdefault(name, {})
-        self.nameInfos[name]['enabled'] = enabled
+    def parseBPPath(self, arg=None):
+        id = None
+        grp = None
+        if arg:
+            if not isinstance(arg, type('')):
+                print "error: argument must be string '[grp.]id'"
+                return None, None
+                
+            tokens = arg.split('.')
+            id = tokens[-1]
+            if len(tokens) > 1:
+                grp = tokens[-2]
+
+        id = id or bpdb.lastBp.id
+        grp = grp or bpdb.lastBp.grp       
+
+        return id, grp
+
+    def enable(self, enabled=True, id=None, grp=None):
+        id = id or bpdb.lastBp.id
+        grp = grp or bpdb.lastBp.grp
+        self.makeIdGrp(id,grp)  
+
+        bpdb.grpInfos[grp][id]['enabled'] = enabled
         
-    def toggle(self, name=None):
-        name = name or self.name
-        self.nameInfos.setdefault(name, {})
-        newEnabled = not self.nameInfos[name].get('enabled', True)
-        self.nameInfos[name]['enabled'] = newEnabled
-        print '%s is now %s.'%(self.prettyName(name,q=1),choice(newEnabled,'enabled','disabled'),)
+    def toggle(self, arg=None):
+        id, grp = self.parseBPPath(arg)
+        self.makeIdGrp(id,grp)  
+
+        newEnabled = not bpdb.grpInfos[grp][id].get('enabled', True)
+        bpdb.grpInfos[grp][id]['enabled'] = newEnabled
+        print '%s is now %s.'%(self.prettyName(id,grp,q=1),choice(newEnabled,'enabled','disabled'),)
 
     def toggleGroup(self, grp=None):
-        grp = grp or self.grp
-        self.grpInfos.setdefault(grp, {})
-        newEnabled = not self.grpInfos[grp].get('enabled', True)
-        self.grpInfos[grp]['enabled'] = newEnabled
-        print 'group %s is now %s.'%(self.prettyName(grp,q=1),choice(newEnabled,'enabled','disabled'),)
+        if grp and not isinstance(grp, type('')):
+            print "error: argument must be string 'grp'"
+            return
+            
+        grp = grp or bpdb.lastBp.grp
+        bpdb.grpInfos.setdefault(grp, {'__settings__':{},})
 
-    def ignore(self, ignoreCount=0, name=None):
-        name = name or self.name
-        self.nameInfos.setdefault(name, {})
-        self.nameInfos[name]['ignoreCount'] = ignoreCount
-        print '%s will ignored %s times.'%(self.prettyName(name,q=1),ignoreCount,)
+        newEnabled = not bpdb.grpInfos[grp]['__settings__'].get('enabled', True)
+        bpdb.grpInfos[grp]['__settings__']['enabled'] = newEnabled
+        print 'group %s is now %s.'%(self.prettyName(grp=grp,q=1),choice(newEnabled,'enabled','disabled'),)
 
-    def reset(self, name=None):
-        name = name or self.name
-        self.nameInfos[name] = {}
-        print '%s has been reset.'%(self.prettyName(name,q=1),)
+    def ignore(self, ignoreCount=0, arg=None):
+        if not isinstance(ignoreCount, int):
+            print 'error: first argument should be integer ignoreCount'
+            return
+            
+        id, grp = self.parseBPPath(arg)
+        self.makeIdGrp(id,grp)  
+
+        bpdb.grpInfos[grp][id]['ignoreCount'] = ignoreCount
+        print '%s will ignored %s times.'%(self.prettyName(id,grp,q=1),ignoreCount,)
+
+    def reset(self, arg=None):
+        id, grp = self.parseBPPath(arg)
+        self.makeIdGrp(id,grp)  
+
+        bpdb.grpInfos[grp][id] = {}
+        print '%s has been reset.'%(self.prettyName(id,grp,q=1),)
 
     def maybeBreak(self, iff=True, frameCount=1,displayPrefix=''):
         if self.shouldBreak(iff):
@@ -4566,27 +4620,26 @@ class bp:
             return False
 
         #make sure we exist
-        bp.grpInfos.setdefault(self.grp, {})
-        bp.nameInfos.setdefault(self.name, {})
+        self.makeIdGrp(self.id,self.grp)  
 
         #check disabled conditions
-        if not bp.grpInfos[self.grp].get('enabled', True):
+        if not bpdb.grpInfos[self.grp]['__settings__'].get('enabled', True):
             return False
-        if not bp.nameInfos[self.name].get('enabled', True):
+        if not bpdb.grpInfos[self.grp][self.id].get('enabled', True):
             return False
         if self.cfg:
             dConfigParamList = []
             dConfigParams = choice(isinstance(self.cfg, (list,tuple)), self.cfg, (self.cfg,))
             dConfigParamList = [param for param in dConfigParams \
-                                if ConfigVariableBool('want-breakpoint-%s' % (param,), 0).getValue()]
+                                if ConfigVariableBool('want-bp-%s' % (param,), 0).getValue()]
             if not dConfigParamList:
                 return False      
 
         #check skip conditions
-        if bp.nameInfos[self.name].get('ignore', 0) > 0:
-            bp.nameInfos[self.name]['ignoreCount'] -= 1
+        if bpdb.grpInfos[self.grp][self.id].get('ignoreCount', 0) > 0:
+            bpdb.grpInfos[self.grp][self.id]['ignoreCount'] -= 1
             return False
-        if bp.nameInfos[self.name].get('lifetime', -1) == 0:
+        if bpdb.grpInfos[self.grp][self.id].get('lifetime', -1) == 0:
             return False
 
         #all conditions go
@@ -4594,13 +4647,12 @@ class bp:
         
     def doBreak(self, frameCount=1,displayPrefix=''):
         #make sure we exist
-        bp.grpInfos.setdefault(self.grp, {})
-        bp.nameInfos.setdefault(self.name, {})
+        self.makeIdGrp(self.id,self.grp)  
 
         #accumulate hit count
-        if 'lifetime' in bp.nameInfos[self.name]:
-            bp.nameInfos[self.name]['lifetime'] -= 1
-        bp.nameInfos[self.name]['count'] = bp.nameInfos[self.name].get('count', 0) + 1
+        if 'lifetime' in bpdb.grpInfos[self.grp][self.id]:
+            bpdb.grpInfos[self.grp][self.id]['lifetime'] -= 1
+        bpdb.grpInfos[self.grp][self.id]['count'] = bpdb.grpInfos[self.grp][self.id].get('count', 0) + 1
         
         #setup debugger
         self.displayContextHint(displayPrefix=displayPrefix)
