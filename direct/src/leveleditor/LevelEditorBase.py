@@ -27,7 +27,10 @@ class LevelEditorBase(DirectObject):
         self.NPParent = render
 
         # define your own config file in inherited class
-        self.settingsFile = None        
+        self.settingsFile = None
+
+        # you can show/hide specific properties by using propertiesMask and this mode
+        self.mode = BitMask32()
         
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """

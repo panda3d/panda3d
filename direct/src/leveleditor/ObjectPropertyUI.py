@@ -343,6 +343,16 @@ class ObjectPropertyUI(ScrolledPanel):
                 propNames.append(key)
 
         for key in propNames:
+            # handling properties mask
+            propMask = BitMask32()
+            for modeKey in objDef.propertiesMask.keys():
+                if key in objDef.propertiesMask[modeKey]:
+                    propMask |= modeKey
+
+            if not propMask.isZero():
+                if (self.editor.mode & propMask).isZero():
+                    continue
+
             propDef = objDef.properties[key]
             propType = propDef[OG.PROP_TYPE]
             propDataType = propDef[OG.PROP_DATATYPE]
