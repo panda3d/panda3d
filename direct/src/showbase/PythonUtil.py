@@ -4418,9 +4418,14 @@ class BpDb:
         argsCopy = args[:]
         def functor(*cArgs, **ckArgs):
             ckArgs.update(kArgs)
+            ckArgs.pop('static', None)
             ckArgs['frameCount'] = ckArgs.get('frameCount',1)+1
             return bpdb.bp(*(cArgs), **ckArgs)
-        return functor
+        
+        if kArgs.get('static'):
+            return staticmethod(functor)
+        else:
+            return functor
 
 
 class bp:
