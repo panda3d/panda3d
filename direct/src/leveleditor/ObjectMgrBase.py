@@ -95,7 +95,8 @@ class ObjectMgrBase:
                     for pair in funcArgs.items():
                         if pair[1] == OG.ARG_NAME:
                             funcArgs[pair[0]] = nameStr
-                            break;
+                        elif pair[1] == OG.ARG_PARENT:
+                            funcArgs[pair[0]] = parent
 
                     if type(funcName) == types.StringType:
                         if funcName.startswith('.'):

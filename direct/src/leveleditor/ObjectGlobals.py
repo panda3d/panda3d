@@ -55,3 +55,4 @@ ARG_NAME = '_arg_name'
 ARG_VAL = '_arg_val' # value from UI
 ARG_OBJ = '_arg_object' # obj information data structure
 ARG_NOLOADING = '_arg_noloading' # to indicate this call is not from loading a scene
+ARG_PARENT = '_arg_parent' # parent object to be passed
