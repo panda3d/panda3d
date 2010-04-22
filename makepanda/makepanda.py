@@ -51,7 +51,7 @@ OSXTARGET=None
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
-PkgListSet(["PYTHON",                                  # Language bindings
+PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "OPENGL"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
   "ODE", "PHYSX",                                      # Physics
@@ -1893,15 +1893,16 @@ if (PkgSkip("PHYSX")==0):
     CopyAllHeaders('panda/src/physx')
     CopyAllHeaders('panda/metalibs/pandaphysx')
 
-CopyAllHeaders('direct/src/directbase')
-CopyAllHeaders('direct/src/dcparser')
-CopyAllHeaders('direct/src/deadrec')
-CopyAllHeaders('direct/src/distributed')
-CopyAllHeaders('direct/src/interval')
-CopyAllHeaders('direct/src/showbase')
-CopyAllHeaders('direct/metalibs/direct')
-CopyAllHeaders('direct/src/dcparse')
-CopyAllHeaders('direct/src/heapq')
+if (PkgSkip("DIRECT")==0):
+    CopyAllHeaders('direct/src/directbase')
+    CopyAllHeaders('direct/src/dcparser')
+    CopyAllHeaders('direct/src/deadrec')
+    CopyAllHeaders('direct/src/distributed')
+    CopyAllHeaders('direct/src/interval')
+    CopyAllHeaders('direct/src/showbase')
+    CopyAllHeaders('direct/metalibs/direct')
+    CopyAllHeaders('direct/src/dcparse')
+    CopyAllHeaders('direct/src/heapq')
 
 if (RUNTIME or RTDIST):
     CopyAllHeaders('direct/src/plugin', skip=["p3d_plugin_config.h"])
@@ -4557,7 +4558,7 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
 # Generate the models directory and samples directory
 #
 
-if (not RUNTIME):
+if (PkgSkip("DIRECT")==0 and not RUNTIME):
   model_extensions = ["*.egg"]
   if (PkgSkip("PANDATOOL")==0):
       model_extensions.append("*.flt")
@@ -4604,7 +4605,7 @@ if (RTDIST):
 # Distribute prebuilt .p3d files as executable.
 #
 
-if (not RUNTIME and not RTDIST):
+if (PkgSkip("DIRECT")==0 and not RUNTIME and not RTDIST):
   if (sys.platform.startswith("win")):
     OPTS=['DIR:direct/src/p3d']
     TargetAdd('p3dWrapper.obj', opts=OPTS, input='p3dWrapper.c')
