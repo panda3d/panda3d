@@ -1060,7 +1060,7 @@ start_p3dpython(P3DInstance *inst) {
       char buffer[buffer_size];
       sprintf(buffer, "%02d%02d%02d_%02d%02d%02d", 
               (int)(log_time_local.tm_year+1900-2000),
-              (int)(log_time_local.tm_mon),
+              (int)(log_time_local.tm_mon+1),
               (int)(log_time_local.tm_mday),
               (int)(log_time_local.tm_hour),
               (int)(log_time_local.tm_min),
