@@ -777,7 +777,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   if (vtx._weights.size()==0) {
     if (context != 0) {
       vtx._weights.push_back(MayaEggWeight(1.0, context));
-      vtx._sumWeights == 1.0; // [gjeon] to be used in normalizing weights
+      vtx._sumWeights = 1.0; // [gjeon] to be used in normalizing weights
     }
     //remaining_weight = 0.0;
   }/* else {
