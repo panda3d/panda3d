@@ -140,7 +140,7 @@
 #defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
 
 // What additional flags should we pass to interrogate?
-#if $[eq $[shell uname -m], x86_64] // if FreeBSD is 64bit
+#if $[eq $[shell uname -m], amd64] // if FreeBSD is 64bit
   #define SYSTEM_IGATE_FLAGS -D_LP64 -D__const=const -Dvolatile -Dmutable
 #else
   #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile -Dmutable
