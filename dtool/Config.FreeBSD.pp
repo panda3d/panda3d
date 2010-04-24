@@ -302,3 +302,6 @@
   #define EXTRA_IPATH /usr/PCBSD/local/include/
   #define EXTRA_LPATH /usr/PCBSD/local/lib/
 #endif
+
+#define EXTRA_IPATH /usr/local/include/
+#define EXTRA_LPATH /usr/local/lib/
