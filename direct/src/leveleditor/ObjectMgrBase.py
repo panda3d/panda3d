@@ -153,7 +153,7 @@ class ObjectMgrBase:
                     if i == 0:
                         anim = animFile
                         newobj.loop(animName)
-
+  
             if newobj is None:
                 return None
 
@@ -384,11 +384,17 @@ class ObjectMgrBase:
             objRGBA = obj[OG.OBJ_RGBA]
             
             # load new model
-            newobjModel = loader.loadModel(model, okMissing=True)
-            if newobjModel is None:
-                print "Can't load model %s"%model
-                return
-            newobj = PythonNodePath(newobjModel)
+            if obj[OG.OBJ_DEF].actor:
+                try:
+                    newobj = Actor(model)
+                except:
+                    newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
+            else:
+                newobjModel = loader.loadModel(model, okMissing=True)
+                if newobjModel is None:
+                    print "Can't load model %s"%model
+                    return
+                newobj = PythonNodePath(newobjModel)
             newobj.setTag('OBJRoot','1')
 
             # reparent children
@@ -414,10 +420,14 @@ class ObjectMgrBase:
             obj[OG.OBJ_MODEL] = model
             self.npIndex[NodePath(newobj)] = obj[OG.OBJ_UID]
 
-            if fSelectObject:
-                base.direct.select(newobj, fUndo=0)        
-
             self.editor.fNeedToSave = True
+            # update anim if necessary
+            animList = obj[OG.OBJ_DEF].animDict.get(model)
+            if animList:
+                self.updateObjectAnim(animList[0], obj, fSelectObject=fSelectObject)
+            else:
+                if fSelectObject:
+                    base.direct.select(newobj, fUndo=0)        
 
     def updateObjectAnim(self, anim, obj, fSelectObject=True):
         """ replace object's anim """

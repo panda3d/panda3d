@@ -8,7 +8,7 @@ class ObjectGen:
 
 class ObjectBase(ObjectGen):
     """ Base class for obj definitions """
-    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], animNames = [], properties={},
+    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], animNames = [], animDict = {}, properties={},
                  movable = True, actor = False, named=False, orderedProperties=[], propertiesMask={}):
         ObjectGen.__init__(self, name)
         self.createFunction = createFunction
@@ -16,6 +16,7 @@ class ObjectBase(ObjectGen):
         self.models = models[:]
         self.anims = anims[:]
         self.animNames = animNames[:]
+        self.animDict = copy.deepcopy(animDict)
         self.properties = copy.deepcopy(properties)
         self.movable = movable
         self.actor = actor
