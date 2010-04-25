@@ -63,7 +63,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX",                                        # Toolkit support
   "OSMESA", "X11", "XF86DGA", "XRANDR",                # Unix platform support
-  "PANDATOOL", "TINYXML", "PVIEW", "DEPLOYTOOLS",      # Toolchain                             
+  "PANDATOOL", "TINYXML", "PVIEW", "DEPLOYTOOLS",      # Toolchain
   "CONTRIB"                                            # Experimental
 ])
 
@@ -220,7 +220,7 @@ MAJOR_VERSION = VERSION[:3]
 
 if (RUNTIME or RTDIST):
     PkgDisable("PANDATOOL")
-    
+
     if (DISTRIBUTOR.strip() == ""):
         exit("You must provide a valid distributor name when making a runtime or rtdist build!")
 
@@ -401,8 +401,8 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
     if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")        
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")        
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/rfftw.lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
     if (PkgSkip("ODE")==0):      LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode.lib")
     if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
@@ -466,7 +466,11 @@ if (COMPILER=="LINUX"):
     if (os.path.exists("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
-     
+
+    if (sys.platform.startswith("freebsd")):
+        IncDirectory("ALWAYS", "/usr/local/include")
+        LibDirectory("ALWAYS", "/usr/local/lib")
+
     if (os.path.exists("/usr/lib64")):
         IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
@@ -507,7 +511,10 @@ if (COMPILER=="LINUX"):
     if (RTDIST):
         SmartPkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
-        SmartPkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
+        if (sys.platform.startswith("freebsd")):
+            SmartPkgEnable("NPAPI", "",          (), ("xulrunner", "nspr*/prtypes.h", "nspr*"))
+        else:
+            SmartPkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
@@ -538,7 +545,7 @@ if (COMPILER=="LINUX"):
                 LibDirectory(pkg, SDK[pkg] + "/lib")
             IncDirectory(pkg, SDK[pkg] + "/include")
             DefSymbol(pkg, "MAYAVERSION", pkg)
-    
+
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
@@ -547,7 +554,7 @@ if (COMPILER=="LINUX"):
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX:
         LibName("OPENGL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-    
+
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
@@ -639,10 +646,10 @@ def BracketNameWithQuotes(name):
     # Workaround for OSX bug - compiler doesn't like those flags quoted.
     if (name.startswith("-framework")): return name
     if (name.startswith("-dylib_file")): return name
-    
+
     # Don't add quotes when it's not necessary.
     if " " not in name: return name
-    
+
     # Account for quoted name (leave as is) but quote everything else (e.g., to protect spaces within paths from improper parsing)
     if (name.startswith('"') and name.endswith('"')): return name
     else: return '"' + name + '"'
@@ -929,7 +936,7 @@ def CompileLink(dll, obj, opts):
                     cmd += ' -l' + base[3:-2]
                 else:
                     cmd += ' ' + x
-        
+
         if (sys.platform == "darwin"):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
@@ -940,7 +947,7 @@ def CompileLink(dll, obj, opts):
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
         if (LDFLAGS !=""): cmd += " " + LDFLAGS
-        
+
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
@@ -948,12 +955,12 @@ def CompileLink(dll, obj, opts):
         cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
-        
+
         oscmd(cmd)
         if (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
             oscmd("strip " + BracketNameWithQuotes(dll))
         os.system("chmod +x " + BracketNameWithQuotes(dll))
-        
+
         if dll.endswith("." + MAJOR_VERSION + ".dylib"):
             newdll = dll[:-6-len(MAJOR_VERSION)] + "dylib"
             if (os.path.isfile(newdll)):
@@ -1010,7 +1017,7 @@ def CompileResource(target, src, opts):
                     cmd += " -d " + var
                 else:
                     cmd += " -d " + var + " = " + val
-        
+
         cmd += " " + BracketNameWithQuotes(src)
         oscmd(cmd)
 
@@ -1022,14 +1029,14 @@ def CompileResource(target, src, opts):
 
 def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0): return
-    
+
     cmdstr = SDK["PYTHONEXEC"] + " " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
         if (GetOrigExt(i)==".dll"):
             cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d","").replace(GetOutputDir()+"/lib/",""))
-    
+
     oscmd(cmdstr)
 
 ##########################################################################################
@@ -1052,7 +1059,7 @@ def FreezePy(target, inputs, opts):
     oscmd(cmdstr)
     if ("LINK_PYTHON_STATIC" in os.environ):
         del os.environ["LINK_PYTHON_STATIC"]
-    
+
     if (not os.path.exists(target)):
         exit("")
 
@@ -1096,11 +1103,11 @@ def CompileBundle(target, inputs, opts):
             objects.append(i)
         else:
             exit("Don't know how to bundle file %s" % i)
-    
+
     # Now link the object files to form the bundle.
     if (plist == None): exit("One plist file must be used when creating a bundle!")
     bundleName = plistlib.readPlist(plist)["CFBundleExecutable"]
-    
+
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
     oscmd("mkdir -p %s/Contents/Resources/" % target)
@@ -1176,7 +1183,7 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking executable", target)
         else:
             ProgressOutput(progress, "Linking dynamic library", target)
-        
+
         # Add version number to the dynamic library, on unix
         if (origsuffix==".dll" and "MODULE" not in opts and not sys.platform.startswith("win") and not RTDIST):
             if (sys.platform == "darwin"):
@@ -1367,7 +1374,7 @@ DTOOL_CONFIG=[
     ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-    ("_SECURE_SCL",                    '1',                      'UNDEF'),	 
+    ("_SECURE_SCL",                    '1',                      'UNDEF'),
     ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
@@ -1410,20 +1417,20 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = '1'
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
-    
+
     dtool_config["HAVE_NET"] = '1'
-    
+
     if (PkgSkip("NVIDIACG")==0):
         dtool_config["HAVE_CG"] = '1'
         dtool_config["HAVE_CGGL"] = '1'
         dtool_config["HAVE_CGDX9"] = '1'
-    
+
     if (not sys.platform.startswith("linux")):
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
-    
+
     if (sys.platform == "darwin"):
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
@@ -1435,7 +1442,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-    
+
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_FREEBSD"] = '1'
@@ -1448,20 +1455,20 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 2 and sys.platform.startswith("win")):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
-    
+
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
             dtool_config["DO_PSTATS"] = '1'
-    
+
     if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
-    
+
     #if (GetOptimize() <= 2):
     #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
-    
+
     if (GetOptimize() <= 3):
         dtool_config["DO_MEMORY_USAGE"] = '1'
-    
+
     #if (GetOptimize() <= 1):
     #    dtool_config["DO_PIPELINING"] = '1'
 
@@ -1480,7 +1487,7 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
-    
+
     if (RUNTIME):
         dtool_config["HAVE_P3D_PLUGIN"] = '1'
 
@@ -1646,7 +1653,7 @@ def CreatePandaVersionFiles():
     if (DISTRIBUTOR != "cmu"):
         # Subtract 1 if we are not an official version.
         nversion -= 1
-    
+
     if (RUNTIME):
         pandaversion_h = PANDAVERSION_H_RUNTIME
     else:
@@ -1661,13 +1668,13 @@ def CreatePandaVersionFiles():
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
         pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
-    
+
     if not RUNTIME:
         checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
         checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
         checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
         checkpandaversion_cxx = checkpandaversion_cxx.replace("$NVERSION",str(nversion))
-        
+
         checkpandaversion_h = CHECKPANDAVERSION_H.replace("$VERSION1",str(version1))
         checkpandaversion_h = checkpandaversion_h.replace("$VERSION2",str(version2))
         checkpandaversion_h = checkpandaversion_h.replace("$VERSION3",str(version3))
@@ -1681,7 +1688,7 @@ def CreatePandaVersionFiles():
         ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
         ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
     ConditionalWriteFile(GetOutputDir()+"/tmp/null.cxx","")
-    
+
     if RUNTIME:
         p3dactivex_rc = {"name" : "Panda3D Game Engine Plug-in",
                          "version" : VERSION,
@@ -1728,7 +1735,7 @@ else:
 
 if (sys.platform == "darwin"):
     configprc = configprc.replace(".panda3d/cache", "Library/Caches/Panda3D-%s" % MAJOR_VERSION)
-    
+
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
@@ -1959,7 +1966,7 @@ if (PkgSkip("CONTRIB")==0):
     CopyAllHeaders('contrib/src/ai')
 
 ########################################################################
-# 
+#
 # These definitions are syntactic shorthand.  They make it easy
 # to link with the usual libraries without listing them all.
 #
@@ -2084,7 +2091,7 @@ TargetAdd('interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composi
 #
 
 OPTS=['DIR:dtool/metalibs/dtoolconfig', 'BUILDING:DTOOLCONFIG']
-if (PkgSkip("PYTHON")): 
+if (PkgSkip("PYTHON")):
   TargetAdd('dtoolconfig_pydtool.obj', opts=OPTS, input="null.cxx")
 else:
   TargetAdd('dtoolconfig_pydtool.obj', opts=OPTS, input="pydtool.cxx")
@@ -2465,7 +2472,7 @@ if (not RUNTIME):
   TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libdisplay.in', opts=['IMOD:panda', 'ILIB:libdisplay', 'SRCDIR:panda/src/display'])
   TargetAdd('libdisplay_igate.obj', input='libdisplay.in', opts=["DEPENDENCYONLY"])
-  
+
   if (RTDIST and sys.platform == "darwin"):
     OPTS=['DIR:panda/src/display']
     TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
@@ -2757,11 +2764,11 @@ if (not RUNTIME):
   TargetAdd('libvision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libvision.in', opts=['IMOD:p3vision', 'ILIB:libvision', 'SRCDIR:panda/src/vision'])
   TargetAdd('libvision_igate.obj', input='libvision.in', opts=["DEPENDENCYONLY"])
-  
+
   TargetAdd('libp3vision_module.obj', input='libvision.in')
   TargetAdd('libp3vision_module.obj', opts=OPTS)
   TargetAdd('libp3vision_module.obj', opts=['IMOD:p3vision', 'ILIB:libp3vision'])
-  
+
   TargetAdd('libp3vision.dll', input='vision_composite1.obj')
   TargetAdd('libp3vision.dll', input='libvision_igate.obj')
   TargetAdd('libp3vision.dll', input='libp3vision_module.obj')
@@ -2778,7 +2785,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
   TargetAdd('libawesomium.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libawesomium.in', opts=['IMOD:p3awesomium', 'ILIB:libawesomium', 'SRCDIR:panda/src/awesomium'])
   TargetAdd('libawesomium_igate.obj', input='libawesomium.in', opts=["DEPENDENCYONLY"])
-  
+
   TargetAdd('libp3awesomium_module.obj', input='libawesomium.in')
   TargetAdd('libp3awesomium_module.obj', opts=OPTS)
   TargetAdd('libp3awesomium_module.obj', opts=['IMOD:p3awesomium', 'ILIB:libp3awesomium'])
@@ -3189,11 +3196,11 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
 if (PkgSkip("ODE")==0 and not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandaode', 'BUILDING:PANDAODE', 'ODE']
   TargetAdd('pandaode_pandaode.obj', opts=OPTS, input='pandaode.cxx')
-  
+
   TargetAdd('libpandaode_module.obj', input='libpandaode.in')
   TargetAdd('libpandaode_module.obj', opts=OPTS)
   TargetAdd('libpandaode_module.obj', opts=['IMOD:pandaode', 'ILIB:libpandaode'])
-  
+
   TargetAdd('libpandaode.dll', input='pandaode_pandaode.obj')
   TargetAdd('libpandaode.dll', input='libpandaode_module.obj')
   TargetAdd('libpandaode.dll', input='pode_composite1.obj')
@@ -3222,11 +3229,11 @@ if (PkgSkip("PHYSX")==0):
 if (PkgSkip("PHYSX")==0):
   OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX']
   TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
-  
+
   TargetAdd('libpandaphysx_module.obj', input='libpandaphysx.in')
   TargetAdd('libpandaphysx_module.obj', opts=OPTS)
   TargetAdd('libpandaphysx_module.obj', opts=['IMOD:pandaphysx', 'ILIB:libpandaphysx'])
-  
+
   TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
   TargetAdd('libpandaphysx.dll', input='libpandaphysx_module.obj')
   TargetAdd('libpandaphysx.dll', input='physx_composite.obj')
@@ -3509,10 +3516,10 @@ if (RTDIST or RUNTIME):
   # Explicitly define this as we don't include dtool_config.h here.
   if (sys.platform != "darwin" and not sys.platform.startswith("win")):
     DefSymbol("RUNTIME", "HAVE_X11", "1")
-  
+
   OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
-  
+
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
@@ -3545,11 +3552,11 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'TINYXML', 'WINUSER'])
-    
+
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3dpython.dll', opts=['PYTHON', 'TINYXML', 'WINUSER'])
-    
+
     if (sys.platform.startswith("win")):
       DefSymbol("NON_CONSOLE", "NON_CONSOLE", "")
       OPTS.append("NON_CONSOLE")
@@ -3586,10 +3593,10 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.res', opts=OPTS, winrc=nppanda3d_rc)
   elif (sys.platform=="darwin"):
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
-  
+
   OPTS += ['NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
-  
+
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
   TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
   if (sys.platform.startswith("win")):
@@ -3613,9 +3620,9 @@ if (RUNTIME and sys.platform.startswith("win")):
   DefSymbol('ACTIVEX', '_MBCS', '')
   TargetAdd('P3DActiveX.tlb', opts=OPTS, input='P3DActiveX.idl')
   TargetAdd('P3DActiveX.res', opts=OPTS, input='P3DActiveX.rc')
-  
+
   TargetAdd('plugin_activex_p3dactivex_composite1.obj', opts=OPTS, input='p3dactivex_composite1.cxx')
-  
+
   TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
   TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
@@ -3630,7 +3637,7 @@ if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
-  
+
   if (sys.platform.startswith("win")):
     panda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
                   "version" : VERSION,
@@ -3641,7 +3648,7 @@ if (RUNTIME):
                   "filedesc" : "Panda3D applet",
                   "icon" : "panda3d.ico"}
     TargetAdd('panda3d.res', opts=OPTS, winrc=panda3d_rc)
-  
+
   TargetAdd('plugin_standalone_panda3dMain.obj', opts=OPTS, input='panda3dMain.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
@@ -3656,7 +3663,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
   TargetAdd('panda3d.exe', input='libp3pystub.dll')
   TargetAdd('panda3d.exe', opts=['NOICON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
-  
+
   if (sys.platform == "darwin"):
     TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
     TargetAdd('Panda3D.app', input='plugin_standalone_panda3d.obj')
@@ -3784,7 +3791,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg2bam.exe', input='egg2bam_eggToBam.obj')
   TargetAdd('egg2bam.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
   TargetAdd('egg2bam.exe', opts=['ADVAPI',  'FFTW'])
-  
+
 #
 # DIRECTORY: pandatool/src/cvscopy/
 #
@@ -3940,7 +3947,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-qtess.exe', input='libconverter.lib')
   TargetAdd('egg-qtess.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
   TargetAdd('egg-qtess.exe', opts=['ADVAPI'])
-  
+
 #
 # DIRECTORY: pandatool/src/eggprogs/
 #
@@ -4072,7 +4079,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-info.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('image-info.exe', input='libp3pystub.dll')
   TargetAdd('image-info.exe', opts=['ADVAPI'])
-  
+
   TargetAdd('image-resize_imageResize.obj', opts=OPTS, input='imageResize.cxx')
   TargetAdd('image-resize.exe', input='image-resize_imageResize.obj')
   TargetAdd('image-resize.exe', input='libimagebase.lib')
@@ -4082,7 +4089,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-resize.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('image-resize.exe', input='libp3pystub.dll')
   TargetAdd('image-resize.exe', opts=['ADVAPI'])
-  
+
   TargetAdd('image-trans_imageTrans.obj', opts=OPTS, input='imageTrans.cxx')
   TargetAdd('image-trans.exe', input='image-trans_imageTrans.obj')
   TargetAdd('image-trans.exe', input='libimagebase.lib')
@@ -4127,7 +4134,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('lwo-scan.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('lwo-scan.exe', input='libp3pystub.dll')
   TargetAdd('lwo-scan.exe', opts=['ADVAPI'])
-  
+
   TargetAdd('lwo2egg_lwoToEgg.obj', opts=OPTS, input='lwoToEgg.cxx')
   TargetAdd('lwo2egg.exe', input='lwo2egg_lwoToEgg.obj')
   TargetAdd('lwo2egg.exe', input='liblwo.lib')
@@ -4462,7 +4469,7 @@ for VER in MAYAVERSIONS:
     else:
       TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
-    
+
     TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
     TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
     TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
@@ -4488,7 +4495,7 @@ for VER in MAYAVERSIONS:
       TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
       TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
-    
+
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
     TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
     TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libcvscopy.lib')
@@ -4501,16 +4508,16 @@ for VER in MAYAVERSIONS:
       TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
       TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
-    
+
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
     TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI',  VER])
-    
+
     TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
-    
+
     TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
     TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
-    
+
     TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
     TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
@@ -4524,11 +4531,11 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('libpandaai.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaai.in', opts=['IMOD:pandaai', 'ILIB:libpandaai', 'SRCDIR:contrib/src/ai'])
   TargetAdd('libpandaai_igate.obj', input='libpandaai.in', opts=["DEPENDENCYONLY"])
-  
+
   TargetAdd('libpandaai_module.obj', input='libpandaai.in')
   TargetAdd('libpandaai_module.obj', opts=OPTS)
   TargetAdd('libpandaai_module.obj', opts=['IMOD:pandaai', 'ILIB:libpandaai'])
-  
+
   TargetAdd('libpandaai.dll', input='libpandaai_module.obj')
   TargetAdd('libpandaai.dll', input='ai_composite1.obj')
   TargetAdd('libpandaai.dll', input='libpandaai_igate.obj')
@@ -4611,11 +4618,11 @@ if (PkgSkip("DIRECT")==0 and not RUNTIME and not RTDIST):
     TargetAdd('p3dWrapper.obj', opts=OPTS, input='p3dWrapper.c')
     TargetAdd('p3dWrapper.exe', input='p3dWrapper.obj')
     TargetAdd('p3dWrapper.exe', opts=["ADVAPI"])
-  
+
   for g in glob.glob("direct/src/p3d/*.p3d"):
     base = os.path.basename(g)
     base = base.split(".", 1)[0]
-    
+
     if (sys.platform.startswith("win")):
       TargetAdd(base+".exe", input='p3dWrapper.exe')
       CopyFile(GetOutputDir()+"/bin/"+base+".p3d", g)
@@ -4750,7 +4757,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py --version %s" % VERSION)
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
-    
+
     print "Building "+fullname+" installer. This can take up to an hour."
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
@@ -4807,8 +4814,8 @@ Architecture: ARCH
 Essential: no
 Provides: panda3d-runtime
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
-Description: Runtime binary and browser plugin for the Panda3D Game Engine 
- This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.  
+Description: Runtime binary and browser plugin for the Panda3D Game Engine
+ This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
 
 """
 
@@ -4851,7 +4858,7 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 """
 
 RUNTIME_INSTALLER_SPEC_FILE="""
-Summary: Runtime binary and browser plugin for the Panda3D Game Engine   
+Summary: Runtime binary and browser plugin for the Panda3D Game Engine
 Name: panda3d-runtime
 Version: VERSION
 Release: 1
@@ -4902,14 +4909,14 @@ def MakeInstallerLinux():
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
     oscmd("mkdir linuxroot")
-    
+
     # Invoke installpanda.py to install it into a temporary dir
     if RUNTIME:
       InstallRuntime(destdir = "linuxroot", outputdir = GetOutputDir())
     else:
       InstallPanda(destdir = "linuxroot", outputdir = GetOutputDir())
       oscmd("chmod -R 755 linuxroot/usr/share/panda3d")
-    
+
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
         oscmd("rpm -E '%_target_cpu' > "+GetOutputDir()+"/tmp/architecture.txt")
@@ -4927,7 +4934,7 @@ def MakeInstallerLinux():
         else:
           oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
         oscmd("rmdir "+ARCH, True)
-    
+
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
         ARCH = ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
@@ -4950,10 +4957,10 @@ def MakeInstallerLinux():
         else:
             oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
-    
+
     if not (os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
-    
+
 #    oscmd("chmod -R 755 linuxroot")
 #    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
 
@@ -4968,10 +4975,10 @@ def MakeInstallerOSX():
     if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
-    
+
     #TODO: add postflight script
     #oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-    
+
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/lib")
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/etc")
     oscmd("cp %s/etc/Config.prc           dstroot/base/Developer/Panda3D/etc/Config.prc" % GetOutputDir())
@@ -4986,7 +4993,7 @@ def MakeInstallerOSX():
             libname = "dstroot/base/Developer/Panda3D/lib/" + base
             # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
             oscmd("cp -R " + GetOutputDir() + "/lib/" + base + " " + libname)
-            
+
             # Execute install_name_tool to make them reference an absolute path
             if (libname.endswith(".dylib") and not os.path.islink(libname)):
                 oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
@@ -4996,7 +5003,7 @@ def MakeInstallerOSX():
                         libdep = line.strip().split(" ", 1)[0]
                         if not libdep.startswith("/"):
                             oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
-    
+
     # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
     oscmd("mkdir -p dstroot/scripts/base/")
     postinstall = open("dstroot/scripts/base/postinstall", "w")
@@ -5036,7 +5043,7 @@ def MakeInstallerOSX():
     postflight.close()
     oscmd("chmod +x dstroot/scripts/base/postinstall")
     oscmd("chmod +x dstroot/scripts/base/postflight")
-    
+
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
     oscmd("mkdir -p dstroot/tools/etc/paths.d")
@@ -5045,7 +5052,7 @@ def MakeInstallerOSX():
         binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
         oscmd("cp -R " + GetOutputDir() + "/bin/" + base + " " + binname)
-        
+
         # Execute install_name_tool to make the binaries reference an absolute path
         if (not os.path.islink(binname)):
             oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (binname, GetOutputDir()), True)
@@ -5054,7 +5061,7 @@ def MakeInstallerOSX():
                     libdep = line.strip().split(" ", 1)[0]
                     if not libdep.startswith("/"):
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
-    
+
     if PkgSkip("PYTHON")==0:
         PV = SDK["PYTHONVERSION"].replace("python", "")
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
@@ -5072,14 +5079,14 @@ def MakeInstallerOSX():
         for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/lib/direct"):
             if ((base != "extensions") and (base != "extensions_native")):
                 compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/lib/direct/"+base)
-    
+
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
-    
+
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
         oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
-    
+
     # Dummy package uninstall16 which just contains a preflight script to remove /Applications/Panda3D/ .
     oscmd("mkdir -p dstroot/scripts/uninstall16/")
     preflight = open("dstroot/scripts/uninstall16/preflight", "w")
@@ -5103,15 +5110,15 @@ def MakeInstallerOSX():
     print >>preflight, "bpfile.close()"
     preflight.close()
     oscmd("chmod +x dstroot/scripts/uninstall16/preflight")
-    
+
     oscmd("chmod -R 0775 dstroot/*")
     # We need to be root to perform a chown. Bleh.
     # Fortunately PackageMaker does it for us, on 10.5 and above.
     #oscmd("chown -R root:admin dstroot/*", True)
-    
+
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/")
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
-    
+
     pkgs = ["base", "tools", "headers", "uninstall16"]
     if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
     if os.path.isdir("samples"): pkgs.append("samples")
@@ -5130,10 +5137,10 @@ def MakeInstallerOSX():
         if os.path.isdir("dstroot/scripts/" + pkg):
             cmd += ' --scripts dstroot/scripts/' + pkg
         oscmd(cmd)
-    
+
     if os.path.isfile("/tmp/Info_plist"):
         oscmd("rm -f /tmp/Info_plist")
-    
+
     dist = open("dstroot/Panda3D/Panda3D.mpkg/Contents/distribution.dist", "w")
     print >>dist, '<?xml version="1.0" encoding="utf-8"?>'
     print >>dist, '<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">'
@@ -5185,7 +5192,7 @@ function have16installed() {
     print >>dist, '    <pkg-ref id="org.panda3d.panda3d.headers.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/headers.pkg</pkg-ref>' % (GetDirectorySize("dstroot/headers") / 1024)
     print >>dist, '</installer-script>'
     dist.close()
-    
+
     oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D')
     oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % VERSION)
     oscmd('rm -f Panda3D-rw.dmg')
