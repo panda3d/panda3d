@@ -21,7 +21,7 @@ TypeHandle AsyncTaskBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskBase::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AsyncTaskBase::
 AsyncTaskBase() {
@@ -30,7 +30,7 @@ AsyncTaskBase() {
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskBase::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AsyncTaskBase::
 ~AsyncTaskBase() {
@@ -48,14 +48,14 @@ record_task(Thread *current_thread) {
   nassertv(current_thread->_current_task == NULL);
 
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)current_thread->_current_task, 
+    ((void * TVOLATILE &)current_thread->_current_task,
      (void *)NULL, (void *)this);
 
   // If the return value is other than NULL, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
-  nassertv(result == NULL);
   nassertv(current_thread->_current_task == this);
+  nassertv(result == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,12 +69,12 @@ clear_task(Thread *current_thread) {
   nassertv(current_thread->_current_task == this);
 
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)current_thread->_current_task, 
+    ((void * TVOLATILE &)current_thread->_current_task,
      (void *)this, (void *)NULL);
 
   // If the return value is other than this, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
-  nassertv(result == this);
   nassertv(current_thread->_current_task == NULL);
+  nassertv(result == this);
 }
