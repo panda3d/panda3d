@@ -39,7 +39,7 @@
 #endif
 
 // FreeBSD doesn't (yet) have any funny architecture flags.
-#defer ARCH_FLAGS 
+#defer ARCH_FLAGS
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
@@ -298,7 +298,7 @@
 #define STATIC_LIB_EXT .a
 #define BUNDLE_EXT
 
-#if $[eq $[shell uname -n], pcbsd] // if we're running PC-BSD
+#if $[isdir /usr/PCBSD/local] // if we're running PC-BSD
   #define EXTRA_IPATH /usr/PCBSD/local/include/
   #define EXTRA_LPATH /usr/PCBSD/local/lib/
 #endif
