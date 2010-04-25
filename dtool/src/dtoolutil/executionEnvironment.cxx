@@ -38,6 +38,10 @@
 
 #ifdef IS_FREEBSD
 extern char **environ;
+
+// This is for sysctl.
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #endif
 
 #ifdef HAVE_PYTHON
@@ -230,7 +234,7 @@ ns_get_environment_variable(const string &var) const {
       }
     }
 #endif
-    
+
     // Otherwise, Return the binary name's parent directory.
     if (!_binary_name.empty()) {
       Filename main_dir (_binary_name);
@@ -270,7 +274,7 @@ ns_set_environment_variable(const string &var, const string &value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::ns_shadow_environment_variable
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
@@ -281,7 +285,7 @@ ns_shadow_environment_variable(const string &var, const string &value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::ns_clear_shadow
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 ns_clear_shadow(const string &var) {
@@ -421,23 +425,23 @@ read_environment_variables() {
 #elif defined(IS_OSX) || defined(IS_FREEBSD)
   // In the case of Mac, there's always _NSGetEnviron() which we can read.
   // In the case of FreeBSD, it's the "environ" variable.
-  
+
   char **envp;
   for (envp = environ; envp && *envp; envp++) {
     string variable;
     string value;
-    
+
     char *envc;
     for (envc = *envp; envc && *envc && strncmp(envc, "=", 1) != 0; envc++) {
       variable += (char) *envc;
     }
-    
+
     if (strncmp(envc, "=", 1) == 0) {
       for (envc++; envc && *envc; envc++) {
         value += (char) *envc;
       }
     }
-    
+
     if (!variable.empty()) {
       _variables[variable] = value;
     }
@@ -560,9 +564,29 @@ read_args() {
     _binary_name = GLOBAL_ARGV[0];
     // This really needs to be resolved against PATH.
   }
-  
+
   for (int i = 1; i < argc; i++) {
     _args.push_back(GLOBAL_ARGV[i]);
+  }
+
+#elif defined(IS_FREEBSD)
+  // In FreeBSD, we can use sysctl to determine the command-line arguments.
+
+  size_t bufsize = 4096;
+  char buffer[4096];
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, getpid()};
+  if (sysctl(mib, 4, (void*) &buffer, &bufsize, NULL, 0) == -1) {
+    perror("sysctl");
+  } else {
+    if (_binary_name.empty()) {
+      _binary_name = buffer;
+    }
+    int idx = strlen(buffer) + 1;
+    while (idx < bufsize) {
+      _args.push_back((char*)(buffer + idx));
+      int newidx = strlen(buffer + idx);
+      idx += newidx + 1;
+    }
   }
 
 #elif defined(HAVE_PROC_SELF_CMDLINE) || defined(HAVE_PROC_CURPROC_CMDLINE)
@@ -585,7 +609,7 @@ read_args() {
     return;
   }
 #endif
-  
+
   int ch = proc.get();
   int index = 0;
   while (!proc.eof() && !proc.fail()) {
