@@ -6,7 +6,7 @@
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
+// All use of this software is subject to the terms of the revised
 // BSD license.  You should have received a copy of this license
 // along with this source code in a file named "LICENSE."
 //
@@ -41,7 +41,7 @@ public:
   unsigned int _cohesion_wt;
   unsigned int _alignment_wt;
 
-  // This vector will hold all the ai characters which belong to 
+  // This vector will hold all the ai characters which belong to
   // this flock.
   typedef std::vector<AICharacter*> AICharList;
   AICharList _ai_char_list;

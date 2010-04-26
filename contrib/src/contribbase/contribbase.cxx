@@ -1,5 +1,5 @@
-// Filename: globals.h
-// Created by:  Deepak, John, Navin (26Apr10)
+// Filename: contribbase.cxx
+// Created by:  rdb (26Apr10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,21 +12,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#pragma warning (disable:4996)
-#pragma warning (disable:4005)
-#pragma warning (disable:4275)
-
-#ifndef _GLOBALS_H
-#define _GLOBALS_H
-
-#include "pandaFramework.h"
-#include "textNode.h"
-#include "pandaSystem.h"
-
-#include "lvecBase3.h"
-#include "nodePath.h"
-
-#include "genericAsyncTask.h"
-#include "asyncTaskManager.h"
-
-#endif
+#include "contribbase.h"

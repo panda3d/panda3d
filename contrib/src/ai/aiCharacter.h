@@ -6,7 +6,7 @@
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
+// All use of this software is subject to the terms of the revised
 // BSD license. You should have received a copy of this license along
 // with this source code in a file named "LICENSE."
 //
@@ -15,23 +15,20 @@
 #ifndef AICHARACTER_H
 #define AICHARACTER_H
 
-#include "aiBehaviors.h"
-#include "aiWorld.h"
-
 class AIBehaviors;
 class AIWorld;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AICharacter
 // Description : This class is used for creating the ai characters.
-//               It assigns both physics and ai attributes to the 
-//               character. It also has an update function which 
+//               It assigns both physics and ai attributes to the
+//               character. It also has an update function which
 //               updates the physics and ai of the character.
-//               This update function is called by the AIWorld 
+//               This update function is called by the AIWorld
 //               update.
 ////////////////////////////////////////////////////////////////////
 class AICharacter {
- public:
+public:
   double _mass;
   double _max_force;
   LVecBase3f _velocity;
@@ -64,11 +61,11 @@ PUBLISHED:
 
     AIBehaviors * get_ai_behaviors();
 
-    // This function is used to enable or disable the guides 
+    // This function is used to enable or disable the guides
     // for path finding.
     void set_pf_guide(bool pf_guide);
 
-    AICharacter(string model_name, NodePath model_np, double mass, 
+    AICharacter(string model_name, NodePath model_np, double mass,
                                       double movt_force, double max_force);
     ~AICharacter();
 };

@@ -6,7 +6,7 @@
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
+// All use of this software is subject to the terms of the revised
 // BSD license. You should have received a copy of this license along
 // with this source code in a file named "LICENSE."
 //
@@ -32,7 +32,7 @@ AINode* find_in_mesh(NavMesh nav_mesh, LVecBase3f pos, int grid_size);
 //               calculated using the manhattan method.
 ////////////////////////////////////////////////////////////////////
 class PathFinder {
-public:
+PUBLISHED:
   AINode *_src_node;
   AINode *_dest_node;
   vector<AINode*> _open_list;

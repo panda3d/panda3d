@@ -6,8 +6,8 @@
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
-// BSD license.  You should have received a copy of this license 
+// All use of this software is subject to the terms of the revised
+// BSD license.  You should have received a copy of this license
 // along with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ public:
   Flee *_flee_obj;
   LVecBase3f _flee_force;
 
-  // This list is used if the ai character needs to flee from 
+  // This list is used if the ai character needs to flee from
   // multiple onjects.
   ListFlee _flee_list;
   ListFlee::iterator _flee_itr;
@@ -111,7 +111,7 @@ public:
   Arrival *_arrival_obj;
   LVecBase3f _arrival_force;
 
-  // Since Flock is a collective behavior the variables are 
+  // Since Flock is a collective behavior the variables are
   // declared within the AIBehaviors class.
   float _flock_weight;
   LVecBase3f _flock_force;
@@ -135,7 +135,7 @@ public:
   bool is_on(BehaviorType bt);
   bool is_off(BehaviorType bt);
   // special cases for pathfollow and pathfinding
-  bool is_on(string ai_type); 
+  bool is_on(string ai_type);
   bool is_off(string ai_type);
   void turn_on(string ai_type);
   void turn_off(string ai_type);
@@ -156,19 +156,19 @@ PUBLISHED:
 
   void flee(NodePath target_object, double panic_distance = 10.0,
                    double relax_distance = 10.0, float flee_wt = 1.0);
-  void flee(LVecBase3f pos, double panic_distance = 10.0, 
+  void flee(LVecBase3f pos, double panic_distance = 10.0,
                    double relax_distance = 10.0, float flee_wt = 1.0);
 
   void pursue(NodePath target_object, float pursue_wt = 1.0);
 
-  void evade(NodePath target_object, double panic_distance = 10.0, 
+  void evade(NodePath target_object, double panic_distance = 10.0,
                   double relax_distance = 10.0, float evade_wt = 1.0);
 
   void arrival(double distance = 10.0);
 
   void flock(float flock_wt);
 
-  void wander(double wander_radius = 5.0, int flag =0, 
+  void wander(double wander_radius = 5.0, int flag =0,
                       double aoe = 0.0, float wander_weight = 1.0);
 
   void obstacle_avoidance(float feeler_length = 1.0);

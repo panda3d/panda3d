@@ -6,7 +6,7 @@
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
+// All use of this software is subject to the terms of the revised
 // BSD license. You should have received a copy of this license along
 // with this source code in a file named "LICENSE."
 //
@@ -25,7 +25,7 @@ class Flock;
 ////////////////////////////////////////////////////////////////////
 //       Class : AICharPool
 // Description : This class implements a linked list of AI
-//               Characters allowing the user to add and delete 
+//               Characters allowing the user to add and delete
 //               characters from the linked list.
 //               This will be used in the AIWorld class.
 ////////////////////////////////////////////////////////////////////
