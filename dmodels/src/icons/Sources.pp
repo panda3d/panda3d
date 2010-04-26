@@ -11,6 +11,11 @@
   #define SOURCES $[mayafiles]
 #end maya_egg
 
+#define eggfiles $[wildcard *.egg]
+#begin egg
+  #define SOURCES $[eggfiles]
+#end egg
+
 #begin install_icons
   #define SOURCES \
       folder.gif minusnode.gif openfolder.gif plusnode.gif python.gif \
@@ -21,5 +26,5 @@
 #begin install_egg
   #define SOURCES \ 
     $[fltfiles:%.flt=%.egg] $[mayafiles:%.mb=%.egg] \
-    icon_lightbulb.egg 
+    $[eggfiles] 
 #end install_egg
