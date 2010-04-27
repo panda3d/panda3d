@@ -7,6 +7,12 @@
 // animation hierarchy, texture swapping bugs; added collision choices to 
 // exporter.
 //
+// Updated by Andrew Gartner, Carnegie Mellon University Entertainment
+// Technology Center. 27Apr2010: Collision is now done through User Defined Properties
+// By default a plane without a standard material gets UV's as well 
+// as any object without a texture but with a standard material.
+// Point objects are now supported as "locators" for a point in space
+// within the egg.
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -95,19 +101,6 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
 
     bool all_ok = true;
 
-    // check if we need the collision set, set the _tree's m_b_has collision to be true
-    if(_options->_add_collision)
-    {
-        _tree._has_collision = true;
-
-        _tree._cs_type = (EggGroup::CollisionSolidType)(_options->_cs_type);
-        _tree._cf_type = (EggGroup::CollideFlags)(_options->_cf_type);
-
-    }
-    else
-    {
-        _tree._has_collision = false;
-    }
     if (_options->_export_whole_scene) {
         _tree._export_mesh = false;
         all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), NULL, 0);
@@ -119,10 +112,10 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
     if (all_ok) {
         switch (_options->_anim_type) {
         case MaxEggOptions::AT_pose:
-            // pose: set to a specific frame, then get out the static geometry.
-            // sprintf(Logger::GetLogString(), "Extracting geometry from frame #%d.", start_frame); 
-            // Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, Logger::GetLogString() );
-            // Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Converting static model." );
+            //pose: set to a specific frame, then get out the static geometry.
+            //sprintf(Logger::GetLogString(), "Extracting geometry from frame #%d.", start_frame); 
+             //Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, Logger::GetLogString() );
+             //Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, "Converting static model." );
             _current_frame = start_frame;
             all_ok = convert_hierarchy(_egg_data);
             break;
@@ -380,7 +373,20 @@ process_model_node(MaxNodeDesc *node_desc) {
                 break;
           
             case HELPER_CLASS_ID:
+              //we should export Point objects to give Max the equivalent of Maya locators
+              if (state.obj->ClassID() == Class_ID(POINTHELP_CLASS_ID, 0)) {
+                
+                egg_group = _tree.get_egg_group(node_desc);
+                get_transform(max_node, egg_group);
+
+              } else {
+                
                 break;
+              
+              }
+              
+               
+              
 
             }
         }
@@ -682,18 +688,32 @@ make_polyset(INode *max_node, Mesh *mesh,
                 Colorf pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
                 vert.set_color(pVC);
             }
-
             // Get the UVs for this vertex
+
+            //first check if we returned nothing in the channels slot
+            //we need UV's even in this case
+            //because the user may not have put a material
+            //on the object at all
+            if (pmat._map_channels.size() == 0) {
+              //since the channel will always be one because there's
+              //no other textures then don't bother with the name
+              UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, 1);
+              vert.set_uv( TexCoordd(uvw.x, uvw.y));   
+            }
+            //otherwise go through and generate the maps per channel
+            //this will also generate default UV's as long 
+            //as the user applies a standard material to the object
             for (int iChan=0; iChan<pmat._map_channels.size(); iChan++) {
                 int channel = pmat._map_channels[iChan];
                 ostringstream uvname;
                 uvname << "m" << channel;
                 UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
                 // changes allow the first channel to be swapped
-                if(channel ==1)
+                if(channel == 1)
                     vert.set_uv( TexCoordd(uvw.x, uvw.y));
                 else
                     vert.set_uv( uvname.str(), TexCoordd(uvw.x, uvw.y));
+           
             }
 
             vert.set_external_index(face.v[iVertex]);
@@ -726,12 +746,14 @@ make_polyset(INode *max_node, Mesh *mesh,
             egg_poly->add_texture(pmat._texture_list[i]);
         }
         egg_poly->set_color(pmat._color);
+        
+
     }
-   
+    
     // Now that we've added all the polygons (and created all the
     // vertices), go back through the vertex pool and set up the
     // appropriate joint membership for each of the vertices.
-
+    
     if (_options->_anim_type == MaxEggOptions::AT_model) {
         get_vertex_weights(max_node, vpool);
     }
@@ -950,6 +972,9 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     pandaMat._any_opacity = false;
     pandaMat._any_gloss = false;
     pandaMat._any_normal = false;
+    
+   
+   
 
     // If it's a multi-material, dig down.
         
@@ -990,16 +1015,21 @@ get_panda_material(Mtl *mtl, MtlID matID) {
             pandaMat._color[2] = diffuseColor.z;
         }
         if (!pandaMat._any_opacity) {
-            // *** Figure out how to actually get the opacity here
-            pandaMat._color[3] = maxMaterial->GetOpacity(_current_frame * GetTicksPerFrame());
+            
+            pandaMat._color[3] = (maxMaterial->GetOpacity(_current_frame * GetTicksPerFrame()));
+        }
+        if (pandaMat._texture_list.size() < 1) {
+            //if we don't have any maps whatsoever, 
+            //give the material a dummy channel 
+            //so that UV's get created
+            pandaMat._map_channels.push_back(1);
         }
         return pandaMat;
     }
-
+      
     // Otherwise, it's unrecognizable. Leave result blank.
     return pandaMat;
 }
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::analyze_diffuse_maps
 //       Access: Private
