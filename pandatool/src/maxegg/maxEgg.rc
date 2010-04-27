@@ -8,7 +8,6 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -26,7 +25,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_EGG_DETAILS DIALOGEX 0, 0, 256, 266
+IDD_EGG_DETAILS DIALOGEX 0, 0, 256, 203
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Export Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -36,7 +35,6 @@ BEGIN
     CONTROL         "Animation",IDC_ANIMATION,"Button",BS_AUTORADIOBUTTON | BS_LEFT,108,4,50,12
     CONTROL         "Both",IDC_BOTH,"Button",BS_AUTORADIOBUTTON | BS_LEFT,164,4,35,12
     CONTROL         "Static",IDC_POSE,"Button",BS_AUTORADIOBUTTON | BS_LEFT,206,4,38,12
-    GROUPBOX        "Options",IDC_STATIC,5,17,246,230,WS_GROUP
     LTEXT           "Filename",IDC_STATIC,12,30,66,8,NOT WS_GROUP
     CONTROL         "Custom1",IDC_FILENAME,"CustEdit",WS_TABSTOP,12,42,180,12
     CONTROL         "Browse...",IDC_BROWSE,"CustButton",WS_TABSTOP,198,42,48,12
@@ -52,26 +50,9 @@ BEGIN
     LTEXT           "End Frame",IDC_EF_LABEL,143,104,42,8,WS_DISABLED | NOT WS_GROUP
     CONTROL         "Custom5",IDC_EF,"CustEdit",WS_DISABLED | WS_TABSTOP,186,102,48,12
     CONTROL         "Double-sided Polygons",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,144,126,102,12
-    CONTROL         "OK",IDC_OK,"CustButton",WS_TABSTOP,163,250,42,12
-    CONTROL         "Cancel",IDC_CANCEL,"CustButton",WS_TABSTOP,209,250,42,12
-    CONTROL         "Add Collision",IDC_COLLISION,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,15,146,52,10
-    LTEXT           "Collision Solid Type",IDC_STATIC,16,159,66,8,NOT WS_GROUP
-    LTEXT           "Collide Flags",IDC_STATIC,16,200,66,8,NOT WS_GROUP
-    CONTROL         "Plane",IDC_PLANE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,75,170,50,10
-    CONTROL         "Sphere",IDC_SPHERE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,129,170,50,10
-    CONTROL         "Polygon",IDC_POLYGON,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,183,170,50,10
-    CONTROL         "PolySet",IDC_POLYSET,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,21,170,50,9
-    CONTROL         "Tube",IDC_TUBE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,21,183,50,10
-    CONTROL         "Inv-sphere",IDC_INSPHERE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,75,183,50,10
-    CONTROL         "FloorMesh",IDC_FLOORMESH,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,129,183,50,10
-    CONTROL         "Descend",IDC_DESCEND,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,21,211,50,10
-    CONTROL         "Keep",IDC_KEEP,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,75,211,50,10
-    CONTROL         "Event",IDC_EVENT,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,129,211,50,10
-    CONTROL         "Solid",IDC_SOLID,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,183,211,50,10
-    CONTROL         "Center",IDC_CENTER,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,21,225,50,10
-    CONTROL         "Turnstile",IDC_TURNSTILE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,183,225,50,10
-    CONTROL         "Level",IDC_LEVEL,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,129,225,50,10
-    CONTROL         "Intangible",IDC_INTANGIBLE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,75,225,50,10
+    CONTROL         "OK",IDC_OK,"CustButton",WS_TABSTOP,162,179,42,12
+    CONTROL         "Cancel",IDC_CANCEL,"CustButton",WS_TABSTOP,208,179,42,12
+    LTEXT           "The collision tags are now defined within each object's User Defined properties window. For more information and help please consult the panda3d manual at www.panda3d.org",IDC_STATIC,12,146,225,26
 END
 
 

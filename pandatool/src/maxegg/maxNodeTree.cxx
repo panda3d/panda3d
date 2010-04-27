@@ -24,10 +24,7 @@ MaxNodeTree::
 MaxNodeTree() {
   _root = new MaxNodeDesc;
   _fps = 0.0;
-  _has_collision = false;
   _export_mesh = false;
-  _cs_type = EggGroup::CST_none;
-  _cf_type = EggGroup::CF_none;
   _egg_data = (EggData *)NULL;
   _egg_root = (EggGroupNode *)NULL;
   _skeleton_node = (EggGroupNode *)NULL;
@@ -175,85 +172,29 @@ get_egg_group(MaxNodeDesc *node_desc) {
     if (node_desc->is_joint()) {
       egg_group->set_group_type(EggGroup::GT_joint);
     }
-
     if (node_desc->_parent == _root) {
       // The parent is the root.
       // Set collision properties for the root if it has them:
-      if(_has_collision && !_export_mesh)
+      if(!_export_mesh)
       {
-        egg_group->set_collision_name(node_desc->get_name());
-        egg_group->set_cs_type(_cs_type);
-        egg_group->set_collide_flags(_cf_type);
+          set_collision_tags(node_desc, egg_group);
       }
       _egg_root->add_child(egg_group);
 
     } else {
       // The parent is another node.
       // if export mesh, the tag should be added at the second level
-      if(_has_collision && _export_mesh)
+      if(_export_mesh)
       {
         if(node_desc->_parent->_parent == _root)
         {
-          egg_group->set_collision_name(node_desc->get_name());
-          egg_group->set_cs_type(_cs_type);
-          egg_group->set_collide_flags(_cf_type);
+            set_collision_tags(node_desc, egg_group);
         }
       }
       EggGroup *parent_egg_group = get_egg_group(node_desc->_parent);
       parent_egg_group->add_child(egg_group);
     }
 
-    // *** This is probably something that a Max plugin would need to be 
-    //     written for.  May want to ask Disney about it
-    /*
-    if (node_desc->has_dag_path()) {
-      // Check for an object type setting, from Oliver's plug-in.
-      MObject dag_object = node_desc->get_dag_path().node();
-      string object_type;
-      if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
-        egg_group->add_object_type(object_type);
-      }
-      if (get_enum_attribute(dag_object, "eggObjectTypes2", object_type)) {
-        egg_group->add_object_type(object_type);
-      }
-      if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
-        egg_group->add_object_type(object_type);
-      }
-
-      // We treat the object type "billboard" as a special case: we
-      // apply this one right away and also flag the group as an
-      // instance.
-      if (egg_group->has_object_type("billboard")) {    
-        egg_group->remove_object_type("billboard");
-        egg_group->set_group_type(EggGroup::GT_instance);
-        egg_group->set_billboard_type(EggGroup::BT_axis);
-        
-      } else if (egg_group->has_object_type("billboard-point")) {    
-        egg_group->remove_object_type("billboard-point");
-        egg_group->set_group_type(EggGroup::GT_instance);
-        egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
-      }
-      
-      // We also treat the object type "dcs" and "model" as a special
-      // case, so we can test for these flags later.
-      if (egg_group->has_object_type("dcs")) {
-        egg_group->remove_object_type("dcs");
-        egg_group->set_dcs_type(EggGroup::DC_default);
-      }
-      if (egg_group->has_object_type("model")) {
-        egg_group->remove_object_type("model");
-        egg_group->set_model_flag(true);
-      }
-      
-      // And "vertex-color" has meaning only to this converter.
-      if (egg_group->has_object_type("vertex-color")) {
-        egg_group->remove_object_type("vertex-color");
-        MaxEggGroupUserData *user_data = new MaxEggGroupUserData;
-        user_data->_vertex_color = true;
-        egg_group->set_user_data(user_data);
-      }
-    }
-    */
     node_desc->_egg_group = egg_group;
   }
 
@@ -420,4 +361,129 @@ find_joint(INode* max_node)
   if (!node || (is_joint(max_node) && !node->is_node_joint()))
     node = build_node(max_node);
   return node->_joint_entry;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaxNodeTree::set_collision_tags
+//       Access: Private
+//  Description: Sets the corresponding collision tag to the egg_group
+//               based on the User Defined Tab in the object properties 
+//               panel
+////////////////////////////////////////////////////////////////////
+void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group) {
+    //Max has huge problems passing strings and bools to Get and SetUserProp
+    //So instead we have to use Integers. Now we have to check
+    //for every collide type, then get its collide flags and
+    //do some number crunching to get the actual flag into the group
+  
+    int check = 1; //is the value true. This could be anything really
+      
+      //We have to check each collision type in turn to see if it's true
+      //Ugly but it works per object, not globaly
+    if (node_desc->get_max_node()->GetUserPropInt(_M("polyset"), check)) {
+        //we have a polyset.
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_polyset);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("plane"), check)) {
+      //plane
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_plane);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("polygon"), check)) {
+      //polygon
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_polygon);
+      }
+    }
+    if (node_desc->get_max_node()->GetUserPropInt(_M("sphere"), check)) {
+      //sphere
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_sphere);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("inv-sphere"), check)) {
+      //invsphere
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_inv_sphere);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("invsphere"), check)) {
+      //invsphere (different spelling)
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_inv_sphere);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("tube"), check)) {
+      //tube
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_tube);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("floor-mesh"), check)) {
+      //floor-mesh
+      if (check == 1) {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(EggGroup::CST_floor_mesh);
+      }
+    }
+    
+    if (node_desc->get_max_node()->GetUserPropInt(_M("descend"), check)) {
+      if (check == 1) {
+      //we have the descend flag specified
+      egg_group->set_collide_flags(EggGroup::CF_descend);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("event"), check)) {
+      if (check == 1) {
+      //we have the event flag specified
+      egg_group->set_collide_flags(EggGroup::CF_event);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("keep"), check)) {
+      if (check == 1) {
+      //we have the keep flag specified
+      egg_group->set_collide_flags(EggGroup::CF_keep);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("solid"), check)) {
+      if (check == 1) {
+      //we have the solid flag specified
+      egg_group->set_collide_flags(EggGroup::CF_solid);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("center"), check)) {
+      if (check == 1) {
+      //we have the center flag specified
+      egg_group->set_collide_flags(EggGroup::CF_center);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("turnstile"), check)) {
+      if (check == 1) {
+      //we have the turnstile flag specified
+      egg_group->set_collide_flags(EggGroup::CF_turnstile);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("level"), check)) {
+      if (check == 1) {
+      //we have the level flag specified
+      egg_group->set_collide_flags(EggGroup::CF_level);
+      }
+    } 
+    if (node_desc->get_max_node()->GetUserPropInt(_M("intangible"), check)) {
+      if (check == 1) {
+      //we have the intangible flag specified
+      egg_group->set_collide_flags(EggGroup::CF_intangible);
+      }
+    }
+    return;
 }

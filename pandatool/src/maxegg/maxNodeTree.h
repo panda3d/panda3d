@@ -45,9 +45,9 @@ public:
   MaxNodeDesc* _root;
   float _fps;
   // the flag for the setting up collision
-  bool _has_collision;
-  EggGroup::CollideFlags _cf_type;
-  EggGroup::CollisionSolidType _cs_type;
+  //bool _has_collision;
+  //EggGroup::CollideFlags _cf_type;
+  //EggGroup::CollisionSolidType _cs_type;
   bool _export_mesh;
 
 private:
@@ -60,6 +60,7 @@ private:
   bool node_in_list(ULONG handle, ULONG *list, int len);
   bool r_build_hierarchy(INode *root, ULONG *selection_list, int len);
   bool is_joint(INode *node);
+  void set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group);
 
   typedef pmap<ULONG, MaxNodeDesc *> NodesByPath;
   NodesByPath _nodes_by_path;
