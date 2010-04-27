@@ -110,7 +110,7 @@ Multifile() :
      PRC_DESC("This is a special value of encryption-iteration-count used to encrypt "
               "subfiles within a multifile.  It has a default value of 0 (just one "
               "application), on the assumption that the files from a multifile must "
-          "be loaded quickly, without paying the cost of an expensive hash on "
+              "be loaded quickly, without paying the cost of an expensive hash on "
               "each subfile in order to decrypt it."));
   
   _read = (IStreamWrapper *)NULL;
@@ -187,15 +187,23 @@ operator = (const Multifile &copy) {
 bool Multifile::
 open_read(const Filename &multifile_name, const streampos &offset) {
   close();
-  _offset = offset;
   Filename fname = multifile_name;
   fname.set_binary();
-  if (!fname.open_read(_read_file)) {
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vfile = vfs->get_file(fname);
+  if (vfile == NULL) {
     return false;
   }
-  _timestamp = fname.get_timestamp();
+  istream *multifile_stream = vfile->open_read_file(false);
+  if (multifile_stream == NULL) {
+    return false;
+  }
+
+  _timestamp = vfile->get_timestamp();
   _timestamp_dirty = true;
-  _read = &_read_filew;
+  _read = new IStreamWrapper(multifile_stream, true);
+  _owns_stream = true;
   _multifile_name = multifile_name;
   return read_index();
 }
@@ -213,12 +221,14 @@ open_read(const Filename &multifile_name, const streampos &offset) {
 //               function returns false.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read(IStreamWrapper *multifile_stream, bool owns_pointer) {
+open_read(IStreamWrapper *multifile_stream, bool owns_pointer,
+          const streampos &offset) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _read = multifile_stream;
   _owns_stream = owns_pointer;
+  _offset = offset;
   return read_index();
 }
 

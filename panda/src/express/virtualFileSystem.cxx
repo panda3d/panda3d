@@ -109,6 +109,12 @@ mount(Multifile *multifile, const Filename &mount_point, int flags) {
 //               exactly the same full pathname), the most-recently
 //               mounted system wins.
 //
+//               The filename specified as the first parameter must
+//               refer to a real, physical filename on disk; it cannot
+//               be a virtual file already appearing within the vfs
+//               filespace.  However, it is possible to mount such a
+//               file; see mount_loop() for this.
+////
 //               Note that a mounted VirtualFileSystem directory is
 //               fully case-sensitive, unlike the native Windows file
 //               system, so you must refer to files within the virtual
@@ -136,6 +142,55 @@ mount(const Filename &physical_filename, const Filename &mount_point,
     // support read-write on Multifiles.
     flags |= MF_read_only;
     if (!multifile->open_read(physical_filename)) {
+      return false;
+    }
+
+    return mount(multifile, mount_point, flags);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::mount_loop
+//       Access: Published
+//  Description: This is similar to mount(), but it receives the name
+//               of a Multifile that already appears within the
+//               virtual file system.  It can be used to mount a
+//               Multifile that is itself hosted within a
+//               virtually-mounted Multifile.
+//
+//               This interface can also be used to mount physical
+//               files (that appear within the virtual filespace), but
+//               it cannot be used to mount directories.  Use mount()
+//               if you need to mount a directory.
+//
+//               Note that there is additional overhead, in the form
+//               of additional buffer copies of the data, for
+//               recursively mounting a multifile like this.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+mount_loop(const Filename &virtual_filename, const Filename &mount_point, 
+           int flags, const string &password) {
+  PT(VirtualFile) file = get_file(virtual_filename, false);
+  if (file == NULL) {
+    express_cat->warning()
+      << "Attempt to mount " << virtual_filename << ", not found.\n";
+    return false;
+  }
+
+  if (file->is_directory()) {
+    PT(VirtualFileMountSystem) new_mount =
+      new VirtualFileMountSystem(virtual_filename);
+    return mount(new_mount, mount_point, flags);
+
+  } else {
+    // It's not a directory; it must be a Multifile.
+    PT(Multifile) multifile = new Multifile;
+    multifile->set_encryption_password(password);
+
+    // For now these are always opened read only.  Maybe later we'll
+    // support read-write on Multifiles.
+    flags |= MF_read_only;
+    if (!multifile->open_read(virtual_filename)) {
       return false;
     }
 

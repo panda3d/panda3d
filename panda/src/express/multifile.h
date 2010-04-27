@@ -42,7 +42,7 @@ private:
 
 PUBLISHED:
   BLOCKING bool open_read(const Filename &multifile_name, const streampos &offset = 0);
-  BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false);
+  BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false, const streampos &offset = 0);
   BLOCKING bool open_write(const Filename &multifile_name);
   BLOCKING bool open_write(ostream *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_read_write(const Filename &multifile_name);

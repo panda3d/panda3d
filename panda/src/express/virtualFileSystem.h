@@ -53,6 +53,8 @@ PUBLISHED:
   BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
   BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point, 
                       int flags, const string &password = "");
+  BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point, 
+                      int flags, const string &password = "");
   bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
   BLOCKING int unmount(const Filename &physical_filename);
