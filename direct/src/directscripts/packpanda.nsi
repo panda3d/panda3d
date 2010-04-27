@@ -143,6 +143,7 @@ Section "${SMDIRECTORY}" SecCore
             File /nonfatal /r "${PANDA}\plugins\*.dlo"
             File /nonfatal /r "${PANDA}\plugins\*.mll"
             File /nonfatal /r "${PANDA}\plugins\*.mel"
+            File /nonfatal /r "${PANDA}\plugins\*.ms"
             File "${PSOURCE}\doc\INSTALLING-PLUGINS.TXT"
             SetOutPath $INSTDIR\pandac\input
             File /r "${PANDA}\pandac\input\*"
