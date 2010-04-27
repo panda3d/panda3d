@@ -53,7 +53,7 @@ ThreadSimpleImpl(Thread *parent_obj) :
   _manager = ThreadSimpleManager::get_global_ptr();
 
 #ifdef HAVE_POSIX_THREADS
-  _posix_system_thread_id = -1;
+  _posix_system_thread_id = (pthread_t)-1;
 #endif
 #ifdef WIN32
   _win32_system_thread_id = 0;
