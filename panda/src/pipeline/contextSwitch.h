@@ -36,16 +36,21 @@ struct ThreadContext;
 extern "C" {
 #endif 
 
-typedef void ContextFunction(void *);
+typedef void ContextFunction(struct ThreadContext *from_context, void *);
+typedef void ThreadFunction(void *);
 
-/* Call this to fill in the appropriate values in context.  The stack
-   must already have been allocated.  The context will be initialized
-   so that when switch_to_thread_context() is called, it will begin
-   executing thread_func(data), which should not return.  This function
-   will return normally. */
+extern const int needs_stack_prealloc;
+
+/* Call this to fill in the appropriate values in context.  If
+   needs_stack_prealloc (above) is true, the stack must already have
+   been allocated; if needs_stack_prealloc is false, the stack pointer
+   is not used and may be NULL.  The context will be initialized so
+   that when switch_to_thread_context() is called, it will begin
+   executing thread_func(data), which should not return.  This
+   function will return normally. */
 void init_thread_context(struct ThreadContext *context, 
                          unsigned char *stack, size_t stack_size,
-                         ContextFunction *thread_func, void *data);
+                         ThreadFunction *thread_func, void *data);
 
 /* Call this to save the current thread context.  This function does
    not return until switch_to_thread_context() is called.  Instead it
@@ -53,15 +58,19 @@ void init_thread_context(struct ThreadContext *context,
 void save_thread_context(struct ThreadContext *context,
                          ContextFunction *next_context, void *data);
 
-/* Call this to resume executing a previously saved context.  When
-   called, it will return from save_thread_context() in the saved
-   stack (or begin executing thread_func()). */
-void switch_to_thread_context(struct ThreadContext *context);
+/* Call this to resume executing a previously saved context.
+   from_context must be the currently-executing context, and
+   to_context is the context to resume.  When called, it will return
+   from save_thread_context() in the saved stack (or begin executing
+   thread_func()). */
+void switch_to_thread_context(struct ThreadContext *from_context,
+                              struct ThreadContext *to_context);
 
 /* Use this pair of functions to transparently allocate and destroy an
    opaque ThreadContext object of the appropriate size.  These
-   functions only allocate memory; they do not initialize the values
-   of the context (see init_thread_context(), above, for that). */
+   functions allocate memory, and initialize the context as
+   appropriate for the main thread.  See init_main_context() to finish
+   the initialization for a new thread. */
 struct ThreadContext *alloc_thread_context();
 void free_thread_context(struct ThreadContext *context);
 

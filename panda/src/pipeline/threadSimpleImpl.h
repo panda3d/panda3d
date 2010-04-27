@@ -73,6 +73,8 @@ public:
   static void prepare_for_exit();
 
   INLINE static Thread *get_current_thread();
+  INLINE bool is_same_system_thread() const;
+
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
@@ -141,6 +143,20 @@ private:
 
   ThreadSimpleManager *_manager;
   static ThreadSimpleImpl *volatile _st_this;
+
+  // We may not mix-and-match OS threads with Panda's SIMPLE_THREADS.
+  // If we ever get a Panda context switch request from a different OS
+  // thread than the thread we think we should be in, that's a serious
+  // error that may cause major consequences.  For this reason, we
+  // store the OS thread's current thread ID here when the thread is
+  // constructed, and insist that it never changes during the lifetime
+  // of the thread.
+#ifdef HAVE_POSIX_THREADS
+  pthread_t _posix_system_thread_id;
+#endif
+#ifdef WIN32
+  DWORD _win32_system_thread_id;
+#endif
 
   friend class ThreadSimpleManager;
 };

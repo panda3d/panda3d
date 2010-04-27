@@ -27,19 +27,13 @@ get_current_thread() {
 //     Function: ThreadSimpleManager::is_same_system_thread
 //       Access: Public
 //  Description: Returns true if we are still running within the same
-//               OS-level thread that created the ThreadSimpleManager,
-//               or false if this appears to be running in a different
+//               OS-level thread we think we should be running in, or
+//               false if this appears to be running in a different
 //               thread.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ThreadSimpleManager::
 is_same_system_thread() const {
-#ifdef HAVE_POSIX_THREADS
-  return pthread_equal(_posix_system_thread_id, pthread_self());
-#endif
-#ifdef WIN32
-  return (_win32_system_thread_id == GetCurrentThreadId());
-#endif
-  return true;
+  return _current_thread->is_same_system_thread();
 }
 
 ////////////////////////////////////////////////////////////////////

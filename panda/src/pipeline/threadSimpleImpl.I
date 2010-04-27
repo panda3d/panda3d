@@ -24,6 +24,24 @@ get_current_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::is_same_system_thread
+//       Access: Public
+//  Description: Returns true if we are still running within the same
+//               OS-level thread that this thread begin in, or false
+//               if this appears to be running in a different thread.
+////////////////////////////////////////////////////////////////////
+INLINE bool ThreadSimpleImpl::
+is_same_system_thread() const {
+#ifdef HAVE_POSIX_THREADS
+  return pthread_equal(_posix_system_thread_id, pthread_self());
+#endif
+#ifdef WIN32
+  return (_win32_system_thread_id == GetCurrentThreadId());
+#endif
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleImpl::bind_thread
 //       Access: Public, Static
 //  Description: Associates the indicated Thread object with the

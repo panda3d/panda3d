@@ -51,6 +51,13 @@ ThreadSimpleImpl(Thread *parent_obj) :
 
   // Save this pointer for convenience.
   _manager = ThreadSimpleManager::get_global_ptr();
+
+#ifdef HAVE_POSIX_THREADS
+  _posix_system_thread_id = -1;
+#endif
+#ifdef WIN32
+  _win32_system_thread_id = 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +94,13 @@ setup_main_thread() {
   _priority = TP_normal;
   _priority_weight = _manager->_simple_thread_normal_weight;
 
+#ifdef HAVE_POSIX_THREADS
+  _posix_system_thread_id = pthread_self();
+#endif
+#ifdef WIN32
+  _win32_system_thread_id = GetCurrentThreadId();
+#endif
+
   _manager->set_current_thread(this);
 }
 
@@ -105,7 +119,9 @@ start(ThreadPriority priority, bool joinable) {
 
   nassertr(_stack == NULL, false);
   _stack_size = memory_hook->round_up_to_page_size((size_t)thread_stack_size);
-  _stack = (unsigned char *)memory_hook->mmap_alloc(_stack_size, true);
+  if (needs_stack_prealloc) {
+    _stack = (unsigned char *)memory_hook->mmap_alloc(_stack_size, true);
+  }
 
   _joinable = joinable;
   _status = TS_running;
@@ -253,6 +269,13 @@ begin_thread() {
 #ifdef HAVE_PYTHON
   PyThreadState_Swap(_python_state);
 #endif  // HAVE_PYTHON
+
+#ifdef HAVE_POSIX_THREADS
+  _posix_system_thread_id = pthread_self();
+#endif
+#ifdef WIN32
+  _win32_system_thread_id = GetCurrentThreadId();
+#endif
 
   // Here we are executing within the thread.  Run the thread_main
   // function defined for this thread.

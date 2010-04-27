@@ -85,6 +85,8 @@
     conditionVarSimpleImpl.cxx \
     conditionVarSpinlockImpl.cxx \
     config_pipeline.cxx \
+    contextSwitch_longjmp_src.c contextSwitch_ucontext_src.c \
+    contextSwitch_windows_src.c \
     cycleData.cxx \
     cycleDataLockedReader.cxx \
     cycleDataLockedStageReader.cxx \

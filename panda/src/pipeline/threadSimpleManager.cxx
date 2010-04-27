@@ -78,13 +78,6 @@ ThreadSimpleManager() :
   _clock = TrueClock::get_global_ptr();
   _waiting_for_exit = NULL;
 
-#ifdef HAVE_POSIX_THREADS
-  _posix_system_thread_id = pthread_self();
-#endif
-#ifdef WIN32
-  _win32_system_thread_id = GetCurrentThreadId();
-#endif
-
   // Install these global pointers so very low-level code (code
   // defined before the pipeline directory) can yield when necessary.
   global_thread_yield = &Thread::force_yield;
@@ -542,9 +535,9 @@ init_pointers() {
 //               of next_context().
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
-st_choose_next_context(void *data) {
+st_choose_next_context(struct ThreadContext *from_context, void *data) {
   ThreadSimpleManager *self = (ThreadSimpleManager *)data;
-  self->choose_next_context();
+  self->choose_next_context(from_context);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,7 +547,7 @@ st_choose_next_context(void *data) {
 //               of next_context().
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
-choose_next_context() {
+choose_next_context(struct ThreadContext *from_context) {
   double now = get_current_time();
 
   do_timeslice_accounting(_current_thread, now);
@@ -696,7 +689,7 @@ choose_next_context() {
       << " blocked, " << _sleeping.size() << " sleeping)\n";
   }
 
-  switch_to_thread_context(_current_thread->_context);
+  switch_to_thread_context(from_context, _current_thread->_context);
 
   // Shouldn't get here.
   nassertv(false);

@@ -38,6 +38,7 @@
 class Thread;
 class ThreadSimpleImpl;
 class BlockerSimple;
+struct ThreadContext;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ThreadSimpleManager
@@ -87,8 +88,8 @@ private:
   typedef pdeque<ThreadSimpleImpl *> FifoThreads;
   typedef pvector<ThreadSimpleImpl *> Sleeping;
 
-  static void st_choose_next_context(void *data);
-  void choose_next_context();
+  static void st_choose_next_context(struct ThreadContext *from_context, void *data);
+  void choose_next_context(struct ThreadContext *from_context);
   void do_timeslice_accounting(ThreadSimpleImpl *thread, double now);
   void wake_sleepers(Sleeping &sleepers, double now);
   void wake_all_sleepers(Sleeping &sleepers);
@@ -158,19 +159,6 @@ private:
   typedef pdeque<TickRecord> TickRecords;
   TickRecords _tick_records;
   unsigned int _total_ticks;
-
-  // We may not mix-and-match OS threads with Panda's SIMPLE_THREADS.
-  // If we ever get a Panda context switch request from a different OS
-  // thread than the original thread, that's a serious error that may
-  // cause major consequences.  For this reason, we store the OS
-  // thread's current thread ID here when the manager is constructed,
-  // and insist that it never changes.
-#ifdef HAVE_POSIX_THREADS
-  pthread_t _posix_system_thread_id;
-#endif
-#ifdef WIN32
-  DWORD _win32_system_thread_id;
-#endif
 
   static bool _pointers_initialized;
   static ThreadSimpleManager *_global_ptr;
