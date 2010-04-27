@@ -284,7 +284,7 @@ class Installer:
         print >>controlfile, "Priority: optional"
         print >>controlfile, "Architecture: %s" % arch
         print >>controlfile, "Description: %s" % self.fullname
-        print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6 libssl0.9.8"
+        print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6, libssl0.9.8"
         controlfile.close()
         postinst = open(Filename(tempdir, "postinst").toOsSpecific(), "w")
         print >>postinst, "#!/bin/sh"
