@@ -205,6 +205,7 @@ open_read(const Filename &multifile_name, const streampos &offset) {
   _read = new IStreamWrapper(multifile_stream, true);
   _owns_stream = true;
   _multifile_name = multifile_name;
+  _offset = offset;
   return read_index();
 }
 
