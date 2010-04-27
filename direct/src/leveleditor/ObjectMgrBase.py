@@ -120,6 +120,9 @@ class ObjectMgrBase:
                         newobj = Actor(model)
                     except:
                         newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
+                    if hasattr(objDef, 'animDict'):
+                        objDef.anims = objDef.animDict.get(model)
+                        
                 elif objDef.model is not None:
                     # since this obj is simple model let's load the model
                     if model is None:

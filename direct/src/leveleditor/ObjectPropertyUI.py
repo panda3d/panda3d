@@ -327,14 +327,8 @@ class ObjectPropertyUI(ScrolledPanel):
         if len(objDef.anims) > 0 or animList:
             if animList is None:
                 animist = objDef.anims
-
-            if '' not in animList:
-                animList.append('')
-            defaultAnim = obj[OG.OBJ_ANIM]
-            if defaultAnim is None:
-                defaultAnim = ''
                 
-            propUI = ObjectPropUICombo(self.lookPane, 'anim', defaultAnim, animList)
+            propUI = ObjectPropUICombo(self.lookPane, 'anim', obj[OG.OBJ_ANIM], animList)
             sizer.Add(propUI)            
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
