@@ -54,8 +54,8 @@ record_task(Thread *current_thread) {
   // If the return value is other than NULL, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
-  nassertv(current_thread->_current_task == this);
   nassertv(result == NULL);
+  nassertv(current_thread->_current_task == this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +75,6 @@ clear_task(Thread *current_thread) {
   // If the return value is other than this, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
-  nassertv(current_thread->_current_task == NULL);
   nassertv(result == this);
+  nassertv(current_thread->_current_task == NULL);
 }
