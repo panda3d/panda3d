@@ -357,5 +357,6 @@ class pdeploy(p3d):
            hidden = True, platform_specific = False,
            keep_user_env = True)
     require('panda3d')
+    require('morepy')
 
     mainModule('direct.p3d.pdeploy')
