@@ -4370,15 +4370,15 @@ class BpDb:
         return bpdb.enabled
 
     @staticmethod
-    def bp(id=None, grp=None, cfg=None, iff=True, frameCount=1):
+    def bp(id=None, grp=None, cfg=None, iff=True, test=None, frameCount=1):
         if not bpdb.enabled or not bpdb.verifyEnabled():
             return
             
-        bpi = bp(id=id, grp=grp, cfg=cfg, iff=iff,frameCount=frameCount+1)
-        bpi.maybeBreak(frameCount=frameCount+1)
+        bpi = bp(id=id, grp=grp, cfg=cfg, iff=iff, frameCount=frameCount+1)
+        bpi.maybeBreak(test=test, frameCount=frameCount+1)
 
     @staticmethod
-    def bpCall(id=None,grp=None,cfg=None,iff=True,frameCount=1,onEnter=1,onExit=0):
+    def bpCall(id=None,grp=None,cfg=None,iff=True,test=None,frameCount=1,onEnter=1,onExit=0):
         def decorator(f):
             return f
 
@@ -4394,10 +4394,10 @@ class BpDb:
                 #create our bp object
                 dbp = bp(id=id or f.__name__, grp=bpi.grp, cfg=bpi.cfg, iff=iff, frameCount=frameCount+1)
                 if onEnter:
-                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Calling ')
+                    dbp.maybeBreak(iff=iff,test=test,frameCount=frameCount+1,displayPrefix='Calling ')
                 f_result = f(*args, **kwds)
                 if onExit:
-                    dbp.maybeBreak(iff=iff,frameCount=frameCount+1,displayPrefix='Exited ')
+                    dbp.maybeBreak(iff=iff,test=test,frameCount=frameCount+1,displayPrefix='Exited ')
                 return f_result
                 
             wrap.func_name = f.func_name
@@ -4410,18 +4410,17 @@ class BpDb:
         
     @staticmethod
     def bpGroup(*args, **kArgs):
-        if not bpdb.enabled or not bpdb.verifyEnabled():
-            def functor(*cArgs, **ckArgs):
-                return
-            return functor
-        
-        argsCopy = args[:]
         def functor(*cArgs, **ckArgs):
-            kwArgs = kArgs
-            kwArgs.update(ckArgs)
-            kwArgs.pop('static', None)
-            kwArgs['frameCount'] = ckArgs.get('frameCount',1)+1
-            return bpdb.bp(*(cArgs), **kwArgs)
+            return
+
+        if bpdb.enabled and bpdb.verifyEnabled():
+            argsCopy = args[:]
+            def functor(*cArgs, **ckArgs):
+                kwArgs = kArgs
+                kwArgs.update(ckArgs)
+                kwArgs.pop('static', None)
+                kwArgs['frameCount'] = ckArgs.get('frameCount',1)+1
+                return bpdb.bp(*(cArgs), **kwArgs)
         
         if kArgs.get('static'):
             return staticmethod(functor)
@@ -4614,16 +4613,22 @@ class bp:
         bpdb.grpInfos[grp][id] = {}
         print '%s has been reset.'%(self.prettyName(id,grp,q=1),)
 
-    def maybeBreak(self, iff=True, frameCount=1,displayPrefix=''):
-        if self.shouldBreak(iff):
+    def maybeBreak(self, iff=True, test=None, frameCount=1, displayPrefix=''):
+        if self.shouldBreak(iff=iff, test=test):
             self.doBreak(frameCount=frameCount+1,displayPrefix=displayPrefix)
     
-    def shouldBreak(self,iff=True):
+    def shouldBreak(self,iff=True, test=None):
         #check easy early out
         if self.disabled:
             return False
         if not self.iff or not iff:
             return False
+        if test:
+            if not isinstance(test, (list, tuple)):
+                test = (test,)
+            for atest in test:
+                if not atest():
+                    return False
 
         #make sure we exist
         self.makeIdGrp(self.id,self.grp)  
