@@ -349,6 +349,7 @@ private:
   int _download_package_index;
   size_t _total_download_size;
   size_t _total_downloaded;
+  bool _packages_specified;
   bool _download_started;
   bool _download_complete;
   bool _instance_started;

@@ -153,6 +153,7 @@ P3DInstance(P3D_request_ready_func *func,
   _download_package_index = 0;
   _total_download_size = 0;
   _total_downloaded = 0;
+  _packages_specified = false;
   _download_started = false;
   _download_complete = false;
   _instance_started = false;
@@ -1114,6 +1115,11 @@ remove_package(P3DPackage *package) {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 get_packages_info_ready() const {
+  if (!_packages_specified) {
+    // We haven't even specified the full set of required packages yet.
+    return false;
+  }
+
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     if (!(*pi)->get_info_ready()) {
@@ -2074,6 +2080,8 @@ scan_app_desc_file(TiXmlDocument *doc) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_packages() {
+  assert(!_packages_specified);
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
@@ -2090,6 +2098,23 @@ add_packages() {
     }
 
     xrequires = xrequires->NextSiblingElement("requires");
+  }
+
+  _packages_specified = true;
+  if (get_packages_info_ready()) {
+    // All packages are ready to go.  Let's start some download
+    // action.
+    _downloading_packages.clear();
+    _total_download_size = 0;
+    Packages::const_iterator pi;
+    for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+      P3DPackage *package = (*pi);
+      if (package->get_info_ready() && !package->get_ready()) {
+        _downloading_packages.push_back(package);
+        _total_download_size += package->get_download_size();
+      }
+    }
+    ready_to_install();
   }
 }
 
