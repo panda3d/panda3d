@@ -40,6 +40,7 @@ typedef void ContextFunction(struct ThreadContext *from_context, void *);
 typedef void ThreadFunction(void *);
 
 extern const int needs_stack_prealloc;
+extern const int is_os_threads;
 
 /* Call this to fill in the appropriate values in context.  If
    needs_stack_prealloc (above) is true, the stack must already have

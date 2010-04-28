@@ -26,6 +26,7 @@
 
 /* The Windows implementation doesn't use the stack pointer. */
 const int needs_stack_prealloc = 0;
+const int is_os_threads = 1;
 
 static struct ThreadContext *current_context = NULL;
 

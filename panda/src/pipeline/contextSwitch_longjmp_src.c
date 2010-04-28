@@ -17,6 +17,7 @@
    which is necessary if setcontext() is not available. */
 
 const int needs_stack_prealloc = 1;
+const int is_os_threads = 0;
 
 #if defined(_M_IX86) || defined(__i386__)
 /* Maybe we can implement our own setjmp/longjmp in assembly code.

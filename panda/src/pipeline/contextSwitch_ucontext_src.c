@@ -24,6 +24,7 @@
 #endif
 
 const int needs_stack_prealloc = 1;
+const int is_os_threads = 0;
 
 struct ThreadContext {
   ucontext_t _ucontext;
