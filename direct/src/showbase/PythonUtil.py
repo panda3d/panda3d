@@ -4417,10 +4417,11 @@ class BpDb:
         
         argsCopy = args[:]
         def functor(*cArgs, **ckArgs):
-            ckArgs.update(kArgs)
-            ckArgs.pop('static', None)
-            ckArgs['frameCount'] = ckArgs.get('frameCount',1)+1
-            return bpdb.bp(*(cArgs), **ckArgs)
+            kwArgs = kArgs
+            kwArgs.update(ckArgs)
+            kwArgs.pop('static', None)
+            kwArgs['frameCount'] = ckArgs.get('frameCount',1)+1
+            return bpdb.bp(*(cArgs), **kwArgs)
         
         if kArgs.get('static'):
             return staticmethod(functor)
@@ -4438,7 +4439,7 @@ class bp:
         
         moduleName = None
         callingModule = inspect.getmodule(inspect.stack()[frameCount][0])
-        if callingModule.__name__ != '__main__':
+        if callingModule and callingModule.__name__ != '__main__':
             #get only leaf module name
             moduleName = callingModule.__name__.split()[-1] 
 
