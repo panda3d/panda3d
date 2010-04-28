@@ -28,6 +28,7 @@
 #include "bamWriter.h"
 #include "geom.h"
 #include "geomLines.h"
+#include "boundingHexahedron.h"
 #include "geomVertexWriter.h"
 
 TypeHandle CollisionSegment::_type_handle;
@@ -135,10 +136,20 @@ compute_internal_bounds() const {
     LPoint3f pmid = (_a + _b) * 0.5f;
     return new BoundingSphere(pmid, csqrt(d2) * 0.5f);
   }
-  LPoint3f min_p(min(_a[0], _b[0]) - .01, min(_a[1], _b[1]) - .01, min(_a[2],_b[2]) - .01);
-  LPoint3f max_p(max(_a[0], _b[0]) + .01, max(_a[1], _b[1]) + .01, max(_a[2],_b[2]) + .01);
+
+  LMatrix4f from_segment;
+  look_at(from_segment, pdelta, LPoint3f(0,0,1), CS_zup_right);
+  from_segment.set_row(3, _a);
   
-  return new BoundingBox(min_p, max_p);  
+  float max_y =  sqrt(d2) + 0.01;
+  PT(BoundingHexahedron) volume = 
+    new BoundingHexahedron(LPoint3f(-0.01, max_y, -0.01), LPoint3f(0.01, max_y, -0.01),
+                           LPoint3f(0.01, max_y, 0.01), LPoint3f(-0.01, max_y,  0.01),
+                           LPoint3f(-0.01, -0.01, -0.01), LPoint3f(0.01, 0.01, -0.01),
+                           LPoint3f(0.01, -0.01, 0.01), LPoint3f(-0.01, -0.01, 0.01));
+
+  volume->xform(from_segment);
+  return volume.p();
 }
 
 ////////////////////////////////////////////////////////////////////
