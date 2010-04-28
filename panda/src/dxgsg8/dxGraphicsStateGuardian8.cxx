@@ -298,6 +298,10 @@ upload_texture(DXTextureContext8 *dtc, bool force) {
     return false;
   }
 
+  dtc->delete_texture();
+  dtc->update_data_size_bytes(0);
+  dtc->mark_unloaded();
+  
   if (_effective_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
