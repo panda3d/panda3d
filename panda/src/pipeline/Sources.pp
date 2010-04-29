@@ -282,3 +282,4 @@
 
 #end test_bin_target
 
+#include $[THISDIRPREFIX]contextSwitchParameters.h.pp

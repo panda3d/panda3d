@@ -13,27 +13,37 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "contextSwitch.h"
+#include "contextSwitchParameters.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #if defined(THREAD_SIMPLE_IMPL) && !defined(CPPPARSER)
 
-#ifdef WIN32
-/* Define this macro to use native Windows threading constructs to
-   switch contexts. */
-#define WIN_THREAD_CONTEXT
-#endif
+/* With OS_SIMPLE_THREADS, we will try to implement context-switching
+   using OS-provided threading constructs.  This is via either Windows
+   or Posix threads. */
 
-#if defined(WIN_THREAD_CONTEXT)
+#if defined(WIN32) && defined(OS_SIMPLE_THREADS)
 
 #include "contextSwitch_windows_src.c"
 
+#elif defined(HAVE_POSIX_THREADS) && defined(OS_SIMPLE_THREADS)
+
+#include "contextSwitch_posix_src.c"
+
 #elif defined(PHAVE_UCONTEXT_H)
+
+/* Without OS_SIMPLE_THREADS, or without Windows or Posix threads
+   libraries available, we have to implement context-switching
+   entirely in user space.  First choice: the ucontext.h interface. */
 
 #include "contextSwitch_ucontext_src.c"
 
 #else
+
+/* Second choice: old fashioned setjmp/longjmp, with some a priori
+   hacks to make it switch stacks. */
 
 #include "contextSwitch_longjmp_src.c"
 
