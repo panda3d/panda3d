@@ -519,7 +519,7 @@ class TaskManager:
                         self.stop()
                         print_exc_plus()
                     else:
-                        if (ExceptionVarDump.wantVariableDump and
+                        if (ExceptionVarDump.wantStackDumpLog and
                             ExceptionVarDump.dumpOnExceptionInit):
                             ExceptionVarDump._varDump__print(e)
                         raise

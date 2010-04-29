@@ -56,8 +56,11 @@ class ShowBase(DirectObject.DirectObject):
 
     def __init__(self, fStartDirect = True, windowType = None):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
-        if config.GetBool('want-variable-dump', 0):
-            ExceptionVarDump.install()
+        logStackDump = (config.GetBool('log-stack-dump', 0) or
+                        config.GetBool('client-log-stack-dump', 0))
+        uploadStackDump = config.GetBool('upload-stack-dump', (not __dev__))
+        if logStackDump or uploadStackDump:
+            ExceptionVarDump.install(logStackDump, uploadStackDump)
 
         # Locate the directory containing the main program
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")

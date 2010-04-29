@@ -64,20 +64,22 @@ def _varDump__print(exc):
 oldExcepthook = None
 # store these values here so that Task.py can always reliably access them
 # from its main exception handler
-wantVariableDump = False
+wantStackDumpLog = False
+wantStackDumpUpload = False
+variableDumpReasons = []
 dumpOnExceptionInit = False
 
 class _AttrNotFound:
     pass
 
 def _excepthookDumpVars(eType, eValue, tb):
-    excStrs = traceback.format_exception(eType, eValue, tb)
+    origTb = tb
+    excStrs = traceback.format_exception(eType, eValue, origTb)
     s = 'printing traceback in case variable repr crashes the process...\n'
     for excStr in excStrs:
         s += excStr
     notify.info(s)
     s = 'DUMPING STACK FRAME VARIABLES'
-    origTb = tb
     #import pdb;pdb.set_trace()
     #foundRun = False
     foundRun = True
@@ -158,15 +160,34 @@ def _excepthookDumpVars(eType, eValue, tb):
 
     if foundRun:
         s += '\n'
-        notify.info(s)
+        if wantStackDumpLog:
+            notify.info(s)
+        if wantStackDumpUpload:
+            excStrs = traceback.format_exception(eType, eValue, origTb)
+            for excStr in excStrs:
+                s += excStr
+            timeMgr = None
+            try:
+                timeMgr = base.cr.timeManager
+            except:
+                try:
+                    timeMgr = simbase.air.timeManager
+                except:
+                    pass
+            if timeMgr:
+                timeMgr.setStackDump(s)
+
     oldExcepthook(eType, eValue, origTb)
 
-def install():
+def install(log, upload):
     global oldExcepthook
-    global wantVariableDump
+    global wantStackDumpLog
+    global wantStackDumpUpload
     global dumpOnExceptionInit
 
-    wantVariableDump = True
+    wantStackDumpLog = log
+    wantStackDumpUpload = upload
+
     dumpOnExceptionInit = config.GetBool('variable-dump-on-exception-init', 0)
     if dumpOnExceptionInit:
         # this mode doesn't completely work because exception objects
