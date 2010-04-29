@@ -3420,7 +3420,11 @@ set_texture(Texture *tex, int priority) {
 void NodePath::
 set_texture(TextureStage *stage, Texture *tex, int priority) {
   nassertv_always(!is_empty());
-
+  if (tex->get_texture_type() == Texture::TT_2d_texture_array){
+    pgraph_cat.error() << "Texture::TT_2d_texture_array is not supported by" << \
+     " the fixed pipeline.\n";
+    return;
+  }
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {

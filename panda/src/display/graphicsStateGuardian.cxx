@@ -1,6 +1,8 @@
 // Filename: graphicsStateGuardian.cxx
 // Created by:  drose (02Feb99)
 // Updated by: fperazzi, PandaSE (06Apr10) (added fetch_ptr_parameter)
+// Updated by: fperazzi, PandaSE (29Apr10)  (added 
+// _max_2d_texture_array_layers, _supports_2d_texture_array)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -169,6 +171,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // and that 3-d and cube-map textures are not supported.
   _max_texture_dimension = -1;
   _max_3d_texture_dimension = 0;
+  _max_2d_texture_array_layers = 0;
   _max_cube_map_dimension = 0;
 
   // Assume we don't support these fairly advanced texture combiner
@@ -178,6 +181,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_texture_dot3 = false;
 
   _supports_3d_texture = false;
+  _supports_2d_texture_array = false;
   _supports_cube_map = false;
   _supports_tex_non_pow2 = false;
   _supports_compressed_texture = false;

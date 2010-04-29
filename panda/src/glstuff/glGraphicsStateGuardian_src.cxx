@@ -584,6 +584,9 @@ reset() {
     }
   }
 
+#ifndef OPENGLES
+  _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
+#endif
 #ifdef OPENGLES_2
   _supports_cube_map = true;
 #else
@@ -1306,6 +1309,7 @@ reset() {
 
   GLint max_texture_size = 0;
   GLint max_3d_texture_size = 0;
+  GLint max_2d_texture_array_layers = 0;
   GLint max_cube_map_size = 0;
 
   GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -1319,7 +1323,12 @@ reset() {
   } else {
     _max_3d_texture_dimension = 0;
   }
-
+#ifndef OPENGLES
+  if(_supports_2d_texture_array) {
+    GLP(GetIntegerv)(GL_MAX_ARRAY_TEXTURE_LAYERS_EXT, &max_2d_texture_array_layers);
+    _max_2d_texture_array_layers = max_2d_texture_array_layers;
+  }
+#endif
   if (_supports_cube_map) {
     GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_size);
     _max_cube_map_dimension = max_cube_map_size;
@@ -1343,6 +1352,7 @@ reset() {
     GLCAT.debug()
       << "max texture dimension = " << _max_texture_dimension
       << ", max 3d texture = " << _max_3d_texture_dimension
+      << ", max 2d texture array = " << max_2d_texture_array_layers
       << ", max cube map = " << _max_cube_map_dimension << "\n";
     GLCAT.debug()
       << "max_elements_vertices = " << max_elements_vertices
@@ -3200,6 +3210,14 @@ prepare_texture(Texture *tex) {
     if (!_supports_3d_texture) {
       GLCAT.warning()
         << "3-D textures are not supported by this OpenGL driver.\n";
+      return NULL;
+    }
+    break;
+  
+  case Texture::TT_2d_texture_array:
+    if (!_supports_2d_texture_array) {
+      GLCAT.warning()
+        << "2-D texture arrays are not supported by this OpenGL driver.\n";
       return NULL;
     }
     break;
@@ -5638,7 +5656,14 @@ get_texture_target(Texture::TextureType texture_type) const {
     } else {
       return GL_NONE;
     }
-
+  case Texture::TT_2d_texture_array:
+    if (_supports_2d_texture_array) {
+#ifndef OPENGLES
+      return GL_TEXTURE_2D_ARRAY_EXT;
+#endif
+    } else {
+      return GL_NONE;
+    }
   case Texture::TT_cube_map:
     if (_supports_cube_map) {
       return GL_TEXTURE_CUBE_MAP;
@@ -5992,7 +6017,8 @@ get_internal_image_format(Texture *tex) const {
     // no compression for render targets
     compression = Texture::CM_off;
   }
-  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture);
+  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture ||
+                tex->get_texture_type() == Texture::TT_2d_texture_array);
 
 #ifndef OPENGLES
   if (get_supports_compressed_texture_format(compression)) {
@@ -8249,22 +8275,38 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   GLenum component_type = get_component_type(tex->get_component_type());
 
   // Ensure that the texture fits within the GL's specified limits.
-  int max_dimension;
+  // Need to split dimensions because of texture arrays
+  int max_dimension_x;
+  int max_dimension_y;
+  int max_dimension_z;
+
   switch (tex->get_texture_type()) {
   case Texture::TT_3d_texture:
-    max_dimension = _max_3d_texture_dimension;
+    max_dimension_x = _max_3d_texture_dimension;
+    max_dimension_y = _max_3d_texture_dimension;
+    max_dimension_z = _max_3d_texture_dimension;
     break;
 
   case Texture::TT_cube_map:
-    max_dimension = _max_cube_map_dimension;
+    max_dimension_x = _max_cube_map_dimension;
+    max_dimension_y = _max_cube_map_dimension;
+    max_dimension_z = 6;
+    break;
+
+  case Texture::TT_2d_texture_array:
+    max_dimension_x = _max_texture_dimension;
+    max_dimension_y = _max_texture_dimension;
+    max_dimension_z = _max_2d_texture_array_layers;
     break;
 
   default:
-    max_dimension = _max_texture_dimension;
+    max_dimension_x = _max_texture_dimension;
+    max_dimension_y = _max_texture_dimension;
+    max_dimension_z = 1;
   }
 
-  if (max_dimension == 0) {
-    // Guess this GL doesn't support cube mapping/3d textures.
+  if (max_dimension_x == 0 || max_dimension_y == 0 || max_dimension_z == 0) {
+    // Guess this GL doesn't support cube mapping/3d textures/2d texture arrays.
     report_my_gl_errors();
     return false;
   }
@@ -8277,10 +8319,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   // reduce the texture at load time instead; of course, the user
   // doesn't always know ahead of time what the hardware limits are.
 
-  if (max_dimension > 0 && image_compression == Texture::CM_off) {
-    while (tex->get_expected_mipmap_x_size(mipmap_bias) > max_dimension ||
-           tex->get_expected_mipmap_y_size(mipmap_bias) > max_dimension ||
-           tex->get_expected_mipmap_z_size(mipmap_bias) > max_dimension) {
+  if ((max_dimension_x > 0 && max_dimension_y > 0 && max_dimension_z > 0) && 
+      image_compression == Texture::CM_off) {
+    while (tex->get_expected_mipmap_x_size(mipmap_bias) > max_dimension_x ||
+           tex->get_expected_mipmap_y_size(mipmap_bias) > max_dimension_y ||
+           tex->get_expected_mipmap_z_size(mipmap_bias) > max_dimension_z) {
       ++mipmap_bias;
     }
 
@@ -8653,6 +8696,22 @@ upload_texture_image(CLP(TextureContext) *gtc,
         }
         break;
 #endif
+#ifndef OPENGLES
+      case GL_TEXTURE_2D_ARRAY_EXT:
+        if (_supports_2d_texture_array) {
+          if (image_compression == Texture::CM_off) {
+            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                             external_format, component_type, image_ptr);
+          } else {
+            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                                       external_format, image_size, image_ptr);
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+#endif
       default:
         if (image_compression == Texture::CM_off) {
           if (n==0) {
@@ -8791,6 +8850,22 @@ upload_texture_image(CLP(TextureContext) *gtc,
         }
         break;
 #endif
+      case GL_TEXTURE_2D_ARRAY_EXT:
+        if (_supports_2d_texture_array) {
+          if (image_compression == Texture::CM_off) {
+            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
+                          width, height, depth, 0,
+                          external_format, component_type, image_ptr);
+          } else {
+            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
+                                    height, depth,
+                                    0, image_size, image_ptr);
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
 #endif  // OPENGLES  // OpenGL ES will fall through.
 
       default:
@@ -8998,11 +9073,11 @@ get_texture_memory_size(Texture *tex) {
   GLint width = 1, height = 1, depth = 1;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
-  if (_supports_3d_texture) {
+  if (_supports_3d_texture || _supports_2d_texture_array) {
     GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
-
-  report_my_gl_errors();
+  
+    report_my_gl_errors();
 
   size_t num_bits = (red_size + green_size + blue_size + alpha_size + luminance_size + intensity_size + depth_size);
   size_t num_bytes = (num_bits + 7) / 8;
@@ -9088,6 +9163,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
 #endif
   }
+  if (_supports_2d_texture_array) {
+#ifndef OPENGLES
+    GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
+#endif
+  }
   GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
 
   // Mesa has a bug querying this property.
@@ -9113,12 +9193,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   
   if (_supports_3d_texture && target == GL_TEXTURE_3D) {
     GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
-  } else if (target == GL_TEXTURE_CUBE_MAP) {
+  } 
+#ifndef OPENGLES
+  else if (_supports_2d_texture_array && target == GL_TEXTURE_2D_ARRAY_EXT) {
+    GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+  }
+#endif 
+  else if (target == GL_TEXTURE_CUBE_MAP) {
     depth = 6;
   }
 #endif
   clear_my_gl_errors();
-
   if (width <= 0 || height <= 0 || depth <= 0) {
     GLCAT.error()
       << "No texture data for " << tex->get_name() << "\n";

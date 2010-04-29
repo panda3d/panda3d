@@ -1,5 +1,6 @@
 // Filename: texturePool.I
 // Created by:  drose (26Apr00)
+// Updated by: fperazzi, PandaSE(29Apr10) (added load_2d_texture_array)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -104,6 +105,27 @@ load_3d_texture(const Filename &filename_pattern, bool read_mipmaps,
                 const LoaderOptions &options) {
   return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps, 
                                               options);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::load_2d_texture_array
+//       Access: Published, Static
+//  Description: Loads a 2-D texture array that is specified with a series
+//               of n pages, all numbered in sequence, and beginning
+//               with index 0.  The filename should include a sequence
+//               of one or more hash characters ("#") which will be
+//               filled in with the index number of each level.
+//
+//               If read_mipmaps is true, the filename should contain
+//               an additional hash mark.  The first hash mark will be
+//               filled in with the mipmap level number, and the
+//               second with the index number of each 2-d level.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+load_2d_texture_array(const Filename &filename_pattern, bool read_mipmaps, 
+                const LoaderOptions &options) {
+  return get_global_ptr()->ns_load_2d_texture_array(filename_pattern, read_mipmaps, 
+                                                    options);
 }
 
 ////////////////////////////////////////////////////////////////////

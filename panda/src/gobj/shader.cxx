@@ -1,6 +1,7 @@
 // Filename: shader.cxx
 // Created by: jyelon (01Sep05)
 // Updated by: fperazzi, PandaSE(06Apr10)
+// Updated by: fperazzi, PandaSE(29Apr10) (added SAT_sampler2dArray)
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -57,42 +58,43 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
 
   string tstr = "invalid ";
   switch (p._type) {
-  case SAT_scalar:      tstr = "scalar "; break; 
-  case SAT_vec1:        tstr = "vec1 "; break;     
-  case SAT_vec2:        tstr = "vec2 "; break;        
-  case SAT_vec3:        tstr = "vec3 "; break;        
-  case SAT_vec4:        tstr = "vec4 "; break;        
-  case SAT_mat1x1:      tstr = "mat1x1 "; break;      
-  case SAT_mat1x2:      tstr = "mat1x2 "; break;      
-  case SAT_mat1x3:      tstr = "mat1x3 "; break;      
-  case SAT_mat1x4:      tstr = "mat1x4 "; break;      
-  case SAT_mat2x1:      tstr = "mat2x1 "; break;      
-  case SAT_mat2x2:      tstr = "mat2x2 "; break;      
-  case SAT_mat2x3:      tstr = "mat2x3 "; break;      
-  case SAT_mat2x4:      tstr = "mat2x4 "; break;      
-  case SAT_mat3x1:      tstr = "mat3x1 "; break;      
-  case SAT_mat3x2:      tstr = "mat3x2 "; break;      
-  case SAT_mat3x3:      tstr = "mat3x3 "; break;       
-  case SAT_mat3x4:      tstr = "mat3x4 "; break;       
-  case SAT_mat4x1:      tstr = "mat4x1 "; break;       
-  case SAT_mat4x2:      tstr = "mat4x2 "; break;       
-  case SAT_mat4x3:      tstr = "mat4x3 "; break;       
-  case SAT_mat4x4:      tstr = "mat4x4 "; break;      
-  case SAT_sampler1d:   tstr = "sampler1d "; break;  
-  case SAT_sampler2d:   tstr = "sampler2d "; break;   
-  case SAT_sampler3d:   tstr = "sampler3d "; break;   
-  case SAT_samplercube: tstr = "samplercube "; break; 
-  default:              tstr = "unknown "; break; 
+  case SAT_scalar:    tstr = "scalar "; break; 
+  case SAT_vec1:      tstr = "vec1 "; break;     
+  case SAT_vec2:      tstr = "vec2 "; break;        
+  case SAT_vec3:      tstr = "vec3 "; break;        
+  case SAT_vec4:      tstr = "vec4 "; break;        
+  case SAT_mat1x1:    tstr = "mat1x1 "; break;      
+  case SAT_mat1x2:    tstr = "mat1x2 "; break;      
+  case SAT_mat1x3:    tstr = "mat1x3 "; break;      
+  case SAT_mat1x4:    tstr = "mat1x4 "; break;      
+  case SAT_mat2x1:    tstr = "mat2x1 "; break;      
+  case SAT_mat2x2:    tstr = "mat2x2 "; break;      
+  case SAT_mat2x3:    tstr = "mat2x3 "; break;      
+  case SAT_mat2x4:    tstr = "mat2x4 "; break;      
+  case SAT_mat3x1:    tstr = "mat3x1 "; break;      
+  case SAT_mat3x2:    tstr = "mat3x2 "; break;      
+  case SAT_mat3x3:    tstr = "mat3x3 "; break;       
+  case SAT_mat3x4:    tstr = "mat3x4 "; break;       
+  case SAT_mat4x1:    tstr = "mat4x1 "; break;       
+  case SAT_mat4x2:    tstr = "mat4x2 "; break;       
+  case SAT_mat4x3:    tstr = "mat4x3 "; break;       
+  case SAT_mat4x4:    tstr = "mat4x4 "; break;      
+  case SAT_sampler1d: tstr = "sampler1d "; break;  
+  case SAT_sampler2d: tstr = "sampler2d "; break;   
+  case SAT_sampler3d: tstr = "sampler3d "; break;   
+  case SAT_sampler2dArray: tstr = "sampler2dArray "; break; 
+  case SAT_samplercube:    tstr = "samplercube "; break; 
+  default:                 tstr = "unknown "; break; 
   }
   
   string cstr = "invalid";
   switch (p._class) {
-  case SAC_scalar:  cstr = "scalar "; break;              
-  case SAC_vector:  cstr = "vector "; break;       
-  case SAC_matrix:  cstr = "matrix "; break;        
+  case SAC_scalar:  cstr = "scalar ";  break;              
+  case SAC_vector:  cstr = "vector ";  break;       
+  case SAC_matrix:  cstr = "matrix ";  break;        
   case SAC_sampler: cstr = "sampler "; break;       
-  case SAC_array:   cstr = "array "; break;       
-  default:          cstr = "unknown ";break; 
+  case SAC_array:   cstr = "array ";   break;       
+  default:          cstr = "unknown "; break; 
   }    
 
   Filename fn = get_filename(p._id._type);
@@ -238,6 +240,7 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
   if ((p._type!=SAT_sampler1d)&&
       (p._type!=SAT_sampler2d)&&
       (p._type!=SAT_sampler3d)&&
+      (p._type!=SAT_sampler2dArray)&&
       (p._type!=SAT_samplercube)) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
@@ -1021,10 +1024,11 @@ compile_parameter(const ShaderArgId        &arg_id,
     bind._name = 0;
     bind._stage = atoi(pieces[1].c_str());
     switch (p._type) {
-    case SAT_sampler1d:   bind._desired_type = Texture::TT_1d_texture; break;
-    case SAT_sampler2d:   bind._desired_type = Texture::TT_2d_texture; break;
-    case SAT_sampler3d:   bind._desired_type = Texture::TT_3d_texture; break;
-    case SAT_samplercube: bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
+    case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
+    case SAT_sampler3d:      bind._desired_type = Texture::TT_3d_texture; break;
+    case SAT_sampler2dArray: bind._desired_type = Texture::TT_2d_texture_array; break;
+    case SAT_samplercube:    bind._desired_type = Texture::TT_cube_map; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1153,6 +1157,14 @@ compile_parameter(const ShaderArgId        &arg_id,
       _tex_spec.push_back(bind);
       return true;
     }
+    case SAT_sampler2dArray: {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_2d_texture_array;
+      _tex_spec.push_back(bind);
+      return true;
+    }
     case SAT_samplercube: {
       ShaderTexSpec bind;
       bind._id = arg_id;
@@ -1245,10 +1257,11 @@ cg_parameter_type(CGparameter p) {
     }
   case CG_PARAMETERCLASS_SAMPLER:
     switch (cgGetParameterType(p)){
-    case CG_SAMPLER1D:   return Shader::SAT_sampler1d;
-    case CG_SAMPLER2D:   return Shader::SAT_sampler2d;
-    case CG_SAMPLER3D:   return Shader::SAT_sampler3d;
-    case CG_SAMPLERCUBE: return Shader::SAT_samplercube;
+    case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
+    case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
+    case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
+    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2dArray;
+    case CG_SAMPLERCUBE:    return Shader::SAT_samplercube;
     default: return SAT_unknown;
     }
   case CG_PARAMETERCLASS_ARRAY: return SAT_unknown;

@@ -1,5 +1,6 @@
 // Filename: texture.h
 // Created by:  mike (09Jan97)
+// Updated by: fperazzi, PandaSE(29Apr10) (added TT_2d_texture_array)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -66,6 +67,7 @@ PUBLISHED:
     TT_1d_texture,
     TT_2d_texture,
     TT_3d_texture,
+    TT_2d_texture_array,
     TT_cube_map,
   };
 
@@ -217,7 +219,9 @@ PUBLISHED:
   INLINE void setup_cube_map();
   INLINE void setup_cube_map(int size,
                              ComponentType component_type, Format format);
-
+  INLINE void setup_2d_texture_array(int z_size = 1);
+  INLINE void setup_2d_texture_array(int x_size, int y_size, int z_size,
+                                     ComponentType component_type, Format format);
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
 

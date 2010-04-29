@@ -1,5 +1,6 @@
 // Filename: texture.I
 // Created by:  drose (05Feb99)
+// Updated by: fperazzi, PandaSE(29Apr10) (added setup_2d_texture_array)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -142,6 +143,34 @@ INLINE void Texture::
 setup_3d_texture(int x_size, int y_size, int z_size,
                  ComponentType component_type, Format format) {
   setup_texture(TT_3d_texture, x_size, y_size, z_size, component_type, format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_2d_texture_array
+//       Access: Published
+//  Description: Sets the texture as an empty 2-d texture array with
+//               no dimensions (though if you know the depth ahead
+//               of time, it saves a bit of reallocation later).
+//               Follow up with read() or load() to fill the texture
+//               properties and image data.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_2d_texture_array(int z_size) {
+  setup_2d_texture_array(0, 1, z_size, T_unsigned_byte, F_rgb);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_2d_texture_array
+//       Access: Published
+//  Description: Sets the texture as an empty 2-d texture array with the
+//               specified dimensions and properties. Follow up with
+//               set_ram_image() or modify_ram_image() to fill the
+//               image data.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_2d_texture_array(int x_size, int y_size, int z_size,
+                 ComponentType component_type, Format format) {
+  setup_texture(TT_2d_texture_array, x_size, y_size, z_size, component_type, format);
 }
 
 ////////////////////////////////////////////////////////////////////

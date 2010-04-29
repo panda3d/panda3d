@@ -1,6 +1,6 @@
 // Filename: glShaderContext_src.cxx
 // Created by: jyelon (01Sep05)
-// Updated by: fperazzi, PandaSE (06Apr10) (updated CLP with note that some
+// Updated by: fperazzi, PandaSE (29Apr10) (updated CLP with note that some
 //   parameter types only supported under Cg)
 //
 ////////////////////////////////////////////////////////////////////
@@ -567,7 +567,7 @@ issue_parameters(GSG *gsg, int altered) {
                   case Shader::SAT_vec3: cgSetParameter3fv(p,(float*)_ptr_data->_ptr); continue;
                   case Shader::SAT_vec4: cgSetParameter4fv(p,(float*)_ptr_data->_ptr); continue;
                 }
-              case Shader::SAC_matrix: cgGLSetMatrixParameterfr(p,(float*)_ptr_data->_ptr); continue;
+              case Shader::SAC_matrix: cgGLSetMatrixParameterfc(p,(float*)_ptr_data->_ptr); continue;
               case Shader::SAC_array: {
                 switch(_ptr._info._subclass) {
                   case Shader::SAC_scalar: 
@@ -580,7 +580,7 @@ issue_parameters(GSG *gsg, int altered) {
                       case 4: cgGLSetParameterArray4f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
                     }
                   case Shader::SAC_matrix:
-                    cgGLSetMatrixParameterArrayfr(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
+                    cgGLSetMatrixParameterArrayfc(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
                 }
               } 
             }
@@ -594,7 +594,7 @@ issue_parameters(GSG *gsg, int altered) {
                   case Shader::SAT_vec3: cgSetParameter3dv(p,(double*)_ptr_data->_ptr); continue;
                   case Shader::SAT_vec4: cgSetParameter4dv(p,(double*)_ptr_data->_ptr); continue;
                 }
-              case Shader::SAC_matrix: cgGLSetMatrixParameterdr(p,(double*)_ptr_data->_ptr); continue;
+              case Shader::SAC_matrix: cgGLSetMatrixParameterdc(p,(double*)_ptr_data->_ptr); continue;
               case Shader::SAC_array: {
                 switch(_ptr._info._subclass) {
                   case Shader::SAC_scalar: 
@@ -607,7 +607,7 @@ issue_parameters(GSG *gsg, int altered) {
                       case 4: cgGLSetParameterArray4d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
                     }
                   case Shader::SAC_matrix:
-                    cgGLSetMatrixParameterArraydr(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
+                    cgGLSetMatrixParameterArraydc(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
                 }
               } 
             }
@@ -833,16 +833,21 @@ disable_shader_texture_bindings(GSG *gsg) {
       return;
     }
 #ifndef OPENGLES
-    GLP(Disable)(GL_TEXTURE_1D);
+    GLP(BindTexture)(GL_TEXTURE_1D, 0);
 #endif  // OPENGLES
-    GLP(Disable)(GL_TEXTURE_2D);
+    GLP(BindTexture)(GL_TEXTURE_2D, 0);
 #ifndef OPENGLES_1
     if (gsg->_supports_3d_texture) {
-      GLP(Disable)(GL_TEXTURE_3D);
+      GLP(BindTexture)(GL_TEXTURE_3D, 0);
     }
 #endif  // OPENGLES_1
+#ifndef OPENGLES
+    if (gsg->_supports_2d_texture_array) {
+      GLP(BindTexture)(GL_TEXTURE_2D_ARRAY_EXT, 0);
+    }
+#endif
     if (gsg->_supports_cube_map) {
-      GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+      GLP(BindTexture)(GL_TEXTURE_CUBE_MAP, 0);
     }
     // This is probably faster - but maybe not as safe?
     // cgGLDisableTextureParameter(p);
@@ -938,9 +943,6 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       // Unsupported texture mode.
       continue;
     }
-#ifndef OPENGLES_2
-    GLP(Enable)(target);
-#endif
     gsg->apply_texture(tc);
 
     if (_shader->get_language() == Shader::SL_GLSL) {
@@ -949,9 +951,6 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     }
 
     if (!gsg->update_texture(tc, false)) {
-#ifndef OPENGLES_2
-      GLP(Disable)(target);
-#endif
       continue;
     }
   }

@@ -1,5 +1,7 @@
 // Filename: graphicsStateGuardian.I
 // Created by:  drose (24Sep99)
+// Updated by: fperazzi, PandaSE (29Apr10) (added 
+// get_max_2d_texture_array_layers and related)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -330,6 +332,22 @@ get_max_3d_texture_dimension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_2d_texture_array_layers
+//       Access: Published
+//  Description: Returns the largest possible number of pages, or -1 
+//               if there is no particular limit. Returns 0 if 2-d
+//               texture arrays not supported.
+//               
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_2d_texture_array_layers() const {
+  return _max_2d_texture_array_layers;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_cube_map_dimension
 //       Access: Published
 //  Description: Returns the largest possible texture size in any one
@@ -395,6 +413,17 @@ get_supports_texture_dot3() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_3d_texture() const {
   return _supports_3d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_2d_texture_array
+//       Access: Published
+//  Description: Returns true if this GSG can render 2-d textures
+//               array.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_2d_texture_array() const {
+  return _supports_2d_texture_array;
 }
 
 ////////////////////////////////////////////////////////////////////

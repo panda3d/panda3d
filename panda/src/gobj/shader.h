@@ -1,6 +1,6 @@
 // Filename: shader.h
 // Created by: jyelon (01Sep05)
-// Updated by: fperazzi, PandaSE(06Apr10)
+// Updated by: fperazzi, PandaSE(29Apr10) (added SAT_sampler2dArray)
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -171,7 +171,8 @@ public:
     SAT_mat4x4,
     SAT_sampler1d,
     SAT_sampler2d,
-    SAT_sampler3d, 
+    SAT_sampler3d,
+    SAT_sampler2dArray,
     SAT_samplercube,
     SAT_unknown
 };
