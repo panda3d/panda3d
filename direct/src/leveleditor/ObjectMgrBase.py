@@ -373,6 +373,7 @@ class ObjectMgrBase:
         obj[OG.OBJ_RGBA] = (r,g,b,a)
         for child in np.getChildren():
             if not child.hasTag('OBJRoot') and\
+               not child.hasTag('_le_sys') and\
                child.getName() != 'bboxLines':
                 child.setTransparency(1)
                 child.setColorScale(r, g, b, a)
@@ -422,6 +423,9 @@ class ObjectMgrBase:
             obj[OG.OBJ_NP] = newobj
             obj[OG.OBJ_MODEL] = model
             self.npIndex[NodePath(newobj)] = obj[OG.OBJ_UID]
+
+            # update scene graph label
+            self.editor.ui.sceneGraphUI.changeLabel(obj[OG.OBJ_UID], newobj.getName())
 
             self.editor.fNeedToSave = True
             # update anim if necessary
