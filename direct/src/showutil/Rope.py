@@ -131,10 +131,13 @@ class Rope(NodePath):
         Rope itself."""
         
         result = self.curve.evaluate(self)
+        startT = result.getStartT()
+        sizeT = result.getEndT() - startT
+
         numPts = len
         ropePts = []
         for i in range(numPts):
             pt = Point3()
-            result.evalPoint(i / float(numPts - 1), pt)
+            result.evalPoint(sizeT * i / float(numPts - 1) + startT, pt)
             ropePts.append(pt)
         return ropePts
