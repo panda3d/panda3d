@@ -808,6 +808,17 @@
 // overhead over plain single-threaded code.
 #define SIMPLE_THREADS
 
+// If this is defined true, then OS threading constructs will be used
+// (if available) to perform context switches in the SIMPLE_THREADS
+// model, instead of strictly user-space calls like setjmp/longjmp.  A
+// mutex is used to ensure that only one thread runs at a time, so the
+// normal SIMPLE_THREADS optimizations still apply, and the normal
+// SIMPLE_THREADS scheduler is used to switch between threads (instead
+// of the OS scheduler).  This may be more portable and more reliable,
+// but it is a weird hybrid between user-space threads and os-provided
+// threads.  This has meaning only if SIMPLE_THREADS is also defined.
+#define OS_SIMPLE_THREADS 1
+
 // Whether threading is defined or not, you might want to validate the
 // thread and synchronization operations.  With threading enabled,
 // defining this will also enable deadlock detection and logging.
