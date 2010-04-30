@@ -72,7 +72,6 @@ class ProtoObjsUI(wx.Panel):
 
         self.SetDropTarget(ProtoDropTarget(self))
 
-        import pdb;pdb.set_trace()
         for key in self.protoObjs.data.keys():
             self.add(self.protoObjs.data[key])
 
