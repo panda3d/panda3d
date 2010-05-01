@@ -1263,6 +1263,7 @@ DTOOL_CONFIG=[
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
     ("SIMPLE_THREADS",                 '1',                      '1'),
+    ("OS_SIMPLE_THREADS",              '1',                      '1'),
     ("DEBUG_THREADS",                  'UNDEF',                  'UNDEF'),
     ("HAVE_POSIX_THREADS",             'UNDEF',                  '1'),
     ("HAVE_AUDIO",                     '1',                      '1'),
@@ -1475,8 +1476,11 @@ def WriteConfigSettings():
     if (GetOptimize() <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
 
-    if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
-        dtool_config["SIMPLE_THREADS"] = 'UNDEF'
+    # Now that we have OS_SIMPLE_THREADS, we can support
+    # SIMPLE_THREADS on exotic architectures like win64, so we no
+    # longer need to disable it for this platform.
+##     if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
+##         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
