@@ -206,6 +206,26 @@ is_true_threads() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::is_simple_threads
+//       Access: Published, Static
+//  Description: Returns true if Panda is currently compiled for
+//               "simple threads", which is to say, cooperative
+//               context switching only, reducing the need for quite
+//               so many critical section protections.  This is not
+//               necessarily the opposite of "true threads", since one
+//               possible implementation of simple threads is via true
+//               threads with mutex protection to ensure only one runs
+//               at a time.
+////////////////////////////////////////////////////////////////////
+INLINE bool Thread::
+is_simple_threads() {
+  if (!support_threads) {
+    return false;
+  }
+  return ThreadImpl::is_simple_threads();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::sleep
 //       Access: Published, Static
 //  Description: Suspends the current thread for at least the

@@ -80,6 +80,7 @@ PUBLISHED:
   INLINE static int get_current_pipeline_stage();
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
+  INLINE static bool is_simple_threads();
   BLOCKING INLINE static void sleep(double seconds);
 
   BLOCKING INLINE static void force_yield();
