@@ -330,6 +330,37 @@ issue_parameters(GSG *gsg, int altered)
 {
 #ifdef HAVE_CG
   if (_cg_context) {
+
+  // Iterate through _ptr parameters
+    for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
+      if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
+#ifdef HAVE_CG
+        const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
+        Shader::ShaderPtrData* _ptr_data = 
+          const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
+        
+        if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
+          release_resources();
+          return;
+        }
+
+        CGparameter p = _cg_parameter_map[_ptr._id._seqno];
+        
+        switch(_ptr_data->_type) {
+        case Shader::SPT_float:
+          cgD3D9SetUniform(p, (float*)_ptr_data->_ptr); 
+          break;
+
+        default: 
+          dxgsg9_cat.error() 
+            << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
+          release_resources(); 
+          return;
+        }
+      }
+#endif
+    }
+
     for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
       if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
         CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
