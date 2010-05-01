@@ -65,6 +65,9 @@ class SceneGraphUIBase(wx.Panel):
         itemId = self.tree.GetItemPyData(parent)
         i = 0
         for child in objNodePath.getChildren():
+            if child.hasTag('OBJRoot'):
+                # since they are already shown in scene graph tree
+                continue
             namestr = "%s.%s"%(child.node().getType(), child.node().getName())
             newItem = self.tree.PrependItem(parent, namestr)
             newItemId = "%s.%s"%(itemId, i)
