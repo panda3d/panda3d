@@ -75,6 +75,9 @@ class ObjectMgrBase:
         if parent is None:
             parent = self.editor.NPParent
 
+        if uid is None:
+            uid = self.genUniqueId()
+
         if self.editor:
             objDef = self.editor.objectPalette.findItem(typeName)
             if objDef is None:
@@ -132,6 +135,7 @@ class ObjectMgrBase:
                     except:
                         newobjModel = loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
                     if newobjModel:
+                        self.flatten(newobjModel, model, objDef, uid)
                         newobj = PythonNodePath(newobjModel)
                     else:
                         newobj = None
@@ -162,9 +166,6 @@ class ObjectMgrBase:
 
             newobj.reparentTo(parent)
             newobj.setTag('OBJRoot','1')
-
-            if uid is None:
-                uid = self.genUniqueId()
 
             # populate obj data using default values
             properties = {}
@@ -385,10 +386,12 @@ class ObjectMgrBase:
             base.direct.deselectAllCB()
 
             objNP = obj[OG.OBJ_NP]
+            objDef = obj[OG.OBJ_DEF]
             objRGBA = obj[OG.OBJ_RGBA]
+            uid = obj[OG.OBJ_UID]
             
             # load new model
-            if obj[OG.OBJ_DEF].actor:
+            if objDef.actor:
                 try:
                     newobj = Actor(model)
                 except:
@@ -398,6 +401,7 @@ class ObjectMgrBase:
                 if newobjModel is None:
                     print "Can't load model %s"%model
                     return
+                self.flatten(newobjModel, model, objDef, uid)
                 newobj = PythonNodePath(newobjModel)
             newobj.setTag('OBJRoot','1')
 
@@ -762,3 +766,7 @@ class ObjectMgrBase:
         self.editor.ui.sceneGraphUI.delete(uid)
         newobj = self.addNewObject(typeName, uid, parent=parentNP, fSelectObject=False)
         newobj.setMat(mat)
+
+    def flatten(self, newobjModel, objDef, uid):
+        # override this to flatten models
+        pass
