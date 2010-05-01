@@ -13,7 +13,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "contextSwitch.h"
-#include "contextSwitchParameters.h"
 
 #include <stdlib.h>
 #include <stdio.h>
