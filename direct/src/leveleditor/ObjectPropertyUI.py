@@ -134,9 +134,16 @@ class ObjectPropUIRadio(ObjectPropUI):
 
 
 class ObjectPropUICombo(ObjectPropUI):
-    def __init__(self, parent, label, value, valueList):
+    def __init__(self, parent, label, value, valueList, obj=None, callBack=None):
         ObjectPropUI.__init__(self, parent, label)
         self.ui = wx.Choice(self.uiPane, -1, choices=valueList)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        if callBack is not None:
+            button = wx.Button(self.uiPane, -1, 'Update')
+            button.Bind(wx.EVT_BUTTON, lambda p0=None, p1=obj, p2=self: callBack(p0, p1, p2))
+            sizer.Add(button)
+        sizer.Add(self.ui, 1, wx.EXPAND, 0)
+        self.uiPane.SetSizer(sizer)
         self.setValue(value)
         self.eventType = wx.EVT_CHOICE
         self.Layout()
@@ -146,6 +153,9 @@ class ObjectPropUICombo(ObjectPropUI):
 
     def getValue(self):
         return self.ui.GetStringSelection()
+
+    def setItems(self, valueList):
+        self.ui.SetItems(valueList)
 
 class ColorPicker(CubeColourDialog):
     def __init__(self, parent, colourData=None, style=CCD_SHOW_ALPHA, alpha = 255, updateCB=None, exitCB=None):
@@ -315,8 +325,16 @@ class ObjectPropertyUI(ScrolledPanel):
 
         objDef = obj[OG.OBJ_DEF]
 
-        if objDef.model is not None and len(objDef.models) > 0:
-            propUI = ObjectPropUICombo(self.lookPane, 'model', obj[OG.OBJ_MODEL], objDef.models)
+        if objDef.updateModelFunction is not None or (objDef.model is not None and len(objDef.models) > 0):
+            defaultModel = obj[OG.OBJ_MODEL]
+            if defaultModel is None:
+                defaultModel = ''
+
+            if len(objDef.models) == 0:
+                modelList = ''
+            else:
+                modelList = objDef.models
+            propUI = ObjectPropUICombo(self.lookPane, 'model', defaultModel, modelList, obj, callBack=objDef.updateModelFunction)
             sizer.Add(propUI)            
 
             propUI.bindFunc(self.editor.objectMgr.onEnterObjectPropUI,
