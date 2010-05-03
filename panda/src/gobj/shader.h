@@ -60,6 +60,22 @@ PUBLISHED:
     ST_geometry,
   };
 
+  enum AutoShaderSwitch {
+    AS_normal = 0x01,
+    AS_glow   = 0x02,
+    AS_gloss  = 0x04,
+    AS_ramp   = 0x08,
+    AS_shadow = 0x10,
+  };
+
+  enum AutoShaderBit {
+    bit_AutoShaderNormal = 0, // bit for AS_normal
+    bit_AutoShaderGlow   = 1, // bit for AS_glow
+    bit_AutoShaderGloss  = 2, // bit for AS_gloss
+    bit_AutoShaderRamp   = 3, // bit for AS_ramp
+    bit_AutoShaderShadow = 4, // bit for AS_shadow
+  };
+
   static PT(Shader) load(const Filename &file, const ShaderLanguage &lang = SL_none);
   static PT(Shader) make(const string &body, const ShaderLanguage &lang = SL_none);
   static PT(Shader) load(const ShaderLanguage &lang, const Filename &vertex, const Filename &fragment, const Filename &geometry = "");

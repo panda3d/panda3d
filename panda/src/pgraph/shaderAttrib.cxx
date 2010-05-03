@@ -132,30 +132,22 @@ set_shader_auto(int priority) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_auto
 //       Access: Published
-//  Description: Set auto shader with control over whether to keep
-//               normal, glow, etc., on or off (e.g., all on via
-//               "normal-on","glow-on","gloss-on","ramp-on","shadow-on")
+//  Description: Set auto shader with bitmask to customize use,
+//  e.g., to keep normal, glow, etc., on or off
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
-set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority) const {
+set_shader_auto(BitMask32 shader_switch, int priority) const {
   
   ShaderAttrib *result = new ShaderAttrib(*this);
   result->_shader = NULL;
   result->_shader_priority = priority;
   result->_auto_shader = true;
   result->_has_shader = true;
-  string cleanedFlag;
-
-  cleanedFlag = downcase(normal_on);
-  result->_auto_normal_on = (cleanedFlag == "normal_on");
-  cleanedFlag = downcase(glow_on);
-  result->_auto_glow_on = (cleanedFlag == "glow_on");
-  cleanedFlag = downcase(gloss_on);
-  result->_auto_gloss_on = (cleanedFlag == "gloss_on");
-  cleanedFlag = downcase(ramp_on);
-  result->_auto_ramp_on = (cleanedFlag == "ramp_on");
-  cleanedFlag = downcase(shadow_on);
-  result->_auto_shadow_on = (cleanedFlag == "shadow_on");
+  result->_auto_normal_on = shader_switch.get_bit(Shader::bit_AutoShaderNormal);
+  result->_auto_glow_on = shader_switch.get_bit(Shader::bit_AutoShaderGlow);
+  result->_auto_gloss_on = shader_switch.get_bit(Shader::bit_AutoShaderGloss);
+  result->_auto_ramp_on = shader_switch.get_bit(Shader::bit_AutoShaderRamp);
+  result->_auto_shadow_on = shader_switch.get_bit(Shader::bit_AutoShaderShadow);
 
   return return_new(result);
 }

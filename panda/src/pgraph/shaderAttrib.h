@@ -66,7 +66,7 @@ PUBLISHED:
   CPT(RenderAttrib) set_shader_off(int priority=0) const;
   CPT(RenderAttrib) set_shader_auto(int priority=0) const;
 
-  CPT(RenderAttrib) set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority=0) const;
+  CPT(RenderAttrib) set_shader_auto(BitMask32 shader_switch, int priority=0) const;
 
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs

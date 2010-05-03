@@ -2,7 +2,7 @@
 // Created by:  drose (25Feb02)
 // Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
 //   for set_shader_input)
-// Updated by: weifengh, PandaSE(15Apr10) (added set_shader_auto)
+// Updated by: weifengh, PandaSE(30Apr10) (added set_shader_auto)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -3725,11 +3725,10 @@ set_shader_auto(int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_auto
 //       Access: Published
-//  Description: overloaded for auto shader selective on/off of
-//               normal, glow, gloss, ramp, shadow
+//  Description: overloaded for auto shader customization
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on, const char* ramp_on, const char* shadow_on, int priority) {
+set_shader_auto(BitMask32 shader_switch, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3738,11 +3737,11 @@ set_shader_auto(const char* normal_on, const char* glow_on, const char* gloss_on
     priority = max(priority,
                    node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
-    node()->set_attrib(sa->set_shader_auto(normal_on, glow_on, gloss_on, ramp_on, shadow_on, priority));
+    node()->set_attrib(sa->set_shader_auto(shader_switch, priority));
   } else {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
-    node()->set_attrib(sa->set_shader_auto(normal_on, glow_on, gloss_on, ramp_on, shadow_on, priority));
+    node()->set_attrib(sa->set_shader_auto(shader_switch, priority));
   }
 }
 ////////////////////////////////////////////////////////////////////
