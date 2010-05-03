@@ -38,6 +38,7 @@
 
 char **params = NULL;
 char *logfile_name = NULL;
+char *pidfile_name = NULL;
 int logfile_fd = -1;
 int stop_on_terminate = 0;
 int stop_always = 0;
@@ -274,6 +275,17 @@ do_autorestart() {
   strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
   fprintf(stderr, "autorestart begun at %s.\n", time_buffer);
 
+  if (pidfile_name != NULL) {
+    unlink(pidfile_name);
+    FILE *pidfile = fopen(pidfile_name, "w");
+    if (pidfile == NULL) {
+      fprintf(stderr, "Could not write pidfile %s\n", pidfile_name);
+    } else {
+      fprintf(pidfile, "%d\n", getpid());
+      fclose(pidfile);
+    }
+  }
+
   sri = 1;
   num_sri = 1;
   if (spam_respawn_count > 1) {
@@ -414,6 +426,8 @@ help() {
           "     Route stdout and stderr from the child process into the indicated\n"
           "     log file.\n\n"
 
+          "  -p pidfilename\n"
+          "     Write the pid of the monitoring process to the indicated pidfile.\n\n"
 
           "  -n\n"
           "     Do not attempt to restart the process under any circumstance.\n"
@@ -487,7 +501,7 @@ main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   /* The initial '+' instructs GNU getopt not to reorder switches. */
-  static const char *optflags = "+l:ntr:s:c:d:wh";
+  static const char *optflags = "+l:p:ntr:s:c:d:wh";
   int flag;
 
   flag = getopt(argc, argv, optflags);
@@ -495,6 +509,10 @@ main(int argc, char *argv[]) {
     switch (flag) {
     case 'l':
       logfile_name = optarg;
+      break;
+
+    case 'p':
+      pidfile_name = optarg;
       break;
 
     case 'n':
