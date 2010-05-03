@@ -44,7 +44,10 @@ class EXPCL_PANDA_TEXT DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
   DynamicTextFont(const char *font_data, int data_length, int face_index);
+  DynamicTextFont(const DynamicTextFont &copy);
   virtual ~DynamicTextFont();
+
+  virtual PT(TextFont) make_copy() const;
 
   INLINE const string &get_name() const;
 
@@ -113,7 +116,7 @@ private:
   void initialize();
   void update_filters();
   void determine_tex_format();
-  DynamicTextGlyph *make_glyph(int character, int glyph_index);
+  DynamicTextGlyph *make_glyph(int character, FT_Face face, int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   void blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,

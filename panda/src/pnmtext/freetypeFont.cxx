@@ -21,10 +21,6 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 
-FT_Library FreetypeFont::_ft_library;
-bool FreetypeFont::_ft_initialized = false;
-bool FreetypeFont::_ft_ok = false;
-
 // This constant determines how big a particular point size font
 // appears to be.  By convention, 10 points is 1 unit (e.g. 1 foot)
 // high.
@@ -40,8 +36,6 @@ const float FreetypeFont::_points_per_inch = 72.0f;
 ////////////////////////////////////////////////////////////////////
 FreetypeFont::
 FreetypeFont() {
-  _font_loaded = false;
-
   _face = NULL;
 
   _point_size = text_point_size;
@@ -51,13 +45,37 @@ FreetypeFont() {
   _scale_factor = text_scale_factor;
   _native_antialias = text_native_antialias;
 
-  _font_pixel_size = 0;
   _line_height = 1.0f;
   _space_advance = 0.25f;
 
-  if (!_ft_initialized) {
-    initialize_ft_library();
-  }
+  _char_size = 0;
+  _dpi = 0;
+  _pixel_width = 0;
+  _pixel_height = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::Copy Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FreetypeFont::
+FreetypeFont(const FreetypeFont &copy) :
+  Namable(copy),
+  _face(copy._face),
+  _point_size(copy._point_size),
+  _requested_pixels_per_unit(copy._requested_pixels_per_unit),
+  _tex_pixels_per_unit(copy._tex_pixels_per_unit),
+  _requested_scale_factor(copy._requested_scale_factor),
+  _scale_factor(copy._scale_factor),
+  _native_antialias(copy._native_antialias),
+  _line_height(copy._line_height),
+  _space_advance(copy._space_advance),
+  _char_size(copy._char_size),
+  _dpi(copy._dpi),
+  _pixel_width(copy._pixel_width),
+  _pixel_height(copy._pixel_height)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,31 +88,32 @@ FreetypeFont() {
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
 load_font(const Filename &font_filename, int face_index) {
-  if (!_ft_ok) {
+  unload_font();
+  _face = new FreetypeFace;
+  if (!_face->_ft_ok) {
     pnmtext_cat.error()
       << "Unable to read font " << font_filename
       << ": FreeType library not initialized properly.\n";
+    unload_font();
     return false;
   }
-
-  unload_font();
 
   bool exists = false;
   int error;
   Filename path(font_filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
-  exists = vfs->read_file(path, _raw_font_data, true);
+  exists = vfs->read_file(path, _face->_font_data, true);
   if (exists) {
     FT_Face face;
-    error = FT_New_Memory_Face(_ft_library, 
-                               (const FT_Byte *)_raw_font_data.data(),
-                               _raw_font_data.length(),
+    error = FT_New_Memory_Face(_face->_ft_library, 
+                               (const FT_Byte *)_face->_font_data.data(),
+                               _face->_font_data.length(),
                                face_index, &face);
-    _face = new FreetypeFace();
     _face->set_face(face);
   }
 
+  bool okflag = false;
   if (!exists) {
     pnmtext_cat.error()
       << "Unable to find font file " << font_filename << "\n";
@@ -107,11 +126,15 @@ load_font(const Filename &font_filename, int face_index) {
         << "Unable to read font " << font_filename << ": invalid.\n";
 
     } else {
-      return font_loaded();
+      okflag = reset_scale();
     }
   }
+
+  if (!okflag) {
+    unload_font();
+  }
   
-  return false;
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,22 +146,24 @@ load_font(const Filename &font_filename, int face_index) {
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
 load_font(const char *font_data, int data_length, int face_index) {
-  if (!_ft_ok) {
+  unload_font();
+  _face = new FreetypeFace;
+
+  if (!_face->_ft_ok) {
     pnmtext_cat.error()
       << "Unable to read font: FreeType library not initialized properly.\n";
+    unload_font();
     return false;
   }
 
-  unload_font();
-
   int error;
   FT_Face face;
-  error = FT_New_Memory_Face(_ft_library, 
+  error = FT_New_Memory_Face(_face->_ft_library, 
                              (const FT_Byte *)font_data, data_length,
                              face_index, &face);
-  _face = new FreetypeFace();
   _face->set_face(face);
 
+  bool okflag = false;
   if (error == FT_Err_Unknown_File_Format) {
     pnmtext_cat.error()
       << "Unable to read font: unknown file format.\n";
@@ -147,10 +172,14 @@ load_font(const char *font_data, int data_length, int face_index) {
       << "Unable to read font: invalid.\n";
     
   } else {
-    return font_loaded();
+    okflag = reset_scale();
   }
 
-  return false;
+  if (!okflag) {
+    unload_font();
+  }
+  
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,10 +189,7 @@ load_font(const char *font_data, int data_length, int face_index) {
 ////////////////////////////////////////////////////////////////////
 void FreetypeFont::
 unload_font() {
-  if (_font_loaded) {
-    _face = NULL;
-    _font_loaded = false;
-  }
+  _face = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,7 +200,7 @@ unload_font() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
-load_glyph(int glyph_index, bool prerender) {
+load_glyph(FT_Face face, int glyph_index, bool prerender) {
   int flags = FT_LOAD_RENDER;
   if (!_native_antialias) { 
     flags |= FT_LOAD_MONOCHROME;
@@ -186,7 +212,7 @@ load_glyph(int glyph_index, bool prerender) {
     flags = 0;
   }
 
-  int error = FT_Load_Glyph(_face->get_face(), glyph_index, flags);
+  int error = FT_Load_Glyph(face, glyph_index, flags);
   if (error) {
     pnmtext_cat.error()
       << "Unable to render glyph " << glyph_index << "\n";
@@ -256,57 +282,6 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
       << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::font_loaded
-//       Access: Private
-//  Description: Called after a font has been successfully loaded,
-//               either from disk or from memory image.
-////////////////////////////////////////////////////////////////////
-bool FreetypeFont::
-font_loaded() {
-  string name = _face->get_face()->family_name;
-  if (_face->get_face()->style_name != NULL) {
-    name += " ";
-    name += _face->get_face()->style_name;
-  }
-  set_name(name);
-  
-  pnmtext_cat.info()
-    << "Loaded font " << name << "\n";
-  _font_loaded = true;
-  reset_scale();
-
-  if (pnmtext_cat.is_debug()) {
-    pnmtext_cat.debug()
-      << name << " has " << _face->get_face()->num_charmaps << " charmaps:\n";
-    for (int i = 0; i < _face->get_face()->num_charmaps; i++) {
-      pnmtext_cat.debug(false) << " " << (void *)_face->get_face()->charmaps[i];
-    }
-    pnmtext_cat.debug(false) << "\n";
-    pnmtext_cat.debug()
-      << "default charmap is " << (void *)_face->get_face()->charmap << "\n";
-  }
-  if (_face->get_face()->charmap == NULL) {
-    // If for some reason FreeType didn't set us up a charmap,
-    // then set it up ourselves.
-    if (_face->get_face()->num_charmaps == 0) {
-      pnmtext_cat.warning()
-        << name << " has no charmaps available.\n";
-    } else {
-      pnmtext_cat.warning()
-        << name << " has no default Unicode charmap.\n";
-      if (_face->get_face()->num_charmaps > 1) {
-        pnmtext_cat.warning()
-          << "Arbitrarily choosing first of " 
-          << _face->get_face()->num_charmaps << " charmaps.\n";
-      }
-      FT_Set_Charmap(_face->get_face(), _face->get_face()->charmaps[0]);
-    }
-  }
-
-  return true;
-}
  
 ////////////////////////////////////////////////////////////////////
 //     Function: FreetypeFont::reset_scale
@@ -317,6 +292,14 @@ font_loaded() {
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
 reset_scale() {
+  if (_face == NULL) {
+    return false;
+  }
+
+  // Get the face, without requesting a particular size yet (we'll
+  // figure out the size in a second).
+  FT_Face face = _face->acquire_face(0, 0, 0, 0);
+
   // The font may be rendered larger (by a factor of _scale_factor),
   // and then reduced into the texture.  Hence the difference between
   // _font_pixels_per_unit and _tex_pixels_per_unit.
@@ -324,13 +307,13 @@ reset_scale() {
   _scale_factor = _requested_scale_factor;
   _font_pixels_per_unit = _tex_pixels_per_unit * _scale_factor;
 
+  _pixel_height = 0;
+  _pixel_width = 0;
   float units_per_inch = (_points_per_inch / _points_per_unit);
-  int dpi = (int)(_font_pixels_per_unit * units_per_inch);
+  _dpi = (int)(_font_pixels_per_unit * units_per_inch);
+  _char_size = (int)(_point_size * 64);
   
-  _font_pixel_size = 0;
-  int error = FT_Set_Char_Size(_face->get_face(),
-                               (int)(_point_size * 64), (int)(_point_size * 64),
-                               dpi, dpi);
+  int error = FT_Set_Char_Size(face, _char_size, _char_size, _dpi, _dpi);
   if (error) {
     // If we were unable to set a particular char size, perhaps we
     // have a non-scalable font.  Try to figure out the next larger
@@ -339,16 +322,16 @@ reset_scale() {
     int desired_height = (int)(_font_pixels_per_unit * _point_size / _points_per_unit + 0.5f);
     int best_size = -1;
     int largest_size = -1;
-    if (_face->get_face()->num_fixed_sizes > 0) {
+    if (face->num_fixed_sizes > 0) {
       largest_size = 0;
       int best_diff = 0;
-      for (int i = 0; i < _face->get_face()->num_fixed_sizes; i++) {
-        int diff = _face->get_face()->available_sizes[i].height - desired_height;
+      for (int i = 0; i < face->num_fixed_sizes; i++) {
+        int diff = face->available_sizes[i].height - desired_height;
         if (diff > 0 && (best_size == -1 || diff < best_diff)) {
           best_size = i;
           best_diff = diff;
         }
-        if (_face->get_face()->available_sizes[i].height > _face->get_face()->available_sizes[largest_size].height) {
+        if (face->available_sizes[i].height > face->available_sizes[largest_size].height) {
           largest_size = i;
         }
       }
@@ -358,13 +341,12 @@ reset_scale() {
     }
 
     if (best_size >= 0) {
-      int pixel_height = _face->get_face()->available_sizes[best_size].height;
-      int pixel_width = _face->get_face()->available_sizes[best_size].width;
-      error = FT_Set_Pixel_Sizes(_face->get_face(), pixel_width, pixel_height);
+      _pixel_height = face->available_sizes[best_size].height;
+      _pixel_width = face->available_sizes[best_size].width;
+      error = FT_Set_Pixel_Sizes(face, _pixel_width, _pixel_height);
       if (!error) {
-        _font_pixels_per_unit = pixel_height * _points_per_unit / _point_size;
+        _font_pixels_per_unit = _pixel_height * _points_per_unit / _point_size;
         _scale_factor = _font_pixels_per_unit / _tex_pixels_per_unit;
-        _font_pixel_size = pixel_height;
 
         if (_scale_factor < 1.0) {
           // No point in enlarging a fixed-point font.
@@ -378,44 +360,26 @@ reset_scale() {
   if (error) {
     pnmtext_cat.warning()
       << "Unable to set " << get_name() 
-      << " to " << _point_size << "pt at " << dpi << " dpi.\n";
+      << " to " << _point_size << "pt at " << _dpi << " dpi.\n";
     _line_height = 1.0f;
+    _face->release_face(face);
     return false;
   }
 
-  _line_height = _face->get_face()->size->metrics.height / (_font_pixels_per_unit * 64.0f);
+  _line_height = face->size->metrics.height / (_font_pixels_per_unit * 64.0f);
 
   // Determine the correct width for a space.
-  error = FT_Load_Char(_face->get_face(), ' ', FT_LOAD_DEFAULT);
+  error = FT_Load_Char(face, ' ', FT_LOAD_DEFAULT);
   if (error) {
     // Space isn't defined.  Oh well.
     _space_advance = 0.25f * _line_height;
 
   } else {
-    _space_advance = _face->get_face()->glyph->advance.x / (_font_pixels_per_unit * 64.0f);
+    _space_advance = face->glyph->advance.x / (_font_pixels_per_unit * 64.0f);
   }
 
+  _face->release_face(face);
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::initialize_ft_library
-//       Access: Private, Static
-//  Description: Should be called exactly once to initialize the
-//               FreeType library.
-////////////////////////////////////////////////////////////////////
-void FreetypeFont::
-initialize_ft_library() {
-  if (!_ft_initialized) {
-    int error = FT_Init_FreeType(&_ft_library);
-    _ft_initialized = true;
-    if (error) {
-      pnmtext_cat.error()
-        << "Unable to initialize FreeType; dynamic fonts will not load.\n";
-    } else {
-      _ft_ok = true;
-    }
-  }
 }
 
 #endif  // HAVE_FREETYPE

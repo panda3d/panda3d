@@ -100,12 +100,52 @@ DynamicTextFont(const char *font_data, int data_length, int face_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DynamicTextFont::
+DynamicTextFont(const DynamicTextFont &copy) :
+  TextFont(copy),
+  FreetypeFont(copy),
+  _texture_margin(copy._texture_margin),
+  _poly_margin(copy._poly_margin),
+  _page_x_size(copy._page_x_size),
+  _page_y_size(copy._page_y_size),
+  _minfilter(copy._minfilter),
+  _magfilter(copy._magfilter),
+  _anisotropic_degree(copy._anisotropic_degree),
+  _render_mode(copy._render_mode),
+  _winding_order(copy._winding_order),
+  _fg(copy._fg),
+  _bg(copy._bg),
+  _outline_color(copy._outline_color),
+  _outline_width(copy._outline_width),
+  _outline_feather(copy._outline_feather),
+  _has_outline(copy._has_outline),
+  _tex_format(copy._tex_format),
+  _needs_image_processing(copy._needs_image_processing),
+  _preferred_page(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DynamicTextFont::
 ~DynamicTextFont() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::make_copy
+//       Access: Published
+//  Description: Returns a new copy of the same font.
+////////////////////////////////////////////////////////////////////
+PT(TextFont) DynamicTextFont::
+make_copy() const {
+  return new DynamicTextFont(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,8 +256,9 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2) 
       << glyph_index;
 
-    if (FT_HAS_GLYPH_NAMES(_face->get_face())) {
-      int error = FT_Get_Glyph_Name(_face->get_face(), glyph_index, 
+    FT_Face face = acquire_face();
+    if (FT_HAS_GLYPH_NAMES(face)) {
+      int error = FT_Get_Glyph_Name(face, glyph_index, 
                                     glyph_name, max_glyph_name);
 
       // Some fonts, notably MS Mincho, claim to have glyph names but
@@ -226,6 +267,7 @@ write(ostream &out, int indent_level) const {
         out << " (" << glyph_name << ")";
       }
     }
+    release_face(face);
 
     out << ", count = " << glyph->_geom_count << "\n";
   }
@@ -249,7 +291,8 @@ get_glyph(int character, const TextGlyph *&glyph) {
     return false;
   }
 
-  int glyph_index = FT_Get_Char_Index(_face->get_face(), character);
+  FT_Face face = acquire_face();
+  int glyph_index = FT_Get_Char_Index(face, character);
   if (text_cat.is_spam()) {
     text_cat.spam()
       << *this << " maps " << character << " to glyph " << glyph_index << "\n";
@@ -259,7 +302,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
   if (ci != _cache.end()) {
     glyph = (*ci).second;
   } else {
-    DynamicTextGlyph *dynamic_glyph = make_glyph(character, glyph_index);
+    DynamicTextGlyph *dynamic_glyph = make_glyph(character, face, glyph_index);
     _cache.insert(Cache::value_type(glyph_index, dynamic_glyph));
     glyph = dynamic_glyph;
   }
@@ -269,6 +312,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
     glyph_index = 0;
   }
     
+  release_face(face);
   return (glyph_index != 0);
 }
 
@@ -399,12 +443,12 @@ determine_tex_format() {
 //               glyph cannot be created for some reason.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-make_glyph(int character, int glyph_index) {
-  if (!load_glyph(glyph_index, false)) {
+make_glyph(int character, FT_Face face, int glyph_index) {
+  if (!load_glyph(face, glyph_index, false)) {
     return (DynamicTextGlyph *)NULL;
   }
 
-  FT_GlyphSlot slot = _face->get_face()->glyph;
+  FT_GlyphSlot slot = face->glyph;
   FT_Bitmap &bitmap = slot->bitmap;
 
   if ((bitmap.width == 0 || bitmap.rows == 0) && (glyph_index == 0)) {
@@ -423,7 +467,7 @@ make_glyph(int character, int glyph_index) {
     // Re-stroke the glyph to make it an outline glyph.
     /*
     FT_Stroker stroker;
-    FT_Stroker_New(_face->get_face()->memory, &stroker);
+    FT_Stroker_New(face->memory, &stroker);
     FT_Stroker_Set(stroker, 16 * 16, FT_STROKER_LINECAP_BUTT,
                    FT_STROKER_LINEJOIN_ROUND, 0);
 

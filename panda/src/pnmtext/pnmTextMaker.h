@@ -40,6 +40,7 @@ class EXPCL_PANDA_PNMTEXT PNMTextMaker : public FreetypeFont {
 PUBLISHED:
   PNMTextMaker(const Filename &font_filename, int face_index);
   PNMTextMaker(const char *font_data, int data_length, int face_index);
+  PNMTextMaker(const PNMTextMaker &copy);
   ~PNMTextMaker();
 
   enum Alignment {

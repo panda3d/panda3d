@@ -41,6 +41,7 @@
 class EXPCL_PANDA_PNMTEXT FreetypeFont : public Namable {
 protected:
   FreetypeFont();
+  FreetypeFont(const FreetypeFont &copy);
 
   bool load_font(const Filename &font_filename, int face_index);
   bool load_font(const char *font_data, int data_length, int face_index);
@@ -73,13 +74,14 @@ PUBLISHED:
   INLINE static float get_points_per_inch();
 
 protected:
-  bool load_glyph(int glyph_index, bool prerender = true);
+  INLINE FT_Face acquire_face() const;
+  INLINE void release_face(FT_Face face) const;
+
+  bool load_glyph(FT_Face face, int glyph_index, bool prerender = true);
   void copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image);
 
 private:
-  bool font_loaded();
   bool reset_scale();
-  static void initialize_ft_library();
 
 protected:
   float _point_size;
@@ -95,19 +97,12 @@ protected:
   float _space_advance;
 
   PT(FreetypeFace) _face;
+  int _char_size;
+  int _dpi;
+  int _pixel_width;
+  int _pixel_height;
 
 protected:
-  bool _font_loaded;
-
-  // This string is used to hold the data read from the font file in
-  // vfs mode.  Since the FreeType library keeps pointers into this
-  // data, we have to keep it around.
-  string _raw_font_data;
-
-  static FT_Library _ft_library;
-  static bool _ft_initialized;
-  static bool _ft_ok;
-
   static const float _points_per_unit;
   static const float _points_per_inch;
 };

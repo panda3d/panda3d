@@ -19,13 +19,10 @@
 
 #ifdef HAVE_FREETYPE
 
-//#include "config_pnmtext.h"
-//#include "filename.h"
-//#include "pvector.h"
-//#include "pmap.h"
-//#include "pnmImage.h"
 #include "typedReferenceCount.h"
 #include "namable.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -40,16 +37,33 @@
 class EXPCL_PANDA_PNMTEXT FreetypeFace : public TypedReferenceCount, public Namable {
 public:
   FreetypeFace();
-
-PUBLISHED:
   ~FreetypeFace();
 
-  INLINE FT_Face get_face();
-  INLINE void set_face(FT_Face face);
+  FT_Face acquire_face();
+  FT_Face acquire_face(int char_size, int dpi, int pixel_width, int pixel_height);
+  void release_face(FT_Face face);
+
+  void set_face(FT_Face face);
 
 private:
-  FT_Face _face;
+  static void initialize_ft_library();
 
+private:
+  // This is provided as a permanent storage for the raw font data, if
+  // needed.
+  string _font_data;
+
+  string _name;
+  FT_Face _face;
+  int _char_size;
+  int _dpi;
+  int _pixel_width;
+  int _pixel_height;
+  Mutex _lock;
+
+  static FT_Library _ft_library;
+  static bool _ft_initialized;
+  static bool _ft_ok;
 
 public:
   static TypeHandle get_class_type() {
@@ -67,6 +81,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class FreetypeFont;
 };
 
 

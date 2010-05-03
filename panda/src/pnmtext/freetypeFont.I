@@ -185,7 +185,7 @@ get_native_antialias() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int FreetypeFont::
 get_font_pixel_size() const {
-  return _font_pixel_size;
+  return _pixel_height;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,4 +230,32 @@ get_points_per_unit() {
 INLINE float FreetypeFont::
 get_points_per_inch() {
   return _points_per_inch;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::acquire_face
+//       Access: Protected
+//  Description: Retrieves the internal freetype face, and also
+//               acquires the lock.
+//
+//               You must call release_face() when you are done using
+//               it, to release the lock.
+////////////////////////////////////////////////////////////////////
+INLINE FT_Face FreetypeFont::
+acquire_face() const {
+  nassertr(_face != NULL, NULL);
+  return _face->acquire_face(_char_size, _dpi, _pixel_width, _pixel_height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::release_face
+//       Access: Protected
+//  Description: Releases the lock acquired by a previous call to
+//               acquire_face(), and allows another thread to use the
+//               face.
+////////////////////////////////////////////////////////////////////
+INLINE void FreetypeFont::
+release_face(FT_Face face) const {
+  nassertv(_face != NULL);
+  _face->release_face(face);
 }

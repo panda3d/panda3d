@@ -37,6 +37,20 @@ TextFont() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextFont::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+TextFont::
+TextFont(const TextFont &copy) :
+  Namable(copy),
+  _is_valid(copy._is_valid),
+  _line_height(copy._line_height),
+  _space_advance(copy._space_advance)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextFont::Destructor
 //       Access: Published, Virtual
 //  Description:

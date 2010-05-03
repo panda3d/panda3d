@@ -75,6 +75,16 @@ StaticTextFont(PandaNode *font_def) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StaticTextFont::make_copy
+//       Access: Published
+//  Description: Returns a new copy of the same font.
+////////////////////////////////////////////////////////////////////
+PT(TextFont) StaticTextFont::
+make_copy() const {
+  return new StaticTextFont(_font);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StaticTextFont::write
 //       Access: Published, Virtual
 //  Description:
