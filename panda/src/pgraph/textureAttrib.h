@@ -72,9 +72,9 @@ PUBLISHED:
 
   INLINE bool is_identity() const;
 
-  CPT(RenderAttrib) add_on_stage(TextureStage *stage, Texture *tex) const;
+  CPT(RenderAttrib) add_on_stage(TextureStage *stage, Texture *tex, int override = 0) const;
   CPT(RenderAttrib) remove_on_stage(TextureStage *stage) const;
-  CPT(RenderAttrib) add_off_stage(TextureStage *stage) const;
+  CPT(RenderAttrib) add_off_stage(TextureStage *stage, int override = 0) const;
   CPT(RenderAttrib) remove_off_stage(TextureStage *stage) const;
   CPT(RenderAttrib) unify_texture_stages(TextureStage *stage) const;
 
@@ -96,42 +96,44 @@ private:
   void sort_on_stages();
 
 private:
-  class OnStageNode {
+  class StageNode {
   public:
-    INLINE OnStageNode(TextureStage *stage, unsigned int implicit_sort);
+    INLINE StageNode(const TextureStage *stage, 
+                     unsigned int implicit_sort = 0,
+                     int override = 0);
 
     PT(TextureStage) _stage;
+    PT(Texture) _texture;
+    int _ff_tc_index;
     unsigned int _implicit_sort;
+    int _override;
   };
 
   class CompareTextureStagePriorities {
   public:
-    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+    INLINE bool operator () (const TextureAttrib::StageNode *a, const TextureAttrib::StageNode *b) const;
   };
 
   class CompareTextureStageSort {
   public:
-    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+    INLINE bool operator () (const TextureAttrib::StageNode *a, const TextureAttrib::StageNode *b) const;
   };
 
   class CompareTextureStagePointer {
   public:
-    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+    INLINE bool operator () (const TextureAttrib::StageNode &a, const TextureAttrib::StageNode &b) const;
   };
 
-  typedef pvector<OnStageNode> OnStages;
-  OnStages _on_stages;      // list of all "on" stages, sorted in render order.
-  OnStages _on_ptr_stages;  // above, sorted in pointer order.
-  OnStages _on_ff_stages;   // fixed-function stages only, in render order.
-  vector_int _ff_tc_index;
+  typedef ov_set<StageNode, CompareTextureStagePointer> Stages;
+  Stages _on_stages;  // set of all "on" stages, indexed by pointer.
+
+  typedef pvector<StageNode *> RenderStages;
+  RenderStages _render_stages;      // all "on" stages, sorted in render order.
+  RenderStages _render_ff_stages;   // fixed-function stages only, in render order.
   unsigned int _next_implicit_sort;
   
-  typedef ov_set<PT(TextureStage) > OffStages;
-  OffStages _off_stages;
+  Stages _off_stages;
   bool _off_all_stages;
-
-  typedef pmap<PT(TextureStage), PT(Texture) > OnTextures;
-  OnTextures _on_textures;
 
   typedef pmap< int, CPT(TextureAttrib) > Filtered;
   Filtered _filtered;

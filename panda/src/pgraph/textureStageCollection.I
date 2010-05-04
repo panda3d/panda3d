@@ -44,3 +44,14 @@ operator + (const TextureStageCollection &other) const {
   a += other;
   return a;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStageCollection::CompareTextureStageSort::operator ()
+//       Access: Public
+//  Description: This STL function object is used to sort a list of
+//               texture stages in order by sort.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStageCollection::CompareTextureStageSort::
+operator () (const TextureStage *a, const TextureStage *b) const {
+  return a->get_sort() < b->get_sort();
+}

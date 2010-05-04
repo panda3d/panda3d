@@ -105,6 +105,122 @@ TextureStage::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::compare_to
+//       Access: Published
+//  Description: Returns a number less than zero if this TextureStage
+//               sorts before the other one, greater than zero if it
+//               sorts after, or zero if they are equivalent.  The
+//               sorting order is arbitrary and largely meaningless,
+//               except to differentiate different stages.
+////////////////////////////////////////////////////////////////////
+int TextureStage::
+compare_to(const TextureStage &other) const {
+  // We put the sort parameter first, so that we sorting a list of
+  // TextureStages will happen to put them in sorted order, even
+  // though we don't promise to do that.  But there's no reason not to
+  // do so, and it might be more convenient for the developer.
+  if (get_sort() != other.get_sort()) {
+    return get_sort() < other.get_sort() ? -1 : 1;
+  }
+
+  // The remaining parameters are arbitrary.  We start with the name,
+  // because that's most likely to be consistent between similar
+  // TextureStages, and different between different TextureStages.
+  int compare = strcmp(get_name().c_str(), other.get_name().c_str());
+  if (compare != 0) {
+    return compare;
+  }
+
+  if (get_priority() != other.get_priority()) {
+    return get_priority() < other.get_priority() ? -1 : 1;
+  }
+  if (get_texcoord_name() != other.get_texcoord_name()) {
+    return get_texcoord_name() < other.get_texcoord_name() ? -1 : 1;
+  }
+  if (get_mode() != other.get_mode()) {
+    return get_mode() < other.get_mode() ? -1 : 1;
+  }
+  if (get_rgb_scale() != other.get_rgb_scale()) {
+    return get_rgb_scale() < other.get_rgb_scale() ? -1 : 1;
+  }
+  if (get_alpha_scale() != other.get_alpha_scale()) {
+    return get_alpha_scale() < other.get_alpha_scale() ? -1 : 1;
+  }
+  if (get_saved_result() != other.get_saved_result()) {
+    return get_saved_result() < other.get_saved_result() ? -1 : 1;
+  }
+  if (get_mode() != other.get_mode()) {
+    return get_mode() < other.get_mode() ? -1 : 1;
+  }
+  if (get_mode() == M_combine) {
+    if (get_combine_rgb_mode() != other.get_combine_rgb_mode()) {
+      return get_combine_rgb_mode() < other.get_combine_rgb_mode() ? -1 : 1;
+    }
+    
+    if (get_num_combine_rgb_operands() != other.get_num_combine_rgb_operands()) {
+      return get_num_combine_rgb_operands() < other.get_num_combine_rgb_operands() ? -1 : 1;
+    }
+    if (get_num_combine_rgb_operands() >= 1) {
+      if (get_combine_rgb_source0() != other.get_combine_rgb_source0()) {
+        return get_combine_rgb_source0() < other.get_combine_rgb_source0() ? -1 : 1;
+      }
+      if (get_combine_rgb_operand0() != other.get_combine_rgb_operand0()) {
+        return get_combine_rgb_operand0() < other.get_combine_rgb_operand0() ? -1 : 1;
+      }
+    }
+    if (get_num_combine_rgb_operands() >= 2) {
+      if (get_combine_rgb_source1() != other.get_combine_rgb_source1()) {
+        return get_combine_rgb_source1() < other.get_combine_rgb_source1() ? -1 : 1;
+      }
+      if (get_combine_rgb_operand1() != other.get_combine_rgb_operand1()) {
+        return get_combine_rgb_operand1() < other.get_combine_rgb_operand1() ? -1 : 1;
+      }
+    }
+    if (get_num_combine_rgb_operands() >= 3) {
+      if (get_combine_rgb_source2() != other.get_combine_rgb_source2()) {
+        return get_combine_rgb_source2() < other.get_combine_rgb_source2() ? -1 : 1;
+      }
+      if (get_combine_rgb_operand2() != other.get_combine_rgb_operand2()) {
+        return get_combine_rgb_operand2() < other.get_combine_rgb_operand2() ? -1 : 1;
+      }
+    }
+    if (get_combine_alpha_mode() != other.get_combine_alpha_mode()) {
+      return get_combine_alpha_mode() < other.get_combine_alpha_mode() ? -1 : 1;
+    }
+    
+    if (get_num_combine_alpha_operands() != other.get_num_combine_alpha_operands()) {
+      return get_num_combine_alpha_operands() < other.get_num_combine_alpha_operands() ? -1 : 1;
+    }
+    if (get_num_combine_alpha_operands() >= 1) {
+      if (get_combine_alpha_source0() != other.get_combine_alpha_source0()) {
+        return get_combine_alpha_source0() < other.get_combine_alpha_source0() ? -1 : 1;
+      }
+      if (get_combine_alpha_operand0() != other.get_combine_alpha_operand0()) {
+        return get_combine_alpha_operand0() < other.get_combine_alpha_operand0() ? -1 : 1;
+      }
+    }
+    if (get_num_combine_alpha_operands() >= 2) {
+      if (get_combine_alpha_source1() != other.get_combine_alpha_source1()) {
+        return get_combine_alpha_source1() < other.get_combine_alpha_source1() ? -1 : 1;
+      }
+      if (get_combine_alpha_operand1() != other.get_combine_alpha_operand1()) {
+        return get_combine_alpha_operand1() < other.get_combine_alpha_operand1() ? -1 : 1;
+      }
+    }
+    if (get_num_combine_alpha_operands() >= 3) {
+      if (get_combine_alpha_source2() != other.get_combine_alpha_source2()) {
+        return get_combine_alpha_source2() < other.get_combine_alpha_source2() ? -1 : 1;
+      }
+      if (get_combine_alpha_operand2() != other.get_combine_alpha_operand2()) {
+        return get_combine_alpha_operand2() < other.get_combine_alpha_operand2() ? -1 : 1;
+      }
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::Destructor
 //       Access: Published
 //  Description: Writes the details of this stage

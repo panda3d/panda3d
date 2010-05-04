@@ -65,10 +65,12 @@ private:
 public:
   virtual ~RenderAttrib();
 
+PUBLISHED:
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
   virtual bool lower_attrib_can_override() const;
 
+public:
   INLINE bool always_reissue() const;
 
   virtual bool has_cull_callback() const;

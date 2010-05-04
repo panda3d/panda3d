@@ -27,7 +27,7 @@ MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)NULL;
 ////////////////////////////////////////////////////////////////////
 void MaterialPool::
 write(ostream &out) {
-  get_ptr()->ns_list_contents(out);
+  get_global_ptr()->ns_list_contents(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +51,31 @@ ns_get_material(Material *temp) {
     }
   }
   return (*mi).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::ns_release_material
+//       Access: Private
+//  Description: The nonstatic implementation of release_material().
+////////////////////////////////////////////////////////////////////
+void MaterialPool::
+ns_release_material(Material *temp) {
+  LightMutexHolder holder(_lock);
+
+  CPT(Material) cpttemp = temp;
+  _materials.erase(cpttemp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::ns_release_all_materials
+//       Access: Private
+//  Description: The nonstatic implementation of release_all_materials().
+////////////////////////////////////////////////////////////////////
+void MaterialPool::
+ns_release_all_materials() {
+  LightMutexHolder holder(_lock);
+
+  _materials.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,13 +129,13 @@ ns_list_contents(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialPool::get_ptr
+//     Function: MaterialPool::get_global_ptr
 //       Access: Private, Static
 //  Description: Initializes and/or returns the global pointer to the
 //               one MaterialPool object in the system.
 ////////////////////////////////////////////////////////////////////
 MaterialPool *MaterialPool::
-get_ptr() {
+get_global_ptr() {
   if (_global_ptr == (MaterialPool *)NULL) {
     _global_ptr = new MaterialPool;
   }

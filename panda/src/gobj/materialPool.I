@@ -35,7 +35,28 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Material *MaterialPool::
 get_material(Material *temp) {
-  return get_ptr()->ns_get_material(temp);
+  return get_global_ptr()->ns_get_material(temp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::release_material
+//       Access: Published, Static
+//  Description: Removes the indicated material from the pool.
+////////////////////////////////////////////////////////////////////
+INLINE void MaterialPool::
+release_material(Material *material) {
+  get_global_ptr()->ns_release_material(material);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::release_all_materials
+//       Access: Published, Static
+//  Description: Releases all materials in the pool and restores the
+//               pool to the empty state.
+////////////////////////////////////////////////////////////////////
+INLINE void MaterialPool::
+release_all_materials() {
+  get_global_ptr()->ns_release_all_materials();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +69,7 @@ get_material(Material *temp) {
 ////////////////////////////////////////////////////////////////////
 INLINE int MaterialPool::
 garbage_collect() {
-  return get_ptr()->ns_garbage_collect();
+  return get_global_ptr()->ns_garbage_collect();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +80,7 @@ garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 INLINE void MaterialPool::
 list_contents(ostream &out) {
-  get_ptr()->ns_list_contents(out);
+  get_global_ptr()->ns_list_contents(out);
 }
 
 ////////////////////////////////////////////////////////////////////

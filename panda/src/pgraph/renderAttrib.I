@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::compose
-//       Access: Public
+//       Access: Published
 //  Description: Returns a new RenderAttrib object that represents the
 //               composition of this attrib with the other attrib.  In
 //               most cases, this is the same as the other attrib; a
@@ -30,7 +30,7 @@ compose(const RenderAttrib *other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::invert_compose
-//       Access: Public
+//       Access: Published
 //  Description: Returns a new RenderAttrib object that represents the
 //               composition of the inverse of this attrib with the
 //               other attrib.  In most cases, this is the same as the
