@@ -54,8 +54,13 @@ record_task(Thread *current_thread) {
   // If the return value is other than NULL, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
   nassertv(result == NULL);
   nassertv(current_thread->_current_task == this);
+#endif  // __GNUC__
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +80,11 @@ clear_task(Thread *current_thread) {
   // If the return value is other than this, someone else must have
   // assigned the task first, in another thread.  That shouldn't be
   // possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
   nassertv(result == this);
   nassertv(current_thread->_current_task == NULL);
+#endif  // __GNUC__
 }
