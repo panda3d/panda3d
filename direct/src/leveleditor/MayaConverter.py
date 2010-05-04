@@ -5,6 +5,9 @@ import ObjectGlobals as OG
 
 CLOSE_STDIN = "<CLOSE STDIN>"
 
+class StartupError(Exception):
+    pass
+
 class Process:
     def __init__(self, parent, cmd, end_callback):
         self.process = wx.Process(parent)
