@@ -236,7 +236,15 @@ open_buffer() {
     return false;
   }
 
+  int error_count = x11GraphicsPipe::disable_x_error_messages();
   glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
+  if (x11GraphicsPipe::enable_x_error_messages() != error_count) {
+    // An error was generated during the glXMakeCurrent() call.
+    // Assume the worst.
+    close_buffer();
+    return false;
+  }
+
   glxgsg->reset_if_new();
   if (!glxgsg->is_valid()) {
     close_buffer();

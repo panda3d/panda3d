@@ -56,6 +56,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _libgl_handle = NULL;
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
+  _temp_context = (GLXContext)NULL;
   _temp_xwindow = (Window)NULL;
   _temp_colormap = (Colormap)NULL;
 }
@@ -249,8 +250,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // We need this before we can query the FBConfig interface, because
   // we need an OpenGL context to get the required extension function
   // pointers.
-  choose_visual(properties);
-  if (_context == NULL) {
+  destroy_temp_xwindow();
+  choose_temp_visual(properties);
+  if (_temp_context == NULL) {
     // No good.
     return;
   }
@@ -270,6 +272,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
       glxdisplay_cat.debug()
         << _fbprops << "\n";
+
+      _context = _temp_context;
+      _temp_context = (GLXContext)NULL;
 
       // By convention, every indirect XVisual that can render to a
       // window can also render to a GLXPixmap.  Direct visuals we're
@@ -305,12 +310,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int num_configs = 0;
   GLXFBConfig *configs =
     _glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
-
-  // Now that we're done querying the first context, we don't need it
-  // anymore.  Clear it so we can create our actual OpenGL context.
-  glXDestroyContext(_display, _context);
-  _context = (GLXContext)NULL;
-  destroy_temp_xwindow();
   
   if (configs != 0) {
     bool context_has_pbuffer, context_has_pixmap, slow;
@@ -326,7 +325,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
         const char *pixmaptext = context_has_pixmap ? " (pixmap)" : "";
         const char *slowtext = slow ? " (slow)" : "";
         glxdisplay_cat.debug()
-          << i << ": " << fbprops << "quality=" << quality << pbuffertext << pixmaptext << slowtext << "\n";
+          << i << ": " << fbprops << " quality=" << quality << pbuffertext << pixmaptext << slowtext << "\n";
       }
       if (need_pbuffer && !context_has_pbuffer) {
         continue;
@@ -359,9 +358,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
       if (_visual) {
         get_properties_advanced(_fbprops, _context_has_pbuffer, _context_has_pixmap,
                                 _slow, _fbconfig);
-
-        // hack?
-        //init_temp_context();
 
         if (glxdisplay_cat.is_debug()) {
           glxdisplay_cat.debug()
@@ -756,16 +752,18 @@ show_glx_server_string(const string &name, int id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::choose_visual
+//     Function: glxGraphicsStateGuardian::choose_temp_visual
 //       Access: Private
-//  Description: Selects a visual for this gsg.  This may be called
-//               initially, to create the first context needed in
-//               order to create the fbconfig.  On successful return,
-//               _visual and _context will be filled in with a
-//               non-NULL value.
+//  Description: Selects an XVisual for an initial OpenGL context.
+//               This may be called initially, to create the first
+//               context needed in order to create the fbconfig.  On
+//               successful return, _visual and _temp_context will be
+//               filled in with a non-NULL value.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
-choose_visual(const FrameBufferProperties &properties) {
+choose_temp_visual(const FrameBufferProperties &properties) {
+  nassertv(_temp_context == (GLXContext)NULL);
+
   int best_quality = 0;
   int best_result = 0;
   FrameBufferProperties best_props;
@@ -792,8 +790,8 @@ choose_visual(const FrameBufferProperties &properties) {
   
   if (best_quality > 0) {
     _visual = _visuals + best_result;
-    _context = glXCreateContext(_display, _visual, None, GL_TRUE);    
-    if (_context) {
+    _temp_context = glXCreateContext(_display, _visual, None, GL_TRUE);    
+    if (_temp_context) {
       _fbprops = best_props;
       return;
     }
@@ -806,17 +804,15 @@ choose_visual(const FrameBufferProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::init_temp_context
 //       Access: Private
-//  Description: Initializes the context created in choose_visual() by
-//               creating a temporary window and binding the context
-//               to that window.
+//  Description: Initializes the context created in
+//               choose_temp_visual() by creating a temporary window
+//               and binding the context to that window.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 init_temp_context() {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, get_pipe());
   Window root_window = x11_pipe->get_root();
-
-  destroy_temp_xwindow();
 
   // Assume everyone uses TrueColor or DirectColor these days.
   Visual *visual = _visual->visual;
@@ -837,7 +833,7 @@ init_temp_context() {
     return;
   }
 
-  glXMakeCurrent(_display, _temp_xwindow, _context);
+  glXMakeCurrent(_display, _temp_xwindow, _temp_context);
   reset();
 }
 
@@ -849,12 +845,19 @@ init_temp_context() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 destroy_temp_xwindow() {
+  glXMakeCurrent(_display, None, NULL);
+
+  if (_temp_colormap != (Colormap)NULL) {
+    XFreeColormap(_display, _temp_colormap);
+    _temp_colormap = (Colormap)NULL;
+  }
   if (_temp_xwindow != (Window)NULL) {
     XDestroyWindow(_display, _temp_xwindow);
     _temp_xwindow = (Window)NULL;
   }
-  if (_temp_colormap != (Colormap)NULL) {
-    XFreeColormap(_display, _temp_colormap);
-    _temp_colormap = (Colormap)NULL;
+
+  if (_temp_context != (GLXContext)NULL){ 
+    glXDestroyContext(_display, _temp_context);
+    _temp_context = (GLXContext)NULL;
   }
 }

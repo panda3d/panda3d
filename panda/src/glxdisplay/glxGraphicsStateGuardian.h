@@ -133,7 +133,7 @@ private:
   void *get_system_func(const char *name);
   void show_glx_client_string(const string &name, int id);
   void show_glx_server_string(const string &name, int id);
-  void choose_visual(const FrameBufferProperties &properties);
+  void choose_temp_visual(const FrameBufferProperties &properties);
   void init_temp_context();
   void destroy_temp_xwindow();
 
@@ -142,6 +142,8 @@ private:
   void *_libgl_handle;
   bool _checked_get_proc_address;
   PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
+
+  GLXContext _temp_context;
   Window _temp_xwindow;
   Colormap _temp_colormap;
 
