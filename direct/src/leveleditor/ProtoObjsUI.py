@@ -71,7 +71,9 @@ class ProtoObjsUI(wx.Panel):
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
 
         self.SetDropTarget(ProtoDropTarget(self))
+        self.populate()
 
+    def populate(self):
         for key in self.protoObjs.data.keys():
             self.add(self.protoObjs.data[key])
 
@@ -98,26 +100,34 @@ class ProtoObjsUI(wx.Panel):
                return True
         return found
 
-    def remove(self):
-        index = self.llist.GetFirstSelected()
+    def removeItem(self, index):
         if index != -1:
            key = self.llist.GetItemText(index)
            del(self.protoObjs.data[key])
            item = self.llist.DeleteItem(index)
 
+    def remove(self):
+        index = self.llist.GetFirstSelected()
+        self.removeItem(index)
+
     def add(self, filename):
         name = os.path.basename(filename)
         for ext in self.supportedExts:
             if name.upper().endswith(ext.upper()):
-                if not self.findLabel(name):
-                   try:
-                      index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
-                      self.protoObjs.data[name]= filename
-                      self.addObj(filename)
-                   except:
-                      pass
-                break
+               try:
+                  index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
+                  self.protoObjs.data[name]= filename
+                  self.addObj(filename)
+               except:
+                  pass
+               break
+
+    def addNewItem(self, result):
+       ProtoObjsUI.AquireFile(self, result[1])
 
     def AquireFile(self, filename):
-        filenameFull = Filename.Filename.fromOsSpecific(filename).getFullpath()
+        label = self.findLabel(filename)
+        if label:
+           self.removeItem(label)
+        filenameFull = Filename.fromOsSpecific(filename).getFullpath()
         self.add(filenameFull)

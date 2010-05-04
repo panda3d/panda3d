@@ -302,6 +302,10 @@ class LevelEditorBase(DirectObject):
                 mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, False)
         mayaConverter.Show()
 
+    def convertFromMaya(self, modelname, callBack):
+        mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, False)
+        mayaConverter.Show()
+
     def updateStatusReadout(self, status, color=None):
         if status:
             # add new status line, first check to see if it already exists
