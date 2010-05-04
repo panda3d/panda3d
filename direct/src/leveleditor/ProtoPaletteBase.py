@@ -48,7 +48,7 @@ class ProtoPaletteBase(ObjectPaletteBase):
 
         for key in self.data.keys():
             if isinstance(self.data[key], ObjectBase):
-               f.write("\t'%s':ObjectBase(name='%s', model='%s', anims=%s, actor=True),\n"%(key, self.data[key].name, self.data[key].model, self.data[key].anims))
+               f.write("\t'%s':ObjectBase(name='%s', model='%s', anims=%s, actor=%s),\n"%(key, self.data[key].name, self.data[key].model, self.data[key].anims, self.data[key].actor))
             else:
                f.write("\t'%s':ObjectGen(name='%s'),\n"%(key, self.data[key].name))
 

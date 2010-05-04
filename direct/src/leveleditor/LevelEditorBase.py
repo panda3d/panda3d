@@ -290,17 +290,16 @@ class LevelEditorBase(DirectObject):
         except:
             pass
 
-
-    def convertMaya(self, modelname, obj=None, isAnim=False):
+    def convertMaya(self, modelname, callBack, obj=None, isAnim=False):
         if obj and isAnim:
-            mayaConverter = MayaConverter(self.ui, self, modelname, obj, isAnim)
+            mayaConverter = MayaConverter(self.ui, self, modelname, callBack, obj, isAnim)
         else:
             reply = wx.MessageBox("Is it an animation file?", "Animation?",
                               wx.YES_NO | wx.ICON_QUESTION)
             if reply == wx.YES:
-                mayaConverter = MayaConverter(self.ui, self, modelname, None, True)
+                mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, True)
             else:        
-                mayaConverter = MayaConverter(self.ui, self, modelname, None, False)
+                mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, False)
         mayaConverter.Show()
 
     def updateStatusReadout(self, status, color=None):

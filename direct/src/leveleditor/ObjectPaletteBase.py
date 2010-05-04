@@ -101,6 +101,14 @@ class ObjectPaletteBase:
             return None
         return item
 
+    def findChildren(self, name):
+        result = []
+        for key in self.dataKeys:
+            if self.dataStruct[key] == name:
+                result.append(key)
+
+        return result
+
     def rename(self, oldName, newName):
         #import pdb;set_trace()
         if oldName == newName:

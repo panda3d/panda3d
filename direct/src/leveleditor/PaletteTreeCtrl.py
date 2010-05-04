@@ -94,12 +94,15 @@ class PaletteTreeCtrl(wx.TreeCtrl):
         self.Expand(self.GetRootItem())
         self.ScrollTo(newItem)
 
-    def DeleteSelected(self):
-        item = self.GetSelection()
+    def DeleteItem(self, item):
         itemText = self.GetItemText(item)
         if item and itemText != self.rootName:
            self.Delete(item)
-           self.paletteUI.palette.delete(itemText)
+           self.paletteUI.palette.delete(itemText)        
+
+    def DeleteSelected(self):
+        item = self.GetSelection()
+        self.DeleteItem(item)
 
     def ReParent(self, parent, newParent):
         # main loop - iterating over item's children

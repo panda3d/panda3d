@@ -163,20 +163,27 @@ class ProtoPaletteUI(wx.Panel):
         name = os.path.basename(filename)
         
         if self.editor.protoPalette.findItem(name):
-           print 'This model already exists in ProtoPalette!'
-           return
+           item = self.tree.traverse(self.tree.root, name)
+           if item:
+              self.tree.DeleteItem(item)
         
         modelname = Filename.fromOsSpecific(filename).getFullpath()
         if modelname.endswith('.mb') or\
            modelname.endswith('.ma'):
-            self.editor.convertMaya(modelname)
+            self.editor.convertMaya(modelname, self.addNewItem)
             return
-        itemData = ObjectBase(name=name, model=modelname, actor=True)
-        self.editor.protoPalette.add(itemData)
 
-        newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.tree.root, name)
-        self.tree.SetItemPyData(newItem, itemData)
-        self.tree.ScrollTo(newItem)
+    def addNewItem(self, result):
+       if len(result) == 2:
+          itemData = ObjectBase(name=result[0], model=result[1], actor=False)          
+       elif len(result) == 3:
+          itemData = ObjectBase(name=result[0], model=result[1], anims=[result[2]], actor=True)
+       else:
+          return
+       self.palette.add(itemData)
+       newItem = self.tree.AppendItem(self.tree.root, itemData.name)
+       self.tree.SetItemPyData(newItem, itemData)
+       self.tree.ScrollTo(newItem)
 
     def compareItems(self, item1, item2):
         data1 = self.tree.GetItemText(item1)
