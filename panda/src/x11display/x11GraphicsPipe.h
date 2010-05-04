@@ -44,6 +44,10 @@ public:
 
   INLINE Cursor get_hidden_cursor();
 
+  static INLINE int disable_x_error_messages();
+  static INLINE int enable_x_error_messages();
+  static INLINE int get_x_error_count();
+
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
@@ -81,6 +85,9 @@ private:
   static bool _error_handlers_installed;
   static ErrorHandlerFunc *_prev_error_handler;
   static IOErrorHandlerFunc *_prev_io_error_handler;
+  
+  static bool _x_error_messages_enabled;
+  static int _x_error_count;
 
 public:
   // This Mutex protects any X library calls, which all have to be

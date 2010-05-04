@@ -70,3 +70,49 @@ get_hidden_cursor() {
   }
   return _hidden_cursor;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::disable_x_error_messages
+//       Access: Public, Static
+//  Description: Globally disables the printing of error messages that
+//               are raised by the X11 system, for instance in order
+//               to test whether a particular X11 operation will
+//               succeed.  Reenable error messages with a later call
+//               to enable_x_error_messages().
+//
+//               The return value is the current value of
+//               get_x_error_count().
+////////////////////////////////////////////////////////////////////
+INLINE int x11GraphicsPipe::
+disable_x_error_messages() {
+  _x_error_messages_enabled = false;
+  return _x_error_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::enable_x_error_messages
+//       Access: Public, Static
+//  Description: Reenables the printing of error messages after a
+//               previous call to disable_x_error_messages().
+//
+//               The return value is the current value of
+//               get_x_error_count().
+////////////////////////////////////////////////////////////////////
+INLINE int x11GraphicsPipe::
+enable_x_error_messages() {
+  _x_error_messages_enabled = true;
+  return _x_error_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsPipe::get_x_error_count
+//       Access: Public, Static
+//  Description: Returns the number of times an error indication has
+//               been raised by the X11 system since application
+//               start, including errors raised while error messages
+//               were disabled.
+////////////////////////////////////////////////////////////////////
+INLINE int x11GraphicsPipe::
+get_x_error_count() {
+  return _x_error_count;
+}

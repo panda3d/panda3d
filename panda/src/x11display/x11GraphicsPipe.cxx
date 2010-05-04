@@ -30,6 +30,8 @@ TypeHandle x11GraphicsPipe::_type_handle;
 bool x11GraphicsPipe::_error_handlers_installed = false;
 x11GraphicsPipe::ErrorHandlerFunc *x11GraphicsPipe::_prev_error_handler;
 x11GraphicsPipe::IOErrorHandlerFunc *x11GraphicsPipe::_prev_io_error_handler;
+bool x11GraphicsPipe::_x_error_messages_enabled = true;
+int x11GraphicsPipe::_x_error_count = 0;
 
 LightReMutex x11GraphicsPipe::_x_mutex;
 
@@ -257,9 +259,20 @@ install_error_handlers() {
 ////////////////////////////////////////////////////////////////////
 int x11GraphicsPipe::
 error_handler(Display *display, XErrorEvent *error) {
+  ++_x_error_count;
+
   static const int msg_len = 80;
   char msg[msg_len];
   XGetErrorText(display, error->error_code, msg, msg_len);
+
+  if (!_x_error_messages_enabled) {
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << msg << "\n";
+    }
+    return 0;
+  }
+
   x11display_cat.error()
     << msg << "\n";
 
