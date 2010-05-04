@@ -123,7 +123,7 @@ class ObjectMgrBase:
                         newobj = Actor(model)
                     except:
                         newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
-                    if hasattr(objDef, 'animDict'):
+                    if hasattr(objDef, 'animDict') and objDef.animDict != {}:
                         objDef.anims = objDef.animDict.get(model)
                         
                 elif objDef.model is not None:
@@ -144,6 +144,7 @@ class ObjectMgrBase:
                     newobj = hidden.attachNewNode(objDef.name)
             else:
                 newobj = nodePath
+
             i = 0
             for i in range(len(objDef.anims)):
                 animFile = objDef.anims[i]
