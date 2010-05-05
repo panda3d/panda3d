@@ -1,8 +1,7 @@
 // Filename: graphicsStateGuardian.h
 // Created by:  drose (02Feb99)
-// Updated by: fperazzi, PandaSE (06Apr10) (added fetch_ptr_parameter)
-// Updated by: fperazzi, PandaSE (29Apr10) (added 
-// _max_2d_texture_array_layers on z axis)
+// Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
+//  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -156,6 +155,8 @@ PUBLISHED:
   INLINE void set_shader_model(int shader_model);
 
   virtual int get_supported_geom_rendering() const;
+  virtual bool get_supports_cg_profile(const string &name) const;
+
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;

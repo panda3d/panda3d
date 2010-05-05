@@ -1,5 +1,6 @@
 // Filename: dxGraphicsStateGuardian9.cxx
 // Created by:  mike (02Feb99)
+// Updated by: fperazzi, PandaSE (05May10) (added get_supports_cg_profile)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -5709,6 +5710,26 @@ void DXGraphicsStateGuardian9::
 atexit_function(void) {
   set_cg_device(NULL);
   static_set_gamma(true, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::get_supports_cg_profile
+//       Access: Public, Virtual
+//  Description: Returns true if this particular GSG supports the 
+//               specified Cg Shader Profile.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+get_supports_cg_profile(const string &name) const {
+#ifndef HAVE_CG
+  return false;
+#endif
+  CGprofile profile = cgGetProfile(name.c_str());
+  
+  if (profile ==CG_PROFILE_UNKNOWN) {
+    dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
+    return false;
+  }
+  return cgD3D9IsProfileSupported(cgGetProfile(name.c_str()));
 }
 
 ////////////////////////////////////////////////////////////////////

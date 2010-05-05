@@ -1,8 +1,8 @@
 // Filename: graphicsStateGuardian.cxx
 // Created by:  drose (02Feb99)
-// Updated by: fperazzi, PandaSE (06Apr10) (added fetch_ptr_parameter)
-// Updated by: fperazzi, PandaSE (29Apr10)  (added 
-// _max_2d_texture_array_layers, _supports_2d_texture_array)
+// Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
+//  _max_2d_texture_array_layers, _supports_2d_texture_array,
+//  get_supports_cg_profile)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -315,6 +315,17 @@ get_supports_multisample() const {
 int GraphicsStateGuardian::
 get_supported_geom_rendering() const {
   return _supported_geom_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_cg_profile
+//       Access: Published, Virtual
+//  Description: Returns true if this particular GSG supports the 
+//               specified Cg Shader Profile.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_supports_cg_profile(const string &name) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

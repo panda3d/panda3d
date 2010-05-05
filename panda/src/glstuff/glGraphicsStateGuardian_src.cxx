@@ -1,5 +1,7 @@
 // Filename: glGraphicsStateGuardian_src.cxx
 // Created by:  drose (02Feb99)
+// Updated by: fperazzi, PandaSE (05May10) (added 
+//   get_supports_cg_profile)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -9581,6 +9583,26 @@ do_point_size() {
 
   report_my_gl_errors();
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_supports_cg_profile
+//       Access: Public, Virtual
+//  Description: Returns true if this particular GSG supports the 
+//               specified Cg Shader Profile.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+get_supports_cg_profile(const string &name) const {
+#ifndef HAVE_CG
+  return false;
+#endif
+  CGprofile profile = cgGetProfile(name.c_str());
+  
+  if (profile ==CG_PROFILE_UNKNOWN) {
+    GLCAT.error() << name <<", unknown Cg-profile\n";
+    return false;
+  }
+  return cgGLIsProfileSupported(profile);
 }
 
 ////////////////////////////////////////////////////////////////////
