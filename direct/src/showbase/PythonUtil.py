@@ -4409,7 +4409,7 @@ class BpDb:
         return decorator
         
     @staticmethod
-    def bpGroup(*args, **kArgs):
+    def bpGroup(*args, **kArgs):  #rename bpGroup -> bpPreset
         def functor(*cArgs, **ckArgs):
             return
 
@@ -4485,9 +4485,13 @@ class bp:
             #look for self
             if grp is None:
                 slf = inspect.stack()[frameCount][0].f_locals.get('self')
-                if slf:
-                    className = slf.__class__.__name__
-                    grp = className
+                try:
+                    if slf:
+                        className = slf.__class__.__name__
+                        grp = className
+                except:
+                    #in __init__ 'self' exists but 'if slf' will crash
+                    pass
             #default to module
             if grp is None:
                 grp = moduleName                
