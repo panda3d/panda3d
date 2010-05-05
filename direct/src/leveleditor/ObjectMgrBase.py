@@ -180,7 +180,7 @@ class ObjectMgrBase:
             if self.editor:
                 if fSelectObject:
                     self.editor.select(newobj, fUndo=0)
-                self.editor.ui.sceneGraphUI.add(newobj)
+                self.editor.ui.sceneGraphUI.add(newobj, parent)
                 self.editor.fNeedToSave = True
         return newobj
 
@@ -771,3 +771,5 @@ class ObjectMgrBase:
     def flatten(self, newobjModel, objDef, uid):
         # override this to flatten models
         pass
+
+

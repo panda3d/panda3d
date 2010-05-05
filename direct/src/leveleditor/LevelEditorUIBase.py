@@ -23,7 +23,10 @@ class PandaTextDropTarget(wx.TextDropTarget):
 
     def OnDropText(self, x, y, text):
         # create new object
-        action = ActionAddNewObj(self.editor, text)
+        parentNPRef = [None]
+        if not self.editor.propMeetsReq(text, parentNPRef):
+            return
+        action = ActionAddNewObj(self.editor, text, parent=parentNPRef[0])
         self.editor.actionMgr.push(action)
         newobj = action()
         if newobj is None:
@@ -112,6 +115,7 @@ ID_GRID_SIZE = 302
 ID_GRID_SNAP = 303
 ID_SHOW_PANDA_OBJECT = 304
 ID_HOT_KEYS = 305
+ID_PARENT_TO_SELECTED = 306
 
 class LevelEditorUIBase(WxPandaShell):
     """ Class for Panda3D LevelEditor """ 
@@ -131,6 +135,7 @@ class LevelEditorUIBase(WxPandaShell):
             ID_GRID_SNAP : ("Grid S&nap", None),
             ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
             ID_HOT_KEYS : ("&Hot Keys", None),
+            ID_PARENT_TO_SELECTED : ("&Parent To Selected", None)
             })
 
         self.editor = editor
@@ -190,6 +195,8 @@ class LevelEditorUIBase(WxPandaShell):
 
         self.showPandaObjectsMenuItem = self.menuOptions.Append(ID_SHOW_PANDA_OBJECT, self.MENU_TEXTS[ID_SHOW_PANDA_OBJECT][0], kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onShowPandaObjects, self.showPandaObjectsMenuItem)
+
+        self.parentToSelectedMenuItem = self.menuOptions.Append(ID_PARENT_TO_SELECTED, self.MENU_TEXTS[ID_PARENT_TO_SELECTED][0], kind = wx.ITEM_CHECK)
 
         self.hotKeysMenuItem = self.menuOptions.Append(ID_HOT_KEYS, self.MENU_TEXTS[ID_HOT_KEYS][0])
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)

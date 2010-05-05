@@ -112,7 +112,7 @@ class SceneGraphUIBase(wx.Panel):
            item, cookie = self.tree.GetNextChild(parent, cookie)
            self.removePandaObjectChildren(itemToRemove)
 
-    def add(self, item):
+    def add(self, item, parentNP = None):
         #import pdb;pdb.set_trace()
         if item is None:
            return
@@ -120,10 +120,10 @@ class SceneGraphUIBase(wx.Panel):
         if obj is None:
            return
 
-        parentNodePath = obj[OG.OBJ_NP].getParent()
-        parentObj = self.editor.objectMgr.findObjectByNodePath(parentNodePath)
+        if parentNP is None :
+           parentNP = obj[OG.OBJ_NP].getParent()
+        parentObj = self.editor.objectMgr.findObjectByNodePath(parentNP)
 
-        #import pdb;pdb.set_trace()
         if parentObj is None:
             parent = self.root
         else:

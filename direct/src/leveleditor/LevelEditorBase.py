@@ -347,3 +347,13 @@ class LevelEditorBase(DirectObject):
         #return 2
         from direct.task import Task
         return Task.again
+
+    def propMeetsReq(self, typeName, parentNP):
+        if self.ui.parentToSelectedMenuItem.IsChecked():
+           if base.direct.selected.last:
+              parent = base.le.objectMgr.findObjectByNodePath(base.direct.selected.last)
+              if parent:
+                 parentNP[0] = parent[OG.OBJ_NP]
+        else:
+           parentNP[0] = None
+        return True
