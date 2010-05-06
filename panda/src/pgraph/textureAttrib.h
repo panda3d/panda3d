@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE int get_ff_tc_index(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
+  INLINE int get_on_stage_override(TextureStage *stage) const;
 
   int find_on_stage(const TextureStage *stage) const;
 

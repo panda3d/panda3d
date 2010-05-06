@@ -44,7 +44,7 @@ PUBLISHED:
   static CPT(RenderAttrib) make(TextureStage *stage, const TransformState *transform);
   static CPT(RenderAttrib) make_default();
 
-  CPT(RenderAttrib) add_stage(TextureStage *stage, const TransformState *transform) const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, const TransformState *transform, int override = 0) const;
   CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
 
   bool is_empty() const;
@@ -58,6 +58,7 @@ PUBLISHED:
   const LMatrix4f &get_mat(TextureStage *stage) const;
 
   CPT(TransformState) get_transform(TextureStage *stage) const;
+  INLINE int get_override(TextureStage *stage) const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
 
@@ -73,16 +74,25 @@ private:
   INLINE void check_stage_list() const;
   void rebuild_stage_list();
 
-  typedef pmap< PT(TextureStage), CPT(TransformState) > Stages;
+private:
+  class StageNode {
+  public:
+    INLINE StageNode(const TextureStage *stage);
+
+    INLINE bool operator < (const StageNode &other) const;
+
+    PT(TextureStage) _stage;
+    CPT(TransformState) _transform;
+    int _override;
+  };
+
+  class CompareTextureStagePointer {
+  public:
+    INLINE bool operator () (const TexMatrixAttrib::StageNode &a, const TexMatrixAttrib::StageNode &b) const;
+  };
+
+  typedef ov_set<StageNode, CompareTextureStagePointer> Stages;
   Stages _stages;
-
-  typedef pvector<TextureStage *> StageList;
-  StageList _stage_list;
-  bool _stage_list_stale;
-
-  // This element is only used during reading from a bam file.  It has
-  // no meaningful value any other time.
-  size_t _num_stages;
 
   static CPT(RenderAttrib) _empty_attrib;
 

@@ -176,6 +176,23 @@ get_on_texture(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_on_stage_override
+//       Access: Published
+//  Description: Returns the override value associated with the
+//               indicated stage.
+////////////////////////////////////////////////////////////////////
+INLINE int TextureAttrib::
+get_on_stage_override(TextureStage *stage) const {
+  Stages::const_iterator si;
+  si = _on_stages.find(StageNode(stage));
+  if (si != _on_stages.end()) {
+    return (*si)._override;
+  }
+  nassert_raise("Specified TextureStage not included in attrib");
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::get_num_off_stages
 //       Access: Published
 //  Description: Returns the number of stages that are turned off by
