@@ -223,6 +223,19 @@ call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
+  nout << "main." << method_name << "(";
+  for (int i = 0; i < num_params; ++i) {
+    if (i != 0) {
+      nout << ", ";
+    }
+    int buffer_size = P3D_OBJECT_GET_REPR(params[i], NULL, 0);
+    char *buffer = new char[buffer_size];
+    P3D_OBJECT_GET_REPR(params[i], buffer, buffer_size);
+    nout.write(buffer, buffer_size);
+    delete[] buffer;
+  }
+  nout << ")\n";
+
   if (method_name == "play") {
     return call_play(params, num_params);
   } else if (method_name == "read_game_log") {
@@ -441,7 +454,8 @@ call_read_log(P3D_object *params[], int num_params) {
   }
 
   string log_pathname = inst_mgr->get_log_directory() + log_filename;
-  return read_log(log_pathname, params + 1, num_params - 1);
+  P3D_object *result = read_log(log_pathname, params + 1, num_params - 1);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,7 +488,6 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   if (num_params > 2) {
     tail_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[2]), 0);
   }
-
   // Read the log data from the primary file
   read_log_file(log_pathname, tail_bytes, head_bytes, log_data);
 
@@ -517,7 +530,8 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
     }
   }
 
-  P3D_object *result = new P3DStringObject(log_data.str().c_str(), log_data.tellp());
+  string log_data_str = log_data.str();
+  P3D_object *result = new P3DStringObject(log_data_str);
   return result;
 }
 
@@ -567,7 +581,7 @@ read_log_file(const string &log_pathname,
   }
 
   // Allocate a temp buffer to hold file data
-  size_t buffer_bytes = full_bytes + head_bytes + tail_bytes + 1;
+  size_t buffer_bytes = max(max(full_bytes, head_bytes), tail_bytes) + 1;
   nout << "allocating " << buffer_bytes << " bytes to read from file.\n";
   char *buffer = new char[buffer_bytes];
   if (buffer == NULL) {
@@ -583,7 +597,9 @@ read_log_file(const string &log_pathname,
   if (full_bytes > 0) {
     log.seekg(0, ios::beg);
     log.read(buffer, full_bytes);
-    buffer[log.gcount()] = NULL;
+    size_t read_bytes = log.gcount();
+    assert(read_bytes < buffer_bytes);
+    buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Full Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";
     log_data << buffer;
@@ -595,7 +611,9 @@ read_log_file(const string &log_pathname,
   if (head_bytes > 0) {
     log.seekg(0, ios::beg);
     log.read(buffer, head_bytes);
-    buffer[log.gcount()] = NULL;
+    size_t read_bytes = log.gcount();
+    assert(read_bytes < buffer_bytes);
+    buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Head Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";
     log_data << buffer << "\n";
@@ -613,7 +631,9 @@ read_log_file(const string &log_pathname,
   if (tail_bytes > 0) {
     log.seekg(file_size - tail_bytes, ios::beg);
     log.read(buffer, tail_bytes);
-    buffer[log.gcount()] = NULL;
+    size_t read_bytes = log.gcount();
+    assert(read_bytes < buffer_bytes);
+    buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Tail Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";
     log_data << buffer;
