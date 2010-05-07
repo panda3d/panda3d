@@ -619,6 +619,8 @@ get_extra_extensions() {
 ////////////////////////////////////////////////////////////////////
 void *glxGraphicsStateGuardian::
 do_get_extension_func(const char *prefix, const char *name) {
+  nassertr(prefix != NULL, NULL);
+  nassertr(name != NULL, NULL);
   string fullname = string(prefix) + string(name);
 
   if (glx_get_proc_address) {
