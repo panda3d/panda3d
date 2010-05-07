@@ -237,10 +237,23 @@ inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
 //        printf(" DO SendMessage %d\n",msg.get_length()); 
         int val = 0;        
         val = _Writer.AddData(msg.get_data(),msg.get_length(),*this);
+        if(val >= 0)
+          return true;
+        // Raise an exception to give us more information at the python level
+        nativenet_cat.warning() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
+        #ifdef HAVE_PYTHON
+        ostringstream s;
+        PyObject *exc_type = PyExc_StandardError;
         
-    if(val >= 0)
-      return true;
-    nativenet_cat.error() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
+        s << endl << "Error sending message: " << endl;
+        msg.dump_hex(s);
+        
+        s << "Message data: " << msg.get_data() << endl;
+        
+        string message = s.str();
+        PyErr_SetString(exc_type, message.c_str());
+        #endif
+    
         ClearAll();
       }
       return false;
