@@ -217,7 +217,14 @@ set_default_value(const string &default_value) {
   } else {
     // Modifying an existing default value.
 
-    if (_default_value->get_string_value() != default_value) {
+    // We set the original default value first, to avoid infinite
+    // recursion when the config variable in question happens to be
+    // consulted in NotifyCategory::out() (for instance,
+    // notify-timestamp).
+    string orig_default_value = _default_value->get_string_value();
+    _default_value->set_string_value(default_value);
+
+    if (orig_default_value != default_value) {
       if ((_flags & F_dconfig) != 0) {
         // As a special exception, if the flags include F_dconfig, we
         // don't report a warning for changing the default value,
@@ -227,10 +234,9 @@ set_default_value(const string &default_value) {
       } else {
         prc_cat->warning()
           << "changing default value for ConfigVariable " 
-          << get_name() << " from '" << _default_value->get_string_value()
+          << get_name() << " from '" << orig_default_value
           << "' to '" << default_value << "'.\n";
       }
-      _default_value->set_string_value(default_value);
     }
   }
 }
