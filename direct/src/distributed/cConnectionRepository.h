@@ -163,6 +163,9 @@ PUBLISHED:
   INLINE void set_verbose(bool verbose);
   INLINE bool get_verbose() const;
 
+  INLINE void set_time_warning(float time_warning);
+  INLINE bool get_time_warning() const;
+
 private:
 #ifdef HAVE_PYTHON
 #ifdef WANT_NATIVE_NET
@@ -211,6 +214,7 @@ private:
   bool _simulated_disconnect;
   bool _verbose;
   bool _in_quiet_zone;
+  float _time_warning;
 
   Datagram _dg;
   DatagramIterator _di;

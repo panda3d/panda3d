@@ -406,3 +406,25 @@ INLINE bool CConnectionRepository::
 get_verbose() const {
   return _verbose;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_time_warning
+//       Access: Published
+//  Description: Directly sets the time_warning field.  When non zero, this
+//               describes every message going back and forth on the
+//               wire when the msg handling time is over it
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_time_warning(float time_warning) {
+  _time_warning = time_warning;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_time_warning
+//       Access: Published
+//  Description: Returns the current setting of the time_warning field.
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_time_warning() const {
+  return _time_warning;
+}

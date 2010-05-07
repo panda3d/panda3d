@@ -66,6 +66,7 @@ CConnectionRepository(bool has_owner_view, bool threaded_net) :
   _handle_datagrams_internally(handle_datagrams_internally),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
+  _time_warning(0.0),
 //  _msg_channels(),
   _msg_sender(0),
   _msg_type(0),
@@ -1072,7 +1073,7 @@ bool CConnectionRepository::network_based_reader_and_yielder(PyObject *PycallBac
 {
   ReMutexHolder holder(_lock);
     while(is_connected())
-    {
+    {        
         check_datagram_ai(PycallBackFunction);
         if(is_connected())
             _bdc.Flush();
@@ -1091,13 +1092,17 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
   ReMutexHolder holder(_lock);
     // these could be static .. not 
   PyObject *doId2do = NULL; 
-
+  float startTime =0;
+  float endTime = 0;
   // this seems weird...here
   _bdc.Flush();
   while (_bdc.GetMessage(_dg))
   { 
       if (get_verbose()) 
           describe_message(nout, "RECV", _dg);
+
+      if (_time_warning > 0) 
+        startTime = ClockObject::get_global_clock()->get_real_time();
 
       // Start breaking apart the datagram.
       _di.assign(_dg);
@@ -1121,6 +1126,13 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
           if (!handle_update_field_ai(doId2do)) 
           {
               Py_XDECREF(doId2do);
+              if (_time_warning > 0) {
+                endTime = ClockObject::get_global_clock()->get_real_time(); 
+                if ( _time_warning < (endTime - startTime)) {
+                  nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
+                  describe_message(nout, "RECV", _dg);
+                }
+              }
               return false; 
           }
       }
@@ -1130,10 +1142,27 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
           if (PyErr_Occurred()) 
           {        
               Py_XDECREF(doId2do);
+              if (_time_warning > 0) {
+                endTime = ClockObject::get_global_clock()->get_real_time(); 
+                if ( _time_warning < (endTime - startTime)) {
+                  nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
+                  describe_message(nout, "RECV", _dg);
+                }
+              }
               return true;
           }
       }
+
+      if (_time_warning > 0) {
+        endTime = ClockObject::get_global_clock()->get_real_time(); 
+        if ( _time_warning < (endTime - startTime)) {
+          nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
+          describe_message(nout, "RECV", _dg);
+        }
+      }
+             
   }
+
 
   Py_XDECREF(doId2do);
   return false;
