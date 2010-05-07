@@ -238,19 +238,19 @@ mark_used() {
   int count = 0;
   xusage->Attribute("count_runtime", &count);
   if (count == 0) {
-    xusage->SetAttribute("first_use", now);
+    xusage->SetAttribute("first_use", (int)now);
   }
 
   ++count;
   xusage->SetAttribute("count_runtime", count);
-  xusage->SetAttribute("last_use", now);
+  xusage->SetAttribute("last_use", (int)now);
 
   if (_updated) {
     // If we've updated the package, we're no longer sure what its
     // disk space is.  Remove that from the XML file, so that the
     // Python code can recompute it later.
     xusage->RemoveAttribute("disk_space");
-    xusage->SetAttribute("last_update", now);
+    xusage->SetAttribute("last_update", (int)now);
   }
 
   // Write the file to a temporary filename, then atomically move it
