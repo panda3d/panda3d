@@ -3534,7 +3534,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     CGPoint cgpt = { pt.h, pt.v };
     HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
                    kHICoordSpaceWindow, window);
-
+    
     // Then convert to plugin coordinates.
     pt.h = (short)(cgpt.x - _wparams.get_win_x());
     pt.v = (short)(cgpt.y - _wparams.get_win_y());
@@ -3546,6 +3546,8 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   swb_event._code = 0;
   swb_event._flags = 0;
   add_carbon_modifier_flags(swb_event._flags, er->modifiers);
+
+  bool trust_mouse_data = true;
 
   switch (er->what) {
   case mouseDown:
@@ -3586,14 +3588,23 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     _mouse_active = ((er->modifiers & 1) != 0);
     break;
 
+  case osEvt:
+    // The mouse data sent with an "os event" seems to be in an
+    // indeterminate space.
+    trust_mouse_data = false;
+    break;
+
   default:
     break;
   }
 
   if (_mouse_active) {
-    swb_event._x = pt.h;
-    swb_event._y = pt.v;
-    swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position | SubprocessWindowBuffer::EF_has_mouse;
+    swb_event._flags |= SubprocessWindowBuffer::EF_has_mouse;
+    if (trust_mouse_data) {
+      swb_event._x = pt.h;
+      swb_event._y = pt.v;
+      swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position;
+    }
   }
 
   if (_swbuffer != NULL) {
