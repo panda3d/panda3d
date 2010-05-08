@@ -41,12 +41,19 @@ function P3D_Generateobj(objAttrs, params, embedAttrs, imageAttrs)
     str += '> ';
   }
   if (imageAttrs["src"]) {
+    if (imageAttrs["href"]) {
+      str += '<a href="' + imageAttrs["href"] + '">';
+    }
     str += '<img ';
-    for (var i in imageAttrs)
-    {
-      str += i + '="' + imageAttrs[i] + '" ';
+    for (var i in imageAttrs) {
+      if (i != "href") {
+        str += i + '="' + imageAttrs[i] + '" ';
+      }
     }
     str += '>';
+    if (imageAttrs["href"]) {
+      str += '</a>';
+    }
   }
   str += '</object>';
 
@@ -84,6 +91,11 @@ function P3D_GetArgs(args, classid, mimeType){
 
     case "noplugin_img":
         ret.imageAttrs["src"] = args[i+1];
+        ret.imageAttrs["border"] = '0';
+        break;
+
+    case "noplugin_href":
+        ret.imageAttrs["href"] = args[i+1];
         break;
 
     case "splash_img":
