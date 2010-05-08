@@ -25,6 +25,7 @@
 class PNMReader;
 class PNMWriter;
 class PNMFileType;
+class StackedPerlinNoise2;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMImage
@@ -208,7 +209,7 @@ PUBLISHED:
                          double pixel_scale = 1.0);
   void threshold(const PNMImage &select_image, int channel, double threshold,
                  const PNMImage &lt, const PNMImage &ge);
-  
+
   void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
                     int xfrom = 0, int yfrom = 0, int cfrom = 0,
                     int x_size = -1, int y_size = -1);
@@ -231,6 +232,9 @@ PUBLISHED:
                          int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
+  void perlin_noise_fill(double sx, double sy, int table_size = 256,
+                         unsigned long seed = 0);
+  void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
 private:
   INLINE void allocate_array();

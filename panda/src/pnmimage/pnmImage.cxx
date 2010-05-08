@@ -17,6 +17,8 @@
 #include "pnmWriter.h"
 #include "pnmBrush.h"
 #include "config_pnmimage.h"
+#include "perlinNoise2.h"
+#include "stackedPerlinNoise2.h"
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
@@ -989,7 +991,7 @@ threshold(const PNMImage &select_image, int channel, double threshold,
             }
           }
         }
-        
+
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
@@ -1017,7 +1019,7 @@ threshold(const PNMImage &select_image, int channel, double threshold,
             }
           }
         }
-        
+
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
@@ -1251,6 +1253,47 @@ make_histogram(PNMImage::Histogram &histogram) {
   ::sort(pixels.begin(), pixels.end());
 
   histogram.swap(pixels, hist_map);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::perlin_noise_fill
+//       Access: Published
+//  Description: Fills the image with a grayscale perlin noise
+//               pattern based on the indicated parameters.
+//               Uses set_xel to set the grayscale values.
+//               The sx and sy parameters are in multiples
+//               of the size of this image.
+//               See also the PerlinNoise2 class in mathutil.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+perlin_noise_fill(double sx, double sy, int table_size, unsigned long seed) {
+  double x, y;
+  double noise;
+  PerlinNoise2 perlin (sx * _x_size, sy * _y_size, table_size, seed);
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      noise = perlin.noise(x, y);
+      set_xel(x, y, 0.5 * (noise + 1.0));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::perlin_noise_fill
+//       Access: Published
+//  Description: Variant of perlin_noise_fill that uses an
+//               existing StackedPerlinNoise2 object.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+perlin_noise_fill(StackedPerlinNoise2 &perlin) {
+  double x, y;
+  double noise;
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      noise = perlin.noise(x / (double) _x_size, y / (double) _y_size);
+      set_xel(x, y, 0.5 * (noise + 1.0));
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
