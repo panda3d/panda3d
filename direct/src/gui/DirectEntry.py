@@ -136,7 +136,7 @@ class DirectEntry(DirectFrame):
         # Update initial text
         self.unicodeText = 0
         if self['initialText']:
-            self.set(self['initialText'])
+            self.enterText(self['initialText'])
 
     def destroy(self):
         self.ignoreAll()
