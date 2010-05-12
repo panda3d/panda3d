@@ -8828,7 +8828,6 @@ upload_texture_image(CLP(TextureContext) *gtc,
         break;
 #endif  // OPENGLES  // OpenGL ES will fall through.
 
-#ifndef OPENGLES_1  // 3-d textures not supported by OpenGL ES 1.  Fall through.
 #ifdef OPENGLES_2
       case GL_TEXTURE_3D_OES:
 #endif
@@ -8852,6 +8851,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
         }
         break;
 #endif
+#ifndef OPENGLES
       case GL_TEXTURE_2D_ARRAY_EXT:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
@@ -8868,7 +8868,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
-#endif  // OPENGLES  // OpenGL ES will fall through.
+#endif
 
       default:
         if (image_compression == Texture::CM_off) {
