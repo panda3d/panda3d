@@ -640,7 +640,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
 
   _download_dest = DD_file;
 
-  if (_wanted_nonblocking) {
+  if (_wanted_nonblocking && _state != S_read_header) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
     return true;
@@ -697,7 +697,7 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   _download_dest = DD_ram;
   _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
 
-  if (_wanted_nonblocking) {
+  if (_wanted_nonblocking && _state != S_read_header) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
     return true;
@@ -757,7 +757,7 @@ download_to_stream(ostream *strm, bool subdocument_resumes) {
 
   _download_dest = DD_stream;
 
-  if (_wanted_nonblocking) {
+  if (_wanted_nonblocking && _state != S_read_header) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
     return true;
@@ -1881,6 +1881,11 @@ run_reading_header() {
   // In case we've got a download in effect, now we know what the
   // first byte of the subdocument request will be, so we can open the
   // file and position it.
+  if (_server_response_has_no_body) {
+    // Never mind on the download.
+    reset_download_to();
+  }
+
   if (!open_download_file()) {
     return false;
   }
@@ -1963,8 +1968,11 @@ run_reading_header() {
     }
   }
 
-  if ((get_status_code() / 100) == 3 && get_status_code() != 305 &&
-      !get_redirect().empty()) {
+  if ((get_status_code() == 300 || 
+       get_status_code() == 301 ||
+       get_status_code() == 302 ||
+       get_status_code() == 303 ||
+       get_status_code() == 307) && !get_redirect().empty()) {
     // Redirect.  Should we handle it automatically?
 
     // According to the letter of RFC 2616, 301 and 302 responses to
