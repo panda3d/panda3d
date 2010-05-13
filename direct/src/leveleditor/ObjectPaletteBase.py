@@ -40,7 +40,7 @@ class ObjectPaletteBase:
         self.data = {}
         self.dataStruct = {}
         self.dataKeys = []
-        self.populate()
+        #self.populate()
 
     def insertItem(self, item, parentName):
         """

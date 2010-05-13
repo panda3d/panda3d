@@ -13,8 +13,6 @@ class ObjectPaletteUI(wx.Panel):
 
         self.palette = self.editor.objectPalette
         self.tree = PaletteTreeCtrl(self, treeStyle=wx.TR_DEFAULT_STYLE, rootName='Objects')
-        self.dataKeys = self.palette.dataKeys[:]
-        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, self.dataKeys)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
@@ -39,6 +37,9 @@ class ObjectPaletteUI(wx.Panel):
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
 
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelected)
+
+    def populate(self):
+        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, self.palette.dataKeys)
 
     def onSelected(self, event):
         pass

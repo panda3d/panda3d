@@ -48,9 +48,6 @@ class ProtoPaletteUI(wx.Panel):
         self.palette = self.editor.protoPalette
         self.tree = PaletteTreeCtrl(self, treeStyle=wx.TR_EDIT_LABELS|wx.TR_DEFAULT_STYLE, rootName="Proto Objects")
 
-        self.dataKeys = self.palette.dataStruct.keys()[:]
-        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, self.dataKeys)
-
         self.editorTxt = "Proto Objects Editor"
 
         self.opSortAlpha = "Sort Alphabetical Order"
@@ -90,6 +87,10 @@ class ProtoPaletteUI(wx.Panel):
         self.tree.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnEndLabelEdit)
 
         self.SetDropTarget(UniversalDropTarget(self.editor))
+
+    def populate(self):
+        dataStructKeys = self.palette.dataStruct.keys()[:]
+        self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, dataStructKeys)
 
     def OnBeginLabelEdit(self, event):
         self.editor.ui.bindKeyEvents(False)

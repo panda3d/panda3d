@@ -71,7 +71,6 @@ class ProtoObjsUI(wx.Panel):
         self.Bind(wx.EVT_CONTEXT_MENU, self.onShowPopup)
 
         self.SetDropTarget(ProtoDropTarget(self))
-        self.populate()
 
     def populate(self):
         for key in self.protoObjs.data.keys():

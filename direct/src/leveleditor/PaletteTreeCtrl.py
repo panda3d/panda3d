@@ -36,7 +36,6 @@ class PaletteTreeCtrl(wx.TreeCtrl):
     def addTreeNodes(self, parentItem, parentItemName, items, itemKeys):
         roots = []
         rootItems = []
-        #import pdb;set_trace()
         for key in itemKeys:
             if parentItemName == items[key]:
                roots.append(key)
