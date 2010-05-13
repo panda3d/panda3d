@@ -173,6 +173,13 @@ class ProtoPaletteUI(wx.Panel):
             self.editor.convertMaya(modelname, self.addNewItem)
             return
 
+        itemData = ObjectBase(name=name, model=modelname, actor=True)
+        self.editor.protoPalette.add(itemData)
+
+        newItem = self.tree.AppendItem(self.editor.ui.protoPaletteUI.tree.root, name)
+        self.tree.SetItemPyData(newItem, itemData)
+        self.tree.ScrollTo(newItem)
+
     def addNewItem(self, result):
        if len(result) == 2:
           itemData = ObjectBase(name=result[0], model=result[1], actor=False)          
