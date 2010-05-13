@@ -32,35 +32,43 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
         self.setH(h)
 
     def setSmZ(self, z, t=None):
+        messenger.send("posUpdate", [self,None,None,z, None, t])
         self.setZ(z)
 
     def setSmXY(self, x, y, t=None):
+        messenger.send("posUpdate", [self,x,y,None, None, t])
         self.setX(x)
         self.setY(y)
 
     def setSmXZ(self, x, z, t=None):
+        messenger.send("posUpdate", [self,x,None,z, None, t])
         self.setX(x)
         self.setZ(z)
 
     def setSmPos(self, x, y, z, t=None):
+        messenger.send("posUpdate", [self,x,y,z, None, t])
         self.setPos(x, y, z)
 
     def setSmHpr(self, h, p, r, t=None):
         self.setHpr(h, p, r)
 
     def setSmXYH(self, x, y, h, t=None):
+        messenger.send("posUpdate", [self,x,y,None,None,t])
         self.setX(x)
         self.setY(y)
         self.setH(h)
 
     def setSmXYZH(self, x, y, z, h, t=None):
+        messenger.send("posUpdate", [self,x,y,z,None,t])
         self.setPos(x, y, z)
         self.setH(h)
 
     def setSmPosHpr(self, x, y, z, h, p, r, t=None):
+        messenger.send("posUpdate", [self,x,y,z,None,t])
         self.setPosHpr(x, y, z, h, p, r)
 
     def setSmPosHprL(self, l, x, y, z, h, p, r, t=None):
+        messenger.send("posUpdate", [self,x,y,z,l,t])
         self.setPosHpr(x, y, z, h, p, r)
 
     def clearSmoothing(self, bogus = None):
