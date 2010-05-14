@@ -224,17 +224,23 @@ class LevelEditorBase(DirectObject):
         view.camLens.setFilmSize(x, y)
         
     def save(self):
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         if self.currentFile:
             self.fileMgr.saveToFile(self.currentFile)
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
 
     def saveAs(self, fileName):
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         self.fileMgr.saveToFile(fileName)
         self.currentFile = fileName
-        
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+
     def load(self, fileName):
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         self.reset()
         self.fileMgr.loadFromFile(fileName)
         self.currentFile = fileName
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
 
     def saveSettings(self):
         if self.settingsFile is None:
@@ -253,6 +259,7 @@ class LevelEditorBase(DirectObject):
         if self.settingsFile is None:
             return
         
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         try:
             f = open(self.settingsFile, 'r')
             configLines = f.readlines()
@@ -289,6 +296,7 @@ class LevelEditorBase(DirectObject):
             self.ui.updateMenu()
         except:
             pass
+        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
 
     def convertMaya(self, modelname, callBack, obj=None, isAnim=False):
         if obj and isAnim:
