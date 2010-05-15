@@ -49,6 +49,18 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   void __setitem__(int i, gray v) { operator[](i) = v; }
 #endif
+  pixel operator + (const pixel &other) const
+    { return pixel(r + other.r, g + other.g, b + other.b); }
+  pixel operator - (const pixel &other) const
+    { return pixel(r - other.r, g - other.g, b - other.b); }
+  pixel operator * (const double mult) const
+    { return pixel(r * mult, g * mult, b * mult); }
+  void operator += (const pixel &other)
+    { r += other.r; g += other.g; b += other.b; }
+  void operator -= (const pixel &other)
+    { r -= other.r; g -= other.g; b -= other.b; }
+  void operator *= (const double mult)
+    { r *= mult; g *= mult; b *= mult; }
 
   gray r, g, b;
 };

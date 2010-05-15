@@ -253,6 +253,20 @@ private:
 
   void setup_rc();
 
+PUBLISHED:
+  INLINE PNMImage operator + (const PNMImage &other) const;
+  INLINE PNMImage operator + (const Colord &other) const;
+  INLINE PNMImage operator - (const PNMImage &other) const;
+  INLINE PNMImage operator - (const Colord &other) const;
+  INLINE PNMImage operator * (const PNMImage &other) const;
+  INLINE PNMImage operator * (double multiplier) const;
+  void operator += (const PNMImage &other);
+  void operator += (const Colord &other);
+  void operator -= (const PNMImage &other);
+  void operator -= (const Colord &other);
+  void operator *= (const PNMImage &other);
+  void operator *= (double multiplier);
+
 private:
   xel *_array;
   xelval *_alpha;

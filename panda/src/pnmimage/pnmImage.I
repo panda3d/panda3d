@@ -939,7 +939,7 @@ setup_sub_image(const PNMImage &copy, int &xto, int &yto,
 //               from the center.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-compute_spot_pixel(Colord &c, double d2, 
+compute_spot_pixel(Colord &c, double d2,
                    double min_radius, double max_radius,
                    const Colord &fg, const Colord &bg) {
   double d = sqrt(d2);
@@ -953,4 +953,90 @@ compute_spot_pixel(Colord &c, double d2,
   } else {
     c = fg;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator +
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               is the sum of the corresponding pixel values
+//               in the two given images.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator + (const PNMImage &other) const {
+  PNMImage target (*this);
+  target += other;
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator +
+//       Access: Published
+//  Description: Returns a new PNMImage in which the provided color
+//               is added to each pixel in the provided image.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator + (const Colord &other) const {
+  PNMImage target (*this);
+  target += other;
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator -
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               from the right image is subtracted from each
+//               pixel value from the left image.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator - (const PNMImage &other) const {
+  PNMImage target (*this);
+  target -= other;
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator -
+//       Access: Published
+//  Description: Returns a new PNMImage in which the provided color
+//               is subtracted from each pixel in the provided image.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator - (const Colord &other) const {
+  PNMImage target (*this);
+  target -= other;
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               from the left image is multiplied by each
+//               pixel value from the right image. Note that the
+//               floating-point values in the 0..1 range are
+//               multiplied, not in the 0..maxval range.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator * (const PNMImage &other) const {
+  PNMImage target (*this);
+  target *= other;
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *
+//       Access: Published
+//  Description: Multiplies every pixel value in the image by
+//               a constant floating-point multiplier value.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator * (double multiplier) const {
+  PNMImage target (*this);
+  target *= multiplier;
+  return target;
 }

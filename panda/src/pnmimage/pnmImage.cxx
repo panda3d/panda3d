@@ -1316,3 +1316,180 @@ setup_rc() {
     _default_bc = lumin_blu;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator +=
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               is the sum of the corresponding pixel values
+//               in the two given images.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator += (const PNMImage &other) {
+  nassertv(_x_size == other._x_size && _y_size == other._y_size);
+  nassertv(_maxval == other._maxval && _maxval == other._maxval);
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r + other._array[i].r);
+      _array[i].g = clamp_val(_array[i].g + other._array[i].g);
+      _array[i].b = clamp_val(_array[i].b + other._array[i].b);
+      _alpha[i] = clamp_val(_alpha[i] + other._alpha[i]);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r + other._array[i].r);
+      _array[i].g = clamp_val(_array[i].g + other._array[i].g);
+      _array[i].b = clamp_val(_array[i].b + other._array[i].b);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] + other._alpha[i]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator +=
+//       Access: Published
+//  Description: Returns a new PNMImage in which the provided color
+//               is added to each pixel in the provided image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator += (const Colord &other) {
+  size_t array_size = _x_size * _y_size;
+  xel addxel (to_val(other.get_x()), to_val(other.get_y()), to_val(other.get_z()));
+  xelval addalpha = to_val(other.get_w());
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r + addxel.r);
+      _array[i].g = clamp_val(_array[i].g + addxel.g);
+      _array[i].b = clamp_val(_array[i].b + addxel.b);
+      _alpha[i] = clamp_val(_alpha[i] + addalpha);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r + addxel.r);
+      _array[i].g = clamp_val(_array[i].g + addxel.g);
+      _array[i].b = clamp_val(_array[i].b + addxel.b);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] + addalpha);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator -=
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               from the right image is subtracted from each
+//               pixel value from the left image.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator -= (const PNMImage &other) {
+  nassertv(_x_size == other._x_size && _y_size == other._y_size);
+  nassertv(_maxval == other._maxval && _maxval == other._maxval);
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r - other._array[i].r);
+      _array[i].g = clamp_val(_array[i].g - other._array[i].g);
+      _array[i].b = clamp_val(_array[i].b - other._array[i].b);
+      _alpha[i] = clamp_val(_alpha[i] - other._alpha[i]);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r - other._array[i].r);
+      _array[i].g = clamp_val(_array[i].g - other._array[i].g);
+      _array[i].b = clamp_val(_array[i].b - other._array[i].b);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] - other._alpha[i]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator -=
+//       Access: Published
+//  Description: Returns a new PNMImage in which the provided color
+//               is subtracted from each pixel in the provided image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator -= (const Colord &other) {
+  (*this) += (-other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *=
+//       Access: Published
+//  Description: Returns a new PNMImage in which each pixel value
+//               from the left image is multiplied by each
+//               pixel value from the right image. Note that the
+//               floating-point values in the 0..1 range are
+//               multiplied, not in the 0..maxval range.
+//               Only valid when both images have the same size.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator *= (const PNMImage &other) {
+  nassertv(_x_size == other._x_size && _y_size == other._y_size);
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = to_val(from_val(_array[i].r) * other.from_val(other._array[i].r));
+      _array[i].g = to_val(from_val(_array[i].g) * other.from_val(other._array[i].g));
+      _array[i].b = to_val(from_val(_array[i].b) * other.from_val(other._array[i].b));
+      _alpha[i] = to_val(from_val(_alpha[i]) * other.from_val(other._alpha[i]));
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = to_val(from_val(_array[i].r) * other.from_val(other._array[i].r));
+      _array[i].g = to_val(from_val(_array[i].g) * other.from_val(other._array[i].g));
+      _array[i].b = to_val(from_val(_array[i].b) * other.from_val(other._array[i].b));
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = to_val(from_val(_alpha[i]) * other.from_val(other._alpha[i]));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *=
+//       Access: Published
+//  Description: Multiplies every pixel value in the image by
+//               a constant floating-point multiplier value.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator *= (double multiplier) {
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r * multiplier);
+      _array[i].g = clamp_val(_array[i].g * multiplier);
+      _array[i].b = clamp_val(_array[i].b * multiplier);
+      _alpha[i] = clamp_val(_alpha[i] * multiplier);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r * multiplier);
+      _array[i].g = clamp_val(_array[i].g * multiplier);
+      _array[i].b = clamp_val(_array[i].b * multiplier);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] * multiplier);
+    }
+  }
+}
+
