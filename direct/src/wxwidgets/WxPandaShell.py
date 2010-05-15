@@ -178,6 +178,8 @@ class WxPandaShell(WxAppShell):
             base.direct.manipulationControl.supportMultiView()
             base.direct.cameraControl.useMayaCamControls = 1
             base.direct.cameraControl.perspCollPlane = self.perspView.collPlane
+            base.direct.cameraControl.perspCollPlane2 = self.perspView.collPlane2
+            
             for widget in base.direct.manipulationControl.widgetList:
                 widget.setBin('gui-popup', 0)
                 widget.setDepthTest(0)

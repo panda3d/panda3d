@@ -230,6 +230,14 @@ class Viewport(wx.Panel, DirectObject):
     collPlane.setIntoCollideMask(BitMask32.bit(21)|oldBitmask)
     v.collPlane = NodePath(collPlane)
     v.collPlane.reparentTo(v.grid)
+
+    collPlane2 = CollisionNode('PerspGridCol2')
+    collPlane2.addSolid(CollisionPlane(Plane(0, 0, -1, 0)))
+    oldBitmask = collPlane2.getIntoCollideMask()
+    collPlane2.setIntoCollideMask(BitMask32.bit(21)|oldBitmask)
+    v.collPlane2 = NodePath(collPlane2)
+    v.collPlane2.reparentTo(v.grid)
+
     #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_perspViewGridBack")
     LE_showInOneCam(v.grid, 'persp')
     return v
