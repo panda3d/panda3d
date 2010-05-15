@@ -35,6 +35,7 @@ class DirectCameraControl(DirectObject):
         self.cqEntries = []
         self.coaMarkerRef = base.direct.group.attachNewNode('coaMarkerRef')
         self.camManipRef = base.direct.group.attachNewNode('camManipRef')
+
         t = CAM_MOVE_DURATION
         self.actionEvents = [
             ['DIRECT-mouse1', self.mouseRotateStart],
@@ -101,7 +102,8 @@ class DirectCameraControl(DirectObject):
         self.useMayaCamControls = 0
         self.altDown = 0
         self.perspCollPlane = None # [gjeon] used for new LE
-
+        self.perspCollPlane2 = None # [gjeon] used for new LE
+        
     def toggleMarkerVis(self):
 ##        if base.direct.cameraControl.coaMarker.isHidden():
 ##            base.direct.cameraControl.coaMarker.show()
@@ -375,10 +377,16 @@ class DirectCameraControl(DirectObject):
             iRay = SelectionRay(base.direct.camera)
             iRay.collider.setFromLens(base.direct.camNode, 0.0, 0.0)
             iRay.collideWithBitMask(1)
-            iRay.ct.traverse(self.perspCollPlane)
+
+            if base.direct.camera.getPos().getZ() >=0:
+                iRay.ct.traverse(self.perspCollPlane)
+            else:
+                iRay.ct.traverse(self.perspCollPlane2)                
+
             if iRay.getNumEntries() > 0:
                 entry = iRay.getEntry(0)
                 hitPt = entry.getSurfacePoint(entry.getFromNodePath())
+
                 # create a temp nodePath to get the position
                 np = NodePath('temp')
                 np.setPos(base.direct.camera, hitPt)
@@ -425,11 +433,17 @@ class DirectCameraControl(DirectObject):
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
         else:
+            if base.direct.camera.getPos().getZ() >=0:
+                dirX = -1
+            else:
+                dirX = 1
+
             wrt = base.direct.camera.getTransform(self.camManipRef)
             self.camManipRef.setHpr(self.camManipRef,
-                                    (-1 * deltaX * 180.0),
+                                    (dirX * deltaX * 180.0),
                                     (deltaY * 180.0),
                                     0.0)
+
             if (self.lockRoll == True):
                 # flatten roll
                 self.camManipRef.setR(0)
