@@ -1318,6 +1318,38 @@ setup_rc() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator ~
+//       Access: Published
+//  Description: Returns a new PNMImage that is the
+//               complement of the current PNMImage.
+////////////////////////////////////////////////////////////////////
+PNMImage PNMImage::
+operator ~ () const {
+  PNMImage target (*this);
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      target._array[i].r = _maxval - _array[i].r;
+      target._array[i].g = _maxval - _array[i].g;
+      target._array[i].b = _maxval - _array[i].b;
+      target._alpha[i] = _maxval - _alpha[i];
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      target._array[i].r = _maxval - _array[i].r;
+      target._array[i].g = _maxval - _array[i].g;
+      target._array[i].b = _maxval - _array[i].b;
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      target._alpha[i] = _maxval - _alpha[i];
+    }
+  }
+  return target;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator +=
 //       Access: Published
 //  Description: Returns a new PNMImage in which each pixel value

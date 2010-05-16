@@ -254,6 +254,8 @@ private:
   void setup_rc();
 
 PUBLISHED:
+  PNMImage operator ~() const;
+
   INLINE PNMImage operator + (const PNMImage &other) const;
   INLINE PNMImage operator + (const Colord &other) const;
   INLINE PNMImage operator - (const PNMImage &other) const;
