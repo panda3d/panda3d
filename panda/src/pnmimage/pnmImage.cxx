@@ -1318,6 +1318,78 @@ setup_rc() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_average_xel
+//       Access: Published
+//  Description: Returns the average color of all of the pixels
+//               in the image.
+////////////////////////////////////////////////////////////////////
+RGBColord PNMImage::
+get_average_xel() const {
+  RGBColord color (RGBColord::zero());
+  if (_x_size == 0 || _y_size == 0) {
+    return color;
+  }
+
+  int x, y;
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      color += get_xel(x, y);
+    }
+  }
+
+  color *= 1.0 / (_x_size * _y_size);
+  return color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_average_xel_a
+//       Access: Published
+//  Description: Returns the average color of all of the pixels
+//               in the image, including the alpha channel.
+////////////////////////////////////////////////////////////////////
+Colord PNMImage::
+get_average_xel_a() const {
+  Colord color (Colord::zero());
+  if (_x_size == 0 || _y_size == 0) {
+    return color;
+  }
+
+  int x, y;
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      color += get_xel_a(x, y);
+    }
+  }
+
+  color *= 1.0 / (_x_size * _y_size);
+  return color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_average_gray
+//       Access: Published
+//  Description: Returns the average grayscale component of all of
+//               the pixels in the image.
+////////////////////////////////////////////////////////////////////
+double PNMImage::
+get_average_gray() const {
+  double color = 0.0;
+  if (_x_size == 0 || _y_size == 0) {
+    return color;
+  }
+
+  int x, y;
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      color += get_gray(x, y);
+    }
+  }
+
+  color *= 1.0 / (_x_size * _y_size);
+  return color;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator ~
 //       Access: Published
 //  Description: Returns a new PNMImage that is the

@@ -236,6 +236,10 @@ PUBLISHED:
                          unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
+  RGBColord get_average_xel() const;
+  Colord get_average_xel_a() const;
+  double get_average_gray() const;
+
 private:
   INLINE void allocate_array();
   INLINE void allocate_alpha();
