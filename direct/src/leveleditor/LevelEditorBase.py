@@ -24,6 +24,8 @@ class LevelEditorBase(DirectObject):
         self.fileMgr = FileMgr(self)
         self.actionMgr = ActionMgr()
 
+        self.fMoveCamera = False
+
         self.NPParent = render
 
         # define your own config file in inherited class
@@ -56,7 +58,12 @@ class LevelEditorBase(DirectObject):
             ('LE-SaveScene', self.ui.onSave),
             ('LE-OpenScene', self.ui.onOpen),
             ('LE-Quit', self.ui.quit),
+            ('DIRECT-mouse1', self.handleMouse1),
+            ('DIRECT-mouse1Up', self.handleMouse1Up),
+            ('DIRECT-mouse2', self.handleMouse2),
+            ('DIRECT-mouse2Up', self.handleMouse2Up),
             ('DIRECT-mouse3', self.handleMouse3),
+            ('DIRECT-mouse3Up', self.handleMouse3Up),
             ('DIRECT-toggleWidgetVis', self.toggleWidget),
             ])
 
@@ -111,11 +118,31 @@ class LevelEditorBase(DirectObject):
                 return
         base.direct.toggleWidgetVis()
 
+    def handleMouse1(self, modifiers):
+        if base.direct.fAlt or modifiers == 4:
+            self.fMoveCamera = True
+            return
+
+    def handleMouse1Up(self):
+        self.fMoveCamera = False
+
+    def handleMouse2(self, modifiers):
+        if base.direct.fAlt or modifiers == 4:
+            self.fMoveCamera = True
+            return
+
+    def handleMouse2Up(self):
+        self.fMoveCamera = False
+
     def handleMouse3(self, modifiers):
         if base.direct.fAlt or modifiers == 4:
+            self.fMoveCamera = True
             return
 
         self.ui.onRightDown()
+
+    def handleMouse3Up(self):
+        self.fMoveCamera = False
 
     def handleDelete(self):
         oldSelectedNPs = base.direct.selected.getSelectedAsList()
