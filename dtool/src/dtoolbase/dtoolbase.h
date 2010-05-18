@@ -94,6 +94,12 @@
 #endif
 #define _WIN32_WINNT 0x0502
 
+#ifdef PHAVE_STDINT_H
+#if defined(__cplusplus) && !defined(__STDC_LIMIT_MACROS)
+#define __STDC_LIMIT_MACROS 1
+#endif
+#endif
+
 #ifdef HAVE_PYTHON
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
@@ -165,9 +171,6 @@
 #endif
 
 #ifdef PHAVE_STDINT_H
-#if defined(__cplusplus) && !defined(__STDC_LIMIT_MACROS)
-#define __STDC_LIMIT_MACROS 1
-#endif
 #include <stdint.h>
 #endif
 
