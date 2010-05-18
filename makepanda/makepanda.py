@@ -512,9 +512,9 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("WX",    tool = "wx-config")
     if (RUNTIME):
         if (sys.platform.startswith("freebsd")):
-            SmartPkgEnable("NPAPI", "",          (), ("xulrunner", "nspr*/prtypes.h", "nspr*"))
+            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner", "nspr*/prtypes.h", "nspr*"))
         else:
-            SmartPkgEnable("NPAPI", "",          (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
+            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
     if (sys.platform != "darwin"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
