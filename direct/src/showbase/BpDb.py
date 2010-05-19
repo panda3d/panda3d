@@ -1,6 +1,5 @@
 
 import inspect
-import pdb
 import sys
 
 #Bpdb - breakpoint debugging system (kanpatel - 04/2010)
@@ -384,6 +383,7 @@ class BpDb:
         #cache this as the latest bp
         self.lastBp = bp.getParts()
         #set up and start debuggger
+        import pdb
         self.pdb = pdb.Pdb()
         #self.pdb.do_alias('aa bpdb.addPdbAliases()')        
         self.addPdbAliases()
