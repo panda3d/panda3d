@@ -319,6 +319,8 @@ run() {
   _transform_type = MayaToEggConverter::TT_model;
   _subsets.clear();
   _subroots.clear();
+  _input_units = DU_invalid;
+  _output_units = DU_invalid;
   _excludes.clear();
   _ignore_sliders.clear();
   _force_joints.clear();
@@ -326,6 +328,14 @@ run() {
   _transform = LMatrix4d::ident_mat();
   _normals_mode = NM_preserve;
   _normals_threshold = 0.0;
+  _got_start_frame = false;
+  _got_end_frame = false;
+  _got_frame_inc = false;
+  _got_neutral_frame = false;
+  _got_input_frame_rate = false;
+  _got_output_frame_rate = false;
+  _got_output_filename = false;
+  _merge_externals = false;
   _got_tbnall = false;
   _got_tbnauto = false;
   _got_transform = false;
