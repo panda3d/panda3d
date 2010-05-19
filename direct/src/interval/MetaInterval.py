@@ -460,6 +460,19 @@ class MetaInterval(CMetaInterval):
         else:
             self.notify.error("Cannot build list from MetaInterval directly.")
 
+    def setPlayRate(self, playRate):
+        """ Changes the play rate of the interval.  If the interval is
+        already started, this changes its speed on-the-fly.  Note that
+        since playRate is a parameter to start() and loop(), the next
+        call to start() or loop() will reset this parameter. """
+        
+        if self.isPlaying():
+            self.pause()
+            CMetaInterval.setPlayRate(self, playRate)
+            self.resume()
+        else:
+            CMetaInterval.setPlayRate(self, playRate)
+
     def __doPythonCallbacks(self):
         # This function invokes any Python-level Intervals that need
         # to be invoked at this point in time.  It must be called
