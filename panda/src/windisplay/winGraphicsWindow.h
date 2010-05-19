@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
+#include "graphicsWindowProc.h"
 #ifndef WIN32_LEAN_AND_MEAN
 	#define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -177,6 +178,17 @@ private:
   bool _rcontrol_down;
   bool _lalt_down;
   bool _ralt_down;
+
+  // following adds support platform specfic window processing
+  // functions.
+  typedef pset<GraphicsWindowProc*> WinProcClasses;
+  WinProcClasses _window_proc_classes;
+
+PUBLISHED:
+  virtual void add_window_proc( const GraphicsWindowProc* wnd_proc_object );
+  virtual void remove_window_proc( const GraphicsWindowProc* wnd_proc_object );
+  virtual void clear_window_procs();
+  virtual bool supports_window_procs() const;
 
 private:
   // We need this map to support per-window calls to window_proc().
