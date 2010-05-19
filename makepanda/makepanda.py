@@ -463,7 +463,7 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("OPENGL", "/usr/X11R6/include")
 
-    if (os.path.exists("/usr/PCBSD")):
+    if (os.path.isdir("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
 
@@ -471,8 +471,10 @@ if (COMPILER=="LINUX"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
 
-    if (os.path.exists("/usr/lib64")):
+    # Workaround for an issue where pkg-config does not include this path
+    if (os.path.isdir("/usr/lib64/glib-2.0/include")):
         IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+    if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
     fcollada_libs = ("FColladaD", "FColladaSD")
