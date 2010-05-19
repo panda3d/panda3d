@@ -1259,11 +1259,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WindowProperties properties;
   int button = -1;
 
-  //first do custom messages processing if any has been set
-  for ( WinProcClasses::iterator it=_window_proc_classes.begin() ; it != _window_proc_classes.end(); it++ ){
-	  (*it)->wnd_proc(hwnd, msg, wparam, lparam);
-  }
-
   switch (msg) {
   case WM_MOUSEMOVE: 
     if (!_tracking_mouse_leaving) {
@@ -2798,26 +2793,3 @@ void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
   view_rect->right = lr.x;
   view_rect->bottom = lr.y;
 }
-
-
-
-void WinGraphicsWindow::add_window_proc( const GraphicsWindowProc* wnd_proc ){
-	//check for type first
-  //nassertv(wnd_proc->get_type() == WinGraphicsWindowProc::get_class_type());
-	nassertv(wnd_proc != NULL);
-  _window_proc_classes.insert( (GraphicsWindowProc*)wnd_proc );
-}
-void WinGraphicsWindow::remove_window_proc( const GraphicsWindowProc* wnd_proc ){
-	//check to see if we have the right type of object
-  //nassertv(wnd_proc->get_type() == WinGraphicsWindowProc::get_class_type());
-	nassertv(wnd_proc != NULL);
-  _window_proc_classes.erase( (GraphicsWindowProc*)wnd_proc );
-}
-void WinGraphicsWindow::clear_window_procs(){
-	_window_proc_classes.clear();
-}
-
-bool WinGraphicsWindow::supports_window_procs() const{
-	return true;
-}
-
