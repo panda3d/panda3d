@@ -39,7 +39,6 @@ public:
   FreetypeFace();
   ~FreetypeFace();
 
-  FT_Face acquire_face();
   FT_Face acquire_face(int char_size, int dpi, int pixel_width, int pixel_height);
   void release_face(FT_Face face);
 
