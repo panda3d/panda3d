@@ -42,7 +42,18 @@ class BpMan:
             
         #parse grp
         tokens = path.split('.')
-        if (len(tokens) > 1) and (len(tokens[0]) > 0):
+        if (len(tokens) == 1):
+            tokens = path.rsplit(')', 1)
+            if (len(tokens) > 1) and (tokens[-1] == ''):
+                tokens = tokens[-2].rsplit('(', 1)
+                if (len(tokens) > 1):
+                    try:
+                        verifyInt = int(tokens[-1])
+                        parts['grp'] = tokens[0]
+                        path = tokens[-1]
+                    except:
+                        pass
+        elif (len(tokens) > 1) and (len(tokens[0]) > 0):
             parts['grp'] = tokens[0]
             path = tokens[1]
 
@@ -186,9 +197,9 @@ class BpDb:
         self.configCallback = callback
                 
     def verifySingleConfig(self, cfg):
-        if cfg not in self.cfgInfos:
-            self.cfgInfos[cfg] = not self.configCallback or self.configCallback(cfg)
-        return self.cfgInfos[cfg]
+        if cfg in self.cfgInfos:
+            return self.cfgInfos[cfg]
+        return not self.configCallback or self.configCallback(cfg)
 
     def verifyConfig(self, cfg):
         cfgList = choice(isinstance(cfg, tuple), cfg, (cfg,))
@@ -196,8 +207,7 @@ class BpDb:
         return (len(passedCfgs) > 0)
 
     def toggleConfig(self, cfg):
-        newEnabled = not self.verifyConfig(cfg)
-        self.cfgInfos[cfg] = newEnabled
+        self.cfgInfos[cfg] = not self.verifyConfig(cfg)
         return self.cfgInfos[cfg]
 
     def resetConfig(self, cfg):
@@ -309,7 +319,10 @@ class BpDb:
     def getFrameCodeInfo(self, frameCount=1):
         #get main bits
         stack = inspect.stack()
-        primaryFrame = stack[frameCount][0]
+        try:
+            primaryFrame = stack[frameCount][0]
+        except:
+            return ('<stdin>', None, -1)
 
         #todo: 
         #frameInfo is inadequate as a unique marker for this code location
@@ -326,7 +339,7 @@ class BpDb:
         moduleName = None
         callingModule = inspect.getmodule(primaryFrame)
         if callingModule and callingModule.__name__ != '__main__':
-            moduleName = callingModule.__name__.split()[-1] #get only leaf module name
+            moduleName = callingModule.__name__
 
         #look for class name
         className = None
@@ -438,13 +451,17 @@ class BpDb:
         if self.enabled and self.verifyEnabled():
             argsCopy = args[:]
             def functor(*cArgs, **ckArgs):
-                kwArgs = kArgs
+                kwArgs = {}
+                kwArgs.update(kArgs)
                 kwArgs.update(ckArgs)
                 kwArgs.pop('static', None)
                 kwArgs['frameCount'] = ckArgs.get('frameCount',1)+1
-                return self.bp(*(cArgs), **kwArgs)
+                if kwArgs.pop('call', None):
+                    return self.bpCall(*(cArgs), **kwArgs)
+                else:
+                    return self.bp(*(cArgs), **kwArgs)
         
-        if kArgs.get('static'):
+        if kArgs.get('static', None):
             return staticmethod(functor)
         else:
             return functor
@@ -453,12 +470,15 @@ class BpDb:
     @staticmethod
     def bpGroup(*args, **kArgs):
         print "BpDb.bpGroup is deprecated, use bpdb.bpPreset instead"
-        return bpdb.bpPreset(*(args), **(kArgs))
+        kwArgs = {}
+        kwArgs.update(kArgs)
+        kwArgs['frameCount'] = kArgs.get('frameCount', 1) + 1
+        return bpdb.bpPreset(*(args), **(kwArgs))
 
 
 class bp:
     def __init__(self, id=None, grp=None, cfg=None, frameCount=1):
-        #check early out conditions
+        #check early out conditions 
         self.disabled = False
         if not bpdb.enabled:
             self.disabled = True
@@ -466,14 +486,16 @@ class bp:
         
         #default cfg, grp, id from calling code info
         moduleName, className, lineNumber = bpdb.getFrameCodeInfo(frameCount=frameCount+1)
+        if moduleName:  #use only leaf module name
+            moduleName = moduleName.split('.')[-1]
         self.grp = grp or className or moduleName
         self.id = id or lineNumber
 
         #default cfg to stripped module name
         if cfg is None and moduleName:
-            cfg = moduleName
-            if cfg.find("Distributed") != -1: #prune leading 'Distributed'
-                cfg = cfg[len("Distributed"):]
+            cfg = moduleName.lower()
+            if cfg.find("distributed") == 0:        #prune leading 'Distributed'
+                cfg = cfg[len("distributed"):]
 
         # check cfgs
         self.cfg = cfg
