@@ -267,7 +267,7 @@ clear_render_textures() {
 void GraphicsOutput::
 add_render_texture(Texture *tex, RenderTextureMode mode,
                    RenderTexturePlane plane) {
-  
+
   if (mode == RTM_none) {
     return;
   }
@@ -335,7 +335,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
   tex->set_size_padded(get_x_size(), get_y_size());
-  
+
   if (mode == RTM_bind_or_copy) {
     // Binding is not supported or it is disabled, so just fall back
     // to copy instead.
@@ -826,18 +826,18 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   if (textures_power_2 != ATS_none) {
     flags |= GraphicsPipe::BF_size_power_2;
   }
-  if (tex != (Texture *)NULL && 
+  if (tex != (Texture *)NULL &&
       tex->get_texture_type() == Texture::TT_cube_map) {
     flags |= GraphicsPipe::BF_size_square;
   }
-  
+
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_child_sort(),
                 *fbp, WindowProperties::size(x_size, y_size),
                 flags, get_gsg(), get_host());
 
-  if (buffer != (GraphicsOutput *)NULL) {
+  if (buffer != (GraphicsOutput *)NULL && tex != (Texture *)NULL) {
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
     return buffer;
   }
@@ -1141,7 +1141,7 @@ copy_to_textures() {
       bool copied = false;
       if (_cube_map_dr != (DisplayRegion *)NULL) {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          copied = 
+          copied =
             _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
                                           _cube_map_dr, buffer);
         } else {
@@ -1151,11 +1151,11 @@ copy_to_textures() {
         }
       } else {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          copied = 
+          copied =
             _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
                                           _default_display_region, buffer);
         } else {
-          copied = 
+          copied =
             _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
                                               _default_display_region, buffer);
         }
@@ -1166,7 +1166,7 @@ copy_to_textures() {
     }
   }
   _trigger_copy = false;
-  
+
   return okflag;
 }
 
@@ -1381,8 +1381,8 @@ operator << (ostream &out, GraphicsOutput::FrameMode fm) {
 //     Function: GraphicsOutput::share_depth_buffer
 //       Access: Published, Virtual
 //  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly 
-//               the same. 
+//               graphics_output. The buffer sizes must be exactly
+//               the same.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 share_depth_buffer(GraphicsOutput *graphics_output) {
