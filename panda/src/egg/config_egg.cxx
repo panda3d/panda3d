@@ -144,6 +144,12 @@ ConfigVariableDouble egg_coplanar_threshold
  PRC_DESC("The numerical threshold below which polygons are considered "
           "to be coplanar.  Determined empirically."));
 
+ConfigVariableInt egg_test_vref_integrity
+("egg-test-vref-integrity", 20,
+ PRC_DESC("The maximum number of vertices a primitive may have before "
+          "its vertices will no longer be checked for internal integrity.  "
+          "This is meaningful in non-production builds only."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg
 //  Description: Initializes the library.  This must be called at

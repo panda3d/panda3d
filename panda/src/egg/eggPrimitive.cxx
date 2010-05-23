@@ -17,6 +17,7 @@
 #include "eggMiscFuncs.h"
 #include "eggTextureCollection.h"
 #include "lexerDefs.h"
+#include "config_egg.h"
 
 #include "indent.h"
 #include "vector_int.h"
@@ -813,37 +814,39 @@ copy_vertices(const EggPrimitive &other) {
 void EggPrimitive::
 test_vref_integrity() const {
   test_ref_count_integrity();
-
-  // First, we need to know how many times each vertex appears.
-  // Usually, this will be only one, but it's possible for a vertex to
-  // appear more than once.
-  typedef pmap<const EggVertex *, int> VertexCount;
-  VertexCount _count;
-
-  // Now count up the vertices.
-  iterator vi;
-  for (vi = begin(); vi != end(); ++vi) {
-    const EggVertex *vert = *vi;
-    vert->test_ref_count_integrity();
-
-    VertexCount::iterator vci = _count.find(vert);
-    if (vci == _count.end()) {
-      _count[vert] = 1;
-    } else {
-      (*vci).second++;
+  
+  if ((int)size() <= egg_test_vref_integrity) {
+    // First, we need to know how many times each vertex appears.
+    // Usually, this will be only one, but it's possible for a vertex to
+    // appear more than once.
+    typedef pmap<const EggVertex *, int> VertexCount;
+    VertexCount _count;
+    
+    // Now count up the vertices.
+    iterator vi;
+    for (vi = begin(); vi != end(); ++vi) {
+      const EggVertex *vert = *vi;
+      vert->test_ref_count_integrity();
+      
+      VertexCount::iterator vci = _count.find(vert);
+      if (vci == _count.end()) {
+        _count[vert] = 1;
+      } else {
+        (*vci).second++;
+      }
     }
-  }
-
-  // Ok, now walk through the vertices found and make sure the vertex
-  // has the proper number of entries of this primitive in its pref.
-  VertexCount::iterator vci;
-  for (vci = _count.begin(); vci != _count.end(); ++vci) {
-    const EggVertex *vert = (*vci).first;
-
-    int count = (*vci).second;
-    int vert_count = vert->has_pref(this);
-
-    nassertv(count == vert_count);
+    
+    // Ok, now walk through the vertices found and make sure the vertex
+    // has the proper number of entries of this primitive in its pref.
+    VertexCount::iterator vci;
+    for (vci = _count.begin(); vci != _count.end(); ++vci) {
+      const EggVertex *vert = (*vci).first;
+      
+      int count = (*vci).second;
+      int vert_count = vert->has_pref(this);
+      
+      nassertv(count == vert_count);
+    }
   }
 }
 

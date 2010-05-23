@@ -39,6 +39,7 @@ extern EXPCL_PANDAEGG ConfigVariableBool egg_consider_fans;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_max_tfan_angle;
 extern EXPCL_PANDAEGG ConfigVariableInt egg_min_tfan_tris;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_coplanar_threshold;
+extern EXPCL_PANDAEGG ConfigVariableInt egg_test_vref_integrity;
 
 extern EXPCL_PANDAEGG void init_libegg();
 
