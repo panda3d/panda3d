@@ -362,6 +362,7 @@ class GarbageReport(Job):
                 if self.numGarbage > 0:
                     yield None
                 self.notify.info(self._report[i])
+            self.notify.info('===== Garbage Report Done =====')
             self.printingEnd()
 
         yield Job.Done
