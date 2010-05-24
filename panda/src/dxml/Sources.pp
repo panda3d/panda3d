@@ -1,9 +1,8 @@
-#begin lib_target
-  #define BUILD_TARGET $[HAVE_TINYXML]
-  #define USE_PACKAGES tinyxml
+#define LOCAL_LIBS p3tinyxml pandabase
 
+#begin lib_target
   #define TARGET dxml
-  #define LOCAL_LIBS directbase
+
   #define OTHER_LIBS \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c prc:c dtool:m

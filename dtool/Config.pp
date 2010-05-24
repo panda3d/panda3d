@@ -915,12 +915,6 @@
 #define PHYSX_LIBS $[if $[WINDOWS_PLATFORM],PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib,PhysXLoader NxCharacter NxCooking]
 #defer HAVE_PHYSX $[libtest $[PHYSX_LPATH],$[PHYSX_LIBS]]
 
-// Info for TinyXML library
-#define TINYXML_IPATH
-#define TINYXML_LPATH
-#define TINYXML_LIBS $[if $[WINDOWS_PLATFORM],tinyxml.lib,tinyxml]
-#defer HAVE_TINYXML $[libtest $[TINYXML_LPATH],$[TINYXML_LIBS]]
-
 // Info for http://www.sourceforge.net/projects/chromium
 #define CHROMIUM_IPATH /usr/include/chromium/include
 #define CHROMIUM_LPATH /usr/lib/chromium/bin/WINT_NT

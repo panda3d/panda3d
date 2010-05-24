@@ -101,11 +101,6 @@
 #else
 #print - Did not find Ageia PhysX
 #endif
-#if $[HAVE_TINYXML]
-#print + TinyXML
-#else
-#print - Did not find TinyXML
-#endif
 #if $[HAVE_GTK]
 #print + gtk+-2
 #else

@@ -63,7 +63,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX",                                        # Toolkit support
   "OSMESA", "X11", "XF86DGA", "XRANDR",                # Unix platform support
-  "PANDATOOL", "TINYXML", "PVIEW", "DEPLOYTOOLS",      # Toolchain
+  "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "CONTRIB"                                            # Experimental
 ])
 
@@ -236,10 +236,10 @@ elif (DISTRIBUTOR == ""):
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg not in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
+        if pkg not in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
             PkgDisable(pkg)
         elif (PkgSkip(pkg)==1):
-            exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
+            exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
 if (sys.platform.startswith("win")):
     os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
@@ -249,9 +249,6 @@ if (INSTALLER and RTDIST):
 
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME):
     exit("Cannot build installer without python")
-
-if (RTDIST or RUNTIME) and (PkgSkip("TINYXML")):
-    exit("Cannot build rtdist or runtime without tinyxml")
 
 if (RTDIST) and (PkgSkip("JPEG")):
     exit("Cannot build rtdist without jpeg")
@@ -412,7 +409,6 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/ml.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cxcore.lib")
-    if (PkgSkip("TINYXML")==0):  LibName("TINYXML",  GetThirdpartyDir() + "tinyxml/lib/tinyxml.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec-51-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat-50-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil-49-panda.lib")
@@ -503,7 +499,6 @@ if (COMPILER=="LINUX"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h")
-    SmartPkgEnable("TINYXML",   "",          ("tinyxml"), "tinyxml.h")
     SmartPkgEnable("ZLIB",      "",          ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
@@ -528,9 +523,9 @@ if (COMPILER=="LINUX"):
 
     if (RUNTIME):
         # For the runtime, all packages are required
-        for pkg in ["OPENSSL", "TINYXML", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
+        for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, TinyXML, ZLib, NPAPI, JPEG, X11 and PNG support!")
+                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG, X11 and PNG support!")
 
     if (not RUNTIME and not LocateBinary("bison")):
         exit("Could not locate bison!")
@@ -1374,7 +1369,6 @@ DTOOL_CONFIG=[
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
     ("_SECURE_SCL",                    '1',                      'UNDEF'),
@@ -1871,6 +1865,8 @@ CopyAllHeaders('panda/src/ode')
 CopyAllHeaders('panda/metalibs/pandaode')
 CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
+CopyAllHeaders('panda/src/tinyxml')
+CopyAllHeaders('panda/src/dxml')
 CopyAllHeaders('panda/metalibs/panda')
 CopyAllHeaders('panda/src/audiotraits')
 CopyAllHeaders('panda/src/audiotraits')
@@ -2627,6 +2623,27 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
   TargetAdd('libvrpn_igate.obj', input='libvrpn.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: panda/src/tinyxml/
+#
+
+OPTS=['DIR:panda/src/tinyxml', 'TINYXML']
+DefSymbol("TINYXML", "TIXML_USE_STL", "")
+TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
+TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
+
+#
+# DIRECTORY: panda/src/dxml/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA']
+  TargetAdd('dxml_config_dxml.obj', opts=OPTS, input='config_dxml.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/dxml', ["*.h", "config_dxml.cxx"])
+  TargetAdd('libdxml.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdxml.in', opts=['IMOD:panda', 'ILIB:libdxml', 'SRCDIR:panda/src/dxml'])
+  TargetAdd('libdxml_igate.obj', input='libdxml.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: panda/metalibs/panda/
 #
 
@@ -2666,6 +2683,7 @@ if (not RUNTIME):
   TargetAdd('libpanda_module.obj', input='libnet.in')
   TargetAdd('libpanda_module.obj', input='libpgui.in')
   TargetAdd('libpanda_module.obj', input='libmovies.in')
+  TargetAdd('libpanda_module.obj', input='libdxml.in')
 
   TargetAdd('libpanda.dll', input='panda_panda.obj')
   TargetAdd('libpanda.dll', input='libpanda_module.obj')
@@ -2739,6 +2757,9 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='libnativenet_igate.obj')
   TargetAdd('libpanda.dll', input='pandabase_pandabase.obj')
   TargetAdd('libpanda.dll', input='libpandaexpress.dll')
+  TargetAdd('libpanda.dll', input='dxml_config_dxml.obj')
+  TargetAdd('libpanda.dll', input='libdxml_igate.obj')
+  TargetAdd('libpanda.dll', input='libp3tinyxml.ilb')
   TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
   TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
@@ -3436,18 +3457,6 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libshowbase_igate.obj', input='libshowbase.in', opts=["DEPENDENCYONLY"])
 
 #
-# DIRECTORY: direct/src/dxml/
-#
-
-if (PkgSkip("PYTHON")==0 and PkgSkip("TINYXML")==0):
-  OPTS=['DIR:direct/src/dxml', 'BUILDING:DIRECT', 'TINYXML']
-  TargetAdd('dxml_config_dxml.obj', opts=OPTS, input='config_dxml.cxx')
-  IGATEFILES=GetDirectoryContents('direct/src/dxml', ["*.h", "config_dxml.cxx"])
-  TargetAdd('libdxml.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libdxml.in', opts=['IMOD:p3direct', 'ILIB:libdxml', 'SRCDIR:direct/src/dxml'])
-  TargetAdd('libdxml_igate.obj', input='libdxml.in', opts=["DEPENDENCYONLY"])
-
-#
 # DIRECTORY: direct/metalibs/direct/
 #
 
@@ -3460,8 +3469,6 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3direct_module.obj', input='libdeadrec.in')
   TargetAdd('libp3direct_module.obj', input='libinterval.in')
   TargetAdd('libp3direct_module.obj', input='libdistributed.in')
-  if (PkgSkip("TINYXML")==0):
-    TargetAdd('libp3direct_module.obj', input='libdxml.in')
   TargetAdd('libp3direct_module.obj', opts=OPTS)
   TargetAdd('libp3direct_module.obj', opts=['IMOD:p3direct', 'ILIB:libp3direct'])
 
@@ -3484,11 +3491,8 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3direct.dll', input='distributed_cConnectionRepository.obj')
   TargetAdd('libp3direct.dll', input='distributed_cDistributedSmoothNodeBase.obj')
   TargetAdd('libp3direct.dll', input='libdistributed_igate.obj')
-  if (PkgSkip("TINYXML")==0):
-    TargetAdd('libp3direct.dll', input='dxml_config_dxml.obj')
-    TargetAdd('libp3direct.dll', input='libdxml_igate.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'TINYXML'])
+  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER'])
 
 #
 # DIRECTORY: direct/src/dcparse/
@@ -3523,7 +3527,7 @@ if (RTDIST or RUNTIME):
   if (sys.platform != "darwin" and not sys.platform.startswith("win")):
     DefSymbol("RUNTIME", "HAVE_X11", "1")
 
-  OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
 
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
@@ -3547,9 +3551,10 @@ if (RTDIST or RUNTIME):
       TargetAdd(fname, input='plugin_binaryXml.obj')
       TargetAdd(fname, input='plugin_handleStream.obj')
       TargetAdd(fname, input='plugin_handleStreamBuf.obj')
+      TargetAdd(fname, input='libp3tinyxml.ilb')
       if (sys.platform == "darwin"):
         TargetAdd(fname, input='libsubprocbuffer.ilb')
-      TargetAdd(fname, opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+      TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
@@ -3557,11 +3562,13 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'TINYXML', 'WINUSER'])
+    TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
+    TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'WINUSER'])
 
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3dpython.dll', opts=['PYTHON', 'TINYXML', 'WINUSER'])
+    TargetAdd('libp3dpython.dll', input='libp3tinyxml.ilb')
+    TargetAdd('libp3dpython.dll', opts=['PYTHON', 'WINUSER'])
 
     if (sys.platform.startswith("win")):
       DefSymbol("NON_CONSOLE", "NON_CONSOLE", "")
@@ -3571,7 +3578,8 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dpython_composite1.obj')
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dPythonMain.obj')
       TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
-      TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'TINYXML', 'WINUSER'])
+      TargetAdd('p3dpythonw.exe', input='libp3tinyxml.ilb')
+      TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
     OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
@@ -3600,7 +3608,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   elif (sys.platform=="darwin"):
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
 
-  OPTS += ['NPAPI', 'TINYXML']
+  OPTS += ['NPAPI']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
 
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
@@ -3612,14 +3620,15 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.rsrc')
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
     TargetAdd('nppanda3d.plugin', input='plugin_find_root_dir_assist.obj')
-  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
+  TargetAdd('nppanda3d.plugin', input='libp3tinyxml.ilb')
+  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
 #
 
 if (RUNTIME and sys.platform.startswith("win")):
-  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX', 'TINYXML']
+  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX']
   DefSymbol('ACTIVEX', '_USRDLL', '')
   DefSymbol('ACTIVEX', '_WINDLL', '')
   DefSymbol('ACTIVEX', '_AFXDLL', '')
@@ -3633,14 +3642,15 @@ if (RUNTIME and sys.platform.startswith("win")):
   TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
-  TargetAdd('p3dactivex.ocx', opts=['MFC', 'WINSOCK2', 'OPENSSL', 'TINYXML'])
+  TargetAdd('p3dactivex.ocx', input='libp3tinyxml.ilb')
+  TargetAdd('p3dactivex.ocx', opts=['MFC', 'WINSOCK2', 'OPENSSL'])
 
 #
 # DIRECTORY: direct/src/plugin_standalone/
 #
 
 if (RUNTIME):
-  OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin_standalone', 'RUNTIME', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
 
@@ -3668,7 +3678,8 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
   TargetAdd('panda3d.exe', input='libp3pystub.dll')
-  TargetAdd('panda3d.exe', opts=['NOICON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+  TargetAdd('panda3d.exe', input='libp3tinyxml.ilb')
+  TargetAdd('panda3d.exe', opts=['NOICON', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
   if (sys.platform == "darwin"):
     TargetAdd('plugin_standalone_panda3dMac.obj', opts=OPTS, input='panda3dMac.cxx')
@@ -3681,9 +3692,10 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libp3dtoolconfig.dll')
     TargetAdd('Panda3D.app', input='libp3dtool.dll')
     TargetAdd('Panda3D.app', input='libp3pystub.dll')
+    TargetAdd('Panda3D.app', input='libp3tinyxml.ilb')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
-    TargetAdd('Panda3D.app', opts=['NOSTRIP', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('Panda3D.app', opts=['NOSTRIP', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   elif (sys.platform.startswith("win")):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
@@ -3694,10 +3706,11 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
     TargetAdd('panda3dw.exe', input='libp3dtool.dll')
     TargetAdd('panda3dw.exe', input='libp3pystub.dll')
-    TargetAdd('panda3dw.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('panda3dw.exe', input='libp3tinyxml.ilb')
+    TargetAdd('panda3dw.exe', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'TINYXML', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
+  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
@@ -3735,8 +3748,9 @@ if (RTDIST):
     TargetAdd('p3dembed.exe', input='plugin_find_root_dir_assist.obj')
   if (sys.platform == "darwin"):
     TargetAdd('p3dembed.exe', input='libsubprocbuffer.ilb')
+  TargetAdd('p3dembed.exe', input='libp3tinyxml.ilb')
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'TINYXML', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/

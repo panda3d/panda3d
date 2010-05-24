@@ -15,7 +15,7 @@
 #ifndef CONFIG_DXML_H
 #define CONFIG_DXML_H
 
-#include "directbase.h"
+#include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
@@ -29,9 +29,9 @@
 #define TIXML_USE_STL
 #endif
 
-NotifyCategoryDecl(dxml, EXPCL_DIRECT, EXPTP_DIRECT);
+NotifyCategoryDecl(dxml, EXPCL_PANDA, EXPTP_PANDA);
 
-extern EXPCL_DIRECT void init_libdxml();
+extern EXPCL_PANDA void init_libdxml();
 
 class TiXmlDocument;
 BEGIN_PUBLISH

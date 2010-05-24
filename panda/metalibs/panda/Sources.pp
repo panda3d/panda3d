@@ -17,7 +17,7 @@
     parametrics \
     pnmimagetypes pnmimage \
     pnmtext text tform lerp putil \
-    audio pgui pandabase
+    audio pgui pandabase dxml
 
 #define LOCAL_LIBS \
   downloader express pandabase
@@ -37,17 +37,4 @@
   #define SOURCES panda.cxx panda.h
   #define INSTALL_HEADERS panda.h
 #end metalib_target
-
-
-
-
-
-
-
-
-
-
-
-
-
 

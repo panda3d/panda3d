@@ -19,7 +19,7 @@
 // instead of the dynamic runtime library, which is much better for
 // distributing the plugin with the XPI and CAB interfaces.  This
 // requires that special /MT versions of OpenSSL, libjpeg, libpng,
-// zlib, and TinyXML are available.
+// and zlib are available.
 
 #define _MT $[if $[P3D_PLUGIN_MT],_mt]
 
@@ -27,7 +27,7 @@
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
     $[if $[IS_OSX],find_root_dir_assist.mm] \
-    get_tinyxml.h \
+    get_tinyxml.h
     binaryXml.cxx binaryXml.h \
     fhandle.h \
     handleStream.cxx handleStream.h handleStream.I \
@@ -105,19 +105,19 @@
 
 #begin lib_target
 
-// 
+//
 // p3d_plugin.dll, the main entry point to the Core API.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES tinyxml$[_MT] openssl$[_MT] zlib$[_MT] jpeg$[_MT] png$[_MT] x11
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
+  #define USE_PACKAGES openssl$[_MT] zlib$[_MT] jpeg$[_MT] png$[_MT] x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
   #define BUILDING_DLL BUILDING_P3D_PLUGIN
   #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
 
   #define OTHER_LIBS \
-    $[if $[OSX_PLATFORM],subprocbuffer]
+    p3tinyxml $[if $[OSX_PLATFORM],subprocbuffer]
 
   #define COMBINED_SOURCES p3d_plugin_composite1.cxx
   #define SOURCES $[COREAPI_SOURCES]
@@ -132,17 +132,17 @@
 
 #begin static_lib_target
 
-// 
+//
 // libp3d_plugin_static.lib, the Core API as a static library (for p3dembed).
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
+  #define USE_PACKAGES openssl zlib jpeg png x11
   #define TARGET p3d_plugin_static
   #define BUILDING_DLL BUILDING_P3D_PLUGIN
 
   #define OTHER_LIBS \
-    $[if $[OSX_PLATFORM],subprocbuffer]
+    p3tinyxml $[if $[OSX_PLATFORM],subprocbuffer]
 
   #define COMBINED_SOURCES p3d_plugin_composite1.cxx
   #define SOURCES $[COREAPI_SOURCES]
@@ -179,14 +179,14 @@
     mkdir_complete.cxx mkdir_complete.h
 
 #begin static_lib_target
-// 
+//
 // libplugin_common.lib, a repository of code shared between the core
 // API and the various plugin implementations.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL]]
   #define TARGET plugin_common
-  #define USE_PACKAGES tinyxml openssl
+  #define USE_PACKAGES openssl
 
   #define SOURCES $[PLUGIN_COMMON_SOURCES]
 
@@ -194,13 +194,13 @@
 
 #if $[P3D_PLUGIN_MT]
 #begin static_lib_target
-// 
+//
 // libplugin_common_mt.lib, the same as above, with /MT compilation.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL]]
   #define TARGET plugin_common_mt
-  #define USE_PACKAGES tinyxml_mt openssl_mt
+  #define USE_PACKAGES openssl_mt
   #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME 1
 
   #define SOURCES $[PLUGIN_COMMON_SOURCES]
@@ -220,14 +220,14 @@
 // to invoke a particular instance of Panda.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
-  #define USE_PACKAGES tinyxml python openssl cg
+  #define BUILD_TARGET $[and $[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define USE_PACKAGES python openssl cg
   #define TARGET p3dpython
 
   #define OTHER_LIBS \
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    express:c pandaexpress:m \
+    express:c pandaexpress:m dxml:c \
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
@@ -268,15 +268,15 @@
 // the desktop.)
 //
 
-  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
-  #define USE_PACKAGES tinyxml python openssl
+  #define BUILD_TARGET $[and $[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
+  #define USE_PACKAGES python openssl
   #define TARGET p3dpythonw
   #define EXTRA_CDEFS NON_CONSOLE
 
   #define OTHER_LIBS \
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    express:c pandaexpress:m \
+    express:c pandaexpress:m dxml:c \
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
@@ -314,15 +314,15 @@
 // desparation fallback in case forking fails for some reason.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_TINYXML],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
-  #define USE_PACKAGES tinyxml python openssl cg
+  #define BUILD_TARGET $[and $[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define USE_PACKAGES python openssl cg
   #define TARGET libp3dpython
   #define LIB_PREFIX
 
   #define OTHER_LIBS \
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    express:c pandaexpress:m \
+    express:c pandaexpress:m dxml:c \
     pgraph:c pgraphnodes:c cull:c gsgbase:c gobj:c \
     mathutil:c lerp:c downloader:c pnmimage:c \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \

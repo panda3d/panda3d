@@ -4,10 +4,10 @@
 // system itself.  Define HAVE_P3D_PLUGIN in your Config.pp to build
 // this directory.
 
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_NPAPI]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_NPAPI]]
 
 #define _MT $[if $[P3D_PLUGIN_MT],_mt]
-#define USE_PACKAGES tinyxml$[_MT] npapi
+#define USE_PACKAGES npapi
 
 #begin lib_target
   // By Mozilla convention, on Windows at least, the generated DLL
@@ -19,6 +19,7 @@
 
   #define LOCAL_LIBS plugin_common$[_MT]
   #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
+  #define OTHER_LIBS p3tinyxml
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx

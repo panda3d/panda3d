@@ -2,7 +2,7 @@
 // the "standalone" part of the Panda3D plugin/runtime system.  Define
 // HAVE_P3D_PLUGIN in your Config.pp to build it.
 
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TINYXML]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin bin_target
   #define USE_PACKAGES openssl zlib
@@ -14,7 +14,7 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     pandabase:c downloader:c express:c pandaexpress:m \
-    pystub
+    pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -42,7 +42,7 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     pandabase:c downloader:c express:c pandaexpress:m \
-    pystub
+    pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -71,7 +71,7 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     pandabase:c downloader:c express:c pandaexpress:m \
-    pystub
+    pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -97,7 +97,7 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     pandabase:c downloader:c express:c pandaexpress:m \
-    pystub \
+    pystub p3tinyxml \
     $[if $[OSX_PLATFORM],subprocbuffer]
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
