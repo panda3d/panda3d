@@ -266,6 +266,7 @@ void CollisionTraverser::
 clear_colliders() {
   _colliders.clear();
   _ordered_colliders.clear();
+  _handlers.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
