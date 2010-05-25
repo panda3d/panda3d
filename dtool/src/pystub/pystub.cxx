@@ -73,6 +73,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyMapping_GetItemString(...);
   EXPCL_DTOOLCONFIG int PyModule_AddIntConstant(...);
   EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
+  EXPCL_DTOOLCONFIG int PyModule_AddStringConstant(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
   EXPCL_DTOOLCONFIG int PyObject_CallFunction(...);
@@ -206,6 +207,7 @@ int PyLong_Type(...) { return 0; }
 int PyMapping_GetItemString(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
+int PyModule_AddStringConstant(...) { return 0; };
 int PyNumber_Long(...) { return 0; }
 int PyObject_Call(...) { return 0; }
 int PyObject_CallFunction(...) { return 0; }
