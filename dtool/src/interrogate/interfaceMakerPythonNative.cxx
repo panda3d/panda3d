@@ -3261,7 +3261,7 @@ bool InterfaceMakerPythonNative::isCppTypeLegal(CPPType *in_ctype)
     {
         return true;
     }
-    else  if(builder.in_forcetype(in_ctype->get_local_name(&parser)))
+    else  if(builder.in_forcetype(type->get_local_name(&parser)))
     {
         return true;
     }

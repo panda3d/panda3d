@@ -14,6 +14,8 @@
 
 #ifndef _ODE_INCLUDES_H_
 #define _ODE_INCLUDES_H_
+
+#include "pandabase.h"
  
 #ifdef int8
   #define temp_ode_int8 int8
