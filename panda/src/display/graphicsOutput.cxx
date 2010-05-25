@@ -838,9 +838,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                 flags, get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {
-    if (tex != (Texture *)NULL) {
-      buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
-    }
+    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
     return buffer;
   }
 
