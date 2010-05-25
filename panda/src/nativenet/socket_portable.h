@@ -132,7 +132,7 @@ const int LOCAL_BLOCKING_ERROR = WSAEWOULDBLOCK;
 const int LOCAL_CONNECT_BLOCKING = WSAEWOULDBLOCK;
 const int LOCAL_NOTCONNECTED_ERROR = WSAENOTCONN;
 const int LOCAL_TIMEOUT_ERROR = WSAETIMEDOUT;
-const SOCKET BAD_SOCKET = 0xffffffff;
+const SOCKET BAD_SOCKET = (SOCKET)-1;
 
 /************************************************************************
 * Solaris 2.6 and Irix 6.4 STUFF
