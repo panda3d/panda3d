@@ -9,6 +9,9 @@
   #define INCLUDED_SOURCES  \
      tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp
 
+  #define INSTALL_HEADERS \
+    tinyxml.h
+
   #define EXTRA_CDEFS TIXML_USE_STL
   #define C++FLAGS $[CFLAGS_SHARED]
 
