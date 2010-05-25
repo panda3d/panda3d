@@ -27,7 +27,7 @@
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
     $[if $[IS_OSX],find_root_dir_assist.mm] \
-    get_tinyxml.h
+    get_tinyxml.h \
     binaryXml.cxx binaryXml.h \
     fhandle.h \
     handleStream.cxx handleStream.h handleStream.I \
