@@ -1865,7 +1865,6 @@ CopyAllHeaders('panda/src/ode')
 CopyAllHeaders('panda/metalibs/pandaode')
 CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
-CopyAllHeaders('panda/src/tinyxml')
 CopyAllHeaders('panda/src/dxml')
 CopyAllHeaders('panda/metalibs/panda')
 CopyAllHeaders('panda/src/audiotraits')
@@ -2623,22 +2622,20 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
   TargetAdd('libvrpn_igate.obj', input='libvrpn.in', opts=["DEPENDENCYONLY"])
 
 #
-# DIRECTORY: panda/src/tinyxml/
-#
-
-OPTS=['DIR:panda/src/tinyxml', 'TINYXML']
-DefSymbol("TINYXML", "TIXML_USE_STL", "")
-TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
-TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
-
-#
 # DIRECTORY: panda/src/dxml/
 #
 
+DefSymbol("TINYXML", "TIXML_USE_STL", "")
+
+if (RUNTIME or RTDIST):
+  OPTS=['DIR:panda/src/dxml', 'TINYXML']
+  TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
+  TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
+
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA']
-  TargetAdd('dxml_config_dxml.obj', opts=OPTS, input='config_dxml.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/dxml', ["*.h", "config_dxml.cxx"])
+  OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA', 'TINYXML']
+  TargetAdd('dxml_composite1.obj', opts=OPTS, input='dxml_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/dxml', ["*.h", "dxml_composite1.cxx"])
   TargetAdd('libdxml.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libdxml.in', opts=['IMOD:panda', 'ILIB:libdxml', 'SRCDIR:panda/src/dxml'])
   TargetAdd('libdxml_igate.obj', input='libdxml.in', opts=["DEPENDENCYONLY"])
@@ -2757,9 +2754,8 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='libnativenet_igate.obj')
   TargetAdd('libpanda.dll', input='pandabase_pandabase.obj')
   TargetAdd('libpanda.dll', input='libpandaexpress.dll')
-  TargetAdd('libpanda.dll', input='dxml_config_dxml.obj')
+  TargetAdd('libpanda.dll', input='dxml_composite1.obj')
   TargetAdd('libpanda.dll', input='libdxml_igate.obj')
-  TargetAdd('libpanda.dll', input='libp3tinyxml.ilb')
   TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
   TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
