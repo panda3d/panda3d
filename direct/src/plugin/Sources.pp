@@ -233,7 +233,8 @@
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c event:c display:c panda:m \
     $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[HAVE_NET],net:c]
+    $[if $[HAVE_NET],net:c] \
+    p3tinyxml
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
@@ -282,7 +283,8 @@
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c event:c display:c panda:m \
     $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[HAVE_NET],net:c]
+    $[if $[HAVE_NET],net:c] \
+    p3tinyxml
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
@@ -328,7 +330,8 @@
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c event:c display:c panda:m \
     $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[HAVE_NET],net:c]
+    $[if $[HAVE_NET],net:c] \
+    p3tinyxml
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
