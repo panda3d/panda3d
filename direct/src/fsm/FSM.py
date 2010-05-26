@@ -121,6 +121,14 @@ class FSM(DirectObject):
     function, and clean it up within the corresponding exitState()
     function.
 
+    There is a way to define specialized transition behavior between
+    two particular states.  This is done by defining a from<X>To<Y>()
+    function, where X is the old state and Y is the new state.  If this
+    is defined, it will be run in place of the exit<X> and enter<Y>
+    functions, so if you want that behavior, you'll have to call them
+    specifically.  Otherwise, you can completely replace that transition's
+    behavior.
+
     See the code in SampleFSM.py for further examples.
     """
 
@@ -179,6 +187,19 @@ class FSM(DirectObject):
         # accessible as self.oldState and self.newState, and the transition
         # functions will already have been called.
         return 'FSM-%s-%s-stateChange' % (self._serialNum, self.name)
+
+    def getCurrentFilter(self):
+        if not self.state:
+            error = "requested %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState)
+            raise AlreadyInTransition, error
+
+        filter = getattr(self, "filter" + self.state, None)
+        if not filter:
+            # If there's no matching filterState() function, call
+            # defaultFilter() instead.
+            filter = self.defaultFilter
+            
+        return filter
 
     def getCurrentOrNextState(self):
         # Returns the current state if we are in a state now, or the
@@ -289,16 +310,8 @@ class FSM(DirectObject):
             self.notify.debug("%s.request(%s, %s" % (
                 self.name, request, str(args)[1:]))
 
-            if not self.state:
-                error = "requested %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState)
-                raise AlreadyInTransition, error
-
-            func = getattr(self, "filter" + self.state, None)
-            if not func:
-                # If there's no matching filterState() function, call
-                # defaultFilter() instead.
-                func = self.defaultFilter
-            result = func(request, args)
+            filter = self.getCurrentFilter()
+            result = filter(request, args)
             if result:
                 if isinstance(result, types.StringTypes):
                     # If the return value is a string, it's just the name
@@ -439,8 +452,11 @@ class FSM(DirectObject):
         self.state = None
 
         try:
-            self.__callExitFunc(self.oldState)
-            self.__callEnterFunc(self.newState, *args)
+            if not self.__callFromToFunc(self.oldState, self.newState, *args):
+                self.__callExitFunc(self.oldState)
+                self.__callEnterFunc(self.newState, *args)
+                pass
+            pass
         except:
             # If we got an exception during the enter or exit methods,
             # go directly to state "InternalError" and raise up the
@@ -476,6 +492,17 @@ class FSM(DirectObject):
             func = self.defaultEnter
         func(*args)
 
+    def __callFromToFunc(self, oldState, newState, *args):
+        # Calls the appropriate fromTo function when transitioning into
+        # a new state, if it exists.
+        assert self.state == None and self.oldState == oldState and self.newState == newState
+
+        func = getattr(self, "from%sTo%s" % (oldState,newState), None)
+        if func:
+            func(*args)
+            return True
+        return False
+
     def __callExitFunc(self, name):
         # Calls the appropriate exit function when leaving a
         # state, if it exists.
@@ -501,7 +528,7 @@ class FSM(DirectObject):
             if self.state:
                 str = ('%s FSM:%s in state "%s"' % (className, self.name, self.state))
             else:
-                str = ('%s FSM:%s not in any state' % (className, self.name))
+                str = ('%s FSM:%s in transition from \'%s\' to \'%s\'' % (className, self.name, self.oldState, self.newState))
             return str
         finally:
             self.fsmLock.release()
