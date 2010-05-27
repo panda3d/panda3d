@@ -381,6 +381,11 @@ $[cdefine HAVE_DX8]
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX9]
 
+/* If we're building 64-bit, we want to use generic DirectX error libraries.  */
+#if $[eq $[USE_COMPILER],MSVC9x64]
+  $[cdefine USE_GENERIC_DXERR_LIBRARY]
+#endif
+
 /* Define if we want to build tinydisplay. */
 $[cdefine HAVE_TINYDISPLAY]
 
@@ -679,10 +684,10 @@ $[cdefine USE_DELETED_CHAIN]
 $[cdefine WANT_NATIVE_NET]
 
 /* Turn off warnings for using scanf and such */
-#if $[eq $[USE_COMPILER],MSVC9]
+#if $[or $[eq $[USE_COMPILER],MSVC9], $[USE_COMPILER],MSVC9x64]
         #print Will ignore CRT_SECURE warnings for MSVC9
         $[cdefine _CRT_SECURE_NO_WARNINGS]
-        # pragma warning( disable : 4996 4275 )
+        # pragma warning( disable : 4996 4275 4267 4099 4049 4013 4005 )
 #endif
 
 
