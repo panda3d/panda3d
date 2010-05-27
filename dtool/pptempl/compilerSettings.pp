@@ -261,7 +261,8 @@
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
 
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
-  #define REGULAR_OPTFLAGS /O2 /Ob2 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
+  // use /bigobj in 64-bit environment
+  #define REGULAR_OPTFLAGS $[if $[eq $[USE_COMPILER],MSVC9x64], /bigobj,] /O2 /Ob2 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
 
   #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL,$[REGULAR_OPTFLAGS]]
 
@@ -292,7 +293,7 @@
   #endif
 
   // Note: all Opts will link w/debug info now
-  #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /stack:4194304
+  #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] $[if $[eq $[USE_COMPILER],MSVC9x64], /MACHINE:X64,] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /stack:4194304
 
   // Added to avoid old iostream reference problems
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
@@ -405,6 +406,10 @@
 #endif
 
 #defer tau_opts $[decygwin %,-I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH] $[tau_ipath]] $[building_var:%=-D%]
-#defer TAU_MAKE_IL $[PDT_ROOT]/Windows/bin/edgcpfe -o $[il_source] $[tau_opts] $[cdefines:%=-D%] $[C++FLAGS] -DWIN32=1 $[TAU_INSTRUMENTOR_FLAGS] $[source]
+#if $[eq $[USE_COMPILER], MSVC9x64]
+  #defer TAU_MAKE_IL $[PDT_ROOT]/Windows/bin/edgcpfe -o $[il_source] $[tau_opts] $[cdefines:%=-D%] $[C++FLAGS] -DWIN64=1 $[TAU_INSTRUMENTOR_FLAGS] $[source]
+#else
+  #defer TAU_MAKE_IL $[PDT_ROOT]/Windows/bin/edgcpfe -o $[il_source] $[tau_opts] $[cdefines:%=-D%] $[C++FLAGS] -DWIN32=1 $[TAU_INSTRUMENTOR_FLAGS] $[source]
+#endif
 #defer TAU_MAKE_PDB $[PDT_ROOT]/Windows/bin/taucpdisp $[il_source] > $[pdb_source]
 #defer TAU_MAKE_INST $[TAU_ROOT]/bin/tau_instrumentor $[pdb_source] $[source] -o $[inst_source]

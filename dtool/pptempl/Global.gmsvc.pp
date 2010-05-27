@@ -104,7 +104,11 @@
 // '#defer extra_cflags $[extra_cflags] /STUFF' will never work because extra_cflags hasnt been
 // defined yet, so this just evaluates the reference to null and removes the reference and the
 // the defining extra_cflags in individual sources.pp's will not picked up.  use END_FLAGS instead
-#defer extra_cflags /EHsc /Zm500 /DWIN32_VC /DWIN32=1 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#if $[eq $[USE_COMPILER], MSVC9x64]
+  #defer extra_cflags /EHsc /Zm500 /DWIN64_VC /DWIN64=1 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#else
+  #defer extra_cflags /EHsc /Zm500 /DWIN32_VC /DWIN32=1 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#endif
 
 #if $[direct_tau]
 #define tau_ipath $[TAU_ROOT]/include
@@ -127,7 +131,12 @@
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]"
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
-#defer COMPILE_IDL midl /nologo /env win32 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
+#if $[eq $[USE_COMPILER], MSVC9x64]
+  #defer COMPILE_IDL midl /nologo /env win64 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
+#else
+  #defer COMPILE_IDL midl /nologo /env win32 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
+#endif
+
 #defer COMPILE_RC rc /R /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
@@ -143,10 +152,16 @@
 
 #defer LINKER_DEF_FILE_ARG $[if $[LINKER_DEF_FILE],/DEF:"$[LINKER_DEF_FILE]",]
 
-#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
+#if $or[ $[eq $[USE_COMPILER], MSVC9x64], $[eq $[USE_COMPILER], MSVC9]]
+  #define USE_MT 1
+#else
+  #define USE_MT 0
+#endif
+
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[and $[eq $[USE_MT], 1],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[and $[eq $[USE_MT], 1],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
 #defer MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[IDL_CDEFS:%=/D%] $[idl]
