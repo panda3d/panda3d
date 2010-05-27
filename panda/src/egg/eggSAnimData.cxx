@@ -39,9 +39,9 @@ optimize() {
     }
 
     // Ok, all the rows had the same value.  Collapse them.
-	if(!_data.empty()){
-		_data.erase(_data.begin() + 1, _data.end());
-	}
+
+    // We have to use the call to v() to work around an apparent compiler bug with Win64.
+    _data.v().erase(_data.v().begin() + 1, _data.v().end());
   }
 }
 
