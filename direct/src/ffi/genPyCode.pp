@@ -66,6 +66,8 @@ import os
 import sys
 import glob
 
+from direct.extensions_native.extension_native_helpers import Dtool_PreloadDLL
+
 #if $[CTPROJS]
 # This script was generated while the user was using the ctattach
 # tools.  That had better still be the case.
@@ -185,7 +187,8 @@ for package in packages:
                     # Try to import the library.  If we can import it,
                     # instrument it.
                     try:
-                        __import__(basename, globals(), locals())
+                        Dtool_PreloadDLL(basename)
+                        # __import__(basename, globals(), locals())
                         isModule = 1
                     except:
                         isModule = 0
@@ -197,7 +200,8 @@ for package in packages:
                         # debug py library magin naming in windows..
                         basename = basename.replace('_d','')                   
                         try:
-                            __import__(basename, globals(), locals())
+                            Dtool_PreloadDLL(basename)
+                            # __import__(basename, globals(), locals())
                             isModule = 1
                         except:
                             isModule = 0                        
