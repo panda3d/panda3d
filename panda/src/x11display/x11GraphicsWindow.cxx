@@ -278,6 +278,15 @@ process_events() {
 
     case ConfigureNotify:
       _awaiting_configure = false;
+
+      // Is this the inner corner or the outer corner?  The Xlib docs
+      // say it should be the outer corner, but it appears to be the
+      // inner corner on my own implementation, which is inconsistent
+      // with XConfigureWindow.  (Panda really wants to work with the
+      // inner corner, anyway, but that means we need to fix
+      // XConfigureWindow too.)
+      properties.set_origin(event.xconfigure.x, event.xconfigure.y);
+
       if (_properties.get_fixed_size()) {
         // If the window properties indicate a fixed size only, undo
         // any attempt by the user to change them.  In X, there
@@ -298,8 +307,8 @@ process_events() {
       } else {
         // A normal window may be resized by the user at will.
         properties.set_size(event.xconfigure.width, event.xconfigure.height);
-        system_changed_properties(properties);
       }
+      system_changed_properties(properties);
       break;
 
     case ButtonPress:
