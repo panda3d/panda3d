@@ -48,7 +48,7 @@ public:
   // These comparison functions are common to all things PointerTo, so
   // they're defined up here.
 #ifndef CPPPARSER
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) || !defined(WIN64_VC)
   INLINE bool operator == (const To *other) const;
   INLINE bool operator != (const To *other) const;
   INLINE bool operator > (const To *other) const;

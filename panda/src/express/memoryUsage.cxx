@@ -22,7 +22,7 @@
 #include "mutexImpl.h"
 #include "interrogate_request.h"
 
-#if defined(WIN32_VC) && defined(_DEBUG)
+#if (defined(WIN32_VC) || defined (WIN64_VC)) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
@@ -318,7 +318,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
   }
 }
 
-#if defined(WIN32_VC) && defined(_DEBUG)
+#if (defined(WIN32_VC) || defined (WIN64_VC))&& defined(_DEBUG)
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::win32_malloc_hook
 //       Access: Public, Static
@@ -406,7 +406,7 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
-#if defined(WIN32_VC) && defined(_DEBUG)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)
   // On a debug Windows build, we can set this malloc hook which
   // allows tracking every malloc call, even from subordinate
   // libraries.

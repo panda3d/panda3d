@@ -134,7 +134,7 @@ PUBLISHED:
   // however, except through the limited add_vertex/remove_vertex or
   // insert/erase interface.  The following implements this.
 public:
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   typedef PT_EggVertex *pointer;
   typedef PT_EggVertex *const_pointer;
 #else

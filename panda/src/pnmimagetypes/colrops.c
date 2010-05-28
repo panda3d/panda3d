@@ -23,7 +23,7 @@
 #endif
 
 #define bmalloc malloc
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
 extern char     *bmalloc(int);
 #else
 #include <malloc.h>
@@ -37,7 +37,7 @@ static BYTE     *g_mant = NULL, *g_nexp = NULL;
 static BYTE     (*g_bval)[256] = NULL;
 
 #ifndef pow
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
 extern double   pow(double, double);
 #endif
 #endif

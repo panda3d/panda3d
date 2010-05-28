@@ -196,7 +196,7 @@ do_update(Thread *current_thread) {
                         "Points: %d\n"
                         "Texture memory: %.1f KB\n";
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   _snprintf(buffer, buffer_size, pattern,
           _scene_graph_analyzer.get_num_nodes(),
           _scene_graph_analyzer.get_num_instances(),

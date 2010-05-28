@@ -16,7 +16,7 @@
 #include "config_express.h"
 #include "textEncoder.h"
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -389,4 +389,7 @@ format_message(int error_code) {
   return result;
 }
 
-#endif  // WIN32_VC
+#endif
+
+
+

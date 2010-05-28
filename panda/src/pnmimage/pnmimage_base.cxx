@@ -33,7 +33,7 @@ pm_message(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   // Windows doesn't define vsnprintf().  Hope we don't overflow.
   vsprintf(buffer, format, ap);
 #else
@@ -59,7 +59,7 @@ pm_error(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   // Windows doesn't define vsnprintf().  Hope we don't overflow.
   vsprintf(buffer, format, ap);
 #else

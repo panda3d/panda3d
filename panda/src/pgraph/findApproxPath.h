@@ -61,7 +61,7 @@ public:
   void output(ostream &out) const;
   INLINE void output_component(ostream &out, int index) const;
 
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
 // Visual C++ won't let us define the ostream operator functions for
 // these guys if they're private--even though we declare them friends.
 private:

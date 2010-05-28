@@ -19,7 +19,7 @@
 
 #ifdef HAVE_OPENSSL
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   #include <WinSock2.h>
   #include <windows.h>  // for WSAGetLastError()
   #undef X509_NAME
@@ -183,7 +183,7 @@ underflow() {
         // Immediately save the os error in case we screw up and do
         // something that will change its value before we can output
         // it.
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
         int os_error = WSAGetLastError();
 #else
         int os_error = errno;
@@ -209,7 +209,7 @@ underflow() {
               << "\n";
           }
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
           downloader_cat.warning()
             << "Windows error code: " << os_error << "\n";
 #else

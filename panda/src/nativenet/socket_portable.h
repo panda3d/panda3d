@@ -43,7 +43,7 @@ typedef unsigned long SOCKET;
 /************************************************************************
 * WINSOCK 32 bit STUFF
 ************************************************************************/
-#elif defined(WIN32) || defined(WIN32_VC)
+#elif defined(WIN32) || defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 

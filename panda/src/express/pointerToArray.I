@@ -376,7 +376,7 @@ erase(iterator first, iterator last) {
   ((To *)(this->_void_ptr))->erase(first, last);
 }
 
-#if !defined(WIN32_VC)
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Indexing operator
 //       Access: Public
@@ -946,7 +946,7 @@ back() const {
   return ((To *)(this->_void_ptr))->back();
 }
 
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Indexing operator
 //       Access: Public

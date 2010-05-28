@@ -22,7 +22,7 @@
    C++-style comments, since this file is occasionally included by a C
    file. */
 
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 
 #ifdef BUILDING_CFTALK
   #define EXPCL_CFTALK __declspec(dllexport)
@@ -337,7 +337,7 @@
 
 #endif  /* WIN32_VC */
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER)
 #define INLINE_LINMATH __forceinline
 #define INLINE_MATHUTIL __forceinline
 

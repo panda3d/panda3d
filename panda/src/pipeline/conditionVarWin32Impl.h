@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC)
 
 #include "mutexWin32Impl.h"
 #include "pnotify.h"

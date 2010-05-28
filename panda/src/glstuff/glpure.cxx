@@ -18,7 +18,7 @@
 // It exists just so we can have some symbols and make the compiler
 // happy.
 
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 __declspec(dllexport)
 #endif
 int glpure;

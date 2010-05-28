@@ -71,7 +71,7 @@
 #include "py_panda.h"
 #endif
 
-#if defined(WIN32_VC) && !defined(__INTEL_COMPILER)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
 // need to chk if vc 7.0 still has this problem, would like to keep it enabled
 #pragma warning (disable : 4506)
@@ -189,7 +189,7 @@ public:
   INLINE void erase(iterator position);
   INLINE void erase(iterator first, iterator last);
 
-#if !defined(WIN32_VC)
+#if !defined(WIN32_VC) && !defined (WIN64_VC)
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
@@ -284,7 +284,7 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::const_reference const_reference;
   typedef TYPENAME pvector<Element>::const_iterator iterator;
   typedef TYPENAME pvector<Element>::const_iterator const_iterator;
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
   // VC++ seems to break the const_reverse_iterator definition somehow.
   typedef TYPENAME pvector<Element>::reverse_iterator reverse_iterator;
 #else
@@ -317,7 +317,7 @@ PUBLISHED:
   INLINE reference front() const;
   INLINE reference back() const;
 
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) && !defined(WIN64_VC)
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif

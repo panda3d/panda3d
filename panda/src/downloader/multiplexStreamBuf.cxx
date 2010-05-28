@@ -14,7 +14,7 @@
 
 #include "multiplexStreamBuf.h"
 
-#if defined(WIN32_VC)
+#if defined(WIN32_VC) || defined(WIN64_VC)
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
@@ -77,7 +77,7 @@ write_string(const string &str) {
     break;
 
   case OT_system_debug:
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
     OutputDebugString(str.c_str());
 #endif
     break;

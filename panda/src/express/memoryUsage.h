@@ -52,7 +52,7 @@ public:
   virtual void heap_free_single(void *ptr);
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
-#if defined(WIN32_VC) && defined(_DEBUG)
+#if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)
   static int win32_malloc_hook(int alloc_type, void *ptr, 
                                size_t size, int block_use, long request, 
                                const unsigned char *filename, int line);
