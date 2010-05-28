@@ -125,7 +125,7 @@ reassign(const WeakPointerToBase<To> &copy) {
 }
 
 #ifndef CPPPARSER
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef WIN32_VC
 ////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToBase::Equivalence operator
 //       Access: Public
