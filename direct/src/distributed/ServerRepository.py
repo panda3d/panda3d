@@ -346,15 +346,17 @@ class ServerRepository:
 
         client = self.clientsByConnection.get(datagram.getConnection())
 
+        if not client:
+            # This shouldn't be possible, though it appears to happen
+            # sometimes?
+            self.notify.warning(
+                "Ignoring datagram from unknown connection %s" % (datagram.getConnection()))
+            return
+
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository received datagram from %s:" % (client.doIdBase))
             #datagram.dumpHex(ostream)
-
-        if not client:
-            # This shouldn't be possible.
-            self.notify.error(
-                "Received datagram from unknown connection.")
 
         dgi = DatagramIterator(datagram)
 
