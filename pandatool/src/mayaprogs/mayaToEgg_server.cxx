@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) || defined(WIN64_VC)
 #include <direct.h>  // for chdir
 #endif
 #include "mayaToEgg_server.h"
@@ -452,7 +452,11 @@ poll() {
         buffers.push_back(buffer);
       }
       // Change to the client's current dir
+#ifdef WIN64_VC
+      _chdir(cwd.c_str());
+#else
       chdir(cwd.c_str());
+#endif
 
       // Pass in the 'new' argc and argv we got from the client
       this->parse_command_line(argc, cargv);
