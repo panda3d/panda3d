@@ -23,7 +23,7 @@ MutexPosixImpl() {
   TAU_PROFILE("MutexPosixImpl::MutexPosixImpl", " ", TAU_USER);
   pthread_mutexattr_t attr;
   pthread_mutexattr_init(&attr);
-  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_DEFAULT);
   int result = pthread_mutex_init(&_lock, &attr);
   pthread_mutexattr_destroy(&attr);
   assert(result == 0);
