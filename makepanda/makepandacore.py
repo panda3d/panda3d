@@ -232,6 +232,7 @@ def oscmd(cmd, ignoreError = False):
             print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
             os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
         exit("")
+    return res
 
 ########################################################################
 ##
@@ -311,7 +312,7 @@ def LocateBinary(binary):
         p = os.defpath
     else:
         p = os.environ["PATH"]
-    
+
     for path in p.split(os.pathsep):
         if os.access(os.path.join(path, binary), os.X_OK):
             return os.path.abspath(os.path.realpath(os.path.join(path, binary)))
@@ -389,7 +390,7 @@ def NeedsBuild(files,others):
 ##
 ## The following routine scans a CXX file and returns a list of
 ## the include-directives inside that file.  It's not recursive:
-## it just returns the includes that are textually inside the 
+## it just returns the includes that are textually inside the
 ## file.  If you need recursive dependencies, you need the higher-level
 ## routine CxxCalcDependencies, defined elsewhere.
 ##
@@ -567,7 +568,7 @@ def TryRegistryKey(path):
         return key
     except: pass
     return 0
-        
+
 def ListRegistryKeys(path):
     result=[]
     index=0
@@ -681,24 +682,40 @@ def ConditionalWriteFile(dest,desiredcontents):
 def DeleteCVS(dir):
     if dir == "": dir = "."
     for entry in os.listdir(dir):
-        if (entry != ".") and (entry != ".."):
-            subdir = dir + "/" + entry
-            if (os.path.isdir(subdir)):
-                if (entry == "CVS"):
-                    shutil.rmtree(subdir)
-                else:
-                    DeleteCVS(subdir)
-            elif (os.path.isfile(subdir) and (entry == ".cvsignore" or entry.startswith(".#"))):
-                os.remove(subdir)
+        subdir = os.path.join(dir, entry)
+        if (os.path.isdir(subdir)):
+            if (entry == "CVS" or entry == "CVSROOT"):
+                shutil.rmtree(subdir)
+            else:
+                DeleteCVS(subdir)
+        elif (os.path.isfile(subdir) and (entry == ".cvsignore" or entry.startswith(".#"))):
+            os.remove(subdir)
 
 def DeleteBuildFiles(dir):
+    if dir == "": dir = "."
     for entry in os.listdir(dir):
-        if (entry != ".") and (entry != ".."):
-            subdir = dir + "/" + entry
-            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in SUFFIX_INC+[".pp", ".moved"]):
-                os.remove(subdir)
-            elif (os.path.isdir(subdir)):
+        subdir = os.path.join(dir, entry)
+        if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in SUFFIX_INC+[".pp", ".moved"]):
+            os.remove(subdir)
+        elif (os.path.isdir(subdir)):
+            if (os.path.basename(subdir)[:3] == "Opt" and os.path.basename(subdir)[4] == "-"):
+                shutil.rmtree(subdir)
+            else:
                 DeleteBuildFiles(subdir)
+
+def DeleteEmptyDirs(dir):
+    if dir == "": dir = "."
+    entries = os.listdir(dir)
+    if not entries:
+        os.rmdir(dir)
+        return
+    for entry in entries:
+        subdir = os.path.join(dir, entry)
+        if (os.path.isdir(subdir)):
+            if (not os.listdir(subdir)):
+                os.rmdir(subdir)
+            else:
+                DeleteEmptyDirs(subdir)
 
 def CreateFile(file):
     if (os.path.exists(file)==0):
@@ -1100,12 +1117,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         defs = {}
         for d in olddefs:
             defs[d] = ""
-    
+
     if (pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h")):
         # Let it be handled by the ffmpeg package
         LibName(target_pkg, "-lswscale")
         return
-    
+
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
         IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
         LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
@@ -1157,7 +1174,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     have_all_pkgs = False
             if (have_all_pkgs):
                 return
-    
+
     if (pkgconfig != None and (libs == None or len(libs) == 0)):
         if (pkg in PkgListGet()):
             print "%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
@@ -1178,7 +1195,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 if (VERBOSE):
                     print GetColor("cyan") + "Couldn't find library lib" + libname + GetColor()
                 have_pkg = False
-        
+
         for i in incs:
             incdir = None
             if (len(glob.glob("/usr/include/" + i)) > 0):
@@ -1196,11 +1213,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                         have_pkg = True
                 if (incdir == None and VERBOSE and i.endswith(".h")):
                     print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
-            
+
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
             if (incdir != None and os.path.isdir(incdir)):
                 IncDirectory(target_pkg, incdir)
-        
+
         if (not have_pkg):
             if (pkg in PkgListGet()):
                 print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower())
@@ -1240,7 +1257,7 @@ def GetSdkDir(sdkname, sdkkey = None):
     elif (sys.platform == "darwin"):
         sdir += "/macosx"
     sdir += "/" + sdkname
-    
+
     # If it does not exist, try the old location.
     if (sdkkey and not os.path.isdir(sdir)):
         sdir = "sdks/" + sdir
@@ -1252,7 +1269,7 @@ def GetSdkDir(sdkname, sdkkey = None):
 
     if (os.path.isdir(sdir)):
         SDK[sdkkey] = sdir
-    
+
     return sdir
 
 def SdkLocateDirectX():
@@ -1261,21 +1278,21 @@ def SdkLocateDirectX():
     GetSdkDir("directx9", "DX9")
     ## We first try to locate the August SDK in 64 bits, then 32.
     if ("DX9" not in SDK):
-        dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
+        dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
             SDK["GENERIC_DXERR_LIBRARY"] = 1;
     if ("DX9" not in SDK):
-        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")		
+        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
             SDK["GENERIC_DXERR_LIBRARY"] = 1;
     if ("DX9" not in SDK):
         ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")		
+        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-    archStr = "x86" 
+    archStr = "x86"
     if (platform.architecture()[0] == "64bit"): archStr = "x64"
     if ("DX9" not in SDK) or ("DX8" not in SDK):
         uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
@@ -1321,7 +1338,7 @@ def SdkLocateMaya():
                     else:
                         ddir1 = "/usr/autodesk/maya"+key
                         ddir2 = "/usr/aw/maya"+key
-                    
+
                     if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
                     elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
 
@@ -1347,14 +1364,14 @@ def SdkLocatePython(force_use_sys_executable = False):
                 SDK["PYTHON"] += "-dbg"
             if (platform.architecture()[0] == "64bit" and os.path.isdir(SDK["PYTHON"] + "-x64")):
                 SDK["PYTHON"] += "-x64"
-            
+
             SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
             if (GetOptimize() <= 2): SDK["PYTHONEXEC"] += "_d.exe"
             else: SDK["PYTHONEXEC"] += ".exe"
-            
+
             if (not os.path.isfile(SDK["PYTHONEXEC"])):
                 exit("Could not find %s!" % SDK["PYTHONEXEC"])
-            
+
             os.system(SDK["PYTHONEXEC"].replace("/", "\\") + " -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
             pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
             if (pv.startswith("Python ")==0):
@@ -1403,18 +1420,18 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.0A","InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
-		
+
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
         if (platform.architecture()[0]!="64bit" or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
             platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
             if (not os.path.isdir(platsdk)): platsdk = 0
-    
-    # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express 
+
+    # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))
                      and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK"))):
         platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
         if (not os.path.isdir(platsdk)): platsdk = 0
-    
+
     # This may not be the best idea but it does give a warning
     if (platsdk == 0):
         if ("WindowsSdkDir" in os.environ):
@@ -1491,11 +1508,11 @@ def SdkAutoDisableMaya():
 
 def SdkAutoDisableMax():
     for version,key1,key2,subdir in MAXVERSIONINFO:
-        if (PkgSkip(version)==0) and ((version not in SDK) or (version+"CS" not in SDK)): 
+        if (PkgSkip(version)==0) and ((version not in SDK) or (version+"CS" not in SDK)):
             if (sys.platform.startswith("win")):
                 if (version in SDK):
                     WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
-                else: 
+                else:
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
                 WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
@@ -1508,7 +1525,7 @@ def SdkAutoDisablePhysX():
 
 ########################################################################
 ##
-## Visual Studio comes with a script called VSVARS32.BAT, which 
+## Visual Studio comes with a script called VSVARS32.BAT, which
 ## you need to run before using visual studio command-line tools.
 ## The following python subroutine serves the same purpose.
 ##
@@ -1607,13 +1624,13 @@ def CheckLinkerLibraryPath():
         for line in f: ldpath.append(line.rstrip())
         f.close()
     except: ldpath = []
-    
-    # Get the current 
+
+    # Get the current
     if ("LD_LIBRARY_PATH" in os.environ):
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
     if (sys.platform == "darwin" and "DYLD_LIBRARY_PATH" in os.environ):
         dyldpath = os.environ["DYLD_LIBRARY_PATH"].split(":")
-    
+
     # Remove any potential current Panda installation lib dirs
     for i in ldpath:
         if i.startswith("/usr/lib/panda"): ldpath.remove(i)
@@ -1622,7 +1639,7 @@ def CheckLinkerLibraryPath():
     for i in dyldpath:
         if i.startswith("/Applications/Panda3D"): dyldpath.remove(i)
         if i.startswith("/Developer/Panda3D"): dyldpath.remove(i)
-    
+
     # Add built/lib/ to (DY)LD_LIBRARY_PATH if it's not already there
     if (ldpath.count(builtlib)==0):
         if ("LD_LIBRARY_PATH" in os.environ):
@@ -1634,7 +1651,7 @@ def CheckLinkerLibraryPath():
             os.environ["DYLD_LIBRARY_PATH"] = builtlib + ":" + os.environ["DYLD_LIBRARY_PATH"]
         else:
             os.environ["DYLD_LIBRARY_PATH"] = builtlib
-     
+
     # Workaround around compile issue on PCBSD
     if (os.path.exists("/usr/PCBSD")):
         os.environ["LD_LIBRARY_PATH"] += ":/usr/PCBSD/local/lib"
@@ -1757,17 +1774,17 @@ def GenerateResourceFile(**kwargs):
         kwargs["dotversion"] += ".0"
     if "commaversion" not in kwargs:
         kwargs["commaversion"] = kwargs["dotversion"].replace(".", ",")
-    
+
     rcdata = ""
     if not "noinclude" in kwargs:
         rcdata += "#define APSTUDIO_READONLY_SYMBOLS\n"
         rcdata += "#include \"winresrc.h\"\n"
         rcdata += "#undef APSTUDIO_READONLY_SYMBOLS\n"
     rcdata += RESOURCE_FILE_TEMPLATE % kwargs
-    
+
     if "icon" in kwargs:
         rcdata += "\nICON_FILE       ICON    \"%s\"\n" % kwargs["icon"]
-    
+
     return rcdata
 
 
@@ -1889,9 +1906,9 @@ def FindLocation(fn, ipath):
 ## this, it needs an include-file search path.  So if you supply
 ## any C++ input, you also need to supply compiler options containing
 ## include-directories, or alternately, a separate ipath parameter.
-## 
+##
 ## The main body of 'makepanda' is a long list of TargetAdd
-## directives building up a giant list of make targets.  Then, 
+## directives building up a giant list of make targets.  Then,
 ## finally, the targets are run and panda is built.
 ##
 ## Makepanda's dependency system does not understand multiple

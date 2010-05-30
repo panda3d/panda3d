@@ -17,7 +17,7 @@ from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
 
-if (platform.architecture()[0] == "64bit"):
+if (platform.architecture()[0] == "64bit" and not sys.platform.startswith("freebsd")):
   libdir = "/lib64"
 else:
   libdir = "/lib"
@@ -116,12 +116,19 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/applications")
     oscmd("mkdir -p "+destdir+prefix+libdir+"/panda3d")
     oscmd("mkdir -p "+destdir+PPATH)
-    oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
+    if (sys.platform.startswith("freebsd")):
+        oscmd("mkdir -p "+destdir+prefix+"/etc")
+    else:
+        oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
     WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
     Configrc = ReadFile(outputdir+"/etc/Config.prc")
     Configrc = Configrc.replace("model-path    $THIS_PRC_DIR/..", "model-path    "+prefix+"/share/panda3d")
-    WriteFile(destdir+"/etc/Config.prc", Configrc)
-    oscmd("cp "+outputdir+"/etc/Confauto.prc    "+destdir+"/etc/Confauto.prc")
+    if (sys.platform.startswith("freebsd")):
+        WriteFile(destdir+prefix+"/etc/Config.prc", Configrc)
+        oscmd("cp "+outputdir+"/etc/Confauto.prc    "+destdir+prefix+"/etc/Confauto.prc")
+    else:
+        WriteFile(destdir+"/etc/Config.prc", Configrc)
+        oscmd("cp "+outputdir+"/etc/Confauto.prc    "+destdir+"/etc/Confauto.prc")
     oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
     oscmd("cp -R direct/src/*                   "+destdir+prefix+"/share/panda3d/direct")
     oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/pandac")
@@ -138,24 +145,25 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/share/panda3d/LICENSE")
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
-    oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
     oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+PPATH+"/panda3d.pth")
     oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
-    oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
+    if (not sys.platform.startswith("freebsd")):
+        oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
+        oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
     oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")):
-            oscmd("cp -d "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
+            oscmd("cp -P "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
     # rpmlint doesn't like it if we compile pyc.
     #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
     #    if ((base != "extensions") and (base != "extensions_native")):
     #        compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
     #compileall.compile_dir(destdir+prefix+"/share/panda3d/Pmw")
-    DeleteCVS(destdir+prefix+"/include/panda3d")
-    DeleteCVS(destdir+prefix+"/share/panda3d")
-    # rpmlint doesn't like these files, for some reason.
-    DeleteBuildFiles(destdir+prefix+"/share/panda3d")
+    DeleteCVS(destdir)
+    DeleteBuildFiles(destdir)
+    DeleteEmptyDirs(destdir)
+    # rpmlint doesn't like this file, for some reason.
     if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
       os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
 
@@ -182,8 +190,8 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp "+outputdir+"/bin/panda3d         "+destdir+prefix+"/bin/")
 
 if (__name__ == "__main__"):
-    if (sys.platform != "linux2"):
-        exit("This script only works on linux at the moment!")
+    if (sys.platform.startswith("win") or sys.platform == "darwin"):
+        exit("This script is not supported on Windows or Mac OS X at the moment!")
 
     destdir = "/"
     if (os.environ.has_key("DESTDIR")):
@@ -192,7 +200,7 @@ if (__name__ == "__main__"):
     parser = OptionParser()
     parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
     parser.add_option('', '--destdir', dest = 'destdir', help = 'Destination directory [default=%s]' % destdir, default = destdir)
-    parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr]', default = '/usr')
+    parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr/local]', default = '/usr/local')
     parser.add_option('', '--runtime', dest = 'runtime', help = 'Specify if runtime build [default=no]', action = 'store_true', default = False)
     (options, args) = parser.parse_args()
 
@@ -203,7 +211,7 @@ if (__name__ == "__main__"):
         destdir = ""
     if (destdir != "" and not os.path.isdir(destdir)):
         exit("Directory '%s' does not exist!" % destdir)
-    
+
     if (options.runtime):
         print "Installing Panda3D Runtime into " + destdir + options.prefix
         InstallRuntime(destdir = destdir, prefix = options.prefix, outputdir = options.outputdir)
