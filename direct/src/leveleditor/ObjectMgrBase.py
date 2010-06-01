@@ -220,6 +220,13 @@ class ObjectMgrBase:
         else:
             return self.objects[uid]
 
+    def findObjectByNodePathBelow(self, nodePath):
+        for ancestor in nodePath.getAncestors():
+            if ancestor.hasTag('OBJRoot'):
+                return self.findObjectByNodePath(ancestor)
+
+        return None
+
     def findObjectsByTypeName(self, typeName):
         results = []
         for uid in self.objects.keys():
@@ -768,7 +775,7 @@ class ObjectMgrBase:
         newobj = self.addNewObject(typeName, uid, parent=parentNP, fSelectObject=False)
         newobj.setMat(mat)
 
-    def flatten(self, newobjModel, objDef, uid):
+    def flatten(self, newobjModel, model, objDef, uid):
         # override this to flatten models
         pass
 
