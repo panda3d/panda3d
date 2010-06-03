@@ -753,6 +753,8 @@ start_p3dpython(P3DInstance *inst) {
     keep_pythonpath = (inst->get_fparams().lookup_token_int("keep_pythonpath") != 0);
   }
 
+  string sys_path = search_path;
+  string ld_path = search_path;
   string dyld_path = search_path;
   string python_path = search_path;
   string prc_path = prc_root + sep + search_path;
@@ -910,13 +912,33 @@ start_p3dpython(P3DInstance *inst) {
     }
   }
 
+  // We also append the original PATH et al to the *end* of the new
+  // definitions, even if keep_user_env is not set.  This is necessary
+  // for os.system() and such to work as expected within the embedded
+  // app.  It's also necessary for webbrowser on Linux.
+  char *orig_path = getenv("PATH");
+  if (orig_path != NULL) {
+    sys_path += sep;
+    sys_path += orig_path;
+  }
+  char *orig_ld_path = getenv("LD_LIBRARY_PATH");
+  if (orig_ld_path != NULL) {
+    ld_path += sep;
+    ld_path += orig_ld_path;
+  }
+  char *orig_dyld_path = getenv("DYLD_LIBRARY_PATH");
+  if (orig_dyld_path != NULL) {
+    dyld_path += sep;
+    dyld_path += orig_dyld_path;
+  }
+
   // Define some new environment variables.
   _env += "PATH=";
-  _env += search_path;
+  _env += sys_path;
   _env += '\0';
 
   _env += "LD_LIBRARY_PATH=";
-  _env += search_path;
+  _env += ld_path;
   _env += '\0';
 
   _env += "DYLD_LIBRARY_PATH=";
