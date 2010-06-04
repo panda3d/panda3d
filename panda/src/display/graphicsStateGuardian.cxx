@@ -58,7 +58,7 @@
 #include <limits.h>
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
+#include "py_panda.h"
 #ifndef CPPPARSER
 IMPORT_THIS struct Dtool_PyTypedObject Dtool_Texture;
 #endif
@@ -155,6 +155,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _prepared_objects = new PreparedGraphicsObjects;
   _stereo_buffer_mask = ~0;
   _incomplete_render = allow_incomplete_render;
+  _effective_incomplete_render = false;
   _loader = Loader::get_global_ptr();
 
   _is_hardware = false;
@@ -1748,6 +1749,7 @@ reset() {
   _lighting_enabled = false;
   _num_lights_enabled = 0;
   _num_clip_planes_enabled = 0;
+  _clip_planes_enabled = false;
 
   _color_scale_enabled = false;
   _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);

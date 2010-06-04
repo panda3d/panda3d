@@ -194,6 +194,10 @@ Texture(const string &name) :
   _x_size = 0;
   _y_size = 1;
   _z_size = 1;
+  // Set it to something else first to
+  // avoid the check in do_set_format
+  // depending on an uninitialised value
+  _format = F_rgba;
   do_set_format(F_rgb);
   do_set_component_type(T_unsigned_byte);
 

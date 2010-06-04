@@ -23,7 +23,7 @@
 DisplayInformation::
 ~DisplayInformation() {
   if (_display_mode_array != NULL) {
-    delete _display_mode_array;
+    delete[] _display_mode_array;
   }
   if (_cpu_id_data != NULL) {
     delete _cpu_id_data;
