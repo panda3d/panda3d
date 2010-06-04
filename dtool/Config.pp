@@ -351,7 +351,7 @@
 // overhead to have this option available even if it is unused, it is
 // by default enabled only in a development build.  This has no effect
 // on DirectX rendering.
-#define SUPPORT_IMMEDIATE_MODE $[<= $[OPTIMIZE], 3]
+#defer SUPPORT_IMMEDIATE_MODE $[<= $[OPTIMIZE], 3]
 
 // Do you want to compile in support for pipelining?  This enables
 // setting and accessing multiple different copies of frame-specific
