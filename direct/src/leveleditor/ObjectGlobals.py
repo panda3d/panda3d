@@ -20,6 +20,7 @@ PROP_UI_SLIDE = '_PropUISlider'
 PROP_UI_SPIN = '_PropUISpinner'
 PROP_UI_BLIND = '_PropUIBlind'
 PROP_UI_COMBO_DYNAMIC = '_PropUIComboBoxDynamic'
+PROP_UI_TIME = '_PropUITime'
 
 # index for property definition
 PROP_TYPE = 0

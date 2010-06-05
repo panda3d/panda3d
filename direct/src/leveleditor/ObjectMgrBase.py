@@ -529,6 +529,9 @@ class ObjectMgrBase:
         elif propType == OG.PROP_UI_COMBO_DYNAMIC:
             val = event.GetString()
 
+        elif propType == OG.PROP_UI_TIME:
+            val = event.ClientObject.GetParent().GetParent().getValue()
+
         else:
             # unsupported property type
             return

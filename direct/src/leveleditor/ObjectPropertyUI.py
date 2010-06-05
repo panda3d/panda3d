@@ -3,6 +3,7 @@ UI for object property control
 """
 import wx
 import os
+import math
 
 from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib.agw.cubecolourdialog import *
@@ -157,6 +158,76 @@ class ObjectPropUICombo(ObjectPropUI):
 
     def setItems(self, valueList):
         self.ui.SetItems(valueList)
+
+class ObjectPropUITime(wx.Panel):
+    def __init__(self, parent, label, value):
+        wx.Panel.__init__(self, parent)
+        self.parent = parent
+        self.labelPane = wx.Panel(self)
+        self.label = wx.StaticText(self.labelPane, label=label)
+        self.labelSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.labelSizer.Add(self.label)
+        self.labelPane.SetSizer(self.labelSizer)
+        self.uiPane = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.labelPane)
+        sizer.Add(self.uiPane, 1, wx.EXPAND, 0)
+        self.SetSizer(sizer)
+
+        hSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.uiAmPm = wx.Choice(self.uiPane, -1, choices=['AM', 'PM'])
+        self.uiHour = wx.Choice(self.uiPane, -1, choices=map(lambda x : str(x), range(1, 13)))
+        self.uiMin = wx.Choice(self.uiPane, -1, choices=map(lambda x : str(x), range(0, 60, 15)))
+
+        hSizer.Add(self.uiAmPm)
+        hSizer.Add(self.uiHour)
+        hSizer.Add(self.uiMin)
+        self.uiPane.SetSizer(hSizer)
+
+        self.setValue(value)
+        self.eventType = wx.EVT_CHOICE
+        self.Layout()
+
+    def setValue(self, value):
+        hourVal = int(math.floor(value))
+        minVal = [0, 15, 30, 45][int((value - hourVal) * 4)]
+
+        if hourVal > 11:
+            ampmStr = 'PM'
+            hourVal = hourVal - 12
+        else:
+            ampmStr = 'AM'
+
+        if hourVal == 0:
+            hourVal = 12
+
+        self.uiAmPm.SetStringSelection(ampmStr)
+        self.uiHour.SetStringSelection(str(hourVal))
+        self.uiMin.SetStringSelection(str(minVal))
+
+    def getValue(self):
+        ampmStr = self.uiAmPm.GetStringSelection()
+        hourVal = int(self.uiHour.GetStringSelection())
+        if hourVal == 12:
+            hourVal = 0
+        if ampmStr == 'PM':
+            hourVal += 12
+
+        minVal = float(self.uiMin.GetStringSelection())
+        value = float(hourVal) + minVal / 60.0
+        return value
+
+    def bindFunc(self, inFunc, outFunc, valFunc = None):
+        self.uiAmPm.Bind(wx.EVT_ENTER_WINDOW, inFunc)
+        self.uiAmPm.Bind(wx.EVT_LEAVE_WINDOW, outFunc)
+        self.uiHour.Bind(wx.EVT_ENTER_WINDOW, inFunc)
+        self.uiHour.Bind(wx.EVT_LEAVE_WINDOW, outFunc)
+        self.uiMin.Bind(wx.EVT_ENTER_WINDOW, inFunc)
+        self.uiMin.Bind(wx.EVT_LEAVE_WINDOW, outFunc)
+        if valFunc:
+            self.uiAmPm.Bind(self.eventType, valFunc)
+            self.uiHour.Bind(self.eventType, valFunc)
+            self.uiMin.Bind(self.eventType, valFunc)            
 
 class ColorPicker(CubeColourDialog):
     def __init__(self, parent, colourData=None, style=CCD_SHOW_ALPHA, alpha = 255, updateCB=None, exitCB=None):
@@ -488,6 +559,14 @@ class ObjectPropertyUI(ScrolledPanel):
                 propUI = ObjectPropUICombo(self.propsPane, key, value, propRange)
                 sizer.Add(propUI)
 
+            elif propType == OG.PROP_UI_TIME:
+
+                if value is None:
+                    continue
+
+                propUI = ObjectPropUITime(self.propsPane, key, value)
+                sizer.Add(propUI)
+                
             else:
                 # unspported property type
                 continue
