@@ -4324,7 +4324,10 @@ bpdb.setEnabledCallback(bpdbGetEnabled)
 bpdb.setConfigCallback(lambda cfg: ConfigVariableBool('want-bp-%s' % (cfg.lower(),), 0).getValue())
 
 def u2ascii(str):
-    return unicodedata.normalize('NFKD', str).encode('ascii','ignore')
+    if type(str) is types.UnicodeType:
+        return unicodedata.normalize('NFKD', str).encode('ascii','ignore')
+    else:
+        return str
 
 import __builtin__
 __builtin__.Functor = Functor
