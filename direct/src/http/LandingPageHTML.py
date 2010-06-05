@@ -283,8 +283,10 @@ stylesheet = '''
 \r\n'''
 
 header = '''
+<?xml version="1.0" encoding="UTF-8"?>
 <html>
 %(headTag)s
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>%(titlestring)s</title>
 <link rel="stylesheet" type="text/css" href="/default.css">
 </head>

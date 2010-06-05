@@ -55,6 +55,7 @@ import marshal
 import ElementTree as ET
 from HTMLParser import HTMLParser
 import BpDb
+import unicodedata
 
 __report_indent = 3
 
@@ -336,12 +337,12 @@ def traceFunctionCall(frame):
         r+=name
         r+='='
         if name in dict:
-            v=str(dict[name])
+            v=safeRepr(dict[name])
             if len(v)>2000:
                 # r+="<too big for debug>"
-                r += (str(dict[name])[:2000] + "...")
+                r += (v[:2000] + "...")
             else:
-                r+=str(dict[name])
+                r+=v
         else: r+="*** undefined ***"
     return r+')'
 
@@ -4322,6 +4323,8 @@ def bpdbGetEnabled():
 bpdb.setEnabledCallback(bpdbGetEnabled)
 bpdb.setConfigCallback(lambda cfg: ConfigVariableBool('want-bp-%s' % (cfg.lower(),), 0).getValue())
 
+def u2ascii(str):
+    return unicodedata.normalize('NFKD', str).encode('ascii','ignore')
 
 import __builtin__
 __builtin__.Functor = Functor
@@ -4384,3 +4387,4 @@ __builtin__.safeTypeName = safeTypeName
 __builtin__.histogramDict = histogramDict
 __builtin__.repeatableRepr = repeatableRepr
 __builtin__.bpdb = bpdb
+__builtin__.u2ascii = u2ascii
