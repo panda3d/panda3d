@@ -252,6 +252,12 @@ class Audio3DManager:
         """
         # Update the positions of all sounds based on the objects
         # to which they are attached
+        
+        # The audio manager is not active so do nothing
+        if hasattr(self.audio_manager, "getActive"):
+            if self.audio_manager.getActive()==0:
+                return Task.cont
+        
         for known_object in self.sound_dict.keys():
             tracked_sound = 0
             while tracked_sound < len(self.sound_dict[known_object]):
