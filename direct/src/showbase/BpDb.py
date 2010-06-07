@@ -447,6 +447,11 @@ class BpDb:
     def bpPreset(self, *args, **kArgs):
         def functor(*cArgs, **ckArgs):
             return
+        if kArgs.get('call', None):
+            def functor(*cArgs, **ckArgs):
+                def decorator(f):
+                    return f
+                return decorator
 
         if self.enabled and self.verifyEnabled():
             argsCopy = args[:]
@@ -460,7 +465,7 @@ class BpDb:
                     return self.bpCall(*(cArgs), **kwArgs)
                 else:
                     return self.bp(*(cArgs), **kwArgs)
-        
+
         if kArgs.get('static', None):
             return staticmethod(functor)
         else:
