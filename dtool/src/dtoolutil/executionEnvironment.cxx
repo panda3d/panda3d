@@ -574,8 +574,9 @@ read_args() {
 
   size_t bufsize = 4096;
   char buffer[4096];
-  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, getpid()};
-  if (sysctl(mib, 4, (void*) &buffer, &bufsize, NULL, 0) == -1) {
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
+  mib[3] = getpid();
+  if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
     perror("sysctl");
   } else {
     if (_binary_name.empty()) {
