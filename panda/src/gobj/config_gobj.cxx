@@ -369,6 +369,14 @@ ConfigVariableDouble default_far
 ("default-far", 100000.0,
  PRC_DESC("The default far clipping distance for all cameras."));
 
+ConfigVariableDouble lens_far_limit
+("lens-far-limit", 0.0000001,
+  PRC_DESC("This number is used to reduce the effect of numeric inaccuracies "
+           "in Lens::extrude().  It should be a very small, positive number, "
+           "almost zero; set it larger if Lens::extrude() returns values "
+           "that appear meaningless, and set it smaller if you appear to be "
+           "unable to move the far plane out far enough."));
+
 ConfigVariableDouble default_fov
 ("default-fov", 30.0,
  PRC_DESC("The default field of view in degrees for all cameras.  This is "
