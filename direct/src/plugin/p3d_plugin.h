@@ -1096,6 +1096,12 @@ EXPCL_P3D_PLUGIN P3D_instance_handle_event_func P3D_instance_handle_event;
 
 #endif  /* P3D_FUNCTION_PROTOTYPES */
 
+// The default max_age, if none is specified in a particular
+// contents.xml, is 5 seconds.  This gives us enough time to start a
+// few packages downloading, without re-querying the host for a new
+// contents.xml at each operation.
+#define P3D_CONTENTS_DEFAULT_MAX_AGE 5
+
 #ifdef __cplusplus
 };  /* end of extern "C" */
 #endif

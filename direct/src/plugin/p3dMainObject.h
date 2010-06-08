@@ -65,6 +65,7 @@ public:
 
   void set_pyobj(P3D_object *pyobj);
   P3D_object *get_pyobj() const;
+  void apply_properties(P3D_object *pyobj);
 
   void set_instance(P3DInstance *inst);
 

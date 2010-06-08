@@ -1141,6 +1141,11 @@ get_packages_info_ready() const {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 get_packages_ready() const {
+  if (!_packages_specified) {
+    // We haven't even specified the full set of required packages yet.
+    return false;
+  }
+
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     if (!(*pi)->get_ready()) {
@@ -1384,6 +1389,7 @@ void P3DInstance::
 splash_button_clicked_main_thread() {
   if (is_failed()) {
     // Can't click the button after we've failed.
+    nout << "Ignoring click for failed instance\n";
     return;
   }
 
@@ -1391,6 +1397,8 @@ splash_button_clicked_main_thread() {
     auth_button_clicked();
   } else if (_session == NULL) {
     play_button_clicked();
+  } else {
+    nout << "Ignoring click for already-started instance\n";
   }
 }
 
@@ -2360,32 +2368,36 @@ handle_notify_request(const string &message) {
     // Once Python is up and running, we can get the actual main
     // object from the Python side, and merge it with our own.
 
-    // But only if this web page is allowed to call our scripting
-    // functions.
-    if (_matches_script_origin) {
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "pyobj");
-      xcommand->SetAttribute("op", "get_panda_script_object");
-      doc->LinkEndChild(xcommand);
-      TiXmlDocument *response = _session->command_and_response(doc);
-      
-      P3D_object *result = NULL;
-      if (response != NULL) {
-        TiXmlElement *xresponse = response->FirstChildElement("response");
-        if (xresponse != NULL) {
-          TiXmlElement *xvalue = xresponse->FirstChildElement("value");
-          if (xvalue != NULL) {
-            result = _session->xml_to_p3dobj(xvalue);
-          }
+    TiXmlDocument *doc = new TiXmlDocument;
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "pyobj");
+    xcommand->SetAttribute("op", "get_panda_script_object");
+    doc->LinkEndChild(xcommand);
+    TiXmlDocument *response = _session->command_and_response(doc);
+
+    P3D_object *result = NULL;
+    if (response != NULL) {
+      TiXmlElement *xresponse = response->FirstChildElement("response");
+      if (xresponse != NULL) {
+        TiXmlElement *xvalue = xresponse->FirstChildElement("value");
+        if (xvalue != NULL) {
+          result = _session->xml_to_p3dobj(xvalue);
         }
-        delete response;
       }
-      
-      if (result != NULL) {
+      delete response;
+    }
+
+    if (result != NULL) {
+      if (_matches_script_origin) {
+        // We only actually merge the objects if this web page is
+        // allowed to call our scripting functions.
         _panda_script_object->set_pyobj(result);
-        P3D_OBJECT_DECREF(result);
+      } else {
+        // Otherwise, we just do a one-time application of the
+        // toplevel properties down to Python.
+        _panda_script_object->apply_properties(result);
       }
+      P3D_OBJECT_DECREF(result);
     }
 
     _panda_script_object->set_string_property("status", "starting");
@@ -3006,7 +3018,6 @@ mark_download_complete() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 ready_to_start() {
-  nout << "_instance_started = " << _instance_started << "\n";
   if (_instance_started || is_failed()) {
     // Already started--or never mind.
     return;

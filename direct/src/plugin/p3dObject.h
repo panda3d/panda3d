@@ -17,6 +17,8 @@
 
 #include "p3d_plugin_common.h"
 
+class P3DPythonObject;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DObject
 // Description : The C++ implementation of P3D_value, corresponding
@@ -55,6 +57,8 @@ public:
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
   virtual P3D_object **get_object_array();
   virtual int get_object_array_size();
+
+  virtual P3DPythonObject *as_python_object();
 
   // Convenience functions.
   bool get_bool_property(const string &property);

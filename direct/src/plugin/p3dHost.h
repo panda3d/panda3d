@@ -43,11 +43,12 @@ public:
   P3DHost *get_alt_host(const string &alt_host);
 
   inline bool has_contents_file() const;
+  bool has_current_contents_file(P3DInstanceManager *inst_mgr) const;
   inline int get_contents_seq() const;
   inline bool check_contents_hash(const string &pathname) const;
 
   bool read_contents_file();
-  bool read_contents_file(const string &contents_filename);
+  bool read_contents_file(const string &contents_filename, bool fresh_download);
   void read_xhost(TiXmlElement *xhost);
 
   P3DPackage *get_package(const string &package_name, 
@@ -72,6 +73,7 @@ private:
 
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);
+  static bool save_xml_file(TiXmlDocument *doc, const string &to_filename);
 
 private:
   string _host_dir;
@@ -80,6 +82,7 @@ private:
   string _download_url_prefix;
   string _descriptive_name;
   TiXmlElement *_xcontents;
+  time_t _contents_expiration;
   int _contents_seq;
   FileSpec _contents_spec;
 

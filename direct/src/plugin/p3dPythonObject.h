@@ -43,13 +43,19 @@ public:
 
   virtual P3D_object *get_property(const string &property);
   virtual bool set_property(const string &property, bool needs_response, P3D_object *value);
+  bool set_property_insecure(const string &property, bool needs_response,
+                             P3D_object *value);
 
   virtual bool has_method(const string &method_name);
   virtual P3D_object *call(const string &method_name, bool needs_response,
                            P3D_object *params[], int num_params);
+  P3D_object *call_insecure(const string &method_name, bool needs_response,
+                            P3D_object *params[], int num_params);
 
   virtual void output(ostream &out);
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
+
+  virtual P3DPythonObject *as_python_object();
 
   P3DSession *get_session();
   int get_object_id();

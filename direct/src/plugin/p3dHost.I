@@ -107,7 +107,8 @@ get_contents_seq() const {
 //     Function: P3DHost::check_contents_hash
 //       Access: Public
 //  Description: Returns true if the indicated pathname has the same
-//               md5 hash as the contents.xml file, false otherwise.
+//               md5 hash as the contents.xml file (as provided by the
+//               server), false otherwise.
 ////////////////////////////////////////////////////////////////////
 inline bool P3DHost::
 check_contents_hash(const string &pathname) const {

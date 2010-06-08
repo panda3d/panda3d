@@ -1864,6 +1864,10 @@ class Packager:
         self.host = PandaSystem.getPackageHostUrl()
         self.addHost(self.host)
 
+        # The maximum amount of time a client should cache the
+        # contents.xml before re-querying the server, in seconds.
+        self.maxAge = 0
+
         # A search list for previously-built local packages.
 
         # We use a bit of caution to read the Filenames out of the
@@ -1918,10 +1922,10 @@ class Packager:
         # client and is therefore readily available to any hacker.
         # Not only is this feature useless, but using it also
         # increases the size of your patchfiles, since encrypted files
-        # don't patch as tightly as unencrypted files.  But it's here
-        # if you really want it.
-        self.encryptExtensions = ['ptf', 'dna', 'txt', 'dc']
-        self.encryptFiles = []
+        # can't really be patched.  But it's here if you really want
+        # it. ** Note: Actually, this isn't implemented yet.
+        #self.encryptExtensions = []
+        #self.encryptFiles = []
 
         # This is the list of DC import suffixes that should be
         # available to the client.  Other suffixes, like AI and UD,
@@ -2220,6 +2224,8 @@ class Packager:
         # Set up the namespace dictionary for exec.
         globals = {}
         globals['__name__'] = packageDef.getBasenameWoExtension()
+        globals['__dir__'] = Filename(packageDef.getDirname()).toOsSpecific()
+        globals['packageDef'] = packageDef
 
         globals['platform'] = self.platform
         globals['packager'] = self
@@ -3156,6 +3162,7 @@ class Packager:
         # sure that our own host at least is added to the map.
         self.addHost(self.host)
 
+        self.maxAge = 0
         self.contents = {}
         self.contentsChanged = False
 
@@ -3171,6 +3178,10 @@ class Packager:
 
         xcontents = doc.FirstChildElement('contents')
         if xcontents:
+            maxAge = xcontents.Attribute('max_age')
+            if maxAge:
+                self.maxAge = int(maxAge)
+                
             xhost = xcontents.FirstChildElement('host')
             if xhost:
                 he = self.HostEntry()
@@ -3199,6 +3210,9 @@ class Packager:
         doc.InsertEndChild(decl)
 
         xcontents = TiXmlElement('contents')
+        if self.maxAge:
+            xcontents.SetAttribute('max_age', str(self.maxAge))
+            
         if self.host:
             he = self.hosts.get(self.host, None)
             if he:

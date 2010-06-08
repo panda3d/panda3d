@@ -159,6 +159,19 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
     return false;
   }
 
+  return set_property_insecure(property, needs_response, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::set_property_insecure
+//       Access: Public
+//  Description: Works as set_property(), but does not check the
+//               matches_script_origin flag.  Intended to be called
+//               internally only, never to be called from Javascript.
+////////////////////////////////////////////////////////////////////
+bool P3DPythonObject::
+set_property_insecure(const string &property, bool needs_response, 
+                      P3D_object *value) {
   bool bresult = !needs_response;
 
   P3D_object *params[2];
@@ -168,12 +181,12 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
 
   if (value == NULL) {
     // Delete an attribute.
-    result = call("__del_property__", needs_response, params, 1);
+    result = call_insecure("__del_property__", needs_response, params, 1);
 
   } else {
     // Set a new attribute.
     params[1] = value;
-    result = call("__set_property__", needs_response, params, 2);
+    result = call_insecure("__set_property__", needs_response, params, 2);
   }
 
   P3D_OBJECT_DECREF(params[0]);
@@ -244,6 +257,19 @@ call(const string &method_name, bool needs_response,
     return NULL;
   }
 
+  return call_insecure(method_name, needs_response, params, num_params);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::call_insecure
+//       Access: Public
+//  Description: Works as call(), but does not check the
+//               matches_script_origin flag.  Intended to be called
+//               internally only, never to be called from Javascript.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DPythonObject::
+call_insecure(const string &method_name, bool needs_response,
+              P3D_object *params[], int num_params) {
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
@@ -329,6 +355,18 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
 
   // Otherwise, we have to send it as a browser object.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::as_python_object
+//       Access: Public, Virtual
+//  Description: Returns this object, downcast to a P3DPythonObject,
+//               if it is in fact an object of that type; or NULL if
+//               it is not.
+////////////////////////////////////////////////////////////////////
+P3DPythonObject *P3DPythonObject::
+as_python_object() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////

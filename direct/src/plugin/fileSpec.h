@@ -34,12 +34,14 @@ public:
   ~FileSpec();
 
   void load_xml(TiXmlElement *xelement);
+  void store_xml(TiXmlElement *xelement);
 
   inline const string &get_filename() const;
   inline void set_filename(const string &filename);
   inline string get_pathname(const string &package_dir) const;
   inline size_t get_size() const;
   inline time_t get_timestamp() const;
+  inline bool has_hash() const;
   
   bool quick_verify(const string &package_dir);
   bool quick_verify_pathname(const string &pathname);

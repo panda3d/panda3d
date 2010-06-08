@@ -37,12 +37,12 @@ public:
 protected:
   bool post_arg_processing();
   bool get_plugin();
-  bool read_contents_file(const Filename &contents_filename);
+  bool read_contents_file(const Filename &contents_filename, bool fresh_download);
   void find_host(TiXmlElement *xcontents);
   void read_xhost(TiXmlElement *xhost);
   void add_mirror(string mirror_url);
   void choose_random_mirrors(vector_string &result, int num_mirrors);
-  bool get_core_api(const Filename &contents_filename, TiXmlElement *xplugin);
+  bool get_core_api();
 
   void usage();
 

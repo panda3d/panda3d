@@ -58,6 +58,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _window_handle_type = window_handle_type;
   _event_type = event_type;
   _script_object = NULL;
+  _contents_expiration = 0;
   _failed = false;
   _started = false;
 
@@ -171,24 +172,40 @@ begin() {
   }
 #endif  // __APPLE__
 
+  string url = PANDA_PACKAGE_HOST_URL;
+  if (!url.empty() && url[url.length() - 1] != '/') {
+    url += '/';
+  }
+  _download_url_prefix = url;
+
   if (!is_plugin_loaded() && !_failed) {
-    // Go download the contents file, so we can download the core DLL.
-    string url = PANDA_PACKAGE_HOST_URL;
-    if (!url.empty() && url[url.length() - 1] != '/') {
-      url += '/';
+    // We need to read the contents.xml file.  First, check to see if
+    // the version on disk is already current enough.
+    bool success = false;
+
+    string contents_filename = _root_dir + "/contents.xml";
+    if (read_contents_file(contents_filename, false)) {
+      if (time(NULL) < _contents_expiration) {
+        // Got the file, and it's good.
+        get_core_api();
+        success = true;
+      }
     }
-    _download_url_prefix = url;
-    ostringstream strm;
-    strm << url << "contents.xml";
 
-    // Append a uniquifying query string to the URL to force the
-    // download to go all the way through any caches.  We use the time
-    // in seconds; that's unique enough.
-    strm << "?" << time(NULL);
-    url = strm.str();
-
-    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
-    start_download(url, req);
+    if (!success) {
+      // Go download the latest contents.xml file.
+      ostringstream strm;
+      strm << _download_url_prefix << "contents.xml";
+      
+      // Append a uniquifying query string to the URL to force the
+      // download to go all the way through any caches.  We use the time
+      // in seconds; that's unique enough.
+      strm << "?" << time(NULL);
+      url = strm.str();
+      
+      PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
+      start_download(url, req);
+    }
   }
 
   handle_request_loop();
@@ -562,7 +579,9 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
         // there's an outstanding contents.xml file on disk, try to
         // load that one as a fallback.
         string contents_filename = _root_dir + "/contents.xml";
-        if (!read_contents_file(contents_filename)) {
+        if (read_contents_file(contents_filename, false)) {
+          get_core_api();
+        } else {
           nout << "Unable to read contents file " << contents_filename << "\n";
           set_failed();
         }
@@ -1134,18 +1153,58 @@ start_download(const string &url, PPDownloadRequest *req) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::read_contents_file
 //       Access: Private
-//  Description: Reads the contents.xml file and starts the core API
-//               DLL downloading, if necessary.
+//  Description: Attempts to open and read the contents.xml file on
+//               disk.  Copies the file to its standard location
+//               on success.  Returns true on success, false on
+//               failure.
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
-read_contents_file(const string &contents_filename) {
+read_contents_file(const string &contents_filename, bool fresh_download) {
   TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
   }
 
+  bool found_core_package = false;
+
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
+    int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
+    xcontents->Attribute("max_age", &max_age);
+
+    // Get the latest possible expiration time, based on the max_age
+    // indication.  Any expiration time later than this is in error.
+    time_t now = time(NULL);
+    _contents_expiration = now + (time_t)max_age;
+
+    if (fresh_download) {
+      // Update the XML with the new download information.
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      while (xorig != NULL) {
+        xcontents->RemoveChild(xorig);
+        xorig = xcontents->FirstChildElement("orig");
+      }
+
+      xorig = new TiXmlElement("orig");
+      xcontents->LinkEndChild(xorig);
+      
+      xorig->SetAttribute("expiration", (int)_contents_expiration);
+
+    } else {
+      // Read the expiration time from the XML.
+      int expiration = 0;
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      if (xorig != NULL) {
+        xorig->Attribute("expiration", &expiration);
+      }
+      
+      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+    }
+
+    nout << "read contents.xml, max_age = " << max_age
+         << ", expires in " << max(_contents_expiration, now) - now
+         << " s\n";
+
     // Look for the <host> entry; it might point us at a different
     // download URL, and it might mention some mirrors.
     find_host(xcontents);
@@ -1157,19 +1216,33 @@ read_contents_file(const string &contents_filename) {
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
-          get_core_api(xpackage);
-          return true;
+          _core_api_dll.load_xml(xpackage);
+          found_core_package = true;
+          break;
         }
       }
-    
+        
       xpackage = xpackage->NextSiblingElement("package");
     }
   }
 
-  // Couldn't find the coreapi package description.
-  nout << "No coreapi package defined in contents file for "
-       << DTOOL_PLATFORM << "\n";
-  return false;
+  if (!found_core_package) {
+    // Couldn't find the coreapi package description.
+    nout << "No coreapi package defined in contents file for "
+         << DTOOL_PLATFORM << "\n";
+    return false;
+  }
+
+  // Success.  Now save the file in its proper place.
+  string standard_filename = _root_dir + "/contents.xml";
+
+  mkfile_complete(standard_filename, nout);
+  if (!doc.SaveFile(standard_filename.c_str())) {
+    nout << "Couldn't rewrite " << standard_filename << "\n";
+    return false;
+  }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1212,24 +1285,28 @@ void PPInstance::
 downloaded_file(PPDownloadRequest *req, const string &filename) {
   switch (req->_rtype) {
   case PPDownloadRequest::RT_contents_file:
-    // Now we have the contents.xml file.  Read this to get the
-    // filename and md5 hash of our core API DLL.
-    if (read_contents_file(filename)) {
-      // Successfully read.  Copy it into its normal place.
-      string contents_filename = _root_dir + "/contents.xml";
-      copy_file(filename, contents_filename);
-      
-    } else {
-      // Error reading the contents.xml file, or in loading the core
-      // API that it references.
-      nout << "Unable to read contents file " << filename << "\n";
-
-      // If there's an outstanding contents.xml file on disk, try to
-      // load that one as a fallback.
-      string contents_filename = _root_dir + "/contents.xml";
-      if (!read_contents_file(contents_filename)) {
-        nout << "Unable to read contents file " << contents_filename << "\n";
-        set_failed();
+    {
+      // Now we have the contents.xml file.  Read this to get the
+      // filename and md5 hash of our core API DLL.
+      if (read_contents_file(filename, true)) {
+        // Successfully downloaded and read, and it has been written
+        // into its normal place.
+        get_core_api();
+        
+      } else {
+        // Error reading the contents.xml file, or in loading the core
+        // API that it references.
+        nout << "Unable to read contents file " << filename << "\n";
+        
+        // If there's an outstanding contents.xml file on disk, try to
+        // load that one as a fallback.
+        string contents_filename = _root_dir + "/contents.xml";
+        if (read_contents_file(contents_filename, false)) {
+          get_core_api();
+        } else {
+          nout << "Unable to read contents file " << contents_filename << "\n";
+          set_failed();
+        }
       }
     }
     break;
@@ -1350,9 +1427,7 @@ send_p3d_temp_file_data() {
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-get_core_api(TiXmlElement *xpackage) {
-  _core_api_dll.load_xml(xpackage);
-
+get_core_api() {
   if (_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file is good.  Just load it.
     do_load_plugin();
@@ -1477,7 +1552,9 @@ do_load_plugin() {
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   nout << "Attempting to load core API from " << pathname << "\n";
-  if (!load_plugin(pathname, "", "", true, "", "", "", false, false, 
+  string contents_filename = _root_dir + "/contents.xml";
+  if (!load_plugin(pathname, contents_filename, PANDA_PACKAGE_HOST_URL,
+                   true, "", "", "", false, false, 
                    _root_dir, nout)) {
     nout << "Unable to launch core API in " << pathname << "\n";
     set_failed();

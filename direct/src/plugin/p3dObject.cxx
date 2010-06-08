@@ -352,7 +352,7 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::get_object_array
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Returns a pointer to the array of objects represented
 //               by this object, if any, or NULL if the object does
 //               not represent an array of objects.  This may also
@@ -366,7 +366,7 @@ get_object_array() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::get_object_array_size
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Returns the number of elements in the array returned
 //               by get_object_array(), or -1 if this object does not
 //               representan array of objects.
@@ -374,6 +374,18 @@ get_object_array() {
 int P3DObject::
 get_object_array_size() {
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::as_python_object
+//       Access: Public, Virtual
+//  Description: Returns this object, downcast to a P3DPythonObject,
+//               if it is in fact an object of that type; or NULL if
+//               it is not.
+////////////////////////////////////////////////////////////////////
+P3DPythonObject *P3DObject::
+as_python_object() {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

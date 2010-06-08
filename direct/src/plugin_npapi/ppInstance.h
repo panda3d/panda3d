@@ -84,8 +84,8 @@ private:
   void open_p3d_temp_file();
   void send_p3d_temp_file_data();
 
-  bool read_contents_file(const string &contents_filename);
-  void get_core_api(TiXmlElement *xpackage);
+  bool read_contents_file(const string &contents_filename, bool fresh_download);
+  void get_core_api();
   void downloaded_plugin(const string &filename);
   void do_load_plugin();
 
@@ -140,6 +140,7 @@ private:
   CoreUrls _core_urls;
 
   FileSpec _core_api_dll;
+  time_t _contents_expiration;
   bool _failed;
   bool _started;
 

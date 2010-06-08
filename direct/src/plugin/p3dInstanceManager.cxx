@@ -261,12 +261,11 @@ initialize(int api_version, const string &contents_filename,
   create_runtime_environment();
   _is_initialized = true;
 
-  if (!_verify_contents &&
-      !host_url.empty() && !contents_filename.empty()) {
+  if (!host_url.empty() && !contents_filename.empty()) {
     // Attempt to pre-read the supplied contents.xml file, to avoid an
     // unnecessary download later.
     P3DHost *host = get_host(host_url);
-    if (!host->read_contents_file(contents_filename)) {
+    if (!host->read_contents_file(contents_filename, false)) {
       nout << "Couldn't read " << contents_filename << "\n";
     }
   }

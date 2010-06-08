@@ -40,6 +40,7 @@ P3DHost(const string &host_url) :
   _descriptive_name = _host_url;
 
   _xcontents = NULL;
+  _contents_expiration = 0;
   _contents_seq = 0;
 }
 
@@ -107,6 +108,25 @@ get_alt_host(const string &alt_host) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::has_current_contents_file
+//       Access: Public
+//  Description: Returns true if a contents.xml file has been
+//               successfully read for this host and is still current,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DHost::
+has_current_contents_file(P3DInstanceManager *inst_mgr) const {
+  if (!inst_mgr->get_verify_contents()) {
+    // If we're not asking to verify contents, then contents.xml files
+    // never expire.
+    return has_contents_file();
+  }
+
+  time_t now = time(NULL);
+  return now < _contents_expiration && (_xcontents != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::read_contents_file
 //       Access: Public
 //  Description: Reads the contents.xml file in the standard
@@ -122,21 +142,21 @@ read_contents_file() {
   }
 
   string standard_filename = _host_dir + "/contents.xml";
-  return read_contents_file(standard_filename);
+  return read_contents_file(standard_filename, false);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::read_contents_file
 //       Access: Public
 //  Description: Reads the contents.xml file in the indicated
-//               filename.  On success, copies the contents.xml file
+//               filename.  On success, writes the contents.xml file
 //               into the standard location (if it's not there
 //               already).
 //
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
-read_contents_file(const string &contents_filename) {
+read_contents_file(const string &contents_filename, bool fresh_download) {
   TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
@@ -152,7 +172,50 @@ read_contents_file(const string &contents_filename) {
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
   ++_contents_seq;
-  _contents_spec.read_hash(contents_filename);
+  _contents_spec = FileSpec();
+
+  int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
+  xcontents->Attribute("max_age", &max_age);
+
+  // Get the latest possible expiration time, based on the max_age
+  // indication.  Any expiration time later than this is in error.
+  time_t now = time(NULL);
+  _contents_expiration = now + (time_t)max_age;
+
+  if (fresh_download) {
+    _contents_spec.read_hash(contents_filename);
+
+    // Update the XML with the new download information.
+    TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+    while (xorig != NULL) {
+      xcontents->RemoveChild(xorig);
+      xorig = xcontents->FirstChildElement("orig");
+    }
+
+    xorig = new TiXmlElement("orig");
+    xcontents->LinkEndChild(xorig);
+    _contents_spec.store_xml(xorig);
+
+    xorig->SetAttribute("expiration", (int)_contents_expiration);
+
+  } else {
+    // Read the download hash and expiration time from the XML.
+    int expiration = 0;
+    TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+    if (xorig != NULL) {
+      _contents_spec.load_xml(xorig);
+      xorig->Attribute("expiration", &expiration);
+    }
+    if (!_contents_spec.has_hash()) {
+      _contents_spec.read_hash(contents_filename);
+    }
+
+    _contents_expiration = min(_contents_expiration, (time_t)expiration);
+  }
+
+  nout << "read contents.xml, max_age = " << max_age
+       << ", expires in " << max(_contents_expiration, now) - now
+       << " s\n";
 
   TiXmlElement *xhost = _xcontents->FirstChildElement("host");
   if (xhost != NULL) {
@@ -194,10 +257,16 @@ read_contents_file(const string &contents_filename) {
   mkdir_complete(_host_dir, nout);
 
   string standard_filename = _host_dir + "/contents.xml";
-  if (standardize_filename(standard_filename) != 
-      standardize_filename(contents_filename)) {
-    if (!copy_file(contents_filename, standard_filename)) {
-      nout << "Couldn't copy to " << standard_filename << "\n";
+  if (fresh_download) {
+    if (!save_xml_file(&doc, standard_filename)) {
+      nout << "Couldn't save to " << standard_filename << "\n";
+    }
+  } else {
+    if (standardize_filename(standard_filename) != 
+        standardize_filename(contents_filename)) {
+      if (!copy_file(contents_filename, standard_filename)) {
+        nout << "Couldn't copy to " << standard_filename << "\n";
+      }
     }
   }
 
@@ -208,13 +277,12 @@ read_contents_file(const string &contents_filename) {
     // iteration.
     string top_filename = inst_mgr->get_root_dir() + "/contents.xml";
     if (standardize_filename(top_filename) != 
-        standardize_filename(contents_filename)) {
-      if (!copy_file(contents_filename, top_filename)) {
+        standardize_filename(standard_filename)) {
+      if (!copy_file(standard_filename, top_filename)) {
         nout << "Couldn't copy to " << top_filename << "\n";
       }
     }
   }
-
 
   return true;
 }
@@ -288,25 +356,30 @@ get_package(const string &package_name, const string &package_version,
 
   PackageMap &package_map = _packages[alt_host];
 
+  P3DPackage *package = NULL;
+
   string key = package_name + "_" + package_version;
   PackageMap::iterator pi = package_map.find(key);
   if (pi != package_map.end()) {
-    P3DPackage *package = (*pi).second;
-    if (!package->get_failed()) {
-      return package;
-    }
+    // We've previously installed this package.
+    package = (*pi).second;
 
-    // If the package has previously failed, move it aside and try
-    // again (maybe it just failed because the user interrupted it).
-    nout << "Package " << key << " has previously failed; trying again.\n";
-    _failed_packages.push_back(package);
-    (*pi).second = NULL;
+    if (package->get_failed()) {
+      // If the package has previously failed, move it aside and try
+      // again (maybe it just failed because the user interrupted it).
+      nout << "Package " << key << " has previously failed; trying again.\n";
+      _failed_packages.push_back(package);
+      (*pi).second = NULL;
+      package = NULL;
+    }
   }
 
-  P3DPackage *package = 
-    new P3DPackage(this, package_name, package_version, alt_host);
-  package_map[key] = package;
-
+  if (package == NULL) {
+    package = 
+      new P3DPackage(this, package_name, package_version, alt_host);
+    package_map[key] = package;
+  }
+    
   return package;
 }
 
@@ -678,6 +751,44 @@ copy_file(const string &from_filename, const string &to_filename) {
   out.close();
 
   if (!in.eof()) {
+    unlink(temp_filename.c_str());
+    return false;
+  }
+
+  if (rename(temp_filename.c_str(), to_filename.c_str()) == 0) {
+    return true;
+  }
+
+  unlink(to_filename.c_str());
+  if (rename(temp_filename.c_str(), to_filename.c_str()) == 0) {
+    return true;
+  }
+
+  unlink(temp_filename.c_str());
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::save_xml_file
+//       Access: Private, Static
+//  Description: Stores the XML document to the file named by
+//               to_filename, safely.
+////////////////////////////////////////////////////////////////////
+bool P3DHost::
+save_xml_file(TiXmlDocument *doc, const string &to_filename) {
+  // Save to a temporary file first, in case (a) we have different
+  // processes writing to the same file, and (b) to prevent partially
+  // overwriting the file should something go wrong.
+  ostringstream strm;
+  strm << to_filename << ".t";
+#ifdef _WIN32
+  strm << GetCurrentProcessId() << "_" << GetCurrentThreadId();
+#else
+  strm << getpid();
+#endif
+  string temp_filename = strm.str();
+
+  if (!doc->SaveFile(temp_filename.c_str())) {
     unlink(temp_filename.c_str());
     return false;
   }

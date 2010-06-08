@@ -65,6 +65,7 @@ Panda3DBase(bool console_environment) {
   _host_url = PANDA_PACKAGE_HOST_URL;
   _this_platform = DTOOL_PLATFORM;
   _verify_contents = false;
+  _contents_expiration = 0;
 
   // Seed the lame random number generator in rand(); we use it to
   // select a mirror for downloading.

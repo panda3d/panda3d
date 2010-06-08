@@ -68,6 +68,17 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::has_hash
+//       Access: Public
+//  Description: Returns true if we have successfully read a hash
+//               value, false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool FileSpec::
+has_hash() const {
+  return _got_hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_actual_file
 //       Access: Public
 //  Description: After a call to quick_verify() or full_verify(), this

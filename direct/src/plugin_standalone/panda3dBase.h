@@ -74,6 +74,8 @@ protected:
   string _log_basename;
   string _this_platform;
   bool _verify_contents;
+  time_t _contents_expiration;
+
   P3D_window_type _window_type;
   P3D_window_handle _parent_window;
   int _win_x, _win_y;

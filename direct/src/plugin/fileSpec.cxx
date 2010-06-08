@@ -124,6 +124,30 @@ load_xml(TiXmlElement *xelement) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::store_xml
+//       Access: Public
+//  Description: Stores the data to the indicated XML file.
+////////////////////////////////////////////////////////////////////
+void FileSpec::
+store_xml(TiXmlElement *xelement) {
+  if (!_filename.empty()) {
+    xelement->SetAttribute("filename", _filename);
+  }
+  if (_size != 0) {
+    xelement->SetAttribute("size", _size);
+  }
+  if (_timestamp != 0) {
+    xelement->SetAttribute("timestamp", _timestamp);
+  }
+  if (_got_hash) {
+    char hash[hash_size * 2 + 1];
+    encode_hex(hash, _hash, hash_size);
+    hash[hash_size * 2] = '\0';
+    xelement->SetAttribute("hash", hash);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::quick_verify
 //       Access: Public
 //  Description: Performs a quick test to ensure the file has not been
@@ -272,6 +296,7 @@ check_hash(const string &pathname) const {
 bool FileSpec::
 read_hash(const string &pathname) {
   memset(_hash, 0, hash_size);
+  _got_hash = false;
 
   ifstream stream(pathname.c_str(), ios::in | ios::binary);
   if (!stream) {
@@ -294,6 +319,7 @@ read_hash(const string &pathname) {
   }
 
   MD5_Final(_hash, &ctx);
+  _got_hash = true;
 
   return true;
 }

@@ -181,6 +181,17 @@ void P3DPackage::
 add_instance(P3DInstance *inst) {
   _instances.push_back(inst);
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!_host->has_current_contents_file(inst_mgr)) {
+    // If the host needs to update its contents file, we're no longer
+    // sure that we're current.
+    _info_ready = false;
+    _ready = false;
+    _failed = false;
+    _allow_data_download = false;
+    nout << "No longer current: " << get_package_name() << "\n";
+  }
+  
   begin_info_download();
 }
 
@@ -381,13 +392,13 @@ begin_info_download() {
 void P3DPackage::
 download_contents_file() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (!_host->has_contents_file() && !inst_mgr->get_verify_contents()) {
-    // If we're allowed to read a contents file without checking the
-    // server first, try it now.
+  if (!_host->has_contents_file()) {
+    // First, read whatever contents file is already on disk.  Maybe
+    // it's current enough.
     _host->read_contents_file();
   }
 
-  if (_host->has_contents_file()) {
+  if (_host->has_current_contents_file(inst_mgr)) {
     // We've already got a contents.xml file; go straight to the
     // package desc file.
     host_got_contents_file();
@@ -414,14 +425,15 @@ download_contents_file() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 contents_file_download_finished(bool success) {
-  if (!_host->has_contents_file()) {
-    if (!success || !_host->read_contents_file(_temp_contents_file->get_filename())) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!_host->has_current_contents_file(inst_mgr)) {
+    if (!success || !_host->read_contents_file(_temp_contents_file->get_filename(), true)) {
       nout << "Couldn't read " << *_temp_contents_file << "\n";
 
       // Maybe we can read an already-downloaded contents.xml file.
       string standard_filename = _host->get_host_dir() + "/contents.xml";
       if (_host->get_host_dir().empty() || 
-          !_host->read_contents_file(standard_filename)) {
+          !_host->read_contents_file(standard_filename, false)) {
         // Couldn't even read that.  Fail.
         report_done(false);
         delete _temp_contents_file;
@@ -503,7 +515,7 @@ contents_file_redownload_finished(bool success) {
     // from what we had before.
     if (!_host->check_contents_hash(_temp_contents_file->get_filename())) {
       // It changed!  Now see if we can read the new contents.
-      if (!_host->read_contents_file(_temp_contents_file->get_filename())) {
+      if (!_host->read_contents_file(_temp_contents_file->get_filename(), true)) {
         // Huh, appears to have changed to something bad.  Never mind.
         nout << "Couldn't read " << *_temp_contents_file << "\n";
 
@@ -569,7 +581,8 @@ host_got_contents_file() {
     // host.
     _alt_host.clear();
 
-    if (!_host->has_contents_file()) {
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    if (!_host->has_current_contents_file(inst_mgr)) {
       // Now go back and get the contents.xml file for the new host.
       download_contents_file();
       return;
@@ -1434,6 +1447,12 @@ download_finished(bool success) {
     if (!_file_spec.full_verify(_package->_package_dir)) {
       nout << "After downloading " << get_url()
            << ", failed hash check\n";
+      nout << "expected: ";
+      _file_spec.output_hash(nout);
+      nout << "\n     got: ";
+      _file_spec.get_actual_file()->output_hash(nout);
+      nout << "\n";
+      
       success = false;
     }
   }

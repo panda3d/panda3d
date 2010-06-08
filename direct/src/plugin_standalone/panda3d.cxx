@@ -353,99 +353,143 @@ post_arg_processing() {
 bool Panda3D::
 get_plugin() {
   // First, look for the existing contents.xml file.
+  bool success = false;
+
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (!_verify_contents && read_contents_file(contents_filename)) {
-    // Got the file, and it's good.
-    return true;
+  if (read_contents_file(contents_filename, false)) {
+    if (!_verify_contents || time(NULL) < _contents_expiration) {
+      // Got the file, and it's good.
+      success = true;
+    }
   }
 
-  // Couldn't read it, so go get it.
-  HTTPClient *http = HTTPClient::get_global_ptr();
-
-  // Try the super_mirror first.
-  if (!_super_mirror_url_prefix.empty()) {
-    // We don't bother putting a uniquifying query string when we're
-    // downloading this file from the super_mirror.  The super_mirror
-    // is by definition a cache, so it doesn't make sense to bust
-    // caches here.
-    string url = _super_mirror_url_prefix + "contents.xml";
-    PT(HTTPChannel) channel = http->make_channel(false);
-    channel->get_document(url);
-
-    Filename tempfile = Filename::temporary("", "p3d_");
-    if (!channel->download_to_file(tempfile)) {
-      cerr << "Unable to download " << url << "\n";
-      tempfile.unlink();
-    } else {
-      // Successfully downloaded from the super_mirror; move it into
-      // place and try to read it.
-      contents_filename.make_dir();
-      contents_filename.unlink();
-      tempfile.rename_to(contents_filename);
-      if (read_contents_file(contents_filename)) {
-        return true;
+  if (!success) {
+    // Couldn't read it (or it wasn't current enough), so go get a new
+    // one.
+    HTTPClient *http = HTTPClient::get_global_ptr();
+    
+    // Try the super_mirror first.
+    if (!_super_mirror_url_prefix.empty()) {
+      // We don't bother putting a uniquifying query string when we're
+      // downloading this file from the super_mirror.  The super_mirror
+      // is by definition a cache, so it doesn't make sense to bust
+      // caches here.
+      string url = _super_mirror_url_prefix + "contents.xml";
+      PT(HTTPChannel) channel = http->make_channel(false);
+      channel->get_document(url);
+      
+      Filename tempfile = Filename::temporary("", "p3d_");
+      if (!channel->download_to_file(tempfile)) {
+        cerr << "Unable to download " << url << "\n";
+        tempfile.unlink();
+      } else {
+        // Successfully downloaded from the super_mirror; try to read it.
+        success = read_contents_file(tempfile, true);
+        tempfile.unlink();
       }
     }
 
-    // Failed to download from the super_mirror.
+    if (!success) {
+      // Go download contents.xml from the actual host.
+      ostringstream strm;
+      strm << _host_url_prefix << "contents.xml";
+      // Append a uniquifying query string to the URL to force the
+      // download to go all the way through any caches.  We use the time
+      // in seconds; that's unique enough.
+      strm << "?" << time(NULL);
+      string url = strm.str();
+      
+      // We might as well explicitly request the cache to be disabled too,
+      // since we have an interface for that via HTTPChannel.
+      DocumentSpec request(url);
+      request.set_cache_control(DocumentSpec::CC_no_cache);
+      
+      PT(HTTPChannel) channel = http->make_channel(false);
+      channel->get_document(request);
+      
+      // Since we have to download some of it, might as well ask the core
+      // API to check all of it.
+      _verify_contents = true;
+      
+      // First, download it to a temporary file.
+      Filename tempfile = Filename::temporary("", "p3d_");
+      if (!channel->download_to_file(tempfile)) {
+        cerr << "Unable to download " << url << "\n";
+        
+        // Couldn't download, but try to read the existing contents.xml
+        // file anyway.  Maybe it's good enough.
+        success = read_contents_file(contents_filename, false);
+        
+      } else {
+        // Successfully downloaded; read it and move it into place.
+        success = read_contents_file(tempfile, true);
+      }
+
+      tempfile.unlink();
+    }
   }
 
-  // Go download contents.xml from the actual host.
-  ostringstream strm;
-  strm << _host_url_prefix << "contents.xml";
-  // Append a uniquifying query string to the URL to force the
-  // download to go all the way through any caches.  We use the time
-  // in seconds; that's unique enough.
-  strm << "?" << time(NULL);
-  string url = strm.str();
-
-  // We might as well explicitly request the cache to be disabled too,
-  // since we have an interface for that via HTTPChannel.
-  DocumentSpec request(url);
-  request.set_cache_control(DocumentSpec::CC_no_cache);
-
-  PT(HTTPChannel) channel = http->make_channel(false);
-  channel->get_document(request);
-
-  // First, download it to a temporary file.
-  Filename tempfile = Filename::temporary("", "p3d_");
-  if (!channel->download_to_file(tempfile)) {
-    cerr << "Unable to download " << url << "\n";
-    tempfile.unlink();
-
-    // Couldn't download, but fall through and try to read the
-    // contents.xml file anyway.  Maybe it's good enough.
-  } else {
-    // Successfully downloaded; move the temporary file into place.
-    contents_filename.make_dir();
-    contents_filename.unlink();
-    tempfile.rename_to(contents_filename);
+  if (success) {
+    // Now that we've downloaded the contents file successfully, start
+    // the Core API.
+    success = get_core_api();
   }
 
-  // Since we had to download some of it, might as well ask the core
-  // API to check all of it.
-  _verify_contents = true;
-
-  return read_contents_file(contents_filename);
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::read_contents_file
 //       Access: Protected
 //  Description: Attempts to open and read the contents.xml file on
-//               disk, and uses that data to load the plugin, if
-//               possible.  Returns true on success, false on failure.
+//               disk.  Copies the file to its standard location
+//               on success.  Returns true on success, false on
+//               failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-read_contents_file(const Filename &contents_filename) {
+read_contents_file(const Filename &contents_filename, bool fresh_download) {
   string os_contents_filename = contents_filename.to_os_specific();
   TiXmlDocument doc(os_contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
   }
 
+  bool found_core_package = false;
+
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
+    int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
+    xcontents->Attribute("max_age", &max_age);
+
+    // Get the latest possible expiration time, based on the max_age
+    // indication.  Any expiration time later than this is in error.
+    time_t now = time(NULL);
+    _contents_expiration = now + (time_t)max_age;
+
+    if (fresh_download) {
+      // Update the XML with the new download information.
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      while (xorig != NULL) {
+        xcontents->RemoveChild(xorig);
+        xorig = xcontents->FirstChildElement("orig");
+      }
+
+      xorig = new TiXmlElement("orig");
+      xcontents->LinkEndChild(xorig);
+      
+      xorig->SetAttribute("expiration", (int)_contents_expiration);
+
+    } else {
+      // Read the expiration time from the XML.
+      int expiration = 0;
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      if (xorig != NULL) {
+        xorig->Attribute("expiration", &expiration);
+      }
+      
+      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+    }
+
     // Look for the <host> entry; it might point us at a different
     // download URL, and it might mention some mirrors.
     find_host(xcontents);
@@ -457,7 +501,9 @@ read_contents_file(const Filename &contents_filename) {
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && _this_platform == string(platform)) {
-          return get_core_api(contents_filename, xpackage);
+          _core_api_dll.load_xml(xpackage);
+          found_core_package = true;
+          break;
         }
       }
     
@@ -465,10 +511,38 @@ read_contents_file(const Filename &contents_filename) {
     }
   }
 
-  // Couldn't find the coreapi package description.
-  nout << "No coreapi package defined in contents file for "
-       << _this_platform << "\n";
-  return false;
+  if (!found_core_package) {
+    // Couldn't find the coreapi package description.
+    nout << "No coreapi package defined in contents file for "
+         << _this_platform << "\n";
+    return false;
+  }
+
+  // Success.  Now copy the file into place.
+  Filename standard_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
+  if (fresh_download) {
+    Filename tempfile = Filename::temporary("", "p3d_");
+    string os_specific = tempfile.to_os_specific();
+    if (!doc.SaveFile(os_specific.c_str())) {
+      nout << "Couldn't write to " << tempfile << "\n";
+      tempfile.unlink();
+      return false;
+    }
+    tempfile.rename_to(standard_filename);
+    nout << "rewrote " << standard_filename << "\n";
+
+  } else {
+    if (contents_filename != standard_filename) {
+      if (!contents_filename.rename_to(standard_filename)) {
+        nout << "Couldn't move contents.xml to " << standard_filename << "\n";
+        contents_filename.unlink();
+        return false;
+      }
+      nout << "moved to " << standard_filename << "\n";
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,9 +672,7 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
-  _core_api_dll.load_xml(xpackage);
-
+get_core_api() {
   if (!_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file needs to be downloaded.  Build up our list of
     // URL's to attempt to download it from, in reverse order.
@@ -690,6 +762,7 @@ get_core_api(const Filename &contents_filename, TiXmlElement *xpackage) {
 
   bool trusted_environment = !_enable_security;
 
+  Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    _host_url, _verify_contents, _this_platform, _log_dirname,
                    _log_basename, trusted_environment, _console_environment,
