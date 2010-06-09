@@ -1449,9 +1449,12 @@ download_finished(bool success) {
            << ", failed hash check\n";
       nout << "expected: ";
       _file_spec.output_hash(nout);
-      nout << "\n     got: ";
-      _file_spec.get_actual_file()->output_hash(nout);
       nout << "\n";
+      if (_file_spec.get_actual_file() != (FileSpec *)NULL) {
+        nout << "     got: ";
+        _file_spec.get_actual_file()->output_hash(nout);
+        nout << "\n";
+      }
       
       success = false;
     }
