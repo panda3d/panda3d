@@ -62,7 +62,7 @@ run_command_line(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:M:Sp:fw:t:s:o:l:iVUPh";
+  const char *optstr = "+mu:M:Sp:nfw:t:s:o:l:iVUPh";
 
   bool allow_multiple = false;
 
@@ -90,8 +90,12 @@ run_command_line(int argc, char *argv[]) {
       _this_platform = optarg;
       break;
 
+    case 'n':
+      _verify_contents = P3D_VC_normal;
+      break;
+
     case 'f':
-      _verify_contents = true;
+      _verify_contents = P3D_VC_force;
       break;
 
     case 'w':
@@ -356,10 +360,12 @@ get_plugin() {
   bool success = false;
 
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (read_contents_file(contents_filename, false)) {
-    if (!_verify_contents || time(NULL) < _contents_expiration) {
-      // Got the file, and it's good.
-      success = true;
+  if (_verify_contents != P3D_VC_force) {
+    if (read_contents_file(contents_filename, false)) {
+      if (_verify_contents == P3D_VC_none || time(NULL) < _contents_expiration) {
+        // Got the file, and it's good.
+        success = true;
+      }
     }
   }
 
@@ -409,7 +415,9 @@ get_plugin() {
       
       // Since we have to download some of it, might as well ask the core
       // API to check all of it.
-      _verify_contents = true;
+      if (_verify_contents == P3D_VC_none) {
+        _verify_contents = P3D_VC_normal;
+      }
       
       // First, download it to a temporary file.
       Filename tempfile = Filename::temporary("", "p3d_");
@@ -529,7 +537,6 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
       return false;
     }
     tempfile.rename_to(standard_filename);
-    nout << "rewrote " << standard_filename << "\n";
 
   } else {
     if (contents_filename != standard_filename) {
@@ -538,7 +545,6 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
         contents_filename.unlink();
         return false;
       }
-      nout << "moved to " << standard_filename << "\n";
     }
   }
 
@@ -742,7 +748,9 @@ get_core_api() {
 
     // Since we had to download some of it, might as well ask the core
     // API to check all of it.
-    _verify_contents = true;
+    if (_verify_contents == P3D_VC_none) {
+      _verify_contents = P3D_VC_normal;
+    }
   }
 
   // Now we've got the DLL.  Load it.
@@ -844,10 +852,17 @@ usage() {
     << "    to be written.  If this is not specified, the default is to send\n"
     << "    the application output to the console.\n\n"
 
+    << "  -n\n"
+    << "    Allow a network connect to the Panda3D download server, to check\n"
+    << "    if a new version is available (but only if the current version\n"
+    << "    appears to be out-of-date).  The default behavior, if both -n\n"
+    << "    and -f are omitted, is not to contact the server at all, unless\n"
+    << "    the local contents do not exist or cannot be read.\n\n"
+
     << "  -f\n"
-    << "    Force an initial contact of the Panda3D download server, to check\n"
-    << "    if a new version is available.  Normally, this is done only\n"
-    << "    if contents.xml cannot be read.\n\n"
+    << "    Force an initial contact of the Panda3D download server, even\n"
+    << "    if the local contents appear to be current.  This is mainly\n"
+    << "    useful when testing local republishes.\n\n"
 
     << "  -i\n"
     << "    Runs the application interactively.  This requires that the application\n"

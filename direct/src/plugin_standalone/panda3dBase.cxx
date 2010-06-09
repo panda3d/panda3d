@@ -64,7 +64,7 @@ Panda3DBase(bool console_environment) {
   _exit_with_last_instance = true;
   _host_url = PANDA_PACKAGE_HOST_URL;
   _this_platform = DTOOL_PLATFORM;
-  _verify_contents = false;
+  _verify_contents = P3D_VC_none;
   _contents_expiration = 0;
 
   // Seed the lame random number generator in rand(); we use it to

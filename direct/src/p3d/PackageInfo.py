@@ -217,6 +217,16 @@ class PackageInfo:
 
         return self.hasPackage
 
+    def hasCurrentDescFile(self):
+        """ Returns true if a desc file file has been successfully
+        read for this package and is still current, false
+        otherwise. """
+
+        if not self.host.hasCurrentContentsFile():
+            return False
+
+        return self.hasDescFile
+
     def downloadDescFile(self, http):
         """ Downloads the desc file for this particular package,
         synchronously, and then reads it.  Returns true on success,

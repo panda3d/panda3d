@@ -42,12 +42,13 @@ reconsider_runtime_environment() {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::verify_contents
 //       Access: Public
-//  Description: Returns the verify_contents flag.  When this is set
-//               false, it indicates that we don't need to contact the
-//               server to verify that a contents.xml file is fresh
-//               before using it; we should just use it as it is.
+//  Description: Returns the verify_contents setting.  When this is
+//               set to P3D_VC_none, it indicates that we don't need
+//               to contact the server to verify that a contents.xml
+//               file is fresh before using it; we should just use it
+//               as it is.
 ////////////////////////////////////////////////////////////////////
-inline bool P3DInstanceManager::
+inline P3D_verify_contents P3DInstanceManager::
 get_verify_contents() const {
   return _verify_contents;
 }
@@ -55,14 +56,16 @@ get_verify_contents() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::reset_verify_contents
 //       Access: Public
-//  Description: Resets the verify_contents flag to true.  This should
-//               be done whenever we discover anything needs to be
-//               downloaded.  At this point, we might as well verify
-//               everything.
+//  Description: Resets the verify_contents flag to P3D_VC_normal, if
+//               it is P3D_VC_none.  This should be done whenever we
+//               discover anything needs to be downloaded.  At this
+//               point, we might as well verify everything.
 ////////////////////////////////////////////////////////////////////
 inline void P3DInstanceManager::
 reset_verify_contents() {
-  _verify_contents = true;
+  if (_verify_contents == P3D_VC_none) {
+    _verify_contents = P3D_VC_normal;
+  }
 }
 
 

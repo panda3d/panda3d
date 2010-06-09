@@ -392,7 +392,7 @@ begin_info_download() {
 void P3DPackage::
 download_contents_file() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (!_host->has_contents_file()) {
+  if (!_host->has_contents_file() && inst_mgr->get_verify_contents() != P3D_VC_force) {
     // First, read whatever contents file is already on disk.  Maybe
     // it's current enough.
     _host->read_contents_file();

@@ -35,13 +35,23 @@ LOCK _api_lock;
 
 bool 
 P3D_initialize(int api_version, const char *contents_filename,
-               const char *host_url, bool verify_contents,
+               const char *host_url, P3D_verify_contents verify_contents,
                const char *platform, const char *log_directory,
                const char *log_basename, bool trusted_environment,
                bool console_environment, const char *root_dir) {
   if (api_version < 10 || api_version > P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
+  }
+
+  if (api_version < 13) {
+    // Prior to version 13, verify_contents was a bool.  Convert
+    // "true" to P3D_VC_normal and "false" to P3D_VC_none.
+    if ((int)verify_contents != 0) {
+      verify_contents = P3D_VC_normal;
+    } else {
+      verify_contents = P3D_VC_none;
+    }
   }
 
   if (!initialized_lock) {

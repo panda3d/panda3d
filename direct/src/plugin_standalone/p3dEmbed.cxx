@@ -112,7 +112,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
         } else if (keyword == "root_dir") {
           root_dir = value;
         } else if (keyword == "verify_contents") {
-          _verify_contents = (bool) atoi(value.c_str());
+          _verify_contents = (P3D_verify_contents)atoi(value.c_str());
         }
       }
       curstr = "";

@@ -1336,6 +1336,7 @@ make_xml() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   xinstance->SetAttribute("root_dir", inst_mgr->get_root_dir());
   xinstance->SetAttribute("log_directory", inst_mgr->get_log_directory());
+  xinstance->SetAttribute("verify_contents", (int)inst_mgr->get_verify_contents());
 
   if (!inst_mgr->get_super_mirror().empty()) {
     xinstance->SetAttribute("super_mirror", inst_mgr->get_super_mirror());

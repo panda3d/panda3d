@@ -74,6 +74,14 @@ class AppRunner(DirectObject):
 
     # Default values for parameters that are absent from the config file:
     maxDiskUsage = 2048 * 1048576  # 2 GB
+
+    # Values for verifyContents, from p3d_plugin.h
+    P3DVCNone = 0
+    P3DVCNormal = 1
+    P3DVCForce = 2
+
+    # Also from p3d_plugin.h
+    P3D_CONTENTS_DEFAULT_MAX_AGE = 5
     
     def __init__(self):
         DirectObject.__init__(self)
@@ -95,6 +103,8 @@ class AppRunner(DirectObject):
         self.interactiveConsole = False
         self.initialAppImport = False
         self.trueFileIO = False
+
+        self.verifyContents = self.P3DVCNone
 
         self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
@@ -272,6 +282,7 @@ class AppRunner(DirectObject):
         parameter, nested, is a list of packages that we are
         recursively calling this from, to avoid recursive loops. """
 
+        package.checkStatus()
         if not package.downloadDescFile(self.http):
             return False
 
@@ -334,7 +345,7 @@ class AppRunner(DirectObject):
         # No shenanigans, just return the requested host.
         return host
         
-    def getHost(self, hostUrl):
+    def getHost(self, hostUrl, hostDir = None):
         """ Returns a new HostInfo object corresponding to the
         indicated host URL.  If we have already seen this URL
         previously, returns the same object.
@@ -348,7 +359,7 @@ class AppRunner(DirectObject):
 
         host = self.hosts.get(hostUrl, None)
         if not host:
-            host = HostInfo(hostUrl, appRunner = self)
+            host = HostInfo(hostUrl, appRunner = self, hostDir = hostDir)
             self.hosts[hostUrl] = host
         return host
 
@@ -361,9 +372,10 @@ class AppRunner(DirectObject):
         host directory cannot be read or doesn't seem consistent. """
 
         host = HostInfo(None, hostDir = hostDir, appRunner = self)
-        if not host.readContentsFile():
-            # Couldn't read the contents.xml file
-            return None
+        if not host.hasContentsFile:
+            if not host.readContentsFile():
+                # Couldn't read the contents.xml file
+                return None
 
         if not host.hostUrl:
             # The contents.xml file there didn't seem to indicate the
@@ -754,7 +766,8 @@ class AppRunner(DirectObject):
                                needsResponse = False)
         self.deferredEvals = []
 
-    def setInstanceInfo(self, rootDir, logDirectory, superMirrorUrl):
+    def setInstanceInfo(self, rootDir, logDirectory, superMirrorUrl,
+                        verifyContents):
         """ Called by the browser to set some global information about
         the instance. """
 
@@ -772,6 +785,10 @@ class AppRunner(DirectObject):
         # The "super mirror" URL, generally used only by panda3d.exe.
         self.superMirrorUrl = superMirrorUrl
 
+        # How anxious should we be about contacting the server for
+        # the latest code?
+        self.verifyContents = verifyContents
+
         # Now that we have rootDir, we can read the config file.
         self.readConfigXml()
         
@@ -782,14 +799,17 @@ class AppRunner(DirectObject):
         If for some reason the package isn't already downloaded, this
         will download it on the spot.  Raises OSError on failure. """
 
-        host = self.getHost(hostUrl)
-        if hostDir and not host.hostDir:
-            host.hostDir = Filename.fromOsSpecific(hostDir)
+        host = self.getHost(hostUrl, hostDir = hostDir)
 
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(self.http):
-                message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
-                raise OSError, message
+        if not host.hasContentsFile:
+            # Always pre-read these hosts' contents.xml files, even if
+            # we have P3DVCForce in effect, since presumably we've
+            # already forced them on the plugin side.
+            host.readContentsFile()
+
+        if not host.downloadContentsFile(self.http):
+            message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
+            raise OSError, message
 
         if not platform:
             platform = None

@@ -98,7 +98,7 @@ class PackageInstaller(DirectObject):
             """ Returns true if the desc file is already downloaded
             and good, or false if it needs to be downloaded. """
 
-            if not self.host.hasContentsFile:
+            if not self.host.hasCurrentContentsFile():
                 # If the contents file isn't ready yet, we can't check
                 # the desc file yet.
                 return False

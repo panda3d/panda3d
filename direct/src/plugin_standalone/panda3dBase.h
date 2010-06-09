@@ -73,7 +73,7 @@ protected:
   string _log_dirname;
   string _log_basename;
   string _this_platform;
-  bool _verify_contents;
+  P3D_verify_contents _verify_contents;
   time_t _contents_expiration;
 
   P3D_window_type _window_type;

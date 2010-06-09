@@ -79,12 +79,19 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 12
+#define P3D_API_VERSION 13
 
 /************************ GLOBAL FUNCTIONS **************************/
 
 /* The following interfaces are global to the core API space, as
    opposed to being specific to a particular instance. */
+
+/* This is passed for verify_contents, below. */
+typedef enum {
+  P3D_VC_none,
+  P3D_VC_normal,
+  P3D_VC_force,
+} P3D_verify_contents;
 
 /* This function should be called immediately after the core API is
    loaded.  You should pass P3D_API_VERSION as the first parameter, so
@@ -98,13 +105,13 @@ extern "C" {
    If host_url is not NULL or empty, it specifies the root URL of
    the download server that provided the contents_filename.
 
-   If verify_contents is true, it means that the download server will
-   be contacted to verify that contents.xml is current, before
-   continuing, for any contents.xml file that is loaded.  If it is
-   false, it means that the contents.xml will be loaded without
-   checking the download server, if possible.  This can be used to
-   minimize unnecessary network operations for standalone
-   applications.  For a web plugin, it should be set true.
+   If verify_contents is P3D_VC_none, then the server will not be
+   contacted unless the current contents.xml cannot be read at all.
+   If it is P3D_VC_normal, the server will be contacted whenever the
+   contents.xml has expired.  If it is P3D_VC_force, each server will
+   be contacted initially in all cases, and subseqeuntly only whenever
+   contents.xml has expired for that server.  Normally, a web plugin
+   should set this to P3D_VC_normal.
 
    If platform is not NULL or empty, it specifies the current platform
    string; otherwise, the compiled-in default is used.  This should
@@ -143,7 +150,7 @@ extern "C" {
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *contents_filename,
-                    const char *host_url, bool verify_contents,
+                    const char *host_url, P3D_verify_contents verify_contents,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
                     bool trusted_environment, bool console_environment,

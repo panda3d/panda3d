@@ -9,6 +9,10 @@ class FileSpec:
 
     def __init__(self):
         self.actualFile = None
+        self.filename = None
+        self.size = 0
+        self.timestamp = 0
+        self.hash = None
 
     def fromFile(self, packageDir, filename, pathname = None, st = None):
         """ Reads the file information from the indicated file.  If st
@@ -28,9 +32,15 @@ class FileSpec:
         self.size = st.st_size
         self.timestamp = st.st_mtime
 
+        self.readHash(pathname)
+
+    def readHash(self, pathname):
+        """ Reads the hash only from the indicated pathname. """
+
         hv = HashVal()
         hv.hashFile(pathname)
         self.hash = hv.asHex()
+                 
 
     def loadXml(self, xelement):
         """ Reads the file information from the indicated XML

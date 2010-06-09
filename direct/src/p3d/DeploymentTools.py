@@ -30,10 +30,11 @@ class Standalone:
         self.host = HostInfo(PandaSystem.getPackageHostUrl(), appRunner = base.appRunner, hostDir = hostDir, asMirror = False, perPlatform = True)
         
         self.http = HTTPClient.getGlobalPtr()
-        if not self.host.readContentsFile():
-            if not self.host.downloadContentsFile(self.http):
-                Standalone.notify.error("couldn't read host")
-                return False
+        if not self.host.hasContentsFile:
+            if not self.host.readContentsFile():
+                if not self.host.downloadContentsFile(self.http):
+                    Standalone.notify.error("couldn't read host")
+                    return False
     
     def buildAll(self, outputDir = "."):
         """ Builds standalone executables for every known platform,
@@ -194,10 +195,11 @@ class Installer:
             return
         
         host = HostInfo(self.hostUrl, appRunner = base.appRunner, rootDir = rootDir, asMirror = True, perPlatform = False)
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(self.http):
-                Installer.notify.error("couldn't read host")
-                return
+        if not host.hasContentsFile:
+            if not host.readContentsFile():
+                if not host.downloadContentsFile(self.http):
+                    Installer.notify.error("couldn't read host")
+                    return
         
         for name, version in self.requirements:
             package = host.getPackage(name, version, platform)
@@ -210,10 +212,11 @@ class Installer:
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
         host = HostInfo(self.standalone.host.hostUrl, appRunner = base.appRunner, rootDir = rootDir, asMirror = False, perPlatform = False)
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(self.http):
-                Installer.notify.error("couldn't read host")
-                return
+        if not host.hasContentsFile:
+            if not host.readContentsFile():
+                if not host.downloadContentsFile(self.http):
+                    Installer.notify.error("couldn't read host")
+                    return
         
         for package in host.getPackages(name = "images"):
             if not package.downloadDescFile(self.http):

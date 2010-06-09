@@ -191,7 +191,7 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize(int api_version, const string &contents_filename, 
-           const string &host_url, bool verify_contents,
+           const string &host_url, P3D_verify_contents verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
            bool console_environment, const string &root_dir) {

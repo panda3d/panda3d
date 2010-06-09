@@ -116,7 +116,7 @@ get_alt_host(const string &alt_host) {
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
 has_current_contents_file(P3DInstanceManager *inst_mgr) const {
-  if (!inst_mgr->get_verify_contents()) {
+  if (inst_mgr->get_verify_contents() == P3D_VC_none) {
     // If we're not asking to verify contents, then contents.xml files
     // never expire.
     return has_contents_file();

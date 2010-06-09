@@ -1219,14 +1219,17 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
     log_directory = "";
   }
 
+  int verify_contents = 0;
+  xinstance->Attribute("verify_contents", &verify_contents);
+
   const char *super_mirror = xinstance->Attribute("super_mirror");
   if (super_mirror == NULL) {
     super_mirror = "";
   }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setInstanceInfo", (char *)"sss", root_dir, 
-     log_directory, super_mirror);
+    (_runner, (char *)"setInstanceInfo", (char *)"sssi", root_dir, 
+     log_directory, super_mirror, verify_contents);
 
   if (result == NULL) {
     PyErr_Print();

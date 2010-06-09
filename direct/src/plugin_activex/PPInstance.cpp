@@ -499,7 +499,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
       nout << "Attempting to load core API from " << pathname << "\n";
       string contents_filename = m_rootDir + "/contents.xml";
       if (!load_plugin(pathname, contents_filename, PANDA_PACKAGE_HOST_URL,
-                       true, "", "", "", false, false, 
+                       P3D_VC_normal, "", "", "", false, false, 
                        m_rootDir, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;

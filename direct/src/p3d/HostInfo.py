@@ -33,7 +33,7 @@ class HostInfo:
         the host directory directly, without an intervening
         platform-specific directory name.  If asMirror is True, then
         the default is perPlatform = True. """
-        
+
         assert appRunner or rootDir or hostDir
 
         self.__setHostUrl(hostUrl)
@@ -41,7 +41,10 @@ class HostInfo:
         self.rootDir = rootDir
         if rootDir is None and appRunner:
             self.rootDir = appRunner.rootDir
-        
+
+        if hostDir and not isinstance(hostDir, Filename):
+            hostDir = Filename.fromOsSpecific(hostDir)
+            
         self.hostDir = hostDir
         self.asMirror = asMirror
         self.perPlatform = perPlatform
@@ -51,6 +54,13 @@ class HostInfo:
         # Initially false, this is set true when the contents file is
         # successfully read.
         self.hasContentsFile = False
+
+        # This is the time value at which the current contents file is
+        # no longer valid.
+        self.contentsExpiration = 0
+
+        # Contains the md5 hash of the original contents.xml file.
+        self.contentsSpec = FileSpec()
 
         # descriptiveName will be filled in later, when the
         # contents file is read.
@@ -69,6 +79,11 @@ class HostInfo:
         # This is a dictionary of packages by (name, version).  It
         # will be filled in when the contents file is read.
         self.packages = {}
+
+        if self.appRunner and self.appRunner.verifyContents != self.appRunner.P3DVCForce:
+            # Attempt to pre-read the existing contents.xml; maybe it
+            # will be current enough for our purposes.
+            self.readContentsFile()
 
     def __setHostUrl(self, hostUrl):
         """ Assigns self.hostUrl, and related values. """
@@ -96,7 +111,7 @@ class HostInfo:
         synchronously, and then reads it.  Returns true on success,
         false on failure. """
 
-        if self.hasContentsFile:
+        if self.hasCurrentContentsFile():
             # We've already got one.
             return True
 
@@ -145,11 +160,12 @@ class HostInfo:
             f.write(rf.getData())
             f.close()
 
-            if not self.readContentsFile(tempFilename):
+            if not self.readContentsFile(tempFilename, freshDownload = True):
                 self.notify.warning("Failure reading %s" % (url))
                 tempFilename.unlink()
                 return False
 
+            tempFilename.unlink()
             return True
 
         # Couldn't download the file.  Maybe we should look for a
@@ -167,9 +183,12 @@ class HostInfo:
 
         # Get the hash of the original file.
         assert self.hostDir
-        filename = Filename(self.hostDir, 'contents.xml')
         hv1 = HashVal()
-        hv1.hashFile(filename)
+        if self.contentsSpec.hash:
+            hv1.setFromHex(self.contentsSpec.hash)
+        else:
+            filename = Filename(self.hostDir, 'contents.xml')
+            hv1.hashFile(filename)
 
         # Now download it again.
         self.hasContentsFile = False
@@ -186,8 +205,18 @@ class HostInfo:
             self.notify.info("%s has not changed." % (url))
             return False
 
+    def hasCurrentContentsFile(self):
+        """ Returns true if a contents.xml file has been successfully
+        read for this host and is still current, false otherwise. """
+        if not self.appRunner or self.appRunner.verifyContents == self.appRunner.P3DVCNone:
+            # If we're not asking to verify contents, then
+            # contents.xml files never expires.
+            return self.hasContentsFile
 
-    def readContentsFile(self, tempFilename = None):
+        now = int(time.time())
+        return now < self.contentsExpiration and self.hasContentsFile
+        
+    def readContentsFile(self, tempFilename = None, freshDownload = False):
         """ Reads the contents.xml file for this particular host, once
         it has been downloaded into the indicated temporary file.
         Returns true on success, false if the contents file is not
@@ -198,28 +227,76 @@ class HostInfo:
         there already.  If tempFilename is not specified, the standard
         filename is read if it is known. """
 
-        if self.hasContentsFile:
-            # No need to read it again.
-            return True
-
         if not hasattr(PandaModules, 'TiXmlDocument'):
             return False
 
         if not tempFilename:
-            if not self.hostDir:
+            if self.hostDir:
                 # If the filename is not specified, we can infer it
-                # only if we already know our hostDir.
-                return False
-            
-            tempFilename = Filename(self.hostDir, 'contents.xml')
-        
+                # if we already know our hostDir
+                hostDir = self.hostDir
+            else:
+                # Otherwise, we have to guess the hostDir.
+                hostDir = self.__determineHostDir(None, self.hostUrl)
+
+            tempFilename = Filename(hostDir, 'contents.xml')
+
         doc = PandaModules.TiXmlDocument(tempFilename.toOsSpecific())
         if not doc.LoadFile():
             return False
-        
+
         xcontents = doc.FirstChildElement('contents')
         if not xcontents:
             return False
+
+        maxAge = xcontents.Attribute('max_age')
+        if maxAge:
+            try:
+                maxAge = int(maxAge)
+            except:
+                maxAge = None
+        if maxAge is None:
+            # Default max_age if unspecified (see p3d_plugin.h).
+            from direct.p3d.AppRunner import AppRunner
+            maxAge = AppRunner.P3D_CONTENTS_DEFAULT_MAX_AGE
+
+        # Get the latest possible expiration time, based on the max_age
+        # indication.  Any expiration time later than this is in error.
+        now = int(time.time())
+        self.contentsExpiration = now + maxAge
+
+        if freshDownload:
+            self.contentsSpec.readHash(tempFilename)
+
+            # Update the XML with the new download information.
+            xorig = xcontents.FirstChildElement('orig')
+            while xorig:
+                xcontents.RemoveChild(xorig)
+                xorig = xcontents.FirstChildElement('orig')
+
+            xorig = PandaModules.TiXmlElement('orig')
+            self.contentsSpec.storeXml(xorig)
+            xorig.SetAttribute('expiration', str(self.contentsExpiration))
+
+            xcontents.InsertEndChild(xorig)
+            
+        else:
+            # Read the download hash and expiration time from the XML.
+            expiration = None
+            xorig = xcontents.FirstChildElement('orig')
+            if xorig:
+                self.contentsSpec.loadXml(xorig)
+                expiration = xorig.Attribute('expiration')
+                if expiration:
+                    try:
+                        expiration = int(expiration)
+                    except:
+                        expiration = None
+            if not self.contentsSpec.hash:
+                self.contentsSpec.readHash(tempFilename)
+
+            if expiration is not None:
+                self.contentsExpiration = min(self.contentsExpiration, expiration)
 
         # Look for our own entry in the hosts table.
         if self.hostUrl:
@@ -257,12 +334,15 @@ class HostInfo:
 
         self.hasContentsFile = True
 
-        # Now copy the contents.xml file into the standard location.
+        # Now save the contents.xml file into the standard location.
         assert self.hostDir
         filename = Filename(self.hostDir, 'contents.xml')
-        if filename != tempFilename:
-            filename.makeDir()
-            tempFilename.copyTo(filename)
+        filename.makeDir()
+        if freshDownload:
+            doc.SaveFile(filename.toOsSpecific())
+        else:
+            if filename != tempFilename:
+                tempFilename.copyTo(filename)
 
         return True
 
