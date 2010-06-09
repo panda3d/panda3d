@@ -68,7 +68,7 @@ protected:
     int DownloadFile( const std::string& from, const std::string& to );
     int CopyFile( const std::string& from, const std::string& to );
 
-    bool read_contents_file(const std::string &contents_filename);
+    bool read_contents_file(const std::string &contents_filename, bool fresh_download);
     void find_host(TiXmlElement *xcontents);
     void read_xhost(TiXmlElement *xhost);
     void add_mirror(std::string mirror_url);
@@ -91,6 +91,7 @@ protected:
     typedef std::vector<std::string> Mirrors;
     Mirrors _mirrors;
     FileSpec _core_api_dll;
+    time_t _contents_expiration;
     bool _failed;
 
     std::string m_rootDir;

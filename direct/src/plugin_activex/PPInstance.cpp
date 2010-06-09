@@ -83,6 +83,7 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
   m_logger.Open( m_rootDir );
 
   m_pluginLoaded = false;
+  _contents_expiration = 0;
   _failed = false;
 
   // Ensure this event is initially in the "set" state, in case we
@@ -142,18 +143,58 @@ int PPInstance::CopyFile( const std::string& from, const std::string& to )
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::read_contents_file
 //       Access: Private
-//  Description: Reads the contents.xml file and starts the core API
-//               DLL downloading, if necessary.
+//  Description: Attempts to open and read the contents.xml file on
+//               disk.  Copies the file to its standard location
+//               on success.  Returns true on success, false on
+//               failure.
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
-read_contents_file(const string &contents_filename) {
+read_contents_file(const string &contents_filename, bool fresh_download) {
   TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
   }
 
+  bool found_core_package = false;
+
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
+    int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
+    xcontents->Attribute("max_age", &max_age);
+
+    // Get the latest possible expiration time, based on the max_age
+    // indication.  Any expiration time later than this is in error.
+    time_t now = time(NULL);
+    _contents_expiration = now + (time_t)max_age;
+
+    if (fresh_download) {
+      // Update the XML with the new download information.
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      while (xorig != NULL) {
+        xcontents->RemoveChild(xorig);
+        xorig = xcontents->FirstChildElement("orig");
+      }
+
+      xorig = new TiXmlElement("orig");
+      xcontents->LinkEndChild(xorig);
+      
+      xorig->SetAttribute("expiration", (int)_contents_expiration);
+
+    } else {
+      // Read the expiration time from the XML.
+      int expiration = 0;
+      TiXmlElement *xorig = xcontents->FirstChildElement("orig");
+      if (xorig != NULL) {
+        xorig->Attribute("expiration", &expiration);
+      }
+      
+      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+    }
+
+    nout << "read contents.xml, max_age = " << max_age
+         << ", expires in " << max(_contents_expiration, now) - now
+         << " s\n";
+
     // Look for the <host> entry; it might point us at a different
     // download URL, and it might mention some mirrors.
     find_host(xcontents);
@@ -166,7 +207,8 @@ read_contents_file(const string &contents_filename) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
           _core_api_dll.load_xml(xpackage);
-          return true;
+          found_core_package = true;
+          break;
         }
       }
     
@@ -174,10 +216,23 @@ read_contents_file(const string &contents_filename) {
     }
   }
 
-  // Couldn't find the coreapi package description.
-  nout << "No coreapi package defined in contents file for "
-       << DTOOL_PLATFORM << "\n";
-  return false;
+  if (!found_core_package) {
+    // Couldn't find the coreapi package description.
+    nout << "No coreapi package defined in contents file for "
+         << DTOOL_PLATFORM << "\n";
+    return false;
+  }
+
+  // Success.  Now save the file in its proper place.
+  string standard_filename = m_rootDir + "/contents.xml";
+
+  mkfile_complete(standard_filename, nout);
+  if (!doc.SaveFile(standard_filename.c_str())) {
+    nout << "Couldn't rewrite " << standard_filename << "\n";
+    return false;
+  }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,58 +354,59 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 {
     int error(0);
 
-    // Start off by downloading contents.xml into a local temporary
-    // file.  We get a unique temporary filename each time; this is a
-    // small file and it's very important that we get the most current
-    // version, not an old cached version.
-    TCHAR tempFileName[ MAX_PATH ];
-    if (!::GetTempFileName( m_rootDir.c_str(), "p3d", 0, tempFileName )) {
-      nout << "GetTempFileName failed (folder is " << m_rootDir << ")\n";
-      return 1;
-    }
-      
-    std::string localContentsFileName( tempFileName );
-
-    // We'll also get the final installation path of the contents.xml
-    // file.
+    // Get the pathname of the local copy of the contents.xml file.
     std::string finalContentsFileName( m_rootDir );
     finalContentsFileName += "/";
     finalContentsFileName += P3D_CONTENTS_FILENAME;
 
-    std::string hostUrl( PANDA_PACKAGE_HOST_URL );
-    if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
-      hostUrl += '/';
+    // Check to see if the version on disk is already current enough.
+    bool already_got = false;
+    if (read_contents_file(finalContentsFileName, false)) {
+      if (time(NULL) < _contents_expiration) {
+        // Got the file, and it's good.
+        already_got = true;
+      }
     }
 
-    // Append a query string to the contents.xml URL to uniquify it
-    // and ensure we don't get a cached version.
-    std::ostringstream strm;
-    strm << hostUrl << P3D_CONTENTS_FILENAME << "?" << time(NULL);
-    std::string remoteContentsUrl( strm.str() );
+    if (!already_got) {
+      // OK, we need to download a new contents.xml file.  Start off
+      // by downloading it into a local temporary file.
+      TCHAR tempFileName[ MAX_PATH ];
+      if (!::GetTempFileName( m_rootDir.c_str(), "p3d", 0, tempFileName )) {
+        nout << "GetTempFileName failed (folder is " << m_rootDir << ")\n";
+        return 1;
+      }
+      
+      std::string localContentsFileName( tempFileName );
 
-    error = DownloadFile( remoteContentsUrl, localContentsFileName );
-    if ( !error )
-    {
-      if ( !read_contents_file( localContentsFileName ) )
-        error = 1;
+      std::string hostUrl( PANDA_PACKAGE_HOST_URL );
+      if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
+        hostUrl += '/';
+      }
+      
+      // Append a query string to the contents.xml URL to uniquify it
+      // and ensure we don't get a cached version.
+      std::ostringstream strm;
+      strm << hostUrl << P3D_CONTENTS_FILENAME << "?" << time(NULL);
+      std::string remoteContentsUrl( strm.str() );
+      
+      error = DownloadFile( remoteContentsUrl, localContentsFileName );
+      if ( !error ) {
+        if ( !read_contents_file( localContentsFileName, true ) )
+          error = 1;
+      }
+
+      if ( error ) {
+        // If we couldn't download or read the contents.xml file, check
+        // to see if there's a good one on disk already, as a fallback.
+        if ( !read_contents_file( finalContentsFileName, false ) )
+          error = 1;
+      }
+
+      // We don't need the temporary file any more.
+      ::DeleteFile( localContentsFileName.c_str() );
     }
-
-    if ( error ) {
-      // If we couldn't download or read the contents.xml file, check
-      // to see if there's a good one on disk already, as a fallback.
-      if ( !read_contents_file( finalContentsFileName ) )
-        error = 1;
-
-    } else {
-      // If we have successfully read the downloaded version,
-      // then move the downloaded version into the final location.
-      mkfile_complete( finalContentsFileName, nout );
-      CopyFile( localContentsFileName, finalContentsFileName );
-    }
-
-    // We don't need the temporary file any more.
-    ::DeleteFile( localContentsFileName.c_str() );
-
+      
     if (!error) {
       // OK, at this point we have successfully read contents.xml,
       // and we have a good file spec in _core_api_dll.
@@ -441,7 +497,9 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
 #endif  // P3D_PLUGIN_P3D_PLUGIN
       
       nout << "Attempting to load core API from " << pathname << "\n";
-      if (!load_plugin(pathname, "", "", true, "", "", "", false, false, 
+      string contents_filename = m_rootDir + "/contents.xml";
+      if (!load_plugin(pathname, contents_filename, PANDA_PACKAGE_HOST_URL,
+                       true, "", "", "", false, false, 
                        m_rootDir, nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;
