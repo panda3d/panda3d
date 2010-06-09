@@ -34,5 +34,8 @@
     config_dxml.cxx \
     tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp
 
-  #define IGATESCAN all
+  // It's important not to include tinyxml.h on the IGATESCAN list,
+  // because that file has to be bracketed by BEGIN_PUBLISH
+  // .. END_PUBLISH (which is handled by config_dxml.cxx).
+  #define IGATESCAN config_dxml.h $[INCLUDED_SOURCES]
 #end lib_target
