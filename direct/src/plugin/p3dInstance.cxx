@@ -1495,8 +1495,17 @@ auth_finished_main_thread() {
 //               normally called by JavaScript, via
 //               P3DMainObject::call_uninstall().
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
+bool P3DInstance::
 uninstall_packages() {
+  if (_packages.empty()) {
+    // If we have no packages (for instance, because we're untrusted),
+    // we can't uninstall anything.
+    nout << "Uninstall failed: no packages.\n";
+    return false;
+  }
+
+  nout << "Uninstalling " << _packages.size() << " packages\n";
+
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
@@ -1514,6 +1523,8 @@ uninstall_packages() {
     nout << "Cleaning up start directory " << start_dir << "\n";
     inst_mgr->delete_directory_recursively(start_dir);
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1526,8 +1537,15 @@ uninstall_packages() {
 //               is normally called by JavaScript, via
 //               P3DMainObject::call_uninstall().
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
+bool P3DInstance::
 uninstall_host() {
+  if (_packages.empty()) {
+    // If we have no packages (for instance, because we're untrusted),
+    // we can't uninstall anything.
+    nout << "Uninstall failed: no packages.\n";
+    return false;
+  }
+
   uninstall_packages();
 
   // Collect the set of hosts referenced by this instance.
@@ -1540,6 +1558,7 @@ uninstall_host() {
       hosts.insert(package->get_host());
     }
   }
+  nout << "Uninstalling " << hosts.size() << " hosts\n";
 
   // Uninstall all of them.
   set<P3DHost *>::iterator hi;
@@ -1547,6 +1566,8 @@ uninstall_host() {
     P3DHost *host = (*hi);
     host->uninstall();
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

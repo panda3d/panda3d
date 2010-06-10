@@ -709,12 +709,13 @@ call_uninstall(P3D_object *params[], int num_params) {
 
   if (_inst != NULL) {
     nout << "uninstall " << mode << " for " << _inst << "\n";
+    bool success = false;
     if (mode == "host") {
-      _inst->uninstall_host();
+      success = _inst->uninstall_host();
     } else {
-      _inst->uninstall_packages();
+      success = _inst->uninstall_packages();
     }
-    return inst_mgr->new_bool_object(true);
+    return inst_mgr->new_bool_object(success);
   }
 
   nout << "couldn't uninstall; no instance.\n";
