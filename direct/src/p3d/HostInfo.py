@@ -194,8 +194,9 @@ class HostInfo:
         self.hasContentsFile = False
         if not self.downloadContentsFile(http, redownload = True):
             return False
-
+        
         hv2 = HashVal()
+        filename = Filename(self.hostDir, 'contents.xml')
         hv2.hashFile(filename)
 
         if hv1 != hv2:
