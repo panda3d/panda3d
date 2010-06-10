@@ -41,7 +41,7 @@ P3DHost(const string &host_url) :
 
   _xcontents = NULL;
   _contents_expiration = 0;
-  _contents_seq = 0;
+  _contents_iseq = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     delete _xcontents;
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
-  ++_contents_seq;
+  ++_contents_iseq;
   _contents_spec = FileSpec();
 
   int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
@@ -336,17 +336,24 @@ read_xhost(TiXmlElement *xhost) {
 //       Access: Public
 //  Description: Returns a (possibly shared) pointer to the indicated
 //               package.
+//
+//               The package_seq value should be the expected minimum
+//               package_seq value for the indicated package.  If the
+//               given seq value is higher than the package_seq value
+//               in the contents.xml file cached for the host, it is a
+//               sign that the contents.xml file is out of date and
+//               needs to be redownloaded.
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DHost::
 get_package(const string &package_name, const string &package_version,
-            const string &alt_host) {
+            const string &package_seq, const string &alt_host) {
   if (!alt_host.empty()) {
     if (_xcontents != NULL) {
       // If we're asking for an alt host and we've already read our
       // contents.xml file, then we already know all of our hosts, and
       // we can start the package off with the correct host immediately.
       P3DHost *new_host = get_alt_host(alt_host);
-      return new_host->get_package(package_name, package_version);
+      return new_host->get_package(package_name, package_version, package_seq);
     }
 
     // If we haven't read contents.xml yet, we need to create the
@@ -379,6 +386,27 @@ get_package(const string &package_name, const string &package_version,
       new P3DPackage(this, package_name, package_version, alt_host);
     package_map[key] = package;
   }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!package_seq.empty() && has_current_contents_file(inst_mgr)) {
+    // If we were given a specific package_seq file to verify, and we
+    // believe we have a valid contents.xml file, then check the seq
+    // value in the contents.
+    FileSpec desc_file;
+    string platform, seq;
+    bool solo;
+    if (get_package_desc_file(desc_file, platform, seq, solo,
+                              package_name, package_version)) {
+      nout << package_name << ": asked for seq " << package_seq
+           << ", we have seq " << seq << "\n";
+      if (compare_seq(package_seq, seq) > 0) {
+        // The requested seq value is higher than the one we have on
+        // file; our contents.xml file must be out of date after all.
+        nout << "expiring contents.xml for " << get_host_url() << "\n";
+        _contents_expiration = 0;
+      }
+    }
+  }
     
   return package;
 }
@@ -396,6 +424,7 @@ get_package(const string &package_name, const string &package_version,
 bool P3DHost::
 get_package_desc_file(FileSpec &desc_file,              // out
                       string &package_platform,         // out
+                      string &package_seq,              // out
                       bool &package_solo,               // out
                       const string &package_name,       // in
                       const string &package_version) {  // in
@@ -412,9 +441,13 @@ get_package_desc_file(FileSpec &desc_file,              // out
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
+    const char *seq = xpackage->Attribute("seq");
     const char *solo = xpackage->Attribute("solo");
     if (version == NULL) {
       version = "";
+    }
+    if (seq == NULL) {
+      seq = "";
     }
     if (name != NULL && platform != NULL &&
         package_name == name && 
@@ -422,6 +455,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
         package_version == version) {
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
+      package_seq = seq;
       package_platform = platform;
       package_solo = false;
       if (solo != NULL) {
@@ -439,6 +473,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
+    const char *seq = xpackage->Attribute("seq");
     const char *solo = xpackage->Attribute("solo");
     if (platform == NULL) {
       platform = "";
@@ -446,12 +481,16 @@ get_package_desc_file(FileSpec &desc_file,              // out
     if (version == NULL) {
       version = "";
     }
+    if (seq == NULL) {
+      seq = "";
+    }
     if (name != NULL &&
         package_name == name && 
         *platform == '\0' &&
         package_version == version) {
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
+      package_seq = seq;
       package_platform = platform;
       package_solo = false;
       if (solo != NULL) {
@@ -804,4 +843,67 @@ save_xml_file(TiXmlDocument *doc, const string &to_filename) {
 
   unlink(temp_filename.c_str());
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::compare_seq
+//       Access: Private, Static
+//  Description: Compares the two dotted-integer sequence values
+//               numerically.  Returns -1 if seq_a sorts first, 1 if
+//               seq_b sorts first, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+int P3DHost::
+compare_seq(const string &seq_a, const string &seq_b) {
+  const char *num_a = seq_a.c_str();
+  const char *num_b = seq_b.c_str();
+  int comp = compare_seq_int(num_a, num_b);
+  while (comp == 0) {
+    if (*num_a != '.') {
+      if (*num_b != '.') {
+        // Both strings ran out together.
+        return 0;
+      }
+      // a ran out first.
+      return -1;
+    } else if (*num_b != '.') {
+      // b ran out first.
+      return 1;
+    }
+
+    // Increment past the dot.
+    ++num_a;
+    ++num_b;
+    comp = compare_seq(num_a, num_b);
+  }
+
+  return comp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::compare_seq_int
+//       Access: Private, Static
+//  Description: Numerically compares the formatted integer value at
+//               num_a with num_b.  Increments both num_a and num_b to
+//               the next character following the valid integer.
+////////////////////////////////////////////////////////////////////
+int P3DHost::
+compare_seq_int(const char *&num_a, const char *&num_b) {
+  long int a;
+  char *next_a;
+  long int b;
+  char *next_b;
+
+  a = strtol((char *)num_a, &next_a, 10);
+  b = strtol((char *)num_b, &next_b, 10);
+
+  num_a = next_a;
+  num_b = next_b;
+
+  if (a < b) {
+    return -1;
+  } else if (b < a) {
+    return 1;
+  } else {
+    return 0;
+  }
 }

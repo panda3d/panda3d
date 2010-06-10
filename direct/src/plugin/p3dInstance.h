@@ -93,7 +93,8 @@ public:
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
-  void add_package(const string &name, const string &version, P3DHost *host);
+  void add_package(const string &name, const string &version, 
+                   const string &seq, P3DHost *host);
   void add_package(P3DPackage *package);
   void remove_package(P3DPackage *package);
   bool get_packages_info_ready() const;

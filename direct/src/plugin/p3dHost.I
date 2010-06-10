@@ -91,16 +91,20 @@ has_contents_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::get_contents_seq
+//     Function: P3DHost::get_contents_iseq
 //       Access: Public
 //  Description: Returns a number that increments whenever a new
 //               version of the contents.xml file has been read.  This
-//               can be used by packages to determine whether they
-//               need to redownload from scratch.
+//               number is local to the session only; it has nothing
+//               to do with the "seq" value written into the
+//               contents.xml file itself.  
+//
+//               This can be used by packages to determine whether
+//               they need to redownload from scratch.
 ////////////////////////////////////////////////////////////////////
 inline int P3DHost::
-get_contents_seq() const {
-  return _contents_seq;
+get_contents_iseq() const {
+  return _contents_iseq;
 }
 
 ////////////////////////////////////////////////////////////////////

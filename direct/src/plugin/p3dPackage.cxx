@@ -59,7 +59,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   // file, instead of an xml file and a multifile to unpack.
   _package_solo = false;
 
-  _host_contents_seq = 0;
+  _host_contents_iseq = 0;
 
   _xconfig = NULL;
   _temp_contents_file = NULL;
@@ -474,8 +474,8 @@ redownload_contents_file(P3DPackage::Download *download) {
   assert(_active_download == NULL);
   assert(_saved_download == NULL);
   
-  if (_host->get_contents_seq() != _host_contents_seq) {
-    // If the contents_seq number has changed, we don't even need to
+  if (_host->get_contents_iseq() != _host_contents_iseq) {
+    // If the contents_iseq number has changed, we don't even need to
     // download anything--just go restart the download.
     host_got_contents_file();
     return;
@@ -504,8 +504,8 @@ void P3DPackage::
 contents_file_redownload_finished(bool success) {
   bool contents_changed = false;
   
-  if (_host->get_contents_seq() != _host_contents_seq) {
-    // If the contents_seq number has changed, we don't even need to
+  if (_host->get_contents_iseq() != _host_contents_iseq) {
+    // If the contents_iseq number has changed, we don't even need to
     // bother reading what we just downloaded.
     contents_changed = true;
   }
@@ -592,7 +592,7 @@ host_got_contents_file() {
   // Record this now, so we'll know later whether the host has been
   // reloaded (e.g. due to some other package, from some other
   // instance, reloading it).
-  _host_contents_seq = _host->get_contents_seq();
+  _host_contents_iseq = _host->get_contents_iseq();
 
   // Now that we have a valid host, we can define the _package_dir.
   _package_dir = _host->get_host_dir() + string("/") + _package_name;
@@ -619,8 +619,9 @@ download_desc_file() {
   // Attempt to check the desc file for freshness.  If it already
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
+  string package_seq;
   if (!_host->get_package_desc_file(_desc_file, _package_platform, 
-                                    _package_solo,
+                                    package_seq, _package_solo,
                                     _package_name, _package_version)) {
     nout << "Couldn't find package " << _package_fullname
          << " in contents file.\n";
@@ -768,14 +769,18 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
     const char *package_name = xrequires->Attribute("name");
-    const char *version = xrequires->Attribute("version");
     const char *host_url = xrequires->Attribute("host");
     if (package_name != NULL && host_url != NULL) {
-      P3DHost *host = inst_mgr->get_host(host_url);
+      const char *version = xrequires->Attribute("version");
       if (version == NULL) {
         version = "";
       }
-      _requires.push_back(RequiredPackage(package_name, version, host));
+      const char *seq = xrequires->Attribute("seq");
+      if (seq == NULL) {
+        seq = "";
+      }
+      P3DHost *host = inst_mgr->get_host(host_url);
+      _requires.push_back(RequiredPackage(package_name, version, seq, host));
     }
 
     xrequires = xrequires->NextSiblingElement("requires");

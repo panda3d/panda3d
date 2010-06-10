@@ -1,4 +1,5 @@
 from direct.p3d.FileSpec import FileSpec
+from direct.p3d.SeqValue import SeqValue
 from pandac.PandaModules import *
 import copy
 import shutil
@@ -8,7 +9,7 @@ class PackageMergerError(StandardError):
     pass
 
 class PackageMerger:
-    """ This class will combine two or more separately-build stage
+    """ This class will combine two or more separately-built stage
     directories, the output of Packager.py or the ppackage tool, into
     a single output directory.  It assumes that the clocks on all
     hosts are in sync, so that the file across all builds with the
@@ -41,6 +42,9 @@ class PackageMerger:
             self.descFile = FileSpec()
             self.descFile.loadXml(xpackage)
 
+            self.packageSeq = SeqValue()
+            self.packageSeq.loadXml(xpackage)
+
             self.importDescFile = None
             ximport = xpackage.FirstChildElement('import')
             if ximport:
@@ -59,6 +63,7 @@ class PackageMerger:
                 xpackage.SetAttribute('solo', '1')
 
             self.descFile.storeXml(xpackage)
+            self.packageSeq.storeXml(xpackage)
 
             if self.importDescFile:
                 ximport = TiXmlElement('import')
@@ -72,6 +77,8 @@ class PackageMerger:
         self.installDir = installDir
         self.xhost = None
         self.contents = {}
+        self.maxAge = None
+        self.contentsSeq = SeqValue()
 
         # We allow the first one to fail quietly.
         self.__readContentsFile(self.installDir)
@@ -89,6 +96,18 @@ class PackageMerger:
 
         xcontents = doc.FirstChildElement('contents')
         if xcontents:
+            maxAge = xcontents.Attribute('max_age')
+            if maxAge:
+                maxAge = int(maxAge)
+                if self.maxAge is None:
+                    self.maxAge = maxAge
+                else:
+                    self.maxAge = min(self.maxAge, maxAge)
+
+            contentsSeq = SeqValue()
+            if contentsSeq.loadXml(xcontents):
+                self.contentsSeq = max(self.contentsSeq, contentsSeq)
+
             xhost = xcontents.FirstChildElement('host')
             if xhost:
                 self.xhost = xhost.Clone()
@@ -118,6 +137,10 @@ class PackageMerger:
         xcontents = TiXmlElement('contents')
         if self.xhost:
             xcontents.InsertEndChild(self.xhost)
+
+        if self.maxAge is not None:
+            xcontents.SetAttribute('max_age', str(self.maxAge))
+        self.contentsSeq.storeXml(xcontents)
 
         contents = self.contents.items()
         contents.sort()
@@ -203,5 +226,6 @@ class PackageMerger:
                 # Here's a new subdirectory we have to copy in.
                 self.__copySubdirectory(pe)
 
+        self.contentsSeq += 1
         self.__writeContentsFile()
         

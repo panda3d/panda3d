@@ -13,6 +13,7 @@ import types
 import getpass
 import platform
 from direct.p3d.FileSpec import FileSpec
+from direct.p3d.SeqValue import SeqValue
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
@@ -165,7 +166,7 @@ class Packager:
         file. """
         
         def __init__(self):
-            pass
+            self.packageSeq = SeqValue()
 
         def getKey(self):
             """ Returns a tuple used for sorting the PackageEntry
@@ -194,6 +195,9 @@ class Packager:
             solo = xpackage.Attribute('solo')
             self.solo = int(solo or '0')
 
+            self.packageSeq = SeqValue()
+            self.packageSeq.loadXml(xpackage)
+
             self.descFile = FileSpec()
             self.descFile.loadXml(xpackage)
 
@@ -215,6 +219,7 @@ class Packager:
             if self.solo:
                 xpackage.SetAttribute('solo', '1')
 
+            self.packageSeq.storeXml(xpackage)
             self.descFile.storeXml(xpackage)
 
             if self.importDescFile:
@@ -658,6 +663,7 @@ class Packager:
                 os.chmod(self.packageFullpath.toOsSpecific(), 0755)
             else:
                 self.readDescFile()
+                self.packageSeq += 1
                 self.compressMultifile()
                 self.writeDescFile()
                 self.writeImportDescFile()
@@ -672,6 +678,7 @@ class Packager:
                 pe.fromFile(self.packageName, self.platform, self.version,
                             False, self.packager.installDir,
                             self.packageDesc, self.packageImportDesc)
+                pe.packageSeq = self.packageSeq
                 
                 self.packager.contents[pe.getKey()] = pe
                 self.packager.contentsChanged = True
@@ -733,6 +740,10 @@ class Packager:
             pe.fromFile(self.packageName, self.platform, self.version,
                         True, self.packager.installDir,
                         Filename(packageDir, file.newName), None)
+            peOrig = self.packager.contents.get(pe.getKey(), None)
+            if peOrig:
+                pe.packageSeq = peOrig.packageSeq + 1
+
             self.packager.contents[pe.getKey()] = pe
             self.packager.contentsChanged = True
 
@@ -1204,6 +1215,7 @@ class Packager:
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
                 xrequires.SetAttribute('host', package.host)
+                package.packageSeq.storeXml(xrequires)
                 requireHosts[package.host] = True
                 xpackage.InsertEndChild(xrequires)
 
@@ -1249,6 +1261,7 @@ class Packager:
             it.  We need this to preserve the list of patches, and
             similar historic data, between sessions. """
 
+            self.packageSeq = SeqValue()
             self.patchVersion = None
             self.patches = []
 
@@ -1262,6 +1275,8 @@ class Packager:
             xpackage = doc.FirstChildElement('package')
             if not xpackage:
                 return
+
+            self.packageSeq.loadXml(xpackage)
 
             xcompressed = xpackage.FirstChildElement('compressed_archive')
             if xcompressed:
@@ -1309,6 +1324,8 @@ class Packager:
             if self.patchVersion:
                 xpackage.SetAttribute('last_patch_version', self.patchVersion)
 
+            self.packageSeq.storeXml(xpackage)
+
             self.__addConfigs(xpackage)
 
             for package in self.requires:
@@ -1318,6 +1335,7 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                package.packageSeq.storeXml(xrequires)
                 xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
@@ -1379,6 +1397,8 @@ class Packager:
                 xpackage.SetAttribute('version', self.version)
             xpackage.SetAttribute('host', self.host)
 
+            self.packageSeq.storeXml(xpackage)
+
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
@@ -1386,6 +1406,7 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                package.packageSeq.storeXml(xrequires)
                 xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
@@ -1400,6 +1421,8 @@ class Packager:
             """ Reads the import desc file.  Returns True on success,
             False on failure. """
 
+            self.packageSeq = SeqValue()
+
             doc = TiXmlDocument(filename.toOsSpecific())
             if not doc.LoadFile():
                 return False
@@ -1411,6 +1434,8 @@ class Packager:
             self.platform = xpackage.Attribute('platform')
             self.version = xpackage.Attribute('version')
             self.host = xpackage.Attribute('host')
+
+            self.packageSeq.loadXml(xpackage)
 
             self.requires = []
             xrequires = xpackage.FirstChildElement('requires')
@@ -1867,6 +1892,25 @@ class Packager:
         # The maximum amount of time a client should cache the
         # contents.xml before re-querying the server, in seconds.
         self.maxAge = 0
+
+        # The contents seq: a tuple of integers, representing the
+        # current seq value.  The contents seq generally increments
+        # with each modification to the contents.xml file.  There is
+        # also a package seq for each package, which generally
+        # increments with each modification to the package.
+        
+        # The contents seq and package seq are used primarily for
+        # documentation purposes, to note when a new version is
+        # released.  The package seq value can also be used to verify
+        # that the contents.xml, desc.xml, and desc.import.xml files
+        # were all built at the same time.
+
+        # Although the package seqs are used at runtime to verify that
+        # the latest contents.xml file has been downloaded, they are
+        # not otherwise used at runtime, and they are not binding on
+        # the download version.  The md5 hash, not the package seq, is
+        # actually used to differentiate different download versions.
+        self.contentsSeq = SeqValue()
 
         # A search list for previously-built local packages.
 
@@ -3163,6 +3207,7 @@ class Packager:
         self.addHost(self.host)
 
         self.maxAge = 0
+        self.contentsSeq = SeqValue()
         self.contents = {}
         self.contentsChanged = False
 
@@ -3181,6 +3226,8 @@ class Packager:
             maxAge = xcontents.Attribute('max_age')
             if maxAge:
                 self.maxAge = int(maxAge)
+
+            self.contentsSeq.loadXml(xcontents)
                 
             xhost = xcontents.FirstChildElement('host')
             if xhost:
@@ -3212,6 +3259,9 @@ class Packager:
         xcontents = TiXmlElement('contents')
         if self.maxAge:
             xcontents.SetAttribute('max_age', str(self.maxAge))
+
+        self.contentsSeq += 1
+        self.contentsSeq.storeXml(xcontents)
             
         if self.host:
             he = self.hosts.get(self.host, None)

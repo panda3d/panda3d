@@ -232,7 +232,7 @@ P3DInstance(P3D_request_ready_func *func,
   // put up a splash image (for instance, the above IT_download image)
   // while we download the real contents.
   P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-  _image_package = host->get_package("images", "");
+  _image_package = host->get_package("images", "", "");
   if (_image_package != NULL) {
     _image_package->add_instance(this);
   }
@@ -758,7 +758,7 @@ get_request() {
         P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
         P3DHost *host = inst_mgr->get_host(host_url);
         if (package_name != NULL) {
-          P3DPackage *package = host->get_package(package_name, package_version);
+          P3DPackage *package = host->get_package(package_name, package_version, "");
           host->forget_package(package);
         } else {
           // If a NULL package name is given, forget the whole host.
@@ -1021,9 +1021,17 @@ get_log_pathname() const {
 //               instance.  The instance will share responsibility for
 //               downloading the package with any of the other
 //               instances that use the same package.
+//
+//               The seq value should be the expected minimum
+//               package_seq value for the indicated package.  If the
+//               given seq value is higher than the package_seq value
+//               in the contents.xml file cached for the host, it is a
+//               sign that the contents.xml file is out of date and
+//               needs to be redownloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-add_package(const string &name, const string &version, P3DHost *host) {
+add_package(const string &name, const string &version, const string &seq,
+            P3DHost *host) {
   string alt_host = _fparams.lookup_token("alt_host");
 
   // Look up in the p3d_info.xml file to see if this p3d file has
@@ -1043,7 +1051,7 @@ add_package(const string &name, const string &version, P3DHost *host) {
     get_host_info(host);
   }
   
-  P3DPackage *package = host->get_package(name, version, alt_host);
+  P3DPackage *package = host->get_package(name, version, seq, alt_host);
   add_package(package);
 }
     
@@ -1859,7 +1867,7 @@ check_p3d_signature() {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-    _certlist_package = host->get_package("certlist", "");
+    _certlist_package = host->get_package("certlist", "", "");
     if (_certlist_package != NULL) {
       _certlist_package->add_instance(this);
     }
@@ -1900,7 +1908,7 @@ mark_p3d_untrusted() {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-    _p3dcert_package = host->get_package("p3dcert", "");
+    _p3dcert_package = host->get_package("p3dcert", "", "");
     if (_p3dcert_package != NULL) {
       _p3dcert_package->add_instance(this);
     }
@@ -2123,8 +2131,12 @@ add_packages() {
       if (version == NULL) {
         version = "";
       }
+      const char *seq = xrequires->Attribute("seq");
+      if (seq == NULL) {
+        seq = "";
+      }
       P3DHost *host = inst_mgr->get_host(host_url);
-      add_package(name, version, host);
+      add_package(name, version, seq, host);
     }
 
     xrequires = xrequires->NextSiblingElement("requires");
@@ -2876,7 +2888,8 @@ report_package_info_ready(P3DPackage *package) {
   P3DPackage::Requires::const_iterator ri;
   for (ri = package->_requires.begin(); ri != package->_requires.end(); ++ri) {
     const P3DPackage::RequiredPackage &rp = (*ri);
-    add_package(rp._package_name, rp._package_version, rp._host);
+    add_package(rp._package_name, rp._package_version, rp._package_seq, 
+                rp._host);
   }
 
   if (get_packages_info_ready()) {

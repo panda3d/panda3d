@@ -44,7 +44,7 @@ public:
 
   inline bool has_contents_file() const;
   bool has_current_contents_file(P3DInstanceManager *inst_mgr) const;
-  inline int get_contents_seq() const;
+  inline int get_contents_iseq() const;
   inline bool check_contents_hash(const string &pathname) const;
 
   bool read_contents_file();
@@ -53,9 +53,11 @@ public:
 
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
+                          const string &package_seq,
                           const string &alt_host = "");
   bool get_package_desc_file(FileSpec &desc_file, 
                              string &package_platform,
+                             string &package_seq,
                              bool &package_solo,
                              const string &package_name,
                              const string &package_version);
@@ -74,6 +76,8 @@ private:
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);
   static bool save_xml_file(TiXmlDocument *doc, const string &to_filename);
+  static int compare_seq(const string &seq_a, const string &seq_b);
+  static int compare_seq_int(const char *&num_a, const char *&num_b);
 
 private:
   string _host_dir;
@@ -83,7 +87,7 @@ private:
   string _descriptive_name;
   TiXmlElement *_xcontents;
   time_t _contents_expiration;
-  int _contents_seq;
+  int _contents_iseq;
   FileSpec _contents_spec;
 
   typedef vector<string> Mirrors;

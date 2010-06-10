@@ -210,9 +210,10 @@ report_step_progress() {
 ////////////////////////////////////////////////////////////////////
 inline P3DPackage::RequiredPackage::
 RequiredPackage(const string &package_name, const string &package_version,
-                P3DHost *host) :
+                const string &package_seq, P3DHost *host) :
   _package_name(package_name),
   _package_version(package_version),
+  _package_seq(package_seq),
   _host(host)
 {
 }
