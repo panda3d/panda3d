@@ -1723,7 +1723,53 @@ class ShowBase(DirectObject.DirectObject):
         throwNewFrame()
         return Task.cont
 
-    def restart(self):
+
+    def __igLoopSync(self, state):
+        # We render the watch variables for the onScreenDebug as soon
+        # as we reasonably can before the renderFrame().
+        onScreenDebug.render()
+
+        if self.recorder:
+            self.recorder.recordFrame()
+
+
+        self.cluster.collectData()
+
+        # Finally, render the frame.
+        self.graphicsEngine.renderFrame()
+        if self.clusterSyncFlag:
+            self.graphicsEngine.syncFrame()
+        if self.multiClientSleep:
+            time.sleep(0)
+
+        # We clear the text buffer for the onScreenDebug as soon
+        # as we reasonably can after the renderFrame().
+        onScreenDebug.clear()
+
+        if self.recorder:
+            self.recorder.playFrame()
+
+        if self.mainWinMinimized:
+            # If the main window is minimized, slow down the app a bit
+            # by sleeping here in igLoop so we don't use all available
+            # CPU needlessly.
+
+            # Note: this isn't quite right if multiple windows are
+            # open.  We should base this on whether *all* windows are
+            # minimized, not just the main window.  But it will do for
+            # now until someone complains.
+            time.sleep(0.1)
+
+        self.graphicsEngine.readyFlip()
+        self.cluster.waitForFlipCommand()
+        self.graphicsEngine.flipFrame()
+
+        # Lerp stuff needs this event, and it must be generated in
+        # C++, not in Python.
+        throwNewFrame()
+        return Task.cont    
+
+    def restart(self,clusterSync=False,cluster=None):
         self.shutdown()
         # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
@@ -1742,7 +1788,11 @@ class ShowBase(DirectObject.DirectObject):
         
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
-        self.taskMgr.add(self.__igLoop, 'igLoop', priority = 50)
+        self.cluster = cluster
+        if (not clusterSync or (cluster == None)):
+            self.taskMgr.add(self.__igLoop, 'igLoop', priority = 50)
+        else:
+            self.taskMgr.add(self.__igLoopSync, 'igLoop', priority = 50)
         # the audioLoop updates the positions of 3D sounds.
         # as such, it needs to run after the cull traversal in the igLoop.
         self.taskMgr.add(self.__audioLoop, 'audioLoop', priority = 60)
