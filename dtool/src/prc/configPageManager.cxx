@@ -664,7 +664,7 @@ config_initialized() {
 
 #ifndef NDEBUG
   ConfigVariableString panda_package_version
-    ("panda-package-version", "",
+    ("panda-package-version", "local_dev",
      PRC_DESC("This can be used to specify the value returned by "
               "PandaSystem::get_package_version_str(), in development mode only, "
               "and only if another value has not already been compiled in.  This "
@@ -673,7 +673,7 @@ config_initialized() {
   ConfigVariableString panda_package_host_url
     ("panda-package-host-url", "",
      PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_url_url(), in development mode only, "
+              "PandaSystem::get_package_host_url(), in development mode only, "
               "and only if another value has not already been compiled in.  This "
               "is intended for developer convenience, to masquerade a development "
               "build of Panda as a different runtime version.  Use with caution."));

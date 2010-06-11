@@ -256,7 +256,7 @@
 // You may define both of these to build or develop the Panda3D
 // rtdist, the environment packaged up for distribution with the
 // plugin.
-#define PANDA_PACKAGE_VERSION local_dev
+//#define PANDA_PACKAGE_VERSION local_dev
 //#define PANDA_PACKAGE_HOST_URL http://some.url/
 #defer HAVE_P3D_RTDIST $[PANDA_PACKAGE_HOST_URL]
 
