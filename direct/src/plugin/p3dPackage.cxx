@@ -66,7 +66,6 @@ P3DPackage(P3DHost *host, const string &package_name,
 
   _computed_plan_size = false;
   _info_ready = false;
-  _download_size = 0;
   _allow_data_download = false;
   _ready = false;
   _failed = false;
@@ -1149,7 +1148,6 @@ report_progress(P3DPackage::InstallStep *step) {
 void P3DPackage::
 report_info_ready() {
   _info_ready = true;
-  _download_size = _compressed_archive.get_size();
 
   Instances::iterator ii;
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
@@ -1184,9 +1182,7 @@ report_done(bool success) {
 
   if (!_allow_data_download && success) {
     // If we haven't been authorized to start downloading yet, just
-    // report that we're ready to start, but that we don't have to
-    // download anything.
-    _download_size = 0;
+    // report that we're ready to start.
     Instances::iterator ii;
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
       (*ii)->report_package_info_ready(this);

@@ -166,6 +166,19 @@ class PackageInfo:
         
         return size
 
+    def getPrevDownloadedEffort(self):
+        """ Returns a rough estimate of this package's total download
+        effort, even if it is already downloaded. """
+
+        effort = 0
+        if self.compressedArchive:
+            effort += self.compressedArchive.size * self.downloadFactor
+        if self.uncompressedArchive:
+            effort += self.uncompressedArchive.size * self.uncompressFactor
+        # Don't bother counting unpacking.
+
+        return effort
+
     def getFormattedName(self):
         """ Returns the name of this package, for output to the user.
         This will be the "public" name of the package, as formatted

@@ -278,7 +278,6 @@ private:
   string _desc_file_pathname;
 
   bool _info_ready;
-  size_t _download_size;
   bool _allow_data_download;
   bool _ready;
   bool _failed;

@@ -21,11 +21,6 @@ class PackageInstaller(DirectObject):
     Also see DWBPackageInstaller, which does exactly this, to add a
     DirectWaitBar GUI.
 
-    Note that in the default mode, with a one-thread task chain, the
-    packages will all be downloaded in sequence, one after the other.
-    If you add more tasks to the task chain, some of the packages may
-    be downloaded in parallel, and the calls to packageStarted()
-    .. packageFinished() may therefore overlap.
     """
 
     notify = directNotify.newCategory("PackageInstaller")
@@ -81,6 +76,10 @@ class PackageInstaller(DirectObject):
             # getDescFile().
             self.downloadEffort = 0
 
+            # Similar, but this is the theoretical effort if the
+            # package were already downloaded.
+            self.prevDownloadedEffort = 0
+
         def __cmp__(self, pp):
             """ Python comparision function.  This makes all
             PendingPackages withe same (packageName, version, host)
@@ -117,6 +116,9 @@ class PackageInstaller(DirectObject):
                 return False
 
             self.downloadEffort = self.package.getDownloadEffort()
+            self.prevDownloadEffort = 0
+            if self.downloadEffort == 0:
+                self.prevDownloadedEffort = self.package.getPrevDownloadedEffort()
 
             return True
             
@@ -141,6 +143,9 @@ class PackageInstaller(DirectObject):
 
             self.package.checkStatus()
             self.downloadEffort = self.package.getDownloadEffort()
+            self.prevDownloadEffort = 0
+            if self.downloadEffort == 0:
+                self.prevDownloadedEffort = self.package.getPrevDownloadedEffort()
 
             return True
 
@@ -193,10 +198,6 @@ class PackageInstaller(DirectObject):
         # This task is spawned on the default task chain, to update
         # the status during the download.
         self.progressTask = None
-
-        # The totalDownloadSize is None, until all package desc files
-        # have been read.
-        self.totalDownloadSize = None
         
         self.accept('PackageInstaller-%s-allHaveDesc' % self.uniqueId,
                     self.__allHaveDesc)
@@ -618,9 +619,9 @@ class PackageInstaller(DirectObject):
             downloadEffort = 0
             currentDownloadSize = 0
             for pp in self.packages:
-                downloadEffort += pp.downloadEffort
+                downloadEffort += pp.downloadEffort + pp.prevDownloadedEffort
                 packageProgress = pp.getProgress()
-                currentDownloadSize += pp.downloadEffort * packageProgress
+                currentDownloadSize += pp.downloadEffort * packageProgress + pp.prevDownloadedEffort
                 if pp.calledPackageStarted and not pp.calledPackageFinished:
                     self.packageProgress(pp.package, packageProgress)
 

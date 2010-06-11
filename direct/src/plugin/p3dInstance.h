@@ -193,6 +193,7 @@ private:
   void set_background_image(ImageType image_type);
   void set_button_image(ImageType image_type);
   void report_package_info_ready(P3DPackage *package);
+  void consider_start_download();
   void ready_to_install();
   void start_next_download();
   void mark_download_complete();
@@ -348,6 +349,7 @@ private:
   Packages _packages;
   Packages _downloading_packages;
   int _download_package_index;
+  size_t _prev_downloaded;
   size_t _total_download_size;
   size_t _total_downloaded;
   bool _packages_specified;

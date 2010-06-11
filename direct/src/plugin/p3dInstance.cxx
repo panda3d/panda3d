@@ -151,6 +151,7 @@ P3DInstance(P3D_request_ready_func *func,
   _instance_window_attached = false;
   _stuff_to_download = false;
   _download_package_index = 0;
+  _prev_downloaded = 0;
   _total_download_size = 0;
   _total_downloaded = 0;
   _packages_specified = false;
@@ -2143,21 +2144,8 @@ add_packages() {
   }
 
   _packages_specified = true;
-  if (get_packages_info_ready()) {
-    // All packages are ready to go.  Let's start some download
-    // action.
-    _downloading_packages.clear();
-    _total_download_size = 0;
-    Packages::const_iterator pi;
-    for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
-      P3DPackage *package = (*pi);
-      if (package->get_info_ready() && !package->get_ready()) {
-        _downloading_packages.push_back(package);
-        _total_download_size += package->get_download_size();
-      }
-    }
-    ready_to_install();
-  }
+
+  consider_start_download();
 }
 
 
@@ -2892,17 +2880,33 @@ report_package_info_ready(P3DPackage *package) {
                 rp._host);
   }
 
+  consider_start_download();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::consider_start_download
+//       Access: Private
+//  Description: When all package info files have been obtained,
+//               begins downloading stuff.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+consider_start_download() {
   if (get_packages_info_ready()) {
     // All packages are ready to go.  Let's start some download
     // action.
     _downloading_packages.clear();
+    _prev_downloaded = 0;
     _total_download_size = 0;
     Packages::const_iterator pi;
     for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
       P3DPackage *package = (*pi);
-      if (package->get_info_ready() && !package->get_ready()) {
-        _downloading_packages.push_back(package);
-        _total_download_size += package->get_download_size();
+      if (package->get_info_ready()) {
+        if (!package->get_ready()) {
+          _downloading_packages.push_back(package);
+          _total_download_size += package->get_download_size();
+        } else {
+          _prev_downloaded += package->get_download_size();
+        }
       }
     }
     ready_to_install();
@@ -2942,7 +2946,8 @@ ready_to_install() {
 
     nout << "Beginning install of " << _downloading_packages.size()
          << " packages, total " << _total_download_size
-         << " bytes required.\n";
+         << " bytes required (" << _prev_downloaded
+         << " previously downloaded).\n";
     
     if (_downloading_packages.size() > 0) {
       _stuff_to_download = true;
@@ -2951,14 +2956,25 @@ ready_to_install() {
       make_splash_window();
     }
     
-    if (_splash_window != NULL) {
-      _splash_window->set_install_progress(0.0, true, 0);
-    }
     _panda_script_object->set_string_property("status", "downloading");
     _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
     _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
     _panda_script_object->set_int_property("downloadElapsedSeconds", 0);
     _panda_script_object->set_undefined_property("downloadRemainingSeconds");
+
+    double progress = 0.0;
+    if (_prev_downloaded != 0) {
+      // We might start off with more than 0 progress, if we've
+      // already downloaded some of it previously.
+      progress = (_prev_downloaded) / (_total_download_size + _prev_downloaded);
+      progress = min(progress, 1.0);
+
+      _panda_script_object->set_float_property("downloadProgress", progress);
+    }
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(progress, true, 0);
+    }
+
     send_notify("ondownloadbegin");
     
     start_next_download();
@@ -3151,7 +3167,7 @@ report_package_progress(P3DPackage *package, double progress) {
   }
 
   // Scale the progress into the range appropriate to this package.
-  progress = (progress * package->get_download_size() + _total_downloaded) / _total_download_size;
+  progress = (progress * package->get_download_size() + _total_downloaded + _prev_downloaded) / (_total_download_size + _prev_downloaded);
   progress = min(progress, 1.0);
 
   if (_splash_window != NULL) {
