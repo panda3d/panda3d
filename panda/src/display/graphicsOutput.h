@@ -212,6 +212,7 @@ public:
 
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();
+  virtual void ready_flip();
   virtual void end_flip();
 
   // It is an error to call any of the following methods from any

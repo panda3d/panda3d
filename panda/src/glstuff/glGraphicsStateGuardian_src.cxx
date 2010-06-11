@@ -1708,6 +1708,28 @@ reset() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::finish
+//       Access: Public, Virtual
+//  Description: Force the graphics card to finish drawing before 
+//               returning.  !!!!!HACK WARNING!!!!
+//               glfinish does not actually wait for the graphics card to finish drawing
+//               only for draw calls to finish.  Thus flip may not happene 
+//               immediately.  Instead we read a single pixel from
+//               the framebuffer.  This forces the graphics card to 
+//               finish drawing the frame before returning.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+finish() {
+  // Rather than call glfinish which returns immediately if 
+  // draw commands have been submitted, we will read a single pixel
+  // from the frame.  That will force the graphics card to finish
+  // drawing before it is called
+  char data[4];
+  GLP(ReadPixels)(0,0,1,1,GL_RGBA,GL_UNSIGNED_BYTE,&data);
+  //GLP(Finish);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::clear
 //       Access: Public
 //  Description: Clears the framebuffer within the current

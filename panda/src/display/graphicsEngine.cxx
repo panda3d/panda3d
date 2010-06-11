@@ -949,6 +949,31 @@ sync_frame() {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::ready_flip
+//       Access: Published
+//  Description: Waits for all the threads that started drawing their
+//               last frame to finish drawing. Returns when all threads have
+//               actually finished drawing, as opposed to 'sync_frame'
+//               we seems to return once all draw calls have been submitted.
+//               Calling 'flip_frame' after this function should immediately
+//               cause a buffer flip.  This function will only work in
+//               opengl right now, for all other graphics pipelines it will 
+//               simply return immediately.  In opengl it's a bit of a hack:
+//               it will attempt to read a single pixel from the frame buffer to
+//               force the graphics card to finish drawing before it returns
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+ready_flip() {
+  Thread *current_thread = Thread::get_current_thread();
+  LightReMutexHolder holder(_lock, current_thread);
+
+  if (_flip_state == FS_draw) {
+    do_ready_flip(current_thread);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::flip_frame
 //       Access: Published
@@ -1571,6 +1596,27 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::ready_flip_windows
+//       Access: Private
+//  Description: This is called by the RenderThread object to flip the
+//               buffers for all of the non-single-buffered windows in
+//               the given list.  This is run in the draw thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+ready_flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsOutput *win = (*wi);
+    if (win->flip_ready()) {
+      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
+      win->ready_flip();
+    }
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::do_sync_frame
 //       Access: Private
 //  Description: The implementation of sync_frame().  We assume _lock
@@ -1595,6 +1641,36 @@ do_sync_frame(Thread *current_thread) {
   }
 
   _flip_state = FS_sync;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_ready_flip
+//       Access: Private
+//  Description: Wait until all draw calls have finished drawing and
+//               the frame is ready to flip
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_ready_flip(Thread *current_thread) {
+  nassertv(_lock.debug_is_locked());
+
+  // Statistics
+  PStatTimer timer(_sync_pcollector, current_thread);
+
+  nassertv(_flip_state == FS_draw);
+
+  // Wait for all the threads to finish their current frame.  Grabbing
+  // and releasing the mutex should achieve that.
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.acquire();
+    thread->_cv_mutex.release();
+  }
+  _app.do_ready_flip(this,current_thread);
+  _flip_state = FS_sync;
+  
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2443,6 +2519,20 @@ do_flip(GraphicsEngine *engine, Thread *current_thread) {
   engine->flip_windows(_cdraw, current_thread);
   engine->flip_windows(_draw, current_thread);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_ready_flip
+//       Access: Public
+//  Description: Prepares windows for flipping by waiting until all draw
+//               calls are finished
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_ready_flip(GraphicsEngine *engine, Thread *current_thread) {
+  LightReMutexHolder holder(_wl_lock);
+  engine->ready_flip_windows(_cdraw, current_thread);
+  engine->ready_flip_windows(_draw, current_thread);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::WindowRenderer::do_close

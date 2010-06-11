@@ -101,6 +101,7 @@ PUBLISHED:
   BLOCKING void render_frame();
   BLOCKING void open_windows();
   BLOCKING void sync_frame();
+  BLOCKING void ready_flip();  
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
@@ -144,8 +145,10 @@ private:
   void make_contexts(const Windows &wlist, Thread *current_thread);
 
   void process_events(const Windows &wlist, Thread *current_thread);
+  void ready_flip_windows(const Windows &wlist, Thread *current_thread);
   void flip_windows(const Windows &wlist, Thread *current_thread);
   void do_sync_frame(Thread *current_thread);
+  void do_ready_flip(Thread *current_thread);
   void do_flip_frame(Thread *current_thread);
   INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
@@ -261,6 +264,7 @@ private:
     void resort_windows();
     void do_frame(GraphicsEngine *engine, Thread *current_thread);
     void do_windows(GraphicsEngine *engine, Thread *current_thread);
+    void do_ready_flip(GraphicsEngine *engine, Thread *current_thread);
     void do_flip(GraphicsEngine *engine, Thread *current_thread);
     void do_release(GraphicsEngine *engine, Thread *current_thread);
     void do_close(GraphicsEngine *engine, Thread *current_thread);

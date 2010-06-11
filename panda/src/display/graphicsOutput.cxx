@@ -1257,6 +1257,21 @@ begin_flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::ready_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after end_frame() has been called on all windows, to
+//               initiate the exchange of the front and back buffers.
+//
+//               This should instruct the window to prepare for the
+//               flip when it is command but not actually flip
+//
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+ready_flip() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::end_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread

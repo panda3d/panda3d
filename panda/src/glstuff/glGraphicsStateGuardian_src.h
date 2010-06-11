@@ -276,7 +276,7 @@ public:
 
   void bind_fbo(GLuint fbo);
   virtual bool get_supports_cg_profile(const string &name) const;
-
+  void finish();
 
 protected:
   void do_issue_transform();

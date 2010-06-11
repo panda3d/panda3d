@@ -145,6 +145,37 @@ begin_flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsWindow::ready_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after end_frame() has been called on all windows, to
+//               initiate the exchange of the front and back buffers.
+//
+//               This should instruct the window to prepare for the
+//               flip when command, but will not actually flip
+//
+//               We have the two separate functions, begin_flip() and
+//               end_flip(), to make it easier to flip all of the
+//               windows at the same time.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::
+ready_flip() {
+  if (_hdc) {
+    // The documentation on SwapBuffers() is not at all clear on
+    // whether the GL context needs to be current before it can be
+    // called.  Empirically, it appears that it is not necessary in
+    // many cases, but it definitely is necessary at least in the case
+    // of Mesa on Windows.
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+    HGLRC context = wglgsg->get_context(_hdc);
+    nassertv(context);
+    wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
+    wglgsg->finish();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::close_window
 //       Access: Protected, Virtual
 //  Description: Closes the window right now.  Called from the window
