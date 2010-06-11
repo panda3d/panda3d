@@ -250,6 +250,17 @@
 // remaining variables are of general interest to everyone.
 
 
+// You may define this to build or develop the plugin.
+//#define HAVE_P3D_PLUGIN 1
+
+// You may define both of these to build or develop the Panda3D
+// rtdist, the environment packaged up for distribution with the
+// plugin.
+#define PANDA_PACKAGE_VERSION local_dev
+//#define PANDA_PACKAGE_HOST_URL http://some.url/
+#defer HAVE_P3D_RTDIST $[PANDA_PACKAGE_HOST_URL]
+
+
 
 // NOTE: In the following, to indicate "yes" to a yes/no question,
 // define the variable to be a nonempty string.  To indicate "no",
