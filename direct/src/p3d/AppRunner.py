@@ -158,6 +158,9 @@ class AppRunner(DirectObject):
         self.altHost = None
         self.altHostMap = {}
 
+        # The URL from which Panda itself should be downloaded.
+        self.pandaHostUrl = PandaSystem.getPackageHostUrl()
+
         # Application code can assign a callable object here; if so,
         # it will be invoked when an uncaught exception propagates to
         # the top of the TaskMgr.run() loop.
@@ -320,7 +323,7 @@ class AppRunner(DirectObject):
         testing. """
 
         if hostUrl is None:
-            hostUrl = PandaSystem.getPackageHostUrl()
+            hostUrl = self.pandaHostUrl
 
         altUrl = self.altHostMap.get(hostUrl, None)
         if altUrl:
@@ -355,7 +358,7 @@ class AppRunner(DirectObject):
         from, see getHostWithAlt().  """
 
         if not hostUrl:
-            hostUrl = PandaSystem.getPackageHostUrl()
+            hostUrl = self.pandaHostUrl
 
         host = self.hosts.get(hostUrl, None)
         if not host:
@@ -810,6 +813,12 @@ class AppRunner(DirectObject):
         if not host.downloadContentsFile(self.http):
             message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
             raise OSError, message
+
+        if name == 'panda3d' and not self.pandaHostUrl:
+            # A special case: in case we don't have the PackageHostUrl
+            # compiled in, infer it from the first package we
+            # installed named "panda3d".
+            self.pandaHostUrl = hostUrl
 
         if not platform:
             platform = None

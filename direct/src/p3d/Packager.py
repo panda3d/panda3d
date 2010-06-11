@@ -2226,7 +2226,7 @@ class Packager:
             self.allowPackages = False
 
         if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
-            raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.'
+            raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.\nIf you are running this script for development purposes, you may also\nset the Config variable panda-package-host-url to the URL you expect\nto download these contents from (for instance, a file:// URL).'
 
         self.readContentsFile()
 

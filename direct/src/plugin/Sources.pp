@@ -5,13 +5,13 @@
 // plugin system itself.
 
 // This directory also contains the code for p3dpython.exe, which is
-// part of the Panda3D plugin runtime.  It's not strictly part of the
+// part of the Panda3D rtdist build.  It's not strictly part of the
 // "Core API"; it is packaged as part of each downloadable version of
-// Panda3D.  It is only built if you have defined
-// PANDA_PACKAGE_HOST_URL in your Config.pp, which indicates an
-// intention to build a downloadable version of Panda3D.  Developers
-// who are preparing a custom Panda3D package for download by the
-// plugin will need to build this.
+// Panda3D.  It is only built if you have defined either
+// PANDA_PACKAGE_HOST_URL or HAVE_P3D_RTDIST in your Config.pp, which
+// indicates an intention to build a downloadable version of Panda3D.
+// Developers who are preparing a custom Panda3D package for download
+// by the plugin will need to build this.
 
 // If P3D_PLUGIN_MT is defined, then (on Windows) /MT is used to
 // compile the core API and the NPAPI and ActiveX plugins, instead of
@@ -220,7 +220,7 @@
 // to invoke a particular instance of Panda.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_P3D_RTDIST],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES python openssl cg
   #define TARGET p3dpython
 
@@ -269,7 +269,7 @@
 // the desktop.)
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
+  #define BUILD_TARGET $[and $[HAVE_P3D_RTDIST],$[HAVE_PYTHON],$[HAVE_OPENSSL],$[WINDOWS_PLATFORM]]
   #define USE_PACKAGES python openssl
   #define TARGET p3dpythonw
   #define EXTRA_CDEFS NON_CONSOLE
@@ -315,8 +315,7 @@
 // the parent (browser) process, instead of forking a child, as a
 // desparation fallback in case forking fails for some reason.
 //
-
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
+  #define BUILD_TARGET $[and $[HAVE_P3D_RTDIST],$[HAVE_PYTHON],$[HAVE_OPENSSL]]
   #define USE_PACKAGES python openssl cg
   #define TARGET libp3dpython
   #define LIB_PREFIX

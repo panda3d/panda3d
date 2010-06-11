@@ -599,6 +599,7 @@ class HostInfo:
         # it more likely that our hash code will exactly match the
         # similar logic in P3DHost.
         p = hostUrl.find('://')
+        hostname = ''
         if p != -1:
             start = p + 3
             end = hostUrl.find('/', start)
