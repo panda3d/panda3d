@@ -748,9 +748,12 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
 {
   MayaEggVertex vtx;
   vtx._sumWeights = 0.0;
-  vtx._pos = vert->get_pos3();
+
+  const LMatrix4d &xform = context->get_vertex_to_node();
+
+  vtx._pos = vert->get_pos3() * xform;
   if (vert->has_normal()) {
-    vtx._normal = vert->get_normal();
+    vtx._normal = vert->get_normal() * xform;
   }
   if (vert->has_uv()) {
     vtx._uv = vert->get_uv();

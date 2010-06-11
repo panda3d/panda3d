@@ -484,6 +484,12 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   egg_group->set_cs_type(EggGroup::CST_polyset);
   egg_group->set_collide_flags(EggGroup::CF_descend);
 
+  NodePath np = node_path.get_node_path();
+  CPT(TransformState) net_transform = np.get_net_transform();
+  LMatrix4f net_mat = net_transform->get_mat();
+  LMatrix4f inv = LCAST(float, egg_parent->get_vertex_frame_inv());
+  net_mat = net_mat * inv;
+
   int num_solids = node->get_num_solids();
 
   if (num_solids > 0) {
@@ -502,8 +508,8 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         int num_points = poly->get_num_points();
         for (int j = 0; j < num_points; j++) {
           EggVertex egg_vert;
-          egg_vert.set_pos(LCAST(double, poly->get_point(j)));
-          egg_vert.set_normal(LCAST(double, poly->get_normal()));
+          egg_vert.set_pos(LCAST(double, poly->get_point(j) * net_mat));
+          egg_vert.set_normal(LCAST(double, poly->get_normal() * net_mat));
 
           EggVertex *new_egg_vert = cvpool->create_unique_vertex(egg_vert);
           egg_poly->add_vertex(new_egg_vert);
