@@ -3934,7 +3934,8 @@ def recordFunctorCreationStacks():
     global Functor
     from pandac.PandaModules import getConfigShowbase
     config = getConfigShowbase()
-    if __dev__ and config.GetBool('record-functor-creation-stacks', 1):
+    # off by default, very slow
+    if __dev__ and config.GetBool('record-functor-creation-stacks', 0):
         if not hasattr(Functor, '_functorCreationStacksRecorded'):
             Functor = recordCreationStackStr(Functor)
             Functor._functorCreationStacksRecorded = True
