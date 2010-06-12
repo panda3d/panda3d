@@ -232,8 +232,6 @@ Texture(const Texture &copy) :
   _cvar(_lock)
 {
   _reloading = false;
-  _has_read_pages = false;
-  _has_read_mipmaps = false;
   _num_mipmap_levels_read = 0;
 
   operator = (copy);
@@ -3850,6 +3848,9 @@ do_assign(const Texture &copy) {
   _component_type = copy._component_type;
   _loaded_from_image = copy._loaded_from_image;
   _loaded_from_txo = copy._loaded_from_txo;
+  _has_read_pages = copy._has_read_pages;
+  _has_read_mipmaps = copy._has_read_mipmaps;
+  _num_mipmap_levels_read = copy._num_mipmap_levels_read;
   _wrap_u = copy._wrap_u;
   _wrap_v = copy._wrap_v;
   _wrap_w = copy._wrap_w;
