@@ -1253,25 +1253,99 @@ load_image_as_model(const Filename &filename) {
     card_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
+  bool is_3d = false;
+  if (tex->get_texture_type() == Texture::TT_3d_texture ||
+      tex->get_texture_type() == Texture::TT_cube_map) {
+    // For a 3-d texture, generate a cube, instead of a plain card.
+    is_3d = true;
+  }
+
+  CPT(GeomVertexFormat) vformat;
+  if (!is_3d) {
+    // Vertices and 2-d texture coordinates, all we need.
+    vformat = GeomVertexFormat::get_v3t2();
+
+  } else {
+    // Vertices and 3-d texture coordinates.
+    vformat = GeomVertexFormat::register_format
+      (new GeomVertexArrayFormat
+       (InternalName::get_vertex(), 3, 
+        GeomEnums::NT_float32, GeomEnums::C_point,
+        InternalName::get_texcoord(), 3, 
+        GeomEnums::NT_float32, GeomEnums::C_texcoord));
+  }
+
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("card", GeomVertexFormat::get_v3t2(),
-     Geom::UH_static);
+    ("card", vformat, Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
-  vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
-  vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
-  vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
+  if (!is_3d) {
+    // A normal 2-d card.
+    vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
+    vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
+    vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
+    vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
+    
+    texcoord.add_data2f(0.0f, tex_scale[1]);
+    texcoord.add_data2f(0.0f, 0.0f);
+    texcoord.add_data2f(tex_scale[0], tex_scale[1]);
+    texcoord.add_data2f(tex_scale[0], 0.0f);
 
-  texcoord.add_data2f(0.0f, tex_scale[1]);
-  texcoord.add_data2f(0.0f, 0.0f);
-  texcoord.add_data2f(tex_scale[0], tex_scale[1]);
-  texcoord.add_data2f(tex_scale[0], 0.0f);
+  } else {
+    // The eight vertices of a 3-d cube.
+    vertex.add_data3f(-1.0f, -1.0f, 1.0f);   // 0
+    vertex.add_data3f(-1.0f, -1.0f, -1.0f);  // 1
+    vertex.add_data3f(1.0f, -1.0f, -1.0f);   // 2
+    vertex.add_data3f(1.0f, -1.0f, 1.0f);    // 3
+    vertex.add_data3f(1.0f, 1.0f, 1.0f);     // 4
+    vertex.add_data3f(1.0f, 1.0f, -1.0f);    // 5
+    vertex.add_data3f(-1.0f, 1.0f, -1.0f);   // 6
+    vertex.add_data3f(-1.0f, 1.0f, 1.0f);    // 7
+
+    texcoord.add_data3f(-1.0f, -1.0f, 1.0f);   // 0
+    texcoord.add_data3f(-1.0f, -1.0f, -1.0f);  // 1
+    texcoord.add_data3f(1.0f, -1.0f, -1.0f);   // 2
+    texcoord.add_data3f(1.0f, -1.0f, 1.0f);    // 3
+    texcoord.add_data3f(1.0f, 1.0f, 1.0f);     // 4
+    texcoord.add_data3f(1.0f, 1.0f, -1.0f);    // 5
+    texcoord.add_data3f(-1.0f, 1.0f, -1.0f);   // 6
+    texcoord.add_data3f(-1.0f, 1.0f, 1.0f);    // 7
+  }
 
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
-  strip->add_consecutive_vertices(0, 4);
-  strip->close_primitive();
+
+  if (!is_3d) {
+    // The two triangles that make up a quad.
+    strip->add_consecutive_vertices(0, 4);
+    strip->close_primitive();
+
+  } else {
+    // The twelve triangles (six quads) that make up a cube.
+    strip->add_vertex(7);
+    strip->add_vertex(0);
+    strip->add_vertex(4);
+    strip->add_vertex(3);
+    strip->close_primitive();
+
+    strip->add_vertex(1);
+    strip->add_vertex(6);
+    strip->add_vertex(2);
+    strip->add_vertex(5);
+    strip->close_primitive();
+
+    strip->add_vertex(5);
+    strip->add_vertex(4);
+    strip->add_vertex(2);
+    strip->add_vertex(3);
+    strip->add_vertex(1);
+    strip->add_vertex(0);
+    strip->add_vertex(6);
+    strip->add_vertex(7);
+    strip->add_vertex(5);
+    strip->add_vertex(4);
+    strip->close_primitive();
+  }
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
