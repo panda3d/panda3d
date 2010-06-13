@@ -178,6 +178,32 @@ check_protocols() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::Object::is_static_method
+//       Access: Public
+//  Description: Returns true if the first method found with the
+//               indicated name is a static method, false if it is an
+//               instance method.  This does not test all overloads of
+//               the indicated name, merely the first one found.
+////////////////////////////////////////////////////////////////////
+bool InterfaceMaker::Object::
+is_static_method(const string &name) {
+  Functions::const_iterator fi;
+  for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
+    Function *func = (*fi);
+    if (!func->_remaps.empty()) {
+      FunctionRemap *remap = func->_remaps.front();
+      string method_name = remap->_cppfunc->get_simple_name();
+      if (method_name == name) {
+        return !func->_has_this;
+      }
+    }
+  }
+
+  // Didn't find the requested function.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Constructor
 //       Access: Public
 //  Description:

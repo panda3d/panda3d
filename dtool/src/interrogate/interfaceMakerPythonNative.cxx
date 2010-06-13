@@ -1259,9 +1259,13 @@ write_module_class(ostream &out,  Object *obj) {
   
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
+    string flags = "METH_NOARGS";
+    if (obj->is_static_method((*msi)->_element_name)) {
+      flags += "|METH_CLASS";
+    }
     out << "  { \""
         << methodNameFromCppName((*msi)->_seq_name, export_calss_name)
-        << "\",(PyCFunction) &" << (*msi)->_name << ", METH_NOARGS, NULL},\n";
+        << "\",(PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
   }
 
   out << "  { NULL, NULL }\n"
