@@ -237,7 +237,7 @@ register_window_class() {
 
     WNDCLASS wc;
     ZeroMemory(&wc, sizeof(WNDCLASS));
-    wc.lpfnWndProc = st_window_proc;
+    wc.lpfnWndProc = (WNDPROC)st_window_proc;
     wc.hInstance = application;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = "panda3d_splash";
