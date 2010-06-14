@@ -265,7 +265,11 @@ near_callback(void *data, dGeomID o1, dGeomID o2) {
   if (!result) {
     odespace_cat.error() << "An error occurred while calling python function!\n";
     PyErr_Print();
+  } else {
+    Py_DECREF(result);
   }
+  Py_DECREF(p2);
+  Py_DECREF(p1);
 }
 #endif
 
