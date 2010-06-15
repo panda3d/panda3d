@@ -258,8 +258,8 @@ void OdeSpace::
 near_callback(void *data, dGeomID o1, dGeomID o2) {
   OdeGeom g1 (o1);
   OdeGeom g2 (o2);
-  PyObject* p1 = DTool_CreatePyInstanceTyped(&g1, Dtool_OdeGeom, true, false, g1.get_type_index());
-  PyObject* p2 = DTool_CreatePyInstanceTyped(&g2, Dtool_OdeGeom, true, false, g2.get_type_index());
+  PyObject* p1 = DTool_CreatePyInstanceTyped(&g1, Dtool_OdeGeom, false, false, g1.get_type_index());
+  PyObject* p2 = DTool_CreatePyInstanceTyped(&g2, Dtool_OdeGeom, false, false, g2.get_type_index());
   PyObject* result = PyEval_CallFunction(_python_callback, "OOO", (PyObject*) data, p1, p2);
   if (!result) {
     odespace_cat.error() << "An error occurred while calling python function!\n";
