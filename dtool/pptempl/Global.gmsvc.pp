@@ -155,7 +155,7 @@
 #if $or[ $[eq $[USE_COMPILER], MSVC9x64], $[eq $[USE_COMPILER], MSVC9]]
   #define USE_MT 1
 #else
-  #define USE_MT 0
+  #define USE_MT
 #endif
 
 #defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[and $[eq $[USE_MT], 1],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
