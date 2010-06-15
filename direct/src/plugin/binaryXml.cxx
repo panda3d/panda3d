@@ -30,10 +30,14 @@ enum NodeType {
   NT_text,
 };
 
+// This typedef defines a 32-bit unsigned integer.  It's used for
+// passing values through the binary XML stream.
+typedef unsigned int xml_uint32;
+
 // These are both prime numbers, though I don't know if that really
 // matters.  Mainly, they're big random numbers.
-static const size_t length_nonce1 = 812311453;
-static const size_t length_nonce2 = 612811373;
+static const xml_uint32 length_nonce1 = 812311453;
+static const xml_uint32 length_nonce2 = 612811373;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_xml
@@ -56,11 +60,11 @@ init_xml() {
 static void
 write_xml_node(ostream &out, TiXmlNode *xnode) {
   const string &value = xnode->ValueStr();
-  size_t value_length = value.length();
-  size_t value_proof = (value_length + length_nonce1) * length_nonce2;
+  xml_uint32 value_length = value.length();
+  xml_uint32 value_proof = (value_length + length_nonce1) * length_nonce2;
 
   // We write out not only value_length, but the same value again
-  // hashed by length_nonce1 and 2 (and truncated back to size_t),
+  // hashed by length_nonce1 and 2 (and truncated back to xml_uint32),
   // just to prove to the reader that we're still on the same page.
   // We do this only on the top node; we don't bother for the nested
   // nodes.
@@ -97,12 +101,12 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
       out.put((char)true);
       
       string name = xattrib->Name();
-      size_t name_length = name.length();
+      xml_uint32 name_length = name.length();
       out.write((char *)&name_length, sizeof(name_length));
       out.write(name.data(), name_length);
       
       const string &value = xattrib->ValueStr();
-      size_t value_length = value.length();
+      xml_uint32 value_length = value.length();
       out.write((char *)&value_length, sizeof(value_length));
       out.write(value.data(), value_length);
       
@@ -134,15 +138,15 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 //               return value.  Returns NULL on error.
 ////////////////////////////////////////////////////////////////////
 static TiXmlNode *
-read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
+read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
               ostream &logfile) {
-  size_t value_length;
+  xml_uint32 value_length;
   in.read((char *)&value_length, sizeof(value_length));
   if (in.gcount() != sizeof(value_length)) {
     return NULL;
   }
-  size_t value_proof_expect = (value_length + length_nonce1) * length_nonce2;
-  size_t value_proof;
+  xml_uint32 value_proof_expect = (value_length + length_nonce1) * length_nonce2;
+  xml_uint32 value_proof;
   in.read((char *)&value_proof, sizeof(value_proof));
   if (in.gcount() != sizeof(value_proof)) {
     return NULL;
@@ -204,7 +208,7 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
 
     while (got_attrib && in && !in.eof()) {
       // We have an attribute.
-      size_t name_length;
+      xml_uint32 name_length;
       in.read((char *)&name_length, sizeof(name_length));
       if (in.gcount() != sizeof(name_length)) {
         delete xnode;
@@ -220,7 +224,7 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
       in.read(buffer, name_length);
       string name(buffer, name_length);
 
-      size_t value_length;
+      xml_uint32 value_length;
       in.read((char *)&value_length, sizeof(value_length));
       if (in.gcount() != sizeof(value_length)) {
         delete xnode;
@@ -321,7 +325,7 @@ read_xml(istream &in, ostream &logfile) {
 
 #if DO_BINARY_XML
   // binary read.
-  size_t buffer_length = 128;
+  xml_uint32 buffer_length = 128;
   char *buffer = new char[buffer_length];
   TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length, logfile);
   delete[] buffer;
