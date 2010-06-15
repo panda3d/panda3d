@@ -256,7 +256,6 @@ collide(PyObject* arg, PyObject* callback) {
 
 void OdeSpace::
 near_callback(void *data, dGeomID o1, dGeomID o2) {
-  odespace_cat.spam() << "near_callback called, data: " << data << ", dGeomID1: " << o1 << ", dGeomID2: " << o2 << "\n";
   OdeGeom g1 (o1);
   OdeGeom g2 (o2);
   PyObject* p1 = DTool_CreatePyInstanceTyped(&g1, Dtool_OdeGeom, true, false, g1.get_type_index());
@@ -268,8 +267,8 @@ near_callback(void *data, dGeomID o1, dGeomID o2) {
   } else {
     Py_DECREF(result);
   }
-  Py_DECREF(p2);
-  Py_DECREF(p1);
+  Py_XDECREF(p2);
+  Py_XDECREF(p1);
 }
 #endif
 
