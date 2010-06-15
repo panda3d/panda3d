@@ -16,6 +16,7 @@
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
+#include "pandaSystem.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -46,6 +47,10 @@
 ////////////////////////////////////////////////////////////////////
 Panda3D::
 Panda3D(bool console_environment) : Panda3DBase(console_environment) {
+  // We use the runtime PandaSystem setting for this value, rather
+  // than the hard-compiled-in setting, to allow users to override
+  // this with a Config.prc variable if needed.
+  _host_url = PandaSystem::get_package_host_url();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,7 +180,7 @@ run_command_line(int argc, char *argv[]) {
       exit(0);
 
     case 'U':
-      cout << PANDA_PACKAGE_HOST_URL << "\n";
+      cout << _host_url << "\n";
       exit(0);
 
     case 'P':
@@ -788,7 +793,7 @@ get_core_api() {
   P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                              P3D_PLUGIN_SEQUENCE_VERSION, official,
                              PANDA_DISTRIBUTOR,
-                             PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+                             _host_url.c_str(), _core_api_dll.get_timestamp());
 
   return true;
 }
@@ -881,7 +886,7 @@ usage() {
 
     << "    Specify the URL of the Panda3D download server.  This is the host\n"
     << "    from which the plugin itself will be downloaded if necessary.  The\n"
-    << "    default is \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
+    << "    default is \"" << _host_url << "\" .\n\n"
 
     << "  -M super_mirror_url\n"
     << "    Specifies the \"super mirror\" URL, the special URL that is consulted\n"
