@@ -130,6 +130,9 @@ public:
 
   void ParseFrameInfo(string comment);
   void PrintData(MayaEggMesh *mesh);
+
+private:
+  int _unnamed_idx;
 };
 
 MPoint MakeMPoint(const LVector3d &vec)
@@ -1364,7 +1367,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
   vector<int> cvertIndices;
   
   string delstring = " ";
-  
+
   if (node->is_of_type(EggPolygon::get_class_type())) {
     /*
     if (mayaloader_cat.is_debug()) {
@@ -1569,6 +1572,19 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     EggGroupNode *group = DCAST(EggGroupNode, node);
     if (node->is_of_type(EggGroup::get_class_type())) {
       EggGroup *group = DCAST(EggGroup, node);
+
+      if (group->get_name() == "") {
+        ostringstream stream;
+        stream << _unnamed_idx;
+        group->set_name("unnamed" + stream.str());
+        _unnamed_idx++;
+      }
+
+      string group_name = group->get_name();
+      size_t found = group_name.find(":");
+      if (found != string::npos)
+        group->set_name(group_name.replace(int(found), 1, "_"));
+
       string parent_name = "";
       if (context)
         parent_name = context->get_name();
@@ -1624,6 +1640,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   _end_frame = 0;
   _frame_rate = 24;
   _timeUnit = MTime::kFilm;
+  _unnamed_idx = 1;
 
   MeshTable::const_iterator ci;
   JointTable::const_iterator ji;
