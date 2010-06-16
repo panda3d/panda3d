@@ -536,6 +536,24 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
     return false;
   }
 
+  // Check the coreapi_set_ver token.  If it is given, it specifies a
+  // minimum Core API version number we expect to find.  If we didn't
+  // find that number, perhaps our contents.xml is out of date.
+  string coreapi_set_ver = lookup_token("coreapi_set_ver");
+  if (!coreapi_set_ver.empty()) {
+    nout << "Instance asked for Core API set_ver " << coreapi_set_ver
+         << ", we found " << _coreapi_set_ver << "\n";
+    // But don't bother if we just freshly downloaded it.
+    if (!fresh_download) {
+      if (compare_seq(coreapi_set_ver, _coreapi_set_ver) > 0) {
+        // The requested set_ver value is higher than the one we have on
+        // file; our contents.xml file must be out of date after all.
+        nout << "expiring contents.xml\n";
+        _contents_expiration = 0;
+      }
+    }
+  }
+
   // Success.  Now copy the file into place.
   Filename standard_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
   if (fresh_download) {

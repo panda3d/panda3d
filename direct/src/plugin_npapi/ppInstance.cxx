@@ -72,8 +72,15 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
         v = "";
       }
 
+      // Make the token lowercase, since HTML is case-insensitive but
+      // we're not.
+      string keyword;
+      for (const char *p = argn[i]; *p; ++p) {
+        keyword += tolower(*p);
+      }
+
       P3D_token token;
-      token._keyword = strdup(argn[i]);
+      token._keyword = strdup(keyword.c_str());
       token._value = strdup(v);
       _tokens.push_back(token);
     }
@@ -1238,6 +1245,24 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     return false;
   }
 
+  // Check the coreapi_set_ver token.  If it is given, it specifies a
+  // minimum Core API version number we expect to find.  If we didn't
+  // find that number, perhaps our contents.xml is out of date.
+  string coreapi_set_ver = lookup_token("coreapi_set_ver");
+  if (!coreapi_set_ver.empty()) {
+    nout << "Instance asked for Core API set_ver " << coreapi_set_ver
+         << ", we found " << _coreapi_set_ver << "\n";
+    // But don't bother if we just freshly downloaded it.
+    if (!fresh_download) {
+      if (compare_seq(coreapi_set_ver, _coreapi_set_ver) > 0) {
+        // The requested set_ver value is higher than the one we have on
+        // file; our contents.xml file must be out of date after all.
+        nout << "expiring contents.xml\n";
+        _contents_expiration = 0;
+      }
+    }
+  }
+
   // Success.  Now save the file in its proper place.
   string standard_filename = _root_dir + "/contents.xml";
 
@@ -1810,6 +1835,88 @@ copy_file(const string &from_filename, const string &to_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::lookup_token
+//       Access: Private
+//  Description: Returns the value associated with the first
+//               appearance of the named token, or empty string if the
+//               token does not appear.
+////////////////////////////////////////////////////////////////////
+string PPInstance::
+lookup_token(const string &keyword) const {
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    if (keyword == (*ti)._keyword) {
+      return (*ti)._value;
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::compare_seq
+//       Access: Private, Static
+//  Description: Compares the two dotted-integer sequence values
+//               numerically.  Returns -1 if seq_a sorts first, 1 if
+//               seq_b sorts first, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+int PPInstance::
+compare_seq(const string &seq_a, const string &seq_b) {
+  const char *num_a = seq_a.c_str();
+  const char *num_b = seq_b.c_str();
+  int comp = compare_seq_int(num_a, num_b);
+  while (comp == 0) {
+    if (*num_a != '.') {
+      if (*num_b != '.') {
+        // Both strings ran out together.
+        return 0;
+      }
+      // a ran out first.
+      return -1;
+    } else if (*num_b != '.') {
+      // b ran out first.
+      return 1;
+    }
+
+    // Increment past the dot.
+    ++num_a;
+    ++num_b;
+    comp = compare_seq(num_a, num_b);
+  }
+
+  return comp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::compare_seq_int
+//       Access: Private, Static
+//  Description: Numerically compares the formatted integer value at
+//               num_a with num_b.  Increments both num_a and num_b to
+//               the next character following the valid integer.
+////////////////////////////////////////////////////////////////////
+int PPInstance::
+compare_seq_int(const char *&num_a, const char *&num_b) {
+  long int a;
+  char *next_a;
+  long int b;
+  char *next_b;
+
+  a = strtol((char *)num_a, &next_a, 10);
+  b = strtol((char *)num_b, &next_b, 10);
+
+  num_a = next_a;
+  num_b = next_b;
+
+  if (a < b) {
+    return -1;
+  } else if (b < a) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::set_failed
 //       Access: Private
 //  Description: Called when something has gone wrong that prevents
@@ -1824,23 +1931,8 @@ set_failed() {
     nout << "Plugin failed.\n";
     stop_outstanding_streams();
 
-    string expression;
     // Look for the "onpluginfail" token.
-    Tokens::iterator ti;
-    for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
-      if ((*ti)._keyword != NULL && (*ti)._value != NULL) {
-        // Make the token lowercase, since HTML is case-insensitive but
-        // we're not.
-        string keyword;
-        for (const char *p = (*ti)._keyword; *p; ++p) {
-          keyword += tolower(*p);
-        }
-        if (keyword == "onpluginfail") {
-          expression = (*ti)._value;
-          break;
-        }
-      }
-    }
+    string expression = lookup_token("onpluginfail");
 
     if (!expression.empty()) {
       // Now attempt to evaluate the expression.

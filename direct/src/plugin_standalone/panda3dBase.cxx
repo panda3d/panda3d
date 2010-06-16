@@ -434,19 +434,21 @@ delete_instance(P3D_instance *inst) {
 //               on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3DBase::
-parse_token(char *arg) {
-  char *equals = strchr(arg, '=');
+parse_token(const char *arg) {
+  const char *equals = strchr(arg, '=');
   if (equals == NULL) {
     return false;
   }
 
-  // Directly munge the C string to truncate it at the equals sign.
-  // Classic C tricks.
-  *equals = '\0';
+  // By convention, the keyword is always lowercase.
+  string keyword;
+  for (const char *p = arg; p < equals; ++p) {
+    keyword += tolower(*p);
+  }
+
   P3D_token token;
-  token._keyword = strdup(arg);
+  token._keyword = strdup(keyword.c_str());
   token._value = strdup(equals + 1);
-  *equals = '=';
 
   _tokens.push_back(token);
 
@@ -460,7 +462,7 @@ parse_token(char *arg) {
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3DBase::
-parse_int_pair(char *arg, int &x, int &y) {
+parse_int_pair(const char *arg, int &x, int &y) {
   char *endptr;
   x = strtol(arg, &endptr, 10);
   if (*endptr == ',') {
@@ -472,6 +474,88 @@ parse_int_pair(char *arg, int &x, int &y) {
 
   // Some parse error on the string.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3DBase::lookup_token
+//       Access: Protected
+//  Description: Returns the value associated with the first
+//               appearance of the named token, or empty string if the
+//               token does not appear.
+////////////////////////////////////////////////////////////////////
+string Panda3DBase::
+lookup_token(const string &keyword) const {
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    if (keyword == (*ti)._keyword) {
+      return (*ti)._value;
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3DBase::compare_seq
+//       Access: Protected, Static
+//  Description: Compares the two dotted-integer sequence values
+//               numerically.  Returns -1 if seq_a sorts first, 1 if
+//               seq_b sorts first, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+int Panda3DBase::
+compare_seq(const string &seq_a, const string &seq_b) {
+  const char *num_a = seq_a.c_str();
+  const char *num_b = seq_b.c_str();
+  int comp = compare_seq_int(num_a, num_b);
+  while (comp == 0) {
+    if (*num_a != '.') {
+      if (*num_b != '.') {
+        // Both strings ran out together.
+        return 0;
+      }
+      // a ran out first.
+      return -1;
+    } else if (*num_b != '.') {
+      // b ran out first.
+      return 1;
+    }
+
+    // Increment past the dot.
+    ++num_a;
+    ++num_b;
+    comp = compare_seq(num_a, num_b);
+  }
+
+  return comp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3DBase::compare_seq_int
+//       Access: Protected, Static
+//  Description: Numerically compares the formatted integer value at
+//               num_a with num_b.  Increments both num_a and num_b to
+//               the next character following the valid integer.
+////////////////////////////////////////////////////////////////////
+int Panda3DBase::
+compare_seq_int(const char *&num_a, const char *&num_b) {
+  long int a;
+  char *next_a;
+  long int b;
+  char *next_b;
+
+  a = strtol((char *)num_a, &next_a, 10);
+  b = strtol((char *)num_b, &next_b, 10);
+
+  num_a = next_a;
+  num_b = next_b;
+
+  if (a < b) {
+    return -1;
+  } else if (b < a) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -94,6 +94,10 @@ private:
   void cleanup_window();
   bool copy_file(const string &from_filename, const string &to_filename);
 
+  string lookup_token(const string &keyword) const;
+  static int compare_seq(const string &seq_a, const string &seq_b);
+  static int compare_seq_int(const char *&num_a, const char *&num_b);
+
   void set_failed();
 
   static void handle_request_loop();
