@@ -81,6 +81,7 @@ $[cdefine PANDA_NUMERIC_VERSION]
 $[cdefine P3D_PLUGIN_MAJOR_VERSION]
 $[cdefine P3D_PLUGIN_MINOR_VERSION]
 $[cdefine P3D_PLUGIN_SEQUENCE_VERSION]
+# define P3D_COREAPI_VERSION_STR "$[join .,$[P3D_COREAPI_VERSION]]"
 #endif
 
 #end pandaVersion.h

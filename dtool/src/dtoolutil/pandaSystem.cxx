@@ -119,6 +119,31 @@ get_package_host_url() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_p3d_coreapi_version_string
+//       Access: Published, Static
+//  Description: Returns the current version of Panda's Core API,
+//               expressed as a string of dot-delimited integers.
+//               There are usually four integers in this version, but
+//               this is not guaranteed.
+//
+//               The Core API is used during the runtime (plugin)
+//               environment only.  This may be the empty string if
+//               the current version of Panda is not built to provide
+//               a particular Core API, which will be the normal case
+//               in a development SDK.  However, you should not use
+//               this method to determine whether you are running in a
+//               runtime environment or not.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_p3d_coreapi_version_string() {
+#ifndef P3D_COREAPI_VERSION_STR
+  return "";
+#else
+  return P3D_COREAPI_VERSION_STR;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_major_version
 //       Access: Published, Static
 //  Description: Returns the major version number of the current
