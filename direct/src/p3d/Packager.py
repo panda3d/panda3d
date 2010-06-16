@@ -166,7 +166,12 @@ class Packager:
         file. """
         
         def __init__(self):
+            # The "seq" value increments automatically with each publish.
             self.packageSeq = SeqValue()
+
+            # The "set_ver" value is optionally specified in the pdef
+            # file and does not change unless the user says it does.
+            self.packageSetVer = SeqValue()
 
         def getKey(self):
             """ Returns a tuple used for sorting the PackageEntry
@@ -196,7 +201,10 @@ class Packager:
             self.solo = int(solo or '0')
 
             self.packageSeq = SeqValue()
-            self.packageSeq.loadXml(xpackage)
+            self.packageSeq.loadXml(xpackage, 'seq')
+
+            self.packageSetVer = SeqValue()
+            self.packageSetVer.loadXml(xpackage, 'set_ver')
 
             self.descFile = FileSpec()
             self.descFile.loadXml(xpackage)
@@ -219,7 +227,8 @@ class Packager:
             if self.solo:
                 xpackage.SetAttribute('solo', '1')
 
-            self.packageSeq.storeXml(xpackage)
+            self.packageSeq.storeXml(xpackage, 'seq')
+            self.packageSetVer.storeXml(xpackage, 'set_ver')
             self.descFile.storeXml(xpackage)
 
             if self.importDescFile:
@@ -317,6 +326,10 @@ class Packager:
             self.mainModule = None
             self.signParams = []
             self.requires = []
+
+            # This may be set explicitly in the pdef file to a
+            # particular sequence value.
+            self.packageSetVer = SeqValue()
 
             # This is the set of config variables assigned to the
             # package.
@@ -679,6 +692,7 @@ class Packager:
                             False, self.packager.installDir,
                             self.packageDesc, self.packageImportDesc)
                 pe.packageSeq = self.packageSeq
+                pe.packageSetVer = self.packageSetVer
                 
                 self.packager.contents[pe.getKey()] = pe
                 self.packager.contentsChanged = True
@@ -743,6 +757,9 @@ class Packager:
             peOrig = self.packager.contents.get(pe.getKey(), None)
             if peOrig:
                 pe.packageSeq = peOrig.packageSeq + 1
+                pe.packageSetVer = peOrig.packageSetVer
+            if self.packageSetVer:
+                pe.packageSetVer = self.packageSetVer
 
             self.packager.contents[pe.getKey()] = pe
             self.packager.contentsChanged = True
@@ -1215,7 +1232,8 @@ class Packager:
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
                 xrequires.SetAttribute('host', package.host)
-                package.packageSeq.storeXml(xrequires)
+                package.packageSeq.storeXml(xrequires, 'seq')
+                package.packageSetVer.storeXml(xrequires, 'set_ver')
                 requireHosts[package.host] = True
                 xpackage.InsertEndChild(xrequires)
 
@@ -1262,6 +1280,7 @@ class Packager:
             similar historic data, between sessions. """
 
             self.packageSeq = SeqValue()
+            self.packageSetVer = SeqValue()
             self.patchVersion = None
             self.patches = []
 
@@ -1276,7 +1295,8 @@ class Packager:
             if not xpackage:
                 return
 
-            self.packageSeq.loadXml(xpackage)
+            self.packageSeq.loadXml(xpackage, 'seq')
+            self.packageSetVer.loadXml(xpackage, 'set_ver')
 
             xcompressed = xpackage.FirstChildElement('compressed_archive')
             if xcompressed:
@@ -1324,7 +1344,8 @@ class Packager:
             if self.patchVersion:
                 xpackage.SetAttribute('last_patch_version', self.patchVersion)
 
-            self.packageSeq.storeXml(xpackage)
+            self.packageSeq.storeXml(xpackage, 'seq')
+            self.packageSetVer.storeXml(xpackage, 'set_ver')
 
             self.__addConfigs(xpackage)
 
@@ -1335,7 +1356,8 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
-                package.packageSeq.storeXml(xrequires)
+                package.packageSeq.storeXml(xrequires, 'seq')
+                package.packageSetVer.storeXml(xrequires, 'set_ver')
                 xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
@@ -1397,7 +1419,8 @@ class Packager:
                 xpackage.SetAttribute('version', self.version)
             xpackage.SetAttribute('host', self.host)
 
-            self.packageSeq.storeXml(xpackage)
+            self.packageSeq.storeXml(xpackage, 'seq')
+            self.packageSetVer.storeXml(xpackage, 'set_ver')
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -1406,7 +1429,8 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
-                package.packageSeq.storeXml(xrequires)
+                package.packageSeq.storeXml(xrequires, 'seq')
+                package.packageSetVer.storeXml(xrequires, 'set_ver')
                 xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
@@ -1422,6 +1446,7 @@ class Packager:
             False on failure. """
 
             self.packageSeq = SeqValue()
+            self.packageSetVer = SeqValue()
 
             doc = TiXmlDocument(filename.toOsSpecific())
             if not doc.LoadFile():
@@ -1435,7 +1460,8 @@ class Packager:
             self.version = xpackage.Attribute('version')
             self.host = xpackage.Attribute('host')
 
-            self.packageSeq.loadXml(xpackage)
+            self.packageSeq.loadXml(xpackage, 'seq')
+            self.packageSetVer.loadXml(xpackage, 'set_ver')
 
             self.requires = []
             xrequires = xpackage.FirstChildElement('requires')
@@ -2707,6 +2733,12 @@ class Packager:
             return package
 
         return None
+
+    def do_setVer(self, value):
+        """ Sets an explicit set_ver number for the package, as a tuple
+        of integers, or as a string of dot-separated integers. """
+
+        self.currentPackage.packageSetVer = SeqValue(value)
 
     def do_config(self, **kw):
         """ Called with any number of keyword parameters.  For each

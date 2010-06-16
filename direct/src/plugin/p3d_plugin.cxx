@@ -80,7 +80,7 @@ P3D_initialize(int api_version, const char *contents_filename,
     log_basename = "";
   }
   
-  if (P3D_API_VERSION < 12 || root_dir == NULL) {
+  if (api_version < 12 || root_dir == NULL) {
     root_dir = "";
   }
 
@@ -104,7 +104,8 @@ void
 P3D_set_plugin_version(int major, int minor, int sequence,
                        bool official, const char *distributor,
                        const char *coreapi_host_url,
-                       time_t coreapi_timestamp) {
+                       time_t coreapi_timestamp,
+                       const char *coreapi_set_ver) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (distributor == NULL) {
     distributor = "";
@@ -115,8 +116,13 @@ P3D_set_plugin_version(int major, int minor, int sequence,
 
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (inst_mgr->get_api_version() < 14 || coreapi_set_ver == NULL) {
+    coreapi_set_ver = "";
+  }
+
   inst_mgr->set_plugin_version(major, minor, sequence, official, distributor,
-                               coreapi_host_url, coreapi_timestamp);
+                               coreapi_host_url, coreapi_timestamp,
+                               coreapi_set_ver);
   RELEASE_LOCK(_api_lock);
 }
 

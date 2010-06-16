@@ -487,9 +487,9 @@ class PatchMaker:
                 return
 
             packageSeq = SeqValue()
-            packageSeq.loadXml(xpackage)
+            packageSeq.loadXml(xpackage, 'seq')
             packageSeq += 1
-            packageSeq.storeXml(xpackage)
+            packageSeq.storeXml(xpackage, 'seq')
 
             # Remove all of the old patch entries from the desc file
             # we read earlier.
@@ -531,7 +531,7 @@ class PatchMaker:
             if doc.LoadFile():
                 xpackage = doc.FirstChildElement('package')
                 if xpackage:
-                    packageSeq.storeXml(xpackage)
+                    packageSeq.storeXml(xpackage, 'seq')
                     doc.SaveFile()
             else:
                 print "Couldn't read %s" % (importDescFullpath)
@@ -548,7 +548,7 @@ class PatchMaker:
                 # contents.xml file, mainly for documentation purposes
                 # (the authoritative seq value is within the desc
                 # file).
-                packageSeq.storeXml(self.contentsDocPackage)
+                packageSeq.storeXml(self.contentsDocPackage, 'seq')
 
 
     # PatchMaker constructor.

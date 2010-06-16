@@ -283,6 +283,20 @@ get_coreapi_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_coreapi_set_ver
+//       Access: Public
+//  Description: Returns the version number associated with the Core
+//               API, if provided.  Some early versions of the Core
+//               API, and some early versions of the plugin, did not
+//               provide a number here.  If provided, this will be a
+//               string of dot-separated integers.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_coreapi_set_ver() const {
+  return _coreapi_set_ver;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_super_mirror
 //       Access: Public
 //  Description: Returns the "super mirror" URL.  See p3d_plugin.h.

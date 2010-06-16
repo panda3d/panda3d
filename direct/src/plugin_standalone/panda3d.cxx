@@ -508,13 +508,18 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
     find_host(xcontents);
 
     // Now look for the core API package.
+    _coreapi_set_ver = "";
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
     while (xpackage != NULL) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && _this_platform == string(platform)) {
-          _core_api_dll.load_xml(xpackage);
+          _coreapi_dll.load_xml(xpackage);
+          const char *set_ver = xpackage->Attribute("set_ver");
+          if (set_ver != NULL) {
+            _coreapi_set_ver = set_ver;
+          }
           found_core_package = true;
           break;
         }
@@ -684,7 +689,7 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 get_core_api() {
-  if (!_core_api_dll.quick_verify(_root_dir)) {
+  if (!_coreapi_dll.quick_verify(_root_dir)) {
     // The DLL file needs to be downloaded.  Build up our list of
     // URL's to attempt to download it from, in reverse order.
     string url;
@@ -693,7 +698,7 @@ get_core_api() {
     // Our last act of desperation: hit the original host, with a
     // query uniquifier, to break through any caches.
     ostringstream strm;
-    strm << _download_url_prefix << _core_api_dll.get_filename()
+    strm << _download_url_prefix << _coreapi_dll.get_filename()
          << "?" << time(NULL);
     url = strm.str();
     core_urls.push_back(url);
@@ -701,7 +706,7 @@ get_core_api() {
     // Before we try that, we'll hit the original host, without a
     // uniquifier.
     url = _download_url_prefix;
-    url += _core_api_dll.get_filename();
+    url += _coreapi_dll.get_filename();
     core_urls.push_back(url);
 
     // And before we try that, we'll try two mirrors, at random.
@@ -710,20 +715,20 @@ get_core_api() {
     for (vector_string::iterator si = mirrors.begin();
          si != mirrors.end(); 
          ++si) {
-      url = (*si) + _core_api_dll.get_filename();
+      url = (*si) + _coreapi_dll.get_filename();
       core_urls.push_back(url);
     }
 
     // The very first thing we'll try is the super_mirror, if we have
     // one.
     if (!_super_mirror_url_prefix.empty()) {
-      url = _super_mirror_url_prefix + _core_api_dll.get_filename();
+      url = _super_mirror_url_prefix + _coreapi_dll.get_filename();
       core_urls.push_back(url);
     }
 
     // Now pick URL's off the list, and try them, until we have
     // success.
-    Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
+    Filename pathname = Filename::from_os_specific(_coreapi_dll.get_pathname(_root_dir));
     pathname.make_dir();
     HTTPClient *http = HTTPClient::get_global_ptr();
 
@@ -736,7 +741,7 @@ get_core_api() {
       if (!channel->download_to_file(pathname)) {
         cerr << "Unable to download " << url << "\n";
 
-      } else if (!_core_api_dll.full_verify(_root_dir)) {
+      } else if (!_coreapi_dll.full_verify(_root_dir)) {
         cerr << "Mismatched download for " << url << "\n";
 
       } else {
@@ -759,7 +764,7 @@ get_core_api() {
   }
 
   // Now we've got the DLL.  Load it.
-  string pathname = _core_api_dll.get_pathname(_root_dir);
+  string pathname = _coreapi_dll.get_pathname(_root_dir);
 
 #ifdef P3D_PLUGIN_P3D_PLUGIN
   // This is a convenience macro for development.  If defined and
@@ -793,7 +798,8 @@ get_core_api() {
   P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                              P3D_PLUGIN_SEQUENCE_VERSION, official,
                              PANDA_DISTRIBUTOR,
-                             _host_url.c_str(), _core_api_dll.get_timestamp());
+                             _host_url.c_str(), _coreapi_dll.get_timestamp(),
+                             _coreapi_set_ver.c_str());
 
   return true;
 }

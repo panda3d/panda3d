@@ -43,7 +43,9 @@ class PackageMerger:
             self.descFile.loadXml(xpackage)
 
             self.packageSeq = SeqValue()
-            self.packageSeq.loadXml(xpackage)
+            self.packageSeq.loadXml(xpackage, 'seq')
+            self.packageSetVer = SeqValue()
+            self.packageSetVer.loadXml(xpackage, 'set_ver')
 
             self.importDescFile = None
             ximport = xpackage.FirstChildElement('import')
@@ -63,7 +65,8 @@ class PackageMerger:
                 xpackage.SetAttribute('solo', '1')
 
             self.descFile.storeXml(xpackage)
-            self.packageSeq.storeXml(xpackage)
+            self.packageSeq.storeXml(xpackage, 'seq')
+            self.packageSetVer.storeXml(xpackage, 'set_ver')
 
             if self.importDescFile:
                 ximport = TiXmlElement('import')

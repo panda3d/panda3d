@@ -510,9 +510,10 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         static const bool official = false;
 #endif
         P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
-                               P3D_PLUGIN_SEQUENCE_VERSION, official,
-                               PANDA_DISTRIBUTOR,
-                               PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+                                   P3D_PLUGIN_SEQUENCE_VERSION, official,
+                                   PANDA_DISTRIBUTOR,
+                                   PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp(),
+                                   "");
 
       }
     }

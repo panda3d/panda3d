@@ -78,7 +78,8 @@ public:
   void set_plugin_version(int major, int minor, int sequence,
                           bool official, const string &distributor,
                           const string &coreapi_host_url,
-                          time_t coreapi_timestamp);
+                          time_t coreapi_timestamp,
+                          const string &coreapi_set_ver);
   inline int get_plugin_major_version() const;
   inline int get_plugin_minor_version() const;
   inline int get_plugin_sequence_version() const;
@@ -86,6 +87,7 @@ public:
   inline const string &get_plugin_distributor() const;
   inline const string &get_coreapi_host_url() const;
   inline time_t get_coreapi_timestamp() const;
+  inline const string &get_coreapi_set_ver() const;
 
   void set_super_mirror(const string &super_mirror_url);
   inline const string &get_super_mirror() const;
@@ -178,6 +180,7 @@ private:
   string _plugin_distributor;
   string _coreapi_host_url;
   time_t _coreapi_timestamp;
+  string _coreapi_set_ver;
   string _super_mirror_url;
 
   P3D_object *_undefined_object;

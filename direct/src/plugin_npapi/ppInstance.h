@@ -139,7 +139,8 @@ private:
   typedef vector<string> CoreUrls;
   CoreUrls _core_urls;
 
-  FileSpec _core_api_dll;
+  string _coreapi_set_ver;
+  FileSpec _coreapi_dll;
   time_t _contents_expiration;
   bool _failed;
   bool _started;

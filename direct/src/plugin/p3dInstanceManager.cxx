@@ -283,7 +283,8 @@ void P3DInstanceManager::
 set_plugin_version(int major, int minor, int sequence,
                    bool official, const string &distributor,
                    const string &coreapi_host_url,
-                   time_t coreapi_timestamp) {
+                   time_t coreapi_timestamp,
+                   const string &coreapi_set_ver) {
   reconsider_runtime_environment();
   _plugin_major_version = major;
   _plugin_minor_version = minor;
@@ -292,6 +293,7 @@ set_plugin_version(int major, int minor, int sequence,
   _plugin_distributor = distributor;
   _coreapi_host_url = coreapi_host_url;
   _coreapi_timestamp = coreapi_timestamp;
+  _coreapi_set_ver = coreapi_set_ver;
 
   nout << "Plugin version: "
        << _plugin_major_version << "."
@@ -303,6 +305,7 @@ set_plugin_version(int major, int minor, int sequence,
   nout << "\n";
   nout << "Plugin distributor: " << _plugin_distributor << "\n";
   nout << "Core API host URL: " <<  _coreapi_host_url << "\n";
+  nout << "Core API version: " << _coreapi_set_ver << "\n";
   nout << "Core API date: " << ctime(&_coreapi_timestamp) << "\n";
 }
 

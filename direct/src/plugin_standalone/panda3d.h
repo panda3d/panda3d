@@ -54,7 +54,8 @@ protected:
   typedef pvector<string> Mirrors;
   Mirrors _mirrors;
   
-  FileSpec _core_api_dll;
+  string _coreapi_set_ver;
+  FileSpec _coreapi_dll;
 };
 
 #include "panda3d.I"

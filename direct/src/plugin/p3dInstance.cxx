@@ -199,8 +199,8 @@ P3DInstance(P3D_request_ready_func *func,
     stream << "c";
   }
   
-// The plugin version as a single number, with three digits reserved
-// for each component.
+  // The plugin version as a single number, with three digits reserved
+  // for each component.
   int numeric_version = 
     inst_mgr->get_plugin_major_version() * 1000000 + 
     inst_mgr->get_plugin_minor_version() * 1000 + 
@@ -221,6 +221,7 @@ P3DInstance(P3D_request_ready_func *func,
   time_t timestamp = inst_mgr->get_coreapi_timestamp();
   _panda_script_object->set_int_property("coreapiTimestamp", (int)timestamp);
   _panda_script_object->set_string_property("coreapiTimestampString", ctime(&timestamp));
+  _panda_script_object->set_string_property("coreapiVersionString", inst_mgr->get_coreapi_set_ver());
 
 
   // We'll start off with the "download" image displayed in the splash

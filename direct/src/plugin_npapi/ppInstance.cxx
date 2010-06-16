@@ -1210,13 +1210,18 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     find_host(xcontents);
 
     // Now look for the core API package.
+    _coreapi_set_ver = "";
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
     while (xpackage != NULL) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
-          _core_api_dll.load_xml(xpackage);
+          _coreapi_dll.load_xml(xpackage);
+          const char *set_ver = xpackage->Attribute("set_ver");
+          if (set_ver != NULL) {
+            _coreapi_set_ver = set_ver;
+          }
           found_core_package = true;
           break;
         }
@@ -1428,7 +1433,7 @@ send_p3d_temp_file_data() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 get_core_api() {
-  if (_core_api_dll.quick_verify(_root_dir)) {
+  if (_coreapi_dll.quick_verify(_root_dir)) {
     // The DLL file is good.  Just load it.
     do_load_plugin();
 
@@ -1440,7 +1445,7 @@ get_core_api() {
     // Our last act of desperation: hit the original host, with a
     // query uniquifier, to break through any caches.
     ostringstream strm;
-    strm << _download_url_prefix << _core_api_dll.get_filename()
+    strm << _download_url_prefix << _coreapi_dll.get_filename()
          << "?" << time(NULL);
     url = strm.str();
     _core_urls.push_back(url);
@@ -1448,7 +1453,7 @@ get_core_api() {
     // Before we try that, we'll hit the original host, without a
     // uniquifier.
     url = _download_url_prefix;
-    url += _core_api_dll.get_filename();
+    url += _coreapi_dll.get_filename();
     _core_urls.push_back(url);
 
     // And before we try that, we'll try two mirrors, at random.
@@ -1457,7 +1462,7 @@ get_core_api() {
     for (vector<string>::iterator si = mirrors.begin();
          si != mirrors.end(); 
          ++si) {
-      url = (*si) + _core_api_dll.get_filename();
+      url = (*si) + _coreapi_dll.get_filename();
       _core_urls.push_back(url);
     }
 
@@ -1492,8 +1497,8 @@ downloaded_plugin(const string &filename) {
   }
 
   // Make sure the DLL was correctly downloaded before continuing.
-  if (!_core_api_dll.quick_verify_pathname(filename)) {
-    nout << "After download, " << _core_api_dll.get_filename() << " is no good.\n";
+  if (!_coreapi_dll.quick_verify_pathname(filename)) {
+    nout << "After download, " << _coreapi_dll.get_filename() << " is no good.\n";
 
     // That DLL came out wrong.  Try the next URL.
     if (!_core_urls.empty()) {
@@ -1510,14 +1515,14 @@ downloaded_plugin(const string &filename) {
   }
 
   // Copy the file onto the target.
-  string pathname = _core_api_dll.get_pathname(_root_dir);
+  string pathname = _coreapi_dll.get_pathname(_root_dir);
   if (!copy_file(filename, pathname)) {
     nout << "Couldn't copy " << pathname << "\n";
     set_failed();
     return;
   }
 
-  if (!_core_api_dll.quick_verify(_root_dir)) {
+  if (!_coreapi_dll.quick_verify(_root_dir)) {
     nout << "After copying, " << pathname << " is no good.\n";
     set_failed();
     return;
@@ -1537,7 +1542,7 @@ downloaded_plugin(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 do_load_plugin() {
-  string pathname = _core_api_dll.get_pathname(_root_dir);
+  string pathname = _coreapi_dll.get_pathname(_root_dir);
 
 #ifdef P3D_PLUGIN_P3D_PLUGIN
   // This is a convenience macro for development.  If defined and
@@ -1567,9 +1572,10 @@ do_load_plugin() {
   static const bool official = false;
 #endif
   P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
-                         P3D_PLUGIN_SEQUENCE_VERSION, official,
-                         PANDA_DISTRIBUTOR,
-                         PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp());
+                             P3D_PLUGIN_SEQUENCE_VERSION, official,
+                             PANDA_DISTRIBUTOR,
+                             PANDA_PACKAGE_HOST_URL, _coreapi_dll.get_timestamp(),
+                             _coreapi_set_ver.c_str());
 
   create_instance();
 }

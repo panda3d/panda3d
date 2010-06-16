@@ -1,4 +1,4 @@
-from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename, DSearchPath, ExecutionEnvironment
+from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename, DSearchPath, ExecutionEnvironment, PandaSystem
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -22,6 +22,7 @@ from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename, 
 class coreapi(solo):
     # The special "coreapi" package.  As a "solo", this is just a
     # single .dll (or dylib, or whatever).
+    setVer(PandaSystem.getP3dCoreapiVersionString())
     file('p3d_plugin.dll')
 
 class images(package):
