@@ -10,6 +10,10 @@
    "coreapi" package should be found at this location. */
 #$[]define PANDA_PACKAGE_HOST_URL "$[PANDA_PACKAGE_HOST_URL]"
 
+/* The Core API version number.  This one also appears in
+   pandaVersion.h. */
+#$[]define P3D_COREAPI_VERSION_STR "$[join .,$[P3D_COREAPI_VERSION]]"
+
 /* The filename(s) to generate output to when the plugin is running.
    For debugging purposes only. */
 #$[]define P3D_PLUGIN_LOG_DIRECTORY "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOG_DIRECTORY]]]"

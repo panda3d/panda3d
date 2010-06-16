@@ -291,9 +291,36 @@ set_plugin_version(int major, int minor, int sequence,
   _plugin_sequence_version = sequence;
   _plugin_official_version = official;
   _plugin_distributor = distributor;
+
+  // The Core API "host URL" is both compiled in, and comes in
+  // externally; we trust the external source in the case of a
+  // conflict.
+  string internal_host_url = PANDA_PACKAGE_HOST_URL;
+  if (coreapi_host_url != internal_host_url) {
+    nout << "Warning!  Downloaded Core API from " << coreapi_host_url
+         << ", but its internal URL was " << internal_host_url << "\n";
+  }
   _coreapi_host_url = coreapi_host_url;
+  if (_coreapi_host_url.empty()) {
+    _coreapi_host_url = internal_host_url;
+  }
+
+  // The Core API timestamp is only available externally.
   _coreapi_timestamp = coreapi_timestamp;
-  _coreapi_set_ver = coreapi_set_ver;
+
+  // The Core API "set ver", or version, is both compiled in and comes
+  // in externally; for this one we trust the internal version in the
+  // case of a conflict.
+  string internal_set_ver = P3D_COREAPI_VERSION_STR;
+  if (coreapi_set_ver != internal_set_ver && !coreapi_set_ver.empty() && !internal_set_ver.empty()) {
+    nout << "Warning!  contents.xml reports Core API version number "
+         << coreapi_set_ver << ", but its actual version number is " 
+         << internal_set_ver << "\n";
+  }
+  _coreapi_set_ver = internal_set_ver;
+  if (_coreapi_set_ver.empty()) {
+    _coreapi_set_ver = coreapi_set_ver;
+  }
 
   nout << "Plugin version: "
        << _plugin_major_version << "."
