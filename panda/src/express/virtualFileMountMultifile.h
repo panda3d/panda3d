@@ -38,6 +38,9 @@ public:
   virtual bool is_directory(const Filename &file) const;
   virtual bool is_regular_file(const Filename &file) const;
 
+  virtual bool read_file(const Filename &file, bool do_uncompress,
+                         pvector<unsigned char> &result) const;
+
   virtual istream *open_read_file(const Filename &file) const;
   virtual off_t get_file_size(const Filename &file, istream *stream) const;
   virtual off_t get_file_size(const Filename &file) const;

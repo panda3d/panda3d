@@ -278,35 +278,18 @@ read_file(string &result, bool auto_unwrap) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::read_file
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Fills up the indicated pvector with the contents of
 //               the file, if it is a regular file.  Returns true on
 //               success, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
 read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
-  result.clear();
-
-  istream *in = open_read_file(auto_unwrap);
-  if (in == (istream *)NULL) {
-    express_cat.info()
-      << "Unable to read " << get_filename() << "\n";
-    return false;
-  }
-
-  bool okflag = read_file(in, result);
-
-  close_read_file(in);
-
-  if (!okflag) {
-    express_cat.info()
-      << "Error while reading " << get_filename() << "\n";
-  }
-  return okflag;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::read_file
+//     Function: VirtualFile::simple_read_file
 //       Access: Public, Static
 //  Description: Fills up the indicated pvector with the contents of
 //               the just-opened file.  Returns true on success, false
@@ -314,10 +297,8 @@ read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
 //               data read from the file will be appended onto it.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
-read_file(istream *in, pvector<unsigned char> &result) {
-  pvector<char> result_vec;
-
-  static const size_t buffer_size = 1024;
+simple_read_file(istream *in, pvector<unsigned char> &result) {
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   in->read(buffer, buffer_size);
@@ -333,14 +314,14 @@ read_file(istream *in, pvector<unsigned char> &result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::read_file
-//       Access: Public, Static
-//  Description: As in read_file() with two parameters, above, but
-//               only reads up to max_bytes bytes from the file.
+//     Function: VirtualFile::simple_read_file
+//       Access: Public
+//  Description: As in simple_read_file() with two parameters, above,
+//               but only reads up to max_bytes bytes from the file.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
-read_file(istream *in, pvector<unsigned char> &result, size_t max_bytes) {
-  static const size_t buffer_size = 1024;
+simple_read_file(istream *in, pvector<unsigned char> &result, size_t max_bytes) {
+  static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   in->read(buffer, min(buffer_size, max_bytes));

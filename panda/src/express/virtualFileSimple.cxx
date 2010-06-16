@@ -15,7 +15,6 @@
 #include "virtualFileSimple.h"
 #include "virtualFileMount.h"
 #include "virtualFileList.h"
-#include "zStream.h"
 
 TypeHandle VirtualFileSimple::_type_handle;
 
@@ -106,24 +105,15 @@ istream *VirtualFileSimple::
 open_read_file(bool auto_unwrap) const {
 
   // Will we be automatically unwrapping a .pz file?
-  bool do_unwrap = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
+  bool do_uncompress = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
 
   Filename local_filename(_local_filename);
-  if (do_unwrap) {
+  if (do_uncompress) {
     // .pz files are always binary, of course.
     local_filename.set_binary();
   }
 
-  istream *result = _mount->open_read_file(local_filename);
-#ifdef HAVE_ZLIB
-  if (result != (istream *)NULL && do_unwrap) {
-    // We have to slip in a layer to decompress the file on the fly.
-    IDecompressStream *wrapper = new IDecompressStream(result, true);
-    result = wrapper;
-  }
-#endif  // HAVE_ZLIB
-
-  return result;
+  return _mount->open_read_file(local_filename, do_uncompress);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,6 +158,28 @@ get_file_size() const {
 time_t VirtualFileSimple::
 get_timestamp() const {
   return _mount->get_timestamp(_local_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::read_file
+//       Access: Public, Virtual
+//  Description: Fills up the indicated pvector with the contents of
+//               the file, if it is a regular file.  Returns true on
+//               success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+
+  // Will we be automatically unwrapping a .pz file?
+  bool do_uncompress = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
+
+  Filename local_filename(_local_filename);
+  if (do_uncompress) {
+    // .pz files are always binary, of course.
+    local_filename.set_binary();
+  }
+
+  return _mount->read_file(local_filename, do_uncompress, result);
 }
 
 ////////////////////////////////////////////////////////////////////

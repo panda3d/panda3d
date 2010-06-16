@@ -64,6 +64,36 @@ is_regular_file(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountMultifile::read_file
+//       Access: Public, Virtual
+//  Description: Fills up the indicated pvector with the contents of
+//               the file, if it is a regular file.  Returns true on
+//               success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountMultifile::
+read_file(const Filename &file, bool do_uncompress,
+          pvector<unsigned char> &result) const {
+  if (do_uncompress) {
+    // If the file is to be decompressed, we'd better just use the
+    // higher-level implementation, which includes support for
+    // on-the-fly decompression.
+    return VirtualFileMount::read_file(file, do_uncompress, result);
+  }
+
+  // But if we're just reading a straight file, let the Multifile do
+  // the reading, which avoids a few levels of buffer copies.
+
+  int subfile_index = _multifile->find_subfile(file);
+  if (subfile_index < 0) {
+    express_cat.info()
+      << "Unable to read " << file << "\n";
+    return false;
+  }
+
+  return _multifile->read_subfile(subfile_index, result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountMultifile::open_read_file
 //       Access: Public, Virtual
 //  Description: Opens the file for reading, if it exists.  Returns a

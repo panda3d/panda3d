@@ -14,6 +14,7 @@
 
 #include "virtualFileMount.h"
 #include "virtualFileSimple.h"
+#include "zStream.h"
 
 TypeHandle VirtualFileMount::_type_handle;
 
@@ -51,6 +52,67 @@ make_virtual_file(const Filename &local_filename,
   file->set_original_filename(original_filename);
 
   return file.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::read_file
+//       Access: Public, Virtual
+//  Description: Fills up the indicated pvector with the contents of
+//               the file, if it is a regular file.  Returns true on
+//               success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMount::
+read_file(const Filename &file, bool do_uncompress,
+          pvector<unsigned char> &result) const {
+  result.clear();
+
+  istream *in = open_read_file(file, do_uncompress);
+  if (in == (istream *)NULL) {
+    express_cat.info()
+      << "Unable to read " << file << "\n";
+    return false;
+  }
+
+  off_t file_size = get_file_size(file, in);
+  if (file_size != 0) {
+    result.reserve((size_t)file_size);
+  }
+
+  bool okflag = VirtualFile::simple_read_file(in, result);
+
+  close_read_file(in);
+
+  if (!okflag) {
+    express_cat.info()
+      << "Error while reading " << file << "\n";
+  }
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_read_file
+//       Access: Published, Virtual
+//  Description: Opens the file for reading.  Returns a newly
+//               allocated istream on success (which you should
+//               eventually delete when you are done reading).
+//               Returns NULL on failure.
+//
+//               If do_uncompress is true, the file is also
+//               decompressed on-the-fly using zlib.
+////////////////////////////////////////////////////////////////////
+istream *VirtualFileMount::
+open_read_file(const Filename &file, bool do_uncompress) const {
+  istream *result = open_read_file(file);
+
+#ifdef HAVE_ZLIB
+  if (result != (istream *)NULL && do_uncompress) {
+    // We have to slip in a layer to decompress the file on the fly.
+    IDecompressStream *wrapper = new IDecompressStream(result, true);
+    result = wrapper;
+  }
+#endif  // HAVE_ZLIB
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

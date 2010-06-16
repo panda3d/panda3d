@@ -91,7 +91,11 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
+#ifdef HAVE_PYTHON
+  BLOCKING PyObject *__py__read_file(const Filename &filename, bool auto_unwrap) const;
+#endif  // HAVE_PYTHON
   BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
+
   BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(istream *stream);
 

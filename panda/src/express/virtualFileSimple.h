@@ -47,6 +47,9 @@ PUBLISHED:
   virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;
 
+public:
+  virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 
                                     const ov_set<string> &mount_points) const;

@@ -765,6 +765,32 @@ get_global_ptr() {
   return _global_ptr;
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::__py__read_file
+//       Access: Published
+//  Description: Convenience function; returns the entire contents of
+//               the indicated file as a string.
+//
+//               This variant on read_file() is implemented directly
+//               for Python, as a small optimization, to avoid the
+//               double-construction of a string object that would be
+//               otherwise required for the return value.
+////////////////////////////////////////////////////////////////////
+PyObject *VirtualFileSystem::
+__py__read_file(const Filename &filename, bool auto_unwrap) const {
+  pvector<unsigned char> pv;
+  bool okflag = read_file(filename, pv, auto_unwrap);
+  nassertr(okflag, NULL);
+
+  if (pv.empty()) {
+    return PyString_FromStringAndSize("", 0);
+  } else {
+    return PyString_FromStringAndSize((const char *)&pv[0], pv.size());
+  }
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::open_read_file
 //       Access: Published
