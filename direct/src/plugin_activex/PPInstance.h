@@ -77,6 +77,10 @@ protected:
     bool HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
 
+    string lookup_token(const string &keyword) const;
+    static int compare_seq(const string &seq_a, const string &seq_b);
+    static int compare_seq_int(const char *&num_a, const char *&num_b);
+
     void set_failed();
 
     P3D_instance* m_p3dInstance;
@@ -90,7 +94,8 @@ protected:
     std::string _download_url_prefix;
     typedef std::vector<std::string> Mirrors;
     Mirrors _mirrors;
-    FileSpec _core_api_dll;
+    string _coreapi_set_ver;
+    FileSpec _coreapi_dll;
     time_t _contents_expiration;
     bool _failed;
 

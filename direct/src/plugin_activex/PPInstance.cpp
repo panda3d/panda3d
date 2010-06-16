@@ -89,6 +89,8 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
   // Ensure this event is initially in the "set" state, in case we
   // never get a download request before we get a close request.
   m_eventDownloadStopped.SetEvent( );
+
+  nout << "Plugin is built with " << PANDA_PACKAGE_HOST_URL << "\n";
 }
 
 PPInstance::~PPInstance(  )
@@ -200,13 +202,18 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     find_host(xcontents);
 
     // Now look for the core API package.
+    _coreapi_set_ver = "";
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
     while (xpackage != NULL) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
         if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
-          _core_api_dll.load_xml(xpackage);
+          _coreapi_dll.load_xml(xpackage);
+          const char *set_ver = xpackage->Attribute("set_ver");
+          if (set_ver != NULL) {
+            _coreapi_set_ver = set_ver;
+          }
           found_core_package = true;
           break;
         }
@@ -221,6 +228,24 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     nout << "No coreapi package defined in contents file for "
          << DTOOL_PLATFORM << "\n";
     return false;
+  }
+
+  // Check the coreapi_set_ver token.  If it is given, it specifies a
+  // minimum Core API version number we expect to find.  If we didn't
+  // find that number, perhaps our contents.xml is out of date.
+  string coreapi_set_ver = lookup_token("coreapi_set_ver");
+  if (!coreapi_set_ver.empty()) {
+    nout << "Instance asked for Core API set_ver " << coreapi_set_ver
+         << ", we found " << _coreapi_set_ver << "\n";
+    // But don't bother if we just freshly downloaded it.
+    if (!fresh_download) {
+      if (compare_seq(coreapi_set_ver, _coreapi_set_ver) > 0) {
+        // The requested set_ver value is higher than the one we have on
+        // file; our contents.xml file must be out of date after all.
+        nout << "expiring contents.xml\n";
+        _contents_expiration = 0;
+      }
+    }
   }
 
   // Success.  Now save the file in its proper place.
@@ -409,13 +434,13 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
       
     if (!error) {
       // OK, at this point we have successfully read contents.xml,
-      // and we have a good file spec in _core_api_dll.
-      if (_core_api_dll.quick_verify(m_rootDir)) {
+      // and we have a good file spec in _coreapi_dll.
+      if (_coreapi_dll.quick_verify(m_rootDir)) {
         // The DLL is already on-disk, and is good.
-        p3dDllFilename = _core_api_dll.get_pathname(m_rootDir);
+        p3dDllFilename = _coreapi_dll.get_pathname(m_rootDir);
       } else {
         // The DLL is not already on-disk, or it's stale.  Go get it.
-        std::string p3dLocalModuleFileName(_core_api_dll.get_pathname(m_rootDir));
+        std::string p3dLocalModuleFileName(_coreapi_dll.get_pathname(m_rootDir));
         mkfile_complete(p3dLocalModuleFileName, nout);
 
         // Try one of the mirrors first.
@@ -426,9 +451,9 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
         for (std::vector<std::string>::iterator si = mirrors.begin();
              si != mirrors.end() && error; 
              ++si) {
-          std::string url = (*si) + _core_api_dll.get_filename();
+          std::string url = (*si) + _coreapi_dll.get_filename();
           error = DownloadFile(url, p3dLocalModuleFileName);
-          if (!error && !_core_api_dll.full_verify(m_rootDir)) {
+          if (!error && !_coreapi_dll.full_verify(m_rootDir)) {
             // If it's not right after downloading, it's an error.
             error = 1;
           }
@@ -436,9 +461,9 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 
         // If that failed, go get it from the authoritative host.
         if (error) {
-          std::string url = _download_url_prefix + _core_api_dll.get_filename();
+          std::string url = _download_url_prefix + _coreapi_dll.get_filename();
           error = DownloadFile(url, p3dLocalModuleFileName);
-          if (!error && !_core_api_dll.full_verify(m_rootDir)) {
+          if (!error && !_coreapi_dll.full_verify(m_rootDir)) {
             error = 1;
           }
         }
@@ -447,13 +472,13 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
         // time with a query prefix to bust through any caches.
         if (error) {
           std::ostringstream strm;
-          strm << _download_url_prefix << _core_api_dll.get_filename();
+          strm << _download_url_prefix << _coreapi_dll.get_filename();
           strm << "?" << time(NULL);
 
           std::string url = strm.str();
           error = DownloadFile(url, p3dLocalModuleFileName);
-          if (!error && !_core_api_dll.full_verify(m_rootDir)) {
-            nout << "After download, " << _core_api_dll.get_filename()
+          if (!error && !_coreapi_dll.full_verify(m_rootDir)) {
+            nout << "After download, " << _coreapi_dll.get_filename()
                  << " is no good.\n";
             error = 1;
           }
@@ -461,7 +486,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 
         if (!error) {
           // Downloaded successfully.
-          p3dDllFilename = _core_api_dll.get_pathname(m_rootDir);
+          p3dDllFilename = _coreapi_dll.get_pathname(m_rootDir);
         }
       }
     }
@@ -512,8 +537,8 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                                    P3D_PLUGIN_SEQUENCE_VERSION, official,
                                    PANDA_DISTRIBUTOR,
-                                   PANDA_PACKAGE_HOST_URL, _core_api_dll.get_timestamp(),
-                                   "");
+                                   PANDA_PACKAGE_HOST_URL, _coreapi_dll.get_timestamp(),
+                                   _coreapi_set_ver.c_str());
 
       }
     }
@@ -578,7 +603,14 @@ int PPInstance::Start( const std::string& p3dFilename  )
     for ( UINT i = 0; i < m_parentCtrl.m_parameters.size(); i++ )
     {
         std::pair< CString, CString > keyAndValue = m_parentCtrl.m_parameters[ i ];
-        p3dTokens[i]._keyword = strdup( m_parentCtrl.m_parameters[ i ].first ); 
+        // Make the token lowercase, since HTML is case-insensitive but
+        // we're not.
+        string keyword;
+        for (const char *p = m_parentCtrl.m_parameters[ i ].first; *p; ++p) {
+          keyword += tolower(*p);
+        }
+
+        p3dTokens[i]._keyword = strdup( keyword.c_str() ); 
         p3dTokens[i]._value = strdup( m_parentCtrl.m_parameters[ i ].second );
     }
     nout << "Creating new P3D instance object \n";
@@ -780,6 +812,96 @@ HandleRequest( P3D_request *request ) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::lookup_token
+//       Access: Private
+//  Description: Returns the value associated with the first
+//               appearance of the named token, or empty string if the
+//               token does not appear.
+////////////////////////////////////////////////////////////////////
+string PPInstance::
+lookup_token(const string &keyword) const {
+  for (UINT i = 0; i < m_parentCtrl.m_parameters.size(); i++) {
+    std::pair<CString, CString> keyAndValue = m_parentCtrl.m_parameters[i];
+    // Make the token lowercase, since HTML is case-insensitive but
+    // we're not.
+    const CString &orig_keyword = m_parentCtrl.m_parameters[i].first;
+    string lower_keyword;
+    for (const char *p = orig_keyword; *p; ++p) {
+      lower_keyword += tolower(*p);
+    }
+    
+    if (lower_keyword == keyword) {
+      return m_parentCtrl.m_parameters[i].second;
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::compare_seq
+//       Access: Private, Static
+//  Description: Compares the two dotted-integer sequence values
+//               numerically.  Returns -1 if seq_a sorts first, 1 if
+//               seq_b sorts first, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+int PPInstance::
+compare_seq(const string &seq_a, const string &seq_b) {
+  const char *num_a = seq_a.c_str();
+  const char *num_b = seq_b.c_str();
+  int comp = compare_seq_int(num_a, num_b);
+  while (comp == 0) {
+    if (*num_a != '.') {
+      if (*num_b != '.') {
+        // Both strings ran out together.
+        return 0;
+      }
+      // a ran out first.
+      return -1;
+    } else if (*num_b != '.') {
+      // b ran out first.
+      return 1;
+    }
+
+    // Increment past the dot.
+    ++num_a;
+    ++num_b;
+    comp = compare_seq(num_a, num_b);
+  }
+
+  return comp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::compare_seq_int
+//       Access: Private, Static
+//  Description: Numerically compares the formatted integer value at
+//               num_a with num_b.  Increments both num_a and num_b to
+//               the next character following the valid integer.
+////////////////////////////////////////////////////////////////////
+int PPInstance::
+compare_seq_int(const char *&num_a, const char *&num_b) {
+  long int a;
+  char *next_a;
+  long int b;
+  char *next_b;
+
+  a = strtol((char *)num_a, &next_a, 10);
+  b = strtol((char *)num_b, &next_b, 10);
+
+  num_a = next_a;
+  num_b = next_b;
+
+  if (a < b) {
+    return -1;
+  } else if (b < a) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::set_failed
 //       Access: Private
 //  Description: Called when something has gone wrong that prevents
@@ -793,24 +915,8 @@ set_failed() {
 
     nout << "Plugin failed.\n";
 
-    string expression;
     // Look for the "onpluginfail" token.
-    
-    for (UINT i = 0; i < m_parentCtrl.m_parameters.size(); i++) {
-      std::pair<CString, CString> keyAndValue = m_parentCtrl.m_parameters[i];
-      // Make the token lowercase, since HTML is case-insensitive but
-      // we're not.
-      const CString &orig_keyword = m_parentCtrl.m_parameters[i].first;
-      string keyword;
-      for (const char *p = orig_keyword; *p; ++p) {
-        keyword += tolower(*p);
-      }
-      
-      if (keyword == "onpluginfail") {
-        expression = m_parentCtrl.m_parameters[i].second;
-        break;
-      }
-    }
+    string expression = lookup_token("onpluginfail");
 
     if (!expression.empty()) {
       // Now attempt to evaluate the expression.

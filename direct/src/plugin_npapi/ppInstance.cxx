@@ -184,6 +184,7 @@ begin() {
     url += '/';
   }
   _download_url_prefix = url;
+  nout << "Plugin is built with " << PANDA_PACKAGE_HOST_URL << "\n";
 
   if (!is_plugin_loaded() && !_failed) {
     // We need to read the contents.xml file.  First, check to see if
