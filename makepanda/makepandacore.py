@@ -1725,6 +1725,19 @@ def ParsePluginVersion(fn):
     except: pass
     return "0.0.0"
 
+def ParseCoreapiVersion(fn):
+    try:
+        f = file(fn, "r")
+        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
+        for line in f:
+            match = pattern.match(line,0)
+            if (match):
+                f.close()
+                return match.group(1)
+        f.close()
+    except: pass
+    return "0"
+
 ##########################################################################################
 #
 # Utility function to generate a resource file

@@ -46,6 +46,7 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 MAJOR_VERSION=None
+COREAPI_VERSION=None
 OSXTARGET=None
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
@@ -213,8 +214,12 @@ if (sys.platform == "darwin" and OSXTARGET != None):
 if (VERSION == None):
     if (RUNTIME):
         VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
+        COREAPI_VERSION = VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+
+if (COREAPI_VERSION == None):
+    COREAPI_VERSION = VERSION
 
 MAJOR_VERSION = VERSION[:3]
 
@@ -1563,6 +1568,7 @@ PANDAVERSION_H_RUNTIME="""
 #define P3D_PLUGIN_MINOR_VERSION $VERSION2
 #define P3D_PLUGIN_SEQUENCE_VERSION $VERSION3
 #define P3D_PLUGIN_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
+#define P3D_COREAPI_VERSION_STR "$COREAPI_VERSION"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR ""
 #define PANDA_PACKAGE_HOST_URL "https://runtime.panda3d.org/"
@@ -1664,6 +1670,7 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$NVERSION",str(nversion))
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
+    pandaversion_h = pandaversion_h.replace("$COREAPI_VERSION",COREAPI_VERSION)
     if (DISTRIBUTOR == "cmu"):
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
