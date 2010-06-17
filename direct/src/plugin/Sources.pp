@@ -117,7 +117,7 @@
   #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
 
   #define OTHER_LIBS \
-    p3tinyxml $[if $[OSX_PLATFORM],subprocbuffer]
+    p3tinyxml$[_MT] $[if $[OSX_PLATFORM],subprocbuffer]
 
   #define COMBINED_SOURCES p3d_plugin_composite1.cxx
   #define SOURCES $[COREAPI_SOURCES]
@@ -206,7 +206,7 @@
   #define SOURCES $[PLUGIN_COMMON_SOURCES]
 
 #end static_lib_target
-#endif
+#endif  // $[P3D_PLUGIN_MT]
 
 
 

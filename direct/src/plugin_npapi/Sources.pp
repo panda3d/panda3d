@@ -19,7 +19,7 @@
 
   #define LOCAL_LIBS plugin_common$[_MT]
   #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME $[P3D_PLUGIN_MT]
-  #define OTHER_LIBS p3tinyxml
+  #define OTHER_LIBS p3tinyxml$[_MT]
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx

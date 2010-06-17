@@ -17,6 +17,32 @@
 
 #end static_lib_target
 
+#if $[P3D_PLUGIN_MT]
+#begin static_lib_target
+//
+// libp3tinyxml_mt.lib, the same as above, with /MT compilation.  This
+// is needed when building the /MT plugin.
+//
+  #define TARGET p3tinyxml_mt
+  #define LINK_FORCE_STATIC_RELEASE_C_RUNTIME 1
+
+  #define COMBINED_SOURCES tinyxml_composite1.cxx
+
+  #define SOURCES \
+     tinyxml.h
+
+  #define INCLUDED_SOURCES  \
+     tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp
+
+  #define INSTALL_HEADERS \
+    tinyxml.h
+
+  #define EXTRA_CDEFS TIXML_USE_STL
+  #define C++FLAGS $[CFLAGS_SHARED]
+
+#end static_lib_target
+#endif  // $[P3D_PLUGIN_MT]
+
 #begin lib_target
   #define TARGET dxml
 
