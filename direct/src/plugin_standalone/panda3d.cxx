@@ -813,10 +813,17 @@ get_core_api() {
 #else
   static const bool official = false;
 #endif
+
+  // Format the coreapi_timestamp as a string, for passing as a
+  // parameter.
+  ostringstream stream;
+  stream << _coreapi_dll.get_timestamp();
+  string coreapi_timestamp = stream.str();
+
   P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                              P3D_PLUGIN_SEQUENCE_VERSION, official,
                              PANDA_DISTRIBUTOR,
-                             _host_url.c_str(), _coreapi_dll.get_timestamp(),
+                             _host_url.c_str(), coreapi_timestamp.c_str(),
                              _coreapi_set_ver.c_str());
 
   return true;

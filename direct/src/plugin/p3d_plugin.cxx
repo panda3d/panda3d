@@ -104,7 +104,7 @@ void
 P3D_set_plugin_version(int major, int minor, int sequence,
                        bool official, const char *distributor,
                        const char *coreapi_host_url,
-                       time_t coreapi_timestamp,
+                       const char *coreapi_timestamp_str,
                        const char *coreapi_set_ver) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (distributor == NULL) {
@@ -116,7 +116,19 @@ P3D_set_plugin_version(int major, int minor, int sequence,
 
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  time_t coreapi_timestamp = 0;
+  if (inst_mgr->get_api_version() < 15) {
+    // Before version 15, this was passed as a time_t.  
+    coreapi_timestamp = (time_t)coreapi_timestamp_str;
+  } else {
+    // Passing a time_t causes problems with disagreements about word
+    // size, so since version 15 we pass it as a string.
+    coreapi_timestamp = strtoul(coreapi_timestamp_str, NULL, 10);
+  }
+
   if (inst_mgr->get_api_version() < 14 || coreapi_set_ver == NULL) {
+    // Prior to version 14 this parameter was absent.
     coreapi_set_ver = "";
   }
 

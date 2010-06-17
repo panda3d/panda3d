@@ -333,7 +333,12 @@ set_plugin_version(int major, int minor, int sequence,
   nout << "Plugin distributor: " << _plugin_distributor << "\n";
   nout << "Core API host URL: " <<  _coreapi_host_url << "\n";
   nout << "Core API version: " << _coreapi_set_ver << "\n";
-  nout << "Core API date: " << ctime(&_coreapi_timestamp) << "\n";
+
+  const char *timestamp_string = ctime(&_coreapi_timestamp);
+  if (timestamp_string == NULL) {
+    timestamp_string = "";
+  }
+  nout << "Core API date: " << timestamp_string << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1379,6 +1384,7 @@ create_runtime_environment() {
        << ", host_url = " << _host_url
        << ", verify_contents = " << _verify_contents
        << "\n";
+  nout << "api_version = " << _api_version << "\n";
 
   // Make the certificate directory.
   _certs_dir = _root_dir + "/certs";

@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 14
+#define P3D_API_VERSION 15
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -168,7 +168,7 @@ typedef void
 P3D_set_plugin_version_func(int major, int minor, int sequence,
                             bool official, const char *distributor,
                             const char *coreapi_host_url,
-                            time_t coreapi_timestamp,
+                            const char *coreapi_timestamp,
                             const char *coreapi_set_ver);
 
 /* This function defines a "super mirror" URL: a special URL that is

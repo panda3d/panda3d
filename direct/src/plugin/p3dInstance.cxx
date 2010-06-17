@@ -220,7 +220,11 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object->set_string_property("coreapiHostUrl", inst_mgr->get_coreapi_host_url());
   time_t timestamp = inst_mgr->get_coreapi_timestamp();
   _panda_script_object->set_int_property("coreapiTimestamp", (int)timestamp);
-  _panda_script_object->set_string_property("coreapiTimestampString", ctime(&timestamp));
+  const char *timestamp_string = ctime(&timestamp);
+  if (timestamp_string == NULL) {
+    timestamp_string = "";
+  }
+  _panda_script_object->set_string_property("coreapiTimestampString", timestamp_string);
   _panda_script_object->set_string_property("coreapiVersionString", inst_mgr->get_coreapi_set_ver());
 
 

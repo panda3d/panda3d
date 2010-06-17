@@ -529,6 +529,13 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;
       } else {
+
+        // Format the coreapi_timestamp as a string, for passing as a
+        // parameter.
+        ostringstream stream;
+        stream << _coreapi_dll.get_timestamp();
+        string coreapi_timestamp = stream.str();
+
 #ifdef PANDA_OFFICIAL_VERSION
         static const bool official = true;
 #else
@@ -537,7 +544,7 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         P3D_set_plugin_version_ptr(P3D_PLUGIN_MAJOR_VERSION, P3D_PLUGIN_MINOR_VERSION,
                                    P3D_PLUGIN_SEQUENCE_VERSION, official,
                                    PANDA_DISTRIBUTOR,
-                                   PANDA_PACKAGE_HOST_URL, _coreapi_dll.get_timestamp(),
+                                   PANDA_PACKAGE_HOST_URL, coreapi_timestamp.c_str(),
                                    _coreapi_set_ver.c_str());
 
       }
@@ -831,7 +838,7 @@ lookup_token(const string &keyword) const {
     }
     
     if (lower_keyword == keyword) {
-      return m_parentCtrl.m_parameters[i].second;
+      return (const char *)m_parentCtrl.m_parameters[i].second;
     }
   }
 
