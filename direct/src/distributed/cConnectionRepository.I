@@ -424,7 +424,7 @@ set_time_warning(float time_warning) {
 //       Access: Published
 //  Description: Returns the current setting of the time_warning field.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CConnectionRepository::
+INLINE float CConnectionRepository::
 get_time_warning() const {
   return _time_warning;
 }

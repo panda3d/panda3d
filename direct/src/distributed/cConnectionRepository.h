@@ -164,7 +164,7 @@ PUBLISHED:
   INLINE bool get_verbose() const;
 
   INLINE void set_time_warning(float time_warning);
-  INLINE bool get_time_warning() const;
+  INLINE float get_time_warning() const;
 
 private:
 #ifdef HAVE_PYTHON
