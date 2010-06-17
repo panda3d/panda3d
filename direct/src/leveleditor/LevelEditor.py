@@ -5,11 +5,11 @@ LevelEditor, ObjectHandler, ObjectPalette should be rewritten
 to be game specific.
 """
 
+from LevelEditorUI import *
 from LevelEditorBase import *
 from ObjectMgr import *
 from ObjectHandler import *
 from ObjectPalette import *
-from LevelEditorUI import *
 from ProtoPalette import *
 
 class LevelEditor(LevelEditorBase):

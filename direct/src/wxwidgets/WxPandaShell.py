@@ -64,7 +64,7 @@ class WxPandaShell(WxAppShell):
 
         menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
-
+        
         self.perspViewMenuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), self.perspViewMenuItem)
 
@@ -223,3 +223,20 @@ class WxPandaShell(WxAppShell):
                 base.winList[i].setActive(1)
 
         self.viewFrame.SetExpanded(viewIdx)
+    
+    def getCurrentView(self):
+        """Function for get the current Viewport"""
+        if self.viewFrame._expanded == -1: #four view
+            self.currentView = None
+        if self.viewFrame._expanded == 0: #top view
+            self.currentView = self.topView
+        if self.viewFrame._expanded == 1: #front view
+            self.currentView = self.frontView
+        if self.viewFrame._expanded == 2: #left view
+            self.currentView = self.leftView
+        if self.viewFrame._expanded == 3: #perspect view
+            self.currentView = self.perspView
+            
+        return self.currentView
+        
+

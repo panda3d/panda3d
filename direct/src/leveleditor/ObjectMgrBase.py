@@ -70,6 +70,84 @@ class ObjectMgrBase:
             self.lastUidMod = 0
         return newUid
 
+    def addNewCurveFromFile(self, curveInfo, degree, uid=None, parent=None, fSelectObject=True, nodePath=None):
+        """ function to add new curve to the scene from file"""
+        curve = []
+        curveControl = []
+        
+        #transfer the curve information from simple positions into control nodes
+        for item in curveInfo:
+            controler = render.attachNewNode("controler")
+            controler = loader.loadModel('models/misc/smiley')
+            controlerPathname = 'controler%d' % item[0]
+            controler.setName(controlerPathname)
+            controler.setPos(item[1])
+            controler.setColor(0, 0, 0, 1)
+            controler.setScale(0.2)
+            controler.reparentTo(render)
+            controler.setTag('OBJRoot','1')
+            controler.setTag('Controller','1') 
+            curve.append((None, item[1]))
+            curveControl.append((item[0], controler))
+        
+        self.editor.curveEditor.degree = degree
+        self.editor.curveEditor.ropeUpdate (curve)
+        #add new curve to the scene
+        curveObjNP = self.addNewCurve(curveControl, degree, uid, parent, fSelectObject, nodePath = self.editor.curveEditor.currentRope)
+        curveObj = self.findObjectByNodePath(curveObjNP)
+        self.editor.objectMgr.updateObjectPropValue(curveObj, 'Degree', degree, fSelectObject=False, fUndo=False)
+        
+        for item in curveControl:
+            item[1].reparentTo(curveObjNP)
+            item[1].hide()
+        
+        curveControl = []
+        curve = []
+        self.editor.curveEditor.currentRope = None
+        
+        return curveObjNP
+
+    def addNewCurve(self, curveInfo, degree, uid=None, parent=None, fSelectObject=True, nodePath=None):
+        """ function to add new curve to the scene"""
+        if parent is None:
+            parent = self.editor.NPParent
+        
+        if uid is None:
+            uid = self.genUniqueId()
+
+        if self.editor:
+            objDef = self.editor.objectPalette.findItem('__Curve__')
+        
+        if nodePath is None:
+            # we need to create curve
+            # and then create newobj with newly created curve
+            pass
+        else:
+            newobj = nodePath
+
+        newobj.reparentTo(parent)
+        newobj.setTag('OBJRoot','1')
+
+        # populate obj data using default values
+        properties = {}
+        for key in objDef.properties.keys():
+            properties[key] = objDef.properties[key][OG.PROP_DEFAULT]
+
+        properties['Degree'] = degree
+        properties['curveInfo'] = curveInfo
+            
+        # insert obj data to main repository
+        self.objects[uid] = [uid, newobj, objDef, None, None, properties, (1,1,1,1)]
+        self.npIndex[NodePath(newobj)] = uid        
+
+        if self.editor:
+            if fSelectObject:
+                self.editor.select(newobj, fUndo=0)
+            self.editor.ui.sceneGraphUI.add(newobj, parent)
+            self.editor.fNeedToSave = True
+
+        return newobj
+
     def addNewObject(self, typeName, uid = None, model = None, parent=None, anim = None, fSelectObject=True, nodePath=None, nameStr=None):
         """ function to add new obj to the scene """
         if parent is None:
@@ -529,9 +607,6 @@ class ObjectMgrBase:
         elif propType == OG.PROP_UI_COMBO_DYNAMIC:
             val = event.GetString()
 
-        elif propType == OG.PROP_UI_TIME:
-            val = event.ClientObject.GetParent().GetParent().getValue()
-
         else:
             # unsupported property type
             return
@@ -612,14 +687,23 @@ class ObjectMgrBase:
             if fSelectObject:
                 base.direct.select(obj[OG.OBJ_NP], fUndo=0)
 
+    def updateCurve(self, val, obj):
+        curve = obj[OG.OBJ_NP]
+        degree = int(val)
+        curveNode = obj[OG.OBJ_PROP]['curveInfo']
+        curveInfor = []
+        for item in curveNode:
+                curveInfor.append((None, item[1].getPos()))
+        curve.setup(degree, curveInfor)
+
     def updateObjectProperties(self, nodePath, propValues):
         """
         When a saved level is loaded,
         update an object's properties
         And call update function if defined.
         """
-
         obj = self.findObjectByNodePath(nodePath)
+        
         if obj:
             for propName in propValues:
                 self.updateObjectPropValue(obj, propName, propValues[propName])
@@ -629,7 +713,7 @@ class ObjectMgrBase:
         Trasverse scene graph to gather data for saving
         """
         for child in parent.getChildren():
-            if child.hasTag('OBJRoot'):
+            if child.hasTag('OBJRoot') and not child.hasTag('Controller'):
                 obj = self.findObjectByNodePath(child)
 
                 if obj:
@@ -640,7 +724,7 @@ class ObjectMgrBase:
                     objAnim = obj[OG.OBJ_ANIM]
                     objProp = obj[OG.OBJ_PROP]
                     objRGBA = obj[OG.OBJ_RGBA]
-
+                        
                     if parentId:
                         parentStr = "objects['%s']"%parentId
                     else:
@@ -661,13 +745,28 @@ class ObjectMgrBase:
                     else:
                         nameStr = "None"
 
-                    self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
+                    if objDef.name == '__Curve__':
+                        #transfer the curve information from control nodes into simple positions for file save
+                        objCurveInfo = obj[OG.OBJ_PROP]['curveInfo']
+                        self.objDegree = obj[OG.OBJ_PROP]['Degree']
+                        newobjCurveInfo = []
+                        for item in objCurveInfo:
+                            newobjCurveInfo.append((item[0], item[1].getPos()))
+                            
+                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewCurveFromFile(%s, %s, '%s', %s, False, None)"%(uid, newobjCurveInfo, self.objDegree, uid, parentStr))    
+                    else:
+                        self.saveData.append("\nobjects['%s'] = objectMgr.addNewObject('%s', '%s', %s, %s, %s, False, None, %s)"%(uid, objDef.name, uid, modelStr, parentStr, animStr, nameStr))
+                    
                     self.saveData.append("if objects['%s']:"%uid)
                     self.saveData.append("    objects['%s'].setPos(%s)"%(uid, np.getPos()))
                     self.saveData.append("    objects['%s'].setHpr(%s)"%(uid, np.getHpr()))
                     self.saveData.append("    objects['%s'].setScale(%s)"%(uid, np.getScale()))
                     self.saveData.append("    objectMgr.updateObjectColor(%f, %f, %f, %f, objects['%s'])"%(objRGBA[0], objRGBA[1], objRGBA[2], objRGBA[3], uid))
-                    self.saveData.append("    objectMgr.updateObjectProperties(objects['%s'], %s)"%(uid,objProp))
+                    
+                    if objDef.name == '__Curve__':
+                        pass
+                    else:
+                        self.saveData.append("    objectMgr.updateObjectProperties(objects['%s'], %s)"%(uid,objProp))
                     
                 self.traverse(child, uid)
 

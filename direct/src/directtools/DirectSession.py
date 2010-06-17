@@ -199,7 +199,7 @@ class DirectSession(DirectObject):
         keyList.extend(map(chr, range(48, 58)))
         keyList.extend(["`", "-", "=", "[", "]", ";", "'", ",", ".", "/", "\\"])
 
-        self.specialKeys = ['escape', 'delete', 'page_up', 'page_down']
+        self.specialKeys = ['escape', 'delete', 'page_up', 'page_down', 'enter']
 
         def addCtrl(a):
             return "control-%s"%a
@@ -285,6 +285,10 @@ class DirectSession(DirectObject):
             'control-o': ('Open Scene', 'LE-OpenScene'),
             'control-q': ('Quit', 'LE-Quit'),
             }
+
+        self.speicalKeyMap = {
+                              'enter': 'DIRECT-enter',
+                             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
 
@@ -555,6 +559,8 @@ class DirectSession(DirectObject):
         if input in self.hotKeyMap.keys():
             keyDesc = self.hotKeyMap[input]
             messenger.send(keyDesc[1])
+        elif input in self.speicalKeyMap.keys():
+            messenger.send(self.speicalKeyMap[input])
         elif input in self.directOnlyKeyMap.keys():
             if self.fIgnoreDirectOnlyKeyMap:
                 return

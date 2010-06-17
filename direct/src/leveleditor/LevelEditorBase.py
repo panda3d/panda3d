@@ -9,6 +9,7 @@ from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from direct.gui.DirectGui import *
 
+from CurveEditor import *
 from FileMgr import *
 from ActionMgr import *
 from MayaConverter import *
@@ -21,6 +22,7 @@ class LevelEditorBase(DirectObject):
         self.fNeedToSave = False
         self.actionEvents = []
         #self.objectMgr = ObjectMgr(self)
+        self.curveEditor = CurveEditor(self)
         self.fileMgr = FileMgr(self)
         self.actionMgr = ActionMgr()
 
@@ -32,7 +34,12 @@ class LevelEditorBase(DirectObject):
         self.settingsFile = None
 
         # you can show/hide specific properties by using propertiesMask and this mode
-        self.mode = BitMask32()
+        self.BASE_MODE = BitMask32.bit(0)
+        self.CREATE_CURVE_MODE = BitMask32.bit(2)
+        self.EDIT_CURVE_MODE = BitMask32.bit(3)
+        
+        self.mode = self.BASE_MODE
+        self.preMode = None
         
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
@@ -122,9 +129,13 @@ class LevelEditorBase(DirectObject):
         if base.direct.fAlt or modifiers == 4:
             self.fMoveCamera = True
             return
+        if self.mode == self.CREATE_CURVE_MODE :
+            self.curveEditor.createCurve()
 
-    def handleMouse1Up(self):
+
+    def handleMouse1Up(self):        
         self.fMoveCamera = False
+
 
     def handleMouse2(self, modifiers):
         if base.direct.fAlt or modifiers == 4:
@@ -138,7 +149,7 @@ class LevelEditorBase(DirectObject):
         if base.direct.fAlt or modifiers == 4:
             self.fMoveCamera = True
             return
-
+        
         self.ui.onRightDown()
 
     def handleMouse3Up(self):
@@ -209,7 +220,11 @@ class LevelEditorBase(DirectObject):
                  self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
         self.objectMgr.selectObject(nodePath, fLEPane)
         self.ui.buildContextMenu(nodePath)
-        
+       
+        if self.mode == self.EDIT_CURVE_MODE:
+            taskMgr.add(self.curveEditor.editCurve, "modify")
+            self.curveEditor.accept("DIRECT-enter", self.curveEditor.onBaseMode) 
+ 
     def deselectAll(self, np=None):
         if len(base.direct.selected.getSelectedAsList()) ==0:
             return

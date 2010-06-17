@@ -27,6 +27,15 @@ class ObjectBase(ObjectGen):
         # to show/hide properties per editor mode
         self.propertiesMask = copy.deepcopy(propertiesMask)
 
+class ObjectCurve(ObjectBase):
+    def __init__(self, *args, **kw):
+        ObjectBase.__init__(self, *args, **kw)
+        self.properties['Degree'] =[OG.PROP_UI_COMBO,   # UI type
+                                    OG.PROP_INT,        # data type
+                                    ('base.le.objectMgr.updateCurve', {'val':OG.ARG_VAL, 'obj':OG.ARG_OBJ}),    # update function
+                                    3,                  # default value
+                                    [2, 3, 4]]          # value range
+
 class ObjectPaletteBase:
     """
     Base class for objectPalette
@@ -40,6 +49,7 @@ class ObjectPaletteBase:
         self.data = {}
         self.dataStruct = {}
         self.dataKeys = []
+        self.populateSystemObjs()
         #self.populate()
 
     def insertItem(self, item, parentName):
@@ -127,6 +137,9 @@ class ObjectPaletteBase:
         except:
             return False
         return True
+
+    def populateSystemObjs(self):
+        self.addHidden(ObjectCurve(name='__Curve__'))
 
     def populate(self):
         # You should implement this in subclass

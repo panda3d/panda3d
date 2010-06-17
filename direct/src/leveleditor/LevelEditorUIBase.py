@@ -29,6 +29,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
         action = ActionAddNewObj(self.editor, text, parent=parentNPRef[0])
         self.editor.actionMgr.push(action)
         newobj = action()
+        print newobj
         if newobj is None:
             return
 
@@ -114,6 +115,9 @@ ID_SHOW_PANDA_OBJECT = 304
 ID_HOT_KEYS = 305
 ID_PARENT_TO_SELECTED = 306
 
+ID_CREATE_CURVE = 601
+ID_EDIT_CURVE = 602
+
 class LevelEditorUIBase(WxPandaShell):
     """ Class for Panda3D LevelEditor """ 
     def __init__(self, editor):
@@ -132,7 +136,9 @@ class LevelEditorUIBase(WxPandaShell):
             ID_GRID_SNAP : ("Grid S&nap", None),
             ID_SHOW_PANDA_OBJECT : ("Show &Panda Objects", None),
             ID_HOT_KEYS : ("&Hot Keys", None),
-            ID_PARENT_TO_SELECTED : ("&Parent To Selected", None)
+            ID_PARENT_TO_SELECTED : ("&Parent To Selected", None),
+            ID_CREATE_CURVE : ("&Create Curve", None),
+            ID_EDIT_CURVE : ("&Edit Curve", None)
             })
 
         self.editor = editor
@@ -197,9 +203,81 @@ class LevelEditorUIBase(WxPandaShell):
 
         self.hotKeysMenuItem = self.menuOptions.Append(ID_HOT_KEYS, self.MENU_TEXTS[ID_HOT_KEYS][0])
         self.Bind(wx.EVT_MENU, self.onHotKeys, self.hotKeysMenuItem)
+        
+        self.menuCurve = wx.Menu()
+        self.menuBar.Insert(3, self.menuCurve, "&CurveMode")
+        
+        self.createCurveMenuItem = self.menuCurve.Append(ID_CREATE_CURVE, self.MENU_TEXTS[ID_CREATE_CURVE][0], kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onCreateCurve, self.createCurveMenuItem)
+        
+        self.editCurveMenuItem = self.menuCurve.Append(ID_EDIT_CURVE, self.MENU_TEXTS[ID_EDIT_CURVE][0], kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onEditCurve, self.editCurveMenuItem)
 
         WxPandaShell.createMenu(self)
-
+        
+    def onCreateCurve(self,e):
+        """Function to invoke curve creating, need to check previous mode"""
+        if self.editor.mode == self.editor.CREATE_CURVE_MODE:
+            self.createCurveMenuItem.Check(False)
+            self.editor.curveEditor.onBaseMode() 
+        else:
+            if self.editor.mode == self.editor.EDIT_CURVE_MODE:
+                self.editor.curveEditor.onBaseMode()
+                self.editCurveMenuItem.Check(False)
+                self.createCurveMenuItem.Check(True)
+                self.onCreateCurve(None)
+            else:
+                self.currentView = self.getCurrentView()
+                if self.currentView == None:
+                    dlg = wx.MessageDialog(None, 'Please select a viewport first.Do not support curve creation under four viewports.', 'NOTICE', wx.OK )
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    self.createCurveMenuItem.Check(False)
+                else:
+                    self.editor.mode = self.editor.CREATE_CURVE_MODE
+                    self.editor.updateStatusReadout('Please press ENTER to end the curve creation.')
+                    degreeUI = CurveDegreeUI(self, -1, 'Curve Degree')
+                    degreeUI.ShowModal()
+                    degreeUI.Destroy()
+                    base.direct.manipulationControl.disableManipulation()
+                    self.editCurveMenuItem.Check(False)
+    
+    def onEditCurve(self,e):
+        """Function to invoke curve editing and transfer global information to local information. Need to check previous mode"""
+        if self.editor.mode == self.editor.EDIT_CURVE_MODE:
+            self.editCurveMenuItem.Check(False)
+            self.editor.curveEditor.onBaseMode() 
+        else:
+            if self.editor.mode == self.editor.CREATE_CURVE_MODE:
+                self.editor.curveEditor.onBaseMode()
+                self.editCurveMenuItem.Check(True)
+                self.createCurveMenuItem.Check(False)
+                self.onEditCurve(None)
+            else:
+                if base.direct.selected.last == None:
+                    dlg = wx.MessageDialog(None, 'Please select a curve first.', 'NOTICE', wx.OK )
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    self.editCurveMenuItem.Check(False)
+                if base.direct.selected.last != None :
+                    base.direct.manipulationControl.enableManipulation()
+                    self.createCurveMenuItem.Check(False)
+                    self.curveObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
+                    if self.curveObj[OG.OBJ_DEF].name == '__Curve__':
+                        self.editor.mode = self.editor.EDIT_CURVE_MODE
+                        self.editor.updateStatusReadout('Please press ENTER to end the curve editing.')
+                        self.editor.curveEditor.currentRope = self.curveObj[OG.OBJ_NP]
+                        self.editor.curveEditor.curveControl = self.curveObj[OG.OBJ_PROP]['curveInfo']
+                        self.editor.curveEditor.degree = self.curveObj[OG.OBJ_PROP]['Degree']
+                        for item in self.editor.curveEditor.curveControl:
+                            item[1].show()
+                            self.editor.curveEditor.curve.append((None, item[1].getPos()))
+                    else:
+                        dlg = wx.MessageDialog(None, 'Please select a curve first.', 'NOTICE', wx.OK )
+                        dlg.ShowModal()
+                        dlg.Destroy()
+                        self.editCurveMenuItem.Check(False)
+                
     def updateMenu(self):
         hotKeyDict = {}
         for hotKey in base.direct.hotKeyMap.keys():
@@ -521,3 +599,32 @@ class ViewportMenu(wx.Menu):
         parent.AppendMenu(id, name, subMenu)
         return subMenu
 
+class CurveDegreeUI(wx.Dialog):
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(150, 120))
+
+        self.parent = parent
+        panel = wx.Panel(self, -1)
+        degreeBox = wx.BoxSizer(wx.VERTICAL)
+    
+        degreeList = ['2','3','4']
+        
+        self.degree = wx.RadioBox(panel, -1, 'Curve Degree', (5, 5), wx.DefaultSize, degreeList, 3, wx.RA_SPECIFY_COLS)
+        self.degree.SetToolTipString("Select the degree of the curve.")
+        self.degree.SetSelection(1)
+        
+        okButton = wx.Button(self, -1, 'Apply', size=(70, 20))
+        okButton.Bind(wx.EVT_BUTTON, self.onApply)
+        
+        degreeBox.Add(panel, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 5)
+        degreeBox.Add(okButton, 0, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 5)
+        self.SetSizer(degreeBox)
+        
+    def onApply(self, evt):
+        if(str(self.degree.GetSelection())=='0'):
+            self.parent.editor.curveEditor.degree = 2
+        if(str(self.degree.GetSelection())=='1'):
+            self.parent.editor.curveEditor.degree = 3
+        if(str(self.degree.GetSelection())=='2'):
+            self.parent.editor.curveEditor.degree = 4
+        self.Destroy()
