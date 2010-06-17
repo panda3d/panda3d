@@ -134,6 +134,7 @@ private:
   Tokens _tokens;
 
   string _root_dir;
+  string _standard_url_prefix;
   string _download_url_prefix;
   typedef vector<string> Mirrors;
   Mirrors _mirrors;

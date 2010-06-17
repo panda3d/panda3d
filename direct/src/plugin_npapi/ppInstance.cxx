@@ -184,6 +184,7 @@ begin() {
     url += '/';
   }
   _download_url_prefix = url;
+  _standard_url_prefix = url;
   nout << "Plugin is built with " << PANDA_PACKAGE_HOST_URL << "\n";
 
   if (!is_plugin_loaded() && !_failed) {
@@ -202,6 +203,7 @@ begin() {
 
     if (!success) {
       // Go download the latest contents.xml file.
+      _download_url_prefix = _standard_url_prefix;
       ostringstream strm;
       strm << _download_url_prefix << "contents.xml";
       
@@ -1168,6 +1170,8 @@ start_download(const string &url, PPDownloadRequest *req) {
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
 read_contents_file(const string &contents_filename, bool fresh_download) {
+  _download_url_prefix = _standard_url_prefix;
+
   TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
