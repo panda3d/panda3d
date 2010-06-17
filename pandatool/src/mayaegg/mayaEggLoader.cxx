@@ -70,6 +70,7 @@
 #include <maya/MFnAnimCurve.h>
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MFnEnumAttribute.h>
+#include <maya/MFnSet.h>
 #include "post_maya_include.h"
 
 #include "mayaEggLoader.h"
@@ -133,6 +134,7 @@ public:
 
 private:
   int _unnamed_idx;
+  MSelectionList _collision_nodes;
 };
 
 MPoint MakeMPoint(const LVector3d &vec)
@@ -355,6 +357,9 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
   result->_name = group->get_name();
   result->_group = dgn.create("transform", MString(result->_name.c_str()), parent, &status);
   result->_addedEggFlag = false;
+
+  if (group->get_cs_type() != EggGroup::CST_none)
+    _collision_nodes.add(result->_group, true);
 
   if (group->has_transform3d()) {
     LMatrix4d tMat = group->get_transform3d();
@@ -1660,6 +1665,10 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   TraverseEggNode(data, NULL, "");
   
   MStatus status;
+
+  MFnSet collision_set;
+  collision_set.create(_collision_nodes, MFnSet::kNone, &status);
+
   if (mayaloader_cat.is_spam()) {
     mayaloader_cat.spam() << "num meshes : " << _mesh_tab.size() << endl;
   }
