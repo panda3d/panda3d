@@ -76,9 +76,9 @@ private:
   P3D_object *call_read_log(P3D_object *params[], int num_params);
   P3D_object *read_log(const string &log_pathname, 
                        P3D_object *params[], int num_params);
-  void        read_log_file(const string &log_pathname, 
-                            size_t tail_bytes, size_t head_bytes, 
-                            ostringstream &log_data);
+  void read_log_file(const string &log_pathname, 
+                     size_t tail_bytes, size_t head_bytes, 
+                     ostringstream &log_data);
   P3D_object *call_uninstall(P3D_object *params[], int num_params);
 
 private:
