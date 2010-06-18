@@ -230,8 +230,8 @@ private:
 #endif  // __APPLE__
 
   P3D_request_ready_func *_func;
-  P3D_object *_browser_script_object;
-  P3DMainObject *_panda_script_object;
+  P3D_object *_dom_object;
+  P3DMainObject *_main_object;
   string _p3d_basename;
   string _origin_protocol;
   string _origin_hostname;

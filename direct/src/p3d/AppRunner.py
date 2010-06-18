@@ -178,7 +178,9 @@ class AppRunner(DirectObject):
 
         # The "main" object will be exposed to the DOM as a property
         # of the plugin object; that is, document.pluginobject.main in
-        # JavaScript will be appRunner.main here.
+        # JavaScript will be appRunner.main here.  This may be
+        # replaced with a direct reference to the JavaScript object
+        # later, in setInstanceInfo().
         self.main = ScriptAttributes()
 
         # By default, we publish a stop() method so the browser can
@@ -770,7 +772,7 @@ class AppRunner(DirectObject):
         self.deferredEvals = []
 
     def setInstanceInfo(self, rootDir, logDirectory, superMirrorUrl,
-                        verifyContents):
+                        verifyContents, main):
         """ Called by the browser to set some global information about
         the instance. """
 
@@ -791,6 +793,10 @@ class AppRunner(DirectObject):
         # How anxious should we be about contacting the server for
         # the latest code?
         self.verifyContents = verifyContents
+
+        # The initial "main" object, if specified.
+        if main is not None:
+            self.main = main
 
         # Now that we have rootDir, we can read the config file.
         self.readConfigXml()

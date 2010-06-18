@@ -281,6 +281,22 @@ output(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void P3DMainObject::
 set_pyobj(P3D_object *pyobj) {
+  if (pyobj == this) {
+    // We are setting a reference directly to ourselves.  This happens
+    // when the application has accepted the main object we gave it in
+    // set_instance_info().  This means the application is directly
+    // manipulating this object as its appRunner.main.  In this case,
+    // we don't actually need to set the reference; instead, we clear
+    // anything we had set.
+    nout << "application shares main object\n";
+    pyobj = NULL;
+
+  } else if (pyobj != NULL) {
+    // In the alternate case, the application has its own, separate
+    // appRunner.main object.  Thus, we do need to set the pointer.
+    nout << "application has its own main object\n";
+  }
+    
   if (_pyobj != pyobj) {
     P3D_OBJECT_XDECREF(_pyobj);
     _pyobj = pyobj;

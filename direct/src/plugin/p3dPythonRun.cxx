@@ -1227,9 +1227,20 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
     super_mirror = "";
   }
 
+  // Get the initial "main" object, if specified.
+  PyObject *main;
+  TiXmlElement *xmain = xinstance->FirstChildElement("main");
+  if (xmain != NULL) {
+    main = xml_to_pyobj(xmain);
+  } else {
+    main = Py_None;
+    Py_INCREF(main);
+  }
+
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setInstanceInfo", (char *)"sssi", root_dir, 
-     log_directory, super_mirror, verify_contents);
+    (_runner, (char *)"setInstanceInfo", (char *)"sssiO", root_dir, 
+     log_directory, super_mirror, verify_contents, main);
+  Py_DECREF(main);
 
   if (result == NULL) {
     PyErr_Print();
