@@ -204,6 +204,7 @@ begin() {
     if (!success) {
       // Go download the latest contents.xml file.
       _download_url_prefix = _standard_url_prefix;
+      _mirrors.clear();
       ostringstream strm;
       strm << _download_url_prefix << "contents.xml";
       
@@ -694,10 +695,11 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::handle_request
 //       Access: Public
-//  Description: Handles a request from the plugin, forwarding
-//               it to the browser as appropriate.  Returns true if we
-//               should continue the request loop, or false to return
-//               (temporarily) to JavaScript.
+//  Description: Handles a request from the Core API or the
+//               application, forwarding it to the browser as
+//               appropriate.  Returns true if we should continue the
+//               request loop, or false to return (temporarily) to
+//               JavaScript.
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
 handle_request(P3D_request *request) {
@@ -1171,6 +1173,7 @@ start_download(const string &url, PPDownloadRequest *req) {
 bool PPInstance::
 read_contents_file(const string &contents_filename, bool fresh_download) {
   _download_url_prefix = _standard_url_prefix;
+  _mirrors.clear();
 
   TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
