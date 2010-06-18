@@ -361,7 +361,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
         if (glxdisplay_cat.is_debug()) {
           glxdisplay_cat.debug()
-            << "Selected context " << best_result << "\n";
+            << "Selected context " << best_result << ": " << _fbprops << "\n";
           glxdisplay_cat.debug()
             << "context_has_pbuffer = " << _context_has_pbuffer
             << ", context_has_pixmap = " << _context_has_pixmap << "\n";
