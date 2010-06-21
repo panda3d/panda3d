@@ -122,7 +122,7 @@ MemoryHook() {
 #else
 
   // Posix case.
-  _page_size = getpagesize();
+  _page_size = sysconf(_SC_PAGESIZE);
 
 #endif  // WIN32
 
@@ -447,7 +447,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   if (allow_exec) {
     prot |= PROT_EXEC;
   }
-  void *ptr = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
+  void *ptr = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (ptr == (void *)-1) {
     perror("mmap");
     abort();
