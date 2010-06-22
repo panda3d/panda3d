@@ -15,6 +15,8 @@
 #ifndef TOUCHINFO_H
 #define TOUCHINFO_H
 
+#include "pandabase.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TouchInfo
 // Description : Stores information for a single touch event.
@@ -25,32 +27,32 @@ PUBLISHED:
   enum TouchInfoFlags
   {
     TIF_move = 0x0001,
-	TIF_down = 0x0002,
-	TIF_UP = 0x0004,
+    TIF_down = 0x0002,
+    TIF_UP = 0x0004,
   };
 
 public:
 
   TouchInfo();
 
-  void set_x(LONG x);
-  void set_y(LONG y);
-  void set_id(DWORD id);
-  void set_flags(DWORD flags);
+  void set_x(int x);
+  void set_y(int y);
+  void set_id(int id);
+  void set_flags(int flags);
 
 PUBLISHED:
 
-  LONG get_x();
-  LONG get_y();
-  DWORD get_id();
-  DWORD get_flags();
+  int get_x();
+  int get_y();
+  int get_id();
+  int get_flags();
 
 private:
   
-	LONG _x;
-	LONG _y;
-	DWORD _id;
-	DWORD _flags;
+  int _x;
+  int _y;
+  int _id;
+  int _flags;
 };
 
 #endif

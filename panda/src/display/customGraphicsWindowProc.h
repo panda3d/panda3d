@@ -15,6 +15,7 @@
 #ifndef CUSTOMGRAPHICSWINDOWPROC_H
 #define CUSTOMGRAPHICSWINDOWPROC_H
 
+#include "pandabase.h"
 #include "graphicsWindowProc.h"
 
 class CustomGraphicsWindowProc: public GraphicsWindowProc{

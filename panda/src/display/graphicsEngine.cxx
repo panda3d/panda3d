@@ -1564,7 +1564,7 @@ process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   // We're not using a vector iterator here, since it's possible that
   // the window list changes in an event, which would invalidate the
   // iterator and cause a crash.
-  for (int i = 0; i < wlist.size(); ++i) {
+  for (size_t i = 0; i < wlist.size(); ++i) {
     wlist[i]->process_events();
   }
 }
