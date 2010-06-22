@@ -984,7 +984,7 @@ bool GraphicsWindow::supports_window_procs() const{
 //               
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindow::
-is_touch_msg(UINT msg){
+is_touch_msg(int msg){
   return false;
 }
 

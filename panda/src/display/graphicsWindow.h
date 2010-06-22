@@ -90,7 +90,7 @@ PUBLISHED:
   void add_custom_event_handler(PyObject* handler, PyObject* name);
   void remove_custom_event_handler(PyObject* name);
 
-  virtual bool is_touch_msg(UINT msg);
+  virtual bool is_touch_msg(int msg);
   virtual int get_num_touches();
   virtual TouchInfo get_touch_info(int index);
 
