@@ -210,7 +210,10 @@ HTTPDate(const string &format) {
   }
 
   // Everything checks out; convert the date.
-#ifdef __GNUC__
+  // rdb made this an #if 0 check as timegm is a nonstandard extension
+  // so it fails in some situations even if the compiler defines __GNUC__
+#if 0
+
   _time = timegm(&t);
 
 #else  // __GNUC__
