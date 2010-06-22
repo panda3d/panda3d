@@ -668,7 +668,14 @@ def CompileCxx(obj,src,opts):
         cmd = "cl "
         if (platform.architecture()[0]=="64bit"):
             cmd += "/favor:blend "
-        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 /Fo" + obj + " /nologo /c"
+        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+        
+        # Enables Windows 7 mode if SDK is detected.
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
+        if platsdk and os.path.isdir(platsdk):
+            cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
+            
+        cmd += "/Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
