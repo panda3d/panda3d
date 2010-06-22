@@ -76,9 +76,11 @@
     config_display.h \
     customGraphicsWindowProc.h \
     drawableRegion.I drawableRegion.h \
+    displayInformation.h \
     displayRegion.I displayRegion.h \
     displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
     displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h \
+    displaySearchParameters.h \
     frameBufferProperties.I frameBufferProperties.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
@@ -100,10 +102,9 @@
     renderBuffer.h \
     stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
-    displaySearchParameters.h \
-    displayInformation.h \
     subprocessWindow.h subprocessWindow.I \
-    subprocessWindowBuffer.h subprocessWindowBuffer.I
+    subprocessWindowBuffer.h subprocessWindowBuffer.I \
+    touchInfo.h
 
   #define IGATESCAN all
 
