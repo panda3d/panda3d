@@ -87,6 +87,7 @@
     graphicsStateGuardian.I \
     graphicsStateGuardian.h \
     graphicsWindow.I graphicsWindow.h \
+    graphicsWindowProc.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
