@@ -28,6 +28,8 @@ class WinGraphicsPipe;
 
 #define PM_INACTIVE  (WM_APP+124)
 
+#define MAX_TOUCHES 20
+
 typedef struct {
   int x;
   int y;
@@ -76,6 +78,14 @@ public:
 
   INLINE HWND get_ime_hwnd();
 
+  virtual void add_window_proc( const GraphicsWindowProc* wnd_proc_object );
+  virtual void remove_window_proc( const GraphicsWindowProc* wnd_proc_object );
+  virtual void clear_window_procs();
+  virtual bool supports_window_procs() const;
+
+  virtual bool is_touch_msg(UINT msg);
+  virtual int get_num_touches();
+  virtual TouchInfo get_touch_info(int index);
 
 protected:
   virtual void close_window();
@@ -177,6 +187,16 @@ private:
   bool _rcontrol_down;
   bool _lalt_down;
   bool _ralt_down;
+
+  // following adds support platform specfic window processing
+  // functions.
+  typedef pset<GraphicsWindowProc*> WinProcClasses;
+  WinProcClasses _window_proc_classes;
+
+#ifdef PANDA_WIN7
+  UINT _numTouches;
+  TOUCHINPUT _touches[MAX_TOUCHES];
+#endif
 
 private:
   // We need this map to support per-window calls to window_proc().

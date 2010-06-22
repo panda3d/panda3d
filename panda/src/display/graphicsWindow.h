@@ -19,6 +19,8 @@
 
 #include "graphicsOutput.h"
 #include "graphicsWindowInputDevice.h"
+#include "graphicsWindowProc.h"
+#include "customGraphicsWindowProc.h"
 #include "windowProperties.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
@@ -29,6 +31,7 @@
 #include "lightReMutex.h"
 #include "pvector.h"
 #include "windowHandle.h"
+#include "touchInfo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
@@ -84,12 +87,24 @@ PUBLISHED:
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 
+  void add_custom_event_handler(PyObject* handler, PyObject* name);
+  void remove_custom_event_handler(PyObject* name);
+
+  virtual bool is_touch_msg(UINT msg);
+  virtual int get_num_touches();
+  virtual TouchInfo get_touch_info(int index);
+
 public:
   // No need to publish these.
   bool has_button_event(int device) const;
   ButtonEvent get_button_event(int device);
   bool has_pointer_event(int device) const;
   PT(PointerEventList) get_pointer_events(int device);
+
+  virtual void add_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
+  virtual void remove_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
+  virtual void clear_window_procs(){};
+  virtual bool supports_window_procs() const;
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 
@@ -143,6 +158,9 @@ private:
   WindowProperties _rejected_properties;
   string _window_event;
   string _close_request_event;
+
+  typedef pset<CustomGraphicsWindowProc*> CustomWinProcClasses;
+  CustomWinProcClasses _custom_window_proc_classes;
   
 public:
   static TypeHandle get_class_type() {

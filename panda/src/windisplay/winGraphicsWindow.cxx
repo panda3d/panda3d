@@ -31,7 +31,6 @@
 
 
 
-
 TypeHandle WinGraphicsWindow::_type_handle;
 TypeHandle WinGraphicsWindow::WinWindowHandle::_type_handle;
 
@@ -109,6 +108,9 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _lalt_down = false;
   _ralt_down = false;
   _hparent = NULL;
+#ifdef PANDA_WIN7
+  _numTouches = 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -470,6 +472,11 @@ open_window() {
 
   // set us as the focus window for keyboard input
   set_focus();
+
+  // Register for Win7 touch events.
+#ifdef PANDA_WIN7
+  RegisterTouchWindow(_hWnd, 0);
+#endif
   
   return true;
 }
@@ -2071,6 +2078,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     properties.set_foreground(false);
     system_changed_properties(properties);
     break;
+
+#ifdef PANDA_WIN7
+  case WM_TOUCH:
+		_numTouches = LOWORD(wparam);
+		if(_numTouches > MAX_TOUCHES)
+			_numTouches = MAX_TOUCHES;
+		GetTouchInputInfo((HTOUCHINPUT)lparam, _numTouches, _touches, sizeof(TOUCHINPUT));
+		CloseTouchInputHandle((HTOUCHINPUT)lparam);
+	break;
+#endif
+  }
+
+  //do custom messages processing if any has been set
+  for ( WinProcClasses::iterator it=_window_proc_classes.begin() ; it != _window_proc_classes.end(); it++ ){
+      (*it)->wnd_proc(hwnd, msg, wparam, lparam);
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -2792,4 +2814,102 @@ void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
   view_rect->top = ul.y;
   view_rect->right = lr.x;
   view_rect->bottom = lr.y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::add_window_proc
+//       Access: Public, Virtual
+//  Description: Adds the specified Windows proc event handler to be called
+//               whenever a Windows event occurs.
+//               
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::add_window_proc( const GraphicsWindowProc* wnd_proc ){
+  nassertv(wnd_proc != NULL);
+  _window_proc_classes.insert( (GraphicsWindowProc*)wnd_proc );
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::remove_window_proc
+//       Access: Public, Virtual
+//  Description: Removes the specified Windows proc event handler.
+//               
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::remove_window_proc( const GraphicsWindowProc* wnd_proc ){
+  nassertv(wnd_proc != NULL);
+  _window_proc_classes.erase( (GraphicsWindowProc*)wnd_proc );
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::clear_window_procs
+//       Access: Public, Virtual
+//  Description: Removes all Windows proc event handlers.
+//               
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::clear_window_procs(){
+  _window_proc_classes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::supports_window_procs
+//       Access: Public, Virtual
+//  Description: Returns whether this window supports adding of windows proc handlers.
+//               
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::supports_window_procs() const{
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::is_touch_msg
+//       Access: Public, Virtual
+//  Description: Returns whether the specified event msg is a touch message.
+//               
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::is_touch_msg(UINT msg){
+#ifdef PANDA_WIN7
+  return msg == WM_TOUCH;
+#else
+  return false;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_num_touches
+//       Access: Public, Virtual
+//  Description: Returns the current number of touches on this window.
+//               
+////////////////////////////////////////////////////////////////////
+int WinGraphicsWindow::
+get_num_touches(){
+#ifdef PANDA_WIN7
+  return _numTouches;
+#else
+  return 0;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_touch_info
+//       Access: Public, Virtual
+//  Description: Returns the TouchInfo object describing the specified touch.
+//               
+////////////////////////////////////////////////////////////////////
+TouchInfo WinGraphicsWindow::
+get_touch_info(int index){
+#ifdef PANDA_WIN7
+  TOUCHINPUT ti = _touches[index];
+  POINT point;
+  point.x = TOUCH_COORD_TO_PIXEL(ti.x);
+  point.y = TOUCH_COORD_TO_PIXEL(ti.y);
+  ScreenToClient(_hWnd, &point);
+
+  TouchInfo ret = TouchInfo();
+  ret.set_x(point.x);
+  ret.set_y(point.y);
+  ret.set_id(ti.dwID);
+  ret.set_flags(ti.dwFlags);
+  return ret;
+#else
+  return TouchInfo();
+#endif
 }

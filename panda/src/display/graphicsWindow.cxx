@@ -77,6 +77,12 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 ~GraphicsWindow() {
+
+	// Clean up custom event handlers.
+	CustomWinProcClasses::iterator iter;
+	for(iter = _custom_window_proc_classes.begin(); iter != _custom_window_proc_classes.end(); ++iter){
+		delete *iter;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -910,7 +916,6 @@ mouse_mode_relative() {
 
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::mouse_mode_absolute
 //       Access: Protected, Virtual
@@ -920,4 +925,87 @@ mouse_mode_relative() {
 void GraphicsWindow::
 mouse_mode_absolute() {
 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::add_custom_event_handler
+//       Access: Published
+//  Description: Adds a custom python event handler to be called
+//               when a window event occurs.
+//               
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+add_custom_event_handler(PyObject* handler, PyObject* name){
+  CustomGraphicsWindowProc* cgwp = new CustomGraphicsWindowProc(handler, name);
+  _custom_window_proc_classes.insert(cgwp);
+  add_window_proc(cgwp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::remove_custom_event_handler
+//       Access: Published
+//  Description: Removes the specified custom python event handler.
+//               
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+remove_custom_event_handler(PyObject* name){
+  //nassertv(wnd_proc != NULL);
+  //_window_proc_classes.erase( (GraphicsWindowProc*)wnd_proc );
+  list<CustomGraphicsWindowProc*> toRemove;
+  CustomWinProcClasses::iterator iter;
+  for(iter = _custom_window_proc_classes.begin(); iter != _custom_window_proc_classes.end(); ++iter){
+    CustomGraphicsWindowProc* cgwp = *iter;
+    if(PyObject_Compare(cgwp->get_name(), name) == 0)
+      toRemove.push_back(cgwp);
+  }
+  list<CustomGraphicsWindowProc*>::iterator iter2;
+  for(iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2){
+    CustomGraphicsWindowProc* cgwp = *iter2;
+    remove_window_proc(cgwp);
+    _custom_window_proc_classes.erase(cgwp);
+    delete cgwp;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::supports_window_procs
+//       Access: Published, Virtual
+//  Description: Returns whether this window supports adding of Windows proc handlers.
+//               
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::supports_window_procs() const{
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::is_touch_msg
+//       Access: Published, Virtual
+//  Description: Returns whether the specified event msg is a touch message.
+//               
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+is_touch_msg(UINT msg){
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_num_touches
+//       Access: Published, Virtual
+//  Description: Returns the current number of touches on this window.
+//               
+////////////////////////////////////////////////////////////////////
+int GraphicsWindow::
+get_num_touches(){
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_touch_info
+//       Access: Published, Virtual
+//  Description: Returns the TouchInfo object describing the specified touch.
+//               
+////////////////////////////////////////////////////////////////////
+TouchInfo GraphicsWindow::
+get_touch_info(int index){
+  return TouchInfo();
 }
