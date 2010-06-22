@@ -314,6 +314,9 @@
 #define INTERROGATE interrogate
 #define INTERROGATE_MODULE interrogate_module
 
+// What is the name of the C# compiler binary?
+#define CSHARP csc
+
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
 #define PYTHON_IPATH /usr/include/python2.4
