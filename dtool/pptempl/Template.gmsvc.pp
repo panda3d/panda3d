@@ -76,7 +76,7 @@
   #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
-      $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
+      $[active_target(bin_target noinst_bin_target csharp_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
 
@@ -96,7 +96,7 @@
 
   // These are the various sources collected from all targets within the
   // directory.
-  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target csharp_target)]]
   #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
   #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
   #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
@@ -292,7 +292,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
 
 #define install_targets \
      $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=install-lib%] \
-     $[active_target(bin_target sed_bin_target):%=install-%] \
+     $[active_target(bin_target sed_bin_target csharp_target):%=install-%] \
      $[installed_files]
 
 install : all $[install_targets]
@@ -439,9 +439,11 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define local $[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define dest $[install_lib_dir]
-#if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
+#if $[not $[lib_is_static]]
+  #if $[or $[eq $[USE_COMPILER], MSVC8],$[eq $[USE_COMPILER], MSVC9],$[eq $[USE_COMPILER], MSVC9x64]]
+$[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]
+  #endif
 #endif
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 
@@ -676,7 +678,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
 #define installed_files \
     $[install_bin_dir]/$[TARGET].exe \
     $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \
-    $[if $[eq $[USE_COMPILER],MSVC8],$[install_bin_dir]/$[TARGET].exe.manifest] \
+    $[if $[or $[eq $[USE_COMPILER],MSVC8],$[eq $[USE_COMPILER],MSVC9],$[eq $[USE_COMPILER],MSVC9x64]],$[install_bin_dir]/$[TARGET].exe.manifest] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -696,7 +698,8 @@ $[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
-#if $[eq $[USE_COMPILER],MSVC8]
+#if $[or $[eq $[USE_COMPILER],MSVC8],$[eq $[USE_COMPILER],MSVC9],$[eq $[USE_COMPILER],MSVC9x64]]
+$[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;1
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]/
 #endif
 
@@ -741,6 +744,39 @@ $[TAB] $[link_bin_c]
 #endif
 
 #end noinst_bin_target test_bin_target test_lib_target
+
+/////////////////////////////////////////////////////////////////////
+// Rules to for rudimentary C-sharp compiling
+/////////////////////////////////////////////////////////////////////
+#forscopes csharp_target
+$[TARGET] : $[ODIR]/$[TARGET].exe
+
+#define target $[ODIR]/$[TARGET].exe
+#define output "$[ODIR]\$[TARGET].exe"
+
+$[target] : $[sources]
+$[TAB] $[CSHARP] /noconfig /nowarn:1701,1702 /errorreport:prompt /warn:4 /define:TRACE /debug:pdbonly /filealign:512 /optimize+ /out:$[target] /target:exe $[osfilename $[SOURCES]]
+
+#if $[build_pdbs]
+$[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
+#endif
+
+#define installed_files \
+    $[install_bin_dir]/$[TARGET].exe
+
+install-$[TARGET] : $[installed_files]
+
+uninstall-$[TARGET] :
+#if $[installed_files]
+$[TAB] rm -f $[sort $[installed_files]]
+#endif
+
+$[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
+#define local $[TARGET].exe
+#define dest $[install_bin_dir]
+$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+
+#end csharp_target
 
 /////////////////////////////////////////////////////////////////////
 // Rules to run bison and/or flex as needed.
