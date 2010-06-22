@@ -74,6 +74,7 @@
   #define INSTALL_HEADERS \
     standardMunger.I standardMunger.h \
     config_display.h \
+    customGraphicsWindowProc.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h \
     displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
