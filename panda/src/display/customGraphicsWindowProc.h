@@ -23,7 +23,7 @@ public:
   CustomGraphicsWindowProc(PyObject* handler, PyObject* name);
   virtual ~CustomGraphicsWindowProc();
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef WIN32
   virtual LONG wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
 

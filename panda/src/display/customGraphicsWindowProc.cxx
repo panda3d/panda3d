@@ -26,7 +26,7 @@ CustomGraphicsWindowProc::~CustomGraphicsWindowProc(){
   Py_DECREF(_handler);
 }
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef WIN32
 LONG CustomGraphicsWindowProc::wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
   PyObject* ret = PyObject_CallFunction(_handler, "IIII", hwnd, msg, wparam, lparam);
   Py_XDECREF(ret);
