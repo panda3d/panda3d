@@ -156,7 +156,9 @@ run_python() {
 
 #ifdef _WIN32
   // Of course it's already resident, so use that version.
-  HMODULE h = GetModuleHandle("libpandaexpress.dll");
+  string basename = Filename::dso_filename("libpandaexpress.so").to_os_specific();
+  HMODULE h = GetModuleHandle(basename.c_str());
+
   if (h == NULL) {
     nout << "Can't find libpandaexpress in memory.\n";
   } else {
