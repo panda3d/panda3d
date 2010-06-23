@@ -926,14 +926,14 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup'
+                cmd = 'g++ -undefined dynamic_lookup -headerpad_max_install_names'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
                 else:
                     cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared'
+                cmd = 'g++ -shared -headerpad_max_install_names'
                 if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
