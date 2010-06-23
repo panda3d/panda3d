@@ -58,12 +58,12 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
   double   p[3][3], q[4][4];
   double   xval, yval;
   int      i, j;
-  
+
   if( arParamDecompMat(cparam, icpara, trans) < 0 ) {
     printf("gConvGLcpara: Parameter error!!\n");
     exit(0);
   }
-  
+
   for( i = 0; i < 3; i++ ) {
     for( j = 0; j < 3; j++ ) {
       p[i][j] = icpara[i][j] / icpara[2][2];
@@ -73,31 +73,31 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
   q[0][1] = (2.0 * p[0][1] / width);
   q[0][2] = ((2.0 * p[0][2] / width)  - 1.0);
   q[0][3] = 0.0;
-  
+
   q[1][0] = 0.0;
   q[1][1] = (2.0 * p[1][1] / height);
   q[1][2] = ((2.0 * p[1][2] / height) - 1.0);
   q[1][3] = 0.0;
-  
+
   q[2][0] = 0.0;
   q[2][1] = 0.0;
   q[2][2] = (gfar + gnear)/(gfar - gnear);
   q[2][3] = -2.0 * gfar * gnear / (gfar - gnear);
-  
+
   q[3][0] = 0.0;
   q[3][1] = 0.0;
   q[3][2] = 1.0;
   q[3][3] = 0.0;
-  
+
   xval =
-    q[0][0] * trans[0][0] + 
+    q[0][0] * trans[0][0] +
     q[0][1] * trans[1][0] +
     q[0][2] * trans[2][0];
   yval =
-    q[1][0] * trans[0][1] + 
+    q[1][0] * trans[0][1] +
     q[1][1] * trans[1][1] +
     q[1][2] * trans[2][1];
-  
+
   xfov = 2.0 * atan(1.0/xval) * (180.0/3.141592654);
   yfov = 2.0 * atan(1.0/yval) * (180.0/3.141592654);
 }
@@ -106,7 +106,7 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
 //     Function: ARToolKit::make
 //       Access: Private
 //  Description: Create a new ARToolKit instance.
-//               
+//
 //               Camera must be the nodepath of a panda camera object.
 //               The panda camera's field of view is initialized to match
 //               the field of view of the physical webcam.  Each time
@@ -118,19 +118,19 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
 ////////////////////////////////////////////////////////////////////
 ARToolKit *ARToolKit::
 make(NodePath camera, const Filename &paramfile, double marker_size) {
-  
+
   if (AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGRA &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGBA &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGB &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGR) {
     vision_cat.error() <<
       "The copy of ARToolKit that you are using is not compiled "
-      "for RGB, BGR, RGBA or ARGB input.  Panda3D cannot use "
+      "for RGB, BGR, RGBA or BGRA input.  Panda3D cannot use "
       "this copy of ARToolKit. Please modify the ARToolKit's "
       "config file and compile it again.\n";
     return 0;
   }
-  
+
   if (camera.is_empty()) {
     vision_cat.error() << "ARToolKit: invalid camera nodepath\n";
     return 0;
@@ -153,13 +153,13 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
     vision_cat.error() << "Cannot load ARToolKit camera config\n";
     return 0;
   }
-  
+
   arParamDisp(&wparam);
   double xfov, yfov;
   analyze_fov(wparam.mat, 640, 480, xfov, yfov);
-  
+
   lens->set_fov(xfov, yfov);
-  
+
   ARToolKit *result = new ARToolKit();
   result->_camera = camera;
   result->_camera_param = new ARParam;
@@ -197,7 +197,7 @@ ARToolKit() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ARToolKit::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ARToolKit::
 ~ARToolKit() {
@@ -217,7 +217,7 @@ get_pattern(const Filename &filename) {
   if (ptf != _pattern_table.end()) {
     return (*ptf).second;
   }
-  
+
   string fn = filename.to_os_specific();
   int id = arLoadPatt(fn.c_str());
   if (id < 0) {
@@ -273,19 +273,19 @@ analyze(Texture *tex, bool do_flip_texture) {
   nassertv(tex->get_ram_image_compression() == Texture::CM_off);
   nassertv(tex->get_component_type() == Texture::T_unsigned_byte);
   nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
-  
+
   if (tex->get_num_components() != 3 && tex->get_num_components() != 4) {
     vision_cat.error() << "ARToolKit can only analyze RGB and RGBA textures.\n";
     return;
   }
-  
+
   int padx = tex->get_pad_x_size();
   int pady = tex->get_pad_y_size();
   int xsize = tex->get_x_size() - padx;
   int ysize = tex->get_y_size() - pady;
   int pagesize = xsize * ysize * 4;
   nassertv((xsize > 0) && (ysize > 0));
-  
+
   ARParam cparam;
   change_size( (ARParam*)_camera_param, xsize, ysize, &cparam );
   arInitCparam( &cparam );
@@ -295,7 +295,7 @@ analyze(Texture *tex, bool do_flip_texture) {
 
   CPTA_uchar ri = tex->get_ram_image();
   const unsigned char *ram = ri.p();
-  
+
   unsigned char *data;
   if (AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_RGB ||
       AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_BGR) {
@@ -371,7 +371,7 @@ analyze(Texture *tex, bool do_flip_texture) {
       }
     }
   }
-  
+
   Controls::const_iterator ctrli;
   for (ctrli=_controls.begin(); ctrli!=_controls.end(); ctrli++) {
     arActivatePatt((*ctrli).first);
@@ -421,19 +421,19 @@ analyze(Texture *tex, bool do_flip_texture) {
       mat(3,3) = 1.0;
       LVecBase3f scale, shear, hpr, pos;
       decompose_matrix(mat, scale, shear, hpr, pos);
-      
+
       if (np.get_parent().is_empty()) {
         vision_cat.error() << "NodePath must have a parent.\n";
       } else {
         np.set_pos_hpr(_camera, pos, hpr);
       }
-      
+
       np.show();
     } else {
       np.hide();
     }
   }
-  
+
   delete data;
 }
 
