@@ -81,6 +81,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyObject_CallMethodObjArgs(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
   EXPCL_DTOOLCONFIG int PyObject_Cmp(...);
+  EXPCL_DTOOLCONFIG int PyObject_Compare(...);
   EXPCL_DTOOLCONFIG int PyObject_Free(...);
   EXPCL_DTOOLCONFIG int PyObject_GenericGetAttr(...);
   EXPCL_DTOOLCONFIG int PyObject_GenericSetAttr(...);
@@ -215,6 +216,7 @@ int PyObject_CallMethod(...) { return 0; }
 int PyObject_CallMethodObjArgs(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
 int PyObject_Cmp(...) { return 0; }
+int PyObject_Compare(...) { return 0; }
 int PyObject_Free(...) { return 0; }
 int PyObject_GenericGetAttr(...) { return 0; };
 int PyObject_GenericSetAttr(...) { return 0; };
