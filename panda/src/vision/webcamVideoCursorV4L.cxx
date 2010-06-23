@@ -146,6 +146,8 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     return;
   }
 
+  // Find the best format in our _pformats vector.
+  // MJPEG is preferred over YUYV, as it's much smaller.
   _format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   pvector<uint32_t>::iterator it;
   for (it = src->_pformats.begin(); it != src->_pformats.end(); ++it) {
@@ -168,14 +170,10 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     return;
   }
 
-  // No interlacing
-  _format->fmt.pix.field = V4L2_FIELD_NONE;
-
-  // This really should be there, but for
-  // some reason it causes weird memory corruption.
-
+  // Request a format of this size, and no interlacing
   _format->fmt.pix.width = _size_x;
   _format->fmt.pix.height = _size_y;
+  _format->fmt.pix.field = V4L2_FIELD_NONE;
 
   // Now politely ask the driver to switch to this format
   if (-1 == ioctl(_fd, VIDIOC_S_FMT, _format)) {
@@ -211,6 +209,7 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     vision_cat.error() << "Not enough memory!\n";
   }
 
+  // Set up the mmap buffers
   struct v4l2_buffer buf;
   for (int i = 0; i < _bufcount; ++i) {
     memset(&buf, 0, sizeof buf);
