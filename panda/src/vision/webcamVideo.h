@@ -30,12 +30,14 @@ PUBLISHED:
   static int             get_num_options();
   static PT(WebcamVideo) get_option(int n);
   MAKE_SEQ(get_options, get_num_options, get_option);
-  
+
   INLINE int get_size_x() const;
   INLINE int get_size_y() const;
   INLINE int get_fps() const;
-  
+
   virtual PT(MovieVideoCursor) open() = 0;
+
+  INLINE void output(ostream &out) const;
 
 public:
   static void find_all_webcams();
@@ -64,6 +66,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const WebcamVideo &n);
 
 #include "webcamVideo.I"
 

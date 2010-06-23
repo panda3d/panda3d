@@ -23,7 +23,7 @@ TypeHandle WebcamVideo::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideo::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WebcamVideo::
 ~WebcamVideo() {
@@ -55,7 +55,7 @@ find_all_webcams() {
   find_all_webcams_ds();
 #endif
 
-#ifdef HAVE_VIDEO4LINUX
+#ifdef IS_LINUX
   extern void find_all_webcams_v4l();
   find_all_webcams_v4l();
 #endif
@@ -63,11 +63,11 @@ find_all_webcams() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideo::get_num_options
-//       Access: Public
+//       Access: Public, Static
 //  Description: Returns the number of webcam options.  An "option"
 //               consists of a device plus a set of configuration
 //               parameters.  For example, "Creative Webcam Live at
-//               640x480, 30 fps" is an option.  
+//               640x480, 30 fps" is an option.
 ////////////////////////////////////////////////////////////////////
 int WebcamVideo::
 get_num_options() {
@@ -77,7 +77,7 @@ get_num_options() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideo::get_option
-//       Access: Public
+//       Access: Public, Static
 //  Description: Returns the nth webcam option.
 ////////////////////////////////////////////////////////////////////
 PT(WebcamVideo) WebcamVideo::

@@ -9,26 +9,30 @@
   #define TARGET p3vision
   #define LOCAL_LIBS \
     display text pgraph gobj linmath putil audio movies
-    
+
   #define COMBINED_SOURCES vision_composite1.cxx
 
   #define SOURCES \
     arToolKit.I arToolKit.h \
     config_vision.h \
     openCVTexture.I openCVTexture.h \
-    webcamVideo.h webcamVideo.I
-    
+    webcamVideo.h webcamVideo.I \
+    webcamVideoCursorV4L.h webcamVideoV4L.h
+
   #define INCLUDED_SOURCES \
     arToolKit.cxx \
     config_vision.cxx \
     openCVTexture.cxx \
     webcamVideo.cxx \
-    webcamVideoDS.cxx
-    
+    webcamVideoDS.cxx \
+    webcamVideoCursorV4L.cxx \
+    webcamVideoV4L.cxx
+
   #define INSTALL_HEADERS \
     arToolKit.I arToolKit.h \
     openCVTexture.I openCVTexture.h \
-    webcamVideo.h webcamVideo.I
+    webcamVideo.h webcamVideo.I \
+    webcamVideoCursorV4L.h webcamVideoV4L.h
 
   #define IGATESCAN all
 
