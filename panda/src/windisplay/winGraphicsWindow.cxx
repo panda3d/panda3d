@@ -2092,7 +2092,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   //do custom messages processing if any has been set
   for ( WinProcClasses::iterator it=_window_proc_classes.begin() ; it != _window_proc_classes.end(); it++ ){
-      (*it)->wnd_proc(hwnd, msg, wparam, lparam);
+      (*it)->wnd_proc(this, hwnd, msg, wparam, lparam);
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -2860,14 +2860,15 @@ bool WinGraphicsWindow::supports_window_procs() const{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::is_touch_msg
+//     Function: WinGraphicsWindow::is_touch_event
 //       Access: Public, Virtual
 //  Description: Returns whether the specified event msg is a touch message.
 //               
 ////////////////////////////////////////////////////////////////////
-bool WinGraphicsWindow::is_touch_msg(UINT msg){
+bool WinGraphicsWindow::
+is_touch_event(GraphicsWindowProcCallbackData* callbackData){
 #ifdef PANDA_WIN7
-  return msg == WM_TOUCH;
+  return callbackData->get_msg() == WM_TOUCH;
 #else
   return false;
 #endif

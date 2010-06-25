@@ -3,7 +3,10 @@
 #include "graphicsThreadingModel.cxx"
 #include "graphicsWindow.cxx"
 #include "graphicsWindowProc.cxx"
-#include "customGraphicsWindowProc.cxx"
+#include "graphicsWindowProcCallbackData.cxx"
+#ifdef HAVE_PYTHON
+#include "pythonGraphicsWindowProc.cxx"
+#endif
 #include "graphicsWindowInputDevice.cxx"
 #include "lru.cxx"
 #include "nativeWindowHandle.cxx"

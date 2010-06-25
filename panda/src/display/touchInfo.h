@@ -28,7 +28,7 @@ PUBLISHED:
   {
     TIF_move = 0x0001,
     TIF_down = 0x0002,
-    TIF_UP = 0x0004,
+    TIF_up = 0x0004,
   };
 
 public:

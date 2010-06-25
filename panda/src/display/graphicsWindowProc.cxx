@@ -14,13 +14,28 @@
 
 #include "graphicsWindowProc.h"
 
-TypeHandle GraphicsWindowProc::_type_handle;
-
-GraphicsWindowProc::GraphicsWindowProc(){
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicWindowProc::Constructor
+//       Access: Public
+//  Description: Does nothing.
+////////////////////////////////////////////////////////////////////
+GraphicsWindowProc::
+GraphicsWindowProc(){
 }
+
 #if defined(__WIN32__) || defined(_WIN32)
-LONG GraphicsWindowProc::wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowProc::wnd_proc
+//       Access: Public, Virtual
+//  Description: A WIN32-specific method that is called when a Window
+//               proc event occurrs. Should be overridden by a derived
+//               class.
+////////////////////////////////////////////////////////////////////
+LONG GraphicsWindowProc::
+wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
 	return 0;
 }
+
 #endif
 //most an empty file.

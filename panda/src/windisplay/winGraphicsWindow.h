@@ -83,7 +83,7 @@ public:
   virtual void clear_window_procs();
   virtual bool supports_window_procs() const;
 
-  virtual bool is_touch_msg(UINT msg);
+  virtual bool is_touch_event(GraphicsWindowProcCallbackData* callbackData);
   virtual int get_num_touches();
   virtual TouchInfo get_touch_info(int index);
 

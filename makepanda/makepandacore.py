@@ -1412,10 +1412,11 @@ def SdkLocateVisualStudio():
 def SdkLocateMSPlatform():
     if (sys.platform != "win32"): return
     platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
-    if (platsdk and not os.path.isdir(platsdk)):
-        platsdk = 0
-    else:
-        print "Windows 7 SDK detected. Enabling special features (multi-touch)."
+    if (platsdk):
+        if os.path.isdir(platsdk):
+            print "Windows 7 SDK detected. Enabling special features (multi-touch)."
+        else:
+            platsdk = 0
     if (platsdk == 0):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1", "Install Dir")
         if (platsdk and not os.path.isdir(platsdk)): platsdk = 0

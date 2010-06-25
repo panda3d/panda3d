@@ -20,7 +20,10 @@
 #include "graphicsOutput.h"
 #include "graphicsWindowInputDevice.h"
 #include "graphicsWindowProc.h"
-#include "customGraphicsWindowProc.h"
+#include "graphicsWindowProcCallbackData.h"
+#ifdef HAVE_PYTHON
+#include "pythonGraphicsWindowProc.h"
+#endif
 #include "windowProperties.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
@@ -87,12 +90,10 @@ PUBLISHED:
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 
-  void add_custom_event_handler(PyObject* handler, PyObject* name);
-  void remove_custom_event_handler(PyObject* name);
-
-  virtual bool is_touch_msg(int msg);
-  virtual int get_num_touches();
-  virtual TouchInfo get_touch_info(int index);
+#ifdef HAVE_PYTHON
+  void add_python_event_handler(PyObject* handler, PyObject* name);
+  void remove_python_event_handler(PyObject* name);
+#endif
 
 public:
   // No need to publish these.
@@ -107,6 +108,10 @@ public:
   virtual bool supports_window_procs() const;
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
+
+  virtual bool is_touch_event(GraphicsWindowProcCallbackData* callbackData);
+  virtual int get_num_touches();
+  virtual TouchInfo get_touch_info(int index);
 
 public:
   virtual void request_open();
@@ -159,9 +164,11 @@ private:
   string _window_event;
   string _close_request_event;
 
-  typedef pset<CustomGraphicsWindowProc*> CustomWinProcClasses;
-  CustomWinProcClasses _custom_window_proc_classes;
-  
+#ifdef HAVE_PYTHON
+  typedef pset<PythonGraphicsWindowProc*> PythonWinProcClasses;
+  PythonWinProcClasses _python_window_proc_classes;
+#endif
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
