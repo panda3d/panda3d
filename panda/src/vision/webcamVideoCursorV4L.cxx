@@ -12,9 +12,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef IS_LINUX
-
 #include "webcamVideoV4L.h"
+
+#ifdef IS_LINUX
 
 #include <sys/mman.h>
 #include <linux/videodev.h>

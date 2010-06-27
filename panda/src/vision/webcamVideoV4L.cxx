@@ -12,10 +12,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "webcamVideoV4L.h"
+
 #ifdef IS_LINUX
 
-#include "webcamVideoV4L.h"
 #include "webcamVideoCursorV4L.h"
+#include "dcast.h"
 
 #include <linux/videodev.h>
 #include <linux/videodev2.h>

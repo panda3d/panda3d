@@ -15,6 +15,8 @@
 #ifndef WEBCAMVIDEOV4L_H
 #define WEBCAMVIDEOV4L_H
 
+#include "pandabase.h"
+
 #ifdef IS_LINUX
 
 #include "webcamVideo.h"
