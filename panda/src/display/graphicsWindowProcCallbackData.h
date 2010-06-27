@@ -17,8 +17,9 @@
 
 #include "pandabase.h"
 #include "callbackData.h"
-#include "graphicsWindow.h"
 #include "touchInfo.h"
+
+class GraphicsWindow;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindowProcCallbackData
