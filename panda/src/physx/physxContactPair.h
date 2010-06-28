@@ -36,6 +36,8 @@ class EXPCL_PANDAPHYSX PhysxContactPair : public TypedReferenceCount {
 PUBLISHED:
   INLINE ~PhysxContactPair();
 
+  bool is_deleted_a() const;
+  bool is_deleted_b() const;
   PhysxActor *get_actor_a() const;
   PhysxActor *get_actor_b() const;
   LVector3f get_sum_normal_force() const;

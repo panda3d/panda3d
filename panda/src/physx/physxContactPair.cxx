@@ -28,6 +28,11 @@ TypeHandle PhysxContactPair::_type_handle;
 PhysxActor *PhysxContactPair::
 get_actor_a() const {
 
+  if (_pair.isDeletedActor[0]) {
+    physx_cat.warning() << "actor A has been deleted" << endl;
+    return NULL;
+  }
+
   NxActor *actorPtr = _pair.actors[0];
   return (actorPtr == NULL) ? NULL : (PhysxActor *)actorPtr->userData;
 }
@@ -41,8 +46,37 @@ get_actor_a() const {
 PhysxActor *PhysxContactPair::
 get_actor_b() const {
 
+  if (_pair.isDeletedActor[1]) {
+    physx_cat.warning() << "actor B has been deleted" << endl;
+    return NULL;
+  }
+
   NxActor *actorPtr = _pair.actors[1];
   return (actorPtr == NULL) ? NULL : (PhysxActor *)actorPtr->userData;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxContactPair::is_deleted_a
+//       Access: Published
+//  Description: Returns true if the first of the two actors is
+//               deleted.
+////////////////////////////////////////////////////////////////////
+bool PhysxContactPair::
+is_deleted_a() const {
+
+  return _pair.isDeletedActor[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxContactPair::is_deleted_b
+//       Access: Published
+//  Description: Returns true if the second of the two actors is
+//               deleted.
+////////////////////////////////////////////////////////////////////
+bool PhysxContactPair::
+is_deleted_b() const {
+
+  return _pair.isDeletedActor[1];
 }
 
 ////////////////////////////////////////////////////////////////////
