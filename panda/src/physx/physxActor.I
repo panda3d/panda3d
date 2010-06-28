@@ -22,6 +22,7 @@
 INLINE PhysxActor::
 PhysxActor() : PhysxObject() {
 
+  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ PhysxActor() : PhysxObject() {
 INLINE PhysxActor::
 ~PhysxActor() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,8 +55,10 @@ ls() const {
 INLINE void PhysxActor::
 ls(ostream &out, int indent_level) const {
 
+  char *name = _name ? _name : "";
+
   indent(out, indent_level) << get_type().get_name()
-                            << " " << get_name( )
+                            << " " << name
                             << " (at 0x" << this << ")";
 
   if (!_np.is_empty()) {

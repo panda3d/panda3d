@@ -32,5 +32,6 @@ PhysxPointOnLineJoint() : PhysxJoint() {
 INLINE PhysxPointOnLineJoint::
 ~PhysxPointOnLineJoint() {
 
+  free(_name);
 }
 

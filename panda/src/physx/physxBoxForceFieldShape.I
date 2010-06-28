@@ -32,5 +32,6 @@ PhysxBoxForceFieldShape() : PhysxForceFieldShape() {
 INLINE PhysxBoxForceFieldShape::
 ~PhysxBoxForceFieldShape() {
 
+  free(_name);
 }
 

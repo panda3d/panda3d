@@ -25,7 +25,7 @@ set_to_default() {
 
   _desc.setToDefault();
 
-  _desc.name = "";
+  _desc.name = _name;
 
   _desc.shapeFlags = NX_SF_FEATURE_INDICES | NX_SF_VISUALIZATION;
   _desc.meshFlags = NX_MESH_SMOOTH_SPHERE_COLLISIONS;

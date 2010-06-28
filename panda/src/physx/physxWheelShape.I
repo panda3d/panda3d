@@ -32,5 +32,6 @@ PhysxWheelShape() : PhysxShape() {
 INLINE PhysxWheelShape::
 ~PhysxWheelShape() {
 
+  free(_name);
 }
 

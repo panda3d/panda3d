@@ -69,10 +69,8 @@ PUBLISHED:
   bool get_flag(PhysxClothFlag flag) const;
 
 public:
-  //void get_mesh_numbers(NxU32 &numVertices, NxU32 &numTriangles);
-
-public:
   NxClothDesc _desc;
+  char *_name;  
 };
 
 #include "physxClothDesc.I"

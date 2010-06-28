@@ -32,5 +32,6 @@ PhysxTriangleMeshShape() : PhysxShape() {
 INLINE PhysxTriangleMeshShape::
 ~PhysxTriangleMeshShape() {
 
+  free(_name);
 }
 

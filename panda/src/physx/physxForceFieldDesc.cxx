@@ -26,7 +26,9 @@
 void PhysxForceFieldDesc::
 set_name(const char *name) {
 
-  _desc.name = name;
+  free(_name);
+  _name = strdup(name);
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -32,5 +32,6 @@ PhysxPointInPlaneJoint() : PhysxJoint() {
 INLINE PhysxPointInPlaneJoint::
 ~PhysxPointInPlaneJoint() {
 
+  free(_name);
 }
 

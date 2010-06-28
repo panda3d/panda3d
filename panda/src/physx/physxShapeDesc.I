@@ -22,5 +22,17 @@
 INLINE PhysxShapeDesc::
 PhysxShapeDesc() {
 
+  _name = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShapeDesc::Destructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxShapeDesc::
+~PhysxShapeDesc() {
+
+  free(_name);
 }
 

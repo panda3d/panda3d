@@ -22,7 +22,7 @@
 INLINE PhysxCapsuleShapeDesc::
 PhysxCapsuleShapeDesc() : PhysxShapeDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxCapsuleShapeDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////

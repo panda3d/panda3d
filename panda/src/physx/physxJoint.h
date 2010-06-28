@@ -72,6 +72,8 @@ public:
 protected:
   INLINE PhysxJoint();
 
+  char *_name;
+
 ////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {

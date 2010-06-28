@@ -22,5 +22,17 @@
 INLINE PhysxForceFieldShapeDesc::
 PhysxForceFieldShapeDesc() {
 
+  _name = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxForceFieldShapeDesc::Destructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxForceFieldShapeDesc::
+~PhysxForceFieldShapeDesc() {
+
+  free(_name);
 }
 

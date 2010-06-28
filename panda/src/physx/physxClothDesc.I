@@ -22,7 +22,8 @@
 INLINE PhysxClothDesc::
 PhysxClothDesc() {
 
-  _desc.name = "";
+  _name = NULL;
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +34,7 @@ PhysxClothDesc() {
 INLINE PhysxClothDesc::
 ~PhysxClothDesc() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,7 +38,6 @@ link(NxForceField *materialPtr) {
   // Link include shape group
   PhysxForceFieldShapeGroup *group = new PhysxForceFieldShapeGroup();
   group->link(&(_ptr->getIncludeShapeGroup()));
-  _ptr->getIncludeShapeGroup().setName("");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +84,10 @@ void PhysxForceField::
 set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
-  _ptr->setName(name);
+
+  free(_name);
+  _name = strdup(name);
+  _ptr->setName(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

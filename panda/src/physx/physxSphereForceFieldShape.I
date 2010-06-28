@@ -32,5 +32,6 @@ PhysxSphereForceFieldShape() : PhysxForceFieldShape() {
 INLINE PhysxSphereForceFieldShape::
 ~PhysxSphereForceFieldShape() {
 
+  free(_name);
 }
 

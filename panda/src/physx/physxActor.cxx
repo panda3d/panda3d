@@ -41,8 +41,6 @@ link(NxActor *actorPtr) {
   NxU32 nShapes = _ptr->getNbShapes();
 
   for (NxU32 i=0; i < nShapes; i++) {
-    if (shapes[i]->getName() == NULL) shapes[i]->setName("");
-
     PhysxShape *shape = PhysxShape::factory(shapes[i]->getType());
     shape->link(shapes[i]);
   }
@@ -137,7 +135,10 @@ void PhysxActor::
 set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
-  _ptr->setName(name);
+
+  free(_name);
+  _name = strdup(name);
+  _ptr->setName(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,6 +401,7 @@ create_shape(PhysxShapeDesc &desc) {
   nassertr(shapePtr, NULL);
 
   shape->link(shapePtr);
+  shape->set_name(desc.ptr()->name);
 
   return shape;
 }

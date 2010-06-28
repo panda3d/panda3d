@@ -142,7 +142,10 @@ void PhysxForceFieldShapeGroup::
 set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
-  _ptr->setName(name);
+
+  free(_name);
+  _name = strdup(name);
+  _ptr->setName(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,6 +193,7 @@ create_shape(PhysxForceFieldShapeDesc &desc) {
   nassertr(shapePtr, NULL);
 
   shape->link(shapePtr);
+  shape->set_name(desc.ptr()->name);
 
   return shape;
 }

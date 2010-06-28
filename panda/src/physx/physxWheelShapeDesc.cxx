@@ -24,7 +24,7 @@ set_to_default() {
 
   _desc.setToDefault();
 
-  _desc.name = "";
+  _desc.name = _name;
   _desc.localPose = PhysxManager::mat4_to_nxMat34(LMatrix4f::y_to_z_up_mat());
 }
 

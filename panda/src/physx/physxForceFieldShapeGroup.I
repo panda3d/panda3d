@@ -22,6 +22,7 @@
 INLINE PhysxForceFieldShapeGroup::
 PhysxForceFieldShapeGroup() : PhysxObject() {
 
+  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ PhysxForceFieldShapeGroup() : PhysxObject() {
 INLINE PhysxForceFieldShapeGroup::
 ~PhysxForceFieldShapeGroup() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

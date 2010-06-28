@@ -65,6 +65,8 @@ public:
 
   NxForceFieldDesc _desc;
   NxForceFieldLinearKernelDesc _kernel;
+
+  char *_name;
 };
 
 #include "physxForceFieldDesc.I"

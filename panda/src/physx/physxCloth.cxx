@@ -145,7 +145,10 @@ void PhysxCloth::
 set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
-  _ptr->setName(name);
+
+  free(_name);
+  _name = strdup(name);
+  _ptr->setName(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

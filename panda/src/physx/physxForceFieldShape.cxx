@@ -104,7 +104,10 @@ void PhysxForceFieldShape::
 set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
-  ptr()->setName(name);
+
+  free(_name);
+  _name = strdup(name);
+  ptr()->setName(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

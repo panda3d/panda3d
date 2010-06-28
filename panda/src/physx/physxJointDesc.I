@@ -22,5 +22,17 @@
 INLINE PhysxJointDesc::
 PhysxJointDesc() {
 
+  _name = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxJointDesc::Destructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PhysxJointDesc::
+~PhysxJointDesc() {
+
+  free(_name);
 }
 

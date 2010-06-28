@@ -22,7 +22,7 @@
 INLINE PhysxForceFieldDesc::
 PhysxForceFieldDesc() {
 
-  _desc.name = "";
+  _desc.name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +33,7 @@ PhysxForceFieldDesc() {
 INLINE PhysxForceFieldDesc::
 ~PhysxForceFieldDesc() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

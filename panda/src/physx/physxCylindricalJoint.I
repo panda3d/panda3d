@@ -32,5 +32,6 @@ PhysxCylindricalJoint() : PhysxJoint() {
 INLINE PhysxCylindricalJoint::
 ~PhysxCylindricalJoint() {
 
+  free(_name);
 }
 

@@ -32,5 +32,6 @@ PhysxCapsuleShape() : PhysxShape() {
 INLINE PhysxCapsuleShape::
 ~PhysxCapsuleShape() {
 
+  free(_name);
 }
 

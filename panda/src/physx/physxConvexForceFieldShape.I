@@ -32,5 +32,6 @@ PhysxConvexForceFieldShape() : PhysxForceFieldShape() {
 INLINE PhysxConvexForceFieldShape::
 ~PhysxConvexForceFieldShape() {
 
+  free(_name);
 }
 

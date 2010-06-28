@@ -32,5 +32,6 @@ PhysxCapsuleForceFieldShape() : PhysxForceFieldShape() {
 INLINE PhysxCapsuleForceFieldShape::
 ~PhysxCapsuleForceFieldShape() {
 
+  free(_name);
 }
 

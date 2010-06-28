@@ -22,6 +22,7 @@
 INLINE PhysxForceField::
 PhysxForceField() : PhysxObject() {
 
+  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ PhysxForceField() : PhysxObject() {
 INLINE PhysxForceField::
 ~PhysxForceField() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

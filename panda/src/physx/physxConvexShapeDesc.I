@@ -22,7 +22,7 @@
 INLINE PhysxConvexShapeDesc::
 PhysxConvexShapeDesc() : PhysxShapeDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxConvexShapeDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////

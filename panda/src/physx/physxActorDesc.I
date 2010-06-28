@@ -22,7 +22,8 @@
 INLINE PhysxActorDesc::
 PhysxActorDesc() {
 
-  _desc.name = "";
+  _name = NULL;
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +34,7 @@ PhysxActorDesc() {
 INLINE PhysxActorDesc::
 ~PhysxActorDesc() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////

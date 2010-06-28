@@ -23,7 +23,9 @@
 void PhysxForceFieldShapeDesc::
 set_name(const char *name) {
 
-  ptr()->name = name;
+  free(_name);
+  _name = strdup(name);
+  ptr()->name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////

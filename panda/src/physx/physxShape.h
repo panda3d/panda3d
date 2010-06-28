@@ -86,6 +86,8 @@ public:
 protected:
   INLINE PhysxShape();
 
+  char *_name;
+
 ////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {

@@ -22,6 +22,7 @@
 INLINE PhysxCloth::
 PhysxCloth() : PhysxObject() {
 
+  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ PhysxCloth() : PhysxObject() {
 INLINE PhysxCloth::
 ~PhysxCloth() {
 
+  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,9 +55,16 @@ ls() const {
 INLINE void PhysxCloth::
 ls(ostream &out, int indent_level) const {
 
+  char *name = _name ? _name : "";
+
   indent(out, indent_level) << get_type().get_name()
+                            << " " << name
                             << " (at 0x" << this << ")";
-  //out << " N:0x" << _node;
+
+  //if (_node) {
+  //  " N:0x" << _node;
+  //}
+
   out << "\n";
 }
 

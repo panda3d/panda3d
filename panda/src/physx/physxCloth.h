@@ -108,6 +108,7 @@ public:
 private:
   NxCloth *_ptr;
   PT(PhysxClothNode) _node;
+  char *_name;
 
 ////////////////////////////////////////////////////////////////////
 public:

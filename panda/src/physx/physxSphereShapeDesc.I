@@ -22,7 +22,7 @@
 INLINE PhysxSphereShapeDesc::
 PhysxSphereShapeDesc() : PhysxShapeDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxSphereShapeDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  _desc.name = _name;
 }
 
 ////////////////////////////////////////////////////////////////////
