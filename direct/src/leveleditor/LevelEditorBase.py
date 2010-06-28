@@ -356,6 +356,22 @@ class LevelEditorBase(DirectObject):
         mayaConverter = MayaConverter(self.ui, self, modelname, callBack, None, False)
         mayaConverter.Show()
 
+    def exportToMaya(self, mayaFileName):
+        exportRootNP = render
+        self.exportToMayaCB(mayaFileName, exportRootNP)
+
+    def exportToMayaCB(self, mayaFileName, exportRootNP):
+        bamFileName = mayaFileName + ".bam"
+
+        if base.direct.selected.last:
+            obj = self.objectMgr.findObjectByNodePath(base.direct.selected.last)
+            if obj:
+                exportRootNP = obj[OG.OBJ_NP]
+
+        exportRootNP.writeBamFile(bamFileName)
+        mayaConverter = MayaConverter(self.ui, self, mayaFileName, None, None, False, FROM_BAM_TO_MAYA)
+        mayaConverter.Show()
+
     def updateStatusReadout(self, status, color=None):
         if status:
             # add new status line, first check to see if it already exists

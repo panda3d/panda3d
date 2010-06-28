@@ -102,6 +102,7 @@ ID_NEW = 101
 ID_OPEN = 102
 ID_SAVE = 103
 ID_SAVE_AS = 104
+ID_EXPORT_TO_MAYA = 105
 
 ID_DUPLICATE = 201
 ID_MAKE_LIVE = 202
@@ -126,6 +127,7 @@ class LevelEditorUIBase(WxPandaShell):
             ID_OPEN : ("&Open", "LE-OpenScene"),
             ID_SAVE : ("&Save", "LE-SaveScene"),
             ID_SAVE_AS : ("Save &As", None),
+            ID_EXPORT_TO_MAYA : ("Export to Maya", None),
             wx.ID_EXIT : ("&Quit", "LE-Quit"),
             ID_DUPLICATE : ("&Duplicate", "LE-Duplicate"),
             ID_MAKE_LIVE : ("Make &Live", "LE-MakeLive"),
@@ -168,6 +170,9 @@ class LevelEditorUIBase(WxPandaShell):
 
         menuItem = self.menuFile.Insert(3, ID_SAVE_AS, self.MENU_TEXTS[ID_SAVE_AS][0])
         self.Bind(wx.EVT_MENU, self.onSaveAs, menuItem)
+
+        menuItem = self.menuFile.Insert(4, ID_EXPORT_TO_MAYA, self.MENU_TEXTS[ID_EXPORT_TO_MAYA][0])
+        self.Bind(wx.EVT_MENU, self.onExportToMaya, menuItem)
 
         self.menuEdit = wx.Menu()
         self.menuBar.Insert(1, self.menuEdit, "&Edit")
@@ -449,6 +454,12 @@ class LevelEditorUIBase(WxPandaShell):
             result = False
         dialog.Destroy()
         return result
+
+    def onExportToMaya(self, evt):
+        dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", "*.mb", wx.SAVE)
+        if dialog.ShowModal() == wx.ID_OK:
+            self.editor.exportToMaya(dialog.GetPath())
+        dialog.Destroy()
 
     def onDuplicate(self, evt):
         self.editor.objectMgr.duplicateSelected()

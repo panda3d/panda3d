@@ -1,6 +1,5 @@
 from direct.wxwidgets.WxAppShell import *
 import os, re, shutil
-
 import ObjectGlobals as OG
 
 CLOSE_STDIN = "<CLOSE STDIN>"
@@ -72,8 +71,11 @@ class Process:
             else:
                 return 1, None
 
+FROM_MAYA_TO_EGG = 0
+FROM_BAM_TO_MAYA = 1
+
 class MayaConverter(wx.Dialog):
-    def __init__(self, parent, editor, mayaFile, callBack=None, obj=None, isAnim=False):
+    def __init__(self, parent, editor, mayaFile, callBack=None, obj=None, isAnim=False, convertMode=FROM_MAYA_TO_EGG):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title="Maya Converter",
                            pos=wx.DefaultPosition, size=(300, 200))
 
@@ -81,6 +83,7 @@ class MayaConverter(wx.Dialog):
         self.obj = obj
         self.isAnim = isAnim
         self.callBack = callBack
+        self.mayaFile = mayaFile
 
         self.mainPanel = wx.Panel(self, -1)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -92,48 +95,76 @@ class MayaConverter(wx.Dialog):
         sizer2.Add(self.output, 1, wx.EXPAND, 0)
         self.mainPanel.SetSizer(sizer2)
 
-        if self.isAnim:
-            if self.obj:
-                command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
-                self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onProcessEnded(p0, p1))
-            else:
-                command = 'maya2egg -uo ft -a model %s -o %s.model.egg'%(mayaFile, mayaFile)
-                self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onModelProcessEnded(p0, p1))
+        if convertMode == FROM_MAYA_TO_EGG:
+            self.convertFromMaya()
+        elif convertMode == FROM_BAM_TO_MAYA:
+            self.convertToMaya()
         else:
-            command = 'maya2egg -uo ft %s -o %s.egg'%(mayaFile, mayaFile)
-            self.process = Process(self, command, lambda p0=None, p1=mayaFile: self.onProcessEnded(p0, p1))
-
+            pass
+        
         self.timer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.onPoll, self.timer)
         self.timer.Start(100)
+
+    def convertFromMaya(self):
+        if self.isAnim:
+            if self.obj:
+                command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(self.mayaFile, self.mayaFile)
+                self.process = Process(self, command, lambda p0=None: self.onProcessEnded(p0))
+            else:
+                command = 'maya2egg -uo ft -a model %s -o %s.model.egg'%(self.mayaFile, self.mayaFile)
+                self.process = Process(self, command, lambda p0=None: self.onModelProcessEnded(p0))
+        else:
+            command = 'maya2egg -uo ft %s -o %s.egg'%(self.mayaFile, self.mayaFile)
+            self.process = Process(self, command, lambda p0=None: self.onProcessEnded(p0))
+
+    def convertToMaya(self):
+        bamFileName = self.mayaFile + ".bam"
+        eggFileName = self.mayaFile + ".egg"
+        command = 'bam2egg %s -o %s'%(bamFileName, eggFileName)
+        self.process = Process(self, command, lambda p0=None: self.onBam2EggEnded(p0))
+
+    def onEgg2MayaEnded(self, evt):
+        self.process.CloseInp()
+        for i in self.process.Poll():
+            self.output.AppendText(i) 
+        self.process = None
+
+    def onBam2EggEnded(self, evt):
+        self.process.CloseInp()
+        for i in self.process.Poll():
+            self.output.AppendText(i) 
+        eggFileName = self.mayaFile + ".egg"
+        command = 'egg2maya -ui ft -uo ft %s -o %s'%(eggFileName, self.mayaFile)
+        self.process = Process(self, command, lambda p0=None: self.onEgg2MayaEnded(p0))
         
     def onPoll(self, evt):
         if self.process:
             for i in self.process.Poll():
                 self.output.AppendText(i)
 
-    def onModelProcessEnded(self, evt, mayaFile):
+    def onModelProcessEnded(self, evt):
         self.process.CloseInp()
         for i in self.process.Poll():
             self.output.AppendText(i)        
         self.process = None
-        command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(mayaFile, mayaFile)
-        self.process = Process(self, command, lambda p0 = None, p1=mayaFile: self.onProcessEnded(p0, p1))
+        command = 'maya2egg -uo ft -a chan %s -o %s.anim.egg'%(self.mayaFile, self.mayaFile)
+        self.process = Process(self, command, lambda p0 = None: self.onProcessEnded(p0))
 
-    def onProcessEnded(self, evt, mayaFile):
+    def onProcessEnded(self, evt):
         self.process.CloseInp()
         for i in self.process.Poll():
             self.output.AppendText(i)
 
-        self.output.AppendText('Converting %s is finished\n'%mayaFile)
+        self.output.AppendText('Converting %s is finished\n'%self.mayaFile)
         self.process = None
 
-        name = os.path.basename(mayaFile)
+        name = os.path.basename(self.mayaFile)
         if self.isAnim:
             if self.obj:
                 objDef = self.obj[OG.OBJ_DEF]
                 objNP = self.obj[OG.OBJ_NP]
-                animName = "%s.anim.egg"%mayaFile                
+                animName = "%s.anim.egg"%self.mayaFile                
                 if animName not in objDef.anims:
                     objDef.anims.append(animName)
                 name = os.path.basename(animName)
@@ -143,11 +174,11 @@ class MayaConverter(wx.Dialog):
                 self.editor.ui.objectPropertyUI.updateProps(self.obj)
                 return
             else:
-                modelName = "%s.model.egg"%mayaFile
-                animName = "%s.anim.egg"%mayaFile
+                modelName = "%s.model.egg"%self.mayaFile
+                animName = "%s.anim.egg"%self.mayaFile
                 result = [name, modelName, animName]
         else:
-            modelName = "%s.egg"%mayaFile
+            modelName = "%s.egg"%self.mayaFile
             result = [name, modelName]
 
         if self.callBack:
