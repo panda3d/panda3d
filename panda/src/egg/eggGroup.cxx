@@ -1243,6 +1243,8 @@ adjust_under() {
     if (invert_ok) {
       _node_frame_inv =
         new MatrixFrame(invert(get_node_frame()));
+    } else {
+      _node_frame_inv = NULL;
     }
 
     _vertex_to_node =
