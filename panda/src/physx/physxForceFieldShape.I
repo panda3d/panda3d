@@ -44,7 +44,7 @@ ls() const {
 INLINE void PhysxForceFieldShape::
 ls(ostream &out, int indent_level) const {
 
-  char *name = _name ? _name : "";
+  const char *name = _name ? _name : "";
 
   indent(out, indent_level) << get_type().get_name()
                             << " " << name
