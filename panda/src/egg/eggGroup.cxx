@@ -1236,12 +1236,20 @@ adjust_under() {
     // Our own transform also affects our node frame.
     _node_frame =
       new MatrixFrame(get_transform3d() * get_node_frame());
-    _node_frame_inv =
-      new MatrixFrame(invert(get_node_frame()));
+
+    // To prevent trying to invert a sigular matrix
+    LMatrix4d mat;
+    bool invert_ok = mat.invert_from(get_node_frame());
+    if (invert_ok) {
+      _node_frame_inv =
+        new MatrixFrame(invert(get_node_frame()));
+    }
+
     _vertex_to_node =
       new MatrixFrame(get_vertex_frame() * get_node_frame_inv());
     _node_to_vertex =
       new MatrixFrame(get_node_frame() * get_vertex_frame_inv());
+
   }
 
   if (is_instance_type()) {
