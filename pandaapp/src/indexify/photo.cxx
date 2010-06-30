@@ -17,7 +17,7 @@
 #include "rollDirectory.h"
 
 static const char * const standard_movie_extensions[] = {
-  "mov", "avi", "mpg", NULL
+  "mov", "avi", "mpg", "mp4", NULL
 };
 
 static const char * const standard_sound_extensions[] = {
