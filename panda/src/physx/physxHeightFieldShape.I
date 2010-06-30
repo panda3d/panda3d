@@ -32,6 +32,5 @@ PhysxHeightFieldShape() : PhysxShape() {
 INLINE PhysxHeightFieldShape::
 ~PhysxHeightFieldShape() {
 
-  free(_name);
 }
 

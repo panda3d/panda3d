@@ -54,7 +54,9 @@ PUBLISHED:
 
 public:
   NxActorDesc _desc;
-  char *_name;
+
+private:
+  string _name;
 };
 
 #include "physxActorDesc.I"

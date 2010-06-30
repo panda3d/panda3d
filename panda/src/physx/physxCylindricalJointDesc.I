@@ -22,7 +22,7 @@
 INLINE PhysxCylindricalJointDesc::
 PhysxCylindricalJointDesc() : PhysxJointDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxCylindricalJointDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

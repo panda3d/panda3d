@@ -32,6 +32,5 @@ PhysxPrismaticJoint() : PhysxJoint() {
 INLINE PhysxPrismaticJoint::
 ~PhysxPrismaticJoint() {
 
-  free(_name);
 }
 

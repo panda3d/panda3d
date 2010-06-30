@@ -29,6 +29,8 @@ link(NxForceFieldShape *shapePtr) {
   _ptr->userData = this;
   _error_type = ET_ok;
 
+  set_name(shapePtr->getName());
+
   PhysxForceFieldShapeGroup *group = (PhysxForceFieldShapeGroup *)_ptr->getShapeGroup().userData;
   group->_shapes.add(this);
 }

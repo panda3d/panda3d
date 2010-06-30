@@ -22,8 +22,7 @@
 INLINE PhysxClothDesc::
 PhysxClothDesc() {
 
-  _name = NULL;
-  _desc.name = _name;
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +33,6 @@ PhysxClothDesc() {
 INLINE PhysxClothDesc::
 ~PhysxClothDesc() {
 
-  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +44,7 @@ INLINE void PhysxClothDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@
 INLINE PhysxD6JointDesc::
 PhysxD6JointDesc() : PhysxJointDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxD6JointDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

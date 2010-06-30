@@ -22,7 +22,6 @@
 INLINE PhysxForceFieldShapeDesc::
 PhysxForceFieldShapeDesc() {
 
-  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +32,5 @@ PhysxForceFieldShapeDesc() {
 INLINE PhysxForceFieldShapeDesc::
 ~PhysxForceFieldShapeDesc() {
 
-  free(_name);
 }
 

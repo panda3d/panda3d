@@ -32,6 +32,5 @@ PhysxConvexShape() : PhysxShape() {
 INLINE PhysxConvexShape::
 ~PhysxConvexShape() {
 
-  free(_name);
 }
 

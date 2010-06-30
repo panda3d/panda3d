@@ -29,12 +29,14 @@ TypeHandle PhysxCloth::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxCloth::
-link(NxCloth *ptr) {
+link(NxCloth *clothPtr) {
 
   // Link self
-  _ptr = ptr;
+  _ptr = clothPtr;
   _error_type = ET_ok;
   _ptr->userData = this;
+
+  set_name(clothPtr->getName());
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
   scene->_cloths.add(this);
@@ -146,9 +148,8 @@ set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
 
-  free(_name);
-  _name = strdup(name);
-  _ptr->setName(_name);
+  _name = name ? name : "";
+  _ptr->setName(_name.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////

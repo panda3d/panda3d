@@ -32,6 +32,5 @@ PhysxPulleyJoint() : PhysxJoint() {
 INLINE PhysxPulleyJoint::
 ~PhysxPulleyJoint() {
 
-  free(_name);
 }
 

@@ -22,7 +22,6 @@
 INLINE PhysxForceField::
 PhysxForceField() : PhysxObject() {
 
-  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +32,6 @@ PhysxForceField() : PhysxObject() {
 INLINE PhysxForceField::
 ~PhysxForceField() {
 
-  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,10 +53,8 @@ ls() const {
 INLINE void PhysxForceField::
 ls(ostream &out, int indent_level) const {
 
-  const char *name = _name ? _name : "";
-
   indent(out, indent_level) << get_type().get_name()
-                            << " " << name
+                            << " " << _name
                             << " (at 0x" << this << ")\n";
 }
 

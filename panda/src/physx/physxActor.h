@@ -197,7 +197,7 @@ private:
   NxActor *_ptr;
   NodePath _np;
   PT(PhysxController) _controller;
-  char *_name;
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

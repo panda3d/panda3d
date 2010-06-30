@@ -22,8 +22,7 @@
 INLINE PhysxActorDesc::
 PhysxActorDesc() {
 
-  _name = NULL;
-  _desc.name = _name;
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +33,6 @@ PhysxActorDesc() {
 INLINE PhysxActorDesc::
 ~PhysxActorDesc() {
 
-  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +44,7 @@ INLINE void PhysxActorDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

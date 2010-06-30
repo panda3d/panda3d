@@ -32,6 +32,5 @@ PhysxD6Joint() : PhysxJoint() {
 INLINE PhysxD6Joint::
 ~PhysxD6Joint() {
 
-  free(_name);
 }
 

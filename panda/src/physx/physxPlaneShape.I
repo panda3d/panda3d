@@ -32,6 +32,5 @@ PhysxPlaneShape() : PhysxShape() {
 INLINE PhysxPlaneShape::
 ~PhysxPlaneShape() {
 
-  free(_name);
 }
 

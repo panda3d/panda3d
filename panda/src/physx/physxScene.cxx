@@ -395,11 +395,6 @@ create_actor(PhysxActorDesc &desc) {
   nassertr(actorPtr, NULL);
 
   actor->link(actorPtr);
-  actor->set_name(desc._desc.name);
-
-  for (unsigned int i=0; i < actor->get_num_shapes(); i++) {
-    actor->get_shape(i)->set_name(desc._desc.shapes[i]->name);
-  }
 
   return actor;
 }
@@ -710,7 +705,7 @@ create_controller(PhysxControllerDesc &desc) {
   nassertr(controllerPtr, NULL);
 
   controller->link(controllerPtr);
-  controllerPtr->getActor()->setName("");
+  controller->get_actor()->set_name("");
 
   return controller;
 }
@@ -764,7 +759,6 @@ create_joint(PhysxJointDesc &desc) {
   nassertr(jointPtr, NULL);
 
   joint->link(jointPtr);
-  joint->set_name(desc.ptr()->name);
 
   return joint;
 }
@@ -826,11 +820,6 @@ create_force_field(PhysxForceFieldDesc &desc) {
   nassertr(fieldPtr, NULL);
 
   field->link(fieldPtr);
-  field->set_name(desc._desc.name);
-
-  for (unsigned int i=0; i < field->get_num_shape_groups(); i++) {
-    field->get_shape_group(i)->set_name(desc._desc.shapeGroups[i]->getName());
-  }
 
   return field;
 }
@@ -884,7 +873,6 @@ create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
   nassertr(groupPtr, NULL);
 
   group->link(groupPtr);
-  group->set_name(strdup(desc._desc.name));
 
   return group;
 }
@@ -940,7 +928,6 @@ create_cloth(PhysxClothDesc &desc) {
   nassertr(clothPtr, NULL);
 
   cloth->link(clothPtr);
-  cloth->set_name(desc._desc.name);
 
   return cloth;
 }

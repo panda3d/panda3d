@@ -70,7 +70,9 @@ PUBLISHED:
 
 public:
   NxClothDesc _desc;
-  char *_name;  
+
+private:
+  string _name;  
 };
 
 #include "physxClothDesc.I"

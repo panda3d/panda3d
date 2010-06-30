@@ -30,6 +30,8 @@ link(NxJoint *jointPtr) {
   _ptr->userData = this;
   _error_type = ET_ok;
 
+  set_name(jointPtr->getName());
+
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
   scene->_joints.add(this);
 }

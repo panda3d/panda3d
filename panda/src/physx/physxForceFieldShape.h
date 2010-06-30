@@ -62,7 +62,8 @@ public:
 protected:
   INLINE PhysxForceFieldShape();
 
-  char *_name;
+private:
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

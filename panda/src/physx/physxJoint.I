@@ -22,7 +22,6 @@
 INLINE PhysxJoint::
 PhysxJoint() : PhysxObject() {
 
-  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,10 +43,8 @@ ls() const {
 INLINE void PhysxJoint::
 ls(ostream &out, int indent_level) const {
 
-  const char *name = _name ? _name : "";
-
   indent(out, indent_level) << get_type().get_name()
-                            << " " << name
+                            << " " << _name
                             << " (at 0x" << this << ")";
 
   NxActor *actorPtr[2];

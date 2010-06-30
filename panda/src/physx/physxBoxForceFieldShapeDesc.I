@@ -22,7 +22,7 @@
 INLINE PhysxBoxForceFieldShapeDesc::
 PhysxBoxForceFieldShapeDesc() : PhysxForceFieldShapeDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxBoxForceFieldShapeDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

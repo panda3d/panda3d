@@ -22,7 +22,6 @@
 INLINE PhysxShapeDesc::
 PhysxShapeDesc() {
 
-  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +32,5 @@ PhysxShapeDesc() {
 INLINE PhysxShapeDesc::
 ~PhysxShapeDesc() {
 
-  free(_name);
 }
 

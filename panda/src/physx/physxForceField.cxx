@@ -25,12 +25,14 @@ TypeHandle PhysxForceField::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysxForceField::
-link(NxForceField *materialPtr) {
+link(NxForceField *fieldPtr) {
 
   // Link self
-  _ptr = materialPtr;
+  _ptr = fieldPtr;
   _ptr->userData = this;
   _error_type = ET_ok;
+
+  set_name(fieldPtr->getName());
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
   scene->_forcefields.add(this);
@@ -85,9 +87,8 @@ set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
 
-  free(_name);
-  _name = strdup(name);
-  _ptr->setName(_name);
+  _name = name ? name : "";
+  _ptr->setName(_name.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////

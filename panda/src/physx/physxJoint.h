@@ -72,7 +72,8 @@ public:
 protected:
   INLINE PhysxJoint();
 
-  char *_name;
+private:
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

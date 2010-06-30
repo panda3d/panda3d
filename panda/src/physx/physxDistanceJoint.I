@@ -32,6 +32,5 @@ PhysxDistanceJoint() : PhysxJoint() {
 INLINE PhysxDistanceJoint::
 ~PhysxDistanceJoint() {
 
-  free(_name);
 }
 

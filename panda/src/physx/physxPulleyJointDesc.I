@@ -22,7 +22,7 @@
 INLINE PhysxPulleyJointDesc::
 PhysxPulleyJointDesc() : PhysxJointDesc() {
 
-  _desc.name = "";
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ INLINE void PhysxPulleyJointDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

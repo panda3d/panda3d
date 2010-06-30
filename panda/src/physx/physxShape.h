@@ -86,7 +86,8 @@ public:
 protected:
   INLINE PhysxShape();
 
-  char *_name;
+private:
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

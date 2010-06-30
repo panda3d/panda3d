@@ -22,7 +22,6 @@
 INLINE PhysxForceFieldDesc::
 PhysxForceFieldDesc() {
 
-  _desc.name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +32,6 @@ PhysxForceFieldDesc() {
 INLINE PhysxForceFieldDesc::
 ~PhysxForceFieldDesc() {
 
-  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +43,7 @@ INLINE void PhysxForceFieldDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

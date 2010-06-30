@@ -69,7 +69,7 @@ public:
 
 private:
   NxForceFieldShapeGroup *_ptr;
-  char *_name;
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

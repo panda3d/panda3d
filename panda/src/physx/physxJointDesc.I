@@ -22,7 +22,6 @@
 INLINE PhysxJointDesc::
 PhysxJointDesc() {
 
-  _name = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +32,5 @@ PhysxJointDesc() {
 INLINE PhysxJointDesc::
 ~PhysxJointDesc() {
 
-  free(_name);
 }
 

@@ -32,6 +32,5 @@ PhysxBoxShape() : PhysxShape() {
 INLINE PhysxBoxShape::
 ~PhysxBoxShape() {
 
-  free(_name);
 }
 

@@ -112,9 +112,8 @@ set_name(const char *name) {
 
   nassertv(_error_type == ET_ok);
 
-  free(_name);
-  _name = strdup(name);
-  ptr()->setName(_name);
+  _name = name ? name : "";
+  ptr()->setName(_name.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////

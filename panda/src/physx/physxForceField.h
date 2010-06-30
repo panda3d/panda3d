@@ -68,7 +68,7 @@ public:
 
 private:
   NxForceField *_ptr;
-  char *_name;
+  string _name;
 
 ////////////////////////////////////////////////////////////////////
 public:

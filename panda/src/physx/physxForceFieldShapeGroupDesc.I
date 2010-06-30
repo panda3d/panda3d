@@ -22,7 +22,7 @@
 INLINE PhysxForceFieldShapeGroupDesc::
 PhysxForceFieldShapeGroupDesc() {
 
-  _desc.name = NULL;
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,6 @@ PhysxForceFieldShapeGroupDesc() {
 INLINE PhysxForceFieldShapeGroupDesc::
 ~PhysxForceFieldShapeGroupDesc() {
 
-  free(_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +44,7 @@ INLINE void PhysxForceFieldShapeGroupDesc::
 set_to_default() {
 
   _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////

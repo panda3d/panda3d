@@ -32,6 +32,5 @@ PhysxFixedJoint() : PhysxJoint() {
 INLINE PhysxFixedJoint::
 ~PhysxFixedJoint() {
 
-  free(_name);
 }
 

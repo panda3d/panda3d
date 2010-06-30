@@ -58,7 +58,9 @@ PUBLISHED:
 
 public:
   virtual NxJointDesc *ptr() const = 0;
-  char *_name;
+
+private:
+  string _name;
 
 protected:
   INLINE PhysxJointDesc();

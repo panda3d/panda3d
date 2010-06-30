@@ -32,6 +32,5 @@ PhysxSphericalJoint() : PhysxJoint() {
 INLINE PhysxSphericalJoint::
 ~PhysxSphericalJoint() {
 
-  free(_name);
 }
 
