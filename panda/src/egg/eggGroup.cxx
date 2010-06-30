@@ -1242,7 +1242,7 @@ adjust_under() {
     bool invert_ok = mat.invert_from(get_node_frame());
     if (invert_ok) {
       _node_frame_inv =
-        new MatrixFrame(invert(get_node_frame()));
+        new MatrixFrame(mat);
     } else {
       _node_frame_inv = NULL;
     }
