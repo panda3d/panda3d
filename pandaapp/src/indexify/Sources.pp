@@ -1,14 +1,19 @@
 #define BUILD_DIRECTORY $[HAVE_FREETYPE]
 
+#define OTHER_LIBS \
+    progbase pandatoolbase \
+    dtoolutil:c dtool:m prc:c dtoolbase:c dtoolconfig:m \
+    express:c pandaexpress:m \
+    putil:c pipeline:c linmath:c pnmimage:c mathutil:c pnmtext:c \
+    pnmimagetypes:c event:c panda:m \
+    pystub
+
+#define UNIX_SYS_LIBS dl
+
 #begin bin_target
   #define USE_PACKAGES freetype
 
   #define TARGET indexify
-  #define OTHER_LIBS \
-    progbase pandatoolbase \
-    pnmtext:c pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
-    dtool:m dtoolconfig:m \
-    pystub
 
   #define SOURCES \
     default_index_icons.cxx default_index_icons.h \
@@ -25,11 +30,6 @@
   #define USE_PACKAGES freetype
 
   #define TARGET font-samples
-  #define OTHER_LIBS \
-    progbase pandatoolbase \
-    pnmtext:c pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
-    dtool:m dtoolconfig:m \
-    pystub
 
   #define SOURCES \
     default_font.cxx default_font.h \
