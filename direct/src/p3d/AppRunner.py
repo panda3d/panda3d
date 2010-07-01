@@ -802,7 +802,8 @@ class AppRunner(DirectObject):
         self.readConfigXml()
         
 
-    def addPackageInfo(self, name, platform, version, hostUrl, hostDir = None):
+    def addPackageInfo(self, name, platform, version, hostUrl, hostDir = None,
+                       recurse = False):
         """ Called by the browser for each one of the "required"
         packages that were preloaded before starting the application.
         If for some reason the package isn't already downloaded, this
@@ -830,6 +831,11 @@ class AppRunner(DirectObject):
             platform = None
         package = host.getPackage(name, version, platform = platform)
         if not package:
+            if not recurse:
+                # Maybe the contents.xml file isn't current.  Re-fetch it.
+                if host.redownloadContentsFile(self.http):
+                    return self.addPackageInfo(name, platform, version, hostUrl, hostDir = hostDir, recurse = True)
+            
             message = "Couldn't find %s %s on %s" % (name, version, hostUrl)
             raise OSError, message
 

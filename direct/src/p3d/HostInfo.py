@@ -106,10 +106,13 @@ class HostInfo:
             # https-protected hostUrl, it will be the cleartext channel.
             self.downloadUrlPrefix = self.hostUrlPrefix
 
-    def downloadContentsFile(self, http, redownload = False):
+    def downloadContentsFile(self, http, redownload = False,
+                             hashVal = None):
         """ Downloads the contents.xml file for this particular host,
         synchronously, and then reads it.  Returns true on success,
-        false on failure. """
+        false on failure.  If hashVal is not None, it should be a
+        HashVal object, which will be filled with the hash from the
+        new contents.xml file."""
 
         if self.hasCurrentContentsFile():
             # We've already got one.
@@ -159,6 +162,8 @@ class HostInfo:
             f = open(tempFilename.toOsSpecific(), 'wb')
             f.write(rf.getData())
             f.close()
+            if hashVal:
+                hashVal.hashString(rf.getData())
 
             if not self.readContentsFile(tempFilename, freshDownload = True):
                 self.notify.warning("Failure reading %s" % (url))
@@ -192,14 +197,15 @@ class HostInfo:
 
         # Now download it again.
         self.hasContentsFile = False
-        if not self.downloadContentsFile(http, redownload = True):
-            return False
-        
         hv2 = HashVal()
-        filename = Filename(self.hostDir, 'contents.xml')
-        hv2.hashFile(filename)
+        if not self.downloadContentsFile(http, redownload = True,
+                                         hashVal = hv2):
+            return False
 
-        if hv1 != hv2:
+        if hv2 == HashVal():
+            self.notify.info("%s didn't actually redownload." % (url))
+            return False
+        elif hv1 != hv2:
             self.notify.info("%s has changed." % (url))
             return True
         else:
