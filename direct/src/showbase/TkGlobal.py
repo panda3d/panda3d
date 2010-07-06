@@ -10,8 +10,10 @@ import sys
 
 # This is required by the ihooks.py module used by Squeeze (used by
 # pandaSqueezer.py) so that Pmw initializes properly
-sys.modules['_Pmw'].__name__ = '_Pmw'
+if '_Pmw' in sys.modules:
+    sys.modules['_Pmw'].__name__ = '_Pmw'
 
+if 
 __builtins__["tkroot"] = Pmw.initialise()
 
 def tkLoop(self):
