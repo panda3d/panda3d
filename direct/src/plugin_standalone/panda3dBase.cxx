@@ -12,6 +12,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#else
+#include <signal.h>
+#endif
 #include "panda3dBase.h"
 #include "httpClient.h"
 #include "find_root_dir.h"
@@ -26,11 +32,6 @@
 #include <ctype.h>
 #include <sstream>
 #include <algorithm>
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <signal.h>
-#endif
 
 // The amount of time in seconds to wait for new messages.
 static const double wait_cycle = 0.2;
@@ -269,7 +270,7 @@ make_parent_window() {
 
   HINSTANCE application = GetModuleHandle(NULL);
   ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.lpfnWndProc = window_proc;
+  wc.lpfnWndProc = (WNDPROC)window_proc;
   wc.hInstance = application;
   wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
   wc.lpszClassName = "panda3d";

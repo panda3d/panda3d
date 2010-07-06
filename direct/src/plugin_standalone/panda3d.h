@@ -15,6 +15,11 @@
 #ifndef PANDA3D_H
 #define PANDA3D_H
 
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
+
+
 #include "panda3dBase.h"
 #include "p3d_plugin.h"
 #include "httpChannel.h"

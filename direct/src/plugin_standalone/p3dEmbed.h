@@ -15,6 +15,10 @@
 #ifndef P3DEMBED_H
 #define P3DEMBED_H
 
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
+
 #include "panda3dBase.h"
 #include "p3d_plugin.h"
 #include "httpChannel.h"
