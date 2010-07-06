@@ -4,7 +4,7 @@
 // developing the plugin system itself.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build this directory.
 
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[WINDOWS_PLATFORM],$[HAVE_ACTIVEX]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[WINDOWS_PLATFORM],$[HAVE_ACTIVEX],$[not $[eq $[USE_COMPILER],MSVC9x64]]]
 
 #define _MT $[if $[P3D_PLUGIN_MT],_mt]
 
