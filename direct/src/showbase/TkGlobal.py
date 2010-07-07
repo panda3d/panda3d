@@ -13,7 +13,6 @@ import sys
 if '_Pmw' in sys.modules:
     sys.modules['_Pmw'].__name__ = '_Pmw'
 
-if 
 __builtins__["tkroot"] = Pmw.initialise()
 
 def tkLoop(self):
