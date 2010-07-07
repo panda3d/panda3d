@@ -1723,7 +1723,7 @@ CreatePandaVersionFiles()
 #
 ##########################################################################################
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
     CopyTree(GetOutputDir()+'/direct', 'direct/src')
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
     if (sys.platform.startswith("win")):
@@ -3383,7 +3383,7 @@ if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgS
 # DIRECTORY: direct/src/directbase/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/directbase', 'PYTHON']
   TargetAdd('directbase_directbase.obj', opts=OPTS+['BUILDING:DIRECT'], input='directbase.cxx')
 
@@ -3402,7 +3402,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/dcparser/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'BISONPREFIX_dcyy']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
@@ -3420,7 +3420,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/deadrec/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/deadrec', 'BUILDING:DIRECT']
   TargetAdd('deadrec_composite.obj', opts=OPTS, input='deadrec_composite.cxx')
   IGATEFILES=GetDirectoryContents('direct/src/deadrec', ["*.h", "*_composite.cxx"])
@@ -3432,7 +3432,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/distributed/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'OPENSSL']
   TargetAdd('distributed_config_distributed.obj', opts=OPTS, input='config_distributed.cxx')
   TargetAdd('distributed_cConnectionRepository.obj', opts=OPTS, input='cConnectionRepository.cxx')
@@ -3446,7 +3446,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/interval/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/interval', 'BUILDING:DIRECT']
   TargetAdd('interval_composite.obj', opts=OPTS, input='interval_composite.cxx')
   IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite.cxx"])
@@ -3458,7 +3458,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/showbase/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/showbase', 'BUILDING:DIRECT']
   TargetAdd('showbase_showBase.obj', opts=OPTS, input='showBase.cxx')
   if (sys.platform == "darwin"):
@@ -3472,7 +3472,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/metalibs/direct/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/metalibs/direct', 'BUILDING:DIRECT']
   TargetAdd('direct_direct.obj', opts=OPTS, input='direct.cxx')
 
@@ -3510,7 +3510,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/dcparse/
 #
 
-if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME):
   OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI']
   TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
   TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
@@ -3522,7 +3522,7 @@ if (PkgSkip("PYTHON")==0 and not RTDIST and not RUNTIME):
 # DIRECTORY: direct/src/heapq/
 #
 
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/heapq']
   TargetAdd('heapq_heapq.obj', opts=OPTS, input='heapq.cxx')
   TargetAdd('libp3heapq.dll', input='heapq_heapq.obj')
