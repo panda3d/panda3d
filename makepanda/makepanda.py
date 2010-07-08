@@ -48,6 +48,7 @@ VERSION=None
 MAJOR_VERSION=None
 COREAPI_VERSION=None
 OSXTARGET=None
+HOST_URL="https://runtime.panda3d.org/"
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -117,12 +118,12 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
-    global VERSION,COMPRESSOR,THREADCOUNT,OSXTARGET
+    global VERSION,COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static"]
+        "static","host="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -150,6 +151,7 @@ def parseopts(args):
             elif (option=="--lzma"): COMPRESSOR="lzma"
             elif (option=="--override"): AddOverride(value.strip())
             elif (option=="--static"): SetLinkAllStatic(True)
+            elif (option=="--host"): HOST_URL=value
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -1493,7 +1495,7 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
-        plugin_config["PANDA_PACKAGE_HOST_URL"] = "https://runtime.panda3d.org/"
+        plugin_config["PANDA_PACKAGE_HOST_URL"] = HOST_URL
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
@@ -1564,7 +1566,7 @@ PANDAVERSION_H="""
 #define PANDA_ABI_VERSION_STR "$VERSION1.$VERSION2"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR "$RTDIST_VERSION"
-#define PANDA_PACKAGE_HOST_URL "https://runtime.panda3d.org/"
+#define PANDA_PACKAGE_HOST_URL "$HOST_URL"
 """
 
 PANDAVERSION_H_RUNTIME="""
@@ -1580,7 +1582,7 @@ PANDAVERSION_H_RUNTIME="""
 #define P3D_COREAPI_VERSION_STR "$COREAPI_VERSION"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR ""
-#define PANDA_PACKAGE_HOST_URL "https://runtime.panda3d.org/"
+#define PANDA_PACKAGE_HOST_URL "$HOST_URL"
 """
 
 CHECKPANDAVERSION_CXX="""
@@ -1680,6 +1682,7 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
     pandaversion_h = pandaversion_h.replace("$COREAPI_VERSION",COREAPI_VERSION)
+    pandaversion_h = pandaversion_h.replace("$HOST_URL",HOST_URL)
     if (DISTRIBUTOR == "cmu"):
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
