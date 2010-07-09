@@ -5,7 +5,7 @@
 
 #define LOCAL_LIBS \
     framework putil collide pgraph chan text \
-    pnmimage pnmimagetypes event effects gobj display \
+    pnmimage pnmimagetypes pnmtext event effects gobj display \
     mathutil putil express dgraph device tform \
     linmath pstatclient panda
 
