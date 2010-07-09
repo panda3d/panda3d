@@ -5722,7 +5722,7 @@ bool DXGraphicsStateGuardian9::
 get_supports_cg_profile(const string &name) const {
 #ifndef HAVE_CG
   return false;
-#endif
+#else
   CGprofile profile = cgGetProfile(name.c_str());
   
   if (profile ==CG_PROFILE_UNKNOWN) {
@@ -5730,6 +5730,7 @@ get_supports_cg_profile(const string &name) const {
     return false;
   }
   return cgD3D9IsProfileSupported(cgGetProfile(name.c_str()));
+#endif  // HAVE_CG
 }
 
 ////////////////////////////////////////////////////////////////////
