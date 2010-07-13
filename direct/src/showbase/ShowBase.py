@@ -58,7 +58,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
         logStackDump = (config.GetBool('log-stack-dump', 0) or
                         config.GetBool('client-log-stack-dump', 0))
-        uploadStackDump = config.GetBool('upload-stack-dump', (not __dev__))
+        uploadStackDump = config.GetBool('upload-stack-dump', 0)
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
