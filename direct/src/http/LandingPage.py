@@ -62,8 +62,8 @@ class LandingPage:
         bodyTag.append(ET.Comment(''))
 
         fileStr = StringIO()
-        ET.ElementTree(headTag).write(fileStr)
-        headTagStr = fileStr.getvalue()
+        ET.ElementTree(headTag).write(fileStr, encoding='utf-8')
+        headTagStr = unicodeUtf8(fileStr.getvalue())
         # remove the tag closer
         # </head>
         headTagStr = headTagStr[:headTagStr.rindex('<')]
@@ -74,8 +74,8 @@ class LandingPage:
         LandingPageHTML.addBodyHeaderAndContent(landing, titleStr, self.getMenuTags(activeTab))
 
         fileStr = StringIO()
-        ET.ElementTree(landing).write(fileStr)
-        landingStr = fileStr.getvalue()
+        ET.ElementTree(landing).write(fileStr, encoding='utf-8')
+        landingStr = unicodeUtf8(fileStr.getvalue())
         # remove <body>
         landingStr = landingStr[landingStr.index('>')+1:]
         # remove tag closers
@@ -86,8 +86,8 @@ class LandingPage:
             landingStr = landingStr[:landingStr.rindex('<')]
         
         fileStr = StringIO()
-        ET.ElementTree(bodyTag).write(fileStr)
-        bodyTagStr = fileStr.getvalue()
+        ET.ElementTree(bodyTag).write(fileStr, encoding='utf-8')
+        bodyTagStr = unicodeUtf8(fileStr.getvalue())
         # extract <body>
         bodyStr = bodyTagStr[bodyTagStr.index('>')+1:]
         bodyTagStr = bodyTagStr[:bodyTagStr.index('>')+1]
