@@ -51,7 +51,7 @@ class WebRequest(object):
             msg += "\nCache-Control: max-age=313977290\nExpires: Tue, 02 May 2017 04:08:44 GMT\n"
 
         msg += u"\r\n\r\n%s" % (body)
-        self.connection.SendThisResponse(encodedUtf8(msg))
+        self.connection.SendThisResponse(msg)
 
     def timeout(self):
         resp = "<html><body>Error 504: Request timed out</body></html>\r\n"
