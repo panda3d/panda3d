@@ -15,14 +15,7 @@
 /*#include "dtool_config.h"*/
 #include "dtoolbase.h"
 
-#ifndef HAVE_GETOPT
-#include "gnu_getopt.h"
-#else
-#ifdef PHAVE_GETOPT_H
 #include <getopt.h>
-#endif
-#endif
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>  /* for strerror */
