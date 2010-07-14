@@ -22,7 +22,10 @@
 #include "webcamVideo.h"
 
 struct v4l2_format;
-#ifdef HAVE_JPEG
+
+// We can only decode a motion-jpeg stream if we have jpegint.h.
+#if defined(HAVE_JPEG) && defined(PHAVE_JPEGINT_H)
+#define SUPPORT_WEBCAM_VIDEO_JPEG 1
 struct jpeg_decompress_struct;
 #endif
 

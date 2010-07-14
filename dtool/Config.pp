@@ -474,6 +474,10 @@
 #define JPEG_LIBS jpeg
 #defer HAVE_JPEG $[libtest $[JPEG_LPATH],$[JPEG_LIBS]]
 
+// Some versions of libjpeg did not provide jpegint.h.  Redefine this
+// to empty if you lack this header file.
+#define PHAVE_JPEGINT_H 1
+
 // Is libpng installed, and where?
 #define PNG_IPATH
 #define PNG_LPATH

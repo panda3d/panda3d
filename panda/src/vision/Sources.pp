@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define USE_PACKAGES opencv artoolkit
+#define USE_PACKAGES opencv artoolkit jpeg
 
 #define BUILDING_DLL BUILDING_VISION
 

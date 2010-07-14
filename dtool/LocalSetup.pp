@@ -280,6 +280,7 @@ $[cdefine REPORT_OPENSSL_ERRORS]
 
 /* Define if we have libjpeg installed.  */
 $[cdefine HAVE_JPEG]
+$[cdefine PHAVE_JPEGINT_H]
 
 /* Define if we have libpng installed.  */
 $[cdefine HAVE_PNG]
