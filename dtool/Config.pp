@@ -115,7 +115,7 @@
 // but you must put /usr/local/panda/lib (or $INSTALL_DIR/lib) on
 // your PYTHONPATH.
 
-// #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
+// #define INSTALL_LIB_DIR /usr/lib/python2.6/site-packages
 
 
 // The character used to separate components of an OS-specific
@@ -319,7 +319,7 @@
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
-#define PYTHON_IPATH /usr/include/python2.4
+#define PYTHON_IPATH /usr/include/python2.6
 #define PYTHON_LPATH
 #define PYTHON_FPATH
 #define PYTHON_COMMAND python
