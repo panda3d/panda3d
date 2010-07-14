@@ -59,7 +59,8 @@ private:
   static void *root_func(void *data);
   static void init_pt_ptr_index();
 
-  enum Status {
+  // There appears to be a name collision with the word "Status".
+  enum PStatus {
     S_new,
     S_start_called,
     S_running,
@@ -71,7 +72,7 @@ private:
   pthread_t _thread;
   bool _joinable;
   bool _detached;
-  Status _status;
+  PStatus _status;
 
   static pthread_key_t _pt_ptr_index;
   static bool _got_pt_ptr_index;
