@@ -2625,8 +2625,13 @@ void P3DInstance::
 set_failed() {
   set_button_image(IT_none);
   set_background_image(IT_failed);
-  _failed = true;
-  make_splash_window();
+  _main_object->set_string_property("status", "failed");
+
+  if (!_failed) {
+    _failed = true;
+    make_splash_window();
+    send_notify("onfail");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3002,6 +3007,7 @@ start_next_download() {
   while (_download_package_index < (int)_downloading_packages.size()) {
     P3DPackage *package = _downloading_packages[_download_package_index];
     if (package->get_failed()) {
+      send_notify("ondownloadfail");
       set_failed();
       return;
     }
@@ -3323,6 +3329,7 @@ report_package_done(P3DPackage *package, bool success) {
     report_package_progress(package, 1.0);
     start_next_download();
   } else {
+    send_notify("ondownloadfail");
     set_failed();
   }
 }
@@ -4080,6 +4087,7 @@ download_finished(bool success) {
     _inst->priv_set_p3d_filename(get_filename());
   } else {
     // Oops, no joy on the instance data.
+    _inst->send_notify("ondownloadfail");
     _inst->set_failed();
   }
 }
