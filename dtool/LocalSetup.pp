@@ -275,7 +275,6 @@ $[cdefine HAVE_ARTOOLKIT]
 
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_OPENSSL]
-$[cdefine OPENSSL_097]
 $[cdefine REPORT_OPENSSL_ERRORS]
 
 /* Define if we have libjpeg installed.  */

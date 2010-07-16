@@ -461,8 +461,6 @@
 #define OPENSSL_LPATH /usr/local/ssl/lib
 #define OPENSSL_LIBS ssl crypto
 #defer HAVE_OPENSSL $[libtest $[OPENSSL_LPATH],$[OPENSSL_LIBS]]
-// Redefine this to empty if your version of OpenSSL is prior to 0.9.7.
-#define OPENSSL_097 1
 
 // Define this true to include the OpenSSL code to report verbose
 // error messages when they occur.
