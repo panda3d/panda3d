@@ -73,6 +73,7 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 GraphicsWindow::
 ~GraphicsWindow() {
   // Clean up python event handlers.
+#ifdef HAVE_PYTHON
   PythonWinProcClasses::iterator iter;
   for (iter = _python_window_proc_classes.begin(); 
        iter != _python_window_proc_classes.end(); 
