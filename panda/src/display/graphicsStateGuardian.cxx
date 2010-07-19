@@ -1273,8 +1273,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
 //  Description: Return a pointer to struct ShaderPtrData
 ////////////////////////////////////////////////////////////////////
 const Shader::ShaderPtrData *GraphicsStateGuardian::
-  fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec){
-    return (_target_shader->get_shader_input_ptr(spec._arg));
+fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
+  return (_target_shader->get_shader_input_ptr(spec._arg));
 }
 
 ////////////////////////////////////////////////////////////////////

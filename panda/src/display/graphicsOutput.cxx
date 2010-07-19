@@ -74,7 +74,8 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                const WindowProperties &win_prop,
                int flags,
                GraphicsStateGuardian *gsg,
-               GraphicsOutput *host) :
+               GraphicsOutput *host,
+               bool default_stereo_flags) :
   _lock("GraphicsOutput"),
   _cull_window_pcollector(_cull_pcollector, name),
   _draw_window_pcollector(_draw_pcollector, name)
@@ -109,6 +110,9 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _red_blue_stereo = false;
   _left_eye_color_mask = 0x0f;
   _right_eye_color_mask = 0x0f;
+  _side_by_side_stereo = false;
+  _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
+  _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _delete_flag = false;
   _texture_card = 0;
   _trigger_copy = false;
@@ -119,11 +123,28 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
     _draw_buffer_type = RenderBuffer::T_back;
   }
 
+  if (default_stereo_flags) {
+    // Check the config variables to see if we should make this a
+    // "stereo" buffer or window.
+    _red_blue_stereo = red_blue_stereo && !fb_prop.is_stereo();
+    if (_red_blue_stereo) {
+      _left_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(0));
+      _right_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(1));
+    }
+    _side_by_side_stereo = side_by_side_stereo && !fb_prop.is_stereo();
+    if (_side_by_side_stereo) {
+      _sbs_left_dimensions.set(sbs_left_dimensions[0], sbs_left_dimensions[1], 
+                               sbs_left_dimensions[2], sbs_left_dimensions[3]);
+      _sbs_right_dimensions.set(sbs_right_dimensions[0], sbs_right_dimensions[1], 
+                                sbs_right_dimensions[2], sbs_right_dimensions[3]);
+    }
+  }
+
   // We start out with one DisplayRegion that covers the whole window,
   // which we may use internally for full-window operations like
   // clear() and get_screenshot().
-  _default_display_region = make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
-  _default_display_region->set_active(false);
+  _overlay_display_region = make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+  _overlay_display_region->set_active(false);
 
   _display_regions_stale = false;
 
@@ -206,7 +227,7 @@ GraphicsOutput::
 
   _total_display_regions.clear();
   _active_display_regions.clear();
-  _default_display_region = NULL;
+  _overlay_display_region = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -443,6 +464,64 @@ set_inverted(bool inverted) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_side_by_side_stereo
+//       Access: Published
+//  Description: Enables side-by-side stereo mode on this particular
+//               window.  When side-by-side stereo mode is in effect,
+//               DisplayRegions that have the "left" channel set will
+//               render on the part of the window specified by
+//               sbs_left_dimensions (typically the left half: (0,
+//               0.5, 0, 1)), while DisplayRegions that have the
+//               "right" channel set will render on the part of the
+//               window specified by sbs_right_dimensions (typically
+//               the right half: (0.5, 1, 0, 1)).
+//
+//               This is commonly used in a dual-monitor mode, where a
+//               window is opened that spans two monitors, and each
+//               monitor represents a different eye.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_side_by_side_stereo(bool side_by_side_stereo) {
+  LVecBase4f left, right;
+  left.set(sbs_left_dimensions[0], sbs_left_dimensions[1], 
+           sbs_left_dimensions[2], sbs_left_dimensions[3]);
+  right.set(sbs_right_dimensions[0], sbs_right_dimensions[1], 
+            sbs_right_dimensions[2], sbs_right_dimensions[3]);
+  set_side_by_side_stereo(side_by_side_stereo, left, right);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_side_by_side_stereo
+//       Access: Published
+//  Description: Enables side-by-side stereo mode on this particular
+//               window.  When side-by-side stereo mode is in effect,
+//               DisplayRegions that have the "left" channel set will
+//               render on the part of the window specified by
+//               sbs_left_dimensions (typically the left half: (0,
+//               0.5, 0, 1)), while DisplayRegions that have the
+//               "right" channel set will render on the part of the
+//               window specified by sbs_right_dimensions (typically
+//               the right half: (0.5, 1, 0, 1)).
+//
+//               This is commonly used in a dual-monitor mode, where a
+//               window is opened that spans two monitors, and each
+//               monitor represents a different eye.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_side_by_side_stereo(bool side_by_side_stereo,
+                        const LVecBase4f &sbs_left_dimensions,
+                        const LVecBase4f &sbs_right_dimensions) {
+  _side_by_side_stereo = side_by_side_stereo;
+  if (_side_by_side_stereo) {
+    _sbs_left_dimensions = sbs_left_dimensions;
+    _sbs_right_dimensions = sbs_right_dimensions;
+  } else {
+    _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
+    _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::set_sort
 //       Access: Published, Virtual
 //  Description: Adjusts the sorting order of this particular
@@ -473,11 +552,11 @@ set_sort(int sort) {
 //               one or the other.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
-make_display_region(float l, float r, float b, float t) {
+make_display_region(const LVecBase4f &dimensions) {
   if (is_stereo() && default_stereo_camera) {
-    return make_stereo_display_region(l, r, b, t);
+    return make_stereo_display_region(dimensions);
   } else {
-    return make_mono_display_region(l, r, b, t);
+    return make_mono_display_region(dimensions);
   }
 }
 
@@ -488,12 +567,23 @@ make_display_region(float l, float r, float b, float t) {
 //               sub-rectangle within the window.  The range on all
 //               parameters is 0..1.
 //
-//               This always returns a mono DisplayRegion, even if
-//               is_stereo() is true.
+//               This generally returns a mono DisplayRegion, even if
+//               is_stereo() is true.  However, if side-by-side stereo
+//               is enabled, this will return a StereoDisplayRegion
+//               whose two eyes are both set to SC_mono.  (This is
+//               necessary because in side-by-side stereo mode, it is
+//               necessary to draw even mono DisplayRegions twice).
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
-make_mono_display_region(float l, float r, float b, float t) {
-  return add_display_region(new DisplayRegion(this, l, r, b, t));
+make_mono_display_region(const LVecBase4f &dimensions) {
+  if (_side_by_side_stereo) {
+    StereoDisplayRegion *dr = make_stereo_display_region(dimensions);
+    dr->get_left_eye()->set_stereo_channel(Lens::SC_mono);
+    dr->get_right_eye()->set_stereo_channel(Lens::SC_mono);
+    return dr;
+  }
+
+  return add_display_region(new DisplayRegion(this, dimensions));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -507,11 +597,40 @@ make_mono_display_region(float l, float r, float b, float t) {
 //               is_stereo() is false.
 ////////////////////////////////////////////////////////////////////
 StereoDisplayRegion *GraphicsOutput::
-make_stereo_display_region(float l, float r, float b, float t) {
-  PT(DisplayRegion) left = new DisplayRegion(this, l, r, b, t);
-  PT(DisplayRegion) right = new DisplayRegion(this, l, r, b, t);
+make_stereo_display_region(const LVecBase4f &dimensions) {
+  PT(DisplayRegion) left, right;
 
-  PT(StereoDisplayRegion) stereo = new StereoDisplayRegion(this, l, r, b, t,
+  if (_side_by_side_stereo) {
+    // On a side-by-side stereo window, each eye gets the
+    // corresponding dimensions of its own sub-region.
+    float left_l = _sbs_left_dimensions[0];
+    float left_b = _sbs_left_dimensions[2];
+    float left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
+    float left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
+    LVecBase4f left_dimensions(dimensions[0] * left_w + left_l,
+                               dimensions[1] * left_w + left_l,
+                               dimensions[2] * left_h + left_b,
+                               dimensions[3] * left_h + left_b);
+    left = new DisplayRegion(this, left_dimensions);
+
+    float right_l = _sbs_right_dimensions[0];
+    float right_b = _sbs_right_dimensions[2];
+    float right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
+    float right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
+    LVecBase4f right_dimensions(dimensions[0] * right_w + right_l,
+                                dimensions[1] * right_w + right_l,
+                                dimensions[2] * right_h + right_b,
+                                dimensions[3] * right_h + right_b);
+    right = new DisplayRegion(this, right_dimensions);
+
+  } else {
+    // Not a side-by-side stereo window; thus, both the left and right
+    // eyes are the same region: the region specified.
+    left = new DisplayRegion(this, dimensions);
+    right = new DisplayRegion(this, dimensions);
+  }
+
+  PT(StereoDisplayRegion) stereo = new StereoDisplayRegion(this, dimensions,
                                                            left, right);
   add_display_region(stereo);
   add_display_region(left);
@@ -533,7 +652,7 @@ bool GraphicsOutput::
 remove_display_region(DisplayRegion *display_region) {
   LightMutexHolder holder(_lock);
 
-  nassertr(display_region != _default_display_region, false);
+  nassertr(display_region != _overlay_display_region, false);
 
   if (display_region->is_stereo()) {
     StereoDisplayRegion *sdr;
@@ -560,15 +679,40 @@ remove_all_display_regions() {
        dri != _total_display_regions.end();
        ++dri) {
     DisplayRegion *display_region = (*dri);
-    if (display_region != _default_display_region) {
+    if (display_region != _overlay_display_region) {
       // Let's aggressively clean up the display region too.
       display_region->cleanup();
       display_region->_window = NULL;
     }
   }
   _total_display_regions.clear();
-  _total_display_regions.push_back(_default_display_region);
+  _total_display_regions.push_back(_overlay_display_region);
   _display_regions_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_overlay_display_region
+//       Access: Published
+//  Description: Replaces the special "overlay" DisplayRegion that is
+//               created for each window or buffer.  See
+//               get_overlay_display_region().  This must be a new
+//               DisplayRegion that has already been created for this
+//               window, for instance via a call to
+//               make_mono_display_region().  You are responsible for
+//               ensuring that the new DisplayRegion covers the entire
+//               window.  The previous overlay display region is not
+//               automatically removed; you must explicitly call
+//               remove_display_region() on it after replacing it with
+//               this method, if you wish it to be removed.
+//
+//               Normally, there is no reason to change the overlay
+//               DisplayRegion, so this method should be used only
+//               in very unusual circumstances.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_overlay_display_region(DisplayRegion *display_region) {
+  nassertv(display_region->get_window() == this);
+  _overlay_display_region = display_region;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -651,128 +795,6 @@ get_active_display_region(int n) const {
     }
   }
   return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOuput::create_texture_card_vdata
-//       Access: Private
-//  Description: Generates a GeomVertexData for a texture card.
-////////////////////////////////////////////////////////////////////
-PT(GeomVertexData) GraphicsOutput::
-create_texture_card_vdata(int x, int y) {
-  float xhi = 1.0;
-  float yhi = 1.0;
-
-  if (Texture::get_textures_power_2() != ATS_none) {
-    int xru = Texture::up_to_power_2(x);
-    int yru = Texture::up_to_power_2(y);
-    xhi = (x * 1.0f) / xru;
-    yhi = (y * 1.0f) / yru;
-  }
-
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
-
-  PT(GeomVertexData) vdata = new GeomVertexData
-    ("card", format, Geom::UH_static);
-
-  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  GeomVertexWriter normal(vdata, InternalName::get_normal());
-
-  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
-  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
-  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
-  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
-
-  texcoord.add_data2f( 0.0f,  yhi);
-  texcoord.add_data2f( 0.0f, 0.0f);
-  texcoord.add_data2f(  xhi,  yhi);
-  texcoord.add_data2f(  xhi, 0.0f);
-
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
-
-  return vdata;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_size_and_recalc
-//       Access: Public
-//  Description: Changes the x_size and y_size, then recalculates
-//               structures that depend on size.  The recalculation
-//               currently includes:
-//               - compute_pixels on all the graphics regions.
-//               - updating the texture card, if one is present.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-set_size_and_recalc(int x, int y) {
-  _x_size = x;
-  _y_size = y;
-  _has_size = true;
-
-  int fb_x_size = get_fb_x_size();
-  int fb_y_size = get_fb_y_size();
-
-  TotalDisplayRegions::iterator dri;
-  for (dri = _total_display_regions.begin();
-       dri != _total_display_regions.end();
-       ++dri) {
-    (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
-  }
-
-  if (_texture_card != 0) {
-    _texture_card->set_vertex_data(create_texture_card_vdata(x, y));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_texture_card
-//       Access: Published
-//  Description: Returns a PandaNode containing a square polygon.
-//               The dimensions are (-1,0,-1) to (1,0,1). The texture
-//               coordinates are such that the texture of this
-//               GraphicsOutput is aligned properly to the polygon.
-//               The GraphicsOutput promises to surgically update
-//               the Geom inside the PandaNode if necessary to maintain
-//               this invariant.
-//
-//               Each invocation of this function returns a freshly-
-//               allocated PandaNode.  You can therefore safely modify
-//               the RenderAttribs of the PandaNode.  The
-//               PandaNode is initially textured with the texture
-//               of this GraphicOutput.
-////////////////////////////////////////////////////////////////////
-NodePath GraphicsOutput::
-get_texture_card() {
-  if (_texture_card == 0) {
-    PT(GeomVertexData) vdata = create_texture_card_vdata(_x_size, _y_size);
-    PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
-    strip->set_shade_model(Geom::SM_uniform);
-    strip->add_next_vertices(4);
-    strip->close_primitive();
-    _texture_card = new Geom(vdata);
-    _texture_card->add_primitive(strip);
-  }
-
-  PT(GeomNode) gnode = new GeomNode("texture card");
-  gnode->add_geom(_texture_card);
-  NodePath path(gnode);
-
-  // The texture card, by default, is textured with the first
-  // render-to-texture output texture.  Depth and stencil
-  // textures are ignored.  The user can freely alter the
-  // card's texture attrib.
-  for (int i=0; i<count_textures(); i++) {
-    Texture *texture = get_texture(i);
-    if ((texture->get_format() != Texture::F_depth_stencil)) {
-      path.set_texture(texture, 0);
-      break;
-    }
-  }
-
-  return path;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -930,6 +952,75 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_texture_card
+//       Access: Published
+//  Description: Returns a PandaNode containing a square polygon.
+//               The dimensions are (-1,0,-1) to (1,0,1). The texture
+//               coordinates are such that the texture of this
+//               GraphicsOutput is aligned properly to the polygon.
+//               The GraphicsOutput promises to surgically update
+//               the Geom inside the PandaNode if necessary to maintain
+//               this invariant.
+//
+//               Each invocation of this function returns a freshly-
+//               allocated PandaNode.  You can therefore safely modify
+//               the RenderAttribs of the PandaNode.  The
+//               PandaNode is initially textured with the texture
+//               of this GraphicOutput.
+////////////////////////////////////////////////////////////////////
+NodePath GraphicsOutput::
+get_texture_card() {
+  if (_texture_card == 0) {
+    PT(GeomVertexData) vdata = create_texture_card_vdata(_x_size, _y_size);
+    PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
+    strip->set_shade_model(Geom::SM_uniform);
+    strip->add_next_vertices(4);
+    strip->close_primitive();
+    _texture_card = new Geom(vdata);
+    _texture_card->add_primitive(strip);
+  }
+
+  PT(GeomNode) gnode = new GeomNode("texture card");
+  gnode->add_geom(_texture_card);
+  NodePath path(gnode);
+
+  // The texture card, by default, is textured with the first
+  // render-to-texture output texture.  Depth and stencil
+  // textures are ignored.  The user can freely alter the
+  // card's texture attrib.
+  for (int i=0; i<count_textures(); i++) {
+    Texture *texture = get_texture(i);
+    if ((texture->get_format() != Texture::F_depth_stencil)) {
+      path.set_texture(texture, 0);
+      break;
+    }
+  }
+
+  return path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::share_depth_buffer
+//       Access: Published, Virtual
+//  Description: Will attempt to use the depth buffer of the input
+//               graphics_output. The buffer sizes must be exactly
+//               the same.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+share_depth_buffer(GraphicsOutput *graphics_output) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::unshare_depth_buffer
+//       Access: Published, Virtual
+//  Description: Discontinue sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+unshare_depth_buffer() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_host
 //       Access: Public, Virtual
 //  Description: This is normally called only from within
@@ -1004,71 +1095,33 @@ clear_pipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-begin_frame(FrameMode mode, Thread *current_thread) {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
+//     Function: GraphicsOutput::set_size_and_recalc
+//       Access: Public
+//  Description: Changes the x_size and y_size, then recalculates
+//               structures that depend on size.  The recalculation
+//               currently includes:
+//               - compute_pixels on all the graphics regions.
+//               - updating the texture card, if one is present.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-end_frame(FrameMode mode, Thread *current_thread) {
-}
+set_size_and_recalc(int x, int y) {
+  _x_size = x;
+  _y_size = y;
+  _has_size = true;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::pixel_factor_changed
-//       Access: Published, Virtual
-//  Description: Called internally when the pixel factor changes.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-pixel_factor_changed() {
-  if (_has_size) {
-    set_size_and_recalc(_x_size, _y_size);
-  }
-}
+  int fb_x_size = get_fb_x_size();
+  int fb_y_size = get_fb_y_size();
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::prepare_for_deletion
-//       Access: Protected
-//  Description: Set the delete flag, and do the usual cleanup
-//               activities associated with that.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-prepare_for_deletion() {
-
-  _active = false;
-  _delete_flag = true;
-
-  // We have to be sure to remove all of the display regions
-  // immediately, so that circular reference counts can be cleared
-  // up (each display region keeps a pointer to a CullResult,
-  // which can hold all sorts of pointers).
-  remove_all_display_regions();
-
-  // If we were rendering directly to texture, we can't delete the
-  // buffer until the texture is gone too.
-  for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      _hold_textures.push_back(get_texture(i));
-    }
+  TotalDisplayRegions::iterator dri;
+  for (dri = _total_display_regions.begin();
+       dri != _total_display_regions.end();
+       ++dri) {
+    (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
   }
 
-  // We have to be sure to clear the _textures pointers, though, or
-  // we'll end up holding a reference to the textures forever.
-  clear_render_textures();
+  if (_texture_card != 0) {
+    _texture_card->set_vertex_data(create_texture_card_vdata(x, y));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1092,82 +1145,35 @@ clear(Thread *current_thread) {
 
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-    DisplayRegionPipelineReader dr_reader(_default_display_region, current_thread);
+    DisplayRegionPipelineReader dr_reader(_overlay_display_region, current_thread);
     _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
     _gsg->clear(this);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::copy_to_textures
-//       Access: Protected
-//  Description: For all textures marked RTM_copy_texture,
-//               RTM_copy_ram, RTM_triggered_copy_texture, or
-//               RTM_triggered_copy_ram, do the necessary copies.
-//
-//               Returns true if all copies are successful, false
-//               otherwise.
+//     Function: GraphicsOutput::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
-copy_to_textures() {
-  bool okflag = true;
-  for (int i = 0; i < count_textures(); ++i) {
-    RenderTextureMode rtm_mode = get_rtm_mode(i);
-    if ((rtm_mode == RTM_none) || (rtm_mode == RTM_bind_or_copy)) {
-      continue;
-    }
+begin_frame(FrameMode mode, Thread *current_thread) {
+  return false;
+}
 
-    Texture *texture = get_texture(i);
-    PStatTimer timer(_copy_texture_pcollector);
-    nassertr(has_texture(), false);
-
-    if ((rtm_mode == RTM_copy_texture)||
-        (rtm_mode == RTM_copy_ram)||
-        ((rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
-        ((rtm_mode == RTM_triggered_copy_ram)&&(_trigger_copy))) {
-      if (display_cat.is_debug()) {
-        display_cat.debug()
-          << "Copying texture for " << get_name() << " at frame end.\n";
-        display_cat.debug()
-          << "cube_map_index = " << _cube_map_index << "\n";
-      }
-      int plane = get_texture_plane(i);
-      RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(plane));
-      if (plane == RTP_color) {
-        buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
-                                         get_fb_properties());
-      }
-
-      bool copied = false;
-      if (_cube_map_dr != (DisplayRegion *)NULL) {
-        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          copied =
-            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
-                                          _cube_map_dr, buffer);
-        } else {
-          copied =
-            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
-                                              _cube_map_dr, buffer);
-        }
-      } else {
-        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          copied =
-            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
-                                          _default_display_region, buffer);
-        } else {
-          copied =
-            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
-                                              _default_display_region, buffer);
-        }
-      }
-      if (!copied) {
-        okflag = false;
-      }
-    }
-  }
-  _trigger_copy = false;
-
-  return okflag;
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1300,6 +1306,164 @@ process_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::pixel_factor_changed
+//       Access: Published, Virtual
+//  Description: Called internally when the pixel factor changes.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+pixel_factor_changed() {
+  if (_has_size) {
+    set_size_and_recalc(_x_size, _y_size);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::prepare_for_deletion
+//       Access: Protected
+//  Description: Set the delete flag, and do the usual cleanup
+//               activities associated with that.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+prepare_for_deletion() {
+  _active = false;
+  _delete_flag = true;
+
+  // We have to be sure to remove all of the display regions
+  // immediately, so that circular reference counts can be cleared
+  // up (each display region keeps a pointer to a CullResult,
+  // which can hold all sorts of pointers).
+  remove_all_display_regions();
+
+  // If we were rendering directly to texture, we can't delete the
+  // buffer until the texture is gone too.
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      _hold_textures.push_back(get_texture(i));
+    }
+  }
+
+  // We have to be sure to clear the _textures pointers, though, or
+  // we'll end up holding a reference to the textures forever.
+  clear_render_textures();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::copy_to_textures
+//       Access: Protected
+//  Description: For all textures marked RTM_copy_texture,
+//               RTM_copy_ram, RTM_triggered_copy_texture, or
+//               RTM_triggered_copy_ram, do the necessary copies.
+//
+//               Returns true if all copies are successful, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+copy_to_textures() {
+  bool okflag = true;
+  for (int i = 0; i < count_textures(); ++i) {
+    RenderTextureMode rtm_mode = get_rtm_mode(i);
+    if ((rtm_mode == RTM_none) || (rtm_mode == RTM_bind_or_copy)) {
+      continue;
+    }
+
+    Texture *texture = get_texture(i);
+    PStatTimer timer(_copy_texture_pcollector);
+    nassertr(has_texture(), false);
+
+    if ((rtm_mode == RTM_copy_texture)||
+        (rtm_mode == RTM_copy_ram)||
+        ((rtm_mode == RTM_triggered_copy_texture)&&(_trigger_copy))||
+        ((rtm_mode == RTM_triggered_copy_ram)&&(_trigger_copy))) {
+      if (display_cat.is_debug()) {
+        display_cat.debug()
+          << "Copying texture for " << get_name() << " at frame end.\n";
+        display_cat.debug()
+          << "cube_map_index = " << _cube_map_index << "\n";
+      }
+      int plane = get_texture_plane(i);
+      RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(plane));
+      if (plane == RTP_color) {
+        buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                         get_fb_properties());
+      }
+
+      bool copied = false;
+      if (_cube_map_dr != (DisplayRegion *)NULL) {
+        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
+          copied =
+            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
+                                          _cube_map_dr, buffer);
+        } else {
+          copied =
+            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
+                                              _cube_map_dr, buffer);
+        }
+      } else {
+        if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
+          copied =
+            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
+                                          _overlay_display_region, buffer);
+        } else {
+          copied =
+            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
+                                              _overlay_display_region, buffer);
+        }
+      }
+      if (!copied) {
+        okflag = false;
+      }
+    }
+  }
+  _trigger_copy = false;
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOuput::create_texture_card_vdata
+//       Access: Private
+//  Description: Generates a GeomVertexData for a texture card.
+////////////////////////////////////////////////////////////////////
+PT(GeomVertexData) GraphicsOutput::
+create_texture_card_vdata(int x, int y) {
+  float xhi = 1.0;
+  float yhi = 1.0;
+
+  if (Texture::get_textures_power_2() != ATS_none) {
+    int xru = Texture::up_to_power_2(x);
+    int yru = Texture::up_to_power_2(y);
+    xhi = (x * 1.0f) / xru;
+    yhi = (y * 1.0f) / yru;
+  }
+
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
+
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("card", format, Geom::UH_static);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+
+  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
+  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
+  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
+  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
+
+  texcoord.add_data2f( 0.0f,  yhi);
+  texcoord.add_data2f( 0.0f, 0.0f);
+  texcoord.add_data2f(  xhi,  yhi);
+  texcoord.add_data2f(  xhi, 0.0f);
+
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+  normal.add_data3f(LVector3f::back());
+
+  return vdata;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::add_display_region
 //       Access: Private
 //  Description: Called by one of the make_display_region() methods to
@@ -1322,7 +1486,7 @@ add_display_region(DisplayRegion *display_region) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 do_remove_display_region(DisplayRegion *display_region) {
-  nassertr(display_region != _default_display_region, false);
+  nassertr(display_region != _overlay_display_region, false);
 
   PT(DisplayRegion) drp = display_region;
   TotalDisplayRegions::iterator dri =
@@ -1375,6 +1539,56 @@ do_determine_display_regions() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::parse_color_mask
+//       Access: Private, Static
+//  Description: Parses one of the keywords in the
+//               red-blue-stereo-colors Config.prc variable, and
+//               returns the corresponding bitmask.
+//
+//               These bitmask values are taken from ColorWriteAttrib.
+////////////////////////////////////////////////////////////////////
+unsigned int GraphicsOutput::
+parse_color_mask(const string &word) {
+  unsigned int result = 0;
+  vector_string components;
+  tokenize(word, components, "|");
+
+  vector_string::const_iterator ci;
+  for (ci = components.begin(); ci != components.end(); ++ci) {
+    string w = downcase(*ci);
+    if (w == "red" || w == "r") {
+      result |= 0x001;
+
+    } else if (w == "green" || w == "g") {
+      result |= 0x002;
+
+    } else if (w == "blue" || w == "b") {
+      result |= 0x004;
+
+    } else if (w == "yellow" || w == "y") {
+      result |= 0x003;
+
+    } else if (w == "magenta" || w == "m") {
+      result |= 0x005;
+
+    } else if (w == "cyan" || w == "c") {
+      result |= 0x006;
+
+    } else if (w == "alpha" || w == "a") {
+      result |= 0x008;
+
+    } else if (w == "off") {
+      
+    } else {
+      display_cat.warning()
+        << "Invalid color in red-blue-stereo-colors: " << (*ci) << "\n";
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::FrameMode output operator
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1390,26 +1604,4 @@ operator << (ostream &out, GraphicsOutput::FrameMode fm) {
   }
 
   return out << "(**invalid GraphicsOutput::FrameMode(" << (int)fm << ")**)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::share_depth_buffer
-//       Access: Published, Virtual
-//  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly
-//               the same.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-share_depth_buffer(GraphicsOutput *graphics_output) {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::unshare_depth_buffer
-//       Access: Published, Virtual
-//  Description: Discontinue sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-unshare_depth_buffer() {
-
 }

@@ -24,7 +24,7 @@
 #include "drawableRegion.h"
 #include "renderBuffer.h"
 #include "graphicsOutputBase.h"
-
+#include "luse.h"
 #include "typedWritableReferenceCount.h"
 #include "pandaNode.h"
 #include "pStatCollector.h"
@@ -67,7 +67,8 @@ protected:
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop, int flags,
                  GraphicsStateGuardian *gsg,
-                 GraphicsOutput *host);
+                 GraphicsOutput *host,
+                 bool default_stereo_flags);
 
 private:
   GraphicsOutput(const GraphicsOutput &copy);
@@ -111,6 +112,10 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE int get_fb_x_size() const;
   INLINE int get_fb_y_size() const;
+  INLINE int get_sbs_left_x_size() const;
+  INLINE int get_sbs_left_y_size() const;
+  INLINE int get_sbs_right_x_size() const;
+  INLINE int get_sbs_right_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
 
@@ -130,6 +135,14 @@ PUBLISHED:
   INLINE unsigned int get_left_eye_color_mask() const;
   INLINE unsigned int get_right_eye_color_mask() const;
 
+  void set_side_by_side_stereo(bool side_by_side_stereo);
+  void set_side_by_side_stereo(bool side_by_side_stereo,
+                               const LVecBase4f &sbs_left_dimensions,
+                               const LVecBase4f &sbs_right_dimensions);
+  INLINE bool get_side_by_side_stereo() const;
+  INLINE const LVecBase4f &get_sbs_left_dimensions() const;
+  INLINE const LVecBase4f &get_sbs_right_dimensions() const;
+
   INLINE const FrameBufferProperties &get_fb_properties() const;
   INLINE bool is_stereo() const;
 
@@ -146,13 +159,19 @@ PUBLISHED:
   INLINE void trigger_copy();
   
   INLINE DisplayRegion *make_display_region();
-  DisplayRegion *make_display_region(float l, float r, float b, float t);
+  INLINE DisplayRegion *make_display_region(float l, float r, float b, float t);
+  DisplayRegion *make_display_region(const LVecBase4f &dimensions);
   INLINE DisplayRegion *make_mono_display_region();
-  DisplayRegion *make_mono_display_region(float l, float r, float b, float t);
+  INLINE DisplayRegion *make_mono_display_region(float l, float r, float b, float t);
+  DisplayRegion *make_mono_display_region(const LVecBase4f &dimensions);
   INLINE StereoDisplayRegion *make_stereo_display_region();
-  StereoDisplayRegion *make_stereo_display_region(float l, float r, float b, float t);
+  INLINE StereoDisplayRegion *make_stereo_display_region(float l, float r, float b, float t);
+  StereoDisplayRegion *make_stereo_display_region(const LVecBase4f &dimensions);
   bool remove_display_region(DisplayRegion *display_region);
   void remove_all_display_regions();
+
+  INLINE DisplayRegion *get_overlay_display_region() const;
+  void set_overlay_display_region(DisplayRegion *display_region);
 
   int get_num_display_regions() const;
   PT(DisplayRegion) get_display_region(int n) const;
@@ -233,8 +252,20 @@ protected:
   INLINE void clear_cube_map_selection();
   INLINE void trigger_flip();
 
-protected:
+private:
+  PT(GeomVertexData) create_texture_card_vdata(int x, int y);
+  
+  DisplayRegion *add_display_region(DisplayRegion *display_region);
+  bool do_remove_display_region(DisplayRegion *display_region);
 
+  INLINE void win_display_regions_changed();
+
+  INLINE void determine_display_regions() const;
+  void do_determine_display_regions();
+
+  static unsigned int parse_color_mask(const string &word);
+
+protected:
   class RenderTexture {
   public:
     PT(Texture) _texture;
@@ -256,16 +287,6 @@ protected:
   bool _trigger_copy;
   
 private:
-  PT(GeomVertexData) create_texture_card_vdata(int x, int y);
-  
-  DisplayRegion *add_display_region(DisplayRegion *display_region);
-  bool do_remove_display_region(DisplayRegion *display_region);
-
-  INLINE void win_display_regions_changed();
-
-  INLINE void determine_display_regions() const;
-  void do_determine_display_regions();
-  
   int _sort;
   int _child_sort;
   bool _got_child_sort;
@@ -278,6 +299,9 @@ protected:
   bool _red_blue_stereo;
   unsigned int _left_eye_color_mask;
   unsigned int _right_eye_color_mask;
+  bool _side_by_side_stereo;
+  LVecBase4f _sbs_left_dimensions;
+  LVecBase4f _sbs_right_dimensions;
   bool _delete_flag;
 
   // These weak pointers are used to keep track of whether the
@@ -289,7 +313,7 @@ protected:
 protected:
   LightMutex _lock; 
   // protects _display_regions.
-  PT(DisplayRegion) _default_display_region;
+  PT(DisplayRegion) _overlay_display_region;
   typedef pvector< PT(DisplayRegion) > TotalDisplayRegions;
   TotalDisplayRegions _total_display_regions;
   typedef pvector<DisplayRegion *> ActiveDisplayRegions;

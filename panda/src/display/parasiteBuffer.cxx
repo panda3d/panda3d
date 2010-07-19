@@ -30,7 +30,7 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
   GraphicsOutput(host->get_engine(), host->get_pipe(), 
                  name, host->get_fb_properties(),
                  WindowProperties::size(x_size, y_size), flags, 
-                 host->get_gsg(), host)
+                 host->get_gsg(), host, false)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -52,7 +52,7 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
   _x_size = x_size;
   _y_size = y_size;
   _has_size = true;
-  _default_display_region->compute_pixels(_x_size, _y_size);
+  _overlay_display_region->compute_pixels(_x_size, _y_size);
   _is_valid = true;
   
   set_inverted(host->get_gsg()->get_copy_texture_inverted());

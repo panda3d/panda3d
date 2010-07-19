@@ -32,7 +32,7 @@ TypeHandle DisplayRegionPipelineReader::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
+DisplayRegion(GraphicsOutput *window, const LVecBase4f &dimensions) :
   _window(window),
   _incomplete_render(true),
   _texture_reload_priority(0),
@@ -41,7 +41,7 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
 {
   _screenshot_buffer_type = window->get_draw_buffer_type();
   _draw_buffer_type = window->get_draw_buffer_type();
-  set_dimensions(l, r, b, t);
+  set_dimensions(dimensions);
   compute_pixels_all_stages();
 }
 
@@ -124,15 +124,12 @@ set_lens_index(int index) {
 //               whole screen.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_dimensions(float l, float r, float b, float t) {
+set_dimensions(const LVecBase4f &dimensions) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
 
-  cdata->_l = l;
-  cdata->_r = r;
-  cdata->_b = b;
-  cdata->_t = t;
+  cdata->_dimensions = dimensions;
 
   if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
     do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), cdata);
@@ -382,8 +379,7 @@ set_cube_map_index(int cube_map_index) {
 void DisplayRegion::
 output(ostream &out) const {
   CDReader cdata(_cycler);
-  out << "DisplayRegion(" << cdata->_l << " " << cdata->_r << " "
-      << cdata->_b << " " << cdata->_t << ")=pixels(" << cdata->_pl
+  out << "DisplayRegion(" << cdata->_dimensions << ")=pixels(" << cdata->_pl
       << " " << cdata->_pr << " " << cdata->_pb << " " << cdata->_pt
       << ")";
 }
@@ -699,23 +695,23 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
       << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
   }
 
-  cdata->_pl = int((cdata->_l * x_size) + 0.5);
-  cdata->_pr = int((cdata->_r * x_size) + 0.5);
+  cdata->_pl = int((cdata->_dimensions[0] * x_size) + 0.5);
+  cdata->_pr = int((cdata->_dimensions[1] * x_size) + 0.5);
 
   nassertv(_window != (GraphicsOutput *)NULL);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
-    cdata->_pb = int(((1.0f - cdata->_t) * y_size) + 0.5);
-    cdata->_pt = int(((1.0f - cdata->_b) * y_size) + 0.5);
-    cdata->_pbi = int((cdata->_t * y_size) + 0.5);
-    cdata->_pti = int((cdata->_b * y_size) + 0.5);
+    cdata->_pb = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
+    cdata->_pt = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
+    cdata->_pbi = int((cdata->_dimensions[3] * y_size) + 0.5);
+    cdata->_pti = int((cdata->_dimensions[2] * y_size) + 0.5);
 
   } else {
     // The window is normal.
-    cdata->_pb = int((cdata->_b * y_size) + 0.5);
-    cdata->_pt = int((cdata->_t * y_size) + 0.5);
-    cdata->_pbi = int(((1.0f - cdata->_b) * y_size) + 0.5);
-    cdata->_pti = int(((1.0f - cdata->_t) * y_size) + 0.5);
+    cdata->_pb = int((cdata->_dimensions[2] * y_size) + 0.5);
+    cdata->_pt = int((cdata->_dimensions[3] * y_size) + 0.5);
+    cdata->_pbi = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
+    cdata->_pti = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
   }
 }
 
@@ -750,7 +746,7 @@ set_active_index(int index) {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::CData::
 CData() :
-  _l(0.), _r(1.), _b(0.), _t(1.),
+  _dimensions(0.0f, 1.0f, 0.0f, 1.0f),
   _pl(0), _pr(0), _pb(0), _pt(0),
   _pbi(0), _pti(0), _lens_index(0),
   _camera_node((Camera *)NULL),
@@ -768,10 +764,7 @@ CData() :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
-  _l(copy._l),
-  _r(copy._r),
-  _b(copy._b),
-  _t(copy._t),
+  _dimensions(copy._dimensions),
   _pl(copy._pl),
   _pr(copy._pr),
   _pb(copy._pb),

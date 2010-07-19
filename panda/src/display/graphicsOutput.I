@@ -210,6 +210,66 @@ get_fb_y_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_left_x_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel width of the left eye, based on scaling
+//               get_x_size() by get_sbs_left_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_x_size().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_sbs_left_x_size() const {
+  float left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
+  return max(int(_x_size * left_w), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_left_y_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel height of the left eye, based on scaling
+//               get_y_size() by get_sbs_left_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_y_size().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_sbs_left_y_size() const {
+  float left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
+  return max(int(_y_size * left_h), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_right_x_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel width of the right eye, based on scaling
+//               get_x_size() by get_sbs_right_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_x_size().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_sbs_right_x_size() const {
+  float right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
+  return max(int(_x_size * right_w), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_right_y_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel height of the right eye, based on scaling
+//               get_y_size() by get_sbs_right_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_y_size().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_sbs_right_y_size() const {
+  float right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
+  return max(int(_y_size * right_h), 1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::has_size
 //       Access: Published
 //  Description: Returns true if the size of the window/frame buffer
@@ -356,6 +416,43 @@ get_right_eye_color_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_side_by_side_stereo
+//       Access: Published
+//  Description: Returns whether side-by-side stereo mode is in effect for
+//               this particular window.  See set_side_by_side_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_side_by_side_stereo() const {
+  return _side_by_side_stereo;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_left_dimensions
+//       Access: Published
+//  Description: Returns the effective sub-region of the window for
+//               displaying the left channel, if side-by-side stereo
+//               mode is in effect for the window.  See
+//               set_side_by_side_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4f &GraphicsOutput::
+get_sbs_left_dimensions() const {
+  return _sbs_left_dimensions;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_right_dimensions
+//       Access: Published
+//  Description: Returns the effective sub-region of the window for
+//               displaying the right channel, if side-by-side stereo
+//               mode is in effect for the window.  See
+//               set_side_by_side_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4f &GraphicsOutput::
+get_sbs_right_dimensions() const {
+  return _sbs_right_dimensions;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_fb_properties
 //       Access: Published
 //  Description: Returns the framebuffer properties of the window.
@@ -375,7 +472,7 @@ get_fb_properties() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 is_stereo() const {
-  return _red_blue_stereo || _fb_properties.is_stereo();
+  return _red_blue_stereo || _side_by_side_stereo || _fb_properties.is_stereo();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -506,17 +603,58 @@ make_display_region() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the indicated
+//               sub-rectangle within the window.  The range on all
+//               parameters is 0..1.
+//
+//               If is_stereo() is true for this window, and
+//               default-stereo-camera is configured true, this
+//               actually makes a StereoDisplayRegion.  Call
+//               make_mono_display_region() or
+//               make_stereo_display_region() if you want to insist on
+//               one or the other.
+////////////////////////////////////////////////////////////////////
+DisplayRegion *GraphicsOutput::
+make_display_region(float l, float r, float b, float t) {
+  return make_display_region(LVecBase4f(l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_mono_display_region
 //       Access: Published
 //  Description: Creates a new DisplayRegion that covers the entire
 //               window.
 //
-//               This always returns a mono DisplayRegion, even if
-//               is_stereo() is true.
+//               This generally returns a mono DisplayRegion, even if
+//               is_stereo() is true.  However, if side-by-side stereo
+//               is enabled, this will return a StereoDisplayRegion
+//               whose two eyes are both set to SC_mono.  (This is
+//               necessary because in side-by-side stereo mode, it is
+//               necessary to draw even mono DisplayRegions twice).
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegion *GraphicsOutput::
 make_mono_display_region() {
   return make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_mono_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the entire
+//               window.
+//
+//               This generally returns a mono DisplayRegion, even if
+//               is_stereo() is true.  However, if side-by-side stereo
+//               is enabled, this will return a StereoDisplayRegion
+//               whose two eyes are both set to SC_mono.  (This is
+//               necessary because in side-by-side stereo mode, it is
+//               necessary to draw even mono DisplayRegions twice).
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *GraphicsOutput::
+make_mono_display_region(float l, float r, float b, float t) {
+  return make_mono_display_region(LVecBase4f(l, r, b, t));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -531,6 +669,41 @@ make_mono_display_region() {
 INLINE StereoDisplayRegion *GraphicsOutput::
 make_stereo_display_region() {
   return make_stereo_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_stereo_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the entire
+//               window.
+//
+//               This always returns a stereo DisplayRegion, even if
+//               is_stereo() is false.
+////////////////////////////////////////////////////////////////////
+INLINE StereoDisplayRegion *GraphicsOutput::
+make_stereo_display_region(float l, float r, float b, float t) {
+  return make_stereo_display_region(LVecBase4f(l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_overlay_display_region
+//       Access: Published
+//  Description: Returns the special "overlay" DisplayRegion that is
+//               created for each window or buffer.  This
+//               DisplayRegion covers the entire window, but cannot be
+//               used for rendering.  It is a placeholder only, to
+//               indicate the dimensions of the window, and is usually
+//               used internally for purposes such as clearing the
+//               window, or grabbing a screenshot of the window.
+//
+//               There are very few applications that require access
+//               to this DisplayRegion.  Normally, you should create
+//               your own DisplayRegion that covers the window, if you
+//               want to render to the window.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *GraphicsOutput::
+get_overlay_display_region() const {
+  return _overlay_display_region;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -563,7 +736,7 @@ make_screenshot_filename(const string &prefix) {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename GraphicsOutput::
 save_screenshot_default(const string &prefix) {
-  return _default_display_region->save_screenshot_default(prefix);
+  return _overlay_display_region->save_screenshot_default(prefix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -578,7 +751,7 @@ save_screenshot_default(const string &prefix) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 save_screenshot(const Filename &filename, const string &image_comment) {
-  return _default_display_region->save_screenshot(filename, image_comment);
+  return _overlay_display_region->save_screenshot(filename, image_comment);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -590,7 +763,7 @@ save_screenshot(const Filename &filename, const string &image_comment) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 get_screenshot(PNMImage &image) {
-  return _default_display_region->get_screenshot(image);
+  return _overlay_display_region->get_screenshot(image);
 }
 
 ////////////////////////////////////////////////////////////////////

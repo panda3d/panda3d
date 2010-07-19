@@ -1084,10 +1084,11 @@ class ShowBase(DirectObject.DirectObject):
             win = self.win
 
         if win != None and win.hasSize():
-            if(win.getYSize() == 0 or win.getXSize() == 0):
-                #flub the aspect since we can't actually see anything
-                return 1
-            aspectRatio = float(win.getXSize()) / float(win.getYSize())
+            # Temporary hasattr for old Pandas
+            if not hasattr(win, 'getSbsLeftXSize'):
+                aspectRatio = float(win.getXSize()) / float(win.getYSize())
+            else:
+                aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
 
         else:
             if win == None or not hasattr(win, "getRequestedProperties"):
@@ -1405,6 +1406,16 @@ class ShowBase(DirectObject.DirectObject):
             name = win.getInputDeviceName(i)
             mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
             mw = mk.attachNewNode(MouseWatcher("watcher%s" % (i)))
+
+            # Temporary hasattr for old Pandas
+            if hasattr(win, 'getSideBySideStereo') and win.getSideBySideStereo():
+                # If the window has side-by-side stereo enabled, then
+                # we should constrain the MouseWatcher to the window's
+                # DisplayRegion.  This will enable the MouseWatcher to
+                # track the left and right halves of the screen
+                # individually.
+                mw.node().setDisplayRegion(win.getOverlayDisplayRegion())
+                
             mb = mw.node().getModifierButtons()
             mb.addButton(KeyboardButton.shift())
             mb.addButton(KeyboardButton.control())
@@ -1438,7 +1449,7 @@ class ShowBase(DirectObject.DirectObject):
 
         aspectRatio = self.getAspectRatio()
         # Scale the smiley face to 32x32 pixels.
-        height = self.win.getYSize()
+        height = self.win.getSbsLeftYSize()
         lilsmiley.setScale(
             32.0 / height / aspectRatio,
             1.0, 32.0 / height)
@@ -2543,9 +2554,13 @@ class ShowBase(DirectObject.DirectObject):
                     # If anybody needs to update their GUI, put a callback on this event
                     messenger.send("aspectRatioChanged")
             
-            if win.getXSize() > 0 and win.getYSize() > 0:
+            # Temporary hasattr for old Pandas
+            if not hasattr(win, 'getSbsLeftXSize'):
                 self.pixel2d.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
                 self.pixel2dp.setScale(2.0 / win.getXSize(), 1.0, 2.0 / win.getYSize())
+            else:
+                self.pixel2d.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
+                self.pixel2dp.setScale(2.0 / win.getSbsLeftXSize(), 1.0, 2.0 / win.getSbsLeftYSize())
 
     def userExit(self):
         # The user has requested we exit the program.  Deal with this.

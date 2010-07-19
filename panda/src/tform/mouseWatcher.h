@@ -206,6 +206,10 @@ private:
   void consider_keyboard_suppress(const MouseWatcherRegion *region);
   void discard_excess_trail_log();
   void update_trail_node();
+
+  static bool constrain_display_region(DisplayRegion *display_region, 
+                                       LVecBase2f &f, LVecBase2f &p,
+                                       Thread *current_thread);
   
 private:
   // This wants to be a set, but because you cannot export sets across

@@ -24,9 +24,9 @@ TypeHandle StereoDisplayRegion::_type_handle;
 ////////////////////////////////////////////////////////////////////
 StereoDisplayRegion::
 StereoDisplayRegion(GraphicsOutput *window,
-                    float l, float r, float b, float t,
+                    const LVecBase4f &dimensions,
                     DisplayRegion *left, DisplayRegion *right) :
-  DisplayRegion(window, l, r, b, t),
+  DisplayRegion(window, dimensions),
   _left_eye(left),
   _right_eye(right)
 {
@@ -115,10 +115,10 @@ set_pixel_zoom(float pixel_zoom) {
 //               indicated dimensions.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_dimensions(float l, float r, float b, float t) {
-  DisplayRegion::set_dimensions(l, r, b, t);
-  _left_eye->set_dimensions(l, r, b, t);
-  _right_eye->set_dimensions(l, r, b, t);
+set_dimensions(const LVecBase4f &dimensions) {
+  DisplayRegion::set_dimensions(dimensions);
+  _left_eye->set_dimensions(dimensions);
+  _right_eye->set_dimensions(dimensions);
 }
 
 ////////////////////////////////////////////////////////////////////

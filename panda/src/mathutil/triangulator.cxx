@@ -151,20 +151,36 @@ triangulate() {
   */
   choose_idx = 0;
 
-  //  cerr << "got " << num_segments << " segments\n";
-  /*
+  cerr << "got " << num_segments << " segments\n";
   for (i = 1; i < (int)seg.size(); ++i) {
     segment_t &s = seg[i];
     printf("  %d. (%g %g), (%g %g)\n", i, s.v0.x, s.v0.y, s.v1.x, s.v1.y);
     printf("    root0 = %d, root1 = %d\n", s.root0, s.root1);
     printf("    next = %d, prev = %d\n", s.next, s.prev);
   }
-  */
 
-  construct_trapezoids(num_segments);
+  while (construct_trapezoids(num_segments) != 0) {
+    // If there's an error, re-shuffle the index and try again.
+    Randomizer randomizer;
+    for (i = 0; i < num_segments; ++i) {
+      int j = randomizer.random_int(num_segments);
+      nassertv(j >= 0 && j < num_segments);
+      int t = permute[i];
+      permute[i] = permute[j];
+      permute[j] = t;
+    }
+    choose_idx = 0;
 
-  //  cerr << "got " << tr.size() - 1 << " trapezoids\n";
-  /*
+    cerr << "got " << num_segments << " segments\n";
+    for (i = 1; i < (int)seg.size(); ++i) {
+      segment_t &s = seg[i];
+      printf("  %d. (%g %g), (%g %g)\n", i, s.v0.x, s.v0.y, s.v1.x, s.v1.y);
+      printf("    root0 = %d, root1 = %d\n", s.root0, s.root1);
+      printf("    next = %d, prev = %d\n", s.next, s.prev);
+    }
+  }
+
+  cerr << "got " << tr.size() - 1 << " trapezoids\n";
   for (i = 1; i < (int)tr.size(); ++i) {
     trap_t &t = tr[i];
     cerr << "  " << i << ". state = " << t.state << "\n";
@@ -173,21 +189,17 @@ triangulate() {
     cerr << "    hi = " << t.hi.x << " " << t.hi.y << " lo = "
          << t.lo.x << " " << t.lo.y << "\n";
   }
-  */
 
   int nmonpoly = monotonate_trapezoids(num_segments);
 
-  //  cerr << "got " << nmonpoly << " monotone polygons\n";
+  cerr << "got " << nmonpoly << " monotone polygons\n";
 
   triangulate_monotone_polygons(num_segments, nmonpoly);
-
-  /*
   Result::iterator ri;
   for (ri = _result.begin(); ri != _result.end(); ++ri) {
     cerr << "tri: " << (*ri)._v0 << " " << (*ri)._v1 << " "
          << (*ri)._v2 << "\n";
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -822,7 +834,7 @@ merge_trapezoids(int segnum, int tfirst, int tlast, int side) {
 
 int Triangulator::
 add_segment(int segnum) {
-  //  cerr << "add_segment(" << segnum << ")\n";
+  cerr << "add_segment(" << segnum << ")\n";
 
   segment_t s;
   //  segment_t *so = &seg[segnum];
@@ -1011,8 +1023,9 @@ add_segment(int segnum) {
 
       if ((tr[t].d0 <= 0) && (tr[t].d1 <= 0)) /* case cannot arise */
         {
+          /* Actually, this case does sometimes arise.  Huh. */
           fprintf(stderr, "add_segment: error\n");
-          break;
+          return 1;
         }
       
       /* only one trapezoid below. partition t into two and make the */
@@ -1445,7 +1458,7 @@ find_new_roots(int segnum) {
 /* Main routine to perform trapezoidation */
 int Triangulator::
 construct_trapezoids(int nseg) {
-  //  cerr << "construct_trapezoids(" << nseg << ")\n";
+  cerr << "construct_trapezoids(" << nseg << ")\n";
   int i;
   int root, h;
   
@@ -1462,7 +1475,10 @@ construct_trapezoids(int nseg) {
   for (h = 1; h <= math_logstar_n(nseg); h++)
     {
       for (i = math_N(nseg, h -1) + 1; i <= math_N(nseg, h); i++) {
-        add_segment(choose_segment());
+        if (add_segment(choose_segment()) != 0) {
+          // error in add_segment.
+          return 1;
+        }
       }
       
       /* Find a new root for each of the segment endpoints */
@@ -2129,7 +2145,7 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
   int ri;
   int endv, tmp, vpos;
 
-  //  cerr << "triangulate_single_polygon(" << nvert << ", " << posmax << ", " << side << ")\n";
+  cerr << "triangulate_single_polygon(" << nvert << ", " << posmax << ", " << side << ")\n";
 
   if (side == TRI_RHS)          /* RHS segment is a single segment */
     {
@@ -2160,6 +2176,8 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
   
   while ((v != endv) || (ri > 1))
     {
+      cerr << " v = " << v << " ri = " << ri << " rc = " << rc.size()
+           << " _result = " << _result.size() << "\n";
       if (v <= 0) {
         // Something went wrong.
         return;

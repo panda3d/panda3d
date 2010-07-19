@@ -25,6 +25,7 @@
 #include "dataNodeTransmit.h"
 #include "transformState.h"
 #include "displayRegion.h"
+#include "stereoDisplayRegion.h"
 #include "geomVertexWriter.h"
 #include "geomLinestrips.h"
 #include "geomPoints.h"
@@ -1415,8 +1416,8 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
     DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
 
-    const LVecBase2f &f = xy->get_value();
-    const LVecBase2f &p = pixel_xy->get_value();
+    LVecBase2f f = xy->get_value();
+    LVecBase2f p = pixel_xy->get_value();
 
     // Asad: determine if mouse moved from last position
     const LVecBase2f &last_f = _xy->get_value();
@@ -1427,41 +1428,16 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
     if (_display_region != (DisplayRegion *)NULL) {
       // If we've got a display region, constrain the mouse to it.
-      DisplayRegionPipelineReader dr_reader(_display_region, current_thread);
-      float left, right, bottom, top;
-      dr_reader.get_dimensions(left, right, bottom, top);
+      if (constrain_display_region(_display_region, f, p, current_thread)) {
+        set_mouse(f, p);
 
-      // Need to translate this into DisplayRegion [0, 1] space
-      float x = (f[0] + 1.0f) / 2.0f;
-      float y = (f[1] + 1.0f) / 2.0f;
-      
-      if (x < left || x >= right || 
-          y < bottom || y >= top) {
+      } else {
         // The mouse is outside the display region, even though it's
         // within the window.  This is considered not having a mouse.
         set_no_mouse();
-
+        
         // This also means we should suppress mouse button events below us.
         _internal_suppress |= MouseWatcherRegion::SF_mouse_button;
-
-      } else {
-        // The mouse is within the display region; rescale it.
-
-        // Scale in DR space
-        float xp = (x - left) / (right - left);
-        // Translate back into [-1, 1] space
-        float xpp = (xp * 2.0f) - 1.0f;
-
-        float yp = (y - bottom) / (top - bottom);
-        float ypp = (yp * 2.0f) - 1.0f;
-
-        int xo, yo, w, h;
-        dr_reader.get_region_pixels_i(xo, yo, w, h);
-
-        LVecBase2f new_f(xpp, ypp);
-        LVecBase2f new_p(p[0] - xo, p[1] - yo);
-
-        set_mouse(new_f, new_p);
       }
 
     } else {
@@ -1677,4 +1653,60 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   if (_button_events->get_num_events() != 0) {
     output.set_data(_button_events_output, EventParameter(_button_events));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::constrain_display_region
+//       Access: Private, Static
+//  Description: Constrains the mouse coordinates to within the
+//               indicated DisplayRegion.  If the mouse pointer does
+//               indeed fall within the DisplayRegion, rescales f and
+//               p correspondingly, and returns true.  If the mouse
+//               pointer does not fall within the DisplayRegion,
+//               leaves f and p unchanged, and returns false.
+////////////////////////////////////////////////////////////////////
+bool MouseWatcher::
+constrain_display_region(DisplayRegion *display_region, 
+                         LVecBase2f &f, LVecBase2f &p,
+                         Thread *current_thread) {
+  // If it's a stereo DisplayRegion, we should actually call this
+  // method twice, once for each eye, in case we have side-by-side
+  // stereo.
+  if (display_region->is_stereo()) {
+    StereoDisplayRegion *stereo_display_region;
+    DCAST_INTO_R(stereo_display_region, display_region, false);
+    return constrain_display_region(stereo_display_region->get_left_eye(), f, p, current_thread) ||
+      constrain_display_region(stereo_display_region->get_right_eye(), f, p, current_thread);
+  }
+
+  DisplayRegionPipelineReader dr_reader(display_region, current_thread);
+  float left, right, bottom, top;
+  dr_reader.get_dimensions(left, right, bottom, top);
+  
+  // Need to translate this into DisplayRegion [0, 1] space
+  float x = (f[0] + 1.0f) / 2.0f;
+  float y = (f[1] + 1.0f) / 2.0f;
+  
+  if (x < left || x >= right || 
+      y < bottom || y >= top) {
+    // The mouse is outside the display region.
+    return false;
+  }
+    
+  // The mouse is within the display region; rescale it.
+  
+  // Scale in DR space
+  float xp = (x - left) / (right - left);
+  // Translate back into [-1, 1] space
+  float xpp = (xp * 2.0f) - 1.0f;
+  
+  float yp = (y - bottom) / (top - bottom);
+  float ypp = (yp * 2.0f) - 1.0f;
+  
+  int xo, yo, w, h;
+  dr_reader.get_region_pixels_i(xo, yo, w, h);
+  
+  f.set(xpp, ypp);
+  p.set(p[0] - xo, p[1] - yo);
+  return true;
 }

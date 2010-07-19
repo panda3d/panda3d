@@ -192,7 +192,7 @@ begin_flip() {
 
   bool copied = 
     _gsg->framebuffer_copy_to_ram(_texture, -1,
-                                  _default_display_region, buffer);
+                                  _overlay_display_region, buffer);
 
   if (copied) {
     CPTA_uchar image = _texture->get_ram_image();

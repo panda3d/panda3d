@@ -225,6 +225,26 @@ ConfigVariableString red_blue_stereo_colors
           "'green', 'cyan', 'magenta', 'yellow', or 'alpha', or a union "
           "of two or more words separated by a vertical pipe (|)."));
 
+ConfigVariableBool side_by_side_stereo
+("side-by-side-stereo", false,
+ PRC_DESC("Set this true to create windows with side-by-side stereo mode enabled "
+          "by default, if the framebuffer does not support true stereo "
+          "rendering."));
+
+ConfigVariableDouble sbs_left_dimensions
+("sbs-left-dimensions", "0.0 0.5 0.0 1.0",
+ PRC_DESC("Defines the default region of the window that is used for the "
+          "left eye, when side-by-side stereo is enabled.  This is a set of "
+          "four numbers, in the form left right top bottom, similar to a "
+          "normal DisplayRegion layout."));
+
+ConfigVariableDouble sbs_right_dimensions
+("sbs-right-dimensions", "0.5 1.0 0.0 1.0",
+ PRC_DESC("Defines the default region of the window that is used for the "
+          "right eye, when side-by-side stereo is enabled.  This is a set of "
+          "four numbers, in the form left right top bottom, similar to a "
+          "normal DisplayRegion layout."));
+
 ConfigVariableBool default_stereo_camera
 ("default-stereo-camera", true,
  PRC_DESC("When this is true, the default DisplayRegion created for "

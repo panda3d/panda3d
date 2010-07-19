@@ -30,7 +30,7 @@ GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                const WindowProperties &win_prop, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host, false)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -41,7 +41,7 @@ GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
       << "Creating new offscreen buffer " << get_name() << "\n";
   }
 
-  _default_display_region->compute_pixels(_x_size, _y_size);
+  _overlay_display_region->compute_pixels(_x_size, _y_size);
   _open_request = OR_none;
 }
 

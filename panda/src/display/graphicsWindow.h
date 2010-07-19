@@ -140,9 +140,6 @@ protected:
   void system_changed_properties(const WindowProperties &properties);
   void system_changed_size(int x_size, int y_size);
 
-private:
-  static unsigned int parse_color_mask(const string &word);
-
 protected:
   INLINE void add_input_device(const GraphicsWindowInputDevice &device);
   typedef vector_GraphicsWindowInputDevice InputDevices;

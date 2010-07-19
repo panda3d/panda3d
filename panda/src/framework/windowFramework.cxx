@@ -336,8 +336,8 @@ get_aspect_2d() {
       this_aspect_ratio = 1.0f;
 
       if (_window->has_size()) {
-        int x_size = _window->get_x_size();
-        int y_size = _window->get_y_size();
+        int x_size = _window->get_sbs_left_x_size();
+        int y_size = _window->get_sbs_left_y_size();
         if (y_size != 0) {
           this_aspect_ratio = (float)x_size / (float)y_size;
         }
@@ -370,7 +370,16 @@ get_mouse() {
     // Another advantage to using a MouseWatcher is that the PGTop of
     // aspect2d likes it better.
     PT(MouseWatcher) mw = new MouseWatcher("watcher");
-    mw->set_display_region(_display_region_3d);
+
+    if (_window->get_side_by_side_stereo()) {
+      // If the window has side-by-side stereo enabled, then
+      // we should constrain the MouseWatcher to the window's
+      // DisplayRegion.  This will enable the MouseWatcher to
+      // track the left and right halves of the screen
+      // individually.
+      mw->set_display_region(_window->get_overlay_display_region());
+    }
+
     _mouse = mouse.attach_new_node(mw);
   }
   return _mouse;
@@ -806,8 +815,8 @@ adjust_aspect_ratio() {
     this_aspect_ratio = 1.0f;
     
     if (_window->has_size()) {
-      x_size = _window->get_x_size();
-      y_size = _window->get_y_size();
+      x_size = _window->get_sbs_left_x_size();
+      y_size = _window->get_sbs_left_y_size();
       if (y_size != 0) {
         this_aspect_ratio = (float)x_size / (float)y_size;
       }
@@ -1151,8 +1160,8 @@ make_camera() {
     // Otherwise, infer the aspect ratio from the window size.  This
     // does assume we have square pixels on our output device.
     if (_window->has_size()) {
-      int x_size = _window->get_x_size();
-      int y_size = _window->get_y_size();
+      int x_size = _window->get_sbs_left_x_size();
+      int y_size = _window->get_sbs_left_y_size();
       if (y_size != 0) {
         lens->set_film_size(x_size, y_size);
       }

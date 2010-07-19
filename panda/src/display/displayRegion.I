@@ -48,10 +48,23 @@ get_lens_index() const {
 INLINE void DisplayRegion::
 get_dimensions(float &l, float &r, float &b, float &t) const {
   CDReader cdata(_cycler);
-  l = cdata->_l;
-  r = cdata->_r;
-  b = cdata->_b;
-  t = cdata->_t;
+  l = cdata->_dimensions[0];
+  r = cdata->_dimensions[1];
+  b = cdata->_dimensions[2];
+  t = cdata->_dimensions[3];
+}
+///////////////////////////////////////////////////////////////////
+
+//     Function: DisplayRegion::get_dimensions
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase4f DisplayRegion::
+get_dimensions() const {
+  CDReader cdata(_cycler);
+  return cdata->_dimensions;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +77,7 @@ get_dimensions(float &l, float &r, float &b, float &t) const {
 INLINE float DisplayRegion::
 get_left() const {
   CDReader cdata(_cycler);
-  return cdata->_l;
+  return cdata->_dimensions[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +90,7 @@ get_left() const {
 INLINE float DisplayRegion::
 get_right() const {
   CDReader cdata(_cycler);
-  return cdata->_r;
+  return cdata->_dimensions[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +103,7 @@ get_right() const {
 INLINE float DisplayRegion::
 get_bottom() const {
   CDReader cdata(_cycler);
-  return cdata->_b;
+  return cdata->_dimensions[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +116,21 @@ get_bottom() const {
 INLINE float DisplayRegion::
 get_top() const {
   CDReader cdata(_cycler);
-  return cdata->_t;
+  return cdata->_dimensions[3];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_dimensions
+//       Access: Published, Virtual
+//  Description: Changes the portion of the framebuffer this
+//               DisplayRegion corresponds to.  The parameters range
+//               from 0 to 1, where 0,0 is the lower left corner and
+//               1,1 is the upper right; (0, 1, 0, 1) represents the
+//               whole screen.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_dimensions(float l, float r, float b, float t) {
+  set_dimensions(LVecBase4f(l, r, b, t));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -586,10 +613,22 @@ is_any_clear_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_dimensions(float &l, float &r, float &b, float &t) const {
-  l = _cdata->_l;
-  r = _cdata->_r;
-  b = _cdata->_b;
-  t = _cdata->_t;
+  l = _cdata->_dimensions[0];
+  r = _cdata->_dimensions[1];
+  b = _cdata->_dimensions[2];
+  t = _cdata->_dimensions[3];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_dimensions
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4f &DisplayRegionPipelineReader::
+get_dimensions() const {
+  return _cdata->_dimensions;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -601,7 +640,7 @@ get_dimensions(float &l, float &r, float &b, float &t) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float DisplayRegionPipelineReader::
 get_left() const {
-  return _cdata->_l;
+  return _cdata->_dimensions[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -613,7 +652,7 @@ get_left() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float DisplayRegionPipelineReader::
 get_right() const {
-  return _cdata->_r;
+  return _cdata->_dimensions[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -625,7 +664,7 @@ get_right() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float DisplayRegionPipelineReader::
 get_bottom() const {
-  return _cdata->_b;
+  return _cdata->_dimensions[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,7 +676,7 @@ get_bottom() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float DisplayRegionPipelineReader::
 get_top() const {
-  return _cdata->_t;
+  return _cdata->_dimensions[3];
 }
 
 ////////////////////////////////////////////////////////////////////
