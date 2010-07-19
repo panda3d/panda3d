@@ -39,7 +39,7 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host, true),
   _input_lock("GraphicsWindow::_input_lock"),
   _properties_lock("GraphicsWindow::_properties_lock")
 {
@@ -50,11 +50,6 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "Creating new window " << get_name() << "\n";
-  }
-
-  _red_blue_stereo = red_blue_stereo && !fb_prop.is_stereo();
-  if (_red_blue_stereo) {
-    _left_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(0));    _right_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(1));
   }
 
   _properties.set_open(false);
@@ -77,12 +72,13 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 ~GraphicsWindow() {
-#ifdef HAVE_PYTHON
-	// Clean up python event handlers.
-	PythonWinProcClasses::iterator iter;
-	for(iter = _python_window_proc_classes.begin(); iter != _python_window_proc_classes.end(); ++iter){
-		delete *iter;
-	}
+  // Clean up python event handlers.
+  PythonWinProcClasses::iterator iter;
+  for (iter = _python_window_proc_classes.begin(); 
+       iter != _python_window_proc_classes.end(); 
+       ++iter) {
+    delete *iter;
+  }
 #endif
 }
 
@@ -857,56 +853,6 @@ system_changed_size(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::parse_color_mask
-//       Access: Private, Static
-//  Description: Parses one of the keywords in the
-//               red-blue-stereo-colors Config.prc variable, and
-//               returns the corresponding bitmask.
-//
-//               These bitmask values are taken from ColorWriteAttrib.
-////////////////////////////////////////////////////////////////////
-unsigned int GraphicsWindow::
-parse_color_mask(const string &word) {
-  unsigned int result = 0;
-  vector_string components;
-  tokenize(word, components, "|");
-
-  vector_string::const_iterator ci;
-  for (ci = components.begin(); ci != components.end(); ++ci) {
-    string w = downcase(*ci);
-    if (w == "red" || w == "r") {
-      result |= 0x001;
-
-    } else if (w == "green" || w == "g") {
-      result |= 0x002;
-
-    } else if (w == "blue" || w == "b") {
-      result |= 0x004;
-
-    } else if (w == "yellow" || w == "y") {
-      result |= 0x003;
-
-    } else if (w == "magenta" || w == "m") {
-      result |= 0x005;
-
-    } else if (w == "cyan" || w == "c") {
-      result |= 0x006;
-
-    } else if (w == "alpha" || w == "a") {
-      result |= 0x008;
-
-    } else if (w == "off") {
-      
-    } else {
-      display_cat.warning()
-        << "Invalid color in red-blue-stereo-colors: " << (*ci) << "\n";
-    }
-  }
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::mouse_mode_relative
 //       Access: Protected, Virtual
 //  Description: detaches mouse. Only mouse delta from now on. 
@@ -914,7 +860,6 @@ parse_color_mask(const string &word) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 mouse_mode_relative() {
-
 }
 
 ////////////////////////////////////////////////////////////////////
