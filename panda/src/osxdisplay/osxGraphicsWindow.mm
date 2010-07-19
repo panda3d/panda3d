@@ -900,7 +900,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
       // Draw a kludgey little resize box in the corner of the window,
       // so the user knows he's supposed to be able to drag the window
       // if he wants.
-      DisplayRegionPipelineReader dr_reader(_default_display_region, current_thread);
+      DisplayRegionPipelineReader dr_reader(_overlay_display_region, current_thread);
       _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
       DCAST(osxGraphicsStateGuardian, _gsg)->draw_resize_box();
     }
