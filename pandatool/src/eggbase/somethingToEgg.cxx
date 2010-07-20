@@ -167,7 +167,7 @@ add_animation_options() {
     ("fro", "fps", 40,
      "Specify the frame rate (frames per second) of the generated animation.  "
      "If this is specified, the animation speed is scaled by the appropriate "
-     "factor based on the frame rate of the input file (see -ri).",
+     "factor based on the frame rate of the input file (see -fri).",
      &SomethingToEgg::dispatch_double, &_got_output_frame_rate, &_output_frame_rate);
 }
 
