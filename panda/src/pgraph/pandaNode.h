@@ -103,7 +103,7 @@ public:
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
                       const TransformState *transform,
-                      Thread *current_thread) const;
+                      Thread *current_thread = Thread::get_current_thread()) const;
   
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;
