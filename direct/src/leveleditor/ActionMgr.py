@@ -54,6 +54,9 @@ class ActionBase(Functor):
         self.postCall()
         return self.result
 
+    # needed this line to override _do__call__
+    __call__ = _do__call__
+
     def redo(self):
         self.result = self._do__call__()
         return self.result
