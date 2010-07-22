@@ -891,8 +891,8 @@ def CompileLink(dll, obj, opts):
         if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
         if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
         if ("MFC" in opts):
-            if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB /NOD:mfcs90d.lib mfcs90d.lib MSVCRTD.lib"
-            else: cmd += " /NOD:MSVCRT.LIB /NOD:mfcs90.lib mfcs90.lib MSVCRT.lib"
+            if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB mfcs90d.lib MSVCRTD.lib"
+            else: cmd += " /NOD:MSVCRT.LIB mfcs90.lib MSVCRT.lib"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         subsystem = GetValueOption(opts, "SUBSYSTEM:")
