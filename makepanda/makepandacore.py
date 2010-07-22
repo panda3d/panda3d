@@ -1561,6 +1561,7 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib"+suffix)
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib")
     AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
