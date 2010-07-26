@@ -3,13 +3,14 @@
   #define LOCAL_LIBS progbase
   #define USE_PACKAGES openssl
 
-  #define OTHER_LIBS \
+  #define OTHER_LIBS \ 
     egg:c pandaegg:m \
-    event:c mathutil:c pnmimage:c putil:c \
-    linmath:c pipeline:c event:c \
-    panda:m \
-    pandabase:c express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    pipeline:c event:c pstatclient:c panda:m \
+    pandabase:c pnmimage:c mathutil:c linmath:c putil:c express:c \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m \
+    $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[and $[HAVE_NET],$[WANT_NATIVE_NET]],net:c downloader:c]
 
   #define SOURCES \
     softCVS.cxx softCVS.h softFilename.cxx softFilename.h

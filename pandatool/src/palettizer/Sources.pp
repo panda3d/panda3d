@@ -2,15 +2,15 @@
   #define TARGET palettizer
   #define LOCAL_LIBS \
     pandatoolbase
+
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    display:c pgraph:c linmath:c putil:c pnmimage:c \
-    pnmimagetypes:c pipeline:c cull:c gsgbase:c gobj:c \
-    event:c mathutil:c pstatclient:c lerp:c \
-    $[if $[HAVE_NET],net:c] \
-    panda:m \
-    pandabase:c express:c downloader:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
+    pipeline:c event:c pstatclient:c panda:m \
+    pandabase:c pnmimage:c mathutil:c linmath:c putil:c express:c \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m \
+    $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[and $[HAVE_NET],$[WANT_NATIVE_NET]],net:c downloader:c]
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
