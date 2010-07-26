@@ -137,7 +137,9 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _ready = false;
   _format = (struct v4l2_format *) malloc(sizeof(struct v4l2_format));
   memset(_format, 0, sizeof(struct v4l2_format));
+#ifdef HAVE_JPEG
   _cinfo = NULL;
+#endif
   _buffers = NULL;
   _buflens = NULL;
   _fd = open(src->_device.c_str(), O_RDWR);
