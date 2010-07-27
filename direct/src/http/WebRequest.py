@@ -45,12 +45,12 @@ class WebRequest(object):
         self.connection.SendThisResponse(encodedUtf8(msg))
 
     def respondCustom(self,contentType,body):
-        msg = u"HTTP/1.0 200 OK\r\nContent-Type: %s" % contentType
+        msg = "HTTP/1.0 200 OK\r\nContent-Type: %s" % contentType
 
         if contentType in ["text/css",]:
             msg += "\nCache-Control: max-age=313977290\nExpires: Tue, 02 May 2017 04:08:44 GMT\n"
 
-        msg += u"\r\n\r\n%s" % (body)
+        msg += "\r\n\r\n%s" % (body)
         self.connection.SendThisResponse(msg)
 
     def timeout(self):
