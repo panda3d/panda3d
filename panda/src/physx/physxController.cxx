@@ -34,8 +34,9 @@ release() {
 
   nassertv(_error_type == ET_ok);
 
+  NxControllerManager *cm = get_actor()->get_scene()->cm();
   unlink();
-  get_actor()->get_scene()->cm()->releaseController(*ptr());
+  cm->releaseController(*ptr());
 }
 
 ////////////////////////////////////////////////////////////////////
