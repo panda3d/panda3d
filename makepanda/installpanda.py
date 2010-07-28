@@ -154,7 +154,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")):
-            oscmd("cp -P "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
+            # We really need to specify -R in order not to follow symlinks on non-GNU
+            oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
     # rpmlint doesn't like it if we compile pyc.
     #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
     #    if ((base != "extensions") and (base != "extensions_native")):

@@ -5037,7 +5037,9 @@ def MakeInstallerOSX():
     for base in os.listdir(GetOutputDir()+"/lib"):
         if (not base.endswith(".a")):
             libname = "dstroot/base/Developer/Panda3D/lib/" + base
-            oscmd("cp -P " + GetOutputDir() + "/lib/" + base + " " + libname)
+            # We really need to specify -R in order not to follow symlinks
+            # On OSX, just specifying -P is not enough to do that.
+            oscmd("cp -R -P " + GetOutputDir() + "/lib/" + base + " " + libname)
 
             # Execute install_name_tool to make them reference an absolute path
             if (libname.endswith(".dylib") and not os.path.islink(libname)):
