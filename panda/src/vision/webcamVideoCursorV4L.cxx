@@ -16,7 +16,9 @@
 
 #ifdef IS_LINUX
 
+#include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 #include <linux/videodev.h>
 #include <linux/videodev2.h>
 

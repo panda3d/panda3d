@@ -19,6 +19,8 @@
 #include "webcamVideoCursorV4L.h"
 #include "dcast.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <linux/videodev.h>
 #include <linux/videodev2.h>
 
