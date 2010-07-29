@@ -155,6 +155,7 @@ init_libputil() {
   BamReaderAuxData::init_type();
   BamReaderParam::init_type();
   BitArray::init_type();
+  BitMask16::init_type();
   BitMask32::init_type();
   BitMask64::init_type();
   ButtonHandle::init_type();
