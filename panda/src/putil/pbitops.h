@@ -23,19 +23,25 @@
 // all to heck.
 ////////////////////////////////////////////////////////////////////
 
+INLINE int count_bits_in_word(PN_uint16 x);
 INLINE int count_bits_in_word(PN_uint32 x);
 INLINE int count_bits_in_word(PN_uint64 x);
 
+INLINE PN_uint16 flood_bits_down(PN_uint16 x);
 INLINE PN_uint32 flood_bits_down(PN_uint32 x);
 INLINE PN_uint64 flood_bits_down(PN_uint64 x);
+INLINE PN_uint16 flood_bits_up(PN_uint16 x);
 INLINE PN_uint32 flood_bits_up(PN_uint32 x);
 INLINE PN_uint64 flood_bits_up(PN_uint64 x);
 
+INLINE int get_lowest_on_bit(PN_uint16 x);
 INLINE int get_lowest_on_bit(PN_uint32 x);
 INLINE int get_lowest_on_bit(PN_uint64 x);
+INLINE int get_highest_on_bit(PN_uint16 x);
 INLINE int get_highest_on_bit(PN_uint32 x);
 INLINE int get_highest_on_bit(PN_uint64 x);
 
+INLINE int get_next_higher_bit(PN_uint16 x);
 INLINE int get_next_higher_bit(PN_uint32 x);
 INLINE int get_next_higher_bit(PN_uint64 x);
 

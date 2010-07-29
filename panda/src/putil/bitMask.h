@@ -160,6 +160,7 @@ INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask)
 #define BITMASK32_DEF BitMask<PN_uint32, 32>
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK32_DEF);
 
+typedef BitMask<PN_uint16, 16> BitMask16;
 typedef BitMask<PN_uint32, 32> BitMask32;
 typedef BitMask<PN_uint64, 64> BitMask64;
 

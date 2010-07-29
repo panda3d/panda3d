@@ -405,7 +405,7 @@ set_word(WordType value) {
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_num_on_bits() const {
-  return count_bits_in_word(_word);
+  return count_bits_in_word((WType)_word);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -417,7 +417,7 @@ get_num_on_bits() const {
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_num_off_bits() const {
-  return count_bits_in_word(~_word);
+  return count_bits_in_word((WType)(~_word));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -518,7 +518,7 @@ get_next_higher_different_bit(int low_bit) const {
     w = (w & (~w + 1));
 
     // And the answer is the number of bits in (w - 1).
-    return count_bits_in_word(w - 1);
+    return count_bits_in_word((WType)(w - 1));
   }
 }
 
