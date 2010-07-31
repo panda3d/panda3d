@@ -2486,6 +2486,7 @@ def _getSafeReprNotify():
     global safeReprNotify
     from direct.directnotify.DirectNotifyGlobal import directNotify
     safeReprNotify = directNotify.newCategory("safeRepr")
+    return safeReprNotify
 
 def safeRepr(obj):
     global dtoolSuperBase
@@ -4138,6 +4139,7 @@ def startSuperLog(customFunction = None):
                 if customFunction:
                     superLogFile.write( "after = %s\n"%customFunction())
 
+        
 
                 return trace_dispatch
         sys.settrace(trace_dispatch)
