@@ -11,6 +11,7 @@ class ReferrerSearch(Job):
         self.maxRefs = maxRefs
         self.found = set()
         self.depth = 0
+        self.shouldPrintStats = False
     
     def __call__(self):
         safeReprNotify = _getSafeReprNotify()
@@ -58,6 +59,10 @@ class ReferrerSearch(Job):
             return s
         else:
             return s[:s.find('\n')]
+
+    def printStatsWhenAble(self):
+        self.shouldPrintStats = True
+        pass
         
     def myrepr(self, referrer, refersTo):
         pre = ''
@@ -86,6 +91,10 @@ class ReferrerSearch(Job):
         return '%s%s' % (pre, post)
         
     def step(self, depth, path):
+        if self.shouldPrintStats:
+            self.printStats(path)
+            self.shouldPrintStats = False
+        
         at = path[-1]
 
         if id(at) in self.found:
@@ -120,6 +129,11 @@ class ReferrerSearch(Job):
         pass
 
     def stepGenerator(self, depth, path):
+        if self.shouldPrintStats:
+            self.printStats(path)
+            
+            self.shouldPrintStats = False
+
         at = path[-1]
 
         if id(at) in self.found:
@@ -155,7 +169,14 @@ class ReferrerSearch(Job):
 
         yield None
         pass
-
+    
+    def printStats(self, path):
+        path = list(reversed(path))
+        path.insert(0,0)
+        print 'RefPath(%s) - Stats - found(%s) | depth(%s) | CurrentPath(%s)' % \
+              (self._id, len(self.found), self.depth, ''.join(self.myrepr(path[x], path[x+1]) for x in xrange(len(path)-1)))
+        pass
+    
     def isAtRoot(self, at, path):
         # Now we define our 'roots'
         
@@ -194,7 +215,6 @@ class ReferrerSearch(Job):
         if at is simbase:
             sys.stdout.write("RefPath(%s): simbase-> " % self._id)
             path = list(reversed(path))
-            path.insert(0,0)
             for x in xrange(len(path)-1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
                 pass
@@ -205,7 +225,6 @@ class ReferrerSearch(Job):
         if at is simbase.air:
             sys.stdout.write("RefPath(%s): simbase.air-> " % self._id)
             path = list(reversed(path))
-            path.insert(0,0)
             for x in xrange(len(path)-1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
                 pass
@@ -216,7 +235,6 @@ class ReferrerSearch(Job):
         if at is messenger:
             sys.stdout.write("RefPath(%s): messenger-> " % self._id)
             path = list(reversed(path))
-            path.insert(0,0)
             for x in xrange(len(path)-1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
                 pass
@@ -227,7 +245,6 @@ class ReferrerSearch(Job):
         if at is taskMgr:
             sys.stdout.write("RefPath(%s): taskMgr-> " % self._id)
             path = list(reversed(path))
-            path.insert(0,0)
             for x in xrange(len(path)-1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
                 pass
@@ -238,7 +255,6 @@ class ReferrerSearch(Job):
         if hasattr(simbase.air, 'mainWorld') and at is simbase.air.mainWorld:
             sys.stdout.write("RefPath(%s): mainWorld-> " % self._id)
             path = list(reversed(path))
-            path.insert(0,0)
             for x in xrange(len(path)-1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
                 pass
