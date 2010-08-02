@@ -9,8 +9,9 @@ class ReferrerSearch(Job):
         Job.__init__(self, 'ReferrerSearch')
         self.obj = obj
         self.maxRefs = maxRefs
-        self.found = set()
+        self.visited = set()
         self.depth = 0
+        self.found = 0
         self.shouldPrintStats = False
     
     def __call__(self):
@@ -18,7 +19,7 @@ class ReferrerSearch(Job):
         info = safeReprNotify.getInfo()
         safeReprNotify.setInfo(0)
 
-        self.found = set()
+        self.visited = set()
         try:
             self.step(0, [self.obj])
         finally:
@@ -35,7 +36,7 @@ class ReferrerSearch(Job):
 
         print 'RefPath(%s): Beginning ReferrerSearch for %s' %(self._id, fastRepr(self.obj))
 
-        self.found = set()
+        self.visited = set()
         for x in self.stepGenerator(0, [self.obj]):
             yield None
             pass
@@ -97,16 +98,17 @@ class ReferrerSearch(Job):
         
         at = path[-1]
 
-        if id(at) in self.found:
+        if id(at) in self.visited:
                # don't continue down this path
                return
 
         # check for success
         if (self.isAtRoot(at, path)):
+            self.found += 1
             return
 
         # mark our progress after checking goal
-        self.found.add(id(at))
+        self.visited.add(id(at))
 
         referrers = [ref for ref in gc.get_referrers(at) \
                      if not (ref is path or \
@@ -114,7 +116,7 @@ class ReferrerSearch(Job):
                        (isinstance(ref, dict) and \
                         ref.keys() == locals().keys()) or \
                        ref is self.__dict__ or \
-                       id(ref) in self.found) ]
+                       id(ref) in self.visited) ]
 
         if (self.isManyRef(at, path, referrers)):
             return
@@ -136,16 +138,17 @@ class ReferrerSearch(Job):
 
         at = path[-1]
 
-        if id(at) in self.found:
+        if id(at) in self.visited:
                # don't continue down this path
                raise StopIteration 
 
         # check for success
         if (self.isAtRoot(at, path)):
+            self.found += 1
             raise StopIteration 
 
         # mark our progress after checking goal
-        self.found.add(id(at))
+        self.visited.add(id(at))
         
         referrers = [ref for ref in gc.get_referrers(at) \
                      if not (ref is path or \
@@ -153,7 +156,7 @@ class ReferrerSearch(Job):
                        (isinstance(ref, dict) and \
                         ref.keys() == locals().keys()) or \
                        ref is self.__dict__ or \
-                       id(ref) in self.found) ]
+                       id(ref) in self.visited) ]
 
         if (self.isManyRef(at, path, referrers)):
             raise StopIteration 
@@ -173,8 +176,8 @@ class ReferrerSearch(Job):
     def printStats(self, path):
         path = list(reversed(path))
         path.insert(0,0)
-        print 'RefPath(%s) - Stats - found(%s) | depth(%s) | CurrentPath(%s)' % \
-              (self._id, len(self.found), self.depth, ''.join(self.myrepr(path[x], path[x+1]) for x in xrange(len(path)-1)))
+        print 'RefPath(%s) - Stats - visited(%s) | found(%s) | depth(%s) | CurrentPath(%s)' % \
+              (self._id, len(self.visited), self.found, self.depth, ''.join(self.myrepr(path[x], path[x+1]) for x in xrange(len(path)-1)))
         pass
     
     def isAtRoot(self, at, path):
