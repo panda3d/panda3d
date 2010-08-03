@@ -1,5 +1,7 @@
 // Filename: geoMipTerrain.h
 // Created by:  pro-rsoft (29jun07)
+// Modified by: CMU ETC Summer 2010 team (03aug10) (added
+//   get_flatten_mode(), get_near(), get_far() ).
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -104,7 +106,10 @@ PUBLISHED:
   INLINE LVecBase2f get_block_from_pos(double x, double y);
   INLINE void set_border_stitching(bool stitching);
   INLINE bool get_border_stitching();
-  
+  INLINE double get_far();
+  INLINE double get_near();
+  INLINE int get_flatten_mode();
+
   PNMImage make_slope_image();
   void generate();
   bool update();

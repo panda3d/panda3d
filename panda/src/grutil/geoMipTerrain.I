@@ -1,5 +1,7 @@
 // Filename: geoMipTerrain.I
 // Created by:  pro-rsoft (29jun07)
+// Modified by: CMU ETC Summer 2010 team (03aug10) (added getters
+//   for _auto_flatten, _near, _far).
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -335,6 +337,39 @@ INLINE void GeoMipTerrain::
 set_far(double input_far) {
   _use_near_far = true;
   _far = input_far;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::get_far
+//       Access: Published
+//  Description: Returns the far LOD distance in the terrain coordinate
+//				 space
+////////////////////////////////////////////////////////////////////
+INLINE double GeoMipTerrain::
+get_far() {
+  return _far;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::get_near
+//       Access: Published
+//  Description: Returns the near LOD distance in the terrain coordinate
+//				 space
+////////////////////////////////////////////////////////////////////
+INLINE double GeoMipTerrain::
+get_near() {
+  return _near;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::get_flatten_mode
+//       Access: Published
+//  Description: Returns the automatic-flatten mode (e.g., off, 
+//               flatten_light, flatten_medium, or flatten_strong)
+////////////////////////////////////////////////////////////////////
+INLINE int GeoMipTerrain::
+get_flatten_mode() {
+  return _auto_flatten;
 }
 
 ////////////////////////////////////////////////////////////////////
