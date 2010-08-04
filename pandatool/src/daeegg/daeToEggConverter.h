@@ -74,6 +74,7 @@ private:
   void process_spline(PT(EggGroup) parent, const FCDSpline* spline);
   void process_controller(PT(EggGroup) parent, const FCDControllerInstance* instance);
   //void process_table_joint(PT(EggTable) parent, FCDSceneNode* node);
+  void process_extra(PT(EggGroup) group, const FCDExtra* extra);
   
   static LMatrix4d convert_matrix(const FMMatrix44& matrix);
   void apply_transform(const PT(EggGroup) to, const FCDTransform* from);
