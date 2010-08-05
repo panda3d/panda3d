@@ -74,7 +74,7 @@ read_file(const Filename &file, bool do_uncompress,
   }
 
   off_t file_size = get_file_size(file, in);
-  if (file_size != 0) {
+  if (file_size > 0) {
     result.reserve((size_t)file_size);
   }
 

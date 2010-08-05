@@ -127,16 +127,24 @@ open_read_file(const Filename &file) const {
 //               the size.
 ////////////////////////////////////////////////////////////////////
 off_t VirtualFileMountSystem::
-get_file_size(const Filename &, istream *stream) const {
+get_file_size(const Filename &file, istream *stream) const {
   // First, save the original stream position.
   streampos orig = stream->tellg();
 
   // Seek to the end and get the stream position there.
   stream->seekg(0, ios::end);
+  if (stream->fail()) {
+    // Seeking not supported.
+    stream->clear();
+    return get_file_size(file);
+  }
   streampos size = stream->tellg();
 
   // Then return to the original point.
   stream->seekg(orig, ios::beg);
+
+  // Make sure there are no error flags set as a result of the seek.
+  stream->clear();
 
   return size;
 }
