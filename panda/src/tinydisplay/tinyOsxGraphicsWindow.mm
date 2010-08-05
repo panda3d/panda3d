@@ -898,48 +898,46 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     FullScreenWindow = this;
     req_properties.clear_fullscreen();
   } else {
-    Rect r;
-    if (req_properties.has_origin()) {
-      r.top = req_properties.get_y_origin();
-      r.left = req_properties.get_x_origin();
-      
-      // A coordinate of -2 means to center the window on screen.
-      if (r.top == -2 || r.left == -2) {
-        if (req_properties.has_size()) {
-          if (r.top == -2) {
-            r.top = 0.5 * (_pipe->get_display_height() - req_properties.get_y_size());
-          }
-          if (r.left == -2) {
-            r.left = 0.5 * (_pipe->get_display_width() - req_properties.get_x_size());
-          }
-        } else {
-          if (r.top == -2) {
-            r.top = 0.5 * (_pipe->get_display_height() - req_properties.get_y_size());
-          }
-          if (r.left == -2) {
-            r.left = 0.5 * (_pipe->get_display_width() - req_properties.get_x_size());
-          }
-        }
-        _properties.set_origin(r.left, r.top);
-      }
-      if (r.top == -1) {
-        r.top = 50;
-      }
-      if (r.left == -1) {
-        r.left = 10;
-      }
-    } else {
-      r.top = 50;
-      r.left = 10;
+    int x_origin = 10;
+    int y_origin = 50;
+    if (req_properties.has_origin()) { 
+      y_origin  = req_properties.get_y_origin();
+      x_origin = req_properties.get_x_origin();
     }
 
+    int x_size = 512;
+    int y_size = 512;
     if (req_properties.has_size()) {
-      r.right = r.left + req_properties.get_x_size();
-      r.bottom = r.top + req_properties.get_y_size();
-    } else {
-      r.right = r.left + 512;
-      r.bottom = r.top + 512;
+      x_size = req_properties.get_x_size();
+      y_size = req_properties.get_y_size();
     }
+      
+    // A coordinate of -2 means to center the window on screen.
+    if (y_origin == -2 || x_origin == -2) {
+      if (y_origin == -2) {
+        y_origin = (_pipe->get_display_height() - y_size) / 2;
+      }
+      if (x_origin == -2) {
+        x_origin = (_pipe->get_display_width() - x_size) / 2;
+      }
+    }
+
+    // A coordinate of -1 means a default location.
+    if (y_origin == -1) {
+      y_origin = 50;
+    }
+    if (x_origin == -1) {
+      x_origin = 10;
+    }
+
+    _properties.set_origin(x_origin, y_origin);
+    _properties.set_size(x_size, y_size);
+
+    Rect r;
+    r.top = y_origin;
+    r.left = x_origin;
+    r.right = r.left + x_size;
+    r.bottom = r.top + y_size;
 
             /*
     if (req_properties.has_parent_window()) {
@@ -1548,12 +1546,12 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
   }
 
   // A coordinate of -2 means to center the window on screen.
-  if (x_origin == -2 || y_origin == -2) {
+  if (x_origin == -2 || y_origin == -2 || x_origin == -1 || y_origin == -1) {
     if (y_origin == -2) {
-      y_origin = 0.5 * (_pipe->get_display_height() - y_size);
+      y_origin = (_pipe->get_display_height() - y_size) / 2;
     }
     if (x_origin == -2) {
-      x_origin = 0.5 * (_pipe->get_display_width() - x_size);
+      x_origin = (_pipe->get_display_width() - x_size) / 2;
     }
     if (y_origin == -1) {
       y_origin = 50;
