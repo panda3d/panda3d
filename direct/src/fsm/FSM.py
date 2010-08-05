@@ -190,7 +190,7 @@ class FSM(DirectObject):
 
     def getCurrentFilter(self):
         if not self.state:
-            error = "requested %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState)
+            error = "FSM cannot determine current filter while in transition (%s -> %s)." % (self.oldState, self.newState)
             raise AlreadyInTransition, error
 
         filter = getattr(self, "filter" + self.state, None)
