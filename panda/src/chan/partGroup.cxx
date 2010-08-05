@@ -124,10 +124,34 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::get_child_named
+//       Access: Public
+//  Description: Returns the first child found with the indicated
+//               name, or NULL if no such child exists.  This method
+//               searches only the children of this particular
+//               PartGroup; it does not recursively search the entire
+//               graph.  See also find_child().
+////////////////////////////////////////////////////////////////////
+PartGroup *PartGroup::
+get_child_named(const string &name) const {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    PartGroup *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+  }
+
+  return (PartGroup *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::find_child
 //       Access: Public
 //  Description: Returns the first descendant found with the indicated
-//               name, or NULL if no such descendant exists.
+//               name, or NULL if no such descendant exists.  This
+//               method searches the entire graph beginning at this
+//               PartGroup; see also get_child_named().
 ////////////////////////////////////////////////////////////////////
 PartGroup *PartGroup::
 find_child(const string &name) const {
@@ -316,11 +340,29 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
 
     bool match = true;
     if (anim->get_num_children() != get_num_children()) {
-      chan_cat.info()
-        << "Part " << get_name() << " has " << get_num_children()
-        << " children, while matching anim node has "
-        << anim->get_num_children() << ":\n";
-      match = false;
+      // If the only difference is "morph", ignore it.  We treat
+      // "morph" as a special case, because it's common for the model
+      // and animation files to differ meaninglessly here.  Any
+      // differences here remain unreported.
+      if (anim->get_num_children() == get_num_children() + 1 &&
+          anim->get_child_named("morph") != NULL &&
+          get_child_named("morph") == NULL) {
+        // Anim has "morph" and model does not, but there are no other
+        // differences.
+
+      } else if (get_num_children() == anim->get_num_children() + 1 &&
+                 get_child_named("morph") != NULL &&
+                 anim->get_child_named("morph") == NULL) {
+        // Model has "morph" and anim does not, but there are no other
+        // differences.
+
+      } else {
+        chan_cat.info()
+          << "Part " << get_name() << " has " << get_num_children()
+          << " children, while matching anim node has "
+          << anim->get_num_children() << ":\n";
+        match = false;
+      }
 
     } else {
       for (int i = 0; match && i < get_num_children(); i++) {
@@ -387,13 +429,21 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     AnimGroup *ac = anim->get_child(j);
 
     if (pc->get_name() < ac->get_name()) {
-      if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
-        return false;
+      if (pc->get_name() == "morph") {
+        // Model has "morph", not in anim.  Ignore.
+      } else {
+        if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
+          return false;
+        }
       }
       i++;
     } else if (ac->get_name() < pc->get_name()) {
-      if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
-        return false;
+      if (ac->get_name() == "morph") {
+        // Anim has "morph", not in model.  Ignore.
+      } else {
+        if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
+          return false;
+        }
       }
       j++;
     } else {
@@ -405,18 +455,32 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     }
   }
 
-  if (i < get_num_children()) {
+  while (i < get_num_children()) {
     // There's at least one extra part.
-    if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
-      return false;
+    PartGroup *pc = get_child(i);
+    
+    if (pc->get_name() == "morph") {
+      // Model has "morph", not in anim.  Ignore.
+    } else {
+      if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
+        return false;
+      }
     }
+    i++;
   }
 
-  if (j < anim->get_num_children()) {
+  while (j < anim->get_num_children()) {
     // There's at least one extra anim channel.
-    if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
-      return false;
+    AnimGroup *ac = anim->get_child(j);
+
+    if (ac->get_name() == "morph") {
+      // Anim has "morph", not in model.  Ignore.
+    } else {
+      if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
+        return false;
+      }
     }
+    j++;
   }
 
   return true;

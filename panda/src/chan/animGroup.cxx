@@ -118,10 +118,34 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::get_child_named
+//       Access: Public
+//  Description: Returns the first child found with the indicated
+//               name, or NULL if no such child exists.  This method
+//               searches only the children of this particular
+//               AnimGroup; it does not recursively search the entire
+//               graph.  See also find_child().
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimGroup::
+get_child_named(const string &name) const {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    AnimGroup *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+  }
+
+  return (AnimGroup *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::find_child
 //       Access: Public
 //  Description: Returns the first descendant found with the indicated
-//               name, or NULL if no such descendant exists.
+//               name, or NULL if no such descendant exists.  This
+//               method searches the entire graph beginning at this
+//               AnimGroup; see also get_child_named().
 ////////////////////////////////////////////////////////////////////
 AnimGroup *AnimGroup::
 find_child(const string &name) const {
