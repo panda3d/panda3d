@@ -429,6 +429,10 @@ private:
   int _last_status_code;
   double _last_run_time;
 
+  // RAU we find that we may need a little more time for the
+  // ssl handshake when the phase files are downloading
+  double _extra_ssl_handshake_time;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -44,6 +44,11 @@ HTTPChannel::
 HTTPChannel(HTTPClient *client) :
   _client(client)
 {
+  ConfigVariableDouble extra_ssl_handshake_time
+    ("extra-ssl-handshake-time", 0.0,
+     PRC_DESC("This specifies how much extra time to try to establish"
+               "the ssl handshake before we bail."));
+  _extra_ssl_handshake_time = extra_ssl_handshake_time;
   _proxy_next_index = 0;
   _persistent_connection = false;
   _allow_proxy = true;
@@ -1563,7 +1568,7 @@ run_ssl_handshake() {
       double elapsed =
         TrueClock::get_global_ptr()->get_short_time() -
         _started_connecting_time;
-      if (elapsed <= get_connect_timeout()) {
+      if (elapsed <= get_connect_timeout() + _extra_ssl_handshake_time) {
         // Keep trying.
         return true;
       }

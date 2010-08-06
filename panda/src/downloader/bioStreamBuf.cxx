@@ -194,6 +194,16 @@ underflow() {
         // the server.  But BIO_should_retry() *appears* to be
         // reliable.
         _read_open = (BIO_should_retry(*_source) != 0);
+
+#ifdef IS_OSX
+        // occassionally we get -1 on read_open on the mac
+        // the os_error is 35 which means "Resource temporarily unavailable".
+        if ( (_read_open == -1) && (os_error == 35)) {
+          downloader_cat.warning() << "forcing retry to true again and _read_open to true\n";
+          BIO_set_retry_read(*_source);
+          _read_open = true;
+        }
+#endif
         if (!_read_open) {
           downloader_cat.info()
             << "Lost connection to "
