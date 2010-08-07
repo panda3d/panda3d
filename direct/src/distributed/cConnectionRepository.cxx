@@ -1130,7 +1130,7 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
                 endTime = ClockObject::get_global_clock()->get_real_time(); 
                 if ( _time_warning < (endTime - startTime)) {
                   nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
-                  describe_message(nout, "RECV", _dg);
+				  _dg.dump_hex(nout,2);
                 }
               }
               return false; 
@@ -1146,7 +1146,7 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
                 endTime = ClockObject::get_global_clock()->get_real_time(); 
                 if ( _time_warning < (endTime - startTime)) {
                   nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
-                  describe_message(nout, "RECV", _dg);
+				  _dg.dump_hex(nout,2);                
                 }
               }
               return true;
@@ -1157,7 +1157,7 @@ bool CConnectionRepository::check_datagram_ai(PyObject *PycallBackFunction)
         endTime = ClockObject::get_global_clock()->get_real_time(); 
         if ( _time_warning < (endTime - startTime)) {
           nout << "msg " << _msg_type <<" from " << _msg_sender << " took "<<  (endTime-startTime) << "secs to process\n";
-          describe_message(nout, "RECV", _dg);
+		  _dg.dump_hex(nout,2);   
         }
       }
              
