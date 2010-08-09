@@ -3,28 +3,10 @@
 //
 // This file defines the set of output files that will be generated to
 // support a makefile build system invoking Microsoft's Visual C++
-// command-line compiler, similar to Template.msvc.pp
+// command-line compiler using Microsoft's nmake.
 //
-// It is a clone of Template.gmsvc.pp that has been adapter do work
-// with nmake and visual studio.  I didn't call it Template.msvc.pp
-// so as not to confuse it with the previous Template.msvc.pp which
-// attempts to create visual studio projects.
+// This was adapted from Template.gmsvc.pp
 //
-// Steven "Sauce" Osman, July 17, 2003
-//
-// Note:
-// There's one weird behavior when running interrogate, specifically
-// with its -od directive.  This is because the pathname specified
-// in -od is dropped into a string in a c++ source file.  This makes
-// the c++ compiler interpret all back-slashes as escape sequences.
-// To fix this, the back-slashes were replaced by double backslashes.
-// This doesn't seem to break interrogate's ability to open the files
-// (because additional slashes don't bother the OS), and it allows
-// the escape character interpretation to work.
-//
-// Note:
-// The SED variable uses single quotes around the command.  A
-// substitution was added to make them double quotes.
 
 // Before this file is processed, the following files are read and
 // processed (in order):
@@ -44,8 +26,20 @@
 
 #if $[ne $[CTPROJS],]
 #define dtool_ver_dir_cyg $[DTOOL]/src/dtoolbase
-#define dtool_ver_dir $[osfilename $[DTOOL]/src/dtoolbase]
+#define dtool_ver_dir $[osfilename $[dtool_ver_dir_cyg]]
 #endif
+
+//
+// Correct LDFLAGS_OPT 3,4 here to get around early evaluation of, even
+// if deferred
+//
+#defer nodefaultlib_cstatic \
+  $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],], \
+     /NODEFAULTLIB:MSVCRT.LIB, \
+     /NODEFAULTLIB:LIBCMT.LIB \
+   ]
+#defer LDFLAGS_OPT3 $[LDFLAGS_OPT3] $[nodefaultlib_cstatic]
+#defer LDFLAGS_OPT4 $[LDFLAGS_OPT4] $[nodefaultlib_cstatic]
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
@@ -60,50 +54,53 @@
   #define real_lib_target_libs
   #define deferred_objs
   #forscopes lib_target
-    #if $[eq $[module $[TARGET],$[TARGET]],]
-      // This library is not on a metalib, so we can build it.
-      #set real_lib_targets $[real_lib_targets] $[TARGET]
-      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
-    #else
-      // This library is on a metalib, so we can't build it, but we
-      // should build all the obj's that go into it.
-      #set deferred_objs $[deferred_objs] \
-        $[patsubst %,$[%_obj],$[compile_sources]]
+    #if $[build_target]
+      #if $[eq $[module $[TARGET],$[TARGET]],]
+        // This library is not on a metalib, so we can build it.
+        #set real_lib_targets $[real_lib_targets] $[TARGET]
+        #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
+      #else
+        // This library is on a metalib, so we can't build it, but we
+        // should build all the obj's that go into it.
+        #set deferred_objs $[deferred_objs] \
+          $[patsubst %,$[%_obj],$[compile_sources]]
+      #endif
     #endif
   #end lib_target
 
   // We need to know the various targets we'll be building.
   // $[lib_targets] will be the list of dynamic and static libraries,
-  // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
-  // list of binaries that are to be built only when specifically
+  // and $[bin_targets] the list of binaries.  $[test_bin_targets] is
+  // the list of binaries that are to be built only when specifically
   // asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]] $[real_lib_target_libs]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
 
-  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%$[lib_ext]]
+  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%$[dllext]$[lib_ext]]
 
   // And these variables will define the various things we need to
   // install.
-  #define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
+  #define install_lib $[active_target(metalib_target static_lib_target dynamic_lib_target ss_lib_target)] $[real_lib_targets]
   #define install_bin $[active_target(bin_target)]
-  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
+  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_modules $[sort $[INSTALL_MODULES(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_MODULES]]
+  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
   #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
-  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
+  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
+  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
   #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
 
   // These are the various sources collected from all targets within the
   // directory.
-  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
 
   // If there is an __init__.py in the directory, then all Python
   // files in the directory just get installed without having to be
@@ -120,33 +117,18 @@
 
 #endif  // $[build_directory]
 
-
-// We define $[complete_local_libs] as the full set of libraries (from
-// within this tree) that we must link a particular target with.  It
-// is the transitive closure of our dependent libs: the libraries we
-// depend on, plus the libraries *those* libraries depend on, and so on.
-#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
 #defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
 
 // $[static_lib_dependencies] is the set of libraries we will link
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
-
-// And $[complete_ipath] is the list of directories (from within this
-// tree) we should add to our -I list.  It's basically just one for
-// each directory named in the $[complete_local_libs], above, plus
-// whatever else the user might have explicitly named in
-// $[LOCAL_INCS].  LOCAL_INCS MUST be a ppremake src dir! (RELDIR only checks those)
-// To add an arbitrary extra include dir, define EXTRA_IPATH in the Sources.pp
-
-#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])] $[EXTRA_IPATH]
+#defer static_lib_dependencies $[all_libs $[if $[and $[lib_is_static],$[build_lib]],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
 
-#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%/include] $[get_ipath]
+#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees_include] $[get_ipath]
 
 // These are the complete set of extra flags the compiler requires.
 #defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]]
@@ -158,9 +140,9 @@
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
-#defer lpath $[sort $[complete_lpath]] $[other_trees:%=%/lib] $[get_lpath]
+#defer lpath $[sort $[complete_lpath]] $[other_trees_lib] $[get_lpath]
 
-// And $[libs] is the set of libraries we will link with.
+// $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
 // This is the set of files we might copy into *.prebuilt, if we have
@@ -173,6 +155,7 @@
 #mkdir $[sort \
     $[if $[install_lib],$[install_lib_dir]] \
     $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
+    $[if $[install_bin] $[install_modules],$[install_lib_dir]] \
     $[if $[install_headers],$[install_headers_dir]] \
     $[if $[install_parser_inc],$[install_parser_inc_dir]] \
     $[if $[install_data],$[install_data_dir]] \
@@ -201,7 +184,14 @@
 /* ################################# DO NOT EDIT ########################### */
 
 #foreach file $[$[composite_file]_sources]
+#if $[USE_TAU]
+// For the benefit of Tau, we copy the source file verbatim into the
+// composite file.  (Tau doesn't instrument files picked up via #include.)
+#copy $[DIRPREFIX]$[file]
+
+#else
 ##include "$[file]"
+#endif  // USE_TAU
 #end file
 
 #end $[composite_file]
@@ -213,12 +203,21 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
+// If we are using GNU make, this will automatically enable the
+// multiprocessor build mode according to the value in
+// NUMBER_OF_PROCESSORS, which should be set by NT.  Maybe this isn't
+// a good idea to do all the time, but you can always disable it by
+// explicitly unsetting NUMBER_OF_PROCESSORS, or by setting it to 1.
+//#if $[NUMBER_OF_PROCESSORS]
+//MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
+//#endif
+
 // The 'all' rule makes all the stuff in the directory except for the
 // test_bin_targets.  It doesn't do any installation, however.
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
+    $[sort $[lib_targets] $[bin_targets]] \
     $[deferred_objs]
 all : $[patsubst %,$[osfilename %],$[all_targets]]
 
@@ -226,34 +225,48 @@ all : $[patsubst %,$[osfilename %],$[all_targets]]
 test : $[patsubst %,$[osfilename %],$[test_bin_targets] $[test_lib_targets]]
 
 clean : clean-igate
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#if $[compile_sources]
 #foreach file $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
 $[TAB] if exist $[file] del /f $[file]
 #end file
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
-#if $[deferred_objs]
- #foreach file $[patsubst %,$[osfilename %],$[deferred_objs]]
-$[TAB] if exist $[file] del /f $[file]
- #end file
 #endif
-#if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
-#foreach file $[patsubst %,$[osfilename %],$[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]]
+#end metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+
+#if $[deferred_objs]
+#foreach file $[patsubst %,$[osfilename %],$[deferred_objs]]
 $[TAB] if exist $[file] del /f $[file]
 #end file
 #endif
-$[TAB] if exist *.pyc del *.pyc
-$[TAB] if exist *.pyo del *.pyo // Also scrub out old generated Python code.
+
+#if $[lib_targets] $[bin_targets] $[test_bin_targets]
+#foreach file $[patsubst %,$[osfilename %],$[lib_targets] $[bin_targets] $[test_bin_targets]]
+$[TAB] if exist $[file] del /f $[file]
+#end file
+#endif
+
+#if $[yxx_st_sources] $[lxx_st_sources]
+#foreach file $[patsubst %,$[osfilename %],$[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]]
+$[TAB] if exist $[file] del /f $[file]
+#end file
+#endif
+
+#if $[py_sources]
+$[TAB] if exist *.pyc del /f *.pyc
+$[TAB] if exist *.pyo del /f *.pyo // Also scrub out old generated Python code.
+#endif
+
+#if $[USE_TAU]
+$[TAB] if exist $[osfilename $[ODIR]/*.il] del /f $[osfilename $[ODIR]/*.il]
+$[TAB] if exist $[osfilename $[ODIR]/*.pdb] del /f $[osfilename $[ODIR]/*.pdb]
+$[TAB] if exist *.inst.* del /f *.inst.*
+#endif
 
 // 'cleanall' is intended to undo all the effects of running ppremake
 // and building.  It removes everything except the Makefile.
 cleanall : clean
 #if $[st_sources]
-$[TAB] if exist $[osfilename $[ODIR]\*.*] del /f/s/q $[osfilename $[ODIR]\*.*]
-#endif
-#if $[yxx_st_sources] $[lxx_st_sources]
-#foreach file $[patsubst %,$[osfilename %],$[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]]
-$[TAB] if exist $[file] del /f $[file]
-#end file
+$[TAB] rmdir /s $[ODIR]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] if exist $[osfilename $[DEPENDENCY_CACHE_FILENAME]] del /f $[osfilename $[DEPENDENCY_CACHE_FILENAME]]
@@ -274,14 +287,12 @@ clean-igate :
 $[TAB] if exist $[osfilename $[igatedb]] del /f $[osfilename $[igatedb]]
   #endif
   #if $[igateoutput]
-#foreach file $[patsubst %,$[osfilename %],$[igateoutput] $[$[igateoutput]_obj]]
-$[TAB] if exist $[file] del /f $[file]
-#end file
+$[TAB] if exist $[osfilename $[igateoutput]] del /f $[osfilename $[igateoutput]]
+$[TAB] if exist $[osfilename $[$[igateoutput]_obj]] del /f $[osfilename $[$[igateoutput]_obj]]
   #endif
   #if $[igatemout]
-#foreach file $[patsubst %,$[osfilename %],$[igatemout] $[$[igatemout]_obj]]
-$[TAB] if exist $[file] del /f $[file]
-#end file
+$[TAB] if exist $[osfilename $[igatemout]] del /f $[osfilename $[igatemout]]
+$[TAB] if exist $[osfilename $[$[igatemout]_obj]] del /f $[osfilename $[$[igatemout]_obj]]
   #endif
 #end metalib_target lib_target ss_lib_target
 
@@ -290,6 +301,7 @@ $[TAB] if exist $[file] del /f $[file]
 // the directories if necessary.
 #define installed_files \
      $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+     $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
      $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -300,15 +312,15 @@ $[TAB] if exist $[file] del /f $[file]
      $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
 
 #define install_targets \
-     $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
+     $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=install-lib%] \
      $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 
-install : $[patsubst %,$[osfilename %],all $[install_targets]]
+install : all $[patsubst %,$[osfilename %],$[install_targets]]
 
 install-igate : $[patsubst %,$[osfilename %],$[sort $[installed_igate_files]]]
 
-uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
+uninstall : $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #if $[installed_files]
 #foreach file $[patsubst %,$[osfilename %],$[sort $[installed_files]]]
 $[TAB] if exist $[file] del /f $[file]
@@ -323,7 +335,7 @@ $[TAB] if exist $[file] del /f $[file]
 #endif
 
 #if $[HAVE_BISON]
-prebuild-bison : $[patsubst %,$[osfilename %],$[patsubst %,%.prebuilt,$[bison_prebuilt]]]
+prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
 clean-prebuild-bison :
 #if $[bison_prebuilt]
 #foreach file $[patsubst %,$[osfilename %],$[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]]
@@ -335,20 +347,14 @@ $[TAB] if exist $[file] del /f $[file]
 // Now it's time to start generating the rules to make our actual
 // targets.
 
-igate : $[patsubst %,$[osfilename %],$[get_igatedb(metalib_target lib_target ss_lib_target)]]
+igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
 
 /////////////////////////////////////////////////////////////////////
-// First, the dynamic libraries.  Each lib_target and metalib_target
-// is a dynamic library.
+// First, the dynamic and static libraries.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target
-
-// In Windows, we don't actually build all the libraries.  In
-// particular, we don't build any libraries that are listed on a
-// metalib.  Is this one such a library?
-#define build_it $[eq $[module $[TARGET],$[TARGET]],]
+#forscopes metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target
 
 // We might need to define a BUILDING_ symbol for win32.  We use the
 // BUILDING_DLL variable name, defined typically in the metalib, for
@@ -380,37 +386,42 @@ igate : $[patsubst %,$[osfilename %],$[get_igatedb(metalib_target lib_target ss_
 #define igatemscan $[get_igatemscan]
 #define igatemout $[get_igatemout]
 
-#if $[build_it]
+#if $[build_lib]
   // Now output the rule to actually link the library from all of its
   // various .obj files.
 
   #define sources \
-   $[patsubst %,$[%_obj],$[compile_sources]] \
-   $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+   $[patsubst %,$[%_obj],$[compile_sources]]
+  #if $[not $[BUILD_COMPONENTS]]
+    // Also link in all of the component files directly into the metalib.
+    #define sources $[sources] \
+      $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+  #endif
 
-  #define varname $[subst -,_,$[lib_prefix]$[TARGET]_so]
-$[varname] = $[patsubst %,$[osfilename %],$[sources]]
-  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+  #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
+$[varname] = $[sources]
+  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-  #define mybasename $[basename $[notdir $[target]]]
-  #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
-  #define tmpdirname_win $[osfilename $[tmpdirname_cyg]]
 
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
-#if $[GENERATE_BUILDDATE]
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies] $[dtool_ver_dir]/version.rc $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]]
-// first generate builddate for rc compiler using compiler preprocessor
-$[TAB]  if not exist $[osfilename $[tmpdirname_cyg]] mkdir $[osfilename $[tmpdirname_cyg]]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
- #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
-$[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
-$[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
+#if $[or $[GENERATE_BUILDDATE],$[WIN_RESOURCE_FILE]]
+  #define resource_file $[or $[WIN_RESOURCE_FILE],$[dtool_ver_dir_cyg]/version.rc]
+  #define tlb_depend $[patsubst %.idl,$[ODIR]/%.tlb,$[filter %.idl, $[get_sources]]]
+$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%] $[tlb_depend]]
+
+ // first generate builddate for rc compiler using compiler preprocessor
+ #define ver_resource "$[ODIR]\$[lib_prefix]$[TARGET].res"
+$[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[ODIR]\verdate.h"
+$[TAB]  rc /n /I"$[ODIR]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[ver_resource] $[filter /D%, $[flags]]  "$[osfilename $[resource_file]]"
+  #define sources $[sources] $[ver_resource]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[link_lib_c++] $[VER_RESOURCE]
+$[TAB] $[link_lib_c++]
   #else
-$[TAB] $[link_lib_c] $[VER_RESOURCE]
+$[TAB] $[link_lib_c]
   #endif
 #else
+
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_lib_c++]
@@ -418,15 +429,14 @@ $[TAB] $[link_lib_c++]
 $[TAB] $[link_lib_c]
   #endif
 #endif
-#if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
-#endif
 
-#if $[build_dlls]
-$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+// Additional dependency rules for the implicit files that get built
+// along with a .dll.
+#if $[not $[lib_is_static]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].lib] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 #endif
-#if $[build_pdbs]
-$[osfilename $[ODIR]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+#if $[has_pdb]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 #endif
 
 #endif
@@ -434,12 +444,13 @@ $[osfilename $[ODIR]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] \
-      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
-      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] \
+    $[if $[build_lib], \
+      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext] \
+      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].lib] \
+      $[if $[has_pdb],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
@@ -454,27 +465,31 @@ $[TAB] if exist $[file] del /f $[file]
 #end file
 #endif
 
-#if $[build_dlls]
-$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
-#define local $[lib_prefix]$[TARGET]$[lib_ext]
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
+#define local $[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define dest $[install_lib_dir]
+#if $[not $[lib_is_static]]
 #if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local];2
-#endif
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] mt -nologo -manifest $[osfilename $[ODIR]/$[local].manifest] -outputresource:$[osfilename $[ODIR]/$[local]];2
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]]
 #endif
+#endif
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
 
-$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
-#define local $[lib_prefix]$[TARGET]$[lib_ext]
+// Install the .lib associated with a .dll.
+#if $[not $[lib_is_static]]
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].lib] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].lib]
+#define local $[lib_prefix]$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
+#endif
 
-#if $[and $[build_dlls],$[build_pdbs]]
-$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET].pdb]
-#define local $[lib_prefix]$[TARGET].pdb
+
+#if $[has_pdb]
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].pdb] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb]
+#define local $[lib_prefix]$[TARGET]$[dllext].pdb
 #define dest $[install_lib_dir]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
 #endif
 
 #if $[igatescan]
@@ -490,10 +505,10 @@ $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
   #define igatemod $[TARGET]
 #endif
 
-$[osfilename $[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%]] : $[patsubst %,$[osfilename %],$[igatedb]]
+$[osfilename $[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%]] : $[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -501,14 +516,6 @@ $[osfilename $[igatedb]] : $[patsubst %,$[osfilename %],$[igateoutput]]
 
 $[lib_prefix]$[TARGET]_igatescan = $[patsubst %,$[osfilename %],$[igatescan]]
 $[osfilename $[igateoutput]] : $[patsubst %,$[osfilename %],$[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]]
-//// Sauce
-//// There's a bug here.  The -od is being passed into a string in the file.  This
-//// makes slashes look like escape sequences.
-//// The hacky fix is to use \\ instead of \.  Windows seems to still let you open files if you
-//// include multiple slashes in them.  Then, when quoted, the string will properly
-//// be created.
-//$[TAB] $[INTERROGATE] -od $[subst \,\\,$[osfilename $[igatedb]]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
-// Actually, drose kindly fixed that
 $[TAB] $[INTERROGATE] -od $[osfilename $[igatedb]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
 
 #endif  // igatescan
@@ -531,7 +538,14 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
-#end metalib_target lib_target
+#foreach idl $[filter %.idl, $[get_sources]]
+  #define idl_basename $[basename $[idl]]
+$[osfilename $[ODIR]/$[idl_basename].tlb] : $[osfilename $[ODIR]/$[idl_basename].h]
+$[osfilename $[ODIR]/$[idl_basename].h] : $[osfilename $[idl]]
+$[TAB] $[MIDL_COMMAND]
+#end idl
+
+#end metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target
 
 
 /////////////////////////////////////////////////////////////////////
@@ -543,25 +557,21 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target test_lib_target
-#define varname $[subst -,_,$[lib_prefix]$[TARGET]_so]
+#define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
-#define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+#define target $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define sources $($[varname])
+#define $[VER_RESOURCE] $[COMPILED_RESOURCES]
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[link_lib_c++] $[COMPILED_RESOURCES]
+$[TAB] $[link_lib_c++]
 #else
-$[TAB] $[link_lib_c] $[COMPILED_RESOURCES]
-#endif
-#if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
+$[TAB] $[link_lib_c]
 #endif
 
-#if $[build_dlls]
-$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
-#endif
-#if $[build_pdbs]
-$[osfilename $[ODIR]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
+#if $[has_pdb]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb] : $[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 #endif
 
 // this section is all very clunky and not generalized enough
@@ -573,7 +583,7 @@ $[osfilename $[rc_to_gen]] : $[patsubst %,$[osfilename %],$[GENERATED_RC_DEPENDE
 $[TAB] $[RC_GENERATOR_RULE]
 
 $[osfilename $[ODIR]/$[RC_BASENAME].res] : $[patsubst %,$[osfilename %],$[rc_to_gen]]
-$[TAB] $[COMPILE_RC] /I"$[ODIR]" /Fo"$[ODIR]/$[RC_BASENAME].res" $[ODIR]/$[RC_BASENAME].rc
+$[TAB] $[COMPILE_RC] /I"$[ODIR]" /Fo"$[osfilename $[ODIR]/$[RC_BASENAME].res]" $[osfilename $[ODIR]/$[RC_BASENAME].rc]
 #endif
 
 #define inf_to_gen $[filter %.inf, $[GENERATED_SOURCES]]
@@ -596,72 +606,29 @@ $[TAB] $[VERHEADER_GENERATOR_RULE]
 $[osfilename $[VERHEADER_DEPENDENTS]] : $[patsubst %,$[osfilename %],$[verhdr_to_gen]]
 #endif
 
-#define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl
-
 #define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
 #if $[idl_to_gen]
 $[osfilename $[idl_to_gen]] : $[patsubst %,$[osfilename %],$[GENERATED_IDL_DEPENDENCIES]]
 $[TAB] $[IDL_GENERATOR_RULE]
 
-$[osfilename $[ODIR]/$[IDL_BASENAME].h] : $[patsubst %,$[osfilename %],$[idl_to_gen]]
+$[osfilename $[ODIR]/$[IDL_BASENAME].h] : $[osfilename $[idl_to_gen]]
+#define idl $[idl_to_gen]
 $[TAB] $[MIDL_COMMAND]
 
 // this is a complete hack.  I dont know how add a generated .h to the dependency list of $[IDL_BASENAME].cpp.
 // it is already there, but in the wrong directory.  should really add this to official dependency list
 #foreach file $[GENERATED_IDL_H_DEPENDENTS]
-$[osfilename $[file]] : $[patsubst %,$[osfilename %],$[ODIR]/$[IDL_BASENAME].h]
+$[osfilename $[file]] : $[osfilename $[ODIR]/$[IDL_BASENAME].h]
 $[TAB]  // empty, dependency-only 'rule'
 
 #end file
 
-$[osfilename $[ODIR]/$[IDL_BASENAME].tlb] : $[patsubst %,$[osfilename %],$[idl_to_gen]]
+$[osfilename $[ODIR]/$[IDL_BASENAME].tlb] : $[osfilename $[idl_to_gen]]
+#define idl $[idl_to_gen]
 $[TAB] $[MIDL_COMMAND]
 #endif
 
 #end noinst_lib_target test_lib_target
-
-
-// /////////////////////////////////////////////////////////////////////
-// // Now the static libraries.  Again, we assume there's no interrogate
-// // interfaces going on in here, and there's no question of this being
-// // a metalib, making the rules relatively simple.
-// /////////////////////////////////////////////////////////////////////
-
-// #forscopes static_lib_target ss_lib_target
-// #define varname $[subst -,_,$[lib_prefix]$[TARGET]_a]
-// $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
-// #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
-// #define sources $($[varname])
-// $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources]]
-// #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-// $[TAB] $[STATIC_LIB_C++]
-// #else
-// $[TAB] $[STATIC_LIB_C]
-// #endif
-
-// #define installed_files \
-//     $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
-//     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-//     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-//     $[INSTALL_DATA:%=$[install_data_dir]/%] \
-//     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
-
-// install-$[lib_prefix]$[TARGET] : $[patsubst %,$[osfilename %],$[installed_files]]
-
-// uninstall-$[lib_prefix]$[TARGET] :
-// #if $[installed_files]
-// #foreach file $[patsubst %,$[osfilename %],$[sort $[installed_files]]]
-// $[TAB] if exist $[file] del /f $[file]
-// #end file
-// #endif
-
-// $[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
-// #define local $[lib_prefix]$[TARGET]$[lib_ext]
-// #define dest $[install_lib_dir]
-// $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
-
-// #end static_lib_target ss_lib_target
-
 
 
 /////////////////////////////////////////////////////////////////////
@@ -671,14 +638,13 @@ $[TAB] $[MIDL_COMMAND]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[osfilename $[TARGET]] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET]]
+$[osfilename $[TARGET]] : $[osfilename $[ODIR]/$[TARGET]]
 
 #define target $[ODIR]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[source]]
-$[TAB] $[subst ',",$[SED]]
-// $[TAB] chmod +x $[target] // WILL THIS BREAK IN WINDOWS?
+$[osfilename $[target]] : $[osfilename $[source]]
+$[TAB] $[SED]
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET]
@@ -694,8 +660,8 @@ $[TAB] if exist $[file] del /f $[file]
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-$[osfilename $[install_bin_dir]/$[TARGET]] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET]]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[osfilename $[install_bin_dir]/$[TARGET]] : $[osfilename $[ODIR]/$[TARGET]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
 
 #end sed_bin_target
 
@@ -706,13 +672,22 @@ $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-$[osfilename $[TARGET]] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].exe]
+$[osfilename $[TARGET]] : $[osfilename $[ODIR]/$[TARGET].exe]
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
 #define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
+
+#if $[WIN_RESOURCE_FILE]
+  #define resource_file $[WIN_RESOURCE_FILE]
+  #define ver_resource "$[ODIR]\$[TARGET].res"
+$[ver_resource] : $[resource_file]
+$[TAB]  rc /n /I"$[ODIR]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[ver_resource] $[filter /D%, $[flags]]  "$[osfilename $[resource_file]]"
+  #set sources $[sources] $[ver_resource]
+#endif
+
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies]]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
@@ -720,23 +695,25 @@ $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #else
   // Otherwise, we can use the normal linker.
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
   #else
-$[TAB] $[LINK_BIN_C]
+$[TAB] $[link_bin_c]
   #endif
 #endif
 #if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];1
+$[TAB] mt -nologo -manifest $[osfilename $[target].manifest] -outputresource:$[osfilename $[target]];1
 #endif
 
 #if $[build_pdbs]
-$[osfilename $[ODIR]/$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].exe]
+$[osfilename $[ODIR]/$[TARGET].pdb] : $[osfilename $[ODIR]/$[TARGET].exe]
 #endif
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET].exe \
     $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \
+    $[if $[eq $[USE_COMPILER],MSVC8],$[install_bin_dir]/$[TARGET].exe.manifest] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
+    $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[if $[bin_postprocess_target],$[install_bin_dir]/$[bin_postprocess_target].exe] \
@@ -744,37 +721,39 @@ $[osfilename $[ODIR]/$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[TAR
 
 install-$[TARGET] : $[patsubst %,$[osfilename %],$[installed_files]]
 
+
 uninstall-$[TARGET] :
 #if $[installed_files]
 #foreach file $[patsubst %,$[osfilename %],$[sort $[installed_files]]]
-$[TAB] if exist $[file] del /f $[file]
+$[TAB] if exist $[osfilename $[file]] del /f $[osfilename $[file]]
 #end file
 #endif
 
-$[osfilename $[install_bin_dir]/$[TARGET].exe] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].exe]
+$[osfilename $[install_bin_dir]/$[TARGET].exe] : $[osfilename $[ODIR]/$[TARGET].exe]
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
+#if $[eq $[USE_COMPILER],MSVC8]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]/]
+#endif
 
 #if $[build_pdbs]
-$[osfilename $[install_bin_dir]/$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].pdb]
+$[osfilename $[install_bin_dir]/$[TARGET].pdb] : $[osfilename $[ODIR]/$[TARGET].pdb]
 #define local $[TARGET].pdb
 #define dest $[install_bin_dir]
-$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]/]
 #endif
 
 #if $[bin_postprocess_target]
 #define input_exe $[ODIR]/$[TARGET].exe
 #define output_exe $[ODIR]/$[bin_postprocess_target].exe
 
-$[osfilename $[output_exe]] : $[patsubst %,$[osfilename %],$[input_exe]]
+$[osfilename $[output_exe]] : $[osfilename $[input_exe]]
 $[TAB] if exist $[osfilename $[output_exe]] del /f $[osfilename $[output_exe]]
-$[TAB] $[bin_postprocess_cmd] $[bin_postprocess_arg1] $[input_exe] $[bin_postprocess_arg2] $[output_exe]
-$[TAB] if exist $[file] del /f $[file]
+$[TAB] $[bin_postprocess_cmd] $[bin_postprocess_arg1] $[osfilename $[input_exe]] $[bin_postprocess_arg2] $[osfilename $[output_exe]]
 
-$[osfilename $[install_bin_dir]/$[bin_postprocess_target].exe] : $[patsubst %,$[osfilename %],$[output_exe]]
-$[TAB] xcopy /I/Y $[osfilename $[output_exe]] $[osfilename $[install_bin_dir]]
+$[osfilename $[install_bin_dir]/$[bin_postprocess_target].exe] : $[osfilename $[output_exe]]
+$[TAB] xcopy /I/Y $[osfilename $[output_exe]] $[osfilename $[install_bin_dir]/]
 #endif
 
 #end bin_target
@@ -785,7 +764,7 @@ $[TAB] xcopy /I/Y $[osfilename $[output_exe]] $[osfilename $[install_bin_dir]]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target test_lib_target
-$[osfilename $[TARGET]] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].exe]
+$[osfilename $[TARGET]] : $[osfilename $[ODIR]/$[TARGET].exe]
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
@@ -793,12 +772,9 @@ $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
 #define sources $($[varname])
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies]]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
 #else
-$[TAB] $[LINK_BIN_C]
-#endif
-#if $[eq $[USE_COMPILER], MSVC8]
-$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];1
+$[TAB] $[link_bin_c]
 #endif
 
 #end noinst_bin_target test_bin_target test_lib_target
@@ -814,19 +790,19 @@ $[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];1
 #define target_prebuilt $[target].prebuilt
 #define target_header_prebuilt $[target_header].prebuilt
 #if $[HAVE_BISON]
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[file]]
-$[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
-$[TAB] move /y y.tab.c $[target]
-$[TAB] move /y y.tab.h $[target_header]
-$[osfilename $[target_header]] : $[patsubst %,$[osfilename %],$[target]]
-$[osfilename $[target_prebuilt]] : $[patsubst %,$[osfilename %],$[target]]
+$[osfilename $[target]] : $[osfilename $[file]]
+$[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[osfilename $[file]]
+$[TAB] move /y y.tab.c $[osfilename $[target]]
+$[TAB] move /y y.tab.h $[osfilename $[target_header]]
+$[osfilename $[target_header]] : $[osfilename $[target]]
+$[osfilename $[target_prebuilt]] : $[osfilename $[target]]
 $[TAB] copy /Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
-$[osfilename $[target_header_prebuilt]] : $[patsubst %,$[osfilename %],$[target_header]]
+$[osfilename $[target_header_prebuilt]] : $[osfilename $[target_header]]
 $[TAB] copy /Y $[osfilename $[target_header]] $[osfilename $[target_header_prebuilt]]
 #else // HAVE_BISON
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[target_prebuilt]]
+$[osfilename $[target]] : $[osfilename $[target_prebuilt]]
 $[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
-$[osfilename $[target_header]] : $[patsubst %,$[osfilename %],$[target_header_prebuilt]]
+$[osfilename $[target_header]] : $[osfilename $[target_header_prebuilt]]
 $[TAB] copy /Y $[osfilename $[target_header_prebuilt]] $[osfilename $[target_header]]
 #endif // HAVE_BISON
 
@@ -838,16 +814,16 @@ $[TAB] copy /Y $[osfilename $[target_header_prebuilt]] $[osfilename $[target_hea
 #define target_prebuilt $[target].prebuilt
 #if $[HAVE_BISON]
 #define source $[file]
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[file]]
-$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
+$[osfilename $[target]] : $[osfilename $[file]]
+$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[osfilename $[file]]
 #define source lex.yy.c
 #define script /#include <unistd.h>/d
-$[TAB] $[subst ',",$[SED]]
-$[TAB] if exist lex.yy.c del /f lex.yy.c
-$[osfilename $[target_prebuilt]] : $[patsubst %,$[osfilename %],$[target]]
+$[TAB] $[SED]
+$[TAB] if exist lex.yy.c del lex.yy.c
+$[osfilename $[target_prebuilt]] : $[osfilename $[target]]
 $[TAB] copy /Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
 #else // HAVE_BISON
-$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[target_prebuilt]]
+$[osfilename $[target]] : $[osfilename $[target_prebuilt]]
 $[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
 #endif // HAVE_BISON
 
@@ -859,7 +835,7 @@ $[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
 // file.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 // need to use #print to avoid printing to Makefile
 // printvar prints the unevaluated defn of the var
 // #print TARGET=$[TARGET]
@@ -877,8 +853,30 @@ $[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
   #set ipath . $[ipath]
 #endif
 
+#if $[not $[direct_tau]]
+
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[source] $[get_depends $[source]]]
+$[TAB] $[compile_c]
+
+#else  // direct_tau
+// This version is used to invoke the tau compiler directly.
+#define il_source $[target].il
+#define pdb_source $[target].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[notdir $[target:%.obj=%.inst.c]]
+$[osfilename $[il_source]] : $[osfilename $[source]]
+$[TAB] $[TAU_MAKE_IL]
+
+$[osfilename $[pdb_source]] : $[osfilename $[il_source]]
+$[TAB] $[TAU_MAKE_PDB]
+
+$[osfilename $[inst_source]] : $[osfilename $[pdb_source]]
+$[TAB] $[TAU_MAKE_INST] -c
+
+$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[inst_source] $[get_depends $[source]]]
+#define source $[inst_source]
 $[TAB] $[COMPILE_C]
+
+#endif  // direct_tau
 
 #end file
 
@@ -895,29 +893,57 @@ $[TAB] $[COMPILE_C]
   #set ipath . $[ipath]
 #endif
 
+#if $[not $[direct_tau]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[source] $[get_depends $[source]] $[yxx_sources:%.yxx=%.h]]
+$[TAB] $[compile_c++]
+
+#else  // direct_tau
+// This version is used to invoke the tau compiler directly.
+#define il_source $[target].il
+#define pdb_source $[target].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[notdir $[target:%.obj=%.inst.cxx]]
+$[osfilename $[il_source]] : $[patsubst %,$[osfilename %],$[source] $[yxx_sources:%.yxx=%.h]]
+$[TAB] $[TAU_MAKE_IL]
+
+$[osfilename $[pdb_source]] : $[osfilename $[il_source]]
+$[TAB] $[TAU_MAKE_PDB]
+
+$[osfilename $[inst_source]] : $[osfilename $[pdb_source]]
+$[TAB] $[TAU_MAKE_INST] -c++
+
+$[osfilename $[target]] : $[patsubst %,$[osfilename %],$[inst_source] $[get_depends $[source]]]
+#define source $[inst_source]
 $[TAB] $[COMPILE_C++]
+
+#endif  // direct_tau
 
 #end file
 
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#end metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 
 // And now the rules to install the auxiliary files, like headers and
 // data files.
 #foreach file $[install_scripts]
-$[osfilename $[install_bin_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+$[osfilename $[install_bin_dir]/$[file]] : $[osfilename $[file]]
 #define local $[file]
 #define dest $[install_bin_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
+#end file
+
+#foreach file $[install_modules]
+$[osfilename $[install_lib_dir]/$[file]] : $[osfilename $[file]]
+#define local $[file]
+#define dest $[install_lib_dir]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #end file
 
 #foreach file $[install_headers]
-$[osfilename $[install_headers_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+$[osfilename $[install_headers_dir]/$[file]] : $[osfilename $[file]]
 #define local $[file]
 #define dest $[install_headers_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #end file
 
 #foreach file $[install_parser_inc]
@@ -925,35 +951,35 @@ $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 $[osfilename $[install_parser_inc_dir]/$[file]] : $[osfilename $[notdir $[file]]]
   #define local $[notdir $[file]]
   #define dest $[install_parser_inc_dir]/$[dir $[file]]
-$[TAB] if not exist $[osfilename $[install_parser_inc_dir]/$[dir $[file]]] mkdir $[osfilename $[install_parser_inc_dir]/$[dir $[file]]] || echo
+$[TAB] mkdir $[osfilename $[install_parser_inc_dir]/$[dir $[file]]] || echo
 $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 #else
 $[osfilename $[install_parser_inc_dir]/$[file]] : $[osfilename $[file]]
   #define local $[file]
   #define dest $[install_parser_inc_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #endif
 #end file
 
 #foreach file $[install_data]
-$[osfilename $[install_data_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+$[osfilename $[install_data_dir]/$[file]] : $[osfilename $[file]]
 #define local $[file]
 #define dest $[install_data_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #end file
 
 #foreach file $[install_config]
-$[osfilename $[install_config_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+$[osfilename $[install_config_dir]/$[file]] : $[osfilename $[file]]
 #define local $[file]
 #define dest $[install_config_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #end file
 
 #foreach file $[install_py]
-$[osfilename $[install_py_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+$[osfilename $[install_py_dir]/$[file]] : $[osfilename $[file]]
 #define local $[file]
 #define dest $[install_py_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #end file
 
 #if $[install_py]
@@ -971,8 +997,15 @@ $[TAB] $[COMMAND]
 
 
 // Finally, the rules to freshen the Makefile itself.
-Makefile : $[patsubst %,$[osfilename %],$[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]]
+Makefile : $[osfilename $[SOURCE_FILENAME]] $[osfilename $[EXTRA_PPREMAKE_SOURCE]]
 $[TAB] ppremake
+
+#if $[USE_TAU]
+#foreach composite_file $[composite_list]
+$[osfilename $[composite_file]] : $[patsubst %,$[osfilename %],$[$[composite_file]_sources]]
+$[TAB] ppremake
+#end composite_file
+#endif   // USE_TAU
 
 #if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
 $[osfilename $[DEPENDENCY_CACHE_FILENAME]] : $[patsubst %,$[osfilename %],$[dep_sources]]
@@ -1017,7 +1050,6 @@ $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 #include $[THISDIRPREFIX]PythonPackageInit.pp
 #endif
 
-
 #output Makefile
 #format makefile
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
@@ -1029,7 +1061,7 @@ igate : $[subdirs:%=igate-%]
 clean : $[subdirs:%=clean-%]
 clean-igate : $[subdirs:%=clean-igate-%]
 cleanall : $[subdirs:%=cleanall-%]
-install : $[patsubst %,$[osfilename %],$[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]/$[CONFIG_HEADER]] $[subdirs:%=install-%]]
+install : $[if $[CONFIG_HEADER],$[osfilename $[install_headers_dir]] $[osfilename $[install_headers_dir]/$[CONFIG_HEADER]]] $[subdirs:%=install-%]
 install-igate : $[subdirs:%=install-igate-%]
 uninstall : $[subdirs:%=uninstall-%]
 #if $[CONFIG_HEADER]
@@ -1069,12 +1101,12 @@ $[TAB] cd $[osfilename ./$[PATH]] && $(MAKE) clean-igate
 #end dirname
 
 #formap dirname subdirs
-cleanall-$[dirname] : $[patsubst %,$[osfilename %],$[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]]
+cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
 $[TAB] cd $[osfilename ./$[PATH]] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
-install-$[dirname] : $[patsubst %,$[osfilename %],$[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]]
+install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
 $[TAB] cd $[osfilename ./$[PATH]] && $(MAKE) install
 #end dirname
 
@@ -1107,14 +1139,14 @@ $[osfilename $[install_headers_dir]] :
 $[TAB] if not exist $[osfilename $[install_headers_dir]] echo mkdir $[osfilename $[install_headers_dir]]
 $[TAB] if not exist $[osfilename $[install_headers_dir]] mkdir $[osfilename $[install_headers_dir]]
 
-$[osfilename $[install_headers_dir]/$[CONFIG_HEADER]] : $[patsubst %,$[osfilename %],$[CONFIG_HEADER]]
+$[osfilename $[install_headers_dir]/$[CONFIG_HEADER]] : $[osfilename $[CONFIG_HEADER]]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[osfilename $[dest]/]
 #endif
 
 // Finally, the rules to freshen the Makefile itself.
-Makefile : $[patsubst %,$[osfilename %],$[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]]
+Makefile : $[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]
 $[TAB] ppremake
 
 #end Makefile
@@ -1130,10 +1162,8 @@ $[TAB] ppremake
 #elif $[or $[eq $[DIR_TYPE], models],$[eq $[DIR_TYPE], models_toplevel],$[eq $[DIR_TYPE], models_group]]
 //////////////////////////////////////////////////////////////////////
 
-#include $[THISDIRPREFIX]Template.models.nmake.pp
+#include $[THISDIRPREFIX]Template.models.pp
 
 //////////////////////////////////////////////////////////////////////
 #endif // DIR_TYPE
-
-
 

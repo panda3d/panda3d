@@ -5,12 +5,8 @@
 // are read.  It defines a few global variables to assist
 // Template.nmake.pp.
 //
-// It is a clone of Global.gmsvc.pp that has been adapter do work
-// with nmake and visual studio.  I didn't call it Global.msvc.pp
-// so as not to confuse it with the previous Global.msvc.pp which
-// attempts to create visual studio projects.
+// This was adapted from Global.gmsvc.pp
 //
-// Steven "Sauce" Osman, July 17, 2003 
 
 #defun get_metalibs target,complete_libs
   // In Windows, we need to know the complete set of metalibs that
@@ -36,6 +32,8 @@
   $[actual_libs]
 #end get_metalibs
 
+#defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
+
 #defun decygwin frompat,topat,path
   #foreach file $[path]
     $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
@@ -59,17 +57,6 @@
 
 #define CFLAGS_SHARED
 
-// Define LINK_ALL_STATIC to generate static libs instead of DLL's.
-#if $[ne $[LINK_ALL_STATIC],]
-  #define build_dlls
-  #define build_libs yes
-  #define dlllib lib
-#else
-  #define build_dlls yes
-  #define build_libs
-  #define dlllib dll
-#endif
-
 #include $[THISDIRPREFIX]compilerSettings.pp
 
 #if $[TEST_INLINING]
@@ -84,11 +71,13 @@
 #defer CDEFINES_OPT3 $[EXTRA_CDEFS]
 #defer CDEFINES_OPT4 $[EXTRA_CDEFS]
 
+#defer cdefines $[CDEFINES_OPT$[OPTIMIZE]]
+
 //  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS]
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[OPT4FLAGS] $[DEBUGPDBFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[if $[no_opt],$[OPT1FLAGS],$[OPTFLAGS]]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[if $[no_opt],$[OPT1FLAGS],$[OPTFLAGS]] $[DEBUGPDBFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[if $[no_opt],$[OPT1FLAGS],$[OPTFLAGS] $[OPT4FLAGS]] $[DEBUGPDBFLAGS]
 
 //#if $[FORCE_DEBUG_FLAGS]
 // make them all link with non-debug msvc runtime dlls for this case
@@ -117,10 +106,22 @@
 // '#defer extra_cflags $[extra_cflags] /STUFF' will never work because extra_cflags hasnt been
 // defined yet, so this just evaluates the reference to null and removes the reference and the
 // the defining extra_cflags in individual sources.pp's will not picked up.  use END_FLAGS instead
-#defer extra_cflags /EHsc /Zm300 /DWIN32_VC /DWIN32=1 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#defer extra_cflags /EHsc /Zm500 /DWIN32_VC /DWIN32=1 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-#defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
-#defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"
+#if $[direct_tau]
+#define tau_ipath $[TAU_ROOT]/include
+#define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB /DTAU_USE_C_API
+#define tau_lpath $[TAU_ROOT]/lib/VC7
+#define tau_libs pytau.lib
+#else  // direct_tau
+#define tau_ipath
+#define tau_cflags
+#define tau_lpath
+#define tau_libs
+#endif   // direct_tau
+
+#defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH] $[tau_ipath]]
+#defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] $[tau_cflags] "$[osfilename $[source]]"
 
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
@@ -144,34 +145,10 @@
 
 #defer LINKER_DEF_FILE_ARG $[if $[LINKER_DEF_FILE],/DEF:"$[LINKER_DEF_FILE]",]
 
-//#defer ver_resource $[directory]\ver.res
-//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
-#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] $[VER_RESOURCE]$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;2,]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[and $[eq $[USE_COMPILER], MSVC9],$[not $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME]]],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
-#if $[ne $[LINK_ALL_STATIC],]
-  #defer SHARED_LIB_C $[STATIC_LIB_C]
-  #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
-  #defer ODIR_SHARED $[ODIR_STATIC]
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#defer MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[IDL_CDEFS:%=/D%] $[idl]
