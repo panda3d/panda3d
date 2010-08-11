@@ -848,7 +848,8 @@ class Packager:
                         self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
                         filenames = []
 
-                    # Extract the manifest file so we can figure out the dependent assemblies.
+                    # Extract the manifest file so we can figure out
+                    # the dependent assemblies.
                     tempFile = Filename.temporary('', 'p3d_', '.manifest')
                     resindex = 2
                     if file.filename.getExtension().lower() == "exe":
@@ -865,6 +866,21 @@ class Packager:
                     if tempFile.exists():
                         afilenames = self.__parseManifest(tempFile)
                         tempFile.unlink()
+
+                    # Also check for an explicit private-assembly
+                    # manifest file on disk.
+                    mfile = file.filename + '.manifest'
+                    if mfile.exists():
+                        if afilenames is None:
+                            afilenames = []
+                        afilenames += self.__parseManifest(mfile)
+                        # Since it's an explicit manifest file, it
+                        # means we should include the manifest
+                        # file itself in the package.
+                        newName = Filename(file.dependencyDir, mfile.getBasename())
+                        self.addFile(mfile, newName = newName.cStr(),
+                                     explicit = False, executable = True)
+                            
                     if afilenames is None and out != 31:
                         self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
 
