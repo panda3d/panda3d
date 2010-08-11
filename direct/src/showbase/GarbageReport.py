@@ -132,6 +132,8 @@ class GarbageReport(Job):
         self.referentsByReference = {}
         self.referentsByNumber = {}
 
+        self._id2garbageInfo = {}
+
         self.cycles = []
         self.cyclesBySyntax = []
         self.uniqueCycleSets = set()
@@ -166,6 +168,18 @@ class GarbageReport(Job):
                 byNum, byRef = result                    
                 self.referentsByNumber[i] = byNum
                 self.referentsByReference[i] = byRef
+
+        for i in xrange(self.numGarbage):
+            if hasattr(self.garbage[i], '_garbageInfo') and callable(self.garbage[i]._garbageInfo):
+                try:
+                    info = self.garbage[i]._garbageInfo()
+                except Exception, e:
+                    info = str(e)
+                self._id2garbageInfo[id(self.garbage[i])] = info
+                yield None
+            else:
+                if not (i % 20):
+                    yield None
 
         # find the cycles
         if self._args.findCycles and self.numGarbage > 0:
@@ -334,6 +348,16 @@ class GarbageReport(Job):
                 for i in xrange(len(self.cyclesBySyntax)):
                     yield None
                     s.append('%s:%s' % (ac.next(), self.cyclesBySyntax[i]))
+
+            if len(self._id2garbageInfo):
+                s.append('===== Garbage Custom Info =====')
+                ac = AlphabetCounter()
+                for i in xrange(len(self.cyclesBySyntax)):
+                    yield None
+                    counter = ac.next()
+                    _id = id(self.garbage[i])
+                    if _id in self._id2garbageInfo:
+                        s.append('%s:%s' % (counter, self._id2garbageInfo[_id]))
 
             if self._args.fullReport:
                 format = '%0' + '%s' % digits + 'i:%s'
