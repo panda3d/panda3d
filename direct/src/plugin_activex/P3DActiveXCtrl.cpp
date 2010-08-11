@@ -159,7 +159,7 @@ BOOL CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry(BOOL bRegister)
 
 // CP3DActiveXCtrl::CP3DActiveXCtrl - Constructor
 
-CP3DActiveXCtrl::CP3DActiveXCtrl() : m_pPandaObject( NULL ), m_instance( *this )
+CP3DActiveXCtrl::CP3DActiveXCtrl() : m_instance( *this ), m_pPandaObject( NULL ) 
 {
     InitializeIIDs(&IID_DP3DActiveX, &IID_DP3DActiveXEvents);
     // TODO: Initialize your control's instance data here.
@@ -173,7 +173,7 @@ CP3DActiveXCtrl::~CP3DActiveXCtrl()
     // TODO: Cleanup your control's instance data here.
     if ( m_pPandaObject )
     {
-        delete m_pPandaObject;
+        m_pPandaObject->Release();
     }
 }
 
