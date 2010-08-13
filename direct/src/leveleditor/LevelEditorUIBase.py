@@ -14,6 +14,9 @@ from LayerEditorUI import *
 from HotKeyUI import *
 from ProtoPaletteUI import *
 from ActionMgr import *
+from AnimControlUI import *
+from CurveAnimUI import * 
+from GraphEditorUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor, view):
@@ -118,6 +121,10 @@ ID_PARENT_TO_SELECTED = 306
 
 ID_CREATE_CURVE = 601
 ID_EDIT_CURVE = 602
+ID_CURVE_ANIM = 603
+
+ID_ANIM = 701
+ID_GRAPH = 702
 
 class LevelEditorUIBase(WxPandaShell):
     """ Class for Panda3D LevelEditor """ 
@@ -140,7 +147,10 @@ class LevelEditorUIBase(WxPandaShell):
             ID_HOT_KEYS : ("&Hot Keys", None),
             ID_PARENT_TO_SELECTED : ("&Parent To Selected", None),
             ID_CREATE_CURVE : ("&Create Curve", None),
-            ID_EDIT_CURVE : ("&Edit Curve", None)
+            ID_EDIT_CURVE : ("&Edit Curve", None),
+            ID_CURVE_ANIM : ("&Curve Animation", None),
+            ID_ANIM : ("&Edit Animation", None),
+            ID_GRAPH : ("&Graph Editor", None)
             })
 
         self.editor = editor
@@ -217,8 +227,45 @@ class LevelEditorUIBase(WxPandaShell):
         
         self.editCurveMenuItem = self.menuCurve.Append(ID_EDIT_CURVE, self.MENU_TEXTS[ID_EDIT_CURVE][0], kind = wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onEditCurve, self.editCurveMenuItem)
-
+        
+        self.curveAnimMenuItem = self.menuCurve.Append(ID_CURVE_ANIM, self.MENU_TEXTS[ID_CURVE_ANIM][0], kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onCurveAnim, self.curveAnimMenuItem)
+        
+        self.menuAnim = wx.Menu()
+        self.menuBar.Insert(4, self.menuAnim, "&AnimationMode")
+        
+        self.editAnimMenuItem = self.menuAnim.Append(ID_ANIM, self.MENU_TEXTS[ID_ANIM][0], kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onAnimation, self.editAnimMenuItem)
+        
+        self.graphEditorMenuItem = self.menuAnim.Append(ID_GRAPH, self.MENU_TEXTS[ID_GRAPH][0], kind = wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onGraphEditor, self.graphEditorMenuItem)
+        
         WxPandaShell.createMenu(self)
+    
+    def onGraphEditor(self,e):
+        if base.direct.selected.last == None:
+            dlg = wx.MessageDialog(None, 'Please select a object first.', 'NOTICE', wx.OK )
+            dlg.ShowModal()
+            dlg.Destroy()
+            self.graphEditorMenuItem.Check(False)
+        else:
+            currentObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
+            self.graphEditorUI = GraphEditorUI(self, self.editor, currentObj)
+            self.graphEditorUI.Show()
+            self.graphEditorMenuItem.Check(True)
+    
+    def onAnimation(self,e):
+        if self.editor.mode != self.editor.ANIM_MODE:
+            self.animUI = AnimControlUI(self, self.editor)
+            self.animUI.Show()
+            self.editor.mode = self.editor.ANIM_MODE
+        if self.editor.mode == self.editor.ANIM_MODE:
+            self.editAnimMenuItem.Check(True)
+        
+    def onCurveAnim(self,e):
+        self.curveAnimUI = CurveAnimUI(self, self.editor)
+        self.curveAnimUI.Show()
+        self.curveAnimMenuItem.Check(True)
         
     def onCreateCurve(self,e):
         """Function to invoke curve creating, need to check previous mode"""
@@ -248,7 +295,7 @@ class LevelEditorUIBase(WxPandaShell):
                     self.editCurveMenuItem.Check(False)
     
     def onEditCurve(self,e):
-        """Function to invoke curve editing and transfer global information to local information. Need to check previous mode"""
+        """Function to invoke curve editing and translate global information to local information. Need to check previous mode"""
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:
             self.editCurveMenuItem.Check(False)
             self.editor.curveEditor.onBaseMode() 
@@ -639,3 +686,4 @@ class CurveDegreeUI(wx.Dialog):
         if(str(self.degree.GetSelection())=='2'):
             self.parent.editor.curveEditor.degree = 4
         self.Destroy()
+

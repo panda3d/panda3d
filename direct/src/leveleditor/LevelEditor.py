@@ -8,6 +8,7 @@ to be game specific.
 from LevelEditorUI import *
 from LevelEditorBase import *
 from ObjectMgr import *
+from AnimMgr import *
 from ObjectHandler import *
 from ObjectPalette import *
 from ProtoPalette import *
@@ -23,6 +24,7 @@ class LevelEditor(LevelEditorBase):
         # If you have your own ObjectPalette and ObjectHandler
         # connect them in your own LevelEditor class
         self.objectMgr = ObjectMgr(self)
+        self.animMgr = AnimMgr(self)
         self.objectPalette = ObjectPalette()
         self.objectHandler = ObjectHandler(self)
         self.protoPalette = ProtoPalette()

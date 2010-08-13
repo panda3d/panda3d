@@ -37,6 +37,8 @@ class LevelEditorBase(DirectObject):
         self.BASE_MODE = BitMask32.bit(0)
         self.CREATE_CURVE_MODE = BitMask32.bit(2)
         self.EDIT_CURVE_MODE = BitMask32.bit(3)
+        self.ANIM_MODE = BitMask32.bit(4)
+        self.GRAPH_EDITOR = False
         
         self.mode = self.BASE_MODE
         self.preMode = None
@@ -245,8 +247,10 @@ class LevelEditorBase(DirectObject):
                     return
 
         base.direct.deselectAll()
+        base.direct.selected.last = None
         self.ui.reset()
         self.objectMgr.reset()
+        self.animMgr.reset()
         self.actionMgr.reset()
         self.ui.perspView.camera.setPos(-19, -19, 19)
         self.ui.perspView.camera.lookAt(Point3(0, 0, 0))

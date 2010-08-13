@@ -5,11 +5,24 @@ import wx
 import os
 import math
 
+from wx.lib.embeddedimage import PyEmbeddedImage
 from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib.agw.cubecolourdialog import *
 from direct.wxwidgets.WxSlider import *
 from pandac.PandaModules import *
 import ObjectGlobals as OG
+import AnimGlobals as AG
+
+#----------------------------------------------------------------------
+Key = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAA3NCSVQICAjb4U/gAAABIElE"
+    "QVQokZWSMW7CQBBFZ2Z3sQ02Ni4sOS6QiLgO5yBXIMcJ1KENje8QLESH7F3FVFQIIS3eTWGJ"
+    "VE7Iq6Z4+tL8GVRSwmPQg94fKiIOBoNer2et/U1FRER8X6+LonBdFwB4l+p53mq1qqRUUsZx"
+    "nKYpBwDOuRACEQGgaRoAYETn8/l4PL4uFkqp/X6fZRlnjO12u7KqENEa43keADDGvuo6Go0A"
+    "wPd9YkxrzY0x4/FYKlXX9eVymc1mjIiIgiD43G4BwFprmgYRubU2DMPnySTw/ev1+pSmRISI"
+    "SZJ8bDan06ksSyLiQmDXCfr9fp7nb8vldDp9mc9d1/1R27XaClscxzkcDlEUhcOhvt06U1uE"
+    "EMaYtpbOXlu01vf5Hz/wDRuDdIDl5WtQAAAAAElFTkSuQmCC")
+#----------------------------------------------------------------------
 
 class AnimFileDrop(wx.FileDropTarget):
     def __init__(self, editor):
@@ -55,13 +68,63 @@ class ObjectPropUI(wx.Panel):
         self.label = wx.StaticText(self.labelPane, label=label)
         self.labelSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.labelSizer.Add(self.label)
+        bmpKey = Key.GetBitmap()
+        self.setKeyButton = wx.BitmapButton(self.labelPane, -1, bmpKey, size = (15,15),style = wx.BU_AUTODRAW)
+        self.labelSizer.Add(self.setKeyButton)
         self.labelPane.SetSizer(self.labelSizer)
         self.uiPane = wx.Panel(self)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.labelPane)
         sizer.Add(self.uiPane, 1, wx.EXPAND, 0)
         self.SetSizer(sizer)
+        
+        self.setKeyButton.Bind(wx.EVT_BUTTON, self.onKey)
 
+    def onKey(self,evt):
+        self.parent = wx.GetTopLevelParent(self)
+        if self.parent.editor.mode == self.parent.editor.ANIM_MODE:
+            obj= self.parent.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
+            
+            objUID = obj[OG.OBJ_UID]
+            propertyName = self.label.GetLabelText()
+            
+            value = self.getValue()
+            frame = self.parent.editor.ui.animUI.curFrame
+            
+            if self.parent.editor.animMgr.keyFramesInfo.has_key((objUID,propertyName)):
+                for i in range(len(self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)])):
+                    if self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)][i][AG.FRAME] == frame:
+                        del self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)][i]
+                self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)].append([frame, value, [], []])
+                #sort keyFrameInfo list by the order of frame number
+                sortKeyList = self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)]
+                for i in range(0, len(sortKeyList)-1):
+                    for j in range(i+1, len(sortKeyList)):
+                        if sortKeyList[i][AG.FRAME]>sortKeyList[j][AG.FRAME]:
+                            temp = sortKeyList[i]
+                            sortKeyList[i] = sortKeyList[j]
+                            sortKeyList[j] = temp
+                            
+                self.parent.editor.animMgr.generateSlope(self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)])
+            else:
+                self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)] = [[frame, value, [], []]]
+            
+            exist = False
+            for keyFrame in self.parent.editor.animMgr.keyFrames:
+                if frame == keyFrame:
+                    exist = True
+                    break
+            
+            if exist == False:
+                self.parent.editor.animMgr.keyFrames.append(frame)
+                self.parent.editor.ui.animUI.OnPropKey()
+
+            else:
+                self.parent.editor.ui.animUI.OnPropKey()
+                
+        else:
+            evt.Skip()
+        
     def setValue(self, value):
         self.ui.SetValue(value)
 
