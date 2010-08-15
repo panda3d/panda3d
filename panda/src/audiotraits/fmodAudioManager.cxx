@@ -143,7 +143,11 @@ FmodAudioManager() {
       result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
       fmod_audio_errcheck("_system->set3DSettings()", result);
 
+#if (FMOD_VERSION >= 0x00043100) // FMod 4.31.00 changed this API
+      result = _system->setFileSystem(open_callback, close_callback, read_callback, seek_callback, 0, 0, -1);
+#else
       result = _system->setFileSystem(open_callback, close_callback, read_callback, seek_callback, -1);
+#endif
       fmod_audio_errcheck("_system->setFileSystem()", result);
     }
   }
