@@ -705,6 +705,7 @@ start_p3dpython(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   _python_root_dir = inst->_panda3d->get_package_dir();
+  replace_slashes(_python_root_dir);
 
   // If we're not to be preserving the user's current directory, then
   // we'll need to change to the standard start directory.
@@ -718,9 +719,11 @@ start_p3dpython(P3DInstance *inst) {
     _start_dir = inst_mgr->get_root_dir() + "/start" + inst->get_start_dir_suffix();
     mkdir_complete(_start_dir, nout);
   }
+  replace_slashes(_start_dir);
 
   // Also make sure the prc directory is present.
   string prc_root = inst_mgr->get_root_dir() + "/prc";
+  replace_slashes(prc_root);
   mkdir_complete(prc_root, nout);
 
 #ifdef _WIN32
@@ -743,6 +746,7 @@ start_p3dpython(P3DInstance *inst) {
     search_path += inst->_packages[pi]->get_package_dir();
   }
 
+  replace_slashes(search_path);
   nout << "Search path is " << search_path << "\n";
 
   bool keep_pythonpath = false;
@@ -780,6 +784,7 @@ start_p3dpython(P3DInstance *inst) {
     // actually exist.
     string this_prc_dir = inst_mgr->get_root_dir() + "/prc";
     inst_mgr->append_safe_dir(this_prc_dir, prc_name);
+    replace_slashes(this_prc_dir);
     prc_path = this_prc_dir + sep + prc_path;    
   }
 
@@ -792,6 +797,7 @@ start_p3dpython(P3DInstance *inst) {
     const char *pypath = getenv("PYTHONPATH");
     if (pypath != (char *)NULL) {
       python_path = pypath;
+      replace_slashes(python_path);
       python_path += sep;
       python_path += search_path;
     }
@@ -803,6 +809,7 @@ start_p3dpython(P3DInstance *inst) {
     }
     if (prcpath != (char *)NULL) {
       prc_path = prcpath;
+      replace_slashes(prc_path);
       prc_path += sep;
       prc_path += search_path;
     }
@@ -827,6 +834,7 @@ start_p3dpython(P3DInstance *inst) {
     }
 #endif
   }
+  replace_slashes(_p3dpython_exe);
 #ifdef _WIN32
   if (!inst_mgr->get_console_environment()) {
     _p3dpython_exe += "w";
@@ -963,7 +971,9 @@ start_p3dpython(P3DInstance *inst) {
   _env += '\0';
 
   _env += "TEMP=";
-  _env += inst_mgr->get_temp_directory();
+  string temp_dir = inst_mgr->get_temp_directory();
+  replace_slashes(temp_dir);
+  _env += temp_dir;
   _env += '\0';
   
   // Define each package's root directory in an environment variable
@@ -1283,6 +1293,30 @@ join_read_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::replace_slashes
+//       Access: Private, Static
+//  Description: Changes the forward slashes to backslashes on
+//               Windows.  Does nothing on the other platforms.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+replace_slashes(string &str) {
+#ifdef _WIN32
+  // It turns out that some very low-level Windows functions fail when
+  // you give them a forward slash instead of a backslash.  In
+  // particular, Windows fails to load the MSVS runtime DLL's (and
+  // their associated manifest files) correctly in this case.  So we
+  // have to be sure to replace forward slashes in our PATH variable
+  // (and other environment variables, for good measure) with
+  // backslashes.
+  for (size_t i = 0; i < str.length(); ++i) {
+    if (str[i] == '/') {
+      str[i] = '\\';
+    }
+  }
+#endif  // _WIN32
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::rt_thread_run
 //       Access: Private
 //  Description: The main function for the read thread.
@@ -1431,11 +1465,16 @@ win_create_process() {
   startup_info.wShowWindow = SW_SHOW;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
-  // If _keep_user_env, meaning not to change the current directory,
-  // then pass NULL in to CreateProcess().
-  const char *start_dir_cstr = NULL;
-  if (!_keep_user_env) {
+  // If _keep_user_env is true, meaning not to change the current
+  // directory, then pass NULL in to CreateProcess().  Otherwise pass
+  // in _start_dir.
+  const char *start_dir_cstr;
+  if (_keep_user_env) {
+    start_dir_cstr = NULL;
+    nout << "Not changing working directory.\n";
+  } else {
     start_dir_cstr = _start_dir.c_str();
+    nout << "Setting working directory: " << start_dir_cstr << "\n";
   }
 
   // Construct the command-line string, containing the quoted
@@ -1538,7 +1577,10 @@ posix_create_process() {
       }
     }
 
-    if (!_keep_user_env) {
+    if (_keep_user_env) {
+      nout << "Not changing working directory.\n";
+    } else {
+      nout << "Setting working directory: " << start_dir << "\n";
       if (chdir(_start_dir.c_str()) < 0) {
         nout << "Could not chdir to " << _start_dir << "\n";
         // This is a warning, not an error.  We don't actually care

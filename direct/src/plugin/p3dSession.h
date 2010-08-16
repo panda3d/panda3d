@@ -70,6 +70,8 @@ private:
   void spawn_read_thread();
   void join_read_thread();
 
+  static void replace_slashes(string &str);
+
 private:
   // These methods run only within the read thread.
   THREAD_CALLBACK_DECLARATION(P3DSession, rt_thread_run);
