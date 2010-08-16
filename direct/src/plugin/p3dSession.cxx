@@ -1580,7 +1580,7 @@ posix_create_process() {
     if (_keep_user_env) {
       nout << "Not changing working directory.\n";
     } else {
-      nout << "Setting working directory: " << start_dir << "\n";
+      nout << "Setting working directory: " << _start_dir << "\n";
       if (chdir(_start_dir.c_str()) < 0) {
         nout << "Could not chdir to " << _start_dir << "\n";
         // This is a warning, not an error.  We don't actually care
