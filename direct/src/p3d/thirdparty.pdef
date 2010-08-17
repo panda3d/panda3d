@@ -18,7 +18,11 @@ class wx(package):
     #config(gui_app = True)
     require('panda3d')
 
-    module('direct.showbase.WxGlobal', 'wx', 'wx.*')
+    module('direct.showbase.WxGlobal')
+    module('direct.wxwidgets')
+    module('direct.wxwidgets.WxAppShell')
+    module('direct.wxwidgets.WxSlider')
+    module('wx', 'wx.*')
 
 class tk(package):
     config(display_name = "Tk GUI Toolkit")
