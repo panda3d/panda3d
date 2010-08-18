@@ -864,7 +864,7 @@ set_data(const string &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_subdata_from
+//     Function: GeomVertexArrayDataHandle::set_subdata
 //       Access: Public
 //  Description: Replaces a portion of the data array from the
 //               indicated string.  If size != data.size(), the size
