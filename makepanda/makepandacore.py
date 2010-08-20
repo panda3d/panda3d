@@ -38,6 +38,7 @@ MAYAVERSIONINFO=[("MAYA6",   "6.0"),
                  ("MAYA2008","2008"),
                  ("MAYA2009","2009"),
                  ("MAYA2010","2010"),
+                 ("MAYA2011","2011"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -46,6 +47,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
                   ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX2009", "SOFTWARE\\Autodesk\\3DSMAX\\11.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX2010", "SOFTWARE\\Autodesk\\3DSMAX\\12.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
+				  ("MAX2011", "SOFTWARE\\Autodesk\\3DSMAX\\13.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
 ]
 
 MAYAVERSIONS=[]
