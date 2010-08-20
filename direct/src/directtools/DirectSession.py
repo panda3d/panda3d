@@ -1300,6 +1300,15 @@ class DisplayRegionList(DirectObject):
         self.mouseUpdate()
         # hack to test movement
         return Task.cont
+        
+    def addDisplayRegionContext(self, cam):
+        self.displayRegionList.append(DisplayRegionContext(cam))
+        
+    def removeDisplayRegionContext(self, cam):
+        for drc in self.displayRegionList:
+            if drc.cam == cam:
+                self.displayRegionList.remove(drc)
+                break
 
 # Create one
 __builtins__['direct'] = base.direct = DirectSession()
