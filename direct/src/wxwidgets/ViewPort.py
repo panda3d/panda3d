@@ -131,7 +131,7 @@ class Viewport(wx.Panel, DirectObject):
 ##     self.accept("page_up-repeat", self.zoomIn)
     #self.accept("mouse3", self.onRightDown)
   
-  def close(self):
+  def Close(self):
     """Closes the viewport."""
     if self.initialized:
        wx.Window.Close(self)
