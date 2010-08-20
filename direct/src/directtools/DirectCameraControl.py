@@ -35,6 +35,7 @@ class DirectCameraControl(DirectObject):
         self.cqEntries = []
         self.coaMarkerRef = base.direct.group.attachNewNode('coaMarkerRef')
         self.camManipRef = base.direct.group.attachNewNode('camManipRef')
+        self.switchDirBelowZero = True
 
         t = CAM_MOVE_DURATION
         self.actionEvents = [
@@ -433,7 +434,7 @@ class DirectCameraControl(DirectObject):
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
         else:
-            if base.direct.camera.getPos().getZ() >=0:
+            if base.direct.camera.getPos().getZ() >=0 or not self.switchDirBelowZero:
                 dirX = -1
             else:
                 dirX = 1
