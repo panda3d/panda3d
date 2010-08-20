@@ -3,6 +3,7 @@ Contains classes useful for 3D viewports.
 
 Originally written by pro-rsoft,
 Modified by gjeon.
+Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close 
 """
 
 __all__ = ["Viewport", "ViewportManager"]
@@ -133,7 +134,8 @@ class Viewport(wx.Panel, DirectObject):
   def close(self):
     """Closes the viewport."""
     if self.initialized:
-      Window.close(self)
+       wx.Window.Close(self)
+    base.closeWindow(self.win)
     ViewportManager.viewports.remove(self)
   
   def onSize(self, evt):
