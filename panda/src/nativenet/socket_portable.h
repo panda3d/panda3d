@@ -351,7 +351,8 @@ inline bool do_shutdown_send(SOCKET s)
 
 
 const long LOCAL_NONBLOCK = 1;
-const long LOCAL_FL_SET = FIONBIO ;
+// With BSDBLOCK defined, we don't need FIONBIO.  Solaris doesn't provide it.
+//const long LOCAL_FL_SET = FIONBIO ;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
