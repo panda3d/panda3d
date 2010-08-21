@@ -1549,7 +1549,7 @@ do_compose(const RenderState *other) const {
 
     } else if (a._override < b._override &&
                a._attrib->lower_attrib_can_override()) {
-      // B, the lower RenderAttrib, overrides.  This is a special
+      // B, the higher RenderAttrib, overrides.  This is a special
       // case; normally, a lower RenderAttrib does not override a
       // higher one, even if it has a higher override value.  But
       // certain kinds of RenderAttribs redefine
