@@ -416,9 +416,14 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       }
       // Process the color
       if (csource != NULL && cinput != NULL) {
-        assert(csource->GetStride() == 4);
-        data = &csource->GetData()[cindices[ix]*4];
-        vertex->set_color(Colorf(data[0], data[1], data[2], data[3]));
+        assert(csource->GetStride() == 3 || csource->GetStride() == 4);
+        if (csource->GetStride() == 3) {
+          data = &csource->GetData()[cindices[ix]*3];
+          vertex->set_color(Colorf(data[0], data[1], data[2], 1.0f));
+        } else {
+          data = &csource->GetData()[cindices[ix]*4];
+          vertex->set_color(Colorf(data[0], data[1], data[2], data[3]));
+        }
       }
       // Possibly add a UV object
       if ((bsource != NULL && binput != NULL) || (tsource != NULL && tinput != NULL)) {
