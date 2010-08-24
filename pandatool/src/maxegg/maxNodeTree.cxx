@@ -15,6 +15,11 @@
 
 #include "maxEgg.h"
 
+// 3dsmax versions below 9 don't define this.
+#ifndef _M
+#define _M(s) (s)
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::Constructor
 //       Access: Public
