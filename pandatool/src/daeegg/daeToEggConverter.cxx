@@ -662,21 +662,5 @@ LMatrix4d DAEToEggConverter::convert_matrix(const FMMatrix44& matrix) {
 void DAEToEggConverter::apply_transform(const PT(EggGroup) to, const FCDTransform* from) {
   assert(from != NULL);
   assert(to != NULL);
-  switch (from->GetType()) {
-    case FCDTransform::TRANSLATION:
-      to->add_translate3d(TO_VEC3(((FCDTTranslation*) from)->GetTranslation()));
-      break;
-    case FCDTransform::ROTATION:
-      to->add_rotate3d(((FCDTRotation*) from)->GetAngle(), TO_VEC3(((FCDTRotation*) from)->GetAxis()));
-      break;
-    case FCDTransform::SCALE:
-      to->add_scale3d(TO_VEC3(((FCDTScale*) from)->GetScale()));
-      break;
-    case FCDTransform::MATRIX:
-      to->add_matrix4(convert_matrix(((FCDTMatrix*) from)->GetTransform()));
-      break;
-    default:
-      // We don't know this, so let FCollada convert it into a matrix
-      to->add_matrix4(convert_matrix(from->ToMatrix()));
-  }
+  to->set_transform3d(convert_matrix(from->ToMatrix()) * to->get_transform3d());
 }
