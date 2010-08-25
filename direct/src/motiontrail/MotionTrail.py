@@ -2,7 +2,6 @@
 
 from pandac.PandaModules import *
 from direct.task import Task
-from otp.otpbase import OTPRender
 from direct.showbase.DirectObject import DirectObject
 
 
@@ -104,7 +103,15 @@ class MotionTrail(NodePath, DirectObject):
         node_path.setTwoSided (True)
 
         # set additive blend effects
-        OTPRender.setAdditiveEffect (node_path, 'motion_trail')
+        node_path.setTransparency (True)
+        node_path.setDepthWrite (False)
+        node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
+
+        # do not light
+        node_path.setLightOff ( )
+
+        # disable writes to destination alpha, write out rgb colors only
+        node_path.setAttrib (ColorWriteAttrib.make (ColorWriteAttrib.CRed | ColorWriteAttrib.CGreen | ColorWriteAttrib.CBlue));
 
         if (MotionTrail.task_added == False):
 #            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
