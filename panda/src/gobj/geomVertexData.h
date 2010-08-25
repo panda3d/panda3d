@@ -158,6 +158,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
+  void describe_vertex(ostream &out, int row) const;
 
   void clear_cache();
   void clear_cache_stage();

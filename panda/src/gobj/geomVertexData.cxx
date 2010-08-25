@@ -1232,6 +1232,76 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::describe_vertex
+//       Access: Published
+//  Description: Writes a verbose, human-friendly description of the
+//               indicated vertex number.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+describe_vertex(ostream &out, int row) const {
+  nassertv_always(row >= 0 && row < get_num_rows());
+
+  out << "Vertex " << row << ":\n";
+
+  GeomVertexReader reader(this);
+  reader.set_row(row);
+  const GeomVertexFormat *format = get_format();
+
+  const TransformBlendTable *tb_table = NULL;
+  if (format->get_animation().get_animation_type() == AT_panda) {
+    tb_table = get_transform_blend_table();
+  }
+  
+  int num_columns = format->get_num_columns();
+  for (int ci = 0; ci < num_columns; ++ci) {
+    int ai = format->get_array_with(ci);
+    const GeomVertexColumn *column = format->get_column(ci);
+    reader.set_column(ai, column);
+    
+    int num_values = min(column->get_num_values(), 4);
+    const LVecBase4f &d = reader.get_data4f();
+    
+    out << "  " << *column->get_name();
+    for (int v = 0; v < num_values; v++) {
+      out << " " << d[v];
+    }
+    out << "\n";
+
+    if (column->get_name() == InternalName::get_transform_blend() &&
+        tb_table != NULL) {
+      // This is an index into the transform blend table.  Look up the
+      // index and report the vertex weighting.
+      reader.set_column(ai, column);
+      int bi = reader.get_data1i();
+      if (bi >= 0 && bi < tb_table->get_num_blends()) {
+        const TransformBlend &blend = tb_table->get_blend(bi);
+        out << "    " << blend << "\n";
+      }
+    }
+  }
+
+  // Also show the raw vertex data, why not?
+  out << "\nraw data:\n";
+  int num_arrays = format->get_num_arrays();
+  for (int ai = 0; ai < num_arrays; ++ai) {
+    const GeomVertexArrayData *array = get_array(ai);
+    const GeomVertexArrayFormat *aformat = format->get_array(ai);
+    nassertv(array != NULL && aformat != NULL);
+    out << "  " << *aformat << "\n";
+    CPT(GeomVertexArrayDataHandle) handle = array->get_handle();
+    nassertv(handle != (const GeomVertexArrayDataHandle *)NULL);
+    const unsigned char *data = handle->get_read_pointer(true);
+    nassertv(data != NULL);
+    int stride = aformat->get_stride();
+    int start = stride * row;
+    if (data != NULL) {
+      Datagram dg(data + start, stride);
+      dg.dump_hex(out, 4);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::clear_cache
 //       Access: Published
 //  Description: Removes all of the previously-cached results of
