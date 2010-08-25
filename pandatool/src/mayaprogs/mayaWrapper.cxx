@@ -288,7 +288,12 @@ int main(int argc, char **argv)
   // bin\python25.zip (within loc)
   // Python\lib\site-packages (within loc)
   // ...so set PYTHONPATH accordingly:
-  sprintf(env4, "PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\lib\\site-packages", loc, loc);
+  if (strcmp(key, "2011") == 0) {
+    //Maya 2011 is built against Python 2.6 so look for that one instead
+    sprintf(env4, "PYTHONPATH=%s\\bin\\python26.zip;%s\\Python\\lib\\site-packages", loc, loc);
+  } else {
+    sprintf(env4, "PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\lib\\site-packages", loc, loc);
+  }
   // Set environment variables MAYA_LOCATION, PYTHONHOME, PYTHONPATH, PATH
   _putenv(env2);
   _putenv(env3);
