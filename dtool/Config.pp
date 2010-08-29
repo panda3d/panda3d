@@ -476,6 +476,10 @@
 // to empty if you lack this header file.
 #define PHAVE_JPEGINT_H 1
 
+// Do you want to compile video-for-linux?  If you have an older Linux
+// system with incompatible headers, define this to empty string.
+#defer HAVE_VIDEO4LINUX $[IS_LINUX]
+
 // Is libpng installed, and where?
 #define PNG_IPATH
 #define PNG_LPATH

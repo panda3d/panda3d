@@ -46,7 +46,7 @@ init_libvision() {
   initialized = true;
 
   WebcamVideo::init_type();
-#ifdef IS_LINUX
+#ifdef HAVE_VIDEO4LINUX
   WebcamVideoCursorV4L::init_type();
   WebcamVideoV4L::init_type();
 #endif

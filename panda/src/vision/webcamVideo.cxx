@@ -55,7 +55,7 @@ find_all_webcams() {
   find_all_webcams_ds();
 #endif
 
-#ifdef IS_LINUX
+#ifdef HAVE_VIDEO4LINUX
   extern void find_all_webcams_v4l();
   find_all_webcams_v4l();
 #endif

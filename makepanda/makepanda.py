@@ -1358,6 +1358,7 @@ DTOOL_CONFIG=[
     ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
     ("PHAVE_JPEGINT_H",                '1',                      '1'),
+    ("HAVE_VIDEO4LINUX",               'UNDEF',                  '1'),
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
     ("HAVE_SGI_RGB",                   '1',                      '1'),
     ("HAVE_TGA",                       '1',                      '1'),
@@ -1454,10 +1455,12 @@ def WriteConfigSettings():
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
+        dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
 
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
+        dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["IS_FREEBSD"] = '1'
         dtool_config["PHAVE_ALLOCA_H"] = 'UNDEF'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'

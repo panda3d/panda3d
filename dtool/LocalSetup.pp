@@ -281,6 +281,9 @@ $[cdefine REPORT_OPENSSL_ERRORS]
 $[cdefine HAVE_JPEG]
 $[cdefine PHAVE_JPEGINT_H]
 
+/* Define to build video-for-linux. */
+$[cdefine HAVE_VIDEO4LINUX]
+
 /* Define if we have libpng installed.  */
 $[cdefine HAVE_PNG]
 
