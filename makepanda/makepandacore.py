@@ -1331,7 +1331,7 @@ def SdkLocateMaya():
                             res = res.replace("\\", "/").rstrip("/")
                             SDK[ver] = res
                 elif (sys.platform == "darwin"):
-                    ddir = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
+                    ddir = "/Applications/Autodesk/maya"+key
                     if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
                     if (platform.architecture()[0] == "64bit"):

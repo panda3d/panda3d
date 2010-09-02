@@ -541,13 +541,20 @@ if (COMPILER=="LINUX"):
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
-            # On OSX, the dir *can* be named 'MacOS' instead of 'lib'.
             if (sys.platform == "darwin"):
-                if (os.path.isdir(SDK[pkg] + "/lib")):   LibDirectory(pkg, SDK[pkg] + "/lib")
-                if (os.path.isdir(SDK[pkg] + "/MacOS")): LibDirectory(pkg, SDK[pkg] + "/MacOS")
+                # Sheesh, Autodesk really can't make up their mind
+                # regarding the location of the Maya devkit on OS X.
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/lib")):
+                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/lib")
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/MacOS")):
+                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/MacOS")
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/include/maya")):
+                    IncDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/include")
+                if (os.path.isdir(SDK[pkg] + "/devkit/include/maya")):
+                    IncDirectory(pkg, SDK[pkg] + "/devkit/include")
             else:
                 LibDirectory(pkg, SDK[pkg] + "/lib")
-            IncDirectory(pkg, SDK[pkg] + "/include")
+                IncDirectory(pkg, SDK[pkg] + "/include")
             DefSymbol(pkg, "MAYAVERSION", pkg)
 
     if (sys.platform == "darwin"):
@@ -556,7 +563,7 @@ if (COMPILER=="LINUX"):
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
-        # Fix for a bug in OSX:
+        # Fix for a bug in OSX Leopard:
         LibName("OPENGL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
     for pkg in MAYAVERSIONS:
