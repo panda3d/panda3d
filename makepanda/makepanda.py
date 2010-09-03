@@ -4598,11 +4598,12 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
   TargetAdd('PandaModules.py', input='libpanda.dll')
   TargetAdd('PandaModules.py', input='libpandaphysics.dll')
   TargetAdd('PandaModules.py', input='libpandafx.dll')
-  TargetAdd('PandaModules.py', input='libp3direct.dll')
+  if (PkgSkip("DIRECT")==0):
+    TargetAdd('PandaModules.py', input='libp3direct.dll')
   TargetAdd('PandaModules.py', input='libp3vision.dll')
   TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
-  if (PkgSkip("AWESOMIUM")== 0):
+  if (PkgSkip("AWESOMIUM")==0):
     TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
