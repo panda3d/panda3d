@@ -317,19 +317,29 @@ void DAEToEggConverter::process_instance(PT(EggGroup) parent, const FCDEntityIns
 void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh* mesh, PT(DaeMaterials) materials) {
   nassertv(mesh != NULL);
   daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
+  
   // Create the egg stuff to hold this mesh
   PT(EggGroup) mesh_group = new EggGroup(FROM_FSTRING(mesh->GetDaeId()));
   parent->add_child(mesh_group);
   PT(EggVertexPool) mesh_pool = new EggVertexPool(FROM_FSTRING(mesh->GetDaeId()));
   mesh_group->add_child(mesh_pool);
   _vertex_pools[FROM_FSTRING(mesh->GetDaeId())] = mesh_pool;
+  
   // First retrieve the vertex source
-  if (mesh->GetSourceCount() == 0) return;
-  const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);
-  if (vsource == NULL) return;
+  if (mesh->GetSourceCount() == 0) {
+    daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no sources" << endl;
+    return;
+  }
+  const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);  
+  if (vsource == NULL) {
+    daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no source for POSITION data" << endl;
+    return;
+  }
+  
   // Loop through the polygon groups and add them
   daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
   if (mesh->GetPolygonsCount() == 0) return;
+  
   // This is an array of pointers, I know. But since they are refcounted, I don't have a better idea.
   PT(EggGroup) *primitive_holders = new PT(EggGroup) [mesh->GetPolygonsCount()];
   for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
