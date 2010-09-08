@@ -149,6 +149,7 @@ class file:
             self.__reader = pm.StreamReader(self.__stream, False)
         if writeMode:
             self.__writer = pm.StreamWriter(self.__stream, False)
+            self.__lastWrite = True
 
     def __del__(self):
         self.close()
