@@ -458,15 +458,13 @@ remanage() {
   if (_left_button != (PGButton *)NULL) {
     _left_button->set_frame(-width / 2.0f, width / 2.0f, 
                             -width / 2.0f, width / 2.0f);
-    _left_button->xform(LMatrix4f::translate_mat(center + ((width - length) / 2.0f) * _axis));
-    _left_button->clear_transform();
+    _left_button->set_transform(TransformState::make_pos(center + ((width - length) / 2.0f) * _axis));
   }
 
   if (_right_button != (PGButton *)NULL) {
     _right_button->set_frame(-width / 2.0f, width / 2.0f, 
                              -width / 2.0f, width / 2.0f);
-    _right_button->xform(LMatrix4f::translate_mat(center + ((length - width) / 2.0f) * _axis));
-    _right_button->clear_transform();
+    _right_button->set_transform(TransformState::make_pos(center + ((length - width) / 2.0f) * _axis));
   }
 
   if (_thumb_button != (PGButton *)NULL) {
