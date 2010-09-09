@@ -56,6 +56,7 @@ import ElementTree as ET
 from HTMLParser import HTMLParser
 import BpDb
 import unicodedata
+import bisect
 
 __report_indent = 3
 
@@ -4343,6 +4344,76 @@ def unicodeUtf8(s):
 def encodedUtf8(s):
     # * -> 8-bit-encoded UTF-8
     return unicodeUtf8(s).encode('utf-8')
+
+class PriorityCallbacks:
+    """ manage a set of prioritized callbacks, and allow them to be invoked in order of priority """
+    def __init__(self):
+        self._callbacks = []
+
+    def clear(self):
+        while self._callbacks:
+            self._callbacks.pop()
+
+    def add(self, callback, priority=None):
+        if priority is None:
+            priority = 0
+        item = (priority, callback)
+        bisect.insort(self._callbacks, item)
+        return item
+
+    def remove(self, item):
+        self._callbacks.pop(bisect.bisect_left(self._callbacks, item))
+
+    def __call__(self):
+        for priority, callback in self._callbacks:
+            callback()
+
+if __debug__:
+    l = []
+    def a(l=l):
+        l.append('a')
+    def b(l=l):
+        l.append('b')
+    def c(l=l):
+        l.append('c')
+    pc = PriorityCallbacks()
+    pc.add(a)
+    pc()
+    assert l == ['a']
+    while len(l):
+        l.pop()
+    bItem = pc.add(b)
+    pc()
+    assert 'a' in l
+    assert 'b' in l
+    assert len(l) == 2
+    while len(l):
+        l.pop()
+    pc.remove(bItem)
+    pc()
+    assert l == ['a']
+    while len(l):
+        l.pop()
+    pc.add(c, 2)
+    bItem = pc.add(b, 10)
+    pc()
+    assert l == ['a', 'c', 'b']
+    while len(l):
+        l.pop()
+    pc.remove(bItem)
+    pc()
+    assert l == ['a', 'c']
+    while len(l):
+        l.pop()
+    pc.clear()
+    pc()
+    assert len(l) == 0
+    del l
+    del a
+    del b
+    del c
+    del pc
+    del bItem
 
 import __builtin__
 __builtin__.Functor = Functor
