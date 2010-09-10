@@ -248,17 +248,17 @@ class CommonFilters:
                 text += "float decay = 1.0f;\n"
                 text += "float2 curcoord = l_texcoordC.xy;\n"
                 text += "float2 lightdir = curcoord - k_casterpos.xy;\n"
-                text += "lightdir *= k_vlparams.y;\n"
+                text += "lightdir *= k_vlparams.x;\n"
                 text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
                 text += "float3 vlcolor = sample.rgb * sample.a;\n"
-                text += "for (int i = 0; i < k_vlparams.x; i++) {\n"
+                text += "for (int i = 0; i < %s; i++) {\n" % int(configuration["VolumetricLighting"].numsamples)
                 text += "  curcoord -= lightdir;\n"
                 text += "  sample = tex2D(k_txcolor, curcoord);\n"
                 text += "  sample *= sample.a * decay;//*weight\n"
                 text += "  vlcolor += sample.rgb;\n"
-                text += "  decay *= k_vlparams.z;\n"
+                text += "  decay *= k_vlparams.y;\n"
                 text += "}\n"
-                text += "o_color += float4(vlcolor * k_vlparams.w, 1);\n"
+                text += "o_color += float4(vlcolor * k_vlparams.z, 1);\n"
             if (configuration.has_key("Inverted")):
                 text += "o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
@@ -292,7 +292,7 @@ class CommonFilters:
             if (configuration.has_key("VolumetricLighting")):
                 config = configuration["VolumetricLighting"]
                 tcparam = config.density / float(config.numsamples)
-                self.finalQuad.setShaderInput("vlparams", config.numsamples, tcparam, config.decay, config.exposure)
+                self.finalQuad.setShaderInput("vlparams", tcparam, config.decay, config.exposure, 0.0)
         
         if (changed == "AmbientOcclusion") or fullrebuild:
             if (configuration.has_key("AmbientOcclusion")):
@@ -388,10 +388,13 @@ class CommonFilters:
         return True
 
     def setVolumetricLighting(self, caster, numsamples = 32, density = 5.0, decay = 0.1, exposure = 0.1):
-        fullrebuild = (self.configuration.has_key("VolumetricLighting") == False)
+        oldconfig = self.configuration.get("VolumetricLighting", None)
+        fullrebuild = True
+        if (oldconfig) and (oldconfig.caster == caster):
+            fullrebuild = False
         newconfig = FilterConfig()
         newconfig.caster = caster
-        newconfig.numsamples = numsamples
+        newconfig.numsamples = int(numsamples)
         newconfig.density = density
         newconfig.decay = decay
         newconfig.exposure = exposure
