@@ -7,6 +7,7 @@ import os
 import marshal
 import imp
 import platform
+import types
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
 # Temporary (?) try..except to protect against unbuilt extend_frozen.
@@ -488,6 +489,8 @@ class Freezer:
 
             # The file on disk it was loaded from, if any.
             self.filename = filename
+            if isinstance(filename, types.StringTypes):
+                self.filename = Filename(filename)
 
             # True if the module was found via the modulefinder.
             self.implicit = implicit
