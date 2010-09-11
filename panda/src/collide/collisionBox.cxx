@@ -531,6 +531,91 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionBox::test_intersection_from_segment
+//       Access: Public, Virtual
+//  Description: Double dispatch point for segment as a FROM object
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_segment(const CollisionEntry &entry) const {
+  const CollisionSegment *seg;
+  DCAST_INTO_R(seg, entry.get_from(), 0);
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = seg->get_point_a() * wrt_mat;
+  LPoint3f from_extent = seg->get_point_b() * wrt_mat;
+  LVector3f from_direction = from_extent - from_origin;
+
+  int i, j;
+  float t, near_t;
+  bool intersect;
+  Planef plane;
+  Planef near_plane; 
+
+  //Returns the details about the first plane of the box that the
+  //segment intersects.
+  for(i = 0, intersect = false, t = 0, j = 0; i < 6 && j < 2; i++) {
+    plane = get_plane(i);
+
+    if (!plane.intersects_line(t, from_origin, from_direction)) {
+      // No intersection.  The segment is parallel to the plane.
+      continue;
+    }
+
+    if (t < 0.0f || t > 1.0f) {
+      // The intersection point is before the start of the segment,
+      // or after the end of the segment, so the segment is either
+      // entirely in front of or behind the plane.
+      continue;
+    }
+    LPoint3f plane_point = from_origin + t * from_direction;
+    LPoint2f p = to_2d(plane_point, i);
+
+    if (!point_is_inside(p, _points[i])){
+      continue;
+    }
+    intersect = true;
+    if(j) {
+      if(t < near_t) {
+        near_plane = plane;
+        near_t = t;
+      }
+    }
+    else {
+      near_plane = plane;
+      near_t = t;
+    }
+    ++j;
+  }
+	 
+
+  if(!intersect) {
+	   //No intersection with ANY of the box's planes has been detected
+	   return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = from_origin + near_t * from_direction;
+
+  LVector3f normal =
+    (has_effective_normal() && seg->get_respect_effective_normal()) 
+    ? get_effective_normal() : near_plane.get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(into_intersection_point);
+
+  return new_entry;
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::test_intersection_from_box
 //       Access: Public, Virtual
