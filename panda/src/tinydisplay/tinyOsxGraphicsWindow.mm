@@ -133,26 +133,32 @@ TinyOsxGraphicsWindow* TinyOsxGraphicsWindow::GetCurrentOSxWindow(WindowRef wind
 //  Description: The standard window event handler for non-fullscreen
 //               windows.
 ////////////////////////////////////////////////////////////////////
-OSStatus TinyOsxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRef event) {
+OSStatus TinyOsxGraphicsWindow::
+event_handler(EventHandlerCallRef myHandler, EventRef event) {
 
   OSStatus result = eventNotHandledErr;
   UInt32 the_class = GetEventClass(event);
   UInt32 kind = GetEventKind(event);
 
   WindowRef window = NULL;
-  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL,
+                    sizeof(window), NULL, &window);
+
+  UInt32 attributes = 0;
+  GetEventParameter(event, kEventParamAttributes, typeUInt32, NULL,
+                    sizeof(attributes), NULL, &attributes);
 
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam() << ClockObject::get_global_clock()->get_real_time() << " event_handler: " << (void *)this << ", " << window << ", " << the_class << ", " << kind << "\n";
   }
 
   switch (the_class) {
-    case kEventClassMouse:
-      result  = handleWindowMouseEvents (myHandler, event);
-      break;
-
-    case kEventClassWindow:
-      switch (kind) {
+  case kEventClassMouse:
+    result  = handleWindowMouseEvents (myHandler, event);
+    break;
+    
+  case kEventClassWindow:
+    switch (kind) {
         case kEventWindowCollapsing:
           /*
           Rect r;
@@ -179,27 +185,44 @@ OSStatus TinyOsxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, Eve
           if (window == FrontNonFloatingWindow ())
             SetUserFocusWindow (window);
           break;
-        case kEventWindowBoundsChanged: // called for resize and moves (drag)
-          DoResize();
-          break;
-        case kEventWindowZoomed:
-          break;
-        case kEventWindowCollapsed:
-          {
-            WindowProperties properties;
-            properties.set_minimized(true);
-            system_changed_properties(properties);
+
+      case kEventWindowBoundsChanging:
+        // Gives us a chance to intercept resize attempts
+        if (attributes & kWindowBoundsChangeSizeChanged) {
+          // If the window is supposed to be fixed-size, enforce this.
+          if (_properties.get_fixed_size()) {
+            Rect bounds;
+            GetEventParameter(event, kEventParamCurrentBounds,
+                              typeQDRectangle, NULL, sizeof(bounds), NULL, &bounds);
+            bounds.right = bounds.left + _properties.get_x_size();
+            bounds.bottom = bounds.top + _properties.get_y_size();
+            SetEventParameter(event, kEventParamCurrentBounds,
+                              typeQDRectangle, sizeof(bounds), &bounds);                   result = noErr;
           }
-          break;
-        case kEventWindowExpanded:
-          {
-            WindowProperties properties;
-            properties.set_minimized(false);
-            system_changed_properties(properties);
-          }
-          break;
+        }
+        break;
+        
+    case kEventWindowBoundsChanged: // called for resize and moves (drag)
+      DoResize();
+      break;
+    case kEventWindowZoomed:
+      break;
+    case kEventWindowCollapsed:
+      {
+        WindowProperties properties;
+        properties.set_minimized(true);
+        system_changed_properties(properties);
       }
       break;
+    case kEventWindowExpanded:
+      {
+        WindowProperties properties;
+        properties.set_minimized(false);
+        system_changed_properties(properties);
+      }
+      break;
+    }
+    break;
   }
 
   return result;
@@ -433,7 +456,6 @@ void TinyOsxGraphicsWindow::ReleaseSystemResources() {
     _pending_icon = NULL;
   }
   if (_current_icon != NULL) {
-    cerr << "release current icon\n";
     CGImageRelease(_current_icon);
     _current_icon = NULL;
   }
@@ -951,16 +973,23 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     }
     else */
     {
+      int attributes = kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute;
+      if (req_properties.has_fixed_size() && req_properties.get_fixed_size()) {
+        attributes &= ~kWindowResizableAttribute;
+      }
+
       if (req_properties.has_undecorated() && req_properties.get_undecorated()) { // create a unmovable .. no edge window..
 	tinydisplay_cat.info() << "Creating undecorated window\n";
 
-	CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes |  kWindowNoTitleBarAttribute, &r, &_osx_window);
+        // We don't want a resize box either.
+        attributes &= ~kWindowResizableAttribute;
+        attributes |= kWindowNoTitleBarAttribute;
+	CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
       }
       else
       { // create a window with crome and sizing and sucj
 	// In this case, we want to constrain the window to the
 	// available size.
-
 	Rect bounds;
 	GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
 
@@ -970,7 +999,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
 	r.bottom = min(r.bottom, bounds.bottom);
 
 	tinydisplay_cat.info() << "Creating standard window\n";
-	CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute, &r, &_osx_window);
+	CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
 	AddAWindow(_osx_window);
       }
     }
@@ -986,6 +1015,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
           { kEventClassWindow, kEventWindowActivated },
           { kEventClassWindow, kEventWindowDeactivated },
           { kEventClassWindow, kEventWindowClose },
+          { kEventClassWindow, kEventWindowBoundsChanging },
           { kEventClassWindow, kEventWindowBoundsChanged },
 
           { kEventClassWindow, kEventWindowCollapsed },

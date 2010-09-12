@@ -229,7 +229,11 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
 
   WindowRef window = NULL;
   GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, 
-                    sizeof(WindowRef), NULL, &window);
+                    sizeof(window), NULL, &window);
+
+  UInt32 attributes = 0;
+  GetEventParameter(event, kEventParamAttributes, typeUInt32, NULL,
+                    sizeof(attributes), NULL, &attributes);
 
   if (osxdisplay_cat.is_spam()) {
     osxdisplay_cat.spam()
@@ -274,6 +278,23 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
     case kEventWindowShown: // called on initial show (not on un-minimize)
       if (window == FrontNonFloatingWindow ())
         SetUserFocusWindow (window);
+      break;
+
+    case kEventWindowBoundsChanging:
+      // Gives us a chance to intercept resize attempts
+      if (attributes & kWindowBoundsChangeSizeChanged) {
+        // If the window is supposed to be fixed-size, enforce this.
+        if (_properties.get_fixed_size()) {
+          Rect bounds;
+          GetEventParameter(event, kEventParamCurrentBounds,
+                            typeQDRectangle, NULL, sizeof(bounds), NULL, &bounds);
+          bounds.right = bounds.left + _properties.get_x_size();
+          bounds.bottom = bounds.top + _properties.get_y_size();
+          SetEventParameter(event, kEventParamCurrentBounds,
+                            typeQDRectangle, sizeof(bounds), &bounds);        
+          result = noErr;
+        }
+      }
       break;
 
     case kEventWindowBoundsChanged: // called for resize and moves (drag)
@@ -1199,6 +1220,11 @@ os_open_window(WindowProperties &req_properties) {
       }
       } else */
     {
+      int attributes = kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute;
+      if (req_properties.has_fixed_size() && req_properties.get_fixed_size()) {
+        attributes &= ~kWindowResizableAttribute;
+      }
+
       if (req_properties.has_undecorated() && req_properties.get_undecorated()) { 
         // create a unmovable .. no edge window..
           
@@ -1207,7 +1233,10 @@ os_open_window(WindowProperties &req_properties) {
             << "Creating undecorated window\n";
         }
  
-        CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes | kWindowNoTitleBarAttribute, &r, &_osx_window);
+        // We don't want a resize box either.
+        attributes &= ~kWindowResizableAttribute;
+        attributes |= kWindowNoTitleBarAttribute;
+        CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
       } else { 
         // create a window with crome and sizing and sucj
         // In this case, we want to constrain the window to the
@@ -1225,7 +1254,7 @@ os_open_window(WindowProperties &req_properties) {
           osxdisplay_cat.debug()  
             << "Creating standard window\n";
         }
-        CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute, &r, &_osx_window);
+        CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
         add_a_window(_osx_window);
       }
     }
@@ -1238,6 +1267,7 @@ os_open_window(WindowProperties &req_properties) {
         { kEventClassWindow, kEventWindowActivated },
         { kEventClassWindow, kEventWindowDeactivated },
         { kEventClassWindow, kEventWindowClose },
+        { kEventClassWindow, kEventWindowBoundsChanging },
         { kEventClassWindow, kEventWindowBoundsChanged },
         
         { kEventClassWindow, kEventWindowCollapsed },
