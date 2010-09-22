@@ -802,7 +802,7 @@ get_core_api() {
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    _host_url, _verify_contents, _this_platform, _log_dirname,
                    _log_basename, trusted_environment, _console_environment,
-                   _root_dir, cerr)) {
+                   _root_dir, "", cerr)) {
     cerr << "Unable to launch core API in " << pathname << "\n";
     return false;
   }

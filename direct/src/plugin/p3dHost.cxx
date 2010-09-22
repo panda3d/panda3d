@@ -23,12 +23,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::Constructor
 //       Access: Private
-//  Description: Use P3DInstanceManager::get_host() to construct a new
-//               P3DHost.
+//  Description: Use P3DInstanceManager::get_host() to construct a
+//               new P3DHost.
 ////////////////////////////////////////////////////////////////////
 P3DHost::
-P3DHost(const string &host_url) :
-  _host_url(host_url) 
+P3DHost(const string &host_url, const string &host_dir) :
+  _host_url(host_url), 
+  _host_dir(host_dir)
 {
   // Ensure that the download URL ends with a slash.
   _host_url_prefix = _host_url;
@@ -116,7 +117,8 @@ get_alt_host(const string &alt_host) {
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
 has_current_contents_file(P3DInstanceManager *inst_mgr) const {
-  if (inst_mgr->get_verify_contents() == P3D_VC_none) {
+  if (inst_mgr->get_verify_contents() == P3D_VC_never
+    || inst_mgr->get_verify_contents() == P3D_VC_none) {
     // If we're not asking to verify contents, then contents.xml files
     // never expire.
     return has_contents_file();
@@ -250,36 +252,41 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     }
   }
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  
   if (_host_dir.empty()) {
     determine_host_dir("");
   }
   assert(!_host_dir.empty());
-  mkdir_complete(_host_dir, nout);
-
+  
   string standard_filename = _host_dir + "/contents.xml";
-  if (fresh_download) {
-    if (!save_xml_file(&doc, standard_filename)) {
-      nout << "Couldn't save to " << standard_filename << "\n";
-    }
-  } else {
-    if (standardize_filename(standard_filename) != 
-        standardize_filename(contents_filename)) {
-      if (!copy_file(contents_filename, standard_filename)) {
-        nout << "Couldn't copy to " << standard_filename << "\n";
+  
+  if (inst_mgr->get_verify_contents() != P3D_VC_never) {
+    mkdir_complete(_host_dir, nout);
+
+    if (fresh_download) {
+      if (!save_xml_file(&doc, standard_filename)) {
+        nout << "Couldn't save to " << standard_filename << "\n";
+      }
+    } else {
+      if (standardize_filename(standard_filename) != 
+          standardize_filename(contents_filename)) {
+        if (!copy_file(contents_filename, standard_filename)) {
+          nout << "Couldn't copy to " << standard_filename << "\n";
+        }
       }
     }
-  }
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (_host_url == inst_mgr->get_host_url()) {
-    // If this is also the plugin host, then copy the contents.xml
-    // file into the root Panda directory as well, for the next plugin
-    // iteration.
-    string top_filename = inst_mgr->get_root_dir() + "/contents.xml";
-    if (standardize_filename(top_filename) != 
-        standardize_filename(standard_filename)) {
-      if (!copy_file(standard_filename, top_filename)) {
-        nout << "Couldn't copy to " << top_filename << "\n";
+    if (_host_url == inst_mgr->get_host_url()) {
+      // If this is also the plugin host, then copy the contents.xml
+      // file into the root Panda directory as well, for the next plugin
+      // iteration.
+      string top_filename = inst_mgr->get_root_dir() + "/contents.xml";
+      if (standardize_filename(top_filename) != 
+          standardize_filename(standard_filename)) {
+        if (!copy_file(standard_filename, top_filename)) {
+          nout << "Couldn't copy to " << top_filename << "\n";
+        }
       }
     }
   }
@@ -305,7 +312,9 @@ read_xhost(TiXmlElement *xhost) {
   if (host_dir_basename == NULL) {
     host_dir_basename = "";
   }
-  determine_host_dir(host_dir_basename);
+  if (_host_dir.empty()) {
+    determine_host_dir(host_dir_basename);
+  }
 
   // Get the "download" URL, which is the source from which we
   // download everything other than the contents.xml file.
@@ -610,6 +619,14 @@ uninstall() {
     nout << "Cannot uninstall " << _descriptive_name << ": host directory not yet known.\n";
     return;
   }
+  
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  
+  // Check if we're even allowed to.
+  if (inst_mgr->get_verify_contents() == P3D_VC_never) {
+    nout << "Not allowed to uninstall " << _descriptive_name << ".\n";
+    return;
+  }
 
   // First, explicitly uninstall each of our packages.
   Packages::iterator mi;
@@ -624,8 +641,6 @@ uninstall() {
 
   // Then, uninstall the host itself.
   nout << "Uninstalling " << _descriptive_name << " from " << _host_dir << "\n";
-
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->delete_directory_recursively(_host_dir);
   inst_mgr->forget_host(this);
 }

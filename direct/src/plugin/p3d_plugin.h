@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 15
+#define P3D_API_VERSION 16
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -91,6 +91,7 @@ typedef enum {
   P3D_VC_none,
   P3D_VC_normal,
   P3D_VC_force,
+  P3D_VC_never,
 } P3D_verify_contents;
 
 /* This function should be called immediately after the core API is
@@ -110,8 +111,11 @@ typedef enum {
    If it is P3D_VC_normal, the server will be contacted whenever the
    contents.xml has expired.  If it is P3D_VC_force, each server will
    be contacted initially in all cases, and subseqeuntly only whenever
-   contents.xml has expired for that server.  Normally, a web plugin
-   should set this to P3D_VC_normal.
+   contents.xml has expired for that server.  The opposite of
+   P3D_VC_force is P3D_VC_never, which forces the plugin never to
+   contact the server and not to verify the contents at all.  This
+   option should only be used if the host directory is prepopulated.
+   Normally, a web plugin should set this to P3D_VC_normal.
 
    If platform is not NULL or empty, it specifies the current platform
    string; otherwise, the compiled-in default is used.  This should
@@ -137,12 +141,15 @@ typedef enum {
    p3d file will be run without checking its signature.  Normally, a
    browser plugin should set this false.
 
-   Finally, console_environment should be set true to indicate that we
-   are running within a text-based console, and expect to preserve the
-   current working directory, and also see standard output, or false
+   Furthermore, console_environment should be set true to indicate that
+   we are running within a text-based console, and expect to preserve
+   the current working directory, and also see standard output, or false
    to indicate that we are running within a GUI environment, and
    expect none of these.  Normally, a browser plugin should set this
    false.
+
+   Finally, root_dir and host_dir can be set to override the default
+   root and package directories.  Normally, you don't need to set them.
 
    This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
@@ -154,7 +161,7 @@ P3D_initialize_func(int api_version, const char *contents_filename,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
                     bool trusted_environment, bool console_environment,
-                    const char *root_dir);
+                    const char *root_dir, const char *host_dir);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to

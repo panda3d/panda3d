@@ -229,6 +229,8 @@ if deploy_mode == 'standalone':
                 s.build(Filename(outputDir, platform + "/" + shortname), platform)
 
 elif deploy_mode == 'installer':
+    if includeRequires:
+        tokens["verify_contents"] = "never"
     i = Installer(shortname, fullname, appFilename, version, tokens = tokens)
     i.licensename = licensename
     i.licensefile = licensefile

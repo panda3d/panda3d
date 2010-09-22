@@ -73,6 +73,7 @@ protected:
 protected:
   string _host_url;
   string _root_dir;
+  string _host_dir;
   string _log_dirname;
   string _log_basename;
   string _this_platform;

@@ -30,7 +30,7 @@ class P3DPackage;
 ////////////////////////////////////////////////////////////////////
 class P3DHost {
 private:
-  P3DHost(const string &host_url);
+  P3DHost(const string &host_url, const string &host_dir = "");
   ~P3DHost();
 
 public:

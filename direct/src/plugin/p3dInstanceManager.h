@@ -58,7 +58,8 @@ public:
                   const string &log_basename,
                   bool trusted_environment,
                   bool console_environment,
-                  const string &root_dir = "");
+                  const string &root_dir = "",
+                  const string &host_dir = "");
 
   inline bool is_initialized() const;
   inline void reconsider_runtime_environment();
@@ -164,6 +165,7 @@ private:
   int _api_version;
   string _host_url;
   string _root_dir;
+  string _host_dir;
   string _certs_dir;
   P3D_verify_contents _verify_contents;
   string _platform;

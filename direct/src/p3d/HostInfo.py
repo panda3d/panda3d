@@ -118,6 +118,10 @@ class HostInfo:
             # We've already got one.
             return True
 
+        if self.appRunner.verifyContents == self.appRunner.P3DVCNever:
+            # Not allowed to.
+            return False
+
         rf = None
         if http:
             if not redownload and self.appRunner and self.appRunner.superMirrorUrl:
@@ -183,6 +187,10 @@ class HostInfo:
         not. """
         assert self.hasContentsFile
 
+        if self.appRunner.verifyContents == self.appRunner.P3DVCNever:
+            # Not allowed to.
+            return False
+
         url = self.hostUrlPrefix + 'contents.xml'
         self.notify.info("Redownloading %s" % (url))
 
@@ -215,7 +223,9 @@ class HostInfo:
     def hasCurrentContentsFile(self):
         """ Returns true if a contents.xml file has been successfully
         read for this host and is still current, false otherwise. """
-        if not self.appRunner or self.appRunner.verifyContents == self.appRunner.P3DVCNone:
+        if not self.appRunner \
+            or self.appRunner.verifyContents == self.appRunner.P3DVCNone \
+            or self.appRunner.verifyContents == self.appRunner.P3DVCNever:
             # If we're not asking to verify contents, then
             # contents.xml files never expires.
             return self.hasContentsFile
@@ -342,14 +352,15 @@ class HostInfo:
         self.hasContentsFile = True
 
         # Now save the contents.xml file into the standard location.
-        assert self.hostDir
-        filename = Filename(self.hostDir, 'contents.xml')
-        filename.makeDir()
-        if freshDownload:
-            doc.SaveFile(filename.toOsSpecific())
-        else:
-            if filename != tempFilename:
-                tempFilename.copyTo(filename)
+        if self.appRunner.verifyContents != self.appRunner.P3DVCNever:
+            assert self.hostDir
+            filename = Filename(self.hostDir, 'contents.xml')
+            filename.makeDir()
+            if freshDownload:
+                doc.SaveFile(filename.toOsSpecific())
+            else:
+                if filename != tempFilename:
+                    tempFilename.copyTo(filename)
 
         return True
 

@@ -194,7 +194,8 @@ initialize(int api_version, const string &contents_filename,
            const string &host_url, P3D_verify_contents verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
-           bool console_environment, const string &root_dir) {
+           bool console_environment,
+           const string &root_dir, const string &host_dir) {
   _api_version = api_version;
   _host_url = host_url;
   _verify_contents = verify_contents;
@@ -236,6 +237,8 @@ initialize(int api_version, const string &contents_filename,
   } else {
     _root_dir = root_dir;
   }
+  
+  _host_dir = host_dir;
 
   // Allow the caller (e.g. panda3d.exe) to specify a log directory.
   // Or, allow the developer to compile one in.
@@ -641,7 +644,7 @@ get_host(const string &host_url) {
     return (*pi).second;
   }
 
-  P3DHost *host = new P3DHost(host_url);
+  P3DHost *host = new P3DHost(host_url, _host_dir);
   bool inserted = _hosts.insert(Hosts::value_type(host_url, host)).second;
   assert(inserted);
 
@@ -1384,6 +1387,9 @@ create_runtime_environment() {
        << ", host_url = " << _host_url
        << ", verify_contents = " << _verify_contents
        << "\n";
+  if (!_host_dir.empty()) {
+    nout << "_host_dir = " << _host_dir << "\n";
+  }
   nout << "api_version = " << _api_version << "\n";
 
   // Make the certificate directory.
@@ -1458,3 +1464,4 @@ nt_thread_run() {
   }
   _notify_ready.release();
 }
+

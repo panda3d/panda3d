@@ -79,6 +79,7 @@ class AppRunner(DirectObject):
     P3DVCNone = 0
     P3DVCNormal = 1
     P3DVCForce = 2
+    P3DVCNever = 3
 
     # Also from p3d_plugin.h
     P3D_CONTENTS_DEFAULT_MAX_AGE = 5
@@ -570,6 +571,11 @@ class AppRunner(DirectObject):
                 totalSize += packageData.totalSize
         self.notify.info("Total Panda3D disk space used: %s MB" % (
             (totalSize + 524288) / 1048576))
+        
+        if self.verifyContents == self.P3DVCNever:
+            # We're not allowed to delete anything anyway.
+            return
+        
         self.notify.info("Configured max usage is: %s MB" % (
             (self.maxDiskUsage + 524288) / 1048576))
         if totalSize <= self.maxDiskUsage:
