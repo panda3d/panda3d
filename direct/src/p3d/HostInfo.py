@@ -118,7 +118,7 @@ class HostInfo:
             # We've already got one.
             return True
 
-        if self.appRunner.verifyContents == self.appRunner.P3DVCNever:
+        if self.appRunner and self.appRunner.verifyContents == self.appRunner.P3DVCNever:
             # Not allowed to.
             return False
 
@@ -187,7 +187,7 @@ class HostInfo:
         not. """
         assert self.hasContentsFile
 
-        if self.appRunner.verifyContents == self.appRunner.P3DVCNever:
+        if self.appRunner and self.appRunner.verifyContents == self.appRunner.P3DVCNever:
             # Not allowed to.
             return False
 
@@ -352,7 +352,7 @@ class HostInfo:
         self.hasContentsFile = True
 
         # Now save the contents.xml file into the standard location.
-        if self.appRunner.verifyContents != self.appRunner.P3DVCNever:
+        if not self.appRunner or self.appRunner.verifyContents != self.appRunner.P3DVCNever:
             assert self.hostDir
             filename = Filename(self.hostDir, 'contents.xml')
             filename.makeDir()
