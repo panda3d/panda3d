@@ -1258,8 +1258,9 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
                const string &pathname, const FileSpec &file_spec) {
   // Only one download should be active at a time
   assert(_active_download == NULL);
-  // This can't happen! If verify_contents is set to P3D_VC_never,
-  // we're not allowed to download anything, so we shouldn't get here.
+  // This can't happen! If verify_contents is set to P3D_VC_never, we're
+  // not allowed to download anything, so we shouldn't get here
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   assert(inst_mgr->get_verify_contents() != P3D_VC_never);
 
   // We can't explicitly support partial downloads here, because
@@ -1308,8 +1309,6 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
       download->_try_urls.push_back(url);
     }
   }
-
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   if (dtype == DT_redownload_contents_file) {
     // When we're redownloading the contents file after a download
