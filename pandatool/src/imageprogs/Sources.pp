@@ -3,7 +3,8 @@
 
 #define OTHER_LIBS \
     pipeline:c event:c pstatclient:c panda:m \
-    pandabase:c pnmimage:c mathutil:c linmath:c putil:c express:c \
+    pandabase:c pnmimage:c pnmimagetypes:c \
+    mathutil:c linmath:c putil:c express:c \
     pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m \
