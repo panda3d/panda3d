@@ -371,6 +371,12 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     bool has_overall_color;
     Colorf overall_color;
     vertex_pool->check_overall_color(has_overall_color, overall_color);
+    if (!egg_flat_colors) {
+      // If flat colors aren't allowed, then we don't care whether
+      // there is an overall color.  In that case, treat all vertex
+      // pools as if they contain a combination of multiple colors.
+      has_overall_color = false;
+    }
     
     // Create a handful of GeomPrimitives corresponding to the various
     // types of primitives that reference this vertex pool.

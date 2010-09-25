@@ -93,6 +93,18 @@ ConfigVariableBool egg_flat_shading
           "to set it true if your scene largely or entirely consists of "
           "flat-shaded polygons."));
 
+ConfigVariableBool egg_flat_colors
+("egg-flat-colors", true,
+ PRC_DESC("Set this true to allow the egg loader to create geometry with the "
+          "ColorAttrib::T_flat attribute set: that is, geometry that uses "
+          "the scene graph color instead of per-vertex color.  Normally Panda "
+          "will do this as an optimization for Geoms whose vertices are all "
+          "the same color, or all white.  This allows the removal of the "
+          "color attribute from the vertices where it is not necessary to "
+          "specify colors per-vertex.  If this is false, the color attribute "
+          "will always be specified per-vertex, even if all vertices have the "
+          "same value."));
+
 ConfigVariableBool egg_load_old_curves
 ("egg-load-old-curves", true,
  PRC_DESC("When this is true, a <NurbsCurve> entry appearing in an egg file "

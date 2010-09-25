@@ -42,6 +42,7 @@ extern EXPCL_PANDAEGG ConfigVariableDouble egg_flatten_radius;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_combine_geoms;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_rigid_geometry;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_flat_shading;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_flat_colors;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_load_old_curves;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_load_classic_nurbs_curves;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_accept_errors;
