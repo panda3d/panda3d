@@ -549,7 +549,7 @@ if (COMPILER=="LINUX"):
                 if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/MacOS")):
                     LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/MacOS")
                 if (os.path.isdir(SDK[pkg] + "/lib")):
-                    LibcDirectory(pkg, SDK[pkg] + "/lib")
+                    LibDirectory(pkg, SDK[pkg] + "/lib")
                 if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/include/maya")):
                     IncDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/include")
                 if (os.path.isdir(SDK[pkg] + "/devkit/include/maya")):
