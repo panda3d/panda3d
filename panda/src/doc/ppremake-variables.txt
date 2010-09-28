@@ -187,6 +187,12 @@ value is either the empty string (false) or a nonempty string (true).
     might be in Windows style format (i.e. with backslashes instead of
     forward slashes).
 
+  $[unixshortname <pathname>] - converts the indicated native-style
+    pathname to a Unix-style pathname for internal operations, using
+    the 8.3 Windows "short" name, if possible.  This is often an easy
+    way to avoid spaces in long Windows filenames, like c:/Program
+    Files/whatever.
+
   $[cygpath_w <pathname>] - similar to $[osfilename], except it takes
     advantage of the Cygwin library, if available, to do a more
     accurate filename conversion.  This is generally specific to the
