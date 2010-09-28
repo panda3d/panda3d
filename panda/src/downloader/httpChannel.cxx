@@ -1079,7 +1079,9 @@ run_connecting_wait() {
       // Time to give up.
       downloader_cat.info()
         << "Timeout connecting to " 
-        << _request.get_url().get_server_and_port() << ".\n";
+        << _request.get_url().get_server_and_port() 
+        << " for " << _request.get_url()
+        << ".\n";
       _status_entry._status_code = SC_timeout;
       _state = S_try_next_proxy;
       return false;
@@ -2442,6 +2444,10 @@ void HTTPChannel::
 begin_request(HTTPEnum::Method method, const DocumentSpec &url,
               const string &body, bool nonblocking, 
               size_t first_byte, size_t last_byte) {
+  
+  downloader_cat.info()
+    << method << " " << url << "\n";
+                
   reset_for_new_request();
 
   _wanted_nonblocking = nonblocking;
