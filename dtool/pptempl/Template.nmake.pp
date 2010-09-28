@@ -1142,7 +1142,7 @@ $[TAB] if not exist $[osfilename $[install_headers_dir]] mkdir $[osfilename $[in
 $[osfilename $[install_headers_dir]/$[CONFIG_HEADER]] : $[osfilename $[CONFIG_HEADER]]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[osfilename $[dest]/]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]/]
 #endif
 
 // Finally, the rules to freshen the Makefile itself.
