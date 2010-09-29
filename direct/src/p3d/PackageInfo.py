@@ -1,5 +1,6 @@
 from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
 from pandac import PandaModules
+from libpandaexpress import ConfigVariableInt
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
 from direct.showbase import VFSImporter
@@ -498,6 +499,11 @@ class PackageInfo:
             # There are no patches to download, oh well.  Stick with
             # plan B as the only plan.
             self.installPlans = [planB]
+
+        # In case of unexpected failures on the internet, we will retry 
+        # the full download instead of just giving up.
+        for retry in range(ConfigVariableInt('package-full-dl-retries', 1)):
+            self.installPlans.append(planB[:])
 
         pc.stop()
 
