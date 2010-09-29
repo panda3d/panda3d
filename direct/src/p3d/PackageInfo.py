@@ -821,6 +821,7 @@ class PackageInfo:
                     if step.bytesDone > step.bytesNeeded:
                         # Oops, too much data.  Might as well abort;
                         # it's the wrong file.
+                        self.notify.warning("Got more data than expected for download %s" % (url))
                         break
                     
                     self.__updateStepProgress(step)
