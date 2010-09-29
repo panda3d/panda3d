@@ -1,5 +1,7 @@
 from pandac.PandaModules import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
+from pandac.PandaModules import HTTPChannel
 from pandac import PandaModules
+from libpandaexpress import ConfigVariableInt
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -153,14 +155,55 @@ class HostInfo:
                 request.setCacheControl(DocumentSpec.CCNoCache)
 
                 self.notify.info("Downloading contents file %s" % (request))
-
-                rf = Ramfile()
-                channel = http.makeChannel(False)
-                channel.getDocument(request)
-                if not channel.downloadToRam(rf):
-                    self.notify.warning("Unable to download %s" % (url))
-                    rf = None
-
+                statusCode = None
+                statusString = ''
+                for attempt in range(ConfigVariableInt('contents-xml-dl-attempts', 3)):
+                    if attempt > 0:
+                        self.notify.info("Retrying (%s)..."%(attempt,))
+                    rf = Ramfile()
+                    channel = http.makeChannel(False)
+                    channel.getDocument(request)
+                    if channel.downloadToRam(rf):
+                        self.notify.warning("Successfully downloaded %s" % (url,))
+                        break
+                    else:
+                        rf = None
+                        statusCode = channel.getStatusCode()
+                        statusString = channel.getStatusString()
+                        self.notify.warning("Could not contact download server at %s" % (url,))
+                        self.notify.warning("Status code = %s %s" % (statusCode, statusString))
+                                    
+                if not rf:
+                    self.notify.warning("Unable to download %s" % (url,))
+                    try:
+                        # Something screwed up.
+                        if statusCode == HTTPChannel.SCDownloadOpenError or \
+                           statusCode == HTTPChannel.SCDownloadWriteError:
+                            launcher.setPandaErrorCode(2)
+                        elif statusCode == 404:
+                            # 404 not found
+                            launcher.setPandaErrorCode(5)
+                        elif statusCode < 100:
+                            # statusCode < 100 implies the connection attempt itself
+                            # failed.  This is usually due to firewall software
+                            # interfering.  Apparently some firewall software might
+                            # allow the first connection and disallow subsequent
+                            # connections; how strange.
+                            launcher.setPandaErrorCode(4)
+                        else:
+                            # There are other kinds of failures, but these will
+                            # generally have been caught already by the first test; so
+                            # if we get here there may be some bigger problem.  Just
+                            # give the generic "big problem" message.
+                            launcher.setPandaErrorCode(6)
+                    except NameError,e:
+                        # no launcher
+                        pass
+                    except AttributeError, e:
+                        self.notify.warning("%s" % (str(e),))
+                        pass
+                    return False
+                    
         tempFilename = Filename.temporary('', 'p3d_', '.xml')
         if rf:
             f = open(tempFilename.toOsSpecific(), 'wb')
