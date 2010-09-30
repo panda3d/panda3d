@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "globPattern.h"
+#include <ctype.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::has_glob_characters
@@ -41,6 +42,39 @@ has_glob_characters() const {
     ++pi;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::get_const_prefix
+//       Access: Public
+//  Description: Returns the initial part of the pattern before the
+//               first glob character.  Since many glob patterns begin
+//               with a sequence of static characters and end with one
+//               or more glob characters, this can be used to
+//               optimized searches through sorted indices.
+////////////////////////////////////////////////////////////////////
+string GlobPattern::
+get_const_prefix() const {
+  string prefix;
+
+  size_t p = 0;  // current point
+  size_t q = 0;  // starting point
+  while (p < _pattern.size()) {
+    switch (_pattern[p]) {
+    case '*':
+    case '?':
+    case '[':
+      return prefix + _pattern.substr(q, p - q);
+
+    case '\\':
+      // Skip over the backslash.
+      prefix += _pattern.substr(q, p - q);
+      ++p;
+      q = p;
+    }
+    ++p;
+  }
+  return prefix += _pattern.substr(q, p - q);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,7 +213,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     // A special exception: we allow ci to reach the end before pi,
     // only if pi is one character before the end and that last
     // character is '*'.
-    if ((ci == cend) && (pi + 1 == pend) && (*pi) == '*') {
+    if ((ci == cend) && (std::distance(pi, pend) == 1) && (*pi) == '*') {
       return true;
     }
     return (pi == pend && ci == cend);
@@ -193,9 +227,15 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     // to recurse twice: either consume one character of the candidate
     // string and continue to try matching the *, or stop trying to
     // match the * here.
-    return
-      matches_substr(pi, pend, ci + 1, cend) ||
-      matches_substr(pi + 1, pend, ci, cend);
+    if (_nomatch_chars.find(*ci) == string::npos) {
+      return
+        matches_substr(pi, pend, ci + 1, cend) ||
+        matches_substr(pi + 1, pend, ci, cend);
+    } else {
+      // On the other hand, if this is one of the nomatch chars, we
+      // can only stop here.
+      return matches_substr(pi + 1, pend, ci, cend);
+    }
 
   case '?':
     // A '?' in the pattern string means to match exactly one
@@ -231,8 +271,14 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
 
   default:
     // Anything else means to match exactly that.
-    if ((*pi) != (*ci)) {
-      return false;
+    if (_case_sensitive) {
+      if ((*pi) != (*ci)) {
+        return false;
+      }
+    } else {
+      if (tolower(*pi) != tolower(*ci)) {
+        return false;
+      }
     }
     return matches_substr(pi + 1, pend, ci + 1, cend);
   }
@@ -286,7 +332,10 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
         char end = (*pi);
         ++pi;
 
-        if (ch >= start && ch <= end) {
+        if (ch >= start && ch <= end || 
+            (!_case_sensitive && 
+             ((tolower(ch) >= start && tolower(ch) <= end) ||
+              (toupper(ch) >= start && toupper(ch) <= end)))) {
           matched = true;
         }
       } else {

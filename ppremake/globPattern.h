@@ -40,14 +40,25 @@ public:
   INLINE GlobPattern(const GlobPattern &copy);
   INLINE void operator = (const GlobPattern &copy);
 
+  INLINE bool operator == (const GlobPattern &other) const;
+  INLINE bool operator != (const GlobPattern &other) const;
+  INLINE bool operator < (const GlobPattern &other) const;
+
   INLINE void set_pattern(const string &pattern);
   INLINE const string &get_pattern() const;
+
+  INLINE void set_case_sensitive(bool case_sensitive);
+  INLINE bool get_case_sensitive() const;
+
+  INLINE void set_nomatch_chars(const string &nomatch_chars);
+  INLINE const string &get_nomatch_chars() const;
 
   INLINE bool matches(const string &candidate) const;
 
   INLINE void output(ostream &out) const;
 
   bool has_glob_characters() const;
+  string get_const_prefix() const;
   int match_files(vector_string &results, const Filename &cwd = Filename());
 
 private:
@@ -64,6 +75,8 @@ private:
                     vector_string &results, const Filename &cwd);
 
   string _pattern;
+  bool _case_sensitive;
+  string _nomatch_chars;
 };
 
 INLINE ostream &operator << (ostream &out, const GlobPattern &glob) {
