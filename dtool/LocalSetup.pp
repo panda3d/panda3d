@@ -251,9 +251,6 @@ $[cdefine HAVE_FMODEX]
 /* Define if we have OpenAL installed. */
 $[cdefine HAVE_OPENAL]
 
-/* Define if we have Ageia PhysX SDK installed. */
-$[cdefine HAVE_PHYSX]
-
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
 

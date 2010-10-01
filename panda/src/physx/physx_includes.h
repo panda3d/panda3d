@@ -23,7 +23,11 @@
 
 #ifdef IS_LINUX
 #define LINUX 1
+#ifdef _LP64
+#define NX64 1
+#else
 #define NX32 1
+#endif
 #define CORELIB 1
 #define NX_DISABLE_FLUIDS 1
 #endif

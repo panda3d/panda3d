@@ -1478,7 +1478,7 @@ def SdkLocatePhysX():
                 if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key):
                     SDK["PHYSX"] = folder
                     SDK["PHYSXVERSION"] = ver
-        elif (sys.platform.startswith("linux") and platform.architecture()[0] != "64bit"):
+        elif (sys.platform.startswith("linux")):
             incpath = "/usr/include/PhysX/%s/SDKs" % key
             libpath = "/usr/lib/PhysX/%s" % key
             if (os.path.isdir(incpath) and os.path.isdir(libpath)):

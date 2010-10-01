@@ -930,8 +930,8 @@
 #defer HAVE_OPENAL $[or $[OPENAL_FRAMEWORK],$[libtest $[OPENAL_LPATH],$[OPENAL_LIBS]]]
 
 // Info for the NVIDIA PhysX SDK
-#define PHYSX_IPATH
-#define PHYSX_LPATH
+#define PHYSX_IPATH /usr/include/PhysX/v2.8.3/SDKs/Cooking/include /usr/include/PhysX/v2.8.3/SDKs/Foundation/include /usr/include/PhysX/v2.8.3/SDKs/NxCharacter/include /usr/include/PhysX/v2.8.3/SDKs/Physics/include /usr/include/PhysX/v2.8.3/SDKs/PhysXLoader/include
+#define PHYSX_LPATH /usr/lib/PhysX/v2.8.3
 #define PHYSX_LIBS $[if $[WINDOWS_PLATFORM],PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib,PhysXLoader NxCharacter NxCooking]
 #defer HAVE_PHYSX $[libtest $[PHYSX_LPATH],$[PHYSX_LIBS]]
 

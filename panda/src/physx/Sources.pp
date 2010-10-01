@@ -30,8 +30,11 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxCloth.I physxCloth.h \
+    physxClothDesc.I physxClothDesc.h \
     physxClothMesh.I physxClothMesh.h \
     physxClothMeshDesc.I physxClothMeshDesc.h \
+    physxClothNode.I physxClothNode.h \
     physxConstraintDominance.I physxConstraintDominance.h \
     physxContactPair.I physxContactPair.h \
     physxContactPoint.I physxContactPoint.h \
@@ -124,7 +127,7 @@
     physxVehicle.I physxVehicle.h \
     physxVehicleDesc.I physxVehicleDesc.h \
     physxWheel.I physxWheel.h \
-    physxWheelDesc.I physxWheel.h \
+    physxWheelDesc.I physxWheelDesc.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
 
@@ -148,8 +151,11 @@
     physxCapsuleForceFieldShapeDesc.cxx \
     physxCapsuleShape.cxx \
     physxCapsuleShapeDesc.cxx \
+    physxCloth.cxx \
+    physxClothDesc.cxx \
     physxClothMesh.cxx \
     physxClothMeshDesc.cxx \
+    physxClothNode.cxx \
     physxConstraintDominance.cxx \
     physxContactPair.cxx \
     physxContactPoint.cxx \
@@ -266,8 +272,11 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxCloth.I physxCloth.h \
+    physxClothDesc.I physxClothDesc.h \
     physxClothMesh.I physxClothMesh.h \
     physxClothMeshDesc.I physxClothMeshDesc.h \
+    physxClothNode.I physxClothNode.h \
     physxConstraintDominance.I physxConstraintDominance.h \
     physxContactPair.I physxContactPair.h \
     physxContactPoint.I physxContactPoint.h \
@@ -360,7 +369,7 @@
     physxVehicle.I physxVehicle.h \
     physxVehicleDesc.I physxVehicleDesc.h \
     physxWheel.I physxWheel.h \
-    physxWheelDesc.I physxWheel.h \
+    physxWheelDesc.I physxWheelDesc.h \
     physxWheelShape.I physxWheelShape.h \
     physxWheelShapeDesc.I physxWheelShapeDesc.h \
 

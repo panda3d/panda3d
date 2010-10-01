@@ -242,6 +242,7 @@ void PhysxScene::
 fetch_results() {
 
   nassertv(_error_type == ET_ok);
+  nassertv(_ptr != NULL);
 
   _pcollector_fetch_results.start();
   _ptr->fetchResults(NX_RIGID_BODY_FINISHED, true);
