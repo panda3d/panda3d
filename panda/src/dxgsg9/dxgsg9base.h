@@ -34,6 +34,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
+#define USE_GENERIC_DXERR_LIBRARY 1
 #ifdef USE_GENERIC_DXERR_LIBRARY
 #include <dxerr.h>
 #define DX_GET_ERROR_STRING_FUNC DXGetErrorString
