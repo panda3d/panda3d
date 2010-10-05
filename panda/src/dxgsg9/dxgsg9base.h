@@ -34,7 +34,9 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
-#define USE_GENERIC_DXERR_LIBRARY 1
+// This symbol is defined (or not defined) in Config.pp.
+//#define USE_GENERIC_DXERR_LIBRARY 1
+
 #ifdef USE_GENERIC_DXERR_LIBRARY
 #include <dxerr.h>
 #define DX_GET_ERROR_STRING_FUNC DXGetErrorString
