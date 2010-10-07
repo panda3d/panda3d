@@ -1,0 +1,6 @@
+#include "config_speedtree.cxx"
+#include "loaderFileTypeSrt.cxx"
+#include "speedTreeNode.cxx"
+#include "speedtree_api.cxx"
+#include "stTransform.cxx"
+#include "stTree.cxx"
