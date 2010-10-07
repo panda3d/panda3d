@@ -452,6 +452,12 @@
   #define physx_libs $[PHYSX_LIBS]
 #endif
 
+#if $[HAVE_SPEEDTREE]
+  #define speedtree_ipath $[wildcard $[SPEEDTREE_IPATH]]
+  #define speedtree_lpath $[wildcard $[SPEEDTREE_LPATH]]
+  #define speedtree_libs $[SPEEDTREE_LIBS]
+#endif
+
 #if $[HAVE_CHROMIUM]
   #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
   #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]

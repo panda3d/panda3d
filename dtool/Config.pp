@@ -755,6 +755,9 @@
 #define DX9_LIBS d3d9.lib d3dx9.lib dxerr9.lib
 #defer HAVE_DX9 $[libtest $[DX9_LPATH],$[DX9_LIBS]]
 
+// Set this nonempty to use <dxerr.h> instead of <dxerr9.h>.
+#define USE_GENERIC_DXERR_LIBRARY
+
 // Is OpenCV installed, and where?
 #define OPENCV_IPATH /usr/local/include/opencv
 #define OPENCV_LPATH /usr/local/lib
@@ -934,6 +937,32 @@
 #define PHYSX_LPATH /usr/lib/PhysX/v2.8.3
 #define PHYSX_LIBS $[if $[WINDOWS_PLATFORM],PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib,PhysXLoader NxCharacter NxCooking]
 #defer HAVE_PHYSX $[libtest $[PHYSX_LPATH],$[PHYSX_LIBS]]
+
+// Info for the SpeedTree tree and terrain rendering library.  This is
+// a commercial library that specializes in rendering trees and other
+// foliage.
+
+// This may be either "OpenGL" or "DirectX9".  Case is important, due
+// to the naming of the SpeedTree libraries.
+#define SPEEDTREE_API OpenGL
+// The local directory in which the SpeedTree SDK has been installed.
+#define SPEEDTREE_SDK_DIR
+// The default directory in which to find the SpeedTree installation at runtime.
+#defer SPEEDTREE_BIN_DIR $[SPEEDTREE_SDK_DIR]/Bin
+
+#defer SPEEDTREE_IPATH $[SPEEDTREE_SDK_DIR]/Include
+#defer SPEEDTREE_LPATH $[SPEEDTREE_SDK_DIR]/Lib/Windows/VC9
+#defer SPEEDTREE_DEBUG $[if $[< $[OPTIMIZE], 3],_d]
+
+// These names are used to build up the names of the SpeedTree libraries.
+#defer SPEEDTREE_VERSION 5.1
+#defer SPEEDTREE_LIB_SUFFIX _v$[SPEEDTREE_VERSION]_VC90MT_Static$[SPEEDTREE_DEBUG].lib
+#if $[WINDOWS_PLATFORM]
+#defer SPEEDTREE_LIBS SpeedTreeCore$[SPEEDTREE_LIB_SUFFIX] SpeedTreeForest$[SPEEDTREE_LIB_SUFFIX] SpeedTreeOpenGLRenderer$[SPEEDTREE_LIB_SUFFIX] SpeedTreeRenderInterface$[SPEEDTREE_LIB_SUFFIX] $[if $[eq $[SPEEDTREE_API],OpenGL],glew32.lib]
+#else
+#defer SPEEDTREE_LIBS
+#endif
+#defer HAVE_SPEEDTREE $[isdir $[SPEEDTREE_SDK_DIR]]
 
 // Info for http://www.sourceforge.net/projects/chromium
 #define CHROMIUM_IPATH /usr/include/chromium/include

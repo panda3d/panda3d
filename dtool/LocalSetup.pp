@@ -101,6 +101,11 @@
 #else
 #print - Did not find Ageia PhysX
 #endif
+#if $[HAVE_SPEEDTREE]
+#print + SpeedTree
+#else
+#print - Did not find SpeedTree
+#endif
 #if $[HAVE_GTK]
 #print + gtk+-2
 #else
@@ -327,6 +332,9 @@ $[cdefine HAVE_CGDX9]
 
 /* Define if we have CGDX10 installed.  */
 $[cdefine HAVE_CGDX10]
+
+/* Define for dxerr.h instead of dxerr9.h. */
+$[cdefine USE_GENERIC_DXERR_LIBRARY]
 
 /* Define if we have zlib installed.  */
 $[cdefine HAVE_ZLIB]

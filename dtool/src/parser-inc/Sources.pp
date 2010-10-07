@@ -22,6 +22,6 @@
     libavutil/avutil.h libavformat/avformat.h \
     libavcodec/avcodec.h libswscale/swscale.h \
     libavformat/avio.h AR/ar.h \
-    WebCore.h WebView.h WebViewListener.h
-
+    WebCore.h WebView.h WebViewListener.h \
+    Core/Core.h Forest/Forest.h Renderers/OpenGL/OpenGLRenderer.h
 

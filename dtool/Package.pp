@@ -309,6 +309,11 @@
 #set PHYSX_LIBS $[PHYSX_LIBS]
 #set HAVE_PHYSX $[HAVE_PHYSX]
 
+#set SPEEDTREE_IPATH $[unixfilename $[SPEEDTREE_IPATH]]
+#set SPEEDTREE_LPATH $[unixfilename $[SPEEDTREE_LPATH]]
+#set SPEEDTREE_LIBS $[SPEEDTREE_LIBS]
+#set HAVE_SPEEDTREE $[HAVE_SPEEDTREE]
+
 #set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
 #set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]
@@ -382,6 +387,10 @@
 
 #if $[HAVE_PHYSX]
   #define GENPYCODE_LIBS $[GENPYCODE_LIBS] libpandaphysx
+#endif
+
+#if $[HAVE_SPEEDTREE]
+  #define GENPYCODE_LIBS $[GENPYCODE_LIBS] libpandaspeedtree
 #endif
 
 #if $[HAVE_AWESOMIUM]
