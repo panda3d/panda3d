@@ -388,10 +388,14 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 bool SpeedTreeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  if (!_is_valid) {
+    return false;
+  }
+
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, trav->get_gsg());
   nassertr(gsg != (GraphicsStateGuardian *)NULL, true);
   if (!validate_api(gsg)) {
-    return true;
+    return false;
   }
 
   ClockObject *clock = ClockObject::get_global_clock();
@@ -713,11 +717,11 @@ validate_api(GraphicsStateGuardian *gsg) {
 #endif
 
   if (pipe->get_interface_name() != compiled_api) {
-    ostringstream stream;
-    stream
+    speedtree_cat.error()
       << "SpeedTree is compiled for " << compiled_api
-      << ", cannot render with " << pipe->get_interface_name();
-    nassert_raise(stream.str());
+      << ", cannot render with " << pipe->get_interface_name()
+      << "\n";
+    _is_valid = false;
     return false;
   }
 

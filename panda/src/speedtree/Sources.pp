@@ -3,8 +3,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define USE_PACKAGES speedtree $[if $[eq $[SPEEDTREE_API],opengl],gl cg cggl] $[if $[eq $[SPEEDTREE_API],directx9],dx9 cg cgdx9]
-#define BUILDING_DLL BUILDING_PANDASKEL
+#define USE_PACKAGES speedtree $[if $[eq $[SPEEDTREE_API],OpenGL],gl cg cggl] $[if $[eq $[SPEEDTREE_API],DirectX9],dx9 cg cgdx9]
+#define BUILDING_DLL BUILDING_PANDASPEEDTREE
 
 #begin lib_target
   #define TARGET pandaspeedtree

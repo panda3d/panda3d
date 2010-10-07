@@ -132,4 +132,10 @@ egg-object-type-glow            <Scalar> blend { add }
 # maya2egg itself.  So if it appears in an egg file, it means nothing.
 egg-object-type-keep-all-uvsets
 
+#if $[HAVE_SPEEDTREE]
+# If we have the SpeedTree library available, we'll want to use it
+# for loading compiled SpeedTree tree objects.
+load-file-type srt pandaspeedtree
+#endif
+
 #end 20_panda.prc

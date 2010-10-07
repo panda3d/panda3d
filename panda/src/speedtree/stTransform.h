@@ -26,7 +26,7 @@
 //               particular instance of a tree when added to the
 //               SpeedTreeNode.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL STTransform {
+class EXPCL_PANDASPEEDTREE STTransform {
 PUBLISHED:
   INLINE STTransform();
   STTransform(const TransformState *trans);

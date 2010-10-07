@@ -27,7 +27,7 @@ class SpeedTreeNode;
 // Description : Encapsulates a single tree model in the SpeedTree
 //               library, as loaded from an SRT file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL STTree : public TypedReferenceCount, public Namable {
+class EXPCL_PANDASPEEDTREE STTree : public TypedReferenceCount, public Namable {
 PUBLISHED:
   STTree(const Filename &fullpath, const Filename &filename = Filename());
 private:

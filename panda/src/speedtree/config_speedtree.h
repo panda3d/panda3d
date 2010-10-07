@@ -23,7 +23,7 @@
 #include "configVariableInt.h"
 #include "configVariableFilename.h"
 
-NotifyCategoryDecl(speedtree, EXPCL_PANDASKEL, EXPTP_PANDASKEL);
+NotifyCategoryDecl(speedtree, EXPCL_PANDASPEEDTREE, EXPTP_PANDASPEEDTREE);
 
 extern ConfigVariableString speedtree_license;
 extern ConfigVariableFilename speedtree_shaders_dir;
@@ -32,7 +32,7 @@ extern ConfigVariableInt speedtree_max_num_visible_cells;
 extern ConfigVariableInt speedtree_max_billboard_images_by_base;
 extern ConfigVariableDouble speedtree_cull_cell_size;
 
-extern EXPCL_PANDASKEL void init_libspeedtree();
+extern EXPCL_PANDASPEEDTREE void init_libspeedtree();
 
 #endif
 

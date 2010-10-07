@@ -26,7 +26,7 @@
 //               returns a SpeedTreeNode with just a single tree
 //               within it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL LoaderFileTypeSrt : public LoaderFileType {
+class EXPCL_PANDASPEEDTREE LoaderFileTypeSrt : public LoaderFileType {
 public:
   LoaderFileTypeSrt();
 

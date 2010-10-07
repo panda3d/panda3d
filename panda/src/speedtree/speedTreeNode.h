@@ -30,7 +30,7 @@
 //               SpeedTree objects like a collection of trees,
 //               terrain, or grass within the Panda3D scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL SpeedTreeNode : public PandaNode {
+class EXPCL_PANDASPEEDTREE SpeedTreeNode : public PandaNode {
 private:
   // This definition is required by InstanceList, below.
   typedef pvector<SpeedTree::CInstance> STInstances;
