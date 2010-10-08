@@ -43,9 +43,15 @@ public:
 PUBLISHED:
   INLINE static const STTransform &ident_mat();
 
+  INLINE void set_pos(const LPoint3f &pos);
   INLINE const LPoint3f &get_pos() const;
+  INLINE void set_rotate(float rotate);
   INLINE float get_rotate() const;
+  INLINE void set_scale(float scale);
   INLINE float get_scale() const;
+
+  INLINE void operator *= (const STTransform &other);
+  INLINE STTransform operator * (const STTransform &other) const;
 
   void output(ostream &out) const;
 

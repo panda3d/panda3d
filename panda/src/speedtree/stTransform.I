@@ -128,3 +128,95 @@ INLINE const STTransform &STTransform::
 ident_mat() {
   return _ident_mat;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::set_pos
+//       Access: Published
+//  Description: Replaces the translation component.
+////////////////////////////////////////////////////////////////////
+INLINE void STTransform::
+set_pos(const LPoint3f &pos) {
+  _pos = pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::get_pos
+//       Access: Published
+//  Description: Returns the translation component.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &STTransform::
+get_pos() const {
+  return _pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::set_rotate
+//       Access: Published
+//  Description: Replaces the rotation component.  Accepts a rotation
+//               in degrees counter-clockwise around the vertical
+//               axis.
+////////////////////////////////////////////////////////////////////
+INLINE void STTransform::
+set_rotate(float rotate) {
+  _rotate = rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::get_rotate
+//       Access: Published
+//  Description: Returns the rotation component, in degrees
+//               counter-clockwise around the vertical axis.
+////////////////////////////////////////////////////////////////////
+INLINE float STTransform::
+get_rotate() const {
+  return _rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::set_scale
+//       Access: Published
+//  Description: Replaces the scale component.  Accepts a uniform
+//               scale value.
+////////////////////////////////////////////////////////////////////
+INLINE void STTransform::
+set_scale(float scale) {
+  _scale = scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::get_scale
+//       Access: Published
+//  Description: Returns the scale component, as a uniform scale
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE float STTransform::
+get_scale() const {
+  return _scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::operator *=
+//       Access: Published
+//  Description: Composes these transforms and stores the result
+//               in-place.
+////////////////////////////////////////////////////////////////////
+INLINE void STTransform::
+operator *= (const STTransform &other) {
+  LQuaternionf quat;
+  quat.set_hpr(LVecBase3f(_rotate, 0.0f, 0.0f));
+  _pos += quat.xform(other.get_pos()) * _scale;
+  _rotate += other._rotate;
+  _scale *= other._scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::operator *
+//       Access: Published
+//  Description: Composes these transforms and returns the result/
+////////////////////////////////////////////////////////////////////
+INLINE STTransform STTransform::
+operator * (const STTransform &other) const {
+  STTransform result = *this;
+  result *= other;
+  return result;
+}

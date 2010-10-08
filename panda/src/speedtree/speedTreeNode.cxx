@@ -30,6 +30,7 @@
 #include "directionalLight.h"
 #include "loader.h"
 #include "deg_2_rad.h"
+#include "sceneGraphReducer.h"
 
 #ifdef SPEEDTREE_OPENGL
 #include "glew/glew.h"
@@ -281,6 +282,54 @@ add_instances(const NodePath &root, const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::add_instances_from
+//       Access: Published
+//  Description: Adds all of the instances defined within the
+//               indicated SpeedTreeNode as instances of this node.
+//               Does not recurse to children.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+add_instances_from(const SpeedTreeNode *other) {
+  int num_trees = other->get_num_trees();
+  for (int ti = 0; ti < num_trees; ++ti) {
+    const InstanceList &other_instance_list = other->get_instance_list(ti);
+    const STTree *tree = other_instance_list.get_tree();
+    InstanceList &this_instance_list = add_tree(tree);
+    
+    int num_instances = other_instance_list.get_num_instances();
+    for (int i = 0; i < num_instances; ++i) {
+      STTransform other_trans = other_instance_list.get_instance(i);
+      this_instance_list.add_instance(other_trans);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::add_instances_from
+//       Access: Published
+//  Description: Adds all of the instances defined within the
+//               indicated SpeedTreeNode as instances of this node,
+//               after applying the indicated scene-graph transform.
+//               Does not recurse to children.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+add_instances_from(const SpeedTreeNode *other, const TransformState *transform) {
+  int num_trees = other->get_num_trees();
+  for (int ti = 0; ti < num_trees; ++ti) {
+    const InstanceList &other_instance_list = other->get_instance_list(ti);
+    const STTree *tree = other_instance_list.get_tree();
+    InstanceList &this_instance_list = add_tree(tree);
+    
+    int num_instances = other_instance_list.get_num_instances();
+    for (int i = 0; i < num_instances; ++i) {
+      CPT(TransformState) other_trans = other_instance_list.get_instance(i);
+      CPT(TransformState) new_trans = transform->compose(other_trans);
+      this_instance_list.add_instance(new_trans.p());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::add_from_stf
 //       Access: Published
 //  Description: Opens and reads the named STF (SpeedTree Forest)
@@ -507,18 +556,63 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::safe_to_combine
+//     Function: SpeedTreeNode::combine_with
 //       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine this
-//               particular kind of PandaNode with other kinds of
-//               PandaNodes of compatible type, adding children or
-//               whatever.  For instance, an LODNode should not be
-//               combined with any other PandaNode, because its set of
-//               children is meaningful.
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
 ////////////////////////////////////////////////////////////////////
-bool SpeedTreeNode::
-safe_to_combine() const {
-  return false;
+PandaNode *SpeedTreeNode::
+combine_with(PandaNode *other) {
+  if (is_exact_type(get_class_type()) &&
+      other->is_exact_type(get_class_type())) {
+    // Two SpeedTreeNodes can combine by moving trees from one to the
+    // other, similar to the way GeomNodes combine.
+    SpeedTreeNode *gother = DCAST(SpeedTreeNode, other);
+    add_instances_from(gother);
+    return this;
+  }
+
+  return PandaNode::combine_with(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::apply_attribs_to_vertices
+//       Access: Public, Virtual
+//  Description: Applies whatever attributes are specified in the
+//               AccumulatedAttribs object (and by the attrib_types
+//               bitmask) to the vertices on this node, if
+//               appropriate.  If this node uses geom arrays like a
+//               GeomNode, the supplied GeomTransformer may be used to
+//               unify shared arrays across multiple different nodes.
+//
+//               This is a generalization of xform().
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
+                          GeomTransformer &transformer) {
+  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    STTransform xform = attribs._transform;
+    Trees::iterator ti;
+    for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
+      InstanceList *instance_list = (*ti);
+      STInstances &instances = instance_list->_instances;
+      STInstances::iterator sti;
+      for (sti = instances.begin(); sti != instances.end(); ++sti) {
+	STTransform orig_transform = *sti;
+	(*sti) = orig_transform * xform;
+      }
+    }
+  }
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -795,20 +889,7 @@ r_add_instances(PandaNode *node, const TransformState *transform,
 		Thread *current_thread) {
   if (node->is_of_type(SpeedTreeNode::get_class_type()) && node != this) {
     SpeedTreeNode *other = DCAST(SpeedTreeNode, node);
-
-    int num_trees = other->get_num_trees();
-    for (int ti = 0; ti < num_trees; ++ti) {
-      const InstanceList &other_instance_list = other->get_instance_list(ti);
-      const STTree *tree = other_instance_list.get_tree();
-      InstanceList &this_instance_list = add_tree(tree);
-      
-      int num_instances = other_instance_list.get_num_instances();
-      for (int i = 0; i < num_instances; ++i) {
-	CPT(TransformState) other_trans = other_instance_list.get_instance(i);
-	CPT(TransformState) new_trans = transform->compose(other_trans);
-	this_instance_list.add_instance(new_trans.p());
-      }
-    }
+    add_instances_from(other, transform);
   }
 
   Children children = node->get_children(current_thread);

@@ -39,8 +39,12 @@ class Loader;
 ////////////////////////////////////////////////////////////////////
 //       Class : SpeedTreeNode
 // Description : Interfaces with the SpeedTree library to render
-//               SpeedTree objects like a collection of trees,
-//               terrain, or grass within the Panda3D scene graph.
+//               SpeedTree objects, especially trees, within the
+//               Panda3D scene graph.  
+//
+//               SpeedTree also includes some support for simple
+//               terrain and grass systems, but that support is not
+//               (yet) implemented within this layer.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDASPEEDTREE SpeedTreeNode : public PandaNode {
 private:
@@ -100,6 +104,8 @@ PUBLISHED:
 
   void add_instance(const STTree *tree, const STTransform &transform);
   void add_instances(const NodePath &root, const TransformState *transform = TransformState::make_identity());
+  void add_instances_from(const SpeedTreeNode *other);
+  void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
   bool add_from_stf(const Filename &pathname, 
 		    const LoaderOptions &options = LoaderOptions());
   bool add_from_stf(istream &in, const Filename &pathname, 
@@ -112,7 +118,10 @@ public:
   SpeedTreeNode(const SpeedTreeNode &copy);
 
   virtual PandaNode *make_copy() const;
-  virtual bool safe_to_combine() const;
+  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
+                                         int attrib_types,
+                                         GeomTransformer &transformer);
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
