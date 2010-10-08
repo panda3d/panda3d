@@ -27,6 +27,15 @@
 
 class Loader;
 
+// There is a SpeedTree bug that prevents reliably deleting a
+// CForestRender object, as of version 5.2.  Presumably it will be
+// fixed beginning in version 5.3.
+#if SPEEDTREE_VERSION_MAJOR > 5 || (SPEEDTREE_VERSION_MAJOR == 5 && SPEEDTREE_VERSION_MINOR >= 3)
+#undef ST_DELETE_FOREST_HACK
+#else
+#define ST_DELETE_FOREST_HACK
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : SpeedTreeNode
 // Description : Interfaces with the SpeedTree library to render
@@ -68,6 +77,7 @@ PUBLISHED:
 
 PUBLISHED:
   SpeedTreeNode(const string &name);
+  virtual ~SpeedTreeNode();
 
   INLINE bool is_valid() const;
 
@@ -162,7 +172,11 @@ private:
   typedef ov_set<InstanceList *, IndirectLess<InstanceList> > Trees;
   Trees _trees;
 
-  SpeedTree::CForestRender &_forest;  // Hack!
+#ifdef ST_DELETE_FOREST_HACK
+  SpeedTree::CForestRender &_forest;
+#else
+  SpeedTree::CForestRender _forest;
+#endif  // ST_DELETE_FOREST_HACK
   SpeedTree::CView _view;
   SpeedTree::SForestCullResultsRender _visible_trees;
   SpeedTree::CForest::SPopulationStats _population_stats;

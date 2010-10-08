@@ -26,6 +26,8 @@
 #include "geomDrawCallbackData.h"
 #include "graphicsStateGuardian.h"
 #include "textureAttrib.h"
+#include "lightAttrib.h"
+#include "directionalLight.h"
 #include "loader.h"
 #include "deg_2_rad.h"
 
@@ -45,8 +47,13 @@ TypeHandle SpeedTreeNode::DrawCallback::_type_handle;
 ////////////////////////////////////////////////////////////////////
 SpeedTreeNode::
 SpeedTreeNode(const string &name) :
-  PandaNode(name),
-  _forest(*(new SpeedTree::CForestRender))  // HACK!  SpeedTree doesn't destruct unused CForestRender objects correctly.  Temporarily leaking these things until SpeedTree is fixed.
+  PandaNode(name)
+#ifdef ST_DELETE_FOREST_HACK
+  // Early versions of SpeedTree don't destruct unused CForestRender
+  // objects correctly.  To avoid crashes, we have to leak these
+  // things.
+  , _forest(*(new SpeedTree::CForestRender))
+#endif
 {
   init_node();
   // For now, set an infinite bounding volume.  Maybe in the future
@@ -373,8 +380,16 @@ add_from_stf(istream &in, const Filename &pathname,
     in >> num_instances;
     for (int ni = 0; ni < num_instances && in && !in.eof(); ++ni) {
       LPoint3f pos;
-      float rotate, scale, elev_min, elev_max, slope_min, slope_max;
-      in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale >> elev_min >> elev_max >> slope_min >> slope_max;
+      float rotate, scale;
+      in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale;
+
+      if (!speedtree_5_2_stf) {
+	// 5.1 or earlier stf files also included these additional
+	// values, which we will ignore:
+	float elev_min, elev_max, slope_min, slope_max;
+	in >> elev_min >> elev_max >> slope_min >> slope_max;
+      }
+
       if (tree != NULL) {
 	add_instance(tree, STTransform(pos, rad_2_deg(rotate), scale));
       }
@@ -382,11 +397,17 @@ add_from_stf(istream &in, const Filename &pathname,
     in >> os_filename;
   }
 
+  // Consume any whitespace at the end of the file.
+  in >> ws;
+
   if (!in.eof()) {
     // If we didn't read all the way to end-of-file, there was an
     // error.
+    in.clear();
+    string text;
+    in >> text;
     speedtree_cat.error()
-      << "Syntax error in " << pathname << "\n";
+      << "Unexpected text in " << pathname << " at \"" << text << "\"\n";
     return false;
   }
 
@@ -431,8 +452,13 @@ authorize(const string &license) {
 ////////////////////////////////////////////////////////////////////
 SpeedTreeNode::
 SpeedTreeNode(const SpeedTreeNode &copy) :
-  PandaNode(copy),
-  _forest(*(new SpeedTree::CForestRender))  // HACK!  SpeedTree doesn't destruct unused CForestRender objects correctly.  Temporarily leaking these things until SpeedTree is fixed.
+  PandaNode(copy)
+#ifdef ST_DELETE_FOREST_HACK
+  // Early versions of SpeedTree don't destruct unused CForestRender
+  // objects correctly.  To avoid crashes, we have to leak these
+  // things.
+  , _forest(*(new SpeedTree::CForestRender))
+#endif
 {
   init_node();
 
@@ -454,6 +480,17 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
 
   _needs_repopulate = true;
   mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+SpeedTreeNode::
+~SpeedTreeNode() {
+  // Help reduce memory waste from ST_DELETE_FOREST_HACK.
+  _forest.ClearInstances();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -527,8 +564,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   
   // Compute the modelview and camera transforms, to pass to the
   // SpeedTree CView structure.
-  CPT(TransformState) modelview = data.get_modelview_transform(trav);
-  modelview = gsg->get_cs_transform()->compose(modelview);
+  CPT(TransformState) orig_modelview = data.get_modelview_transform(trav);
+  CPT(TransformState) modelview = gsg->get_cs_transform()->compose(orig_modelview);
   CPT(TransformState) camera_transform = modelview->invert_compose(TransformState::make_identity());
   const LMatrix4f &modelview_mat = modelview->get_mat();
   const LPoint3f &camera_pos = camera_transform->get_pos();
@@ -543,6 +580,40 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 	    SpeedTree::Mat4x4(modelview_mat.get_data()),
 	    lens->get_near(), lens->get_far());
 
+  // Convert the render state to SpeedTree's input.
+  const RenderState *state = data._state;
+
+  // Check texture state.  If all textures are disabled, then we ask
+  // SpeedTree to disable textures.
+  bool show_textures = true;
+  const TextureAttrib *ta = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
+  if (ta != (TextureAttrib *)NULL) {
+    show_textures = !ta->has_all_off();
+  }
+  _forest.EnableTexturing(show_textures);
+
+  // Check lighting state.  SpeedTree only supports a single
+  // directional light; we look for a directional light in the
+  // lighting state and pass its direction to SpeedTree.
+  NodePath light;
+  const LightAttrib *la = DCAST(LightAttrib, state->get_attrib(LightAttrib::get_class_slot()));
+  if (la != (LightAttrib *)NULL) {
+    light = la->get_most_important_light();
+  }
+  if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
+    DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
+
+    CPT(TransformState) transform = light.get_transform(trav->get_scene()->get_scene_root().get_parent());
+    LVector3f dir = light_obj->get_direction() * transform->get_mat();
+    _forest.SetLightDir(SpeedTree::Vec3(dir[0], dir[1], dir[2]));
+
+  } else {
+    // No light.  But there's no way to turn off lighting in
+    // SpeedTree.  In lieu of this, we just shine a light from
+    // above.
+    _forest.SetLightDir(SpeedTree::Vec3(0.0, 0.0, -1.0));
+  }
+
   if (!_needs_repopulate) {
     // Don't bother culling now unless we're correctly fully
     // populated.  (Culling won't be accurate unless the forest has
@@ -550,7 +621,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // populate.)
     _forest.CullAndComputeLOD(_view, _visible_trees);
   }
-  //  cerr << _visible_trees.m_aVisibleCells.size() << " visible cells\n";
 
   // Recurse onto the node's children.
   return true;
@@ -857,16 +927,6 @@ draw_callback(CallbackData *data) {
   GeomDrawCallbackData *geom_cbdata;
   DCAST_INTO_V(geom_cbdata, data);
 
-  // Check the input state.
-  const RenderState *state = geom_cbdata->get_object()->_state;
-  
-  bool show_textures = true;
-  const TextureAttrib *texattrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
-  if (texattrib != (TextureAttrib *)NULL) {
-    show_textures = !texattrib->has_all_off();
-  }
-  _forest.EnableTexturing(show_textures);
-
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, geom_cbdata->get_gsg());
 
   setup_for_render(gsg);
@@ -889,6 +949,10 @@ draw_callback(CallbackData *data) {
   }
 
   _forest.EndRender();
+
+  // SpeedTree leaves the graphics state indeterminate.  But this
+  // doesn't help?
+  geom_cbdata->set_lost_state(true);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -62,6 +62,18 @@ ConfigVariableDouble speedtree_cull_cell_size
 	  "while increasing the number of trees that are rendered "
 	  "per call."));
 
+ConfigVariableBool speedtree_5_2_stf
+("speedtree-5-2-stf", 
+#if SPEEDTREE_VERSION_MAJOR > 5 || (SPEEDTREE_VERSION_MAJOR == 5 && SPEEDTREE_VERSION_MINOR >= 2)
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("The format of the STF file changed in SpeedTree version 5.2.  "
+	  "Specify true here to read STF files in the new file format, or "
+	  "false to read STF files in the pre-5.2 file format."));
+ 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libspeedtree
 //  Description: Initializes the library.  This must be called at

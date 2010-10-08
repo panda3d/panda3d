@@ -31,6 +31,7 @@ extern ConfigVariableBool speedtree_allow_horizontal_billboards;
 extern ConfigVariableInt speedtree_max_num_visible_cells;
 extern ConfigVariableInt speedtree_max_billboard_images_by_base;
 extern ConfigVariableDouble speedtree_cull_cell_size;
+extern ConfigVariableBool speedtree_5_2_stf;
 
 extern EXPCL_PANDASPEEDTREE void init_libspeedtree();
 
