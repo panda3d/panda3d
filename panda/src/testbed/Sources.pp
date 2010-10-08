@@ -7,10 +7,10 @@
     framework putil collide pgraph chan text \
     pnmimage pnmimagetypes pnmtext event effects gobj display \
     mathutil putil express dgraph device tform \
-    linmath pstatclient panda pandaspeedtree
+    linmath pstatclient panda
 
 #begin bin_target
-  #define TARGET pview1
+  #define TARGET pview
 
   #define SOURCES \
     pview.cxx
@@ -37,18 +37,4 @@
 #begin test_bin_target
   #define TARGET test_map
   #define SOURCES test_map.cxx
-#end test_bin_target
-
-#begin test_bin_target
-  #define USE_PACKAGES gl
-  #define LOCAL_LIBS
-  #define TARGET gm
-  #define SOURCES gm.cxx
-#end test_bin_target
-
-#begin test_bin_target
-  #define USE_PACKAGES gl
-  #define LOCAL_LIBS
-  #define TARGET om
-  #define SOURCES om.cxx
 #end test_bin_target

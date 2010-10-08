@@ -22,8 +22,6 @@
 #include "partGroup.h"
 #include "cardMaker.h"
 #include "bamCache.h"
-#include "speedTreeNode.h"
-#include "randomizer.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -149,34 +147,27 @@ event_0(const Event *event, void *) {
   WindowFramework *wf;
   DCAST_INTO_V(wf, param.get_ptr());
 
-  PT(SpeedTreeNode) st = new SpeedTreeNode("st");
-  Filename dirname("/c/Users/drose/Desktop/SpeedTree/SpeedTree SDK v5.1.1 Full/Bin/Forests/Huangshan");
-  vector_string basenames;
-  dirname.scan_directory(basenames);
+  // Create a new offscreen buffer.
+  GraphicsOutput *win = wf->get_graphics_output();
+  PT(GraphicsOutput) buffer = win->make_texture_buffer("tex", 256, 256);
+  cerr << buffer->get_type() << "\n";
 
-  vector_string srts;
-  for (size_t bi = 0; bi < basenames.size(); ++bi) {
-    if (Filename(basenames[bi]).get_extension() == "srt") {
-      srts.push_back(basenames[bi]);
-    }
-  }
-  nassertv(!srts.empty());
+  // Set the offscreen buffer to render the same scene as the main camera.
+  DisplayRegion *dr = buffer->make_display_region();
+  dr->set_camera(NodePath(wf->get_camera(0)));
+
+  // Make the clear color on the buffer be yellow, so it's obviously
+  // different from the main scene's background color.
+  buffer->set_clear_color(Colorf(1, 1, 0, 0));
+
+  // Apply the offscreen buffer's texture to a card in the main
+  // window.
+  CardMaker cm("card");
+  cm.set_frame(0, 1, 0, 1);
+  NodePath card_np(cm.generate());
   
-  Randomizer random;
-  for (int xi = 0; xi < 20; ++xi) {
-    for (int yi = 0; yi < 20; ++yi) {
-      int ri = random.random_int(srts.size());
-      Filename filename(dirname, srts[ri]);
-      NodePath tree1 = wf->load_model(NodePath(), filename);
-      tree1.set_pos(xi * 50, yi * 50, 0);
-      st->add_instances(tree1);
-    }
-  }
-
-  NodePath stnp = framework.get_models().attach_new_node(st);
-
-  NodePath axis = wf->load_model(framework.get_models(), "zup-axis.bam");
-  wf->center_trackball(axis);
+  card_np.reparent_to(wf->get_render_2d());
+  card_np.set_texture(buffer->get_texture());
 }
 
 void 
