@@ -26,6 +26,8 @@
 #include "geomDrawCallbackData.h"
 #include "graphicsStateGuardian.h"
 #include "textureAttrib.h"
+#include "loader.h"
+#include "deg_2_rad.h"
 
 #ifdef SPEEDTREE_OPENGL
 #include "glew/glew.h"
@@ -272,6 +274,127 @@ add_instances(const NodePath &root, const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::add_from_stf
+//       Access: Published
+//  Description: Opens and reads the named STF (SpeedTree Forest)
+//               file, and adds the SRT files named within as
+//               instances of this node.  Returns true on success,
+//               false on failure.
+////////////////////////////////////////////////////////////////////
+bool SpeedTreeNode::
+add_from_stf(const Filename &pathname, const LoaderOptions &options) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  Filename filename = Filename::text_filename(pathname);
+  PT(VirtualFile) file = vfs->get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    // No such file.
+    speedtree_cat.error()
+      << "Could not find " << pathname << "\n";
+    return false;
+  }
+
+  if (speedtree_cat.is_debug()) {
+    speedtree_cat.debug()
+      << "Reading STF file " << filename << "\n";
+  }
+
+  istream *in = file->open_read_file(true);
+  bool success = add_from_stf(*in, pathname, options);
+  vfs->close_read_file(in);
+
+  return success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::add_from_stf
+//       Access: Published
+//  Description: Reads text data from the indicated stream, which is
+//               understood to represent the named STF (SpeedTree
+//               Forest) file, and adds the SRT files named within as
+//               instances of this node.  Returns true on success,
+//               false on failure.
+//
+//               The pathname is used for reference only; if nonempty,
+//               it provides a search directory for named SRT files.
+//
+//               The Loader and LoaderOptions, if provided, are used
+//               to load the SRT files.  If the Loader pointer is
+//               NULL, the default global Loader is used instead.
+////////////////////////////////////////////////////////////////////
+bool SpeedTreeNode::
+add_from_stf(istream &in, const Filename &pathname, 
+	     const LoaderOptions &options, Loader *loader) {
+  if (loader == NULL) {
+    loader = Loader::get_global_ptr();
+  }
+  string os_filename;
+
+  Filename dirname = pathname.get_dirname();
+  dirname.make_absolute();
+  DSearchPath search;
+  search.append_directory(dirname);
+
+  typedef pmap<Filename, CPT(STTree) > AlreadyLoaded;
+  AlreadyLoaded already_loaded;
+
+  // The STF file format doesn't allow for spaces in the SRT filename.
+  in >> os_filename;
+  while (in && !in.eof()) {
+    CPT(STTree) tree;
+    Filename srt_filename = Filename::from_os_specific(os_filename);
+    AlreadyLoaded::iterator ai = already_loaded.find(srt_filename);
+    if (ai != already_loaded.end()) {
+      tree = (*ai).second;
+    } else {
+      // Resolve the SRT filename relative to the STF file first.
+      srt_filename.resolve_filename(search);
+
+      // Now load up the SRT file using the Panda loader (which will
+      // also search the model-path if necessary).
+      PT(PandaNode) srt_root = loader->load_sync(srt_filename);
+
+      if (srt_root != NULL) {
+	NodePath srt(srt_root);
+	NodePath srt_np = srt.find("**/+SpeedTreeNode");
+	if (!srt_np.is_empty()) {
+	  SpeedTreeNode *srt_node = DCAST(SpeedTreeNode, srt_np.node());
+	  if (srt_node->get_num_trees() >= 1) {
+	    tree = srt_node->get_tree(0);
+	  }
+	}
+      }
+      already_loaded[srt_filename] = tree;
+    }
+
+    // Now we've loaded the SRT data, so apply it the appropriate
+    // number of times to the locations specified.
+    int num_instances;
+    in >> num_instances;
+    for (int ni = 0; ni < num_instances && in && !in.eof(); ++ni) {
+      LPoint3f pos;
+      float rotate, scale, elev_min, elev_max, slope_min, slope_max;
+      in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale >> elev_min >> elev_max >> slope_min >> slope_max;
+      if (tree != NULL) {
+	add_instance(tree, STTransform(pos, rad_2_deg(rotate), scale));
+      }
+    }
+    in >> os_filename;
+  }
+
+  if (!in.eof()) {
+    // If we didn't read all the way to end-of-file, there was an
+    // error.
+    speedtree_cat.error()
+      << "Syntax error in " << pathname << "\n";
+    return false;
+  }
+
+  // Return true if we successfully read all the way to end-of-file.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::authorize
 //       Access: Published, Static
 //  Description: Make this call to initialized the SpeedTree API and
@@ -419,13 +542,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 	    SpeedTree::Mat4x4(projection_mat.get_data()),
 	    SpeedTree::Mat4x4(modelview_mat.get_data()),
 	    lens->get_near(), lens->get_far());
-  
-  if (!_forest.UploadViewShaderParameters(_view)) {
-    speedtree_cat.warning()
-      << "Couldn't set view parameters\n";
-    speedtree_cat.warning()
-      << SpeedTree::CCore::GetError() << "\n";
-  }
 
   if (!_needs_repopulate) {
     // Don't bother culling now unless we're correctly fully
@@ -864,6 +980,13 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     _forest.CullAndComputeLOD(_view, _visible_trees);
 
     _needs_repopulate = false;
+  }
+
+  if (!_forest.UploadViewShaderParameters(_view)) {
+    speedtree_cat.warning()
+      << "Couldn't set view parameters\n";
+    speedtree_cat.warning()
+      << SpeedTree::CCore::GetError() << "\n";
   }
 }
 

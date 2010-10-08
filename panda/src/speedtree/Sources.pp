@@ -16,6 +16,7 @@
   #define SOURCES \
     config_speedtree.h \
     loaderFileTypeSrt.h \
+    loaderFileTypeStf.h \
     speedtree_api.h \
     speedTreeNode.h \
     stTransform.h \
@@ -27,6 +28,7 @@
   #define INCLUDED_SOURCES \
     config_speedtree.cxx \
     loaderFileTypeSrt.cxx \
+    loaderFileTypeStf.cxx \
     speedtree_api.cxx \
     speedTreeNode.cxx \
     stTransform.cxx \

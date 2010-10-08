@@ -21,8 +21,11 @@
 #include "stTree.h"
 #include "stTransform.h"
 #include "callbackObject.h"
+#include "loaderOptions.h"
 
 #include "speedtree_api.h"
+
+class Loader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SpeedTreeNode
@@ -87,6 +90,11 @@ PUBLISHED:
 
   void add_instance(const STTree *tree, const STTransform &transform);
   void add_instances(const NodePath &root, const TransformState *transform = TransformState::make_identity());
+  bool add_from_stf(const Filename &pathname, 
+		    const LoaderOptions &options = LoaderOptions());
+  bool add_from_stf(istream &in, const Filename &pathname, 
+		    const LoaderOptions &options = LoaderOptions(),
+		    Loader *loader = NULL);
 
   static bool authorize(const string &license = "");
 

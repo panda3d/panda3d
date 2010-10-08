@@ -133,9 +133,11 @@ egg-object-type-glow            <Scalar> blend { add }
 egg-object-type-keep-all-uvsets
 
 #if $[HAVE_SPEEDTREE]
-# If we have the SpeedTree library available, we'll want to use it
-# for loading compiled SpeedTree tree objects.
+# If we have the SpeedTree library available, we'll want to use it for
+# loading compiled SpeedTree tree objects, and SpeedTree forest
+# tables.
 load-file-type srt pandaspeedtree
+load-file-type stf pandaspeedtree
 #endif
 
 #end 20_panda.prc

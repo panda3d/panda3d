@@ -16,6 +16,7 @@
 #include "speedTreeNode.h"
 #include "stTree.h"
 #include "loaderFileTypeSrt.h"
+#include "loaderFileTypeStf.h"
 #include "loaderFileTypeRegistry.h"
 #include "dconfig.h"
 
@@ -80,9 +81,11 @@ init_libspeedtree() {
   SpeedTreeNode::init_type();
   STTree::init_type();
   LoaderFileTypeSrt::init_type();
+  LoaderFileTypeStf::init_type();
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   reg->register_type(new LoaderFileTypeSrt);
+  reg->register_type(new LoaderFileTypeStf);
 }
 
 // We need a SpeedTree custom allocator to integrate with Panda's
