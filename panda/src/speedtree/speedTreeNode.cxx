@@ -36,6 +36,10 @@
 #include "glew/glew.h"
 #endif  // SPEEDTREE_OPENGL
 
+#ifdef SPEEDTREE_DIRECTX9
+#include "dxGraphicsStateGuardian9.h"
+#endif
+
 bool SpeedTreeNode::_authorized;
 bool SpeedTreeNode::_done_first_init;
 TypeHandle SpeedTreeNode::_type_handle;
@@ -1075,6 +1079,12 @@ setup_for_render(GraphicsStateGuardian *gsg) {
 
     _done_first_init = true;
   }
+
+#ifdef SPEEDTREE_DIRECTX9
+  // In DirectX, we have to tell SpeedTree our device pointer.
+  DXGraphicsStateGuardian9 *dxgsg = DCAST(DXGraphicsStateGuardian9, gsg);
+  SpeedTree::DX9::SetDevice(dxgsg->_screen->_d3d_device);
+#endif  // SPEEDTREE_DIRECTX9
 
   if (_needs_repopulate) {
     repopulate();

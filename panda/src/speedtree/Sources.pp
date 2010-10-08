@@ -9,7 +9,7 @@
 #begin lib_target
   #define TARGET pandaspeedtree
   #define LOCAL_LIBS \
-    display text pgraph gobj linmath putil
+    display text pgraph gobj linmath putil $[if $[eq $[SPEEDTREE_API],DirectX9],dxgsg9]
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

@@ -20,7 +20,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "dconfig.h"
 
-Configure(config_speedtree);
+ConfigureDef(config_speedtree);
 NotifyCategoryDef(speedtree, "");
 
 ConfigureFn(config_speedtree) {
