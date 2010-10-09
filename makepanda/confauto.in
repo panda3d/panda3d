@@ -110,3 +110,9 @@ paranoid-clock 1
 # and don't specify an extension.
 
 default-model-extension .egg
+
+# If we have the SpeedTree library available, we'll want to use it for
+# loading compiled SpeedTree tree objects, and SpeedTree forest
+# tables.
+#st#load-file-type srt pandaspeedtree
+#st#load-file-type stf pandaspeedtree

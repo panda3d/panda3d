@@ -57,6 +57,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "OPENGL"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
   "ODE", "PHYSX",                                      # Physics
+  "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA",       # 3D Formats support
   "VRPN", "OPENSSL",                                   # Transport
@@ -293,11 +294,13 @@ SdkLocatePython(RTDIST)
 SdkLocateVisualStudio()
 SdkLocateMSPlatform()
 SdkLocatePhysX()
+SdkLocateSpeedTree()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
 SdkAutoDisablePhysX()
+SdkAutoDisableSpeedTree()
 
 if (RTDIST and SDK["PYTHONVERSION"] != "python2.6" and DISTRIBUTOR == "cmu"):
     exit("The CMU rtdist distribution must be built against Python 2.6!")
@@ -454,6 +457,18 @@ if (COMPILER=="MSVC"):
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
         # We need to be able to find NxCharacter.dll when importing code library libpandaphysx
         AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
+    if (PkgSkip("SPEEDTREE")==0):
+        libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9/"
+        debugext = ''
+        if (GetOptimize() <= 2 and sys.platform.startswith("win")): debugext = "_d"
+        libsuffix = "_v%s_VC90MT_Static%s.lib" % (SDK["SPEEDTREEVERSION"], debugext)
+        LibName("SPEEDTREE", "%sSpeedTreeCore%s" % (libdir, libsuffix))
+        LibName("SPEEDTREE", "%sSpeedTreeForest%s" % (libdir, libsuffix))
+        LibName("SPEEDTREE", "%sSpeedTree%sRenderer%s" % (libdir, SDK["SPEEDTREEAPI"], libsuffix))
+        LibName("SPEEDTREE", "%sSpeedTreeRenderInterface%s" % (libdir, libsuffix))
+        if (SDK["SPEEDTREEAPI"] == "OpenGL"):
+            LibName("SPEEDTREE",  "%sglew32.lib" % (libdir))
+        IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
 
 if (COMPILER=="LINUX"):
     PkgDisable("AWESOMIUM")
@@ -1423,6 +1438,7 @@ PRC_PARAMETERS=[
 def WriteConfigSettings():
     dtool_config={}
     prc_parameters={}
+    speedtree_parameters={}
     plugin_config={}
 
     if (sys.platform.startswith("win")):
@@ -1527,6 +1543,16 @@ def WriteConfigSettings():
     else:
         dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "UNDEF"
 
+    if (PkgSkip("SPEEDTREE")==0):
+        speedtree_parameters["SPEEDTREE_OPENGL"] = "UNDEF"
+        speedtree_parameters["SPEEDTREE_DIRECTX9"] = "UNDEF"
+        if SDK["SPEEDTREEAPI"] == "OpenGL":
+            speedtree_parameters["SPEEDTREE_OPENGL"] = "1"
+        elif SDK["SPEEDTREEAPI"] == "DirectX9":
+            speedtree_parameters["SPEEDTREE_DIRECTX9"] = "1"
+            
+        speedtree_parameters["SPEEDTREE_BIN_DIR"] = (SDK["SPEEDTREE"] + "/Bin")
+        
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
@@ -1552,6 +1578,15 @@ def WriteConfigSettings():
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
             del plugin_config[key]
         ConditionalWriteFile(GetOutputDir() + '/include/p3d_plugin_config.h', conf)
+
+    if (PkgSkip("SPEEDTREE")==0):
+        conf = "/* speedtree_parameters.h.  Generated automatically by makepanda.py */\n"
+        for key in speedtree_parameters.keys():
+            val = OverrideValue(key, speedtree_parameters[key])
+            if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
+            else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
+            del speedtree_parameters[key]
+        ConditionalWriteFile(GetOutputDir() + '/include/speedtree_parameters.h', conf)
 
     for x in PkgListGet():
         if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
@@ -1756,6 +1791,13 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
 ##########################################################################################
 
 confautoprc=ReadFile("makepanda/confauto.in")
+if (PkgSkip("SPEEDTREE")==0):
+    # If SpeedTree is available, enable it in the config file
+    confautoprc = confautoprc.replace('#st#', '')
+else:
+    # otherwise, disable it.
+    confautoprc = confautoprc.replace('#st#', '#')
+
 if (os.path.isfile("makepanda/myconfig.in")):
   configprc=ReadFile("makepanda/myconfig.in")
 else:
@@ -1827,10 +1869,19 @@ CopyTree(GetOutputDir()+'/include/parser-inc','dtool/src/parser-inc')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/openssl')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/netinet')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Cg')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Core')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Forest')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/Core/','dtool/src/parser-inc/Core.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/Forest/','dtool/src/parser-inc/Forest.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL/','dtool/src/parser-inc/OpenGLRenderer.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9/','dtool/src/parser-inc/DirectX9Renderer.h')
 DeleteCVS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
@@ -1934,6 +1985,9 @@ CopyAllHeaders('panda/src/testbed')
 if (PkgSkip("PHYSX")==0):
     CopyAllHeaders('panda/src/physx')
     CopyAllHeaders('panda/metalibs/pandaphysx')
+
+if (PkgSkip("SPEEDTREE")==0):
+    CopyAllHeaders('panda/src/speedtree')
 
 if (PkgSkip("DIRECT")==0):
     CopyAllHeaders('direct/src/directbase')
@@ -3348,6 +3402,29 @@ if (not RUNTIME):
   TargetAdd('libpandaphysics.dll', input='libparticlesystem_igate.obj')
   TargetAdd('libpandaphysics.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
+
+#
+# DIRECTORY: panda/src/speedtree/
+#
+
+if (PkgSkip("SPEEDTREE")==0):
+  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
+  TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpandaspeedtree.in', opts=['IMOD:pandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:panda/src/speedtree'])
+  TargetAdd('libpandaspeedtree_igate.obj', input='libpandaspeedtree.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('libpandaspeedtree_module.obj', input='libpandaspeedtree.in')
+  TargetAdd('libpandaspeedtree_module.obj', opts=OPTS)
+  TargetAdd('libpandaspeedtree_module.obj', opts=['IMOD:pandaspeedtree', 'ILIB:libpandaspeedtree'])
+  TargetAdd('libpandaspeedtree.dll', input='pandaspeedtree_composite1.obj')
+  TargetAdd('libpandaspeedtree.dll', input='libpandaspeedtree_igate.obj')
+  TargetAdd('libpandaspeedtree.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
+  if SDK["SPEEDTREEAPI"] == 'OpenGL':
+      TargetAdd('libpandaspeedtree.dll', opts=['OPENGL', 'NVIDIACG', 'CGGL'])
+  elif SDK["SPEEDTREEAPI"] == 'OpenGL':
+      TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
 
 #
 # DIRECTORY: panda/src/testbed/

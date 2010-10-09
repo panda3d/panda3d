@@ -75,6 +75,7 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
                    "dtool/src/dtoolutil/checkPandaVersion.h",
                    "dtool/src/dtoolutil/checkPandaVersion.cxx",
                    "dtool/src/prc/prc_parameters.h",
+                   "panda/src/speedtree/speedtree_parameters.h",
                    "direct/src/plugin/p3d_plugin_config.h",
                    "direct/src/plugin_activex/P3DActiveX.rc",
                    "direct/src/plugin_npapi/nppanda3d.rc",
@@ -1486,6 +1487,26 @@ def SdkLocatePhysX():
                 SDK["PHYSXVERSION"] = ver
                 SDK["PHYSXLIBS"] = libpath
 
+def SdkLocateSpeedTree():
+    # Look for all of the SpeedTree SDK directories within the
+    # thirdparty dir, and pick the highest-numbered one.
+    speedtrees = []
+    dir = GetThirdpartyDir()
+    for dirname in os.listdir(dir):
+        if dirname.startswith('SpeedTree SDK v'):
+            version = dirname[15:].split()[0]
+            version = map(int, version.split('.'))
+            speedtrees.append((version, dirname))
+    if not speedtrees:
+        # No installed SpeedTree SDK.
+        return
+    
+    speedtrees.sort()
+    version, dirname = speedtrees[-1]
+    SDK["SPEEDTREE"] = os.path.join(dir, dirname)
+    SDK["SPEEDTREEAPI"] = "OpenGL"
+    SDK["SPEEDTREEVERSION"] = '%s.%s' % (version[0], version[1])
+            
 ########################################################################
 ##
 ## SDK Auto-Disables
@@ -1531,6 +1552,12 @@ def SdkAutoDisablePhysX():
         PkgDisable("PHYSX")
         WARNINGS.append("I cannot locate SDK for PhysX")
         WARNINGS.append("I have automatically added this command-line option: --no-physx")
+
+def SdkAutoDisableSpeedTree():
+    if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):
+        PkgDisable("SPEEDTREE")
+        WARNINGS.append("I cannot locate SDK for SpeedTree")
+        WARNINGS.append("I have automatically added this command-line option: --no-speedtree")
 
 ########################################################################
 ##
