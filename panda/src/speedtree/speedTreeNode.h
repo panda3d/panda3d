@@ -22,6 +22,8 @@
 #include "stTransform.h"
 #include "callbackObject.h"
 #include "loaderOptions.h"
+#include "transformState.h"
+#include "nodePath.h"
 
 #include "speedtree_api.h"
 
