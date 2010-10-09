@@ -1492,6 +1492,8 @@ def SdkLocateSpeedTree():
     # thirdparty dir, and pick the highest-numbered one.
     speedtrees = []
     dir = GetThirdpartyDir()
+    if not os.path.exists(dir):
+        return
     for dirname in os.listdir(dir):
         if dirname.startswith('SpeedTree SDK v'):
             version = dirname[15:].split()[0]
