@@ -288,6 +288,12 @@ appear before they are referenced.
     of the above.  New egg files should use only the above filter
     types.
 
+  <Scalar> anisotropic-degree { degree }
+
+    Enables anisotropic filtering for the texture, and specifies the
+    degree of filtering.  If the degree is 0 or 1, anisotropic
+    filtering is disabled.  The default is disabled.
+
   <Scalar> envtype { environment-type }
 
     This specifies the type of texture environment to create; i.e. it
