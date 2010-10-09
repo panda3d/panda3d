@@ -37,22 +37,147 @@ ConfigVariableFilename speedtree_shaders_dir
 	  "shaders at runtime.  If this is empty, the default is based on "
 	  "SPEEDTREE_BIN_DIR, as provided at compile time."));
 
-ConfigVariableBool speedtree_allow_horizontal_billboards
-("speedtree-allow-horizontal-billboards", true,
+ConfigVariableFilename speedtree_textures_dir
+("speedtree-textures-dir", "",
+ PRC_DESC("Specifies the directory in which to locate textures referenced "
+	  "by SRT files at runtime.  The default is to search in the same "
+	  "directory as the SRT file itself.  Unfortunately, the model-path "
+	  "cannot be searched, because SpeedTree only provides a single "
+	  "directory option."));
+
+ConfigVariableDouble speedtree_max_anisotropy
+("speedtree-max-anisotropy", 0.0,
+ PRC_DESC("Specifies the maximum anisotropy for SpeedTree textures."));
+
+ConfigVariableBool speedtree_horizontal_billboards
+("speedtree-horizontal-billboards", true,
  PRC_DESC("Set this true to allow the use of horizontal billboards in "
 	  "SpeedTree, or false to disallow them.  Documentation on this "
 	  "feature is sparse, but presumably enabling them increases "
 	  "visual quality and also causes a greater performance impact."));
 
-ConfigVariableInt speedtree_max_num_visible_cells
-("speedtree-max-num-visible-cells", 75,
- PRC_DESC("Specifies the maximum number of cells in a single SpeedTree forest "
-	  "frustum.  This is used internally by SpeedTree's billboard system."));
+ConfigVariableDouble speedtree_alpha_test_scalar
+("speedtree-alpha-test-scalar", 0.57,
+ PRC_DESC("Undocumented speedtree config."));
+
+ConfigVariableBool speedtree_z_pre_pass
+("speedtree-z-pre-pass", false,
+ PRC_DESC("True if the SpeedTree renderer should perform a first pass "
+	  "to fill the depth buffer before going back to draw pixels.  "
+	  "This can result in a cost savings if there is much overdraw and "
+	  "if the pixel shader is particularly expensive, but in most cases "
+	  "it will result in a cost penalty."));
 
 ConfigVariableInt speedtree_max_billboard_images_by_base
 ("speedtree-max-billboard-images-by-base", 20,
  PRC_DESC("Specifies the maximum number of billboard images used by any single "
 	  "tree."));
+
+ConfigVariableDouble speedtree_visibility
+("speedtree-visibility", 1000.0,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_global_light_scalar
+("speedtree-global-light-scalar", 1.0,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableBool speedtree_specular_lighting
+("speedtree-specular-lighting", false,
+ PRC_DESC("True to enable specular lighting effects in SpeedTree."));
+
+ConfigVariableBool speedtree_transmission_lighting
+("speedtree-transmission-lighting", false,
+ PRC_DESC("True to enable transmission lighting effects in SpeedTree."));
+
+ConfigVariableBool speedtree_detail_layer
+("speedtree-detail-layer", false,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableBool speedtree_detail_normal_mapping
+("speedtree-detail-normal-mapping", false,
+ PRC_DESC("True to enable normal maps in SpeedTree."));
+
+ConfigVariableBool speedtree_ambient_contrast
+("speedtree-ambient-contrast", false,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_transmission_scalar
+("speedtree-transmission-scalar", 1.0f,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_fog_start_distance
+("speedtree-fog-start-distance", 2500.0,
+ PRC_DESC("Specifies the nearest distance at which fog begins to be visible."));
+
+ConfigVariableDouble speedtree_fog_end_distance
+("speedtree-fog-end-distance", 5000.0,
+ PRC_DESC("Specifies the distance at and beyond which fog is complete."));
+
+ConfigVariableDouble speedtree_fog_color
+("speedtree-fog-color", "1.0 1.0 1.0",
+ PRC_DESC("Specifies the r g b color of SpeedTree fog."));
+
+ConfigVariableDouble speedtree_sky_color
+("speedtree-sky-color", "0.2 0.3 0.5",
+ PRC_DESC("Specifies the r g b color of the SpeedTree sky, when the sky "
+	  "is enabled.  Currently unused."));
+
+ConfigVariableDouble speedtree_sky_fog_min
+("speedtree-sky-fog-min", -0.5,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_sky_fog_max
+("speedtree-sky-fog-max", 1.0,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_sun_color
+("speedtree-sun-color", "1.0 1.0 0.85",
+ PRC_DESC("Specifies the r g b color of the SpeedTree sun, when the sun "
+	  "is enabled.  Currently unused."));
+
+ConfigVariableDouble speedtree_sun_size
+("speedtree-sun-size", 0.001,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_sun_spread_exponent
+("speedtree-sun-spread-exponent", 200.0,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableDouble speedtree_sun_fog_bloom
+("speedtree-sun-fog-bloom", 0.0,
+ PRC_DESC("Undocumented SpeedTree parameter."));
+
+ConfigVariableInt speedtree_num_shadow_maps
+("speedtree-num-shadow-maps", 3,
+ PRC_DESC("Specifies the number of shadow maps to use to render SpeedTree "
+	  "shadows."));
+
+ConfigVariableInt speedtree_shadow_map_resolution
+("speedtree-shadow-map-resolution", 0, //1024,
+ PRC_DESC("Specifies the resolution for rendering shadow maps.  Should "
+	  "be a power of 2.  Specify 0 to disable shadowing in SpeedTree.  "
+	  "Currently unsupported."));
+
+ConfigVariableBool speedtree_smooth_shadows
+("speedtree-smooth-shadows", false,
+ PRC_DESC("True to enable a smoothing pass on the shadow maps."));
+
+ConfigVariableBool speedtree_show_shadow_splits_on_terrain
+("speedtree-show-shadow-splits-on-terrain", false,
+ PRC_DESC("Currently unsupported."));
+
+ConfigVariableBool speedtree_wind_enabled
+("speedtree-wind-enabled", true,
+ PRC_DESC("True to enable global wind in the SpeedTree world."));
+
+ConfigVariableBool speedtree_frond_rippling
+("speedtree-frond-rippling", true,
+ PRC_DESC("True to allow fronds to respond to the global wind."));
+
+ConfigVariableInt speedtree_max_num_visible_cells
+("speedtree-max-num-visible-cells", 75,
+ PRC_DESC("Specifies the maximum number of cells in a single SpeedTree forest "
+	  "frustum.  This is used internally by SpeedTree's billboard system."));
 
 ConfigVariableDouble speedtree_cull_cell_size
 ("speedtree-cull-cell-size", 1200,

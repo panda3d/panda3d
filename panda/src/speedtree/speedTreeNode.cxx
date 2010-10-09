@@ -71,28 +71,73 @@ SpeedTreeNode(const string &name) :
   SpeedTree::SForestRenderInfo render_info;
 
   // First, get the shader directory.
-  if (!speedtree_shaders_dir.get_value().is_directory()) {
-    speedtree_cat.warning()
-      << "speedtree-shaders-dir is set to " << speedtree_shaders_dir
-      << ", which doesn't exist.\n";
+  Filename shaders_dir = speedtree_shaders_dir;
+
+  // We expect the shader directory to contain at least this one token
+  // filename (to prove it's the right directory).
+  Filename token_filename = "Branch.hlsl";
+  if (!Filename(shaders_dir, token_filename).exists()) {
+    // If that shader directory doesn't work, look along the model-path.
+    if (token_filename.resolve_filename(get_model_path())) {
+      shaders_dir = token_filename.get_dirname();
+    } else {
+      if (!shaders_dir.is_directory()) {
+	speedtree_cat.warning()
+	  << "speedtree-shaders-dir is set to " << shaders_dir
+	  << ", which doesn't exist.\n";
+      } else {
+	speedtree_cat.warning()
+	  << "speedtree-shaders-dir is set to " << shaders_dir
+	  << ", which exists but doesn't contain " <<  token_filename
+	  << ".\n";
+      }
+    }
   }
 
-  string shaders_dir = speedtree_shaders_dir.get_value().to_os_specific();
+  string os_shaders_dir = shaders_dir.to_os_specific();
   // Ensure the path ends with a terminal slash; SpeedTree requires this.
 #ifdef WIN32
-  if (!shaders_dir.empty() && shaders_dir[shaders_dir.length() - 1] != '\\') {
-    shaders_dir += "\\";
+  if (!os_shaders_dir.empty() && os_shaders_dir[os_shaders_dir.length() - 1] != '\\') {
+    os_shaders_dir += "\\";
   }
 #else
-  if (!shaders_dir.empty() && shaders_dir[shaders_dir.length() - 1] != '/') {
-    shaders_dir += "/";
+  if (!os_shaders_dir.empty() && os_shaders_dir[os_shaders_dir.length() - 1] != '/') {
+    os_shaders_dir += "/";
   }
 #endif
 
-  render_info.m_strShaderPath = shaders_dir.c_str();
+  render_info.m_strShaderPath = os_shaders_dir.c_str();
+  render_info.m_nMaxAnisotropy = speedtree_max_anisotropy;
+  render_info.m_bHorizontalBillboards = speedtree_horizontal_billboards;
+  render_info.m_fAlphaTestScalar = speedtree_alpha_test_scalar;
+  render_info.m_bZPrePass = speedtree_z_pre_pass;
   render_info.m_nMaxBillboardImagesByBase = speedtree_max_billboard_images_by_base;
-  render_info.m_nNumShadowMaps = 1;
-  render_info.m_nShadowMapResolution = 0;
+  render_info.m_fVisibility = speedtree_visibility;
+  render_info.m_fGlobalLightScalar = speedtree_global_light_scalar;
+  //render_info.m_sLightMaterial = ...
+  render_info.m_bSpecularLighting = speedtree_specular_lighting;
+  render_info.m_bTransmissionLighting = speedtree_transmission_lighting;
+  render_info.m_bDetailLayer = speedtree_detail_layer;
+  render_info.m_bDetailNormalMapping = speedtree_detail_normal_mapping;
+  render_info.m_bAmbientContrast = speedtree_ambient_contrast;
+  render_info.m_fTransmissionScalar = speedtree_transmission_scalar;
+  render_info.m_fFogStartDistance = speedtree_fog_start_distance;
+  render_info.m_fFogEndDistance = speedtree_fog_end_distance;
+  render_info.m_vFogColor = SpeedTree::Vec3(speedtree_fog_color[0], speedtree_fog_color[1], speedtree_fog_color[2]);
+  render_info.m_vSkyColor = SpeedTree::Vec3(speedtree_sky_color[0], speedtree_sky_color[1], speedtree_sky_color[2]);
+  render_info.m_fSkyFogMin = speedtree_sky_fog_min;
+  render_info.m_fSkyFogMax = speedtree_sky_fog_max;
+  render_info.m_vSunColor = SpeedTree::Vec3(speedtree_sun_color[0], speedtree_sun_color[1], speedtree_sun_color[2]);
+  render_info.m_fSunSize = speedtree_sun_size;
+  render_info.m_fSunSpreadExponent = speedtree_sun_spread_exponent;
+  render_info.m_fSunFogBloom = speedtree_sun_fog_bloom;
+  render_info.m_nNumShadowMaps = speedtree_num_shadow_maps;
+  render_info.m_nShadowMapResolution = speedtree_shadow_map_resolution;
+  render_info.m_bSmoothShadows = speedtree_smooth_shadows;
+  render_info.m_bShowShadowSplitsOnTerrain = speedtree_show_shadow_splits_on_terrain;
+  render_info.m_bWindEnabled = speedtree_wind_enabled;
+  render_info.m_bFrondRippling = speedtree_frond_rippling;
+  
   _forest.SetRenderInfo(render_info);
 }
 
@@ -964,7 +1009,7 @@ repopulate() {
 			 _forest.GetBaseTrees().size(), 
 			 speedtree_max_num_visible_cells, 
 			 max_instances_by_cell,
-			 speedtree_allow_horizontal_billboards);
+			 speedtree_horizontal_billboards);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1105,9 +1150,26 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       if (si != _population_stats.m_mMaxNumInstancesPerCellPerBase.end()) {
 	max_instances = max(max_instances, (int)si->second);
       }
-      
+
+      // Get the speedtree-textures-dir to pass for initialization.
+      string os_textures_dir;
+      if (!speedtree_textures_dir.empty()) {
+	os_textures_dir = speedtree_textures_dir.get_value().to_os_specific();
+	// Ensure the path ends with a terminal slash; SpeedTree requires this.
+#ifdef WIN32
+	if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '\\') {
+	  os_textures_dir += "\\";
+	}
+#else
+	if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '/') {
+	  os_textures_dir += "/";
+	}
+#endif
+      }
+
       if (!_forest.InitTreeGraphics((SpeedTree::CTreeRender *)tree->get_tree(), 
-				    max_instances, speedtree_allow_horizontal_billboards)) {
+				    max_instances, speedtree_horizontal_billboards,
+				    os_textures_dir.c_str())) {
 	speedtree_cat.warning()
 	  << "Failed to init tree graphics for " << *tree << "\n";
 	speedtree_cat.warning()
