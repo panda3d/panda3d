@@ -2,5 +2,7 @@
 
 namespace SpeedTree {
   class CTree;
-  class CForest;
+  class CForest {
+    class SPopulationStats;
+  };
 };

@@ -23,5 +23,6 @@
     libavcodec/avcodec.h libswscale/swscale.h \
     libavformat/avio.h AR/ar.h \
     WebCore.h WebView.h WebViewListener.h \
-    Core/Core.h Forest/Forest.h Renderers/OpenGL/OpenGLRenderer.h
+    Core/Core.h Forest/Forest.h Renderers/OpenGL/OpenGLRenderer.h \
+    Renderers/DirectX9/DirectX9Renderer.h
 
