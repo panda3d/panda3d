@@ -52,6 +52,7 @@ PortalNode(const string &name) :
   _visible = false;
   _open = true;
   _clip_plane = false;
+  _max_depth = 10;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +78,7 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
   _visible = false;
   _open = true;
   _clip_plane = false;
+  _max_depth = 10;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +97,8 @@ PortalNode(const PortalNode &copy) :
   _cell_out(copy._cell_out),
   _clip_plane(copy._clip_plane),
   _visible(copy._visible),
-  _open(copy._open)
+  _open(copy._open),
+  _max_depth(copy._max_depth)
 {
 }
 
@@ -226,8 +229,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   PortalClipper *portal_viewer = trav->get_portal_clipper();
   set_visible(false);
-  if (is_open() && !_cell_out.is_empty() && portal_viewer) {
+  if (is_open() && !_cell_out.is_empty() && portal_viewer && data._portal_depth <= _max_depth) {
     portal_cat.debug() << "checking portal node  " << *this << endl;
+    portal_cat.debug() << "portal_depth is " << data._portal_depth << endl;
     PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
     PT(BoundingVolume) reduced_frustum;
     
@@ -304,6 +308,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
                                     cell_transform,
                                     next_state, new_bh,
                                     current_thread);
+        next_data._portal_depth = data._portal_depth + 1;
 
         portal_viewer->set_reduced_frustum(new_bh);
         portal_cat.spam() << "cull_callback: before traversing " << _cell_out.get_name() << endl;

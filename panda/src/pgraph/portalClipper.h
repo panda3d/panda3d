@@ -41,8 +41,6 @@ class CullTraverserData;
 class CullableObject;
 class NodePath;
 
-#define _FACING_THRESHOLD 0.0  //about 90 degrees with the camera
-
 ////////////////////////////////////////////////////////////////////
 //       Class : PortalClipper
 // Description : This object performs a depth-first traversal of the

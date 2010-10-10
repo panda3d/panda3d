@@ -269,14 +269,28 @@ prepare_portal(const NodePath &node_path)
   // check if the portal intersects with the cameras 0 point (center of projection). In that case the portal will invert itself.
   // portals intersecting the near plane or the 0 point are a weird case anyhow, therefore we don't reduce the frustum any further
   // and just return true. In effect the portal doesn't reduce visibility but will draw everything in its out cell
-  if ((temp[0][1] <= 0) || (temp[1][1] <= 0) || (temp[2][1] <= 0) || (temp[3][1] <= 0)) {
-      portal_cat.debug() << "portal intersects with center of projection.." << endl;
-      return true;
+  const Lens *lens = _scene_setup->get_lens();
+  LVector3f forward = LVector3f::forward(lens->get_coordinate_system());
+  int forward_axis;
+  if (forward[1]) {
+    forward_axis = 1;
+  }
+  else if (forward[2]) {
+    forward_axis = 2;
+  }
+  else {
+    forward_axis = 0;
+  }
+  if ((temp[0][forward_axis] * forward[forward_axis] <= 0) ||
+    (temp[1][forward_axis] * forward[forward_axis] <= 0) ||
+    (temp[2][forward_axis] * forward[forward_axis] <= 0) ||
+    (temp[3][forward_axis] * forward[forward_axis] <= 0)) {
+    portal_cat.debug() << "portal intersects with center of projection.." << endl;
+    return true;
   }
   
   // project portal points, so they are in the -1..1 range
   LPoint3f projected_coords[4];
-  const Lens *lens = _scene_setup->get_lens();
   lens->project(temp[0], projected_coords[0]);
   lens->project(temp[1], projected_coords[1]);
   lens->project(temp[2], projected_coords[2]);
@@ -336,11 +350,11 @@ prepare_portal(const NodePath &node_path)
 
     // lets first add the clipped portal (in yellow)
     _color = Colorf(1,1,0,1);
-    move_to((near_point[0]+far_point[0])/2.0); // I choose a point in the middle between near and far.. could also be some other z value.. 
-    draw_to((near_point[1]+far_point[1])/2.0);
-    draw_to((near_point[2]+far_point[2])/2.0);
-    draw_to((near_point[3]+far_point[3])/2.0);
-    draw_to((near_point[0]+far_point[0])/2.0);
+    move_to((near_point[0]*0.99+far_point[0]*0.01)); // I choose a point in the middle between near and far.. could also be some other z value.. 
+    draw_to((near_point[1]*0.99+far_point[1]*0.01));
+    draw_to((near_point[2]*0.99+far_point[2]*0.01));
+    draw_to((near_point[3]*0.99+far_point[3]*0.01));
+    draw_to((near_point[0]*0.99+far_point[0]*0.01));
 
     // ok, now lets add the original portal (in cyan) 
     _color = Colorf(0,1,1,1);

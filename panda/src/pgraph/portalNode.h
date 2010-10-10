@@ -82,6 +82,9 @@ PUBLISHED:
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
 
+  INLINE void set_max_depth(int value);
+  INLINE int get_max_depth();
+
   INLINE void set_open(bool value);
   INLINE bool is_open();
 
@@ -124,6 +127,7 @@ private:
 
   bool _visible;
   bool _open;
+  int _max_depth;
 
 public:
   static void register_with_read_factory();

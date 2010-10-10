@@ -257,3 +257,21 @@ INLINE void PortalNode::set_open(bool value) {
 INLINE bool PortalNode::is_open() {
   return _open;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_max_depth
+//       Access: Published
+//  Description: Set the maximum depth this portal will be visible at
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_max_depth(int value) {
+  _max_depth = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::get_max_depth
+//       Access: Published
+//  Description: Returns the maximum depth this portal will be visible at
+////////////////////////////////////////////////////////////////////
+INLINE int PortalNode::get_max_depth() {
+  return _max_depth;
+}

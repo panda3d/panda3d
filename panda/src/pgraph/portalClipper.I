@@ -175,15 +175,8 @@ get_reduced_viewport(LPoint2f& min, LPoint2f& max) const  {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
 is_facing_view(Planef portal_plane) {
-  //  Planef view_plane(_reduced_frustum->get_point(4), _reduced_frustum->get_point(5), _reduced_frustum->get_point(6));
-
-  // use the view_frustum's near plane to calculate direction
-  //portal_cat.spam() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
-  //float direction = portal_plane.get_normal().dot(-view_plane.get_normal());
-  portal_cat.spam() << portal_plane.get_normal() << "; " << Normalf::forward() << endl;
-  float direction = portal_plane.get_normal().dot(Normalf::forward());
-  portal_cat.spam() << "Found direction of " << direction << endl;
-  return (direction < _FACING_THRESHOLD);
+  portal_cat.debug() << "portal plane check value: " << portal_plane[3] << "\n";
+  return (portal_plane[3] > 0);
 }
 
 ////////////////////////////////////////////////////////////////////

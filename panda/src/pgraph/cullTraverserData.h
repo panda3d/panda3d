@@ -83,6 +83,7 @@ public:
   PT(GeometricBoundingVolume) _view_frustum;
   CPT(CullPlanes) _cull_planes;
   DrawMask _draw_mask;
+  int _portal_depth;
 
 private:
   bool is_in_view_impl();
