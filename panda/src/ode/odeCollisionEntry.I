@@ -26,7 +26,7 @@ OdeCollisionEntry() {
 //       Access: Published
 //  Description: Returns the first geom in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeGeom OdeCollisionEntry::
+INLINE OdeGeom OdeCollisionEntry::
 get_geom1() const {
   return OdeGeom(_geom1);
 }
@@ -36,7 +36,7 @@ get_geom1() const {
 //       Access: Published
 //  Description: Returns the second geom in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeGeom OdeCollisionEntry::
+INLINE OdeGeom OdeCollisionEntry::
 get_geom2() const {
   return OdeGeom(_geom2);
 }
@@ -46,7 +46,7 @@ get_geom2() const {
 //       Access: Published
 //  Description: Returns the first body in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeBody OdeCollisionEntry::
+INLINE OdeBody OdeCollisionEntry::
 get_body1() const {
   return OdeBody(_body1);
 }
@@ -56,7 +56,7 @@ get_body1() const {
 //       Access: Published
 //  Description: Returns the second body in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeBody OdeCollisionEntry::
+INLINE OdeBody OdeCollisionEntry::
 get_body2() const {
   return OdeBody(_body2);
 }
@@ -66,7 +66,7 @@ get_body2() const {
 //       Access: Published
 //  Description: Returns the number of contacts in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const size_t OdeCollisionEntry::
+INLINE size_t OdeCollisionEntry::
 get_num_contacts() const {
   return _num_contacts;
 }
@@ -76,7 +76,7 @@ get_num_contacts() const {
 //       Access: Published
 //  Description: Returns the nth contact geom in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeContactGeom OdeCollisionEntry::
+INLINE OdeContactGeom OdeCollisionEntry::
 get_contact_geom(size_t n) const {
   nassertr(n >= 0 && n < _num_contacts, OdeContactGeom());
   return _contact_geoms[n];
@@ -87,7 +87,7 @@ get_contact_geom(size_t n) const {
 //       Access: Published
 //  Description: Returns the nth contact geom in the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const OdeContactGeom OdeCollisionEntry::
+INLINE OdeContactGeom OdeCollisionEntry::
 operator [] (size_t n) const {
   nassertr(n >= 0 && n < _num_contacts, OdeContactGeom());
   return _contact_geoms[n];
@@ -100,7 +100,7 @@ operator [] (size_t n) const {
 //               This does exactly the same as
 //               get_contact_geom(n).get_pos().
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f OdeCollisionEntry::
+INLINE LPoint3f OdeCollisionEntry::
 get_contact_point(size_t n) const {
   nassertr(n >= 0 && n < _num_contacts, LPoint3f::zero());
   return _contact_geoms[n].get_pos();

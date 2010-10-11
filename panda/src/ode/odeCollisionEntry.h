@@ -31,15 +31,15 @@ class EXPCL_PANDAODE OdeCollisionEntry : public TypedReferenceCount {
 PUBLISHED:
   virtual ~OdeCollisionEntry();
   
-  INLINE const OdeGeom get_geom1() const;
-  INLINE const OdeGeom get_geom2() const;
-  INLINE const OdeBody get_body1() const;
-  INLINE const OdeBody get_body2() const;
+  INLINE OdeGeom get_geom1() const;
+  INLINE OdeGeom get_geom2() const;
+  INLINE OdeBody get_body1() const;
+  INLINE OdeBody get_body2() const;
   
-  INLINE const size_t get_num_contacts() const;
-  INLINE const LPoint3f get_contact_point(size_t n) const;
-  INLINE const OdeContactGeom get_contact_geom(size_t n) const;
-  INLINE const OdeContactGeom operator [] (size_t n) const;
+  INLINE size_t get_num_contacts() const;
+  INLINE LPoint3f get_contact_point(size_t n) const;
+  INLINE OdeContactGeom get_contact_geom(size_t n) const;
+  INLINE OdeContactGeom operator [] (size_t n) const;
   MAKE_SEQ(get_contact_points, get_num_contacts, get_contact_point);
   MAKE_SEQ(get_contact_geoms, get_num_contacts, get_contact_geom);
   
