@@ -1489,11 +1489,12 @@ def SdkLocatePhysX():
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
-    # thirdparty dir, and pick the highest-numbered one.
-    speedtrees = []
-    dir = GetThirdpartyDir()
+    # sdks/win32/speedtree dir, and pick the highest-numbered one.
+    dir = GetSdkDir("speedtree")
     if not os.path.exists(dir):
         return
+
+    speedtrees = []
     for dirname in os.listdir(dir):
         if dirname.startswith('SpeedTree SDK v'):
             version = dirname[15:].split()[0]
