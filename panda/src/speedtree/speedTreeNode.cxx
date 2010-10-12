@@ -755,6 +755,15 @@ combine_with(PandaNode *other) {
     // Two SpeedTreeNodes can combine by moving trees from one to the
     // other, similar to the way GeomNodes combine.
     SpeedTreeNode *gother = DCAST(SpeedTreeNode, other);
+
+    // But, not if they both have a terrain set.
+    if (has_terrain() && gother->has_terrain()) {
+      return NULL;
+
+    } else if (gother->has_terrain()) {
+      set_terrain(gother->get_terrain());
+    }
+
     add_instances_from(gother);
     return this;
   }

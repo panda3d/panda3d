@@ -33,11 +33,13 @@ ConfigVariableString speedtree_license
 ("speedtree-license", "", 
  PRC_DESC("Specify the license string to pass to SpeedTreeNode::authorize() by default."));
 
+#ifndef CPPPARSER
 ConfigVariableFilename speedtree_shaders_dir
 ("speedtree-shaders-dir", Filename(Filename::from_os_specific(SPEEDTREE_BIN_DIR), "Shaders"),
  PRC_DESC("Specifies the directory in which to locate SpeedTree's system "
 	  "shaders at runtime.  If this is empty, the default is based on "
 	  "SPEEDTREE_BIN_DIR, as provided at compile time."));
+#endif  // CPPPARSER
 
 ConfigVariableFilename speedtree_textures_dir
 ("speedtree-textures-dir", "",
