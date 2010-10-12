@@ -14,6 +14,7 @@
 
 #include "pandabase.h"
 #include "speedTreeNode.h"
+#include "stBasicTerrain.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
 #include "cullTraverser.h"
@@ -57,7 +58,7 @@ SpeedTreeNode(const string &name) :
   // Early versions of SpeedTree don't destruct unused CForestRender
   // objects correctly.  To avoid crashes, we have to leak these
   // things.
-  , _forest(*(new SpeedTree::CForestRender))
+  , _forest_render(*(new SpeedTree::CForestRender))
 #endif
 {
   init_node();
@@ -94,19 +95,19 @@ SpeedTreeNode(const string &name) :
     }
   }
 
-  string os_shaders_dir = shaders_dir.to_os_specific();
+  _os_shaders_dir = shaders_dir.to_os_specific();
   // Ensure the path ends with a terminal slash; SpeedTree requires this.
 #ifdef WIN32
-  if (!os_shaders_dir.empty() && os_shaders_dir[os_shaders_dir.length() - 1] != '\\') {
-    os_shaders_dir += "\\";
+  if (!_os_shaders_dir.empty() && _os_shaders_dir[_os_shaders_dir.length() - 1] != '\\') {
+    _os_shaders_dir += "\\";
   }
 #else
-  if (!os_shaders_dir.empty() && os_shaders_dir[os_shaders_dir.length() - 1] != '/') {
-    os_shaders_dir += "/";
+  if (!_os_shaders_dir.empty() && _os_shaders_dir[_os_shaders_dir.length() - 1] != '/') {
+    _os_shaders_dir += "/";
   }
 #endif
 
-  render_info.m_strShaderPath = os_shaders_dir.c_str();
+  render_info.m_strShaderPath = _os_shaders_dir.c_str();
   render_info.m_nMaxAnisotropy = speedtree_max_anisotropy;
   render_info.m_bHorizontalBillboards = speedtree_horizontal_billboards;
   render_info.m_fAlphaTestScalar = speedtree_alpha_test_scalar;
@@ -114,7 +115,10 @@ SpeedTreeNode(const string &name) :
   render_info.m_nMaxBillboardImagesByBase = speedtree_max_billboard_images_by_base;
   render_info.m_fVisibility = speedtree_visibility;
   render_info.m_fGlobalLightScalar = speedtree_global_light_scalar;
-  //render_info.m_sLightMaterial = ...
+  render_info.m_sLightMaterial.m_vAmbient = SpeedTree::Vec4(speedtree_ambient_color[0], speedtree_ambient_color[1], speedtree_ambient_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vDiffuse = SpeedTree::Vec4(speedtree_diffuse_color[0], speedtree_diffuse_color[1], speedtree_diffuse_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vSpecular = SpeedTree::Vec4(speedtree_specular_color[0], speedtree_specular_color[1], speedtree_specular_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vEmissive = SpeedTree::Vec4(speedtree_emissive_color[0], speedtree_emissive_color[1], speedtree_emissive_color[2], 1.0f);
   render_info.m_bSpecularLighting = speedtree_specular_lighting;
   render_info.m_bTransmissionLighting = speedtree_transmission_lighting;
   render_info.m_bDetailLayer = speedtree_detail_layer;
@@ -138,7 +142,7 @@ SpeedTreeNode(const string &name) :
   render_info.m_bWindEnabled = speedtree_wind_enabled;
   render_info.m_bFrondRippling = speedtree_frond_rippling;
   
-  _forest.SetRenderInfo(render_info);
+  _forest_render.SetRenderInfo(render_info);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,9 +188,9 @@ add_tree(const STTree *tree) {
     bool inserted = result.second;
     nassertr(inserted, *(*ti));
 
-    if (!_forest.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
+    if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to register tree " << tree->get_filename() << "\n";
+	<< "Failed to register tree " << tree->get_fullpath() << "\n";
       speedtree_cat.warning()
 	<< SpeedTree::CCore::GetError() << "\n";
     }
@@ -213,9 +217,9 @@ remove_tree(const STTree *tree) {
     return 0;
   }
 
-  if (!_forest.UnregisterTree(tree->get_tree())) {
+  if (!_forest_render.UnregisterTree(tree->get_tree())) {
     speedtree_cat.warning()
-      << "Failed to unregister tree " << tree->get_filename() << "\n";
+      << "Failed to unregister tree " << tree->get_fullpath() << "\n";
     speedtree_cat.warning()
       << SpeedTree::CCore::GetError() << "\n";
   }
@@ -242,9 +246,9 @@ remove_all_trees() {
   for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
     InstanceList *instance_list = (*ti);
     const STTree *tree = instance_list->get_tree();
-    if (!_forest.UnregisterTree(tree->get_tree())) {
+    if (!_forest_render.UnregisterTree(tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to unregister tree " << tree->get_filename() << "\n";
+	<< "Failed to unregister tree " << tree->get_fullpath() << "\n";
       speedtree_cat.warning()
 	<< SpeedTree::CCore::GetError() << "\n";
     }
@@ -387,25 +391,33 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
 bool SpeedTreeNode::
-add_from_stf(const Filename &pathname, const LoaderOptions &options) {
+add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  Filename filename = Filename::text_filename(pathname);
-  PT(VirtualFile) file = vfs->get_file(filename);
+  Filename fullpath = Filename::text_filename(stf_filename);
+  vfs->resolve_filename(fullpath, get_model_path());
+
+  if (!vfs->exists(fullpath)) {
+    speedtree_cat.warning()
+      << "Couldn't find " << stf_filename << "\n";
+    return false;
+  }
+
+  PT(VirtualFile) file = vfs->get_file(fullpath);
   if (file == (VirtualFile *)NULL) {
     // No such file.
     speedtree_cat.error()
-      << "Could not find " << pathname << "\n";
+      << "Could not find " << stf_filename << "\n";
     return false;
   }
 
   if (speedtree_cat.is_debug()) {
     speedtree_cat.debug()
-      << "Reading STF file " << filename << "\n";
+      << "Reading STF file " << fullpath << "\n";
   }
 
   istream *in = file->open_read_file(true);
-  bool success = add_from_stf(*in, pathname, options);
+  bool success = add_from_stf(*in, fullpath, options);
   vfs->close_read_file(in);
 
   return success;
@@ -514,6 +526,123 @@ add_from_stf(istream &in, const Filename &pathname,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::setup_terrain
+//       Access: Published
+//  Description: A convenience function to set up terrain geometry by
+//               reading a terrain.txt file as defined by SpeedTree.
+//               This file names the various map files that define the
+//               terrain, as well as defining parameters size as its
+//               size and color.
+//
+//               This method implicitly creates a STBasicTerrain
+//               object and passes it to set_terrain().
+////////////////////////////////////////////////////////////////////
+bool SpeedTreeNode::
+setup_terrain(const Filename &terrain_file) {
+  PT(STBasicTerrain) terrain = new STBasicTerrain;
+  if (terrain->setup_terrain(terrain_file)) {
+    set_terrain(terrain);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::set_terrain
+//       Access: Published
+//  Description: Associated a terrain with the node.  If the terrain
+//               has not already been loaded prior to this call,
+//               load_data() will be called immediately.
+//
+//               The terrain will be rendered using SpeedTree
+//               callbacks, and trees may be repositioned with a call
+//               to snap_to_terrain().
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+set_terrain(STTerrain *terrain) {
+  _terrain = NULL;
+  if (terrain == (STTerrain *)NULL) {
+    return;
+  }
+
+  if (!terrain->is_valid()) {
+    // If the terrain was not already loaded, load it immediately.
+    terrain->load_data();
+  }
+
+  nassertv(terrain->is_valid());
+  nassertv(terrain->get_num_splat_layers() == SpeedTree::c_nNumTerrainSplatLayers);
+  _terrain = terrain;
+
+  _terrain_render.SetShaderLoader(_forest_render.GetShaderLoader());
+
+  SpeedTree::STerrainRenderInfo render_info;
+  render_info.m_strShaderPath = _os_shaders_dir.c_str();
+
+  string os_specific = terrain->get_normal_map().to_os_specific();
+  render_info.m_strNormalMap = os_specific.c_str();
+  os_specific = terrain->get_splat_map().to_os_specific();
+  render_info.m_strSplatMap = os_specific.c_str();
+
+  for (int i = 0; i < SpeedTree::c_nNumTerrainSplatLayers; ++i) {
+    os_specific = terrain->get_splat_layer(i).to_os_specific();
+    render_info.m_astrSplatLayers[i] = os_specific.c_str();
+    render_info.m_afSplatTileValues[i] = terrain->get_splat_layer_tiling(i);
+  }
+
+  render_info.m_fNormalMapBlueScale = 1.0f;
+  render_info.m_bShadowsEnabled = false;
+  render_info.m_bZPrePass = false;
+
+  _terrain_render.SetRenderInfo(render_info);
+  _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
+  _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
+			  speedtree_max_num_visible_cells);
+  _visible_terrain.Reserve(speedtree_max_num_visible_cells);
+
+  _terrain_render.SetHeightHints(terrain->get_min_height(), terrain->get_max_height());
+
+  _needs_repopulate = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::snap_to_terrain
+//       Access: Published
+//  Description: Adjusts all the trees in this node so that their Z
+//               position matches the height of the terrain at their
+//               X, Y position.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+snap_to_terrain() {
+  Trees::iterator ti;
+  for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
+    InstanceList *instance_list = (*ti);
+
+    int num_instances = instance_list->get_num_instances();
+    if (_terrain != (STTerrain *)NULL) {
+      for (int i = 0; i < num_instances; ++i) {
+	STTransform trans = instance_list->get_instance(i);
+	LPoint3f pos = trans.get_pos();
+	pos[2] = _terrain->get_height(pos[0], pos[1]);
+	trans.set_pos(pos);
+	instance_list->set_instance(i, trans);
+      }
+    } else {
+      for (int i = 0; i < num_instances; ++i) {
+	STTransform trans = instance_list->get_instance(i);
+	LPoint3f pos = trans.get_pos();
+	pos[2] = 0.0f;
+	trans.set_pos(pos);
+	instance_list->set_instance(i, trans);
+      }
+    }
+  }
+
+  _needs_repopulate = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::authorize
 //       Access: Published, Static
 //  Description: Make this call to initialized the SpeedTree API and
@@ -555,20 +684,20 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
   // Early versions of SpeedTree don't destruct unused CForestRender
   // objects correctly.  To avoid crashes, we have to leak these
   // things.
-  , _forest(*(new SpeedTree::CForestRender))
+  , _forest_render(*(new SpeedTree::CForestRender))
 #endif
 {
   init_node();
 
-  _forest.SetRenderInfo(copy._forest.GetRenderInfo());
+  _forest_render.SetRenderInfo(copy._forest_render.GetRenderInfo());
 
   Trees::const_iterator ti;
   for (ti = copy._trees.begin(); ti != copy._trees.end(); ++ti) {
     InstanceList *instance_list = (*ti);
     const STTree *tree = instance_list->get_tree();
-    if (!_forest.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
+    if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to register tree " << tree->get_filename() << "\n";
+	<< "Failed to register tree " << tree->get_fullpath() << "\n";
       speedtree_cat.warning()
 	<< SpeedTree::CCore::GetError() << "\n";
     }
@@ -588,7 +717,7 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
 SpeedTreeNode::
 ~SpeedTreeNode() {
   // Help reduce memory waste from ST_DELETE_FOREST_HACK.
-  _forest.ClearInstances();
+  _forest_render.ClearInstances();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -702,8 +831,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   ClockObject *clock = ClockObject::get_global_clock();
-  _forest.SetGlobalTime(clock->get_frame_time());
-  _forest.AdvanceGlobalWind();
+  _forest_render.SetGlobalTime(clock->get_frame_time());
+  _forest_render.AdvanceGlobalWind();
   
   // Compute the modelview and camera transforms, to pass to the
   // SpeedTree CView structure.
@@ -733,7 +862,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (ta != (TextureAttrib *)NULL) {
     show_textures = !ta->has_all_off();
   }
-  _forest.EnableTexturing(show_textures);
+  _forest_render.EnableTexturing(show_textures);
+  _terrain_render.EnableTexturing(show_textures);
 
   // Check lighting state.  SpeedTree only supports a single
   // directional light; we look for a directional light in the
@@ -748,21 +878,27 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     CPT(TransformState) transform = light.get_transform(trav->get_scene()->get_scene_root().get_parent());
     LVector3f dir = light_obj->get_direction() * transform->get_mat();
-    _forest.SetLightDir(SpeedTree::Vec3(dir[0], dir[1], dir[2]));
+    _light_dir = SpeedTree::Vec3(dir[0], dir[1], dir[2]);
 
   } else {
     // No light.  But there's no way to turn off lighting in
     // SpeedTree.  In lieu of this, we just shine a light from
     // above.
-    _forest.SetLightDir(SpeedTree::Vec3(0.0, 0.0, -1.0));
+    _light_dir = SpeedTree::Vec3(0.0, 0.0, -1.0);
   }
+
+  _forest_render.SetLightDir(_light_dir);
 
   if (!_needs_repopulate) {
     // Don't bother culling now unless we're correctly fully
     // populated.  (Culling won't be accurate unless the forest has
     // been populated, but we have to be in the draw traversal to
     // populate.)
-    _forest.CullAndComputeLOD(_view, _visible_trees);
+    _forest_render.CullAndComputeLOD(_view, _visible_trees);
+
+    if (has_terrain()) {
+      _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
+    }
   }
 
   // Recurse onto the node's children.
@@ -921,9 +1057,10 @@ init_node() {
     return;
   }
 
-  _forest.SetHint(SpeedTree::CForest::HINT_MAX_NUM_VISIBLE_CELLS, speedtree_max_num_visible_cells);
+  _forest_render.SetHint(SpeedTree::CForest::HINT_MAX_NUM_VISIBLE_CELLS, 
+			 speedtree_max_num_visible_cells);
 
-  _forest.SetCullCellSize(speedtree_cull_cell_size);
+  _forest_render.SetCullCellSize(speedtree_cull_cell_size);
 
   _is_valid = true;
 }
@@ -958,7 +1095,7 @@ r_add_instances(PandaNode *node, const TransformState *transform,
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 repopulate() {
-  _forest.ClearInstances();
+  _forest_render.ClearInstances();
 
   Trees::iterator ti;
   for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
@@ -973,7 +1110,7 @@ repopulate() {
       continue;
     }
 
-    if (!_forest.AddInstances(tree->get_tree(), &instances[0], instances.size())) {
+    if (!_forest_render.AddInstances(tree->get_tree(), &instances[0], instances.size())) {
       speedtree_cat.warning()
 	<< "Failed to add " << instances.size()
 	<< " instances for " << *tree << "\n";
@@ -982,7 +1119,7 @@ repopulate() {
     }
   }
   
-  _forest.GetPopulationStats(_population_stats);
+  _forest_render.GetPopulationStats(_population_stats);
   print_forest_stats(_population_stats);
 
   // setup billboard caps based on instances-per-cell stats
@@ -1005,11 +1142,57 @@ repopulate() {
     max_instances_by_cell = max(max_instances_by_cell, max_instances);
   }
 
-  _visible_trees.Reserve(_forest.GetBaseTrees(),
-			 _forest.GetBaseTrees().size(), 
+  _visible_trees.Reserve(_forest_render.GetBaseTrees(),
+			 _forest_render.GetBaseTrees().size(), 
 			 speedtree_max_num_visible_cells, 
 			 max_instances_by_cell,
 			 speedtree_horizontal_billboards);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::update_terrain_cells
+//       Access: Private
+//  Description: Called once a frame to load vertex data for
+//               newly-visible terrain cells.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+update_terrain_cells() {
+  nassertv(has_terrain());
+
+  SpeedTree::TTerrainCellArray &cells = _visible_terrain.m_aCellsToUpdate;
+
+  int num_tile_res = _terrain_render.GetMaxTileRes();
+  float cell_size = _terrain_render.GetCellSize();
+
+  // A temporary vertex data object for populating terrain.
+  PT(GeomVertexData) vertex_data = 
+    new GeomVertexData("terrain", _terrain->get_vertex_format(), 
+		       GeomEnums::UH_static);
+  int num_vertices = num_tile_res * num_tile_res;
+  vertex_data->set_num_rows(num_vertices);
+  size_t num_bytes = vertex_data->get_array(0)->get_data_size_bytes();
+
+  int num_cells = (int)cells.size();
+  for (int ci = 0; ci < num_cells; ++ci) {
+    SpeedTree::CTerrainCell *cell = cells[ci];
+    nassertv(cell != NULL && cell->GetVbo() != NULL);
+    int cell_yi = cell->Row();
+    int cell_xi = cell->Col();
+    //cerr << "populating cell " << cell_xi << " " << cell_yi << "\n";
+
+    _terrain->fill_vertices(vertex_data,
+			    cell_xi * cell_size, cell_yi * cell_size,
+			    cell_size, num_tile_res);
+
+    const GeomVertexArrayData *array_data = vertex_data->get_array(0);
+    CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
+    const unsigned char *data_pointer = handle->get_read_pointer(true);
+    SpeedTree::CGeometryBuffer *vbo = (SpeedTree::CGeometryBuffer *)cell->GetVbo();
+
+    nassertv(vbo->NumVertices() == num_tile_res * num_tile_res);
+    nassertv(vbo->NumVertices() * vbo->VertexSize() == handle->get_data_size_bytes());
+    vbo->OverwriteVertices(data_pointer, num_vertices, 0);
+  }    
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1060,15 +1243,42 @@ draw_callback(CallbackData *data) {
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, geom_cbdata->get_gsg());
 
   setup_for_render(gsg);
+
+  if (_terrain_render.IsEnabled()) {
+
+    // Is this needed for terrain?
+    _terrain_render.UploadShaderConstants
+      (&_forest_render, _light_dir,
+       _forest_render.GetRenderInfo().m_sLightMaterial);
+
+    // set terrain render states
+    //SetTransparentTextureMode(TRANS_TEXTURE_NOTHING);
+
+    // render actual terrain
+    bool terrain = _terrain_render.Render
+      (&_forest_render, _visible_terrain, SpeedTree::RENDER_PASS_STANDARD,
+       _light_dir, _forest_render.GetRenderInfo().m_sLightMaterial, 
+       &_forest_render.GetRenderStats());
+
+    if (!terrain) {
+      speedtree_cat.warning()
+	<< "Failed to render terrain\n";
+      speedtree_cat.warning()
+	<< SpeedTree::CCore::GetError() << "\n";
+    }
+
+    // restore default forest rendering states
+    //SetTransparentTextureMode(ETextureAlphaRenderMode(m_uiTransparentTextureRenderMode));
+  }
   
   // start the forest render
-  _forest.StartRender();
+  _forest_render.StartRender();
   
-  bool branches = _forest.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool fronds = _forest.RenderFronds(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool leaf_meshes = _forest.RenderLeafMeshes(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool leaf_cards = _forest.RenderLeafCards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
-  bool billboards = _forest.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+  bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+  bool fronds = _forest_render.RenderFronds(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+  bool leaf_meshes = _forest_render.RenderLeafMeshes(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+  bool leaf_cards = _forest_render.RenderLeafCards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+  bool billboards = _forest_render.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
 
   if (!branches || !fronds || !leaf_meshes || !leaf_cards || !billboards) {
     speedtree_cat.warning()
@@ -1078,7 +1288,7 @@ draw_callback(CallbackData *data) {
       << SpeedTree::CCore::GetError() << "\n";
   }
 
-  _forest.EndRender();
+  _forest_render.EndRender();
 
   // SpeedTree leaves the graphics state indeterminate.  But this
   // doesn't help?
@@ -1167,9 +1377,9 @@ setup_for_render(GraphicsStateGuardian *gsg) {
 #endif
       }
 
-      if (!_forest.InitTreeGraphics((SpeedTree::CTreeRender *)tree->get_tree(), 
-				    max_instances, speedtree_horizontal_billboards,
-				    os_textures_dir.c_str())) {
+      if (!_forest_render.InitTreeGraphics((SpeedTree::CTreeRender *)tree->get_tree(), 
+					   max_instances, speedtree_horizontal_billboards,
+					   os_textures_dir.c_str())) {
 	speedtree_cat.warning()
 	  << "Failed to init tree graphics for " << *tree << "\n";
 	speedtree_cat.warning()
@@ -1178,7 +1388,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     }
 
     // Init overall graphics
-    if (!_forest.InitGraphics(false)) {
+    if (!_forest_render.InitGraphics(false)) {
       speedtree_cat.warning()
 	<< "Failed to init graphics\n";
       speedtree_cat.warning()
@@ -1190,16 +1400,39 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     // This call apparently must be made at draw time, not earlier,
     // because it might attempt to create OpenGL index buffers and
     // such.
-    _forest.UpdateTreeCellExtents();
+    _forest_render.UpdateTreeCellExtents();
+
+    if (has_terrain()) {
+      // Now initialize the terrain.
+      static const int speedtree_terrain_num_lods = 5;  // number of LOD stages
+      static const int speedtree_terrain_resolution = 33; // num vertices per edge of grid cell at highest LOD, must be power-of-two-plus-1
+      static const float speedtree_terrain_cell_size = 800.0f;  // spatial size of one edge of grid cell
+      
+      if (!_terrain_render.Init(speedtree_terrain_num_lods, 
+				speedtree_terrain_resolution,
+				speedtree_terrain_cell_size,
+				_terrain->get_st_vertex_format())) {
+	speedtree_cat.warning()
+	  << "Failed to init terrain\n";
+	speedtree_cat.warning()
+	  << SpeedTree::CCore::GetError() << "\n";
+      }
+    }
 
     // If we needed to repopulate, it means we didn't cull in the cull
     // traversal.  Do it now.
-    _forest.CullAndComputeLOD(_view, _visible_trees);
+    _forest_render.CullAndComputeLOD(_view, _visible_trees);
+    if (has_terrain()) {
+      _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
+    }
 
     _needs_repopulate = false;
   }
+  if (has_terrain()) {
+    update_terrain_cells();
+  }
 
-  if (!_forest.UploadViewShaderParameters(_view)) {
+  if (!_forest_render.UploadViewShaderParameters(_view)) {
     speedtree_cat.warning()
       << "Couldn't set view parameters\n";
     speedtree_cat.warning()

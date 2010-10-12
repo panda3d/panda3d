@@ -25,18 +25,6 @@ get_fullpath() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: STTree::get_filename
-//       Access: Published
-//  Description: Returns the original filename given for the SRT file
-//               for this tree, before resolving it along the
-//               model-path, as passed to the constructor.
-////////////////////////////////////////////////////////////////////
-INLINE const Filename &STTree::
-get_filename() const {
-  return _filename;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: STTree::is_valid
 //       Access: Published
 //  Description: Returns true if the tree was successfully loaded and

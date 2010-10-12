@@ -80,6 +80,38 @@ modify_tree(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::clear_terrain
+//       Access: Published
+//  Description: Removes the terrain associated with the node.
+////////////////////////////////////////////////////////////////////
+INLINE void SpeedTreeNode::
+clear_terrain() {
+  set_terrain(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::has_terrain
+//       Access: Published
+//  Description: Returns true if a valid terrain has been associated
+//               with the node, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SpeedTreeNode::
+has_terrain() const {
+  return _terrain != (STTerrain *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::get_terrain
+//       Access: Published
+//  Description: Returns the terrain associated with the node, or NULL
+//               if there is no terrain.
+////////////////////////////////////////////////////////////////////
+INLINE STTerrain *SpeedTreeNode::
+get_terrain() const {
+  return _terrain;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::InstanceList::Constructor
 //       Access: Public
 //  Description:
@@ -128,6 +160,18 @@ INLINE STTransform SpeedTreeNode::InstanceList::
 get_instance(int n) const {
   nassertr(n >= 0 && n < (int)_instances.size(), STTransform::ident_mat());
   return _instances[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::InstanceList::set_instance
+//       Access: Published
+//  Description: Replaces the transform of the nth instance of this
+//               tree.
+////////////////////////////////////////////////////////////////////
+INLINE void SpeedTreeNode::InstanceList::
+set_instance(int n, const STTransform &transform) {
+  nassertv(n >= 0 && n < (int)_instances.size());
+  _instances[n] = transform;
 }
 
 ////////////////////////////////////////////////////////////////////

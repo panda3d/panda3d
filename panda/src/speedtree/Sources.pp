@@ -18,9 +18,11 @@
     loaderFileTypeSrt.h \
     loaderFileTypeStf.h \
     speedtree_api.h \
-    speedTreeNode.h \
-    stTransform.h \
-    stTree.h
+    speedTreeNode.h speedTreeNode.I \
+    stBasicTerrain.h stBasicTerrain.I \
+    stTerrain.h stTerrain.I \
+    stTransform.h stTransform.I \
+    stTree.h stTree.I
 
   // A generated file
   #define SOURCES $[SOURCES] speedtree_parameters.h 
@@ -31,15 +33,19 @@
     loaderFileTypeStf.cxx \
     speedtree_api.cxx \
     speedTreeNode.cxx \
+    stBasicTerrain.cxx \
+    stTerrain.cxx \
     stTransform.cxx \
     stTree.cxx
 
   #define INSTALL_HEADERS \
     speedtree_parameters.h \
     speedtree_api.h \
-    speedTreeNode.h \
-    stTransform.h \
-    stTree.h
+    speedTreeNode.h speedTreeNode.I \
+    stBasicTerrain.h stBasicTerrain.I \
+    stTerrain.h stTerrain.I \
+    stTransform.h stTransform.I \
+    stTree.h stTree.I
 
   #define IGATESCAN all
 

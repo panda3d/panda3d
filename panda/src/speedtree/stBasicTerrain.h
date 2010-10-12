@@ -1,0 +1,112 @@
+// Filename: stBasicTerrain.h
+// Created by:  drose (12Oct10)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef STBASICTERRAIN_H
+#define STBASICTERRAIN_H
+
+#include "pandabase.h"
+#include "stTerrain.h"
+#include "luse.h"
+#include "pvector.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : STBasicTerrain
+// Description : A specific implementation of STTerrain that supports
+//               basic heightmaps loaded from an image file, as
+//               described in a terrain.txt file similar to those
+//               provided with the SpeedTree example application.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDASPEEDTREE STBasicTerrain : public STTerrain {
+PUBLISHED:
+  STBasicTerrain();
+  STBasicTerrain(const STBasicTerrain &copy);
+  virtual ~STBasicTerrain();
+
+  void clear();
+
+  bool setup_terrain(const Filename &terrain_filename);
+  bool setup_terrain(istream &in, const Filename &pathname);
+
+  INLINE void set_height_map(const Filename &height_map);
+  INLINE const Filename &get_height_map() const;
+
+  virtual void load_data();
+
+  INLINE float get_size() const;
+  virtual float get_height(float x, float y) const;
+  virtual float get_smooth_height(float x, float y, float radius) const;
+  virtual float get_slope(float x, float y) const;
+
+  virtual void fill_vertices(GeomVertexData *data,
+			     float start_x, float start_y,
+			     float size_xy, int num_xy) const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+protected:
+  bool read_height_map();
+
+private:
+  static void read_quoted_filename(Filename &result, istream &in, 
+				   const Filename &dirname);
+
+protected:
+  template<class ValueType>
+  class InterpolationData {
+  public:
+    InterpolationData();
+    void reset(int width, int height);
+
+    ValueType get_nearest_neighbor(float u, float v) const;
+    ValueType calc_bilinear_interpolation(float u, float v) const;
+    ValueType calc_smooth(float u, float v, float radius) const;
+    bool is_present() const;
+
+    int _width;
+    int _height;
+    pvector<ValueType> _data;
+  };
+
+protected:
+  Filename _height_map;
+  float _size;
+  float _height_scale;
+
+  InterpolationData<float> _height_data;
+  //InterpolationData<LVector3f> _normal_data;
+  InterpolationData<float> _slope_data;
+  //InterpolationData<unsigned char> _ao_data;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    STTerrain::init_type();
+    register_type(_type_handle, "STBasicTerrain",
+                  STTerrain::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "stBasicTerrain.I"
+
+#endif

@@ -25,20 +25,12 @@ TypeHandle STTree::_type_handle;
 //               the read was successful or not.  Note that the
 //               filename must be a fully-qualified pathname; the
 //               STTree constructor does not search the model-path.
-//               (However, the user-specified relative filename may be
-//               specified as an optional second parameter, which is
-//               used for documentary purposes only.)
 ////////////////////////////////////////////////////////////////////
 STTree::
-STTree(const Filename &fullpath, const Filename &filename) :
+STTree(const Filename &fullpath) :
   Namable(fullpath.get_basename_wo_extension()),
-  _fullpath(fullpath),
-  _filename(filename)
+  _fullpath(fullpath)
 {
-  if (_filename.empty()) {
-    _filename = fullpath;
-  }
-
   _is_valid = false;
 
   // Ensure we have a license.
@@ -70,7 +62,7 @@ STTree(const Filename &fullpath, const Filename &filename) :
   }
 
   speedtree_cat.info() 
-    << "Read " << _filename << "\n";
+    << "Read " << _fullpath << "\n";
   _is_valid = true;
 }
 

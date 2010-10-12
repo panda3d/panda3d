@@ -14,6 +14,8 @@
 
 #include "config_speedtree.h"
 #include "speedTreeNode.h"
+#include "stBasicTerrain.h"
+#include "stTerrain.h"
 #include "stTree.h"
 #include "loaderFileTypeSrt.h"
 #include "loaderFileTypeStf.h"
@@ -147,6 +149,26 @@ ConfigVariableDouble speedtree_sun_fog_bloom
 ("speedtree-sun-fog-bloom", 0.0,
  PRC_DESC("Undocumented SpeedTree parameter."));
 
+ConfigVariableDouble speedtree_ambient_color
+("speedtree-ambient-color", "1 1 1",
+ PRC_DESC("Specifies the r g b color of the ambient light on SpeedTree "
+	  "surfaces."));
+
+ConfigVariableDouble speedtree_diffuse_color
+("speedtree-diffuse-color", "1 1 1",
+ PRC_DESC("Specifies the r g b color of the diffuse light on SpeedTree "
+	  "surfaces."));
+
+ConfigVariableDouble speedtree_specular_color
+("speedtree-specular-color", "1 1 1",
+ PRC_DESC("Specifies the r g b color of the specular reflections on SpeedTree "
+	  "surfaces."));
+
+ConfigVariableDouble speedtree_emissive_color
+("speedtree-emissive-color", "0 0 0",
+ PRC_DESC("Specifies the r g b color of the emissive light effect on SpeedTree "
+	  "surfaces."));
+
 ConfigVariableInt speedtree_num_shadow_maps
 ("speedtree-num-shadow-maps", 3,
  PRC_DESC("Specifies the number of shadow maps to use to render SpeedTree "
@@ -216,6 +238,8 @@ init_libspeedtree() {
   initialized = true;
 
   SpeedTreeNode::init_type();
+  STBasicTerrain::init_type();
+  STTerrain::init_type();
   STTree::init_type();
   LoaderFileTypeSrt::init_type();
   LoaderFileTypeStf::init_type();

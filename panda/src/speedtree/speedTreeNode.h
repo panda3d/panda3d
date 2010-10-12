@@ -20,6 +20,7 @@
 #include "pointerTo.h"
 #include "stTree.h"
 #include "stTransform.h"
+#include "stTerrain.h"
 #include "callbackObject.h"
 #include "loaderOptions.h"
 #include "transformState.h"
@@ -68,6 +69,7 @@ PUBLISHED:
     INLINE int get_num_instances() const;
     INLINE STTransform get_instance(int n) const;
     MAKE_SEQ(get_instances, get_num_instances, get_instance);
+    INLINE void set_instance(int n, const STTransform &transform);
 
     INLINE int add_instance(const STTransform &transform);
     INLINE void remove_instance(int n);
@@ -108,11 +110,19 @@ PUBLISHED:
   void add_instances(const NodePath &root, const TransformState *transform = TransformState::make_identity());
   void add_instances_from(const SpeedTreeNode *other);
   void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
-  bool add_from_stf(const Filename &pathname, 
+  bool add_from_stf(const Filename &stf_filename, 
 		    const LoaderOptions &options = LoaderOptions());
   bool add_from_stf(istream &in, const Filename &pathname, 
 		    const LoaderOptions &options = LoaderOptions(),
 		    Loader *loader = NULL);
+
+  bool setup_terrain(const Filename &terrain_file);
+  void set_terrain(STTerrain *terrain);
+  INLINE void clear_terrain();
+  INLINE bool has_terrain() const;
+  INLINE STTerrain *get_terrain() const;
+
+  void snap_to_terrain();
 
   static bool authorize(const string &license = "");
 
@@ -145,6 +155,7 @@ private:
 		       Thread *current_thread);
 
   void repopulate();
+  void update_terrain_cells();
   bool validate_api(GraphicsStateGuardian *gsg);
   void draw_callback(CallbackData *cbdata);
   void setup_for_render(GraphicsStateGuardian *gsg);
@@ -179,20 +190,28 @@ private:
   };
 
 private:
+  string _os_shaders_dir;
+  
   // A list of instances per each unique tree.
   typedef ov_set<InstanceList *, IndirectLess<InstanceList> > Trees;
   Trees _trees;
 
 #ifdef ST_DELETE_FOREST_HACK
-  SpeedTree::CForestRender &_forest;
+  SpeedTree::CForestRender &_forest_render;
 #else
-  SpeedTree::CForestRender _forest;
+  SpeedTree::CForestRender _forest_render;
 #endif  // ST_DELETE_FOREST_HACK
   SpeedTree::CView _view;
   SpeedTree::SForestCullResultsRender _visible_trees;
   SpeedTree::CForest::SPopulationStats _population_stats;
   bool _needs_repopulate;
   bool _is_valid;
+
+  PT(STTerrain) _terrain;
+  SpeedTree::CTerrainRender _terrain_render;
+  SpeedTree::STerrainCullResults _visible_terrain;
+
+  SpeedTree::Vec3 _light_dir;
 
   static bool _authorized;
   static bool _done_first_init;

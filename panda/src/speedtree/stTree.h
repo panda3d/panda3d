@@ -29,13 +29,12 @@ class SpeedTreeNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDASPEEDTREE STTree : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  STTree(const Filename &fullpath, const Filename &filename = Filename());
+  STTree(const Filename &fullpath);
 private:
   STTree(const STTree &copy);
 
 PUBLISHED:
   INLINE const Filename &get_fullpath() const;
-  INLINE const Filename &get_filename() const;
 
   INLINE bool is_valid() const;
 
@@ -47,7 +46,6 @@ public:
 
 private:
   Filename _fullpath;
-  Filename _filename;
   bool _is_valid;
   SpeedTree::CTreeRender _tree;
 
