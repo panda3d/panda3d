@@ -46,6 +46,7 @@ INLINE float cmod(float x, float y);
 
 INLINE double cfloor(double f);
 INLINE double cceil(double f);
+INLINE double cfrac(double f);
 INLINE double csqrt(double v);
 INLINE double csin(double v);
 INLINE double ccos(double v);
