@@ -975,10 +975,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
     updated_splits[smi] = _shadow_infos[smi]._shadow_split;
   };
-  static const float shadow_fade = 0.25;
 
   _forest_render.SetCascadedShadowMapDistances(updated_splits, lens->get_far());
-  _forest_render.SetShadowFadePercentage(shadow_fade);
+  _forest_render.SetShadowFadePercentage(speedtree_shadow_fade);
 
   if (!_needs_repopulate) {
     // Don't bother culling now unless we're correctly fully
@@ -1622,10 +1621,6 @@ setup_for_render(GraphicsStateGuardian *gsg) {
 
     if (has_terrain()) {
       // Now initialize the terrain.
-      static const int speedtree_terrain_num_lods = 5;  // number of LOD stages
-      static const int speedtree_terrain_resolution = 33; // num vertices per edge of grid cell at highest LOD, must be power-of-two-plus-1
-      static const float speedtree_terrain_cell_size = 800.0f;  // spatial size of one edge of grid cell
-      
       if (!_terrain_render.Init(speedtree_terrain_num_lods, 
 				speedtree_terrain_resolution,
 				speedtree_terrain_cell_size,

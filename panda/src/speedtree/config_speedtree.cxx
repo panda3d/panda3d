@@ -169,7 +169,7 @@ ConfigVariableInt speedtree_shadow_map_resolution
 ConfigVariableDouble speedtree_cascading_shadow_splits
 ("speedtree-cascading-shadow-splits", "200 400 600",
  PRC_DESC("Specifies the shadow split distance, in spatial units, for "
-	  "each of shadow map to be rendered.  The number of values also "
+	  "each shadow map to be rendered.  The number of values also "
 	  "implies the number of shadow maps, to a maximum value compiled "
 	  "within SpeedTree (typically 4)."));
 
@@ -188,6 +188,30 @@ ConfigVariableBool speedtree_wind_enabled
 ConfigVariableBool speedtree_frond_rippling
 ("speedtree-frond-rippling", true,
  PRC_DESC("True to allow fronds to respond to the global wind."));
+
+ConfigVariableInt speedtree_terrain_num_lods
+("speedtree-terrain-num-lods", 5,
+ PRC_DESC("Specifies the number of different LOD stages to use in "
+	  "rendering terrain.  Each stage has 75% few polygons than the "
+	  "stage before.  Increasing this number decreases the total "
+	  "number of polygons onscreen, at the cost of visual quality of "
+	  "distant terrain."));
+
+ConfigVariableInt speedtree_terrain_resolution
+("speedtree-terrain-resolution", 33,
+ PRC_DESC("Specifies the number of vertices per edge of each terrain grid "
+	  "cell at the highest LOD.  This must be a power of two plus 1."));
+	  
+ConfigVariableInt speedtree_terrain_cell_size
+("speedtree-terrain-cell-size", 800,
+ PRC_DESC("Specifies the size in spatial units of one edge of a terrain "
+	  "grid cell.  This effects culling and resolution, but has nothing "
+	  "to do with the scale of the heightmap or other maps."));
+
+ConfigVariableDouble speedtree_shadow_fade
+("speedtree-shadow-fade", 0.25,
+ PRC_DESC("Specifies the rate at which shadows fade to transparency in the "
+	  "distance."));
 
 ConfigVariableBool speedtree_show_overlays
 ("speedtree-show-overlays", false,

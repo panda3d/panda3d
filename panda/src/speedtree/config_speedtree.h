@@ -60,7 +60,11 @@ extern ConfigVariableBool speedtree_smooth_shadows;
 extern ConfigVariableBool speedtree_show_shadow_splits_on_terrain;
 extern ConfigVariableBool speedtree_wind_enabled;
 extern ConfigVariableBool speedtree_frond_rippling;
+extern ConfigVariableInt speedtree_terrain_num_lods;
+extern ConfigVariableInt speedtree_terrain_resolution;
+extern ConfigVariableInt speedtree_terrain_cell_size;
 
+extern ConfigVariableDouble speedtree_shadow_fade;
 extern ConfigVariableBool speedtree_show_overlays;
 
 extern ConfigVariableInt speedtree_max_num_visible_cells;
