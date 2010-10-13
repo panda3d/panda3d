@@ -536,6 +536,7 @@ class ConnectionRepository(
         if ch.isConnectionReady():
             self.setConnectionHttp(ch)
             self._serverAddress = serverList[serverIndex-1]
+            self.notify.info("Successfully connected to %s." % (self._serverAddress.cStr()))
 
             ## if self.recorder:
             ##     # If we have a recorder, we wrap the connect inside a

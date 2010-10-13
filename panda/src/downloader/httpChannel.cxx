@@ -35,6 +35,8 @@
 
 TypeHandle HTTPChannel::_type_handle;
 
+#define _NOTIFY_HTTP_CHANNEL_ID   "[" << this << "] "
+
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::Constructor
 //       Access: Private
@@ -44,6 +46,13 @@ HTTPChannel::
 HTTPChannel(HTTPClient *client) :
   _client(client)
 {
+  // This should be debug
+  if (downloader_cat.is_info()) {
+    downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
+    << "created.\n";
+  }
+
   ConfigVariableDouble extra_ssl_handshake_time
     ("extra-ssl-handshake-time", 0.0,
      PRC_DESC("This specifies how much extra time to try to establish"
@@ -113,6 +122,13 @@ HTTPChannel(HTTPClient *client) :
 ////////////////////////////////////////////////////////////////////
 HTTPChannel::
 ~HTTPChannel() {
+  // This should be debug
+  if (downloader_cat.is_info()) {
+    downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
+    << "destroyed.\n";
+  }
+
   close_connection();
   reset_download_to();
 }
@@ -293,6 +309,13 @@ write_headers(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run() {
+  // This should be spam
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
+      << "run().\n";
+  }
+
   if (_state == _done_state || _state == S_failure) {
     clear_extra_headers();
     if (!reached_done_state()) {
@@ -314,6 +337,7 @@ run() {
       _bytes_requested += _bytes_per_update * num_potential_updates;
       if (downloader_cat.is_spam()) {
         downloader_cat.spam()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "elapsed = " << elapsed << " num_potential_updates = " 
           << num_potential_updates << " bytes_requested = " 
           << _bytes_requested << "\n";
@@ -347,6 +371,7 @@ run() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "begin run(), _state = " << _state << ", _done_state = "
       << _done_state << "\n";
   }
@@ -368,6 +393,7 @@ run() {
         // individual case has similar logic to prevent more than two
         // consecutive lost connections.
         downloader_cat.warning()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Too many lost connections, giving up.\n";
         _status_entry._status_code = SC_lost_connection;
         _state = S_failure;
@@ -388,10 +414,12 @@ run() {
       if (downloader_cat.is_debug()) {
         if (_connect_count > 0) {
           downloader_cat.debug()
+            << _NOTIFY_HTTP_CHANNEL_ID 
             << "Reconnecting to " << _bio->get_server_name() << ":" 
             << _bio->get_port() << "\n";
         } else {
           downloader_cat.debug()
+            << _NOTIFY_HTTP_CHANNEL_ID 
             << "Connecting to " << _bio->get_server_name() << ":" 
             << _bio->get_port() << "\n";
         }
@@ -406,6 +434,7 @@ run() {
     /*
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "continue run(), _state = " << _state << "\n";
     }
     */
@@ -497,6 +526,7 @@ run() {
       
     default:
       downloader_cat.warning()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Unhandled state " << _state << "\n";
       return false;
     }
@@ -512,6 +542,7 @@ run() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "later run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
@@ -803,6 +834,7 @@ get_connection() {
   // We're now passing ownership of the connection to the caller.
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "passing ownership of connection to caller.\n";
   }
   reset_to_new();
@@ -869,6 +901,7 @@ reached_done_state() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "terminating run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
@@ -882,17 +915,20 @@ reached_done_state() {
       _status_list.push_back(_status_entry);
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Reexamining failure responses.\n";
       }
       size_t best_i = 0;
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "  " << 0 << ". " << _status_list[0]._status_code << " "
           << _status_list[0]._status_string << "\n";
       }
       for (size_t i = 1; i < _status_list.size(); i++) {
         if (downloader_cat.is_debug()) {
           downloader_cat.debug()
+            << _NOTIFY_HTTP_CHANNEL_ID 
             << "  " << i << ". " << _status_list[i]._status_code << " "
             << _status_list[i]._status_string << "\n";
         }
@@ -903,6 +939,7 @@ reached_done_state() {
       }
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "chose index " << best_i << ", above.\n";
       }
       _status_entry = _status_list[best_i];
@@ -925,6 +962,7 @@ reached_done_state() {
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Unable to download body: " << _request.get_url() << "\n";
       }
       return false;
@@ -992,6 +1030,7 @@ run_connecting() {
       return false;
     }
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Could not connect to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
@@ -1000,8 +1039,10 @@ run_connecting() {
     return false;
   }
 
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
+  // This should be info or debug
+  if (downloader_cat.is_info()) {
+    downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Connected to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
   }
@@ -1036,6 +1077,7 @@ run_connecting_wait() {
   BIO_get_fd(*_bio, &fd);
   if (fd < 0) {
     downloader_cat.warning()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "nonblocking socket BIO has no file descriptor.\n";
     // This shouldn't be possible.
     _status_entry._status_code = SC_internal_error;
@@ -1045,6 +1087,7 @@ run_connecting_wait() {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "waiting to connect to " << _request.get_url().get_server_and_port() << ".\n";
   }
   fd_set wset;
@@ -1064,6 +1107,7 @@ run_connecting_wait() {
   int errcode = select(fd + 1, NULL, &wset, NULL, &tv);
   if (errcode < 0) {
     downloader_cat.warning()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Error in select.\n";
     // This shouldn't be possible.
     _status_entry._status_code = SC_internal_error;
@@ -1078,6 +1122,7 @@ run_connecting_wait() {
          _started_connecting_time > get_connect_timeout())) {
       // Time to give up.
       downloader_cat.info()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Timeout connecting to " 
         << _request.get_url().get_server_and_port() 
         << " for " << _request.get_url()
@@ -1267,6 +1312,7 @@ run_socks_proxy_greet_reply() {
   if (reply[0] != 0x05) {
     // We only speak Socks5.
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Rejecting Socks version " << (int)reply[0] << "\n";
     _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
@@ -1275,6 +1321,7 @@ run_socks_proxy_greet_reply() {
 
   if (reply[1] == (char)0xff) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Socks server does not accept our available login methods.\n";
     _status_entry._status_code = SC_socks_no_acceptable_login_method;
     _state = S_try_next_proxy;
@@ -1290,6 +1337,7 @@ run_socks_proxy_greet_reply() {
 
   // The server accepted a login method we didn't offer!
   downloader_cat.info()
+    << _NOTIFY_HTTP_CHANNEL_ID 
     << "Socks server accepted unrequested login method "
     << (int)reply[1] << "\n";
   _status_entry._status_code = SC_socks_no_acceptable_login_method;
@@ -1318,6 +1366,7 @@ run_socks_proxy_connect() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Requesting SOCKS5 connection to " 
       << _request.get_url().get_server_and_port() << "\n";
   }
@@ -1356,6 +1405,7 @@ run_socks_proxy_connect_reply() {
   if (reply[0] != 0x05) {
     // We only speak Socks5.
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Rejecting Socks version " << (int)reply[0] << "\n";
     close_connection();  // connection is now bad.
     _status_entry._status_code = SC_socks_invalid_version;
@@ -1365,6 +1415,7 @@ run_socks_proxy_connect_reply() {
 
   if (reply[1] != 0x00) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Connection refused, SOCKS code " << (int)reply[1] << "\n";
     /*
       Socks error codes (from RFC1928):
@@ -1419,6 +1470,7 @@ run_socks_proxy_connect_reply() {
 
   default:
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Unsupported SOCKS address type: " << (int)reply[3] << "\n";
     _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
@@ -1458,6 +1510,7 @@ run_socks_proxy_connect_reply() {
       ((unsigned int)(unsigned char)reply[total_bytes - 1]);
     
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << _proxy << " directed us to " << connect_host << ":"
       << connect_port << "\n";
   }
@@ -1498,11 +1551,13 @@ run_setup_ssl() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Setting ssl-cipher-list '" << cipher_list << "'\n";
   }
   int result = SSL_set_cipher_list(ssl, cipher_list.c_str());
   if (result == 0) {
     downloader_cat.error()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Invalid cipher list: '" << cipher_list << "'\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_ssl_internal_failure;
@@ -1524,18 +1579,21 @@ run_setup_ssl() {
     SSL_use_PrivateKey(ssl, _client->_client_certificate_priv);
     if (!SSL_check_private_key(ssl)) {
       downloader_cat.warning()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Client private key does not match public key!\n";
     }
   }
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "SSL Ciphers available:\n";
     const char *name;
     int pri = 0;
     name = SSL_get_cipher_list(ssl, pri);
     while (name != NULL) {
       downloader_cat.spam()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "  " << pri + 1 << ". " << name << "\n";
       pri++;
       name = SSL_get_cipher_list(ssl, pri);
@@ -1544,6 +1602,7 @@ run_setup_ssl() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "performing SSL handshake\n";
   }
   _state = S_ssl_handshake;
@@ -1578,6 +1637,7 @@ run_ssl_handshake() {
     }
 
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Could not establish SSL handshake with " 
       << _request.get_url().get_server_and_port() << "\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
@@ -1620,10 +1680,12 @@ run_ssl_handshake() {
   const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
   if (cipher == (const SSL_CIPHER *)NULL) {
     downloader_cat.warning()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "No current cipher on SSL connection.\n";
   } else {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Using cipher " << SSL_CIPHER_get_name((SSL_CIPHER *) cipher) << "\n";
     }
   }
@@ -1636,6 +1698,7 @@ run_ssl_handshake() {
   X509 *cert = SSL_get_peer_certificate(ssl);
   if (cert == (X509 *)NULL) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "No certificate was presented by server.\n";
 
     // This shouldn't be possible, per the SSL specs.
@@ -1651,11 +1714,13 @@ run_ssl_handshake() {
     string common_name = get_x509_name_component(subject, NID_commonName);
     
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Server is " << common_name << " from " << org_unit_name
       << " / " << org_name << "\n";
 
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Received certificate from server:\n" << flush;
       X509_print_fp(stderr, cert);
       fflush(stderr);
@@ -1672,6 +1737,7 @@ run_ssl_handshake() {
 
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Expired certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) { 
       cert_valid = false;
@@ -1679,6 +1745,7 @@ run_ssl_handshake() {
 
   } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) {
       cert_valid = false;
@@ -1687,6 +1754,7 @@ run_ssl_handshake() {
   } else if (verify_result == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
              verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Self-signed certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
       cert_valid = false;
@@ -1694,6 +1762,7 @@ run_ssl_handshake() {
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Unable to verify identity of " << _request.get_url().get_server_and_port()
       << ", verify error code " << verify_result << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
@@ -1798,6 +1867,7 @@ run_reading_header() {
   if (parse_http_header()) {
     if (_bio.is_null()) {
       downloader_cat.info()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Connection lost while reading HTTP response.\n";
       if (_response_type == RT_http_hangup) {
         // This was our second hangup in a row.  Give up.
@@ -1816,6 +1886,7 @@ run_reading_header() {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Timeout waiting for "
           << _request.get_url().get_server_and_port() 
           << " in run_reading_header (" << elapsed 
@@ -1843,6 +1914,7 @@ run_reading_header() {
     string content_range = get_header_value("Content-Range");
     if (content_range.empty()) {
       downloader_cat.warning()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Got 206 response without Content-Range header!\n";
       _status_entry._status_code = SC_invalid_http;
       _state = S_failure;
@@ -1851,6 +1923,7 @@ run_reading_header() {
     } else {
       if (!parse_content_range(content_range)) {
         downloader_cat.warning()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Couldn't parse Content-Range: " << content_range << "\n";
         _status_entry._status_code = SC_invalid_http;
         _state = S_failure;
@@ -1866,6 +1939,7 @@ run_reading_header() {
     if (_first_byte_requested != 0 || _last_byte_requested != 0 ||
         _first_byte_delivered != 0 || _last_byte_delivered != 0) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Requested byte range " << _first_byte_requested
         << " to " << _last_byte_delivered
         << "; server delivers range " << _first_byte_delivered
@@ -1998,6 +2072,7 @@ run_reading_header() {
       if (find(_redirect_trail.begin(), _redirect_trail.end(),
                new_url) != _redirect_trail.end()) {
         downloader_cat.warning()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "cycle detected in redirect to " << new_url << "\n";
         
       } else {
@@ -2005,6 +2080,7 @@ run_reading_header() {
 
         if (downloader_cat.is_debug()) {
           downloader_cat.debug()
+            << _NOTIFY_HTTP_CHANNEL_ID 
             << "following redirect to " << new_url << "\n";
         }
         if (_request.get_url().has_username()) {
@@ -2094,6 +2170,7 @@ run_begin_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to begin body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2110,6 +2187,7 @@ run_begin_body() {
     // connection and get a new one.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Dropping connection rather than skipping past " 
         << get_file_size() << " bytes.\n";
     }
@@ -2120,6 +2198,7 @@ run_begin_body() {
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Unable to skip body.\n";
       }
       reset_to_new();
@@ -2153,6 +2232,7 @@ run_reading_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to read body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2164,6 +2244,7 @@ run_reading_body() {
     // Whoops, we're not in skip-body mode.  Better reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting, not in skip-body mode.\n";
     }
     reset_to_new();
@@ -2174,7 +2255,9 @@ run_reading_body() {
   getline(*_body_stream, line);
   while (!_body_stream->fail() && !_body_stream->eof()) {
     if (downloader_cat.is_spam()) {
-      downloader_cat.spam() << "skip: " << line << "\n";
+      downloader_cat.spam() 
+        << _NOTIFY_HTTP_CHANNEL_ID 
+        << "skip: " << line << "\n";
     }
     getline(*_body_stream, line);
   }
@@ -2212,6 +2295,7 @@ run_read_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to read body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2247,6 +2331,7 @@ run_read_trailer() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to read trailer; server would close anyway.\n";
     }
     reset_to_new();
@@ -2298,6 +2383,7 @@ run_download_to_file() {
 
   if (_download_to_file.fail()) {
     downloader_cat.warning()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Error writing to " << _download_to_filename << "\n";
     _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
@@ -2411,6 +2497,7 @@ run_download_to_stream() {
 
   if (_download_to_stream->fail()) {
     downloader_cat.warning()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Error writing to stream\n";
     _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
@@ -2446,7 +2533,8 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
               size_t first_byte, size_t last_byte) {
   
   downloader_cat.info()
-    << method << " " << url << "\n";
+    << _NOTIFY_HTTP_CHANNEL_ID 
+    << "begin " << method << " " << url << "\n";
                 
   reset_for_new_request();
 
@@ -2488,6 +2576,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _proxy_auth = (HTTPAuthorization *)NULL;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to change proxy to " << _proxy << "\n";
     }
     reset_to_new();
@@ -2498,6 +2587,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _nonblocking = nonblocking;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to change nonblocking state to " << _nonblocking << ".\n";
     }
     reset_to_new();
@@ -2555,6 +2645,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "resetting to clear previous request.\n";
       }
       reset_to_new();
@@ -2562,6 +2653,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     } else if (TrueClock::get_global_ptr()->get_short_time() - _last_run_time >= _idle_timeout) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "resetting old connection: " 
           << TrueClock::get_global_ptr()->get_short_time() - _last_run_time
           << " s old.\n";
@@ -2643,6 +2735,13 @@ reconsider_proxy() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 reset_for_new_request() {
+  // This should be spam
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
+      << "reset_for_new_request.\n";
+  }
+  
   reset_download_to();
   reset_body_stream();
 
@@ -2672,6 +2771,7 @@ finished_body(bool has_trailer) {
   if (will_close_connection() && _download_dest == DD_none) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting to finish body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2703,6 +2803,7 @@ open_download_file() {
   if (_download_dest == DD_file) {
     if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
       downloader_cat.info()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Could not open " << _download_to_filename << " for writing.\n";
       _status_entry._status_code = SC_download_open_error;
       _state = S_failure;
@@ -2719,6 +2820,7 @@ open_download_file() {
       _download_to_file.seekp(0, ios::end);
       if (_first_byte_delivered > (size_t)_download_to_file.tellp()) {
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Invalid starting position of byte " << _first_byte_delivered
           << " within " << _download_to_filename << " (which has " 
           << _download_to_file.tellp() << " bytes)\n";
@@ -2733,6 +2835,7 @@ open_download_file() {
     } else if (_download_dest == DD_ram) {
       if (_first_byte_delivered > _download_to_ramfile->_data.length()) {
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Invalid starting position of byte " << _first_byte_delivered 
           << " within Ramfile (which has " 
           << _download_to_ramfile->_data.length() << " bytes)\n";
@@ -2755,6 +2858,7 @@ open_download_file() {
       _download_to_stream->seekp(0, ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Invalid starting position of byte " << _first_byte_delivered
           << " within stream (which has " 
           << _download_to_stream->tellp() << " bytes)\n";
@@ -2812,7 +2916,9 @@ server_getline(string &str) {
         str = str.substr(0, p);
       }
       if (downloader_cat.is_debug()) {
-        downloader_cat.debug() << "recv: " << str << "\n";
+        downloader_cat.debug() 
+          << _NOTIFY_HTTP_CHANNEL_ID 
+          << "recv: " << str << "\n";
       }
       return true;
 
@@ -2860,6 +2966,7 @@ server_getline_failsafe(string &str) {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Timeout waiting for "
           << _request.get_url().get_server_and_port() 
           << " in server_getline_failsafe (" << elapsed 
@@ -2933,6 +3040,7 @@ server_get_failsafe(string &str, size_t num_bytes) {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "Timeout waiting for "
           << _request.get_url().get_server_and_port() 
           << " in server_get_failsafe (" << elapsed 
@@ -2980,6 +3088,7 @@ server_send(const string &str, bool secret) {
     // Oops, the connection has been closed!
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Lost connection to server unexpectedly during write.\n";
     }
     reset_to_new();
@@ -2988,6 +3097,7 @@ server_send(const string &str, bool secret) {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "wrote " << write_count << " bytes to " << _bio << "\n";
   }
   
@@ -3031,6 +3141,7 @@ parse_http_response(const string &line) {
       // and try again, once.
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID 
           << "got non-HTTP response, resetting.\n";
       }
       reset_to_new();
@@ -3183,6 +3294,7 @@ check_socket() {
   if ((*_source)->is_closed()) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "Lost connection to server unexpectedly during read.\n";
     }
     reset_to_new();
@@ -3441,6 +3553,7 @@ validate_server_name(X509 *cert) {
 
   if (cert_names.empty()) {
     downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Server certificate from " << hostname
       << " provides no name.\n";
     return false;
@@ -3448,6 +3561,7 @@ validate_server_name(X509 *cert) {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
+      << _NOTIFY_HTTP_CHANNEL_ID 
       << "Server certificate from " << hostname
       << " provides name(s):";
     vector_string::const_iterator si;
@@ -3472,6 +3586,7 @@ validate_server_name(X509 *cert) {
   }
 
   downloader_cat.info()
+    << _NOTIFY_HTTP_CHANNEL_ID 
     << "Server certificate from " << hostname
     << " provides wrong name(s):";
   for (si = cert_names.begin(); si != cert_names.end(); ++si) {
@@ -3779,6 +3894,7 @@ reset_url(const URLSpec &old_url, const URLSpec &new_url) {
                           new_url.get_port() != old_url.get_port()))) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
+        << _NOTIFY_HTTP_CHANNEL_ID 
         << "resetting for new server " 
         << new_url.get_server_and_port() << "\n";
     }
@@ -3860,6 +3976,13 @@ reset_download_to() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 reset_to_new() {
+  // This should be debug or spam
+  if (downloader_cat.is_info()) {
+    downloader_cat.info()
+      << _NOTIFY_HTTP_CHANNEL_ID 
+      << "reset_to_new.\n";
+  }
+  
   close_connection();
   _state = S_new;
 }
