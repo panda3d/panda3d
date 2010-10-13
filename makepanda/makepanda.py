@@ -3425,7 +3425,7 @@ if (PkgSkip("SPEEDTREE")==0):
   TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
   if SDK["SPEEDTREEAPI"] == 'OpenGL':
       TargetAdd('libpandaspeedtree.dll', opts=['OPENGL', 'NVIDIACG', 'CGGL'])
-  elif SDK["SPEEDTREEAPI"] == 'OpenGL':
+  elif SDK["SPEEDTREEAPI"] == 'DirectX9':
       TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
 
 #
