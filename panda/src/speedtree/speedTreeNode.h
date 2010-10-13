@@ -245,6 +245,11 @@ private:
   friend class SpeedTreeNode::DrawCallback;
 };
 
+INLINE ostream &operator << (ostream &out, const SpeedTreeNode::InstanceList &instances) {
+  instances.output(out);
+  return out;
+}
+
 #include "speedTreeNode.I"
 
 #endif

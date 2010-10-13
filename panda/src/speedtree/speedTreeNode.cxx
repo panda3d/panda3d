@@ -1039,11 +1039,15 @@ void SpeedTreeNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
 
+  // This makes NodePath.ls() too confusing.
+  /*
   Trees::const_iterator ti;
   for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
     InstanceList *instance_list = (*ti);
-    instance_list->write(out, indent_level + 2);
+    indent(out, indent_level + 2) 
+      << *instance_list << "\n";
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1534,7 +1538,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::InstanceList::
 output(ostream &out) const {
-  out << *_tree << ": " << _instances.size() << " instances.";
+  out << *_tree << ": " << _instances.size() << " instances";
 }
 
 ////////////////////////////////////////////////////////////////////
