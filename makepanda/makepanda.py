@@ -1874,6 +1874,7 @@ MakeDirectory(GetOutputDir()+'/include/parser-inc/Forest')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/glew')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
@@ -1882,6 +1883,7 @@ CopyFile(GetOutputDir()+'/include/parser-inc/Core/','dtool/src/parser-inc/Core.h
 CopyFile(GetOutputDir()+'/include/parser-inc/Forest/','dtool/src/parser-inc/Forest.h')
 CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL/','dtool/src/parser-inc/OpenGLRenderer.h')
 CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9/','dtool/src/parser-inc/DirectX9Renderer.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h')
 DeleteCVS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
