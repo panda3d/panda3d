@@ -246,6 +246,8 @@ init_libspeedtree() {
   LoaderFileTypeSrt::init_type();
   LoaderFileTypeStf::init_type();
 
+  SpeedTreeNode::register_with_read_factory();
+
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   reg->register_type(new LoaderFileTypeSrt);
   reg->register_type(new LoaderFileTypeStf);

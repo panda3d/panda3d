@@ -77,6 +77,10 @@ PUBLISHED:
     void output(ostream &out) const;
     void write(ostream &out, int indent_level = 0) const;
 
+  public:
+    void write_datagram(BamWriter *manager, Datagram &dg);
+    void fillin(DatagramIterator &scan, BamReader *manager);
+
   private:
     PT(STTree) _tree;
     STInstances _instances;

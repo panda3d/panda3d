@@ -52,3 +52,30 @@ void STTransform::
 output(ostream &out) const {
   out << "STTransform(" << _pos << ", " << _rotate << ", " << _scale << ")";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void STTransform::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  _pos.write_datagram(dg);
+  dg.add_float32(_rotate);
+  dg.add_float32(_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STTransform::fillin
+//       Access: Public
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new SpeedTreeNode.
+////////////////////////////////////////////////////////////////////
+void STTransform::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _pos.read_datagram(scan);
+  _rotate = scan.get_float32();
+  _scale = scan.get_float32();
+}

@@ -55,6 +55,10 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
 private:
   LPoint3f _pos;
   float _rotate;

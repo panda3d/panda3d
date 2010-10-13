@@ -704,6 +704,7 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
 
     _trees.push_back(new InstanceList(*instance_list));
   }
+  _trees.sort();
 
   _needs_repopulate = true;
   mark_internal_bounds_stale();
@@ -716,6 +717,7 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
 ////////////////////////////////////////////////////////////////////
 SpeedTreeNode::
 ~SpeedTreeNode() {
+  remove_all_trees();
   // Help reduce memory waste from ST_DELETE_FOREST_HACK.
   _forest_render.ClearInstances();
 }
@@ -1497,6 +1499,14 @@ register_with_read_factory() {
 void SpeedTreeNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
+
+  int num_trees = _trees.size();
+  dg.add_uint32(num_trees);
+  Trees::const_iterator ti;
+  for (ti = _trees.begin(); ti != _trees.end(); ++ti) {
+    InstanceList *instance_list = (*ti);
+    instance_list->write_datagram(manager, dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1529,6 +1539,21 @@ make_from_bam(const FactoryParams &params) {
 void SpeedTreeNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
+
+  int num_trees = scan.get_uint32();
+  _trees.reserve(num_trees);
+  for (int i = 0; i < num_trees; i++) {
+    InstanceList *instance_list = new InstanceList(NULL);
+    instance_list->fillin(scan, manager);
+    if (instance_list->get_tree() == (STTree *)NULL) {
+      // The tree wasn't successfully loaded.  Don't keep it.
+      delete instance_list;
+    } else {
+      _trees.push_back(instance_list);
+    }
+  }
+
+  _trees.sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1554,6 +1579,76 @@ write(ostream &out, int indent_level) const {
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
     indent(out, indent_level + 2)
       << STTransform(*ii) << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::InstanceList::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::InstanceList::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  // Compute the relative pathname to the SRT file.
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  bool has_bam_dir = !manager->get_filename().empty();
+  Filename bam_dir = manager->get_filename().get_dirname();
+  Filename srt_filename = _tree->get_fullpath();
+
+  bam_dir.make_absolute(vfs->get_cwd());
+  if (!has_bam_dir || !srt_filename.make_relative_to(bam_dir, true)) {
+    srt_filename.find_on_searchpath(get_model_path());
+  }
+
+  dg.add_string(srt_filename);
+
+  // Now record the instances.
+  int num_instances = _instances.size();
+  dg.add_uint32(num_instances);
+  STInstances::const_iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    STTransform transform = (*ii);
+    transform.write_datagram(manager, dg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::InstanceList::fillin
+//       Access: Public
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new SpeedTreeNode.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::InstanceList::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  // Get the relative pathname to the SRT file.
+  string srt_filename = scan.get_string();
+
+  // Now load up the SRT file using the Panda loader (which will
+  // also search the model-path if necessary).
+  Loader *loader = Loader::get_global_ptr();
+  PT(PandaNode) srt_root = loader->load_sync(srt_filename);
+
+  if (srt_root != NULL) {
+    NodePath srt(srt_root);
+    NodePath srt_np = srt.find("**/+SpeedTreeNode");
+    if (!srt_np.is_empty()) {
+      SpeedTreeNode *srt_node = DCAST(SpeedTreeNode, srt_np.node());
+      if (srt_node->get_num_trees() >= 1) {
+	_tree = (STTree *)srt_node->get_tree(0);
+      }
+    }
+  }
+
+  // Now read the instances.
+  int num_instances = scan.get_uint32();
+  _instances.reserve(num_instances);
+  for (int i = 0; i < num_instances; i++) {
+    STTransform transform;
+    transform.fillin(scan, manager);
+    _instances.push_back(transform);
   }
 }
 
