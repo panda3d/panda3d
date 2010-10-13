@@ -109,6 +109,7 @@ clear() {
 bool STBasicTerrain::
 setup_terrain(const Filename &terrain_filename) {
   _is_valid = false;
+  set_name(terrain_filename.get_basename());
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 

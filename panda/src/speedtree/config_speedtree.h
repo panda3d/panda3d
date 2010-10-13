@@ -52,16 +52,16 @@ extern ConfigVariableDouble speedtree_sun_color;
 extern ConfigVariableDouble speedtree_sun_size;
 extern ConfigVariableDouble speedtree_sun_spread_exponent;
 extern ConfigVariableDouble speedtree_sun_fog_bloom;
-extern ConfigVariableDouble speedtree_ambient_color;
-extern ConfigVariableDouble speedtree_diffuse_color;
 extern ConfigVariableDouble speedtree_specular_color;
 extern ConfigVariableDouble speedtree_emissive_color;
-extern ConfigVariableInt speedtree_num_shadow_maps;
 extern ConfigVariableInt speedtree_shadow_map_resolution;
+extern ConfigVariableDouble speedtree_cascading_shadow_splits;
 extern ConfigVariableBool speedtree_smooth_shadows;
 extern ConfigVariableBool speedtree_show_shadow_splits_on_terrain;
 extern ConfigVariableBool speedtree_wind_enabled;
 extern ConfigVariableBool speedtree_frond_rippling;
+
+extern ConfigVariableBool speedtree_show_overlays;
 
 extern ConfigVariableInt speedtree_max_num_visible_cells;
 extern ConfigVariableDouble speedtree_cull_cell_size;

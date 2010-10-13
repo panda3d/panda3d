@@ -29,6 +29,7 @@
 #include "textureAttrib.h"
 #include "lightAttrib.h"
 #include "directionalLight.h"
+#include "ambientLight.h"
 #include "loader.h"
 #include "deg_2_rad.h"
 #include "sceneGraphReducer.h"
@@ -68,10 +69,7 @@ SpeedTreeNode(const string &name) :
   //set_internal_bounds(new OmniBoundingVolume);
   //  set_internal_bounds(new BoundingSphere(LPoint3f::zero(), 10.0f));
 
-  // Intialize the render params.
-  SpeedTree::SForestRenderInfo render_info;
-
-  // First, get the shader directory.
+  // Intialize the render params.  First, get the shader directory.
   Filename shaders_dir = speedtree_shaders_dir;
 
   // We expect the shader directory to contain at least this one token
@@ -107,42 +105,12 @@ SpeedTreeNode(const string &name) :
   }
 #endif
 
+  SpeedTree::SForestRenderInfo render_info;
   render_info.m_strShaderPath = _os_shaders_dir.c_str();
-  render_info.m_nMaxAnisotropy = speedtree_max_anisotropy;
-  render_info.m_bHorizontalBillboards = speedtree_horizontal_billboards;
-  render_info.m_fAlphaTestScalar = speedtree_alpha_test_scalar;
-  render_info.m_bZPrePass = speedtree_z_pre_pass;
-  render_info.m_nMaxBillboardImagesByBase = speedtree_max_billboard_images_by_base;
-  render_info.m_fVisibility = speedtree_visibility;
-  render_info.m_fGlobalLightScalar = speedtree_global_light_scalar;
-  render_info.m_sLightMaterial.m_vAmbient = SpeedTree::Vec4(speedtree_ambient_color[0], speedtree_ambient_color[1], speedtree_ambient_color[2], 1.0f);
-  render_info.m_sLightMaterial.m_vDiffuse = SpeedTree::Vec4(speedtree_diffuse_color[0], speedtree_diffuse_color[1], speedtree_diffuse_color[2], 1.0f);
-  render_info.m_sLightMaterial.m_vSpecular = SpeedTree::Vec4(speedtree_specular_color[0], speedtree_specular_color[1], speedtree_specular_color[2], 1.0f);
-  render_info.m_sLightMaterial.m_vEmissive = SpeedTree::Vec4(speedtree_emissive_color[0], speedtree_emissive_color[1], speedtree_emissive_color[2], 1.0f);
-  render_info.m_bSpecularLighting = speedtree_specular_lighting;
-  render_info.m_bTransmissionLighting = speedtree_transmission_lighting;
-  render_info.m_bDetailLayer = speedtree_detail_layer;
-  render_info.m_bDetailNormalMapping = speedtree_detail_normal_mapping;
-  render_info.m_bAmbientContrast = speedtree_ambient_contrast;
-  render_info.m_fTransmissionScalar = speedtree_transmission_scalar;
-  render_info.m_fFogStartDistance = speedtree_fog_start_distance;
-  render_info.m_fFogEndDistance = speedtree_fog_end_distance;
-  render_info.m_vFogColor = SpeedTree::Vec3(speedtree_fog_color[0], speedtree_fog_color[1], speedtree_fog_color[2]);
-  render_info.m_vSkyColor = SpeedTree::Vec3(speedtree_sky_color[0], speedtree_sky_color[1], speedtree_sky_color[2]);
-  render_info.m_fSkyFogMin = speedtree_sky_fog_min;
-  render_info.m_fSkyFogMax = speedtree_sky_fog_max;
-  render_info.m_vSunColor = SpeedTree::Vec3(speedtree_sun_color[0], speedtree_sun_color[1], speedtree_sun_color[2]);
-  render_info.m_fSunSize = speedtree_sun_size;
-  render_info.m_fSunSpreadExponent = speedtree_sun_spread_exponent;
-  render_info.m_fSunFogBloom = speedtree_sun_fog_bloom;
-  render_info.m_nNumShadowMaps = speedtree_num_shadow_maps;
-  render_info.m_nShadowMapResolution = speedtree_shadow_map_resolution;
-  render_info.m_bSmoothShadows = speedtree_smooth_shadows;
-  render_info.m_bShowShadowSplitsOnTerrain = speedtree_show_shadow_splits_on_terrain;
-  render_info.m_bWindEnabled = speedtree_wind_enabled;
-  render_info.m_bFrondRippling = speedtree_frond_rippling;
-  
   _forest_render.SetRenderInfo(render_info);
+
+  // Now apply the rest of the config settings.
+  reload_config();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,8 +159,7 @@ add_tree(const STTree *tree) {
     if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
 	<< "Failed to register tree " << tree->get_fullpath() << "\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
     }
   }
 
@@ -220,8 +187,7 @@ remove_tree(const STTree *tree) {
   if (!_forest_render.UnregisterTree(tree->get_tree())) {
     speedtree_cat.warning()
       << "Failed to unregister tree " << tree->get_fullpath() << "\n";
-    speedtree_cat.warning()
-      << SpeedTree::CCore::GetError() << "\n";
+    write_error(speedtree_cat.warning());
   }
 
   _needs_repopulate = true;
@@ -249,8 +215,7 @@ remove_all_trees() {
     if (!_forest_render.UnregisterTree(tree->get_tree())) {
       speedtree_cat.warning()
 	<< "Failed to unregister tree " << tree->get_fullpath() << "\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
     }
     delete instance_list;
   }
@@ -562,6 +527,8 @@ setup_terrain(const Filename &terrain_file) {
 void SpeedTreeNode::
 set_terrain(STTerrain *terrain) {
   _terrain = NULL;
+  _needs_repopulate = true;
+
   if (terrain == (STTerrain *)NULL) {
     return;
   }
@@ -577,33 +544,27 @@ set_terrain(STTerrain *terrain) {
 
   _terrain_render.SetShaderLoader(_forest_render.GetShaderLoader());
 
-  SpeedTree::STerrainRenderInfo render_info;
-  render_info.m_strShaderPath = _os_shaders_dir.c_str();
+  SpeedTree::STerrainRenderInfo trender_info;
+  trender_info.m_strShaderPath = _os_shaders_dir.c_str();
 
   string os_specific = terrain->get_normal_map().to_os_specific();
-  render_info.m_strNormalMap = os_specific.c_str();
+  trender_info.m_strNormalMap = os_specific.c_str();
   os_specific = terrain->get_splat_map().to_os_specific();
-  render_info.m_strSplatMap = os_specific.c_str();
+  trender_info.m_strSplatMap = os_specific.c_str();
 
   for (int i = 0; i < SpeedTree::c_nNumTerrainSplatLayers; ++i) {
     os_specific = terrain->get_splat_layer(i).to_os_specific();
-    render_info.m_astrSplatLayers[i] = os_specific.c_str();
-    render_info.m_afSplatTileValues[i] = terrain->get_splat_layer_tiling(i);
+    trender_info.m_astrSplatLayers[i] = os_specific.c_str();
+    trender_info.m_afSplatTileValues[i] = terrain->get_splat_layer_tiling(i);
   }
 
-  render_info.m_fNormalMapBlueScale = 1.0f;
-  render_info.m_bShadowsEnabled = false;
-  render_info.m_bZPrePass = false;
+  trender_info.m_fNormalMapBlueScale = 1.0f;
+  trender_info.m_bShadowsEnabled = false; // what does this do?
+  trender_info.m_bZPrePass = false;
 
-  _terrain_render.SetRenderInfo(render_info);
-  _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
-  _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
-			  speedtree_max_num_visible_cells);
-  _visible_terrain.Reserve(speedtree_max_num_visible_cells);
+  _terrain_render.SetRenderInfo(trender_info);
 
   _terrain_render.SetHeightHints(terrain->get_min_height(), terrain->get_max_height());
-
-  _needs_repopulate = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -638,6 +599,74 @@ snap_to_terrain() {
       }
     }
   }
+
+  _needs_repopulate = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::reload_config
+//       Access: Published
+//  Description: Re-reads the current setting of all of the relevant
+//               config variables and applies them to this node.  This
+//               can be called after changing config settings, to make
+//               them apply to this particular node.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+reload_config() {
+
+  _shadow_infos.clear();
+  int num_shadow_maps = speedtree_cascading_shadow_splits.get_num_words();
+  if (num_shadow_maps > SpeedTree::c_nMaxNumShadowMaps) {
+    speedtree_cat.warning()
+      << "SpeedTree is current compiled to support a maximum of " 
+      << SpeedTree::c_nMaxNumShadowMaps << " shadow maps.\n";
+    num_shadow_maps = SpeedTree::c_nMaxNumShadowMaps;
+  }
+  _shadow_infos.insert(_shadow_infos.begin(), num_shadow_maps, ShadowInfo());
+  for (int smi = 0; smi < num_shadow_maps; ++smi) {
+    _shadow_infos[smi]._shadow_split = speedtree_cascading_shadow_splits[smi];
+  }
+
+  SpeedTree::SForestRenderInfo render_info = _forest_render.GetRenderInfo();
+
+  render_info.m_nMaxAnisotropy = speedtree_max_anisotropy;
+  render_info.m_bHorizontalBillboards = speedtree_horizontal_billboards;
+  render_info.m_fAlphaTestScalar = speedtree_alpha_test_scalar;
+  render_info.m_bZPrePass = speedtree_z_pre_pass;
+  render_info.m_nMaxBillboardImagesByBase = speedtree_max_billboard_images_by_base;
+  render_info.m_fVisibility = speedtree_visibility;
+  render_info.m_fGlobalLightScalar = speedtree_global_light_scalar;
+  render_info.m_sLightMaterial.m_vSpecular = SpeedTree::Vec4(speedtree_specular_color[0], speedtree_specular_color[1], speedtree_specular_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vEmissive = SpeedTree::Vec4(speedtree_emissive_color[0], speedtree_emissive_color[1], speedtree_emissive_color[2], 1.0f);
+  render_info.m_bSpecularLighting = speedtree_specular_lighting;
+  render_info.m_bTransmissionLighting = speedtree_transmission_lighting;
+  render_info.m_bDetailLayer = speedtree_detail_layer;
+  render_info.m_bDetailNormalMapping = speedtree_detail_normal_mapping;
+  render_info.m_bAmbientContrast = speedtree_ambient_contrast;
+  render_info.m_fTransmissionScalar = speedtree_transmission_scalar;
+  render_info.m_fFogStartDistance = speedtree_fog_start_distance;
+  render_info.m_fFogEndDistance = speedtree_fog_end_distance;
+  render_info.m_vFogColor = SpeedTree::Vec3(speedtree_fog_color[0], speedtree_fog_color[1], speedtree_fog_color[2]);
+  render_info.m_vSkyColor = SpeedTree::Vec3(speedtree_sky_color[0], speedtree_sky_color[1], speedtree_sky_color[2]);
+  render_info.m_fSkyFogMin = speedtree_sky_fog_min;
+  render_info.m_fSkyFogMax = speedtree_sky_fog_max;
+  render_info.m_vSunColor = SpeedTree::Vec3(speedtree_sun_color[0], speedtree_sun_color[1], speedtree_sun_color[2]);
+  render_info.m_fSunSize = speedtree_sun_size;
+  render_info.m_fSunSpreadExponent = speedtree_sun_spread_exponent;
+  render_info.m_fSunFogBloom = speedtree_sun_fog_bloom;
+  render_info.m_nNumShadowMaps = num_shadow_maps;
+  render_info.m_nShadowMapResolution = speedtree_shadow_map_resolution;
+  render_info.m_bSmoothShadows = speedtree_smooth_shadows;
+  render_info.m_bShowShadowSplitsOnTerrain = speedtree_show_shadow_splits_on_terrain;
+  render_info.m_bWindEnabled = speedtree_wind_enabled;
+  render_info.m_bFrondRippling = speedtree_frond_rippling;
+
+  _forest_render.SetRenderInfo(render_info);
+
+  _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
+  _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
+			  speedtree_max_num_visible_cells);
+  _visible_terrain.Reserve(speedtree_max_num_visible_cells);
 
   _needs_repopulate = true;
 }
@@ -679,7 +708,9 @@ authorize(const string &license) {
 ////////////////////////////////////////////////////////////////////
 SpeedTreeNode::
 SpeedTreeNode(const SpeedTreeNode &copy) :
-  PandaNode(copy)
+  PandaNode(copy),
+  _os_shaders_dir(copy._os_shaders_dir),
+  _shadow_infos(copy._shadow_infos)
 #ifdef ST_DELETE_FOREST_HACK
   // Early versions of SpeedTree don't destruct unused CForestRender
   // objects correctly.  To avoid crashes, we have to leak these
@@ -690,6 +721,13 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
   init_node();
 
   _forest_render.SetRenderInfo(copy._forest_render.GetRenderInfo());
+  _terrain_render.SetRenderInfo(copy._terrain_render.GetRenderInfo());
+
+  // No way to copy these parameters, so we just re-assign them.
+  _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
+  _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
+			  speedtree_max_num_visible_cells);
+  _visible_terrain.Reserve(speedtree_max_num_visible_cells);
 
   Trees::const_iterator ti;
   for (ti = copy._trees.begin(); ti != copy._trees.end(); ++ti) {
@@ -698,13 +736,14 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
     if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
 	<< "Failed to register tree " << tree->get_fullpath() << "\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
     }
 
     _trees.push_back(new InstanceList(*instance_list));
   }
   _trees.sort();
+
+  set_terrain(copy._terrain);
 
   _needs_repopulate = true;
   mark_internal_bounds_stale();
@@ -878,38 +917,75 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   // Check lighting state.  SpeedTree only supports a single
   // directional light; we look for a directional light in the
-  // lighting state and pass its direction to SpeedTree.
-  NodePath light;
+  // lighting state and pass its direction and color to SpeedTree.  We
+  // also accumulate the ambient light colors.
+  Colorf ambient_color(0.0f, 0.0f, 0.0f, 0.0f);
+  DirectionalLight *dlight = NULL;
+  NodePath dlight_np;
+  Colorf diffuse_color;
+
+  int diffuse_priority = 0;
   const LightAttrib *la = DCAST(LightAttrib, state->get_attrib(LightAttrib::get_class_slot()));
   if (la != (LightAttrib *)NULL) {
-    light = la->get_most_important_light();
+    for (int i = 0; i < la->get_num_on_lights(); ++i) {
+      NodePath light = la->get_on_light(i);
+      if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
+	// A directional light.
+	DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
+	if (dlight == NULL || light_obj->get_priority() > dlight->get_priority()) {
+	  // Here's the most important directional light.
+	  dlight = light_obj;
+	  dlight_np = light;
+	}
+      } else if (!light.is_empty() && light.node()->is_of_type(AmbientLight::get_class_type())) {
+	// An ambient light.  We keep the color only.
+	AmbientLight *light_obj = DCAST(AmbientLight, light.node());
+	ambient_color += light_obj->get_color();
+      }
+    }
   }
-  if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
-    DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
-
-    CPT(TransformState) transform = light.get_transform(trav->get_scene()->get_scene_root().get_parent());
-    LVector3f dir = light_obj->get_direction() * transform->get_mat();
+    
+  if (dlight != (DirectionalLight *)NULL) {
+    CPT(TransformState) transform = dlight_np.get_transform(trav->get_scene()->get_scene_root().get_parent());
+    LVector3f dir = dlight->get_direction() * transform->get_mat();
     _light_dir = SpeedTree::Vec3(dir[0], dir[1], dir[2]);
+    diffuse_color = dlight->get_color();
 
   } else {
     // No light.  But there's no way to turn off lighting in
     // SpeedTree.  In lieu of this, we just shine a light from
     // above.
     _light_dir = SpeedTree::Vec3(0.0, 0.0, -1.0);
+
+    // Also, we set ambient and diffuse colors to the same full-white
+    // value.
+    ambient_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+    diffuse_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   }
 
+  SpeedTree::SForestRenderInfo render_info = _forest_render.GetRenderInfo();
+  render_info.m_sLightMaterial.m_vAmbient = SpeedTree::Vec4(ambient_color[0], ambient_color[1], ambient_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vDiffuse = SpeedTree::Vec4(diffuse_color[0], diffuse_color[1], diffuse_color[2], 1.0f);
+  _forest_render.SetRenderInfo(render_info);
+
   _forest_render.SetLightDir(_light_dir);
+
+  SpeedTree::st_float32 updated_splits[SpeedTree::c_nMaxNumShadowMaps];
+  memset(updated_splits, 0, sizeof(updated_splits));
+  for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
+    updated_splits[smi] = _shadow_infos[smi]._shadow_split;
+  };
+  static const float shadow_fade = 0.25;
+
+  _forest_render.SetCascadedShadowMapDistances(updated_splits, lens->get_far());
+  _forest_render.SetShadowFadePercentage(shadow_fade);
 
   if (!_needs_repopulate) {
     // Don't bother culling now unless we're correctly fully
     // populated.  (Culling won't be accurate unless the forest has
     // been populated, but we have to be in the draw traversal to
     // populate.)
-    _forest_render.CullAndComputeLOD(_view, _visible_trees);
-
-    if (has_terrain()) {
-      _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
-    }
+    cull_forest();
   }
 
   // Recurse onto the node's children.
@@ -1052,6 +1128,52 @@ write(ostream &out, int indent_level) const {
   */
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::write_error
+//       Access: Public, Static
+//  Description: Writes the current SpeedTree error message to the
+//               indicated stream.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+write_error(ostream &out) {
+  const char *error = SpeedTree::CCore::GetError();
+  if (error != (const char *)NULL) {
+    out << error;
+  }
+  out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::set_transparent_texture_mode
+//       Access: Protected
+//  Description: Uses SpeedTree::CRenderState to set the indicated
+//               transparency mode.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const {
+  // turn all modes off (no telling what render state the client
+  // application might be in before this call)
+  SpeedTree::CRenderState::SetBlending(false);
+  SpeedTree::CRenderState::SetAlphaTesting(false);
+  SpeedTree::CRenderState::SetAlphaToCoverage(false);
+  
+  switch (eMode) {
+  case SpeedTree::TRANS_TEXTURE_ALPHA_TESTING:
+    SpeedTree::CRenderState::SetAlphaTesting(true);
+    break;
+  case SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE:
+    SpeedTree::CRenderState::SetAlphaToCoverage(true);
+    break;
+  case SpeedTree::TRANS_TEXTURE_BLENDING:
+    SpeedTree::CRenderState::SetBlending(true);
+    break;
+  default:
+    // intentionally do nothing (TRANS_TEXTURE_NOTHING)
+    break;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::init_node
 //       Access: Private
@@ -1129,8 +1251,7 @@ repopulate() {
       speedtree_cat.warning()
 	<< "Failed to add " << instances.size()
 	<< " instances for " << *tree << "\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
     }
   }
   
@@ -1259,15 +1380,34 @@ draw_callback(CallbackData *data) {
 
   setup_for_render(gsg);
 
-  if (_terrain_render.IsEnabled()) {
+  // Set some initial state requirements.
+  SpeedTree::CRenderState::SetAlphaFunction(SpeedTree::ALPHAFUNC_GREATER, 0.0f);
 
+  // start the forest render
+  _forest_render.StartRender();
+
+  if (_forest_render.ShadowsAreEnabled()) {
+    // Update the shadow maps.  TODO: consider updating these only
+    // every once in a while, instead of every frame, as a simple
+    // optimization.
+    render_forest_into_shadow_maps();
+    _forest_render.ClearBoundTextures( );
+  }
+
+  if (!_forest_render.UploadViewShaderParameters(_view)) {
+    speedtree_cat.warning()
+      << "Couldn't set view parameters\n";
+    write_error(speedtree_cat.warning());
+  }
+  
+  if (has_terrain()) {
     // Is this needed for terrain?
     _terrain_render.UploadShaderConstants
-      (&_forest_render, _light_dir,
+      (&_forest_render, _light_dir, 
        _forest_render.GetRenderInfo().m_sLightMaterial);
 
     // set terrain render states
-    //SetTransparentTextureMode(TRANS_TEXTURE_NOTHING);
+    set_transparent_texture_mode(SpeedTree::TRANS_TEXTURE_NOTHING);
 
     // render actual terrain
     bool terrain = _terrain_render.Render
@@ -1278,16 +1418,18 @@ draw_callback(CallbackData *data) {
     if (!terrain) {
       speedtree_cat.warning()
 	<< "Failed to render terrain\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
+      
+      // Clear the terrain so we don't keep spamming error messages.
+      _terrain = NULL;
     }
-
-    // restore default forest rendering states
-    //SetTransparentTextureMode(ETextureAlphaRenderMode(m_uiTransparentTextureRenderMode));
   }
-  
-  // start the forest render
-  _forest_render.StartRender();
+
+  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
+  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
+  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
+  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
+  set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode(mode));
   
   bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
   bool fronds = _forest_render.RenderFronds(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
@@ -1299,15 +1441,76 @@ draw_callback(CallbackData *data) {
     speedtree_cat.warning()
       << "Failed to render forest completely: "
       << branches << " " << fronds << " " << leaf_meshes << " " << leaf_cards << " " << billboards << "\n";
-    speedtree_cat.warning()
-      << SpeedTree::CCore::GetError() << "\n";
+    write_error(speedtree_cat.warning());
   }
 
   _forest_render.EndRender();
 
-  // SpeedTree leaves the graphics state indeterminate.  But this
-  // doesn't help?
+  if (_forest_render.ShadowsAreEnabled() && speedtree_show_overlays) {
+    _forest_render.RenderOverlays();
+  }
+
+  // SpeedTree leaves the graphics state indeterminate.  Make sure
+  // Panda doesn't rely on anything in the state.
   geom_cbdata->set_lost_state(true);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::render_forest_into_shadow_maps
+//       Access: Private
+//  Description: Renders the forest from the point of view of the
+//               light, to fill up the shadow map(s).
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+render_forest_into_shadow_maps() {
+  bool success = true;
+
+  // d3d10 allows A2C on render targets, so make sure to turn it off
+  SpeedTree::CRenderState::SetMultisampling(false);
+  SpeedTree::CRenderState::SetAlphaToCoverage(false);
+
+#if defined(SPEEDTREE_OPENGL)
+  // Ensure the viewport is not constrained.  SpeedTree doesn't expect
+  // that.
+  glDisable(GL_SCISSOR_TEST);
+#endif
+
+  for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
+    const SpeedTree::CView &light_view = _shadow_infos[smi]._light_view;
+    const SpeedTree::SForestCullResults &light_cull = _shadow_infos[smi]._light_cull;
+    
+    if (_forest_render.BeginShadowMap(smi, light_view)) {
+      success &= _forest_render.UploadViewShaderParameters(light_view);
+      
+      // branch geometry can be rendered with backfacing triangle
+      // removed, so a closer tolerance can be used
+      SpeedTree::CRenderState::SetPolygonOffset(1.0f, 0.125f);
+      
+      success &= _forest_render.RenderBranches(light_cull, SpeedTree::RENDER_PASS_SHADOW);
+      
+      // the remaining geometry types cannot be backface culled, so we
+      // need a much more aggressive offset
+      SpeedTree::CRenderState::SetPolygonOffset(10.0f, 1.0f);
+      
+      success &= _forest_render.RenderFronds(light_cull, SpeedTree::RENDER_PASS_SHADOW);
+      success &= _forest_render.RenderLeafMeshes(light_cull, SpeedTree::RENDER_PASS_SHADOW);
+      success &= _forest_render.RenderLeafCards(light_cull, SpeedTree::RENDER_PASS_SHADOW, light_view);
+      
+      // We don't bother to render billboard geometry into the shadow
+      // map(s).
+      
+      success &= _forest_render.EndShadowMap(smi);
+    }
+  }
+
+  //  SpeedTree::CRenderState::SetMultisampling(m_sUserSettings.m_nSampleCount > 0);
+
+  if (!success) {
+    speedtree_cat.warning()
+      << "Failed to render shadow maps\n";
+    write_error(speedtree_cat.warning());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1395,10 +1598,11 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       if (!_forest_render.InitTreeGraphics((SpeedTree::CTreeRender *)tree->get_tree(), 
 					   max_instances, speedtree_horizontal_billboards,
 					   os_textures_dir.c_str())) {
-	speedtree_cat.warning()
-	  << "Failed to init tree graphics for " << *tree << "\n";
-	speedtree_cat.warning()
-	  << SpeedTree::CCore::GetError() << "\n";
+	if (speedtree_cat.is_debug()) {
+	  speedtree_cat.debug()
+	    << "Failed to init tree graphics for " << *tree << "\n";
+	  write_error(speedtree_cat.debug());
+	}
       }
     }
 
@@ -1406,8 +1610,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     if (!_forest_render.InitGraphics(false)) {
       speedtree_cat.warning()
 	<< "Failed to init graphics\n";
-      speedtree_cat.warning()
-	<< SpeedTree::CCore::GetError() << "\n";
+      write_error(speedtree_cat.warning());
       _is_valid = false;
       return;
     }
@@ -1429,31 +1632,48 @@ setup_for_render(GraphicsStateGuardian *gsg) {
 				_terrain->get_st_vertex_format())) {
 	speedtree_cat.warning()
 	  << "Failed to init terrain\n";
-	speedtree_cat.warning()
-	  << SpeedTree::CCore::GetError() << "\n";
+	write_error(speedtree_cat.warning());
       }
     }
 
     // If we needed to repopulate, it means we didn't cull in the cull
     // traversal.  Do it now.
-    _forest_render.CullAndComputeLOD(_view, _visible_trees);
-    if (has_terrain()) {
-      _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
-    }
-
+    cull_forest();
     _needs_repopulate = false;
   }
   if (has_terrain()) {
     update_terrain_cells();
   }
+}
 
-  if (!_forest_render.UploadViewShaderParameters(_view)) {
-    speedtree_cat.warning()
-      << "Couldn't set view parameters\n";
-    speedtree_cat.warning()
-      << SpeedTree::CCore::GetError() << "\n";
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::cull_forest
+//       Access: Private
+//  Description: Calls the SpeedTree methods to perform the needed
+//               cull calculations.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+cull_forest() {
+  _forest_render.CullAndComputeLOD(_view, _visible_trees);
+  if (has_terrain()) {
+    _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
+  }
+
+  if (_forest_render.ShadowsAreEnabled()) {
+    for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
+      SpeedTree::CView &light_view = _shadow_infos[smi]._light_view;
+      SpeedTree::SForestCullResultsRender &light_cull = _shadow_infos[smi]._light_cull;
+
+      _forest_render.ComputeLightView
+	(_forest_render.GetLightDir(), _view.GetFrustumPoints(), smi, 
+	 light_view, 0.0f);
+      
+      light_view.SetLodRefPoint(_view.GetCameraPos());
+      _forest_render.CullAndComputeLOD(light_view, light_cull, false);
+    }
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::print_forest_stats

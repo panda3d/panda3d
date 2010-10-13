@@ -46,8 +46,7 @@ class Loader;
 //               Panda3D scene graph.  
 //
 //               SpeedTree also includes some support for simple
-//               terrain and grass systems, but that support is not
-//               (yet) implemented within this layer.
+//               terrain and grass systems.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDASPEEDTREE SpeedTreeNode : public PandaNode {
 private:
@@ -128,6 +127,8 @@ PUBLISHED:
 
   void snap_to_terrain();
 
+  void reload_config();
+
   static bool authorize(const string &license = "");
 
 public:
@@ -153,6 +154,11 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  static void write_error(ostream &out);
+
+protected:
+  void set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const;
+
 private:
   void init_node();
   void r_add_instances(PandaNode *node, const TransformState *transform,
@@ -162,7 +168,10 @@ private:
   void update_terrain_cells();
   bool validate_api(GraphicsStateGuardian *gsg);
   void draw_callback(CallbackData *cbdata);
+  void render_forest_into_shadow_maps();
   void setup_for_render(GraphicsStateGuardian *gsg);
+  void cull_forest();
+
   void print_forest_stats(const SpeedTree::CForest::SPopulationStats &forest_stats) const;
 
 private:
@@ -216,6 +225,17 @@ private:
   SpeedTree::STerrainCullResults _visible_terrain;
 
   SpeedTree::Vec3 _light_dir;
+
+  class ShadowInfo {
+  public:
+    ShadowInfo() {};
+
+    SpeedTree::CView _light_view;
+    SpeedTree::SForestCullResultsRender _light_cull;
+    float _shadow_split;
+  };
+  typedef pvector<ShadowInfo> ShadowInfos;
+  ShadowInfos _shadow_infos;
 
   static bool _authorized;
   static bool _done_first_init;

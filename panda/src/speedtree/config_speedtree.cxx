@@ -151,16 +151,6 @@ ConfigVariableDouble speedtree_sun_fog_bloom
 ("speedtree-sun-fog-bloom", 0.0,
  PRC_DESC("Undocumented SpeedTree parameter."));
 
-ConfigVariableDouble speedtree_ambient_color
-("speedtree-ambient-color", "1 1 1",
- PRC_DESC("Specifies the r g b color of the ambient light on SpeedTree "
-	  "surfaces."));
-
-ConfigVariableDouble speedtree_diffuse_color
-("speedtree-diffuse-color", "1 1 1",
- PRC_DESC("Specifies the r g b color of the diffuse light on SpeedTree "
-	  "surfaces."));
-
 ConfigVariableDouble speedtree_specular_color
 ("speedtree-specular-color", "1 1 1",
  PRC_DESC("Specifies the r g b color of the specular reflections on SpeedTree "
@@ -171,16 +161,17 @@ ConfigVariableDouble speedtree_emissive_color
  PRC_DESC("Specifies the r g b color of the emissive light effect on SpeedTree "
 	  "surfaces."));
 
-ConfigVariableInt speedtree_num_shadow_maps
-("speedtree-num-shadow-maps", 3,
- PRC_DESC("Specifies the number of shadow maps to use to render SpeedTree "
-	  "shadows."));
-
 ConfigVariableInt speedtree_shadow_map_resolution
 ("speedtree-shadow-map-resolution", 0, //1024,
  PRC_DESC("Specifies the resolution for rendering shadow maps.  Should "
-	  "be a power of 2.  Specify 0 to disable shadowing in SpeedTree.  "
-	  "Currently unsupported."));
+	  "be a power of 2.  Specify 0 to disable shadowing in SpeedTree."));
+
+ConfigVariableDouble speedtree_cascading_shadow_splits
+("speedtree-cascading-shadow-splits", "200 400 600",
+ PRC_DESC("Specifies the shadow split distance, in spatial units, for "
+	  "each of shadow map to be rendered.  The number of values also "
+	  "implies the number of shadow maps, to a maximum value compiled "
+	  "within SpeedTree (typically 4)."));
 
 ConfigVariableBool speedtree_smooth_shadows
 ("speedtree-smooth-shadows", false,
@@ -197,6 +188,11 @@ ConfigVariableBool speedtree_wind_enabled
 ConfigVariableBool speedtree_frond_rippling
 ("speedtree-frond-rippling", true,
  PRC_DESC("True to allow fronds to respond to the global wind."));
+
+ConfigVariableBool speedtree_show_overlays
+("speedtree-show-overlays", false,
+ PRC_DESC("True to draw onscreen overlays showing the generated "
+	  "shadow map(s)."));
 
 ConfigVariableInt speedtree_max_num_visible_cells
 ("speedtree-max-num-visible-cells", 75,

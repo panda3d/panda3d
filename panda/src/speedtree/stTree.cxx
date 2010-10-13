@@ -56,8 +56,7 @@ STTree(const Filename &fullpath) :
   if (!_tree.LoadTree(os_fullpath.c_str())) {
     speedtree_cat.warning()
       << "Couldn't read: " << _fullpath << "\n";
-    speedtree_cat.warning()
-      << SpeedTree::CCore::GetError() << "\n";
+    SpeedTreeNode::write_error(speedtree_cat.warning());
     return;
   }
 
