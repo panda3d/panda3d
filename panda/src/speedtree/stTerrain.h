@@ -65,6 +65,10 @@ PUBLISHED:
   virtual float get_smooth_height(float x, float y, float radius) const;
   virtual float get_slope(float x, float y) const;
 
+  bool placement_is_acceptable(float x, float y,
+			       float height_min, float height_max, 
+			       float slope_min, float slope_max);
+
   virtual void fill_vertices(GeomVertexData *data,
 			     float start_x, float start_y,
 			     float size_xy, int num_xy) const;

@@ -95,11 +95,13 @@ ConfigVariableBool speedtree_transmission_lighting
 
 ConfigVariableBool speedtree_detail_layer
 ("speedtree-detail-layer", false,
- PRC_DESC("Undocumented SpeedTree parameter."));
+ PRC_DESC("True to render the detail texture layer defined on tree and "
+	  "terrain objects, false otherwise."));
 
 ConfigVariableBool speedtree_detail_normal_mapping
 ("speedtree-detail-normal-mapping", false,
- PRC_DESC("True to enable normal maps in SpeedTree."));
+ PRC_DESC("True to render the detail normal maps defined on tree and "
+	  "terrain objects, false otherwise."));
 
 ConfigVariableBool speedtree_ambient_contrast
 ("speedtree-ambient-contrast", false,
@@ -109,13 +111,10 @@ ConfigVariableDouble speedtree_transmission_scalar
 ("speedtree-transmission-scalar", 1.0f,
  PRC_DESC("Undocumented SpeedTree parameter."));
 
-ConfigVariableDouble speedtree_fog_start_distance
-("speedtree-fog-start-distance", 2500.0,
- PRC_DESC("Specifies the nearest distance at which fog begins to be visible."));
-
-ConfigVariableDouble speedtree_fog_end_distance
-("speedtree-fog-end-distance", 5000.0,
- PRC_DESC("Specifies the distance at and beyond which fog is complete."));
+ConfigVariableDouble speedtree_fog_distance
+("speedtree-fog-distance", "2500 5000",
+ PRC_DESC("Specifies the nearest and farthest distance of the fog on trees "
+	  "and terrain."));
 
 ConfigVariableDouble speedtree_fog_color
 ("speedtree-fog-color", "1.0 1.0 1.0",
@@ -126,13 +125,9 @@ ConfigVariableDouble speedtree_sky_color
  PRC_DESC("Specifies the r g b color of the SpeedTree sky, when the sky "
 	  "is enabled.  Currently unused."));
 
-ConfigVariableDouble speedtree_sky_fog_min
-("speedtree-sky-fog-min", -0.5,
- PRC_DESC("Undocumented SpeedTree parameter."));
-
-ConfigVariableDouble speedtree_sky_fog_max
-("speedtree-sky-fog-max", 1.0,
- PRC_DESC("Undocumented SpeedTree parameter."));
+ConfigVariableDouble speedtree_sky_fog
+("speedtree-sky-fog", "-0.5 1.0",
+ PRC_DESC("Specifies the range of fog in the sky.  -1 is down, 1 is up."));
 
 ConfigVariableDouble speedtree_sun_color
 ("speedtree-sun-color", "1.0 1.0 0.85",
@@ -238,6 +233,20 @@ ConfigVariableDouble speedtree_area_scale
 	  "when loading a new terrain.  The default is about 3281, which "
 	  "scales from kilometers to feet.  You should set a different "
 	  "scale if you use units other than feet."));
+
+ConfigVariableBool speedtree_follow_terrain
+("speedtree-follow-terrain", true,
+ PRC_DESC("Set this true to have trees automatically snap to the terrain "
+	  "height when loaded into a SpeedTree node with a configured "
+	  "terrain.  If this is false, you may still call "
+	  "SpeedTreeNode::snap_to_terrain() afterwards."));
+
+ConfigVariableInt speedtree_max_random_try_count
+("speedtree-max-random-try-count", 1000,
+ PRC_DESC("This is a cheesy limit to detect bad parameters passed to "
+	  "SpeedTreeNode::add_random_instances().  If this number of attempts "
+	  "to find a legal place for a tree fail in a row, the parameters "
+	  "are deemed to be in error, and the function fails."));
 
 ConfigVariableBool speedtree_5_2_stf
 ("speedtree-5-2-stf", 

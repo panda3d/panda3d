@@ -291,7 +291,13 @@ modify_instance_list(const STTree *tree) {
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 add_instance(const STTree *tree, const STTransform &transform) {
-  add_tree(tree).add_instance(transform);
+  if (speedtree_follow_terrain && has_terrain()) {
+    STTransform new_transform = transform;
+    new_transform._pos[2] = _terrain->get_height(new_transform._pos[0], new_transform._pos[1]);
+    add_tree(tree).add_instance(new_transform);
+  } else {
+    add_tree(tree).add_instance(transform);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,8 +359,68 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
     for (int i = 0; i < num_instances; ++i) {
       CPT(TransformState) other_trans = other_instance_list.get_instance(i);
       CPT(TransformState) new_trans = transform->compose(other_trans);
-      this_instance_list.add_instance(new_trans.p());
+
+      if (speedtree_follow_terrain && has_terrain()) {
+	STTransform new_transform = new_trans;
+	new_transform._pos[2] = _terrain->get_height(new_transform._pos[0], new_transform._pos[1]);
+	this_instance_list.add_instance(new_transform);
+
+      } else {
+	this_instance_list.add_instance(new_trans.p());
+      }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::add_random_instances
+//       Access: Published
+//  Description: Creates a number of random instances of the indicated
+//               true, within the indicated range.  If a terrain is
+//               present, height_min and height_max restrict trees to
+//               the (x, y) positions that fall within the indicated
+//               terrain, and slope_min and slope_max restrict trees
+//               to the (x, y) positions that have a matching slope.
+//               If a terrain is not present, height_min and
+//               height_max specify a random range of Z heights, and
+//               slope_min and slope_max are ignored.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+add_random_instances(const STTree *tree, int quantity, 
+		     float x_min, float x_max, 
+		     float y_min, float y_max,
+		     float scale_min, float scale_max,
+		     float height_min, float height_max,
+		     float slope_min, float slope_max,
+		     Randomizer &randomizer) {
+  InstanceList &instance_list = add_tree(tree);
+  _needs_repopulate = true;
+
+  for (int i = 0; i < quantity; ++i) {
+    STTransform transform;
+    transform._pos[0] = randomizer.random_real(x_max - x_min) + x_min;
+    transform._pos[1] = randomizer.random_real(y_max - y_min) + y_min;
+    transform._rotate = randomizer.random_real(360.0);
+    transform._scale = randomizer.random_real(scale_max - scale_min) + scale_min;
+
+    if (has_terrain()) {
+      // Spin till we find a valid match with terrain.
+      int repeat_count = speedtree_max_random_try_count;
+      while (!_terrain->placement_is_acceptable(transform._pos[0], transform._pos[1], height_min, height_max, slope_min, slope_max)) {
+	transform._pos[0] = randomizer.random_real(x_max - x_min) + x_min;
+	transform._pos[1] = randomizer.random_real(y_max - y_min) + y_min;
+	if (--repeat_count == 0) {
+	  nassert_raise("Exceeded speedtree-max-random-try-count; bad placement parameters?");
+	  return;
+	}
+      }
+      transform._pos[2] = _terrain->get_height(transform._pos[0], transform._pos[1]);
+      
+    } else {
+      // No terrain; just pick a random height.
+      transform._pos[2] = randomizer.random_real(height_max - height_min) + height_min;
+    }
+    instance_list.add_instance(transform);
   }
 }
 
@@ -472,8 +538,8 @@ add_from_stf(istream &in, const Filename &pathname,
       if (!speedtree_5_2_stf) {
 	// 5.1 or earlier stf files also included these additional
 	// values, which we will ignore:
-	float elev_min, elev_max, slope_min, slope_max;
-	in >> elev_min >> elev_max >> slope_min >> slope_max;
+	float height_min, height_max, slope_min, slope_max;
+	in >> height_min >> height_max >> slope_min >> slope_max;
       }
 
       if (tree != NULL) {
@@ -576,6 +642,10 @@ set_terrain(STTerrain *terrain) {
   _terrain_render.SetRenderInfo(trender_info);
 
   _terrain_render.SetHeightHints(terrain->get_min_height(), terrain->get_max_height());
+
+  if (speedtree_follow_terrain) {
+    snap_to_terrain();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -655,12 +725,12 @@ reload_config() {
   render_info.m_bDetailNormalMapping = speedtree_detail_normal_mapping;
   render_info.m_bAmbientContrast = speedtree_ambient_contrast;
   render_info.m_fTransmissionScalar = speedtree_transmission_scalar;
-  render_info.m_fFogStartDistance = speedtree_fog_start_distance;
-  render_info.m_fFogEndDistance = speedtree_fog_end_distance;
+  render_info.m_fFogStartDistance = speedtree_fog_distance[0];
+  render_info.m_fFogEndDistance = speedtree_fog_distance[1];
   render_info.m_vFogColor = SpeedTree::Vec3(speedtree_fog_color[0], speedtree_fog_color[1], speedtree_fog_color[2]);
   render_info.m_vSkyColor = SpeedTree::Vec3(speedtree_sky_color[0], speedtree_sky_color[1], speedtree_sky_color[2]);
-  render_info.m_fSkyFogMin = speedtree_sky_fog_min;
-  render_info.m_fSkyFogMax = speedtree_sky_fog_max;
+  render_info.m_fSkyFogMin = speedtree_sky_fog[0];
+  render_info.m_fSkyFogMax = speedtree_sky_fog[1];
   render_info.m_vSunColor = SpeedTree::Vec3(speedtree_sun_color[0], speedtree_sun_color[1], speedtree_sun_color[2]);
   render_info.m_fSunSize = speedtree_sun_size;
   render_info.m_fSunSpreadExponent = speedtree_sun_spread_exponent;
@@ -1445,9 +1515,9 @@ draw_callback(CallbackData *data) {
     PStatTimer timer1(_draw_speedtree_trees_pcollector);
 
     //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
-    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
-    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
-    SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
+    SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
+    //SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
+    //SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
     set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode(mode));
     
     bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);

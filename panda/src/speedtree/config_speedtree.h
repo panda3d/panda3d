@@ -42,8 +42,7 @@ extern ConfigVariableBool speedtree_detail_layer;
 extern ConfigVariableBool speedtree_detail_normal_mapping;
 extern ConfigVariableBool speedtree_ambient_contrast;
 extern ConfigVariableDouble speedtree_transmission_scalar;
-extern ConfigVariableDouble speedtree_fog_start_distance;
-extern ConfigVariableDouble speedtree_fog_end_distance;
+extern ConfigVariableDouble speedtree_fog_distance;
 extern ConfigVariableDouble speedtree_fog_color;
 extern ConfigVariableDouble speedtree_sky_color;
 extern ConfigVariableDouble speedtree_sky_fog_min;
@@ -70,6 +69,8 @@ extern ConfigVariableBool speedtree_show_overlays;
 extern ConfigVariableInt speedtree_max_num_visible_cells;
 extern ConfigVariableDouble speedtree_cull_cell_size;
 extern ConfigVariableDouble speedtree_area_scale;
+extern ConfigVariableBool speedtree_follow_terrain;
+extern ConfigVariableInt speedtree_max_random_try_count;
 extern ConfigVariableBool speedtree_5_2_stf;
 
 extern EXPCL_PANDASPEEDTREE void init_libspeedtree();

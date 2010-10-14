@@ -59,7 +59,7 @@ public:
   void write_datagram(BamWriter *manager, Datagram &dg);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
-private:
+public:
   LPoint3f _pos;
   float _rotate;
   float _scale;

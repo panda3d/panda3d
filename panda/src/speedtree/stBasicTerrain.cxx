@@ -297,7 +297,7 @@ get_smooth_height(float x, float y, float radius) const {
 ////////////////////////////////////////////////////////////////////
 float STBasicTerrain::
 get_slope(float x, float y) const {
-  return 0.0f;
+  return _slope_data.calc_bilinear_interpolation(x / _size, y / _size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -394,8 +394,100 @@ read_height_map() {
       _max_height = max(_max_height, v);
     }
   }
+
+  compute_slope(0.5f);
   
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: STBasicTerrain::compute_slope
+//       Access: Protected
+//  Description: Once _height_data has been filled in, compute the
+//               corresponding values for _slope_data.
+////////////////////////////////////////////////////////////////////
+void STBasicTerrain::
+compute_slope(float smoothing) {
+  nassertv(!_height_data._data.empty());
+
+  int width = _height_data._width;
+  int height = _height_data._height;
+  _slope_data.reset(width, height);
+
+  float u_spacing = _size / (float)width;
+  float v_spacing = _size / (float)height;
+
+  for (int i = 0; i < width; ++i) {
+    int left = (i + width - 1) % width;
+    int right = (i + 1) % width;
+
+    for (int j = 0; j < height; ++j) {
+      int top = (j + height - 1) % height;
+      int bottom = (j + 1) % height;
+
+      float slope = 0.0f;
+      float this_height = _height_data._data[i + j * width];
+      slope += catan2(cabs(this_height - _height_data._data[right + j * width]), u_spacing);
+      slope += catan2(cabs(this_height - _height_data._data[left + j * width]), u_spacing);
+      slope += catan2(cabs(this_height - _height_data._data[i + top * width]), v_spacing);
+      slope += catan2(cabs(this_height - _height_data._data[i + bottom * width]), v_spacing);
+
+      slope *= (0.5f / MathNumbers::pi_f);
+
+      if (slope > 1.0f) {
+	slope = 1.0f;
+      }
+      _slope_data._data[i + j * width] = slope;
+    }
+  }
+
+  if (smoothing > 0.0f) {
+    // Create a temporary array for smoothing data.
+    InterpolationData<float> smoothing_data;
+    smoothing_data.reset(width, height);
+    float *smoothed = &smoothing_data._data[0];
+
+    int steps = int(smoothing);
+    float last_interpolation = smoothing - steps;
+    ++steps;
+    for (int si = 0; si < steps; ++si) {
+
+      // compute smoothed normals
+      for (int i = 0; i < width; ++i) {
+	int left = (i + width - 1) % width;
+	int right = (i + 1) % width;
+
+	for (int j = 0; j < height; ++j) {
+	  int top = (j + height - 1) % height;
+	  int bottom = (j + 1) % height;
+
+	  smoothed[i + j * width] = (_slope_data._data[right + j * width] + 
+				     _slope_data._data[left + j * width] + 
+				     _slope_data._data[i + top * width] + 
+				     _slope_data._data[i + bottom * width] +
+				     _slope_data._data[right + top * width] +
+				     _slope_data._data[right + bottom * width] +
+				     _slope_data._data[left + top * width] +
+				     _slope_data._data[left + bottom * width]);
+	  smoothed[i + j * width] *= 0.125f;
+	}
+      }
+
+      // interpolate or set
+      if (si == steps - 1) {
+	// last step, interpolate
+	for (int i = 0; i < width; ++i) {
+	  for (int j = 0; j < height; ++j) {
+	    _slope_data._data[i + j * width] = interpolate(_slope_data._data[i + j * width], smoothed[i + j * width], last_interpolation);
+	  }
+	}
+
+      } else {
+	// full smoothing step, copy everything
+	_slope_data = smoothing_data;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

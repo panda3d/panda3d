@@ -130,6 +130,29 @@ get_slope(float x, float y) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: STTerrain::placement_is_acceptable
+//       Access: Published
+//  Description: Returns true if the elevation and slope of point (x,
+//               y) fall within the requested limits, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool STTerrain::
+placement_is_acceptable(float x, float y,
+			float height_min, float height_max, 
+			float slope_min, float slope_max) {
+  float height = get_height(x, y);
+  if (height < height_min || height > height_max) {
+    return false;
+  }
+
+  float slope = get_slope(x, y);
+  if (slope < slope_min || slope > slope_max) {
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: STTerrain::fill_vertices
 //       Access: Published, Virtual
 //  Description: After load_data() has been called, this will be

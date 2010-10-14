@@ -57,6 +57,9 @@ PUBLISHED:
 
 protected:
   bool read_height_map();
+  void compute_slope(float smoothing);
+
+  INLINE float interpolate(float a, float b, float t);
 
 private:
   static void read_quoted_filename(Filename &result, istream &in, 

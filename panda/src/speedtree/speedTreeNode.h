@@ -26,6 +26,7 @@
 #include "transformState.h"
 #include "nodePath.h"
 #include "pStatCollector.h"
+#include "randomizer.h"
 #include "speedtree_api.h"
 
 class Loader;
@@ -115,6 +116,14 @@ PUBLISHED:
   void add_instances(const NodePath &root, const TransformState *transform = TransformState::make_identity());
   void add_instances_from(const SpeedTreeNode *other);
   void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
+  void add_random_instances(const STTree *tree, int quantity, 
+			    float x_min, float x_max, 
+			    float y_min, float y_max,
+			    float scale_min, float scale_max,
+			    float height_min, float height_max,
+			    float slope_min, float slope_max,
+			    Randomizer &randomizer = Randomizer());
+
   bool add_from_stf(const Filename &stf_filename, 
 		    const LoaderOptions &options = LoaderOptions());
   bool add_from_stf(istream &in, const Filename &pathname, 

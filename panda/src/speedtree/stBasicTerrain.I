@@ -52,6 +52,17 @@ get_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: STBasicTerrain::interpolate
+//       Access: Protected, Static
+//  Description: Convenience function to calculate the linear
+//               interpolation from A to B.
+////////////////////////////////////////////////////////////////////
+INLINE float STBasicTerrain::
+interpolate(float a, float b, float t) {
+  return (a + (b - a) * t);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: STBasicTerrain::InterpolationData::Constructor
 //       Access: Public
 //  Description: 
@@ -103,8 +114,6 @@ ValueType STBasicTerrain::InterpolationData<ValueType>::
 calc_bilinear_interpolation(float u, float v) const {
   u -= cfloor(u);
   v -= cfloor(v);
-  nassertr((u >= 0.0f) && (u < 1.0f) && 
-	   (v >= 0.0f) && (v < 1.0f), 0);
   
   u *= (float)_width;
   v *= (float)_height;
