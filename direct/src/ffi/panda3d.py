@@ -13,6 +13,7 @@ panda3d_modules = {
     "physx"       : "libpandaphysx",
     "ai"          : "libpandaai",
     "awesomium"   : "libp3awesomium",
+    "speedtree"   : "libpandaspeedtree",
 }
 
 class panda3d_import_manager:
