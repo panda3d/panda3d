@@ -5,10 +5,8 @@
 // platform, when ppremake has been compiled using Cygwin.  It
 // inherits most of its parameters from Config.Win32.pp.
 //
-//  *** UNCOMMENT ONE OF THE TWO OPTIONS BELOW FOR 32 OR 64 BIT BUILDS
 
-// 32-bit
+// Note: if you are building for 64-bit Windows, you should configure
+// ppremake with the "Cygwin64" platform name instead of "Cygwin".
+
 #include $[THISDIRPREFIX]Config.Win32.pp
-
-// 64-bit
-// #include $[THISDIRPREFIX]Config.Win64.pp

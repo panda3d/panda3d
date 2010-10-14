@@ -458,10 +458,18 @@ if (COMPILER=="MSVC"):
         # We need to be able to find NxCharacter.dll when importing code library libpandaphysx
         AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
     if (PkgSkip("SPEEDTREE")==0):
-        libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9/"
+        win64 = (sys.platform.startswith("win") and platform.architecture()[0] == "64bit")
+        if win64:
+            libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9.x64/"
+            p64ext = '64'
+        else:
+            libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9/"
+            p64ext = ''
+            
         debugext = ''
         if (GetOptimize() <= 2 and sys.platform.startswith("win")): debugext = "_d"
-        libsuffix = "_v%s_VC90MT_Static%s.lib" % (SDK["SPEEDTREEVERSION"], debugext)
+        libsuffix = "_v%s_VC90MT%s_Static%s.lib" % (
+            SDK["SPEEDTREEVERSION"], p64ext, debugext)
         LibName("SPEEDTREE", "%sSpeedTreeCore%s" % (libdir, libsuffix))
         LibName("SPEEDTREE", "%sSpeedTreeForest%s" % (libdir, libsuffix))
         LibName("SPEEDTREE", "%sSpeedTree%sRenderer%s" % (libdir, SDK["SPEEDTREEAPI"], libsuffix))

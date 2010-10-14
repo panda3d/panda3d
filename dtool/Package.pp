@@ -74,8 +74,14 @@
 // PLATFORM variable, and help it to control the effects of functions
 // like $[os] and $[isfullpath].
 
+// True if we are specifically 32-bit Windows.
+#define WIN32_PLATFORM $[or $[eq $[PLATFORM],Win32],$[eq $[PLATFORM],Cygwin]]
+
+// True if we are 64-bit windows.
+#define WIN64_PLATFORM $[or $[eq $[PLATFORM],Win64],$[eq $[PLATFORM],Cygwin64]]
+
 // True if we are building on some flavor of Windows.
-#define WINDOWS_PLATFORM $[or $[eq $[PLATFORM],Win32],$[eq $[PLATFORM],Cygwin]]
+#define WINDOWS_PLATFORM $[or $[WIN32_PLATFORM],$[WIN64_PLATFORM]]
 
 // True if we are building on some flavor of OS X.
 #define OSX_PLATFORM $[eq $[PLATFORM],OSX]

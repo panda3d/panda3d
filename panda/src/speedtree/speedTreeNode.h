@@ -45,8 +45,10 @@ class Loader;
 //               SpeedTree objects, especially trees, within the
 //               Panda3D scene graph.  
 //
-//               SpeedTree also includes some support for simple
-//               terrain and grass systems.
+//               SpeedTree also includes some support for a simple
+//               terrain system, which is available here as well.
+//               SpeedTree's rather lame grass system is not presently
+//               exposed.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDASPEEDTREE SpeedTreeNode : public PandaNode {
 private:

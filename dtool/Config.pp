@@ -755,8 +755,11 @@
 #define DX9_LIBS d3d9.lib d3dx9.lib dxerr9.lib
 #defer HAVE_DX9 $[libtest $[DX9_LPATH],$[DX9_LIBS]]
 
-// Set this nonempty to use <dxerr.h> instead of <dxerr9.h>.
-#define USE_GENERIC_DXERR_LIBRARY
+// Set this nonempty to use <dxerr.h> instead of <dxerr9.h>.  The
+// choice between the two is largely based on which version of the
+// DirectX SDK(s) you might have installed.  The generic library is
+// the default for 64-bit windows.
+#defer USE_GENERIC_DXERR_LIBRARY $[WIN64_PLATFORM]
 
 // Is OpenCV installed, and where?
 #define OPENCV_IPATH /usr/local/include/opencv
@@ -951,12 +954,13 @@
 #defer SPEEDTREE_BIN_DIR $[SPEEDTREE_SDK_DIR]/Bin
 
 #defer SPEEDTREE_IPATH $[SPEEDTREE_SDK_DIR]/Include
-#defer SPEEDTREE_LPATH $[SPEEDTREE_SDK_DIR]/Lib/Windows/VC9
+#defer SPEEDTREE_LPATH $[SPEEDTREE_SDK_DIR]/Lib/Windows/VC9$[if $[WIN64_PLATFORM],.x64]
 #defer SPEEDTREE_DEBUG $[if $[< $[OPTIMIZE], 3],_d]
+#defer SPEEDTREE_64 $[if $[WIN64_PLATFORM],64]
 
 // These names are used to build up the names of the SpeedTree libraries.
 #defer SPEEDTREE_VERSION 5.1
-#defer SPEEDTREE_LIB_SUFFIX _v$[SPEEDTREE_VERSION]_VC90MT_Static$[SPEEDTREE_DEBUG].lib
+#defer SPEEDTREE_LIB_SUFFIX _v$[SPEEDTREE_VERSION]_VC90MT$[SPEEDTREE_64]_Static$[SPEEDTREE_DEBUG].lib
 #if $[WINDOWS_PLATFORM]
 #defer SPEEDTREE_LIBS SpeedTreeCore$[SPEEDTREE_LIB_SUFFIX] SpeedTreeForest$[SPEEDTREE_LIB_SUFFIX] SpeedTree$[SPEEDTREE_API]Renderer$[SPEEDTREE_LIB_SUFFIX] SpeedTreeRenderInterface$[SPEEDTREE_LIB_SUFFIX] $[if $[eq $[SPEEDTREE_API],OpenGL],glew32.lib]
 #else

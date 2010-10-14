@@ -389,10 +389,9 @@ $[cdefine HAVE_DX8]
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX9]
 
-/* If we're building 64-bit, we want to use generic DirectX error libraries.  */
-#if $[eq $[USE_COMPILER],MSVC9x64]
-  $[cdefine USE_GENERIC_DXERR_LIBRARY]
-#endif
+/* The choice of generic vs. the specific dxerr library largely
+   depends on which SDK you have installed. */
+$[cdefine USE_GENERIC_DXERR_LIBRARY]
 
 /* Define if we want to build tinydisplay. */
 $[cdefine HAVE_TINYDISPLAY]

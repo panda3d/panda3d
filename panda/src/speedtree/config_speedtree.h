@@ -69,6 +69,7 @@ extern ConfigVariableBool speedtree_show_overlays;
 
 extern ConfigVariableInt speedtree_max_num_visible_cells;
 extern ConfigVariableDouble speedtree_cull_cell_size;
+extern ConfigVariableDouble speedtree_area_scale;
 extern ConfigVariableBool speedtree_5_2_stf;
 
 extern EXPCL_PANDASPEEDTREE void init_libspeedtree();

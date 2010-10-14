@@ -159,11 +159,11 @@ setup_terrain(istream &in, const Filename &pathname) {
   in >> keyword;
   while (in && !in.eof()) {
     if (keyword == "area") {
-      // area defines the size of the terrain in square kilometers.
-      static const float feet_per_km = 3280.839895013f;
+      // "area" defines the size of the terrain in square kilometers.
+      // We apply speedtree_area_scale to convert that to local units.
       float area;
       in >> area;
-      _size = csqrt(area) * feet_per_km;
+      _size = csqrt(area) * speedtree_area_scale;
 
     } else if (keyword == "height_scale") {
       in >> _height_scale;
