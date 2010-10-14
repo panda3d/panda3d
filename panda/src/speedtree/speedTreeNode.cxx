@@ -33,6 +33,7 @@
 #include "loader.h"
 #include "deg_2_rad.h"
 #include "sceneGraphReducer.h"
+#include "pStatTimer.h"
 
 #ifdef SPEEDTREE_OPENGL
 #include "glew/glew.h"
@@ -46,6 +47,16 @@ bool SpeedTreeNode::_authorized;
 bool SpeedTreeNode::_done_first_init;
 TypeHandle SpeedTreeNode::_type_handle;
 TypeHandle SpeedTreeNode::DrawCallback::_type_handle;
+
+PStatCollector SpeedTreeNode::_cull_speedtree_pcollector("Cull:SpeedTree");
+PStatCollector SpeedTreeNode::_cull_speedtree_shadows_pcollector("Cull:SpeedTree:Shadows");
+PStatCollector SpeedTreeNode::_cull_speedtree_trees_pcollector("Cull:SpeedTree:Trees");
+PStatCollector SpeedTreeNode::_cull_speedtree_terrain_pcollector("Cull:SpeedTree:Terrain");
+PStatCollector SpeedTreeNode::_draw_speedtree_pcollector("Draw:SpeedTree");
+PStatCollector SpeedTreeNode::_draw_speedtree_shadows_pcollector("Draw:SpeedTree:Shadows");
+PStatCollector SpeedTreeNode::_draw_speedtree_trees_pcollector("Draw:SpeedTree:Trees");
+PStatCollector SpeedTreeNode::_draw_speedtree_terrain_pcollector("Draw:SpeedTree:Terrain");
+PStatCollector SpeedTreeNode::_draw_speedtree_terrain_update_pcollector("Draw:SpeedTree:Terrain:Update");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::Constructor
@@ -873,6 +884,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (!_is_valid) {
     return false;
   }
+  PStatTimer timer(_cull_speedtree_pcollector);
 
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, trav->get_gsg());
   nassertr(gsg != (GraphicsStateGuardian *)NULL, true);
@@ -948,6 +960,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (dlight != (DirectionalLight *)NULL) {
     CPT(TransformState) transform = dlight_np.get_transform(trav->get_scene()->get_scene_root().get_parent());
     LVector3f dir = dlight->get_direction() * transform->get_mat();
+    dir.normalize();
     _light_dir = SpeedTree::Vec3(dir[0], dir[1], dir[2]);
     diffuse_color = dlight->get_color();
 
@@ -1372,6 +1385,7 @@ validate_api(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 draw_callback(CallbackData *data) {
+  PStatTimer timer(_draw_speedtree_pcollector);
   GeomDrawCallbackData *geom_cbdata;
   DCAST_INTO_V(geom_cbdata, data);
 
@@ -1389,6 +1403,7 @@ draw_callback(CallbackData *data) {
     // Update the shadow maps.  TODO: consider updating these only
     // every once in a while, instead of every frame, as a simple
     // optimization.
+    PStatTimer timer(_draw_speedtree_shadows_pcollector);
     render_forest_into_shadow_maps();
     _forest_render.ClearBoundTextures( );
   }
@@ -1400,6 +1415,7 @@ draw_callback(CallbackData *data) {
   }
   
   if (has_terrain()) {
+    PStatTimer timer1(_draw_speedtree_terrain_pcollector);
     // Is this needed for terrain?
     _terrain_render.UploadShaderConstants
       (&_forest_render, _light_dir, 
@@ -1424,23 +1440,28 @@ draw_callback(CallbackData *data) {
     }
   }
 
-  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
-  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
-  //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
-  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
-  set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode(mode));
-  
-  bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool fronds = _forest_render.RenderFronds(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool leaf_meshes = _forest_render.RenderLeafMeshes(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
-  bool leaf_cards = _forest_render.RenderLeafCards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
-  bool billboards = _forest_render.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+  {
+    // Now draw the actual trees.
+    PStatTimer timer1(_draw_speedtree_trees_pcollector);
 
-  if (!branches || !fronds || !leaf_meshes || !leaf_cards || !billboards) {
-    speedtree_cat.warning()
-      << "Failed to render forest completely: "
-      << branches << " " << fronds << " " << leaf_meshes << " " << leaf_cards << " " << billboards << "\n";
-    write_error(speedtree_cat.warning());
+    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
+    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
+    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
+    SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
+    set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode(mode));
+    
+    bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+    bool fronds = _forest_render.RenderFronds(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+    bool leaf_meshes = _forest_render.RenderLeafMeshes(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
+    bool leaf_cards = _forest_render.RenderLeafCards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+    bool billboards = _forest_render.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+    
+    if (!branches || !fronds || !leaf_meshes || !leaf_cards || !billboards) {
+      speedtree_cat.warning()
+	<< "Failed to render forest completely: "
+	<< branches << " " << fronds << " " << leaf_meshes << " " << leaf_cards << " " << billboards << "\n";
+      write_error(speedtree_cat.warning());
+    }
   }
 
   _forest_render.EndRender();
@@ -1637,6 +1658,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     _needs_repopulate = false;
   }
   if (has_terrain()) {
+    PStatTimer timer1(_draw_speedtree_terrain_update_pcollector);
     update_terrain_cells();
   }
 }
@@ -1649,12 +1671,17 @@ setup_for_render(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 cull_forest() {
-  _forest_render.CullAndComputeLOD(_view, _visible_trees);
+  {
+    PStatTimer timer1(_cull_speedtree_trees_pcollector);
+    _forest_render.CullAndComputeLOD(_view, _visible_trees);
+  }
   if (has_terrain()) {
+    PStatTimer timer1(_cull_speedtree_terrain_pcollector);
     _terrain_render.CullAndComputeLOD(_view, _visible_terrain);
   }
 
   if (_forest_render.ShadowsAreEnabled()) {
+    PStatTimer timer1(_cull_speedtree_shadows_pcollector);
     for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
       SpeedTree::CView &light_view = _shadow_infos[smi]._light_view;
       SpeedTree::SForestCullResultsRender &light_cull = _shadow_infos[smi]._light_cull;

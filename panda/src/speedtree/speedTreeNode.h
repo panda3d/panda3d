@@ -25,7 +25,7 @@
 #include "loaderOptions.h"
 #include "transformState.h"
 #include "nodePath.h"
-
+#include "pStatCollector.h"
 #include "speedtree_api.h"
 
 class Loader;
@@ -239,6 +239,16 @@ private:
 
   static bool _authorized;
   static bool _done_first_init;
+
+  static PStatCollector _cull_speedtree_pcollector;
+  static PStatCollector _cull_speedtree_shadows_pcollector;
+  static PStatCollector _cull_speedtree_trees_pcollector;
+  static PStatCollector _cull_speedtree_terrain_pcollector;
+  static PStatCollector _draw_speedtree_pcollector;
+  static PStatCollector _draw_speedtree_shadows_pcollector;
+  static PStatCollector _draw_speedtree_trees_pcollector;
+  static PStatCollector _draw_speedtree_terrain_pcollector;
+  static PStatCollector _draw_speedtree_terrain_update_pcollector;
 
 public:
   static void register_with_read_factory();

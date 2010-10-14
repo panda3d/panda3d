@@ -56,9 +56,9 @@ ConfigVariableDouble speedtree_max_anisotropy
 ConfigVariableBool speedtree_horizontal_billboards
 ("speedtree-horizontal-billboards", true,
  PRC_DESC("Set this true to allow the use of horizontal billboards in "
-	  "SpeedTree, or false to disallow them.  Documentation on this "
-	  "feature is sparse, but presumably enabling them increases "
-	  "visual quality and also causes a greater performance impact."));
+	  "SpeedTree, or false to disallow them.  Horizontal billboards "
+	  "may be defined for some trees to provide a billboard LOD "
+	  "when the tree is seen from above."));
 
 ConfigVariableDouble speedtree_alpha_test_scalar
 ("speedtree-alpha-test-scalar", 0.57,
