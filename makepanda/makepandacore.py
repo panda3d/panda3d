@@ -1469,6 +1469,7 @@ def SdkLocateMacOSX(osxtarget=None):
 PHYSXVERSIONINFO=[
     ("PHYSX281","v2.8.1"),
     ("PHYSX283","v2.8.3"),
+    ("PHYSX284","v2.8.4"),
 ]
 
 def SdkLocatePhysX():
@@ -1476,7 +1477,8 @@ def SdkLocatePhysX():
         if (sys.platform == "win32"):
             folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
             for folder in ListRegistryValues(folders):
-                if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key):
+                if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
+                   folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
                     SDK["PHYSX"] = folder
                     SDK["PHYSXVERSION"] = ver
         elif (sys.platform.startswith("linux")):

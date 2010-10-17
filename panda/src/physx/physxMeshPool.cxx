@@ -16,6 +16,7 @@
 #include "physxConvexMesh.h"
 #include "physxTriangleMesh.h"
 #include "physxClothMesh.h"
+#include "physxSoftBodyMesh.h"
 
 #include "physxFileStream.h"
 #include "virtualFileSystem.h"
@@ -23,7 +24,7 @@
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
 PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
-//PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
+PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::check_file
@@ -164,6 +165,45 @@ load_cloth_mesh(const Filename &fn) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxMeshPool::load_soft_body_mesh
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PhysxSoftBodyMesh *PhysxMeshPool::
+load_soft_body_mesh(const Filename &fn) {
+
+  if (!check_filename(fn)) return NULL;
+
+  PhysxSoftBodyMesh *mesh;
+
+  SoftbodyMeshes::iterator it = _softbody_meshes.find(fn);
+  if (it == _softbody_meshes.end()) {
+    // Not found; load mesh.
+    NxSoftBodyMesh *meshPtr;
+    PhysxFileStream stream = PhysxFileStream(fn, true);
+
+    mesh = new PhysxSoftBodyMesh();
+    nassertr_always(mesh, NULL);
+
+    NxPhysicsSDK *sdk = NxGetPhysicsSDK();
+    nassertr_always(sdk, NULL);
+
+    meshPtr = sdk->createSoftBodyMesh(stream);
+    nassertr_always(meshPtr, NULL);
+
+    mesh->link(meshPtr);
+
+    _softbody_meshes.insert(SoftbodyMeshes::value_type(fn, mesh));
+  }
+  else {
+    // Found; return previously loaded mesh.
+    mesh = (*it).second;
+  }
+
+  return mesh;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxMeshPool::release_convex_mesh
 //       Access: Published
 //  Description:
@@ -213,6 +253,25 @@ release_cloth_mesh(PhysxClothMesh *mesh) {
   for (it=_cloth_meshes.begin(); it != _cloth_meshes.end(); ++it) {
     if (mesh == (*it).second) {
       _cloth_meshes.erase(it);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxMeshPool::release_soft_body_mesh
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool PhysxMeshPool::
+release_soft_body_mesh(PhysxSoftBodyMesh *mesh) {
+
+  SoftbodyMeshes::iterator it;
+  for (it=_softbody_meshes.begin(); it != _softbody_meshes.end(); ++it) {
+    if (mesh == (*it).second) {
+      _softbody_meshes.erase(it);
       return true;
     }
   }
@@ -279,6 +338,19 @@ list_contents(ostream &out) {
     }
   }
 
+  // Soft body meshes
+  {
+    SoftbodyMeshes::const_iterator it;
+    for (it=_softbody_meshes.begin(); it != _softbody_meshes.end(); ++it) {
+      Filename fn = (*it).first;
+      PhysxSoftBodyMesh *mesh = (*it).second;
+
+      out << "  " << fn.get_fullpath()
+          << " (soft body mesh, " << mesh->ptr()->getReferenceCount() 
+          << " references)\n";
+    }
+  }
+
   // Summary
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
 
@@ -290,5 +362,8 @@ list_contents(ostream &out) {
 
   out << "  Total number of cloth meshes: " << sdk->getNbClothMeshes() 
       << " created, " << _cloth_meshes.size() << " registred\n";
+
+  out << "  Total number of soft body meshes: " << sdk->getNbSoftBodyMeshes() 
+      << " created, " << _softbody_meshes.size() << " registred\n";
 }
 

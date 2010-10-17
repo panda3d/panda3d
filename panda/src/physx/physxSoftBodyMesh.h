@@ -1,5 +1,5 @@
-// Filename: physxVehicle.h
-// Created by:  enn0x (23Mar10)
+// Filename: physxSoftBodyMesh.h
+// Created by:  enn0x (12Sep10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,53 +12,41 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PHYSXVEHICLE_H
-#define PHYSXVEHICLE_H
+#ifndef PHYSXSOFTBODYMESH_H
+#define PHYSXSOFTBODYMESH_H
 
 #include "pandabase.h"
-#include "pointerToArray.h"
 
 #include "physxObject.h"
 #include "physx_includes.h"
 
-class PhysxActor;
-class PhysxWheel;
-class PhysxVehicleDesc;
-class PhysxScene;
-
 ////////////////////////////////////////////////////////////////////
-//       Class : PhysxVehicle
+//       Class : PhysxSoftBodyMesh
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSX PhysxVehicle : public PhysxObject {
+class EXPCL_PANDAPHYSX PhysxSoftBodyMesh : public PhysxObject {
 
 PUBLISHED:
-  INLINE PhysxVehicle();
-  INLINE ~PhysxVehicle();
-
-  //PhysxActor *get_actor() const;
-
-  //unsigned int get_num_wheels() const;
-  //PhysxWheel *get_wheel(unsigned int idx) const;
-  //MAKE_SEQ(get_wheels, get_num_wheels, get_wheel);
-
-  INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
-
-private:
+  unsigned int get_reference_count() const;
 
 ////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level=0) const;
+
 public:
-  void create(PhysxScene *scene, PhysxVehicleDesc &desc);
-  void update_vehicle(float dt);
+  INLINE PhysxSoftBodyMesh();
+  INLINE ~PhysxSoftBodyMesh();
+
+  INLINE NxSoftBodyMesh *ptr() const { return _ptr; };
+
+  void link(NxSoftBodyMesh *meshPtr);
+  void unlink();
 
 private:
-  PTA(PT(PhysxWheel)) _wheels;
-  PT(PhysxActor) _actor;
-  PT(PhysxScene) _scene;
+  NxSoftBodyMesh *_ptr;
 
 ////////////////////////////////////////////////////////////////////
 public:
@@ -67,7 +55,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxVehicle", 
+    register_type(_type_handle, "PhysxSoftBodyMesh", 
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -82,6 +70,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "physxVehicle.I"
+#include "physxSoftBodyMesh.I"
 
-#endif // PHYSXVEHICLE_H
+#endif // PHYSXSOFTBODYMESH_H

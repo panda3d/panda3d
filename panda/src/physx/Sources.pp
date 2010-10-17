@@ -84,6 +84,7 @@
     physxMemoryReadBuffer.h \
     physxMemoryWriteBuffer.h \
     physxMeshPool.I physxMeshPool.h \
+    physxMeshHash.I physxMeshHash.h \
     physxMotorDesc.I physxMotorDesc.h \
     physxObject.I physxObject.h \
     physxObjectCollection.I physxObjectCollection.h \
@@ -110,6 +111,11 @@
     physxSegment.I physxSegment.h \
     physxShape.I physxShape.h \
     physxShapeDesc.I physxShapeDesc.h \
+    physxSoftBody.I physxSoftBody.h \
+    physxSoftBodyDesc.I physxSoftBodyDesc.h \
+    physxSoftMeshBody.I physxSoftMeshBody.h \
+    physxSoftBodyMeshDesc.I physxSoftBodyMeshDesc.h \
+    physxSoftBodyNode.I physxSoftBodyNode.h \
     physxSphere.I physxSphere.h \
     physxSphereForceFieldShape.I physxSphereForceFieldShape.h \
     physxSphereForceFieldShapeDesc.I physxSphereForceFieldShapeDesc.h \
@@ -205,6 +211,7 @@
     physxMemoryReadBuffer.cxx \
     physxMemoryWriteBuffer.cxx \
     physxMeshPool.cxx \
+    physxMeshHash.cxx \
     physxMotorDesc.cxx \
     physxObject.cxx \
     physxObjectCollection.cxx \
@@ -231,6 +238,11 @@
     physxSegment.cxx \
     physxShape.cxx \
     physxShapeDesc.cxx \
+    physxSoftBody.cxx \
+    physxSoftBodyDesc.cxx \
+    physxSoftMeshBody.cxx \
+    physxSoftBodyMeshDesc.cxx \
+    physxSoftBodyNode.cxx \
     physxSphere.cxx \
     physxSphereForceFieldShape.cxx \
     physxSphereForceFieldShapeDesc.cxx \
@@ -326,6 +338,7 @@
     physxMemoryReadBuffer.h \
     physxMemoryWriteBuffer.h \
     physxMeshPool.I physxMeshPool.h \
+    physxMeshHash.I physxMeshHash.h \
     physxMotorDesc.I physxMotorDesc.h \
     physxObject.I physxObject.h \
     physxObjectCollection.I physxObjectCollection.h \
@@ -352,6 +365,11 @@
     physxSegment.I physxSegment.h \
     physxShape.I physxShape.h \
     physxShapeDesc.I physxShapeDesc.h \
+    physxSoftBody.I physxSoftBody.h \
+    physxSoftBodyDesc.I physxSoftBodyDesc.h \
+    physxSoftMeshBody.I physxSoftMeshBody.h \
+    physxSoftBodyMeshDesc.I physxSoftBodyMeshDesc.h \
+    physxSoftBodyNode.I physxSoftBodyNode.h \
     physxSphere.I physxSphere.h \
     physxSphereForceFieldShape.I physxSphereForceFieldShape.h \
     physxSphereForceFieldShapeDesc.I physxSphereForceFieldShapeDesc.h \

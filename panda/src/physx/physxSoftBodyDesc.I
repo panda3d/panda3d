@@ -1,5 +1,5 @@
-// Filename: physxScene.I
-// Created by:  enn0x (14Sep09)
+// Filename: physxSoftBodyDesc.I
+// Created by:  enn0x (12Sep10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,57 +15,46 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
+//     Function: PhysxSoftBodyDesc::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-PhysxScene() : PhysxObject() {
+INLINE PhysxSoftBodyDesc::
+PhysxSoftBodyDesc() {
 
-  _debugNode = new PhysxDebugGeomNode();
+  set_to_default();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
+//     Function: PhysxSoftBodyDesc::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxScene::
-~PhysxScene() {
+INLINE PhysxSoftBodyDesc::
+~PhysxSoftBodyDesc() {
 
-  _debugNode = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxSoftBodyDesc::set_to_default
 //       Access: Published
-//  Description: 
+//  Description: (re)sets the structure to the default.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls() const {
+INLINE void PhysxSoftBodyDesc::
+set_to_default() {
 
-  ls(nout);
+  _desc.setToDefault();
+  set_name("");
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
+//     Function: PhysxSoftBodyDesc::is_valid
 //       Access: Published
-//  Description: 
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxScene::
-ls(ostream &out, int indent_level) const {
+INLINE bool PhysxSoftBodyDesc::
+is_valid() const {
 
-  indent(out, indent_level) << get_type().get_name()
-                            << " (at 0x" << this << ")\n";
-
-  _materials.ls(out, indent_level);
-  _actors.ls(out, indent_level);
-  _joints.ls(out, indent_level);
-  _forcefields.ls(out, indent_level);
-  _ffgroups.ls(out, indent_level);
-  _controllers.ls(out, indent_level);
-  _vehicles.ls(out, indent_level);
-  _cloths.ls(out, indent_level);
-  _softbodies.ls(out, indent_level);
+  return _desc.isValid();
 }
 

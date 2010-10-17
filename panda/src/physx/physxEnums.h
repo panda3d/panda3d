@@ -107,10 +107,10 @@
 #define NX_FORCE_FIELD_CUSTOM_KERNEL_EPSILON 97
 #define NX_IMPROVED_SPRING_SOLVER 98
 
-#ifdef PHYSX283
+#ifndef PHYSX281
 #define NX_FAST_MASSIVE_BP_VOLUME_DELETION 99
 #define NX_LEGACY_JOINT_DRIVE 100
-#endif /* PHYSX283 */
+#endif /* PHYSX281 */
 
 // PhysxActorFlag
 #define NX_AF_DISABLE_COLLISION 1<<0
@@ -296,6 +296,23 @@
 #define NX_STATIC_SHAPES 1<<0
 #define NX_DYNAMIC_SHAPES 1<<1
 #define NX_ALL_SHAPES (1<<0|1<<1)
+
+// PhysxSoftBodyFlag
+#define NX_SBF_STATIC 1<<1
+#define NX_SBF_DISABLE_COLLISION 1<<2
+#define NX_SBF_SELFCOLLISION 1<<3
+#define NX_SBF_VISUALIZATION 1<<4
+#define NX_SBF_GRAVITY 1<<5
+#define NX_SBF_VOLUME_CONSERVATION 1<<6
+#define NX_SBF_DAMPING 1<<7
+#define NX_SBF_COLLISION_TWOWAY 1<<8
+#define NX_SBF_TEARABLE 1<<9
+#define NX_SBF_HARDWARE 1<<10
+#define NX_SBF_COMDAMPING 1<<11
+#define NX_SBF_VALIDBOUNDS 1<<12
+#define NX_SBF_FLUID_COLLISION 1<<13
+#define NX_SBF_DISABLE_DYNAMIC_CCD 1<<14
+#define NX_SBF_ADHERE 1<<15
 
 // PhysxSphericalJointFlag
 #define NX_SJF_TWIST_LIMIT_ENABLED 1<<0
@@ -632,6 +649,24 @@ PUBLISHED:
     SF_softbody_drain             = NX_SF_SOFTBODY_DRAIN,
     SF_softbody_disable_collision = NX_SF_SOFTBODY_DISABLE_COLLISION,
     SF_softbody_twoway            = NX_SF_SOFTBODY_TWOWAY
+  };
+
+  enum PhysxSoftBodyFlag {
+    SBF_static              = NX_SBF_STATIC,
+    SBF_disable_collision   = NX_SBF_DISABLE_COLLISION,
+    SBF_selfcollision       = NX_SBF_SELFCOLLISION,
+    SBF_visualization       = NX_SBF_VISUALIZATION,
+    SBF_gravity             = NX_SBF_GRAVITY,
+    SBF_volume_conservtion  = NX_SBF_VOLUME_CONSERVATION,
+    SBF_damping             = NX_SBF_DAMPING,
+    SBF_collision_twoway    = NX_SBF_COLLISION_TWOWAY,
+    SBF_tearable            = NX_SBF_TEARABLE,
+    SBF_hardware            = NX_SBF_HARDWARE,
+    SBF_comdamping          = NX_SBF_COMDAMPING,
+    SBF_validbounds         = NX_SBF_VALIDBOUNDS,
+    SBF_fluid_collision     = NX_SBF_FLUID_COLLISION,
+    SBF_disable_dynamic_ccd = NX_SBF_DISABLE_DYNAMIC_CCD,
+    SBF_adhere              = NX_SBF_ADHERE
   };
 
   enum PhysxShapesType {

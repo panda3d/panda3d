@@ -26,6 +26,8 @@ class PhysxTriangleMesh;
 class PhysxTriangleMeshDesc;
 class PhysxClothMesh;
 class PhysxClothMeshDesc;
+class PhysxSoftBodyMesh;
+class PhysxSoftBodyMeshDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxKitchen
@@ -42,11 +44,13 @@ PUBLISHED:
   bool cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc, const Filename &filename);
   bool cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc, const Filename &filename);
   bool cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename);
+  bool cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc, const Filename &filename);
   bool cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename);
 
   PhysxConvexMesh *cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc);
   PhysxTriangleMesh *cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc);
   PhysxClothMesh *cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc);
+  PhysxSoftBodyMesh *cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc);
 
 private:
   NxCookingInterface *_cooking;

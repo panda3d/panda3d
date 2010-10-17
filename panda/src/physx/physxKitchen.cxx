@@ -22,6 +22,8 @@
 #include "physxMemoryWriteBuffer.h"
 #include "physxClothMesh.h"
 #include "physxClothMeshDesc.h"
+#include "physxSoftBodyMesh.h"
+#include "physxSoftBodyMeshDesc.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxKitchen::set_cooking_params
@@ -99,6 +101,22 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 
   PhysxFileStream fs = PhysxFileStream(filename, false);
   return _cooking->NxCookClothMesh(meshDesc.get_desc(), fs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxKitchen::cook_soft_body_mesh
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool PhysxKitchen::
+cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc, const Filename &filename) {
+
+  nassertr_always(!filename.empty(), false);
+  nassertr_always(filename.touch(), false);
+  nassertr_always(meshDesc.is_valid(), false);
+
+  PhysxFileStream fs = PhysxFileStream(filename, false);
+  return _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), fs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,6 +240,35 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
   PhysxMemoryReadBuffer rbuffer(wbuffer.data);
   NxClothMesh *meshPtr = sdk->createClothMesh(rbuffer);
+  nassertr(meshPtr, NULL);
+
+  mesh->link(meshPtr);
+
+  return mesh;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxKitchen::cook_soft_body_mesh
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxSoftBodyMesh *PhysxKitchen::
+cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc) {
+
+  nassertr_always(meshDesc.is_valid(), false);
+
+  PhysxMemoryWriteBuffer wbuffer;
+  bool status = _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), wbuffer);
+  nassertr(status, NULL);
+
+  NxPhysicsSDK *sdk = NxGetPhysicsSDK();
+  nassertr(sdk, NULL);
+
+  PhysxSoftBodyMesh *mesh = new PhysxSoftBodyMesh();
+  nassertr(mesh, NULL);
+
+  PhysxMemoryReadBuffer rbuffer(wbuffer.data);
+  NxSoftBodyMesh *meshPtr = sdk->createSoftBodyMesh(rbuffer);
   nassertr(meshPtr, NULL);
 
   mesh->link(meshPtr);

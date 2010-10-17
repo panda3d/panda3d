@@ -296,6 +296,30 @@ get_cloth_mesh(unsigned int idx) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_num_soft_body_meshes
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int PhysxManager::
+get_num_soft_body_meshes() {
+
+  return _sdk->getNbSoftBodyMeshes();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_soft_body_mesh
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxSoftBodyMesh *PhysxManager::
+get_soft_body_mesh(unsigned int idx) {
+
+  nassertr_always(idx < _sdk->getNbSoftBodyMeshes(), NULL);
+
+  return (PhysxSoftBodyMesh *)_softbody_meshes[idx];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::is_hardware_available
 //       Access: Published
 //  Description: Returns TRUE if a physcis hardware is available
