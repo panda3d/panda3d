@@ -359,7 +359,7 @@ cut_sheet(int first_row_id, int do_mate, const EggVertexPool *vertex_pool) {
       not_any = true;
 
       ei = _edges.begin();
-      while (ei != _edges.end() && not_any) {
+      while (not_any && ei != _edges.end()) {
         EggMesherEdge::Strips &strips = (*ei)->_strips;
         si = strips.begin();
         while (si != strips.end() && not_any) {
