@@ -707,9 +707,9 @@ def CompileCxx(obj,src,opts):
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
         
         # Enables Windows 7 mode if SDK is detected.
-        #platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
-        #if platsdk and os.path.isdir(platsdk):
-        #    cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
+        if platsdk and os.path.isdir(platsdk):
+            cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
             
         cmd += "/Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
