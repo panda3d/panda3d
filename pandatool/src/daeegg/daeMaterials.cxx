@@ -267,11 +267,11 @@ get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semanti
       // semantic TEXCOORD.
       for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
         if (_materials[semantic]->_uvsets[i]->_input_set == input_set) {
-          daeegg_cat.info() << "Using uv set with non-matching input semantic\n";
+          daeegg_cat.debug() << "Using uv set with non-matching input semantic " << _materials[semantic]->_uvsets[i]->_semantic << "\n";
           return _materials[semantic]->_uvsets[i]->_semantic;
         }
       }
-      daeegg_cat.warning() << "No uv set binding found for input set " << input_set << "\n";
+      daeegg_cat.debug() << "No uv set binding found for input set " << input_set << "\n";
     }
   }
   return "";
