@@ -249,7 +249,7 @@ void DAEToEggConverter::process_node(PT(EggGroupNode) parent, const FCDSceneNode
     return;
   }
   // Create an egg group for this node
-  PT(EggGroup) node_group = new EggGroup(node_id);
+  PT(EggGroup) node_group = new EggGroup(FROM_FSTRING(node->GetName()));
   process_extra(node_group, node->GetExtra());
   parent->add_child(node_group);
   // Check if its a joint
@@ -290,7 +290,7 @@ void DAEToEggConverter::process_instance(PT(EggGroup) parent, const FCDEntityIns
         process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
       }
       if (geometry->IsSpline()) {
-        process_spline(parent, FROM_FSTRING(geometry->GetDaeId()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
+        process_spline(parent, FROM_FSTRING(geometry->GetName()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
       }
       break; }
     case FCDEntityInstance::CONTROLLER: {
@@ -558,7 +558,7 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
       }
     }
     if (geometry->IsSpline()) {
-      process_spline(parent, FROM_FSTRING(geometry->GetDaeId()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
+      process_spline(parent, FROM_FSTRING(geometry->GetName()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
     }
   }
   // Add the joint hierarchy
@@ -618,7 +618,7 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
     for (size_t mt = 0; mt < morph_controller->GetTargetCount(); ++mt) {
       const FCDMorphTarget* morph_target = morph_controller->GetTarget(mt);
       assert(morph_target != NULL);
-      PT(EggSAnimData) target = new EggSAnimData(FROM_FSTRING(morph_target->GetGeometry()->GetDaeId()));
+      PT(EggSAnimData) target = new EggSAnimData(FROM_FSTRING(morph_target->GetGeometry()->GetName()));
       if (morph_target->IsAnimated()) {
         //TODO
       } else {
