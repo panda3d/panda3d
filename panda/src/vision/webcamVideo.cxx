@@ -59,6 +59,11 @@ find_all_webcams() {
   extern void find_all_webcams_v4l();
   find_all_webcams_v4l();
 #endif
+
+#ifdef HAVE_OPENCV
+  extern void find_all_webcams_opencv();
+  find_all_webcams_opencv();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

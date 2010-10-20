@@ -617,7 +617,7 @@ get_frame_data(int frame,
     y_pitch = -y_pitch;
   }
 
-  return (const unsigned char *)image->imageData;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

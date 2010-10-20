@@ -17,6 +17,7 @@
     config_vision.h \
     openCVTexture.I openCVTexture.h \
     webcamVideo.h webcamVideo.I \
+    webcamVideoCursorOpenCV.h webcamVideoOpenCV.h \
     webcamVideoCursorV4L.h webcamVideoV4L.h
 
   #define INCLUDED_SOURCES \
@@ -25,6 +26,8 @@
     openCVTexture.cxx \
     webcamVideo.cxx \
     webcamVideoDS.cxx \
+    webcamVideoCursorOpenCV.cxx \
+    webcamVideoOpenCV.cxx \
     webcamVideoCursorV4L.cxx \
     webcamVideoV4L.cxx
 
@@ -32,6 +35,7 @@
     arToolKit.I arToolKit.h \
     openCVTexture.I openCVTexture.h \
     webcamVideo.h webcamVideo.I \
+    webcamVideoCursorOpenCV.h webcamVideoOpenCV.h \
     webcamVideoCursorV4L.h webcamVideoV4L.h
 
   #define IGATESCAN all
