@@ -3145,7 +3145,7 @@ do_write_txo(ostream &out, const string &filename) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_unlock_and_reload_ram_image
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: This is similar to do_reload_ram_image(), except that
 //               the lock is released during the actual operation, to
 //               allow normal queries into the Texture object to
@@ -3173,7 +3173,7 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     // pre-compressed, we don't consider it.
     has_ram_image = false;
   }
-  if (_loaded_from_image && !has_ram_image && !_fullpath.empty()) {
+  if (!has_ram_image && do_can_reload()) {
     nassertv(!_reloading);
     _reloading = true;
 
@@ -4235,7 +4235,7 @@ do_has_uncompressed_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 CPTA_uchar Texture::
 do_get_ram_image() {
-  if (_loaded_from_image && !do_has_ram_image() && !_fullpath.empty()) {
+  if (!do_has_ram_image() && do_can_reload()) {
     do_unlock_and_reload_ram_image(true);
 
     // Normally, we don't update the _modified semaphores in a do_blah
@@ -4273,7 +4273,7 @@ do_get_uncompressed_ram_image() {
   }
 
   // Couldn't uncompress the existing image.  Try to reload it.
-  if (_loaded_from_image && (!do_has_ram_image() || _ram_image_compression != CM_off) && !_fullpath.empty()) {
+  if ((!do_has_ram_image() || _ram_image_compression != CM_off) && do_can_reload()) {
     do_unlock_and_reload_ram_image(false);
   }
 
@@ -4692,13 +4692,27 @@ do_set_pad_size(int x, int y, int z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_can_reload
+//       Access: Protected, Virtual
+//  Description: Returns true if we can safely call
+//               do_unlock_and_reload_ram_image() in order to make the
+//               image available, or false if we shouldn't do this
+//               (because we know from a priori knowledge that it
+//               wouldn't work anyway).
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_can_reload() {
+  return (_loaded_from_image && !_fullpath.empty());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_reload
 //       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_reload() {
-  if (_loaded_from_image && !_fullpath.empty()) {
+  if (do_can_reload()) {
     do_clear_ram_image();
     do_unlock_and_reload_ram_image(true);
     if (do_has_ram_image()) {

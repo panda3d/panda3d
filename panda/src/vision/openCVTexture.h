@@ -40,13 +40,14 @@ PUBLISHED:
   virtual ~OpenCVTexture();
 
   bool from_camera(int camera_index = -1, int z = 0,
+                   int alpha_file_channel = 0,
                    const LoaderOptions &options = LoaderOptions());
 
 public:
   static PT(Texture) make_texture();
 
 protected:
-  virtual INLINE void consider_update();
+  virtual void consider_update();
   virtual PT(Texture) do_make_copy();
   void do_assign(const OpenCVTexture &copy);
 
@@ -81,7 +82,11 @@ private:
     void clear();
     INLINE bool is_valid() const;
     INLINE bool is_from_file() const;
-    const unsigned char *get_frame_data(int frame);
+    bool get_frame_data(int frame,
+                        const unsigned char *&r,
+                        const unsigned char *&g,
+                        const unsigned char *&b,
+                        ssize_t &x_pitch, ssize_t &y_pitch);
 
     CvCapture *_capture;
     Filename _filename;

@@ -67,37 +67,6 @@ get_tex_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::set_video_size
-//       Access: Protected
-//  Description: Should be called by a derived class to set the size
-//               of the video when it is loaded.
-////////////////////////////////////////////////////////////////////
-INLINE void VideoTexture::
-set_video_size(int video_width, int video_height) {
-  _video_width = video_width;
-  _video_height = video_height;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::consider_update
-//       Access: Protected
-//  Description: Calls update_frame() if the current frame has
-//               changed.
-////////////////////////////////////////////////////////////////////
-INLINE void VideoTexture::
-consider_update() {
-  int this_frame = ClockObject::get_global_clock()->get_frame_count();
-  if (this_frame != _last_frame_update) {
-    int frame = get_frame();
-    if (_current_frame != frame) {
-      update_frame(frame);
-      _current_frame = frame;
-    }
-    _last_frame_update = this_frame;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::clear_current_frame
 //       Access: Protected
 //  Description: Resets the record of the current frame so that it

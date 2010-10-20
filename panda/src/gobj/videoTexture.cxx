@@ -108,6 +108,22 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::set_video_size
+//       Access: Protected
+//  Description: Should be called by a derived class to set the size
+//               of the video when it is loaded.  Assumes the lock is
+//               held.
+////////////////////////////////////////////////////////////////////
+void VideoTexture::
+set_video_size(int video_width, int video_height) {
+  _video_width = video_width;
+  _video_height = video_height;
+  do_set_pad_size(max(_x_size - _video_width, 0), 
+                  max(_y_size - _video_height, 0),
+                  0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::do_has_ram_image
 //       Access: Protected, Virtual
 //  Description: Returns true if the Texture has its image contents
@@ -135,6 +151,22 @@ reconsider_dirty() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::do_unlock_and_reload_ram_image
+//       Access: Protected, Virtual
+//  Description: This is similar to do_reload_ram_image(), except that
+//               the lock is released during the actual operation, to
+//               allow normal queries into the Texture object to
+//               continue during what might be a slow operation.
+//
+//               In the case of a VideoTexture, this is exactly the
+//               same as do_reload_ram_image().
+////////////////////////////////////////////////////////////////////
+void VideoTexture::
+do_unlock_and_reload_ram_image(bool) {
+  consider_update();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::do_reload_ram_image
 //       Access: Protected, Virtual
 //  Description: Called when the Texture image is required but the ram
@@ -143,7 +175,39 @@ reconsider_dirty() {
 //               available, if possible.
 ////////////////////////////////////////////////////////////////////
 void VideoTexture::
-do_reload_ram_image() {
+do_reload_ram_image(bool) {
   consider_update();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::do_can_reload
+//       Access: Protected, Virtual
+//  Description: Returns true if we can safely call
+//               do_unlock_and_reload_ram_image() in order to make the
+//               image available, or false if we shouldn't do this
+//               (because we know from a priori knowledge that it
+//               wouldn't work anyway).
+////////////////////////////////////////////////////////////////////
+bool VideoTexture::
+do_can_reload() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::consider_update
+//       Access: Protected, Virtual
+//  Description: Calls update_frame() if the current frame has
+//               changed.
+////////////////////////////////////////////////////////////////////
+void VideoTexture::
+consider_update() {
+  int this_frame = ClockObject::get_global_clock()->get_frame_count();
+  if (this_frame != _last_frame_update) {
+    int frame = get_frame();
+    if (_current_frame != frame) {
+      update_frame(frame);
+      _current_frame = frame;
+    }
+    _last_frame_update = this_frame;
+  }
+}

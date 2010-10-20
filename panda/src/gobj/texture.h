@@ -496,7 +496,7 @@ protected:
   bool do_write_txo_file(const Filename &fullpath) const;
   bool do_write_txo(ostream &out, const string &filename) const;
 
-  void do_unlock_and_reload_ram_image(bool allow_compression);
+  virtual void do_unlock_and_reload_ram_image(bool allow_compression);
   virtual void do_reload_ram_image(bool allow_compression);
   PTA_uchar do_modify_ram_image();
   PTA_uchar do_make_ram_image();
@@ -561,6 +561,7 @@ protected:
   void do_clear_ram_mipmap_images();
   void do_generate_ram_mipmap_images();
   void do_set_pad_size(int x, int y, int z);
+  virtual bool do_can_reload();
   bool do_reload();
 
   // This nested class declaration is used below.
