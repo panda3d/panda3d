@@ -3429,6 +3429,7 @@ if (PkgSkip("SPEEDTREE")==0):
   TargetAdd('libpandaspeedtree_module.obj', opts=['IMOD:pandaspeedtree', 'ILIB:libpandaspeedtree'])
   TargetAdd('libpandaspeedtree.dll', input='pandaspeedtree_composite1.obj')
   TargetAdd('libpandaspeedtree.dll', input='libpandaspeedtree_igate.obj')
+  TargetAdd('libpandaspeedtree.dll', input='libpandaspeedtree_module.obj')
   TargetAdd('libpandaspeedtree.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
   if SDK["SPEEDTREEAPI"] == 'OpenGL':
