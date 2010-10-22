@@ -60,7 +60,7 @@ find_all_webcams() {
   find_all_webcams_v4l();
 #endif
 
-#ifdef HAVE_OPENCV
+#if defined(HAVE_OPENCV) && !defined(HAVE_DIRECTCAM) && !defined(HAVE_VIDEO4LINUX)
   extern void find_all_webcams_opencv();
   find_all_webcams_opencv();
 #endif
