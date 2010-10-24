@@ -79,13 +79,7 @@ class BrowserObject:
         return method
 
     def __str__(self):
-        parentObj, attribName = self.__childObject
-        if parentObj:
-            # Format it from its parent.
-            return "%s.%s" % (parentObj, attribName)
-        else:
-            # Format it directly.
-            return "BrowserObject(%s)" % (self.__objectId)
+        return self.toString()
 
     def __nonzero__(self):
         return True
