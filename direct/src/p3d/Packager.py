@@ -2878,11 +2878,12 @@ class Packager:
             newName = moduleName
 
         if filename:
+            filename = Filename(filename)
             newFilename = Filename('/'.join(moduleName.split('.')))
             newFilename.setExtension(filename.getExtension())
             self.currentPackage.addFile(
                 filename, newName = newFilename.cStr(),
-                deleteTemp = True, explicit = True, extract = True)
+                explicit = True, extract = True)
 
         self.currentPackage.mainModule = (moduleName, newName)
 
