@@ -203,7 +203,7 @@ class fmod(package):
     config(display_name = "FMod audio library")
     require('panda3d')
 
-    file('libp3fmod_audio.dll')
+    file('libp3fmod_audio.dll', required = True)
 
     file('fmod.prc', extract = True, text = """
 plugin-path $FMOD_ROOT
@@ -218,7 +218,7 @@ class openal(package):
     config(display_name = "OpenAL audio library")
     require('panda3d')
 
-    file('libp3openal_audio.dll')
+    file('libp3openal_audio.dll', required = True)
 
     file('openal.prc', extract = True, text = """
 plugin-path $OPENAL_ROOT
@@ -243,7 +243,7 @@ class egg(package):
     config(display_name = "Panda3D egg loader")
     require('panda3d')
 
-    file('libpandaegg.dll')
+    file('libpandaegg.dll', required = True)
 
     file('egg.prc', extract = True, text = """
 plugin-path $EGG_ROOT
@@ -258,7 +258,7 @@ class ode(package):
     config(display_name = "Panda3D Open Dynamics Engine integration")
     require('panda3d')
 
-    file('libpandaode.dll')
+    file('libpandaode.dll', required = True)
 
 class physx(package):
     # This package contains the code for the NVIDIA PhysX integration.
@@ -268,7 +268,7 @@ class physx(package):
     config(display_name = "Panda3D PhysX integration")
     require('panda3d')
 
-    file('libpandaphysx.dll')
+    file('libpandaphysx.dll', required = True)
     file('physxcudart_20.dll')
     file('PhysXDevice.dll')
 
@@ -281,7 +281,7 @@ class ai(package):
     config(display_name = "Panda3D AI modules")
     require('panda3d')
 
-    file('libpandaai.dll')
+    file('libpandaai.dll', required = True)
 
 class vision(package):
     # This package contains the code for webcam support, augmented
@@ -292,7 +292,7 @@ class vision(package):
     config(display_name = "Panda3D vision modules")
     require('panda3d')
 
-    file('libp3vision.dll')
+    file('libp3vision.dll', required = True)
 
 
 class packp3d(p3d):

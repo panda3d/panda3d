@@ -110,7 +110,7 @@ class p3dcert(package):
 
     else:
         # Anywhere else, we just ship the executable file p3dcert.exe.
-        file('p3dcert.exe')
+        file('p3dcert.exe', required = True)
 
 
 class p3dembed(package):
@@ -118,4 +118,4 @@ class p3dembed(package):
     # pdeploy to generate a self-extracting .p3d executable.
 
     config(platform_specific = True)
-    file('p3dembed.exe')
+    file('p3dembed.exe', required = True)

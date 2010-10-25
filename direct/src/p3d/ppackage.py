@@ -31,7 +31,8 @@ Parameters:
     Specify the names of the package(s) you wish to build out of the
     package.pdef file.  This allows you to build only a subset of the
     packages defined in this file.  If you omit these parameters, all
-    packages are built.
+    packages are built, and packages that cannot be built are silently
+    ignored.
 
 Options:
 
