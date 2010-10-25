@@ -1064,6 +1064,14 @@ make_canonical() {
     // The root directory is a special case.
     return true;
   }
+  
+#ifndef WIN32
+  // Use realpath in order to resolve symlinks properly
+  char newpath [PATH_MAX + 1];
+  if (realpath(c_str(), newpath) != NULL) {
+    (*this) = newpath;
+  }
+#endif
 
   Filename cwd = ExecutionEnvironment::get_cwd();
   if (!r_make_canonical(cwd)) {
