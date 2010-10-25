@@ -113,7 +113,7 @@
     physxShapeDesc.I physxShapeDesc.h \
     physxSoftBody.I physxSoftBody.h \
     physxSoftBodyDesc.I physxSoftBodyDesc.h \
-    physxSoftMeshBody.I physxSoftMeshBody.h \
+    physxSoftBodyMesh.I physxSoftBodyMesh.h \
     physxSoftBodyMeshDesc.I physxSoftBodyMeshDesc.h \
     physxSoftBodyNode.I physxSoftBodyNode.h \
     physxSphere.I physxSphere.h \
@@ -240,7 +240,7 @@
     physxShapeDesc.cxx \
     physxSoftBody.cxx \
     physxSoftBodyDesc.cxx \
-    physxSoftMeshBody.cxx \
+    physxSoftBodyMesh.cxx \
     physxSoftBodyMeshDesc.cxx \
     physxSoftBodyNode.cxx \
     physxSphere.cxx \
@@ -367,7 +367,7 @@
     physxShapeDesc.I physxShapeDesc.h \
     physxSoftBody.I physxSoftBody.h \
     physxSoftBodyDesc.I physxSoftBodyDesc.h \
-    physxSoftMeshBody.I physxSoftMeshBody.h \
+    physxSoftBodyMesh.I physxSoftBodyMesh.h \
     physxSoftBodyMeshDesc.I physxSoftBodyMeshDesc.h \
     physxSoftBodyNode.I physxSoftBodyNode.h \
     physxSphere.I physxSphere.h \
