@@ -994,7 +994,11 @@ class Packager:
             filenames = []
             dependency = assembly.FirstChildElement("dependency")
             while dependency:
-                ident = dependency.FirstChildElement("dependentAssembly").FirstChildElement("assemblyIdentity")
+                depassembly = dependency.FirstChildElement("dependentAssembly")
+                if not depassembly:
+                    continue
+                
+                ident = assembly.FirstChildElement("assemblyIdentity")
                 if ident:
                     name = ident.Attribute("name")
                     if name:
