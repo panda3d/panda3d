@@ -98,7 +98,7 @@ class pil(package):
            'TarIO', 'TgaImagePlugin', 'TiffImagePlugin', 'TiffTags',
            'WalImageFile', 'WmfImagePlugin', 'XVThumbImagePlugin',
            'XbmImagePlugin', 'XpmImagePlugin', '_imaging',
-           '_imagingmath', '_imagingtk', )
+           '_imagingmath', '_imagingtk')
 
 class pyopengl(package):
     config(display_name = "PyOpenGL")

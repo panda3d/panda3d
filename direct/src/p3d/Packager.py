@@ -536,9 +536,9 @@ class Packager:
             
             # But first, make sure that all required modules are present.
             missing = []
+            moduleDict = dict(self.freezer.getModuleDefs()).keys()
             for module in self.requiredModules:
-                if module not in self.freezer.modules.keys() or \
-                            self.freezer.modules[module].exclude:
+                if module not in moduleDict:
                     missing.append(module)
             if len(missing) > 0:
                 self.notify.warning("Cannot build package %s, missing required modules: %r" % (self.packageName, missing))
