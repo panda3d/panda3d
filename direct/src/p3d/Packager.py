@@ -995,14 +995,13 @@ class Packager:
             dependency = assembly.FirstChildElement("dependency")
             while dependency:
                 depassembly = dependency.FirstChildElement("dependentAssembly")
-                if not depassembly:
-                    continue
+                if depassembly:
+                    ident = assembly.FirstChildElement("assemblyIdentity")
+                    if ident:
+                        name = ident.Attribute("name")
+                        if name:
+                            filenames.append(name + ".manifest")
                 
-                ident = assembly.FirstChildElement("assemblyIdentity")
-                if ident:
-                    name = ident.Attribute("name")
-                    if name:
-                        filenames.append(name + ".manifest")
                 dependency = dependency.NextSiblingElement("dependency")
             
             # Pick up direct dll dependencies that it lists
