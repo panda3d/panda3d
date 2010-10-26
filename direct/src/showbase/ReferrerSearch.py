@@ -118,6 +118,11 @@ class ReferrerSearch(Job):
                        ref is self.__dict__ or \
                        id(ref) in self.visited) ]
 
+        # Check to see if this object has an unusually large
+        # ref-count.  This usually indicates that it is some
+        # sort of global, singleton, or manager object
+        # and as such no further knowledge would be gained from
+        # traversing further up the ref tree.
         if (self.isManyRef(at, path, referrers)):
             return
             
@@ -138,26 +143,37 @@ class ReferrerSearch(Job):
 
         at = path[-1]
 
-        if id(at) in self.visited:
-               # don't continue down this path
-               raise StopIteration 
-
         # check for success
         if (self.isAtRoot(at, path)):
             self.found += 1
             raise StopIteration 
 
+        if id(at) in self.visited:
+            # don't continue down this path
+            raise StopIteration 
+
         # mark our progress after checking goal
         self.visited.add(id(at))
-        
-        referrers = [ref for ref in gc.get_referrers(at) \
-                     if not (ref is path or \
-                       inspect.isframe(ref) or \
-                       (isinstance(ref, dict) and \
-                        ref.keys() == locals().keys()) or \
-                       ref is self.__dict__ or \
-                       id(ref) in self.visited) ]
 
+        # Look for all referrers, culling out the ones that
+        # we know to be red herrings.
+        referrers = [ref for ref in gc.get_referrers(at) \
+                     if not (# we disregard the steps of our traversal
+                             ref is path or \
+                             # The referrer is this call frame
+                             inspect.isframe(ref) or \
+                             # The referrer is the locals() dictionary (closure)
+                             (isinstance(ref, dict) and ref.keys() == locals().keys()) or \
+                             # We found the reference on self
+                             ref is self.__dict__ or \
+                             # We've already seen this referrer
+                             id(ref) in self.visited) ]
+
+        # Check to see if this object has an unusually large
+        # ref-count.  This usually indicates that it is some
+        # sort of global, singleton, or manager object
+        # and as such no further knowledge would be gained from
+        # traversing further up the ref tree.
         if (self.isManyRef(at, path, referrers)):
             raise StopIteration 
             
@@ -181,7 +197,21 @@ class ReferrerSearch(Job):
         pass
     
     def isAtRoot(self, at, path):
-        # Now we define our 'roots'
+        # Now we define our 'roots', or places where we will 
+        # end this particular thread of search
+
+        # We found a circular reference
+        if at in path:
+            sys.stdout.write("RefPath(%s): Circular: " % self._id)
+            path = list(reversed(path))
+            path.insert(0,0)
+            for x in xrange(len(path)-1):
+                sys.stdout.write(self.myrepr(path[x], path[x+1]))
+                pass
+            print
+            return True
+
+
         
         # __builtins__
         if at is __builtins__:
