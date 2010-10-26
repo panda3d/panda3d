@@ -978,13 +978,10 @@ class Freezer:
                 if prev and not prev.exclude:
                     # Previously exported.
                     pass
-                else:
-                    if mdef.moduleName in self.mf.modules or \
-                       mdef.moduleName in startupModules or \
-                       mdef.filename:
-                        moduleDefs.append((newName, mdef))
-                    elif not mdef.guess:
-                        print "Unknown module %s" % (mdef.moduleName)
+                elif mdef.moduleName in self.mf.modules or \
+                     mdef.moduleName in startupModules or \
+                     mdef.filename:
+                    moduleDefs.append((newName, mdef))
             elif mdef.forbid:
                 if not prev or not prev.forbid:
                     moduleDefs.append((newName, mdef))
