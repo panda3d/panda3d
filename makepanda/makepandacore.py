@@ -195,6 +195,29 @@ def exit(msg = ""):
 
 ########################################################################
 ##
+## LocateBinary
+##
+## This function searches the system PATH for the binary. Returns its
+## full path when it is found, or None when it was not found.
+##
+########################################################################
+
+def LocateBinary(binary):
+    if os.path.isfile(binary):
+        return binary
+    if "PATH" not in os.environ or os.environ["PATH"] == "":
+        p = os.defpath
+    else:
+        p = os.environ["PATH"]
+
+    for path in p.split(os.pathsep):
+        binpath = os.path.join(os.path.expanduser(path), binary)
+        if os.access(binpath, os.X_OK):
+            return os.path.abspath(os.path.realpath(binpath))
+    return None
+
+########################################################################
+##
 ## Run a command.
 ##
 ########################################################################
@@ -298,28 +321,6 @@ def GetDirectorySize(dir):
                 size += os.path.getsize(os.path.join(path, file))
             except: pass
     return size
-
-########################################################################
-##
-## LocateBinary
-##
-## This function searches the system PATH for the binary. Returns its
-## full path when it is found, or None when it was not found.
-##
-########################################################################
-
-def LocateBinary(binary):
-    if os.path.isfile(binary):
-        return binary
-    if "PATH" not in os.environ or os.environ["PATH"] == "":
-        p = os.defpath
-    else:
-        p = os.environ["PATH"]
-
-    for path in p.split(os.pathsep):
-        if os.access(os.path.join(path, binary), os.X_OK):
-            return os.path.abspath(os.path.realpath(os.path.join(path, binary)))
-    return None
 
 ########################################################################
 ##
