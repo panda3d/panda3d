@@ -12,8 +12,9 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*#include "dtool_config.h"*/
+#ifdef WITHIN_PANDA
 #include "dtoolbase.h"
+#endif
 
 #include <getopt.h>
 #include <stdio.h>
@@ -28,10 +29,29 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <pwd.h>
+#include <grp.h>
+
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
+/* The maximum number of seconds to wait for a process to go away
+   after issuing SIGTERM.  This is only used in watchdog mode, when -W
+   is provided on the command line. */
+#define MAX_WAITTERM_SEC 10
 
 char **params = NULL;
 char *logfile_name = NULL;
 char *pidfile_name = NULL;
+int dont_fork = 0;
+char *watchdog_url = NULL;
+int watchdog_start_sec = 0;
+int watchdog_cycle_sec = 0;
+int watchdog_timeout_sec = 0;
+char *startup_username = NULL;
+char *startup_groupname = NULL;
+char *startup_chdir = NULL;
 int logfile_fd = -1;
 int stop_on_terminate = 0;
 int stop_always = 0;
@@ -51,6 +71,7 @@ int spam_restart_delay_time = 600;  /* Optionally, do not exit if we spam too mu
 
 
 pid_t child_pid = 0;
+pid_t watchdog_pid = 0;
 
 #define TIME_BUFFER_SIZE 128
 
@@ -133,6 +154,137 @@ invoke_respawn_script(time_t now) {
   }
 }
 
+/* A callback function passed to libcurl that simply discards the data
+   retrieved from the server.  We only care about the HTTP status. */
+size_t 
+watchdog_bitbucket(void *ptr, size_t size, size_t nmemb, void *userdata) {
+  return size * nmemb;
+}
+
+/* Waits up to timeout_ms for a particular child to terminate.
+   Returns 0 if the timeout expires. */
+pid_t 
+waitpid_timeout(pid_t child_pid, int *status_ptr, int timeout_ms) {
+  pid_t result;
+  struct timeval now, tv;
+  int now_ms, start_ms, elapsed_ms;
+  
+  gettimeofday(&now, NULL);
+  start_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+    
+  result = waitpid(child_pid, status_ptr, WNOHANG);
+  while (result == 0) {
+    gettimeofday(&now, NULL);
+    now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+    elapsed_ms = now_ms - start_ms;
+    
+    if (elapsed_ms > timeout_ms) {
+      /* Tired of waiting. */
+      return 0;
+    }
+    
+    /* Yield the timeslice and wait some more. */
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+    select(0, NULL, NULL, NULL, &tv);
+    result = waitpid(child_pid, status_ptr, WNOHANG);
+  }
+  if (result == -1) {
+    perror("waitpid");
+  }
+
+  return result;
+}
+
+
+/* Poll the requested URL until a failure or timeout occurs, or until
+   the child terminates on its own.  Returns 1 on HTTP failure or
+   timeout, 0 on self-termination.  In either case, *status_ptr is
+   filled in with the status value returned by waitpid().*/
+int 
+do_watchdog(int *status_ptr) {
+#ifndef HAVE_LIBCURL
+  fprintf(stderr, "Cannot watchdog; no libcurl available.\n");
+  return 0;
+#else  /* HAVE_LIBCURL */
+
+  CURL *curl;
+  CURLcode res;
+  char error_buffer[CURL_ERROR_SIZE];
+  pid_t wresult;
+
+  // Before we start polling the URL, wait at least start milliseconds.
+  wresult = waitpid_timeout(child_pid, status_ptr, watchdog_start_sec * 1000);
+  if (wresult == child_pid) {
+    // The child terminated on its own before we got started.
+    return 0;
+  }
+
+  curl = curl_easy_init();
+  if (!curl) {
+    fprintf(stderr, "Cannot watchdog; curl failed to init.\n");
+    return 0;
+  }
+
+  curl_easy_setopt(curl, CURLOPT_URL, watchdog_url);
+  /*curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);*/
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, watchdog_timeout_sec * 1000);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, watchdog_bitbucket);
+  curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "autorestart");
+
+  res = curl_easy_perform(curl);
+  while (res == 0) {
+    /* 0: The HTTP request finished successfully (but might or might
+       not have returned an error code like a 404). */
+    long http_response = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_response);
+    if ((http_response / 100) != 2) {
+      /* Anything in the 200 range is deemed success.  Anything else
+         is deemed failure. */
+      fprintf(stderr, "%s returned %ld\n", watchdog_url, http_response);
+      break;
+    }
+
+    wresult = waitpid_timeout(child_pid, status_ptr, watchdog_cycle_sec * 1000);
+    if (wresult == child_pid) {
+      /* The process terminated on its own.  Return 0 to indicate this. */
+      return 0;
+    }
+
+    res = curl_easy_perform(curl);
+  }
+
+  curl_easy_cleanup(curl);
+
+  /* Failed to retrieve the watchdog URL. */
+  if (res != 0) {
+    fprintf(stderr, "Failed to contact %s: %s\n", watchdog_url, error_buffer);
+  }
+  
+  /* Kill the child process and wait for it to go away. */
+  kill(child_pid, SIGTERM);
+
+  pid_t result = waitpid_timeout(child_pid, status_ptr, MAX_WAITTERM_SEC * 1000);
+  if (result != child_pid) {
+    if (result == -1) {
+      perror("waitpid");
+    } else {
+      /* SIGTERM didn't make the process die.  Try SIGKILL. */
+      fprintf(stderr, "Force-killing child process\n");
+      kill(child_pid, SIGKILL);
+      result = waitpid_timeout(child_pid, status_ptr, MAX_WAITTERM_SEC * 1000);
+      if (result == -1) {
+        perror("waitpid");
+      }
+    }
+  }
+
+  /* Return 1 to indicate we killed the child due to an HTTP error. */
+  return 1;
+#endif  /* HAVE_LIBCURL */
+}
+
 void
 exec_process() {
   /* First, output the command line to the log file. */
@@ -157,6 +309,7 @@ spawn_process() {
      respawn any more. */
   pid_t wresult;
   int status;
+  int error_exit;
 
   child_pid = fork();
   if (child_pid < 0) {
@@ -173,18 +326,34 @@ spawn_process() {
     exit(1);
   }
 
-  /* Parent.  Wait for the child to terminate, then diagnose the reason. */
-  wresult = waitpid(child_pid, &status, 0);
-  if (wresult < 0) {
-    perror("waitpid");
-    return 0;
+  /* Parent. */
+
+  error_exit = 0;
+
+  if (watchdog_url != NULL) {
+    /* If we're watchdogging, then go check the URL.  This function
+       won't return until the URL fails or the child exits. */
+    error_exit = do_watchdog(&status);
+
+  } else {
+    /* If we're not watchdogging, then just wait for the child to
+       terminate, and diagnose the reason. */
+    wresult = waitpid(child_pid, &status, 0);
+    if (wresult < 0) {
+      perror("waitpid");
+      return 0;
+    }
   }
 
   /* Now that we've returned from waitpid, clear the child pid number
      so our signal handler doesn't get too confused. */
   child_pid = 0;
 
-  if (WIFSIGNALED(status)) {
+  if (error_exit) {
+    /* An HTTP error exit is a reason to respawn. */
+    return 1;
+
+  } else if (WIFSIGNALED(status)) {
     int signal = WTERMSIG(status);
     fprintf(stderr, "\nprocess caught signal %d.\n\n", signal);
     /* A signal exit is a reason to respawn unless the signal is TERM
@@ -421,7 +590,11 @@ help() {
 
           "  -p pidfilename\n"
           "     Write the pid of the monitoring process to the indicated pidfile.\n\n"
-
+          "  -f\n"
+          "     Don't fork autorestart itself; run it as a foreground process. \n"
+          "     (Normally, autorestart forks itself to run as a background process.)\n"
+          "     In this case, the file named by -p is not used.\n\n"
+          
           "  -n\n"
           "     Do not attempt to restart the process under any circumstance.\n"
           "     The program can still be used to execute a script on abnormal\n"
@@ -433,7 +606,7 @@ help() {
           "     child process will be restarted only if it exits with a\n"
           "     non-zero exit status, or if it is killed with a signal other\n"
           "     than SIGTERM.  Without this flag, the default behavior is to\n"
-          "     restarted the child process if it exits for any reason.\n\n"
+          "     restart the child process if it exits for any reason.\n\n"
 
           "  -r count,secs,sleep\n"
           "     Sleep 'sleep' seconds if the process respawns 'count' times\n"
@@ -458,6 +631,28 @@ help() {
           "  -d secs\n"
           "     Specifies the number of seconds to delay for between restarts.\n"
           "     The default is %d.\n\n"
+
+#ifdef HAVE_LIBCURL
+          "  -W watchdog_url,start,cycle,timeout\n"
+          "     Specifies an optional URL to watch while waiting for the process\n"
+          "     to terminate.  If this is specified, autorestart will start the process,\n"
+          "     wait start seconds, and then repeatedly poll the indicated URL\n"
+          "     every cycle seconds.  If a HTTP failure code is detected,\n"
+          "     or no response is received within timeout seconds, then the\n"
+          "     child is terminated and restarted.  The start, cycle, and timeout\n"
+          "     parameters are all required.\n\n"
+#endif  /* HAVE_LIBCURL */
+
+          "  -U username\n"
+          "     Change to the indicated user upon startup.  The logfile is still\n"
+          "     created as the initial user.\n\n"
+
+          "  -G groupname\n"
+          "     Change to the indicated group upon startup.\n\n"
+
+          "  -D dirname\n"
+          "     Change to the indicated working directory upon startup.  The logfile\n"
+          "     is still created relative to the initial startup directory.\n\n"
 
           "  -h\n"
           "     Output this help information.\n\n",
@@ -489,12 +684,54 @@ parse_int_triplet(char *param, int *a, int *b, int *c) {
   *c = atoi(comma2 + 1);
 }
 
+void 
+parse_watchdog(char *param) {
+  char *comma;
+  char *comma2;
+  char *comma3;
+
+#ifndef HAVE_LIBCURL
+  fprintf(stderr, "-W requires autorestart to have been compiled with libcurl support.\n");
+  exit(1);
+#endif  /* HAVE_LIBCURL */
+
+  comma = strrchr(param, ',');
+  if (comma == NULL) {
+    fprintf(stderr, "Comma required: %s\n", param);
+    exit(1);
+  }
+  *comma = '\0';
+
+  comma2 = strrchr(param, ',');
+  if (comma2 == NULL) {
+    *comma = ',';
+    fprintf(stderr, "Second comma required: %s\n", param);
+    exit(1);
+  }
+  *comma2 = '\0';
+
+  comma3 = strrchr(param, ',');
+  if (comma3 == NULL) {
+    *comma = ',';
+    *comma2 = ',';
+    fprintf(stderr, "Third comma required: %s\n", param);
+    exit(1);
+  }
+  *comma3 = '\0';
+
+  watchdog_url = param;
+  watchdog_start_sec = atoi(comma3 + 1);
+  watchdog_cycle_sec = atoi(comma2 + 1);
+  watchdog_timeout_sec = atoi(comma + 1);
+}
+
+
 int 
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   /* The initial '+' instructs GNU getopt not to reorder switches. */
-  static const char *optflags = "+l:p:ntr:s:c:d:wh";
+  static const char *optflags = "+l:p:fntr:s:c:d:W:U:G:D:h";
   int flag;
 
   flag = getopt(argc, argv, optflags);
@@ -506,6 +743,10 @@ main(int argc, char *argv[]) {
 
     case 'p':
       pidfile_name = optarg;
+      break;
+
+    case 'f':
+      dont_fork = 1;
       break;
 
     case 'n':
@@ -520,10 +761,6 @@ main(int argc, char *argv[]) {
       parse_int_triplet(optarg, &spam_respawn_count, &spam_respawn_time, &spam_restart_delay_time);
       break;
 
-    case 'w':
-      spam_restart_delay_time = atoi(optarg);
-      break;
-
     case 's':
       respawn_script = optarg;
       break;
@@ -536,6 +773,22 @@ main(int argc, char *argv[]) {
       respawn_delay_time = atoi(optarg);
       break;
 
+    case 'W':
+      parse_watchdog(optarg);
+      break;
+
+    case 'U':
+      startup_username = optarg;
+      break;
+
+    case 'G':
+      startup_groupname = optarg;
+      break;
+
+    case 'D':
+      startup_chdir = optarg;
+      break;
+      
     case 'h':
       help();
       return 1;
@@ -573,7 +826,46 @@ main(int argc, char *argv[]) {
     fprintf(stderr, "Generating output to %s.\n", logfile_name);
   }
 
-  double_fork();
+  if (startup_chdir != NULL) {
+    if (chdir(startup_chdir) != 0) {
+      perror(startup_chdir);
+      return 1;
+    }
+  }
+
+  if (startup_groupname != NULL) {
+    struct group *grp;
+    grp = getgrnam(startup_groupname);
+    if (grp == NULL) {
+      perror(startup_groupname);
+      return 1;
+    }
+
+    if (setgid(grp->gr_gid) != 0) {
+      perror(startup_groupname);
+      return 1;
+    }
+  }
+
+  if (startup_username != NULL) {
+    struct passwd *pwd;
+    pwd = getpwnam(startup_username);
+    if (pwd == NULL) {
+      perror(startup_username);
+      return 1;
+    }
+
+    if (setuid(pwd->pw_uid) != 0) {
+      perror(startup_username);
+      return 1;
+    }
+  }
+
+  if (dont_fork) {
+    do_autorestart();
+  } else {
+    double_fork();
+  }
 
   return 0;
 }
