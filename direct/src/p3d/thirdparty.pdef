@@ -113,8 +113,3 @@ class httplib2(package):
 
     module('httplib2', required = True)
 
-class pycurl(package):
-    config(display_name = "PyCURL")
-    require('panda3d')
-
-    module('pycurl', required = True)
