@@ -113,3 +113,9 @@ class httplib2(package):
 
     module('httplib2', required = True)
 
+class box2d(package):
+    config(display_name = "Box2D")
+    require('panda3d')
+
+    module('Box2D', required = True)
+
