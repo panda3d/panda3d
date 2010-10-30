@@ -1032,7 +1032,8 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
   if (!handle) {
     return 0;
   }
-  const char* text = _shader->get_text(type).c_str();
+  string text_str = _shader->get_text(type);
+  const char* text = text_str.c_str();
   gsg->_glShaderSource(handle, 1, &text, NULL);
   gsg->_glCompileShader(handle);
   GLint status;
