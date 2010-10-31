@@ -1529,7 +1529,28 @@ operator -= (const PNMImage &other) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator -= (const Colord &other) {
-  (*this) += (-other);
+  size_t array_size = _x_size * _y_size;
+  xel subxel (to_val(other.get_x()), to_val(other.get_y()), to_val(other.get_z()));
+  xelval subalpha = to_val(other.get_w());
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r - subxel.r);
+      _array[i].g = clamp_val(_array[i].g - subxel.g);
+      _array[i].b = clamp_val(_array[i].b - subxel.b);
+      _alpha[i] = clamp_val(_alpha[i] + subalpha);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r - subxel.r);
+      _array[i].g = clamp_val(_array[i].g - subxel.g);
+      _array[i].b = clamp_val(_array[i].b - subxel.b);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] - subalpha);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
