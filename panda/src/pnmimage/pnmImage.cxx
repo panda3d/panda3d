@@ -1464,25 +1464,28 @@ operator += (const PNMImage &other) {
 void PNMImage::
 operator += (const Colord &other) {
   size_t array_size = _x_size * _y_size;
-  xel addxel (to_val(other.get_x()), to_val(other.get_y()), to_val(other.get_z()));
-  xelval addalpha = to_val(other.get_w());
+  // Note: don't use to_val here because it clamps values below 0
+  int add_r = (int)(other.get_x() * get_maxval() + 0.5);
+  int add_g = (int)(other.get_y() * get_maxval() + 0.5);
+  int add_b = (int)(other.get_z() * get_maxval() + 0.5);
+  int add_a = (int)(other.get_w() * get_maxval() + 0.5);
 
   if (_array != NULL && _alpha != NULL) {
     for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + addxel.r);
-      _array[i].g = clamp_val(_array[i].g + addxel.g);
-      _array[i].b = clamp_val(_array[i].b + addxel.b);
-      _alpha[i] = clamp_val(_alpha[i] + addalpha);
+      _array[i].r = clamp_val(_array[i].r + add_r);
+      _array[i].g = clamp_val(_array[i].g + add_g);
+      _array[i].b = clamp_val(_array[i].b + add_b);
+      _alpha[i] = clamp_val(_alpha[i] + add_a);
     }
   } else if (_array != NULL) {
     for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + addxel.r);
-      _array[i].g = clamp_val(_array[i].g + addxel.g);
-      _array[i].b = clamp_val(_array[i].b + addxel.b);
+      _array[i].r = clamp_val(_array[i].r + add_r);
+      _array[i].g = clamp_val(_array[i].g + add_g);
+      _array[i].b = clamp_val(_array[i].b + add_b);
     }
   } else if (_alpha != NULL) {
     for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] + addalpha);
+      _alpha[i] = clamp_val(_alpha[i] + add_a);
     }
   }
 }
@@ -1529,28 +1532,7 @@ operator -= (const PNMImage &other) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator -= (const Colord &other) {
-  size_t array_size = _x_size * _y_size;
-  xel subxel (to_val(other.get_x()), to_val(other.get_y()), to_val(other.get_z()));
-  xelval subalpha = to_val(other.get_w());
-
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r - subxel.r);
-      _array[i].g = clamp_val(_array[i].g - subxel.g);
-      _array[i].b = clamp_val(_array[i].b - subxel.b);
-      _alpha[i] = clamp_val(_alpha[i] + subalpha);
-    }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r - subxel.r);
-      _array[i].g = clamp_val(_array[i].g - subxel.g);
-      _array[i].b = clamp_val(_array[i].b - subxel.b);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] - subalpha);
-    }
-  }
+  (*this) += (-other);
 }
 
 ////////////////////////////////////////////////////////////////////
