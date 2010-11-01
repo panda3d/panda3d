@@ -714,9 +714,9 @@ def CompileCxx(obj,src,opts):
         cmd += "/Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
         if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
         if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts)
@@ -734,9 +734,9 @@ def CompileCxx(obj,src,opts):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
         else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -I' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin"):
             cmd += " -Wno-deprecated-declarations"
@@ -840,9 +840,9 @@ def CompileIgate(woutd,wsrc,opts):
     cmd += ' -S' + GetOutputDir() + '/include/parser-inc'
     for x in ipath: cmd += ' -I' + BracketNameWithQuotes(x)
     for (opt,dir) in INCDIRECTORIES:
-        if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -S' + BracketNameWithQuotes(dir)
+        if (opt=="ALWAYS") or (opt in opts): cmd += ' -S' + BracketNameWithQuotes(dir)
     for (opt,var,val) in DEFSYMBOLS:
-        if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
+        if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
     building = GetValueOption(opts, "BUILDING:")
     if (building): cmd += " -DBUILDING_"+building
     cmd += ' -module ' + module + ' -library ' + library
@@ -934,7 +934,7 @@ def CompileLink(dll, obj, opts):
         if (dll.endswith(".dll")):
             cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
         for x in obj:
             if (x.endswith(".dll")):
                 cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
@@ -951,7 +951,7 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " " + BracketNameWithQuotes(name)
+            if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
         oscmd(cmd)
         SetVC90CRTVersion(dll+".manifest")
         mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
@@ -1044,9 +1044,9 @@ def CompileResource(target, src, opts):
         cmd += " /Fo" + BracketNameWithQuotes(target)
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
         cmd += " " + BracketNameWithQuotes(src)
 
         oscmd(cmd)
@@ -1056,9 +1056,9 @@ def CompileResource(target, src, opts):
         cmd += " -o " + BracketNameWithQuotes(target)
         for x in ipath: cmd += " -i " + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " -i " + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += " -i " + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)):
+            if (opt=="ALWAYS") or (opt in opts):
                 if (val == ""):
                     cmd += " -d " + var
                 else:
@@ -1179,9 +1179,9 @@ def CompileMIDL(target, src, opts):
         cmd += " /out" + BracketNameWithQuotes(os.path.dirname(target))
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
+            if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
         cmd += " " + BracketNameWithQuotes(src)
 
         oscmd(cmd)
@@ -3178,7 +3178,6 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/glstuff',  'NVIDIACG', 'CGGL']
   TargetAdd('glstuff_glpure.obj', opts=OPTS, input='glpure.cxx')
   TargetAdd('libp3glstuff.dll', input='glstuff_glpure.obj')
-  TargetAdd('libp3glstuff.dll', input='libpandafx.dll')
   TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'OPENGL',  'NVIDIACG', 'CGGL'])
 
@@ -3253,7 +3252,6 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("OPENGL")==
   TargetAdd('libpandagl.dll', input='glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='glxdisplay_composite.obj')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
-  TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA'])
 
@@ -3447,9 +3445,6 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
   TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
   TargetAdd('pview.exe', input='pview_pview.obj')
   TargetAdd('pview.exe', input='libp3framework.dll')
-  TargetAdd('pview.exe', input='libpandafx.dll')
-  if (PkgSkip("OPENGL")==0):
-      TargetAdd('pview.exe', input='libpandagl.dll')
   TargetAdd('pview.exe', input='libpandaegg.dll')
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
@@ -4933,8 +4928,8 @@ Section: libdevel
 Priority: optional
 Architecture: ARCH
 Essential: no
-Depends: PYTHONV
-Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), python-pmw
+Depends: DEPENDS
+Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), python-pmw, RECOMMENDS
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine SDK
@@ -4952,6 +4947,7 @@ Section: web
 Priority: optional
 Architecture: ARCH
 Essential: no
+Depends: DEPENDS
 Provides: panda3d-runtime
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: Runtime binary and browser plugin for the Panda3D Game Engine
@@ -5076,7 +5072,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_SPEC_FILE[1:]
         else:
             txt = INSTALLER_SPEC_FILE[1:]
-        txt = txt.replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV).replace("PV",PV)
+        txt = txt.replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PV",PV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot targetroot -bb panda3d.spec")
         if (RUNTIME):
@@ -5092,15 +5088,32 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PV)
+        txt = txt.replace("VERSION",str(VERSION)).replace("ARCH",ARCH).replace("PV",PV)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
           oscmd("cd targetroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
           WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
-        WriteFile("targetroot/DEBIAN/control",txt)
         WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
+        oscmd("mkdir targetroot/debian")
+        WriteFile("targetroot/debian/control", "")
+        if (RUNTIME):
+            oscmd("ln -s .. targetroot/debian/panda3d-runtime")
+            oscmd("cd targetroot ; dpkg-shlibdeps -xpanda3d-runtime debian/panda3d-runtime/usr/lib*/*.so* debian/panda3d-runtime/usr/bin/*")
+            depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
+            WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends))
+        else:
+            oscmd("ln -s .. targetroot/debian/panda3d")
+            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (VERSION, libdir))
+            # Library dependencies are required, binary dependencies are recommended. Dunno why -xlibphysx-extras is needed, prolly a bug in their package
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d/usr/lib*/panda3d/lib*.so*" % libdir)
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -Tdebian/substvars_rec debian/panda3d/usr/bin/*" % libdir)
+            depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
+            recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
+            depends += ", " + PYTHONV
+            WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
+        oscmd("rm -rf targetroot/debian")
         oscmd("chmod -R 755 targetroot/DEBIAN")
         if (RUNTIME):
             oscmd("dpkg-deb -b targetroot panda3d-runtime_"+VERSION+"_"+ARCH+".deb")
