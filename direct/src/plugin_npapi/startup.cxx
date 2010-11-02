@@ -131,11 +131,6 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
     case NPPVpluginDescriptionString:
       *(const char **)value = "Runs 3-D games and interactive applets";
       break;
-      /*
-    case NPPVpluginNeedsXEmbed:
-      *((NPBool *)value) = false;
-      break;
-      */
     default:
       nout << "Ignoring GetValue request " << variable << "\n";
       return NPERR_INVALID_PARAM;
@@ -567,6 +562,16 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
       *(NPObject **)value = obj;
       return NPERR_NO_ERROR;
     }
+  } else if (variable == NPPVpluginNeedsXEmbed) {
+    // We'll say yes if the browser supports it.
+    // This is necessary to support Chromium.
+    NPBool supports_xembed = false;
+    NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
+    if (err != NPERR_NO_ERROR) {
+      supports_xembed = false;
+    }
+    *((NPBool *)value) = supports_xembed;
+    return NPERR_NO_ERROR;
   } else {
     return NP_GetValue(NULL, variable, value);
   }
