@@ -546,16 +546,16 @@ if (COMPILER=="LINUX"):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
             SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
         if (not RUNTIME):
+            SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
 
     if (RUNTIME):
         # For the runtime, all packages are required
-        for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "X11", "PNG"]:
+        for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG, X11 and PNG support!")
+                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
 
     if (not RUNTIME and not LocateBinary("bison")):
         exit("Could not locate bison!")
