@@ -383,10 +383,10 @@ PUBLISHED:
     P_force_field_custom_kernel_epsilon     = NX_FORCE_FIELD_CUSTOM_KERNEL_EPSILON,
     P_improved_spring_solver                = NX_IMPROVED_SPRING_SOLVER,
 
-#ifndef LINUX /* The following enums are only defined in SDK version 2.8.1 */
+#ifndef PHYSX281
     P_fast_massive_bp_volume_deletion       = NX_FAST_MASSIVE_BP_VOLUME_DELETION,
     P_legacy_joint_drive                    = NX_LEGACY_JOINT_DRIVE,
-#endif /* LINUX */
+#endif
 
     P_visualize_world_axes                  = NX_VISUALIZE_WORLD_AXES,
     P_visualize_body_axes                   = NX_VISUALIZE_BODY_AXES,
