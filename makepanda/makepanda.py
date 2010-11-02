@@ -1545,6 +1545,11 @@ def WriteConfigSettings():
 
     if (RUNTIME):
         dtool_config["HAVE_P3D_PLUGIN"] = '1'
+    
+    # Whether it's present on the system doesn't matter here,
+    # as the runtime itself doesn't include or link with X11.
+    if (RUNTIME and sys.platform.startswith("linux")):
+        dtool_config["HAVE_X11"] = '1'
 
     if ("GENERIC_DXERR_LIBRARY" in SDK):
         dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "1"
