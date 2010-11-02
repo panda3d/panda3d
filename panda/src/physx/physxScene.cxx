@@ -241,12 +241,6 @@ simulate(float dt) {
 void PhysxScene::
 fetch_results() {
 
-#ifdef NX64
-  cout << "<64bit>";
-#else
-  cout << "<32bit>";
-#endif
-
   nassertv(_error_type == ET_ok);
   nassertv(_ptr != NULL);
 
