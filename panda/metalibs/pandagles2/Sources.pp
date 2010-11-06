@@ -5,7 +5,7 @@
 // under Windows).
 
 #define DIR_TYPE metalib
-#define BUILDING_DLL BUILDING_PANDAGLES
+#define BUILDING_DLL BUILDING_PANDAGLES2
 #define BUILD_DIRECTORY $[HAVE_GLES2]
 
 #define COMPONENT_LIBS \
