@@ -2284,6 +2284,8 @@ class Packager:
         path, and adds its contents to the indicated DSearchPath. """
 
         path = ExecutionEnvironment.getEnvironmentVariable(varname)
+        if len(path) == 0:
+            path = os.environ[varname]
         for dirname in path.split(';'):
             dirname = Filename.fromOsSpecific(dirname)
             if dirname.makeTrueCase():
@@ -2294,6 +2296,8 @@ class Packager:
         path, and adds its contents to the indicated DSearchPath. """
 
         path = ExecutionEnvironment.getEnvironmentVariable(varname)
+        if len(path) == 0:
+            path = os.environ[varname]
         for dirname in path.split(':'):
             dirname = Filename.fromOsSpecific(dirname)
             if dirname.makeTrueCase():
