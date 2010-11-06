@@ -115,7 +115,7 @@ def usage(problem):
     print ""
     print "  makepanda --everything"
     print ""
-    os._exit(0)
+    os._exit(1)
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
