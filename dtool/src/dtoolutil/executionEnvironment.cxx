@@ -36,6 +36,11 @@
 #define environ (*_NSGetEnviron())
 #endif
 
+#ifdef IS_LINUX
+// extern char **environ is defined here:
+#include <unistd.h>
+#endif
+
 #ifdef IS_FREEBSD
 extern char **environ;
 
@@ -387,11 +392,33 @@ get_ptr() {
 void ExecutionEnvironment::
 read_environment_variables() {
 #ifdef PREREAD_ENVIRONMENT
-#if defined(HAVE_PROC_SELF_ENVIRON)
-  // In Linux, and possibly in other systems, we might not be able to
-  // use getenv() at static init time.  However, we may be lucky and
-  // have a file called /proc/self/environ that may be read to
-  // determine all of our environment variables.
+#if defined(IS_OSX) || defined(IS_FREEBSD) || defined(IS_LINUX)
+  // In the case of Mac, we'll try reading _NSGetEnviron().
+  // In the case of FreeBSD and Linux, use the "environ" variable.
+
+  char **envp;
+  for (envp = environ; envp && *envp; envp++) {
+    string variable;
+    string value;
+
+    char *envc;
+    for (envc = *envp; envc && *envc && strncmp(envc, "=", 1) != 0; envc++) {
+      variable += (char) *envc;
+    }
+
+    if (strncmp(envc, "=", 1) == 0) {
+      for (envc++; envc && *envc; envc++) {
+        value += (char) *envc;
+      }
+    }
+
+    if (!variable.empty()) {
+      _variables[variable] = value;
+    }
+  }
+#elif defined(HAVE_PROC_SELF_ENVIRON)
+  // In some cases, we may have a file called /proc/self/environ
+  // that may be read to determine all of our environment variables.
 
   pifstream proc("/proc/self/environ");
   if (proc.fail()) {
@@ -421,30 +448,6 @@ read_environment_variables() {
       _variables[variable] = value;
     }
     ch = proc.get();
-  }
-#elif defined(IS_OSX) || defined(IS_FREEBSD)
-  // In the case of Mac, there's always _NSGetEnviron() which we can read.
-  // In the case of FreeBSD, it's the "environ" variable.
-
-  char **envp;
-  for (envp = environ; envp && *envp; envp++) {
-    string variable;
-    string value;
-
-    char *envc;
-    for (envc = *envp; envc && *envc && strncmp(envc, "=", 1) != 0; envc++) {
-      variable += (char) *envc;
-    }
-
-    if (strncmp(envc, "=", 1) == 0) {
-      for (envc++; envc && *envc; envc++) {
-        value += (char) *envc;
-      }
-    }
-
-    if (!variable.empty()) {
-      _variables[variable] = value;
-    }
   }
 #else
   cerr << "Warning: environment variables unavailable to dconfig.\n";
