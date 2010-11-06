@@ -2169,12 +2169,12 @@ class Packager:
             GlobPattern('libGLU.so*'),
             GlobPattern('libGLcore.so*'),
             GlobPattern('libX*.so*'),
+            GlobPattern('libxcb*.so*'),
             GlobPattern('libc.so*'),
             GlobPattern('libdl.so*'),
             GlobPattern('libm.so*'),
             GlobPattern('libnvidia*.so*'),
             GlobPattern('libpthread.so*'),
-            GlobPattern('linux-gate.so*'),
             ]
 
         # A Loader for loading models.
