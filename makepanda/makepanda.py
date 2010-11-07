@@ -5115,10 +5115,10 @@ def MakeInstallerLinux():
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends))
         else:
             oscmd("ln -s .. targetroot/debian/panda3d" + MAJOR_VERSION)
-            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d%s -eusr%s/panda3d%s/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, MAJOR_VERSION, libdir, MAJOR_VERSION))
+            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d%s -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, MAJOR_VERSION, libdir))
             # Library dependencies are required, binary dependencies are recommended. Dunno why -xlibphysx-extras is needed, prolly a bug in their package
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d%s dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d%s/usr/lib*/panda3d/lib*.so*" % (libdir, MAJOR_VERSION, MAJOR_VERSION, MAJOR_VERSION))
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d%s dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (libdir, MAJOR_VERSION, MAJOR_VERSION, MAJOR_VERSION))
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d%s/usr/lib*/panda3d/lib*.so*" % (libdir, MAJOR_VERSION, MAJOR_VERSION))
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (libdir, MAJOR_VERSION, MAJOR_VERSION))
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             depends += ", " + PYTHONV
