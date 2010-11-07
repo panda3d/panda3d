@@ -4930,7 +4930,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
 
 
 INSTALLER_DEB_FILE="""
-Package: panda3d
+Package: panda3dMAJOR_VERSION
 Version: VERSION
 Section: libdevel
 Priority: optional
@@ -4939,6 +4939,8 @@ Essential: no
 Depends: DEPENDS
 Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), python-pmw, RECOMMENDS
 Provides: panda3d
+Conflicts: panda3d
+Replaces: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine SDK
  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
@@ -5096,7 +5098,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV)
+        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR_VERSION", MAJOR_VERSION)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
@@ -5112,11 +5114,11 @@ def MakeInstallerLinux():
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends))
         else:
-            oscmd("ln -s .. targetroot/debian/panda3d")
-            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, libdir))
+            oscmd("ln -s .. targetroot/debian/panda3d" + MAJOR_VERSION)
+            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d%s -eusr%s/panda3d%s/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, MAJOR_VERSION, libdir, MAJOR_VERSION))
             # Library dependencies are required, binary dependencies are recommended. Dunno why -xlibphysx-extras is needed, prolly a bug in their package
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d/usr/lib*/panda3d/lib*.so*" % libdir)
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -Tdebian/substvars_rec debian/panda3d/usr/bin/*" % libdir)
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d%s dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d%s/usr/lib*/panda3d/lib*.so*" % (libdir, MAJOR_VERSION, MAJOR_VERSION, MAJOR_VERSION))
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d%s dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (libdir, MAJOR_VERSION, MAJOR_VERSION, MAJOR_VERSION))
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             depends += ", " + PYTHONV
@@ -5126,7 +5128,7 @@ def MakeInstallerLinux():
         if (RUNTIME):
             oscmd("dpkg-deb -b targetroot panda3d-runtime_"+DEBVERSION+"_"+ARCH+".deb")
         else:
-            oscmd("dpkg-deb -b targetroot panda3d_"+DEBVERSION+"_"+ARCH+".deb")
+            oscmd("dpkg-deb -b targetroot panda3d"+MAJOR_VERSION+"_"+DEBVERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 targetroot")
 
     if not (os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
