@@ -45,6 +45,7 @@ RTDIST_VERSION="dev"
 RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
+DEBVERSION=None
 MAJOR_VERSION=None
 COREAPI_VERSION=None
 OSXTARGET=None
@@ -95,6 +96,7 @@ def usage(problem):
     print ""
     print "  --help            (print the help message you're reading now)"
     print "  --verbose         (print out more information)"
+    print "  --runtime         (build a runtime build instead of an SDK build)"
     print "  --installer       (build an installer)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --version         (set the panda version number)"
@@ -118,13 +120,13 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR
-    global VERSION,COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
+    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL,DEBVERSION
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host="]
+        "static","host=","debversion="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -153,6 +155,7 @@ def parseopts(args):
             elif (option=="--override"): AddOverride(value.strip())
             elif (option=="--static"): SetLinkAllStatic(True)
             elif (option=="--host"): HOST_URL=value
+            elif (option=="--debversion"): DEBVERSION=value
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -5093,7 +5096,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION",str(VERSION)).replace("ARCH",ARCH).replace("PV",PV)
+        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
@@ -5110,7 +5113,7 @@ def MakeInstallerLinux():
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends))
         else:
             oscmd("ln -s .. targetroot/debian/panda3d")
-            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (VERSION, libdir))
+            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, libdir))
             # Library dependencies are required, binary dependencies are recommended. Dunno why -xlibphysx-extras is needed, prolly a bug in their package
             oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d/usr/lib*/panda3d/lib*.so*" % libdir)
             oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d -Tdebian/substvars_rec debian/panda3d/usr/bin/*" % libdir)
@@ -5121,9 +5124,9 @@ def MakeInstallerLinux():
         oscmd("rm -rf targetroot/debian")
         oscmd("chmod -R 755 targetroot/DEBIAN")
         if (RUNTIME):
-            oscmd("dpkg-deb -b targetroot panda3d-runtime_"+VERSION+"_"+ARCH+".deb")
+            oscmd("dpkg-deb -b targetroot panda3d-runtime_"+DEBVERSION+"_"+ARCH+".deb")
         else:
-            oscmd("dpkg-deb -b targetroot panda3d_"+VERSION+"_"+ARCH+".deb")
+            oscmd("dpkg-deb -b targetroot panda3d_"+DEBVERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 targetroot")
 
     if not (os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
