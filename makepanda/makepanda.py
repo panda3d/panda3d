@@ -4930,7 +4930,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
 
 
 INSTALLER_DEB_FILE="""
-Package: panda3dMAJOR_VERSION
+Package: panda3dMAJOR
 Version: VERSION
 Section: libdevel
 Priority: optional
@@ -5098,7 +5098,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR_VERSION", MAJOR_VERSION)
+        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
