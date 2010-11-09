@@ -25,7 +25,7 @@
 // we generate the script anyway to be consistent with Win32, which
 // does require it.
 
-#if $[eq $[PLATFORM],Win32]
+#if $[MAKE_BAT_SCRIPTS]
 
 #output genPyCode.bat
 @echo off
@@ -35,7 +35,7 @@ rem ################################# DO NOT EDIT ###########################
 $[python] -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
 
-#else  // Win32
+#else  // MAKE_BAT_SCRIPTS
 
 #output genPyCode $[if $[>= $[PPREMAKE_VERSION],1.21],binary]
 #! /bin/sh
@@ -55,7 +55,7 @@ $[python] -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #endif
 #end genPyCode
 
-#endif  // Win32
+#endif  // MAKE_BAT_SCRIPTS
 
 #output genPyCode.py
 #! /usr/bin/env $[python]
