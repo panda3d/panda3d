@@ -232,6 +232,7 @@ do_watchdog(int *status_ptr) {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, watchdog_bitbucket);
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "autorestart");
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 
   res = curl_easy_perform(curl);
   while (res == 0) {
@@ -395,6 +396,23 @@ sigterm_handler() {
   exit(1);
 }
 
+void
+sighup_handler() {
+  time_t now;
+  char time_buffer[TIME_BUFFER_SIZE];
+
+  now = time(NULL);
+  strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
+
+  fprintf(stderr, "\nsighup caught at %s.\n", time_buffer);
+  if (child_pid == 0) {
+    fprintf(stderr, "no child process.\n\n");
+
+  } else {
+    kill(child_pid, SIGHUP);
+  }
+}
+
 void 
 sigalarm_handler() {
   fprintf(stderr, "sleep epoch was complete.\n");
@@ -420,6 +438,15 @@ do_autorestart() {
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
   if (sigaction(SIGTERM, &sa, NULL) < 0) {
+    perror("sigaction");
+  }
+
+  /* Set up a signal handler to trap SIGHUP.  We pass this into the
+     child. */
+  sa.sa_handler = sighup_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  if (sigaction(SIGHUP, &sa, NULL) < 0) {
     perror("sigaction");
   }
 
