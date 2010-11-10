@@ -32,7 +32,7 @@
   #define USE_PACKAGES gles2 egl x11
   #define EXTRA_CDEFS OPENGLES_2
   #define LOCAL_LIBS \
-    gles2gsg
+    gles2gsg x11display
 
   #define SOURCES \
     config_egldisplay.cxx config_egldisplay.h \
