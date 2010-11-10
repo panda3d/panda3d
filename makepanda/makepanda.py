@@ -1495,6 +1495,9 @@ def WriteConfigSettings():
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
+        # 10.4 had a broken ucontext implementation
+        if int(platform.mac_ver()[0][3]) <= 4:
+            dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
