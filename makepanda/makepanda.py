@@ -174,7 +174,6 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
-    if (DEBVERSION is None): DEBVERSION = VERSION
     if (OSXTARGET != None and OSXTARGET.strip() == ""):
         OSXTARGET = None
     elif (OSXTARGET != None):
@@ -218,15 +217,18 @@ if (sys.platform == "darwin" and OSXTARGET != None):
 ##
 ########################################################################
 
-if (VERSION == None):
+if (VERSION is None):
     if (RUNTIME):
         VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
         COREAPI_VERSION = VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
 
-if (COREAPI_VERSION == None):
+if (COREAPI_VERSION is None):
     COREAPI_VERSION = VERSION
+
+if (DEBVERSION is None):
+    DEBVERSION = VERSION
 
 MAJOR_VERSION = VERSION[:3]
 
