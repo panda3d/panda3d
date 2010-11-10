@@ -174,6 +174,7 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
+    if (DEBVERSION is None): DEBVERSION = VERSION
     if (OSXTARGET != None and OSXTARGET.strip() == ""):
         OSXTARGET = None
     elif (OSXTARGET != None):
