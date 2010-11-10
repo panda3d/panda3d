@@ -417,7 +417,7 @@ process_events() {
       break;
 
     default:
-      x11display_cat.error()
+      x11display_cat.warning()
         << "unhandled X event type " << event.type << "\n";
     }
   }
