@@ -147,7 +147,7 @@ class Standalone:
         filenames = []
         vfs = VirtualFileSystem.getGlobalPtr()
         for e in package.extracts:
-            if e.basename not in ["p3dembed", "p3dembed.exe"]:
+            if e.basename not in ["p3dembed", "p3dembed.exe", "p3dembed.exe.manifest"]:
                 filename = Filename(package.getPackageDir(), e.filename)
                 filename.makeAbsolute()
                 if vfs.exists(filename):

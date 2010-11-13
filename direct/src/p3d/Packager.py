@@ -895,18 +895,15 @@ class Packager:
                     command = 'mt -inputresource:"%s";#%d -out:"%s" > nul' % (
                         file.filename.toOsSpecific(),
                         resindex, tempFile.toOsSpecific())
-                    print command
                     try:
                         out = os.system(command)
                     except:
-                        print "failed"
                         pass
                     afilenames = None
 
                     if tempFile.exists():
                         afilenames = self.__parseManifest(tempFile)
-                        print tempFile
-                        #tempFile.unlink()
+                        tempFile.unlink()
 
                     # Also check for an explicit private-assembly
                     # manifest file on disk.
@@ -999,7 +996,7 @@ class Packager:
             while dependency:
                 depassembly = dependency.FirstChildElement("dependentAssembly")
                 if depassembly:
-                    ident = assembly.FirstChildElement("assemblyIdentity")
+                    ident = depassembly.FirstChildElement("assemblyIdentity")
                     if ident:
                         name = ident.Attribute("name")
                         if name:
