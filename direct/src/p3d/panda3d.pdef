@@ -362,5 +362,6 @@ class pdeploy(p3d):
     require('panda3d')
     require('morepy')
 
+    module('encodings', 'encodings.zlib_codec', 'encodings.bz2_codec')
     mainModule('direct.p3d.pdeploy')
 
