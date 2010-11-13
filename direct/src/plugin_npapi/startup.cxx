@@ -565,12 +565,15 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   } else if (variable == NPPVpluginNeedsXEmbed) {
     // We'll say yes if the browser supports it.
     // This is necessary to support Chromium.
-    NPBool supports_xembed = false;
-    NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
-    if (err != NPERR_NO_ERROR) {
-      supports_xembed = false;
-    }
-    *((NPBool *)value) = supports_xembed;
+    //NPBool supports_xembed = false;
+    //NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
+    //if (err != NPERR_NO_ERROR) {
+    //  supports_xembed = false;
+    //}
+    // At the moment, setting it to true doesn't work
+    // at all on Linux.  We'll have to fix that before
+    // we support Chromium, I suppose.
+    *((NPBool *)value) = false;
     return NPERR_NO_ERROR;
   } else {
     return NP_GetValue(NULL, variable, value);
