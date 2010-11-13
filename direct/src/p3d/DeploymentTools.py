@@ -10,6 +10,8 @@ from direct.showbase.AppRunnerGlobal import appRunner
 from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
 from pandac.PandaModules import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
 from direct.p3d.HostInfo import HostInfo
+# This is important for some reason
+import encodings
 
 class CachedFile:
     def __init__(self): self.str = ""
