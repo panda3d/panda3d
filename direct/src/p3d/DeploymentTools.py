@@ -218,9 +218,10 @@ class Installer:
         for name, version in self.requirements:
             package = host.getPackage(name, version, platform)
             if not package:
-                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Installer.notify.error("Package %s %s for %s not known on %s" % (
+                    name, version, platform, host.hostUrl))
                 continue
-            package.installed = True # Hack not to let it install itself
+            package.installed = True # Hack not to let it unnecessarily install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
                 Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
@@ -238,7 +239,7 @@ class Installer:
                     return
         
         for package in host.getPackages(name = "images"):
-            package.installed = True # Hack not to let it install itself
+            package.installed = True # Hack not to let it unnecessarily install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
                 Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
