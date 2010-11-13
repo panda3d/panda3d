@@ -56,6 +56,9 @@ class panda3d(package):
            'direct.task.*')
     module('panda3d')
 
+    # Include various standard Python encodings.  The rest is in morepy.
+    module('encodings', 'encodings.utf_8', 'encodings.ascii')
+
     # Pick up the shader files that appear in direct/src/filter.
     import direct
     file(Filename(direct.__path__[0], 'filter/*.sha'), newDir = 'direct/filter')
@@ -360,3 +363,4 @@ class pdeploy(p3d):
     require('morepy')
 
     mainModule('direct.p3d.pdeploy')
+
