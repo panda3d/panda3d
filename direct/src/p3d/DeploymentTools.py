@@ -212,11 +212,24 @@ class Installer:
         if not host.hasContentsFile:
             if not host.readContentsFile():
                 if not host.downloadContentsFile(self.http):
-                    Installer.notify.error("couldn't read host")
+                    Installer.notify.error("couldn't read host %s" % host.hostUrl)
                     return
         
+        superHost = None
+        if appRunner.superMirrorUrl:
+            superHost = HostInfo(appRunner.superMirrorUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
+            if not superHost.hasContentsFile:
+                if not superHost.readContentsFile():
+                    if not superHost.downloadContentsFile(self.http):
+                        Installer.notify.warning("couldn't read supermirror host %s" % superHost.hostUrl)
+                        superHost = None
+        
         for name, version in self.requirements:
-            package = host.getPackage(name, version, platform)
+            package = None
+            if superHost:
+                package = superHost.getPackage(name, version, platform)
+            if not package:
+                package = host.getPackage(name, version, platform)
             if not package:
                 Installer.notify.error("Package %s %s for %s not known on %s" % (
                     name, version, platform, host.hostUrl))
@@ -231,14 +244,15 @@ class Installer:
                 continue
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
-        host = HostInfo(self.standalone.host.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
-        if not host.hasContentsFile:
-            if not host.readContentsFile():
-                if not host.downloadContentsFile(self.http):
-                    Installer.notify.error("couldn't read host")
-                    return
+        if host.hostUrl != self.standalone.host.hostUrl:
+            host = HostInfo(self.standalone.host.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
+            if not host.hasContentsFile:
+                if not host.readContentsFile():
+                    if not host.downloadContentsFile(self.http):
+                        Installer.notify.error("couldn't read host %s" % host.hostUrl)
+                        return
         
-        for package in host.getPackages(name = "images"):
+        for package in superHost.getPackages(name = "images") + host.getPackages(name = "images"):
             package.installed = True # Hack not to let it unnecessarily install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
