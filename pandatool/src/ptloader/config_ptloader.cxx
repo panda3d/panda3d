@@ -13,6 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_ptloader.h"
+
+// This needs to be included first to work around a bug in OSX 10.4.
+#ifdef HAVE_FCOLLADA 
+#include "daeToEggConverter.h" 
+#endif
+
 #include "loaderFileTypePandatool.h"
 
 #include "config_flt.h"
@@ -23,10 +29,6 @@
 #include "vrmlToEggConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
-
-#ifdef HAVE_FCOLLADA
-#include "daeToEggConverter.h"
-#endif
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
