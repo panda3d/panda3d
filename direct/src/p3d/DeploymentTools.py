@@ -217,13 +217,16 @@ class Installer:
         
         for name, version in self.requirements:
             package = host.getPackage(name, version, platform)
+            if not package:
+                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                continue
             package.installed = True # Hack not to let it install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             if not package.downloadPackage(self.http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
@@ -238,10 +241,10 @@ class Installer:
             package.installed = True # Hack not to let it install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             if not package.downloadPackage(self.http):
-                Installer.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
+                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
             break
         
