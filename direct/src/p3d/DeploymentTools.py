@@ -484,8 +484,6 @@ class Installer:
         print >>plist, '</plist>'
         plist.close()
         
-        Filename(output, "hosts/").makeDir()
-        
         return output
 
     def buildPKG(self, output, platform):
