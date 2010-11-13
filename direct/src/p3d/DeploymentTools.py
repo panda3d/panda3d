@@ -271,7 +271,6 @@ class Installer:
                 if not archive.exists():
                     continue
                 
-                print archive
                 mf = Multifile()
                 # Make sure that it isn't mounted before altering it, just to be safe
                 vfs.unmount(archive)
