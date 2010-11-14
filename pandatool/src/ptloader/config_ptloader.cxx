@@ -15,7 +15,7 @@
 #include "config_ptloader.h"
 
 // This needs to be included first to work around a bug in OSX 10.4.
-#ifdef HAVE_FCOLLADA 
+#if defined(HAVE_FCOLLADA) && defined(IS_OSX)
 #include "daeToEggConverter.h" 
 #endif
 
@@ -29,6 +29,11 @@
 #include "vrmlToEggConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
+
+// Windows freaks out if this input is placed earlier.
+#if defined(HAVE_FCOLLADA) && !defined(IS_OSX)
+#include "daeToEggConverter.h" 
+#endif
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
