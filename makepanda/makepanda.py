@@ -46,6 +46,7 @@ RUNTIME=0
 DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
+RPMRELEASE="1"
 MAJOR_VERSION=None
 COREAPI_VERSION=None
 OSXTARGET=None
@@ -121,12 +122,12 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL,DEBVERSION
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL,DEBVERSION,RPMRELEASE
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host=","debversion="]
+        "static","host=","debversion=","rpmrelease="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -156,6 +157,7 @@ def parseopts(args):
             elif (option=="--static"): SetLinkAllStatic(True)
             elif (option=="--host"): HOST_URL=value
             elif (option=="--debversion"): DEBVERSION=value
+            elif (option=="--rpmrelease"): RPMRELEASE=value
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -4979,7 +4981,7 @@ INSTALLER_SPEC_FILE="""
 Summary: The Panda3D free 3D engine SDK
 Name: panda3d
 Version: VERSION
-Release: 1
+Release: RPMRELEASE
 License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/targetroot
@@ -5088,13 +5090,13 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_SPEC_FILE[1:]
         else:
             txt = INSTALLER_SPEC_FILE[1:]
-        txt = txt.replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PV",PV)
+        txt = txt.replace("VERSION", VERSION).replace("RELEASE", RPMRELEASE).replace("PANDASOURCE", pandasource).replace("PV", PV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot targetroot -bb panda3d.spec")
         if (RUNTIME):
-            oscmd("mv "+ARCH+"/panda3d-runtime-"+VERSION+"-1."+ARCH+".rpm .")
+            oscmd("mv "+ARCH+"/panda3d-runtime-"+VERSION+"-"+RPMRELEASE+"."+ARCH+".rpm .")
         else:
-            oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
+            oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-"+RPMRELEASE+"."+ARCH+".rpm .")
         oscmd("rmdir "+ARCH, True)
 
     if (os.path.exists("/usr/bin/dpkg-deb")):
@@ -5104,7 +5106,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION", str(DEBVERSION)).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
+        txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
