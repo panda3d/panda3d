@@ -5090,7 +5090,7 @@ def MakeInstallerLinux():
             txt = RUNTIME_INSTALLER_SPEC_FILE[1:]
         else:
             txt = INSTALLER_SPEC_FILE[1:]
-        txt = txt.replace("VERSION", VERSION).replace("RELEASE", RPMRELEASE).replace("PANDASOURCE", pandasource).replace("PV", PV)
+        txt = txt.replace("VERSION", VERSION).replace("RPMRELEASE", RPMRELEASE).replace("PANDASOURCE", pandasource).replace("PV", PV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' --root "+pandasource+" --buildroot targetroot -bb panda3d.spec")
         if (RUNTIME):
