@@ -5097,7 +5097,7 @@ def MakeInstallerLinux():
             oscmd("mv "+ARCH+"/panda3d-runtime-"+VERSION+"-"+RPMRELEASE+"."+ARCH+".rpm .")
         else:
             oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-"+RPMRELEASE+"."+ARCH+".rpm .")
-        oscmd("rmdir "+ARCH, True)
+        oscmd("rm -rf "+ARCH, True)
 
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
