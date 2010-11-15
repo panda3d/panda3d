@@ -5015,7 +5015,7 @@ RUNTIME_INSTALLER_SPEC_FILE="""
 Summary: Runtime binary and browser plugin for the Panda3D Game Engine
 Name: panda3d-runtime
 Version: VERSION
-Release: 1
+Release: RPMRELEASE
 License: BSD License
 Group: Productivity/Graphics/Other
 BuildRoot: PANDASOURCE/targetroot
