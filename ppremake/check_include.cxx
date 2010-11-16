@@ -45,7 +45,7 @@ check_include(const string &line) {
 
   if (p >= line.length() || (line[p] != '"' && line[p] != '<')) {
     // if it starts with a capital, assume its a #define var used as
-    // include tgt, and dont print a warning
+    // include tgt, and don't print a warning
     if(!((line[p]>='A')&&(line[p]<='Z'))) {
       cerr << "Ignoring invalid #include directive: " << line << "\n";
     }

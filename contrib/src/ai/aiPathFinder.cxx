@@ -326,7 +326,7 @@ void PathFinder::remove_from_olist() {
     }
   }
 
-  // At this point the AINode was succesfully removed and the binary
+  // At this point the AINode was successfully removed and the binary
   // heap re-arranged.
 }
 
