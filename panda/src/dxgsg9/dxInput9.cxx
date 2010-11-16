@@ -59,7 +59,7 @@ bool DInput9Info::InitDirectInput() {
     HRESULT hr;
 
     // assumes dx9 exists
-    // use dynamic load so non-dinput programs dont have to load dinput
+    // use dynamic load so non-dinput programs don't have to load dinput
     #define DLLNAME "dinput9.dll"
     #define DINPUTCREATE "DirectInput9Create"
 

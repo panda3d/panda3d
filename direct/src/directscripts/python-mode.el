@@ -3239,7 +3239,7 @@ does not include blank lines, comments, or continuation lines."
       t)))
 
 (defun py-go-up-tree-to-keyword (key)
-  "Go to begining of statement starting with KEY, at or preceding point.
+  "Go to beginning of statement starting with KEY, at or preceding point.
 
 KEY is a regular expression describing a Python keyword.  Skip blank
 lines and non-indenting comments.  If the statement found starts with

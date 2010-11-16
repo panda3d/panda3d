@@ -889,7 +889,7 @@ transpose_in_place() {
 
 // Matrix inversion code from Numerical Recipes in C.
 
-// dont trust compilers to inline these
+// don't trust compilers to inline these
 #define DET2(E00,E01,E10,E11) ((E00)*(E11) - (E10)*(E01))
 #define MATRIX3_DETERMINANT(mat)                                  \
    ( (mat)._00 * DET2((mat)._11,(mat)._12,(mat)._21,(mat)._22)    \

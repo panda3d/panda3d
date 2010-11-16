@@ -301,7 +301,7 @@ read(istream &data, const string &filename, PNMFileType *type,
 //               reading the entire image.
 //
 //               The PNMReader is always deleted upon completion,
-//               whether succesful or not.
+//               whether successful or not.
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
 read(PNMReader *reader) {
@@ -406,7 +406,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
 //               writer via the PNMImageHeader::make_writer() methods.
 //
 //               The PNMWriter is always deleted upon completion,
-//               whether succesful or not.
+//               whether successful or not.
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
 write(PNMWriter *writer) const {

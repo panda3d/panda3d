@@ -28,7 +28,7 @@ class SoundInterval(Interval.Interval):
     # the sound is caused by the delay between the end of the sound
     # and the next taskMgr cycle). There still seems to be a skip
     # in Miles when looping MP3s. =(
-    # RAU 03/01/07 add listenerNode in case we dont want to
+    # RAU 03/01/07 add listenerNode in case we don't want to
     # use base.camera as the listener, node must not be None
     def __init__(self, sound, loop = 0, duration = 0.0, name = None,
                  volume = 1.0, startTime = 0.0, node=None,

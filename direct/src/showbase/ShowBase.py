@@ -1564,7 +1564,7 @@ class ShowBase(DirectObject.DirectObject):
     # to a user request so sfxActive/musicActive represent how things
     # *should* be, regardless of App/OS/HW state
     def enableMusic(self, bEnableMusic):
-        # dont setActive(1) if no audiofocus
+        # don't setActive(1) if no audiofocus
         if self.AppHasAudioFocus and self.musicManagerIsValid:
             self.musicManager.setActive(bEnableMusic)
         self.musicActive = bEnableMusic
@@ -1582,7 +1582,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.sfxManagerList[i].setActive(bEnabled)
 
     def enableSoundEffects(self, bEnableSoundEffects):
-        # dont setActive(1) if no audiofocus
+        # don't setActive(1) if no audiofocus
         if self.AppHasAudioFocus or (bEnableSoundEffects==0):
             self.SetAllSfxEnables(bEnableSoundEffects)
         self.sfxActive=bEnableSoundEffects

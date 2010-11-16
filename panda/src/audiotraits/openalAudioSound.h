@@ -41,34 +41,34 @@ class EXPCL_OPENAL_AUDIO OpenALAudioSound : public AudioSound {
 public:
 
   ~OpenALAudioSound();
-            
-  // For best compatability, set the loop_count, start_time,
+
+  // For best compatibility, set the loop_count, start_time,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
   void play();
   void stop();
-            
+
   // loop: false = play once; true = play forever.
   // inits to false.
   void set_loop(bool loop=true);
   bool get_loop() const;
-            
+
   // loop_count: 0 = forever; 1 = play once; n = play n times.
   // inits to 1.
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
-            
-  // 0 = begining; length() = end.
+
+  // 0 = beginning; length() = end.
   // inits to 0.0.
   void set_time(float time=0.0);
   float get_time() const;
-            
+
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
   void set_volume(float volume=1.0);
   float get_volume() const;
-            
+
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
@@ -92,7 +92,7 @@ public:
   const string& get_finished_event() const;
 
   const string &get_name() const;
-  
+
   // return: playing time in seconds.
   float length() const;
 
@@ -107,7 +107,7 @@ public:
 
   void set_3d_max_distance(float dist);
   float get_3d_max_distance() const;
-            
+
   void set_3d_drop_off_factor(float factor);
   float get_3d_drop_off_factor() const;
 
@@ -134,11 +134,11 @@ private:
   void push_fresh_buffers();
   INLINE void require_sound_data();
   INLINE void release_sound_data();
-  
+
 private:
-  
+
   void do_stop();
-  
+
   PT(MovieAudio) _movie;
   OpenALAudioManager::SoundData *_sd;
 
@@ -151,17 +151,17 @@ private:
 
   int    _playing_loops;
   float  _playing_rate;
-  
+
   pdeque<QueuedBuffer> _stream_queued;
   int                  _loops_completed;
-  
+
   ALuint _source;
   PT(OpenALAudioManager) _manager;
-  
+
   float _volume; // 0..1.0
   float _balance; // -1..1
   float _play_rate; // 0..1.0
-  
+
   bool _positional;
   ALfloat _location[3];
   ALfloat _velocity[3];
@@ -169,7 +169,7 @@ private:
   float _min_dist;
   float _max_dist;
   float _drop_off_factor;
-  
+
   double _length;
   int    _loop_count;
 
@@ -177,11 +177,11 @@ private:
 
   // The calibrated clock is initialized when the
   // sound starts playing, and is periodically corrected
-  // thereafter.  
+  // thereafter.
   double _calibrated_clock_base;
   double _calibrated_clock_scale;
   double _calibrated_clock_decavg;
-  
+
   // The start_time field affects the next call to play.
   double _start_time;
 
@@ -190,12 +190,12 @@ private:
   // to be atomic, because get_time can be called
   // in the cull thread.
   float  _current_time;
-  
+
   // This is the string that throw_event() will throw
   // when the sound finishes playing.  It is not triggered
   // when the sound is stopped with stop().
   string _finished_event;
-  
+
   Filename _basename;
 
   // _active is for things like a 'turn off sound effects' in
@@ -204,7 +204,7 @@ private:
   // Use status() for info on whether the sound is playing.
   bool _active;
   bool _paused;
-  
+
  public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -217,7 +217,7 @@ private:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type(); 
+    init_type();
     return get_class_type();
   }
 
@@ -234,8 +234,3 @@ private:
 #endif //]
 
 #endif /* __OPENAL_AUDIO_SOUND_H__ */
-
-
-
-
-

@@ -26,7 +26,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
   DWORD d3dcolor, tempcolorval=255;
 
   // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
-  // dont think this makes much difference
+  // don't think this makes much difference
   
   __asm {
         push ebx   ; want to save this in case this fn is inlined

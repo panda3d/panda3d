@@ -1759,7 +1759,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (wparam == SC_KEYMENU) {
       // if Alt is released (alone w/o other keys), defwindproc will
       // send this command, which will 'activate' the title bar menu
-      // (we have none) and give focus to it.  we dont want this to
+      // (we have none) and give focus to it.  we don't want this to
       // happen, so kill this msg.
 
       // Note that the WM_SYSKEYUP message for Alt has already
@@ -2314,7 +2314,7 @@ hide_or_show_cursor(bool hide_cursor) {
   }
 }
 
-// dont pick any video modes < MIN_REFRESH_RATE Hz
+// don't pick any video modes < MIN_REFRESH_RATE Hz
 #define MIN_REFRESH_RATE 60
 // EnumDisplaySettings may indicate 0 or 1 for refresh rate, which means use driver default rate (assume its >min_refresh_rate)
 #define ACCEPTABLE_REFRESH_RATE(RATE) ((RATE >= MIN_REFRESH_RATE) || (RATE==0) || (RATE==1))

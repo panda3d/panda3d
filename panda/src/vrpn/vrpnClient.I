@@ -41,7 +41,7 @@ is_valid() const {
 //     Function: VrpnClient::is_connected
 //       Access: Public
 //  Description: Returns true if the connection is established
-//               succesfully, false otherwise.
+//               successfully, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool VrpnClient::
 is_connected() const {

@@ -42,9 +42,9 @@ typedef struct {
   float xoffset,yoffset;
   float ang1,ang1_vel;
   float ang2,ang2_vel;
-  
+
   float radius;
-  
+
   // for moving
   float xstart,ystart;
   float xend,yend;
@@ -84,8 +84,8 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
 #define DO_FP_MODULUS(VAL,MAXVAL)  \
     {if(VAL > MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL-idivresult*MAXVAL;} else  \
     if(VAL < -MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL+idivresult*MAXVAL;}}
-  
-    // probably should use panda lerps for this stuff, but I dont understand how
+
+    // probably should use panda lerps for this stuff, but I don't understand how
 
     if(gridmotiontype==Rotation) {
 
@@ -238,21 +238,21 @@ load_gridded_models(WindowFramework *window,
 
   // Compute the integer square root of grid_count, so that we put our
   // models in a nice square grid.
-      
+
   gridwidth=1;
   while(gridwidth*gridwidth < grid_count) {
     gridwidth++;
   }
-  
+
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
   wander_area_pos_offset = -max((float)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
   // Now walk through the list again, copying models into the scene
   // graph as we go.
-  
+
   float xpos = grid_pos_offset;
   float ypos = grid_pos_offset;
-      
+
   srand( (unsigned)time( NULL ) );
   double now = ClockObject::get_global_clock()->get_frame_time();
 

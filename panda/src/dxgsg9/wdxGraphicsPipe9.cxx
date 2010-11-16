@@ -305,7 +305,7 @@ find_all_card_memavails() {
 
     // Get Current VidMem avail.  Note this is only an estimate, when
     // we switch to fullscreen mode from desktop, more vidmem will be
-    // available (typically 1.2 meg).  I dont want to switch to
+    // available (typically 1.2 meg).  I don't want to switch to
     // fullscreen more than once due to the annoying monitor flicker,
     // so try to figure out optimal mode using this estimate
     DDSCAPS2 ddsGAVMCaps;
@@ -618,7 +618,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
     }
 
     // ignore memory based checks for min res 640x480.  some cards just
-    // dont give accurate memavails.  (should I do the check anyway for
+    // don't give accurate memavails.  (should I do the check anyway for
     // 640x480 32bpp?)
     bool bDoMemBasedChecks =
       ((!((RequestedX_Size == 640)&&(RequestedY_Size == 480))) &&
@@ -655,7 +655,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
       // refresh rates less than 60
       if (0) {
         if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-          // dont want refresh rates under 60Hz, but 0 or 1 might indicate
+          // don't want refresh rates under 60Hz, but 0 or 1 might indicate
           // a default refresh rate, which is usually > = 60
           if (bVerboseMode) {
             wdxdisplay9_cat.info()

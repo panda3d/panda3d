@@ -120,7 +120,7 @@ PUBLISHED:
   // stop.
   // If you activate the manager while looping sounds are playing
   // (those that have a loop_count of zero),
-  // they will start playing from the begining of their loop.
+  // they will start playing from the beginning of their loop.
   // inits to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() const = 0;

@@ -72,7 +72,7 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Copy Assigment (full)
+//     Function: CycleDataWriter::Copy Assignment (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -229,7 +229,7 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Copy Assigment (trivial)
+//     Function: CycleDataWriter::Copy Assignment (trivial)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////

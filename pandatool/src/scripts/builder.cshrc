@@ -84,7 +84,7 @@ endif
 
 
 if (! $?TCSH_NO_PANDA_ATTACH ) then
-# builder scripts dont attach (attach scripts too buggy on cygwin 1.0)
+# builder scripts don't attach (attach scripts too buggy on cygwin 1.0)
 # they set paths manually
 # setenv TOOL /install/tool
 setenv MYTOOL ~/player/dtool

@@ -137,7 +137,7 @@ void MeshDrawer::end() {
     _vertex->add_data3f(0,0,0);
     _vertex->add_data3f(0,0,0);
   }
-  // dont clear more then you have too
+  // don't clear more then you have too
   _last_clear_index = _clear_index;
 
   // delete the re writers

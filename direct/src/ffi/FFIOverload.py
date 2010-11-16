@@ -198,7 +198,7 @@ def subclass(type1, type2):
     elif inheritsFrom(type2, type1):
         return 1
     else:
-        # This is the dont care case. We must specify a sorting
+        # This is the don't care case. We must specify a sorting
         # rule just so it is not arbitrary
         if (type1.foreignTypeName > type2.foreignTypeName):
             return -1

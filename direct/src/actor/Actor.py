@@ -562,7 +562,7 @@ class Actor(DirectObject, NodePath):
         return bundles
 
     def __updateSortedLODNames(self):
-        # Cache the sorted LOD names so we dont have to grab them
+        # Cache the sorted LOD names so we don't have to grab them
         # and sort them every time somebody asks for the list
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int

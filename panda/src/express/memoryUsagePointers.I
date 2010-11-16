@@ -44,7 +44,7 @@ Entry(const Entry &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::Entry::Copy Assigment Operator
+//     Function: MemoryUsagePointers::Entry::Copy Assignment Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////

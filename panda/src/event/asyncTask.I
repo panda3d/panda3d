@@ -79,7 +79,7 @@ get_manager() const {
 //               added will not affect the task's wake time; it will
 //               only affect the task if it is re-added to the queue
 //               in the future, for instance if the task returns
-//               DS_again.  Howver, see recalc_wake_time() if you wish
+//               DS_again.  However, see recalc_wake_time() if you wish
 //               to apply the delay effect immediately.
 ////////////////////////////////////////////////////////////////////
 INLINE void AsyncTask::

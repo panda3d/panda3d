@@ -587,7 +587,7 @@ get_standardized_rotation(FLOATTYPE angle_in_degrees) {
 //       Access: Published
 //  Description: Try to un-spin the hpr to a standard form.  Like
 //               all standards, someone decides between many
-//               arbitrary posible standards.  This function assumes
+//               arbitrary possible standards.  This function assumes
 //               that 0 and 360 are the same, as is 720 and
 //               -360.  Also 180 and -180 are the same.  Another
 //               example is -90 and 270.
@@ -828,7 +828,7 @@ fmin(const FLOATNAME(LVecBase3) &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::cross product (with assigment)
+//     Function: LVecBase3::cross product (with assignment)
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////

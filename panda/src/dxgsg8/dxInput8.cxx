@@ -59,7 +59,7 @@ bool DInput8Info::InitDirectInput() {
     HRESULT hr;
 
     // assumes dx8 exists
-    // use dynamic load so non-dinput programs dont have to load dinput
+    // use dynamic load so non-dinput programs don't have to load dinput
     #define DLLNAME "dinput8.dll"
     #define DINPUTCREATE "DirectInput8Create"
 

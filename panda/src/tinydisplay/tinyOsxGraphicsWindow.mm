@@ -820,7 +820,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
 
   if (_current_icon != NULL && _pending_icon == NULL) {
       // If we already have an icon specified, we'll need to reapply it
-      // when the window is succesfully created.
+      // when the window is successfully created.
       _pending_icon = _current_icon;
       _current_icon = NULL;
   }

@@ -19,50 +19,50 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-//[FIRST READ FmodAudioManager for an Introduction if you haven't
-//already].
+// [FIRST READ FmodAudioManager for an Introduction if you haven't
+// already].
 //
-//Hello, all future Panda audio code people! This is my errata
-//documentation to Help any future programmer maintain FMOD and PANDA.
+// Hello, all future Panda audio code people! This is my errata
+// documentation to Help any future programmer maintain FMOD and PANDA.
 //
-//Well, if you reading this you probably want to know how PANDA deals
-//with sounds directly using FMOD-EX. Well I am going to tell you.
+// Well, if you reading this you probably want to know how PANDA deals
+// with sounds directly using FMOD-EX. Well I am going to tell you.
 //
-//The first thing, you as the programmer have to understand,
-//especially if you never have done sound programming before, is how
-//the FMOD-EX API works.
+// The first thing, you as the programmer have to understand,
+// especially if you never have done sound programming before, is how
+// the FMOD-EX API works.
 //
-//With FMOD-EX the guys at Firelight, adopted a model of managing
-//sounds with FMOD similar to how a Sound Designer creates sound in a
-//sound studio using SOUNDS and CHANNELS. Although this may seem
-//strange at first, if you are not familiar with sound programming,
-//there is a very good metaphor you are probably already familiar with
-//to explain how FMOD-EX works.
+// With FMOD-EX the guys at Firelight, adopted a model of managing
+// sounds with FMOD similar to how a Sound Designer creates sound in a
+// sound studio using SOUNDS and CHANNELS. Although this may seem
+// strange at first, if you are not familiar with sound programming,
+// there is a very good metaphor you are probably already familiar with
+// to explain how FMOD-EX works.
 //
-//Think of you standard GUI API. Usually a GUI API is made up of two
-//things: Windows and Widgets. These correspond to CHANNELS and
-//SOUNDS, where a Channel is a Window and a Sound is Widget. Sounds
-//are played within channels, and channels don't exist unless they
-//have something to display.
+// Think of you standard GUI API. Usually a GUI API is made up of two
+// things: Windows and Widgets. These correspond to CHANNELS and
+// SOUNDS, where a Channel is a Window and a Sound is Widget. Sounds
+// are played within channels, and channels don't exist unless they
+// have something to display.
 //
-//Now why am I explaining all of this? When PANDA was created they set
-//up the basic audio classes to handle only the idea of a SOUND. The
-//idea of a Channel really wasn't prevalent as in more modern Audio
-//APIs. With this rewrite of PANDA to use the FMOD-EX API, the PANDA
-//FmodAudioSound Class, now has to handle two different parts of the
-//FMOD-EX API in order to play a sound.
+// Now why am I explaining all of this? When PANDA was created they set
+// up the basic audio classes to handle only the idea of a SOUND. The
+// idea of a Channel really wasn't prevalent as in more modern Audio
+// APIs. With this rewrite of PANDA to use the FMOD-EX API, the PANDA
+// FmodAudioSound Class, now has to handle two different parts of the
+// FMOD-EX API in order to play a sound.
 //
-//SOUND: The object the handles the audio data in form of WAV, AIF,
-//OGG, MID, IT, MP3, etc... And CHANNEL: The object that actually
-//plays the sound and manipulates it in real time.
+// SOUND: The object the handles the audio data in form of WAV, AIF,
+// OGG, MID, IT, MP3, etc... And CHANNEL: The object that actually
+// plays the sound and manipulates it in real time.
 //
-//Ultimately this isn't a problem expect for a couple situations when
-//you go to play a sound, which I will explain in more detail in that
-//part of the code. All that you have to know right now is that
-//Channels in FMOD do not exist unless they are playing a sound. And
-//in the PANDA FmodAudioSound API class there is only ONE dedicated
-//channel per sound.  Otherwise there is really nothing to worry
-//about.
+// Ultimately this isn't a problem expect for a couple situations when
+// you go to play a sound, which I will explain in more detail in that
+// part of the code. All that you have to know right now is that
+// Channels in FMOD do not exist unless they are playing a sound. And
+// in the PANDA FmodAudioSound API class there is only ONE dedicated
+// channel per sound.  Otherwise there is really nothing to worry
+// about.
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -85,34 +85,34 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   FmodAudioSound(AudioManager *manager, Filename fn, bool positional );
   ~FmodAudioSound();
-            
-  // For best compatability, set the loop_count, start_time,
+
+  // For best compatibility, set the loop_count, start_time,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
   void play();
   void stop();
-            
+
   // loop: false = play once; true = play forever.
   // inits to false.
   void set_loop(bool loop=true);
   bool get_loop() const;
-            
+
   // loop_count: 0 = forever; 1 = play once; n = play n times.
   // inits to 1.
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
-            
-  // 0 = begining; length() = end.
+
+  // 0 = beginning; length() = end.
   // inits to 0.0.
   void set_time(float start_time=0.0);
   float get_time() const;
-            
+
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
   void set_volume(float volume=1.0);
   float get_volume() const;
-            
+
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
@@ -126,7 +126,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   float get_play_rate() const;
 
   const string &get_name() const;
-            
+
   // return: playing time in seconds.
   float length() const;
 
@@ -141,7 +141,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   void set_3d_max_distance(float dist);
   float get_3d_max_distance() const;
-            
+
   AudioSound::SoundStatus status() const;
 
   virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
@@ -189,11 +189,11 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   virtual int get_priority();
   virtual void set_priority(int priority);
-  
+
   bool _active;
   bool _paused;
   float _start_time;
-  
+
   string _finished_event;
 
   // This reference-counting pointer is set to this while the sound is
@@ -225,7 +225,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type(); 
+    init_type();
     return get_class_type();
   }
 

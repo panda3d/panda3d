@@ -132,7 +132,7 @@ class OnscreenGeom(DirectObject, NodePath):
 
     def cget(self, option):
         # Get current configuration setting.
-        # This is for compatability with DirectGui functions
+        # This is for compatibility with DirectGui functions
         getter = eval('self.get' + string.upper(option[0]) + option[1:])
         return getter()
 

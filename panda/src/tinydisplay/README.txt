@@ -88,7 +88,7 @@ texture objects.
   features from TinyGL.
 
 - C sources for GCC on 32/64 bit architectures. It has been tested
-succesfully on x86-Linux and MS Windows.
+successfully on x86-Linux and MS Windows.
 
 Examples:
 ---------

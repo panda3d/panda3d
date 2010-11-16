@@ -70,7 +70,7 @@ round_up_to_page_size(size_t size) const {
 //     Function: MemoryHook::inflate_size
 //       Access: Private, Static
 //  Description: Increments the amount of requested size as necessary
-//               to accomodate the extra data we might piggyback on
+//               to accommodate the extra data we might piggyback on
 //               each allocated block.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryHook::

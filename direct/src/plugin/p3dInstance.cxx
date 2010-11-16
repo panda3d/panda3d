@@ -2441,7 +2441,7 @@ handle_notify_request(const string &message) {
     _main_object->set_string_property("status", "starting");
 
   } else if (message == "onwindowopen") {
-    // The process told us that it just succesfully opened its
+    // The process told us that it just successfully opened its
     // window, for the first time.  Hide the splash window.
     _instance_window_opened = true;
     if (_splash_window != NULL) {

@@ -162,7 +162,7 @@ get_proxy_realm() const {
 //               series), this will generally contain the new URL the
 //               server wants us to try.  In many cases, the client
 //               will automatically follow redirects; if these are
-//               succesful the client will return a successful code
+//               successful the client will return a successful code
 //               and get_redirect() will return empty, but get_url()
 //               will return the new, redirected URL.
 ////////////////////////////////////////////////////////////////////
@@ -1007,7 +1007,7 @@ get_bytes_requested() const {
 //               transmission.
 //
 //               Note that simply testing is_download_complete() does
-//               not prove that the requested document was succesfully
+//               not prove that the requested document was successfully
 //               retrieved--you might have just downloaded the "404
 //               not found" stub (for instance) that a server would
 //               provide in response to some error condition.  You

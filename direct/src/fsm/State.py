@@ -173,7 +173,7 @@ class State(DirectObject):
             if fsm.getCurrentState():
                 # made this 'conditional_request()' instead of 'request()' to avoid warning when
                 # loading minigames where rules->frameworkInit transition doesnt exist and you
-                # dont want to add it since it results in hanging the game
+                # don't want to add it since it results in hanging the game
                 fsm.conditional_request((fsm.getInitialState()).getName())
 
             # If it has no current state, I assume this means it

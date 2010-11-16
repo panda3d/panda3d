@@ -44,7 +44,7 @@ wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
                    GraphicsOutput *host):
   WinGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  // dont actually create the window in the constructor.  reason:
+  // don't actually create the window in the constructor.  reason:
   // multi-threading requires panda C++ window object to exist in
   // separate thread from actual API window
 
@@ -709,7 +709,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   if (is_fullscreen()) {
     // CREATE FULLSCREEN BUFFERS
 
-    presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
+    presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we don't care about preserving contents of old frame
     presentation_params->PresentationInterval = (do_sync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
     presentation_params->FullScreen_RefreshRateInHz = display._display_mode.RefreshRate;
 
@@ -1332,7 +1332,7 @@ D3DFMT_to_DepthBits(D3DFORMAT fmt) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
 is_badvidmem_card(D3DADAPTER_IDENTIFIER9 *pDevID) {
-  // dont trust Intel cards since they often use regular memory as vidmem
+  // don't trust Intel cards since they often use regular memory as vidmem
   if (pDevID->VendorId == 0x00008086) {
     return true;
   }

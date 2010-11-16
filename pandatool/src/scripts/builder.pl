@@ -377,7 +377,7 @@ sub archivetree() {
             &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\\testbed %i in (*.pdb *.map) do copy %i ".$archdirname."\\".$dir1."\\bin )","nomsg","DO_LOG","NT cmd");
         }
 
-        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
+        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just don't check retval
         # delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
         # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
 
@@ -517,7 +517,7 @@ sub buildall() {
     }
 
     if($DONT_ARCHIVE_OLD_BUILDS) {
-        &myexecstr("rd /s /q ".$inst_dirs[$treenum],"DO_LOG","NT cmd");  # dont bother checking errors here, probably just some shell has the dir cd'd to
+        &myexecstr("rd /s /q ".$inst_dirs[$treenum],"DO_LOG","NT cmd");  # don't bother checking errors here, probably just some shell has the dir cd'd to
     } else {
         &archivetree($treenum);
     }
@@ -540,7 +540,7 @@ sub buildall() {
     # hopefully there are no extra dirs underneath
 
     # add wintools to dir copy list
-    # dont want to add wintools to global dirstodo, treat it separately
+    # don't want to add wintools to global dirstodo, treat it separately
     unshift(dirstodolist,"wintools");
 
     foreach my $dir1 (@dirstodolist) {

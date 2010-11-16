@@ -55,7 +55,7 @@ PNMImage(const PNMImage &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::Copy Assigment Operator
+//     Function: PNMImage::Copy Assignment Operator
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ is_valid() const {
 //               image.  The new number of channels must be an integer
 //               in the range 1 through 4, inclusive.  This will
 //               allocate and/or deallocate memory as necessary to
-//               accomodate; see set_color_type().
+//               accommodate; see set_color_type().
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_num_channels(int num_channels) {

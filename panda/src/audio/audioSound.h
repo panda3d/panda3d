@@ -27,7 +27,7 @@ class EXPCL_PANDA_AUDIO AudioSound : public TypedReferenceCount {
 PUBLISHED:
   virtual ~AudioSound();
 
-  // For best compatability, set the loop_count,
+  // For best compatibility, set the loop_count,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.

@@ -261,7 +261,7 @@ HTTPClient::
 //  Description: This may be called once, presumably at the beginning
 //               of an application, to initialize OpenSSL's random
 //               seed.  On Windows, it is particularly important to
-//               call this at startup if you are going to be perfoming
+//               call this at startup if you are going to be performing
 //               any https operations or otherwise use encryption,
 //               since the Windows algorithm for getting a random seed
 //               takes 2-3 seconds at startup, but can take 30 seconds

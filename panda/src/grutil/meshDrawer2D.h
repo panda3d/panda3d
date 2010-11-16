@@ -41,10 +41,10 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MeshDrawer2D
-// Description : This class allows the drawing of 2d objects - 
+// Description : This class allows the drawing of 2d objects -
 //               mainly based on quads and rectangles.
-//               Alows clipping and serverl high level UI theme
-//               functions. 
+//               Allows clipping and serverl high level UI theme
+//               functions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GRUTIL MeshDrawer2D : public TypedObject {
 PUBLISHED:
@@ -54,44 +54,44 @@ PUBLISHED:
   INLINE void set_budget(int budget);
   INLINE int get_budget();
   INLINE NodePath get_root();
-  
+
   INLINE void quad_raw(
     LVector3f v1, LVector4f c1, LVector2f uv1,
     LVector3f v2, LVector4f c2, LVector2f uv2,
     LVector3f v3, LVector4f c3, LVector2f uv3,
     LVector3f v4, LVector4f c4, LVector2f uv4);
-  
+
   INLINE void rectangle_raw(
-    float x, float y, float w, float h, 
-    float u, float v, float us, float vs, 
+    float x, float y, float w, float h,
+    float u, float v, float us, float vs,
     LVector4f color);
-  
+
   INLINE void set_clip(float x, float y, float w, float h);
-  
+
   INLINE void rectangle(
-    float x, float y, float w, float h, 
-    float u, float v, float us, float vs, 
+    float x, float y, float w, float h,
+    float u, float v, float us, float vs,
     LVector4f color);
-  
+
   void rectangle_border(
       float x, float y, float w, float h,
       float r, float t, float l, float b,
       float tr, float tt, float tl, float tb,
-      float u, float v, float us, float vs, 
+      float u, float v, float us, float vs,
       LVector4f color);
 
   void rectangle_border_tiled(
       float x, float y, float w, float h,
       float r, float t, float l, float b,
       float tr, float tt, float tl, float tb,
-      float u, float v, float us, float vs, 
+      float u, float v, float us, float vs,
       LVector4f color);
 
   void rectangle_tiled(
-    float x, float y, float w, float h, 
-    float u, float v, float us, float vs, 
-    LVector4f color);              
-                  
+    float x, float y, float w, float h,
+    float u, float v, float us, float vs,
+    LVector4f color);
+
   void begin();
   void end();
 

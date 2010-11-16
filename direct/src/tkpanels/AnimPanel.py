@@ -563,7 +563,7 @@ class ActorControl(Pmw.MegaWidget):
 
     def setPlayRate(self, rate):
         # set play rate on the actor, although for the AnimPanel
-        # purpose we dont use the actor's play rate, but rather
+        # purpose we don't use the actor's play rate, but rather
         # the self.playRate value since we drive the animation
         # playback ourselves
         self['actor'].setPlayRate(eval(rate), self['active'])

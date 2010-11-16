@@ -478,7 +478,7 @@ create_texture(DXScreenData &scrn) {
     } else {
       nassertr((num_color_channels == 3)||(num_color_channels == 4), false);
       // look for compatible 16bit fmts, if none then give up
-      // (dont worry about other bitdepths for 16 bit)
+      // (don't worry about other bitdepths for 16 bit)
       switch(num_alpha_bits) {
       case 0:
         if (num_color_channels == 3) {
@@ -511,7 +511,7 @@ create_texture(DXScreenData &scrn) {
     }
   case 8:
     if (needs_luminance) {
-      // dont bother handling those other 8bit lum fmts like 4-4,
+      // don't bother handling those other 8bit lum fmts like 4-4,
       // since 16 8-8 is usually supported too
       nassertr(num_color_channels == 1, false);
 
@@ -663,7 +663,7 @@ create_texture(DXScreenData &scrn) {
     break;
 
   case Texture::FT_nearest_mipmap_linear:
-    // if we dont have bilinear, do nearest_nearest
+    // if we don't have bilinear, do nearest_nearest
     if (!((filter_caps & D3DPTFILTERCAPS_MIPFPOINT) &&
           (filter_caps & D3DPTFILTERCAPS_MINFLINEAR))) {
       ft = Texture::FT_nearest_mipmap_nearest;
@@ -671,7 +671,7 @@ create_texture(DXScreenData &scrn) {
     break;
 
   case Texture::FT_linear_mipmap_nearest:
-    // if we dont have mip linear, do nearest_nearest
+    // if we don't have mip linear, do nearest_nearest
     if (!(filter_caps & D3DPTFILTERCAPS_MIPFLINEAR)) {
       ft = Texture::FT_nearest_mipmap_nearest;
     }
@@ -905,7 +905,7 @@ create_simple_texture(DXScreenData &scrn) {
 void DXTextureContext8::
 delete_texture() {
   if (_d3d_texture == NULL) {
-    // dont bother printing the msg below, since we already released it.
+    // don't bother printing the msg below, since we already released it.
     return;
   }
 

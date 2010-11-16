@@ -374,7 +374,7 @@ class OnscreenText(DirectObject, NodePath):
             self.textNode.clearFrame()
 
     def configure(self, option=None, **kw):
-        # These is for compatability with DirectGui functions
+        # These is for compatibility with DirectGui functions
         if not self.mayChange:
             print 'OnscreenText.configure: mayChange == 0'
             return
@@ -396,7 +396,7 @@ class OnscreenText(DirectObject, NodePath):
 
     def cget(self, option):
         # Get current configuration setting.
-        # This is for compatability with DirectGui functions
+        # This is for compatibility with DirectGui functions
         getter = eval('self.get' + string.upper(option[0]) + option[1:])
         return getter()
 
