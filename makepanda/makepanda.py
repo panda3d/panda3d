@@ -5312,12 +5312,12 @@ def MakeInstallerOSX():
             os.makedirs("dstroot/" + pkg)
         if os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            if os.path.isdir("dstroot/scripts/" + pkg):
+                cmd += ' --scripts dstroot/scripts/' + pkg
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:
             exit("PackageMaker could not be found!")
-        if os.path.isdir("dstroot/scripts/" + pkg):
-            cmd += ' --scripts dstroot/scripts/' + pkg
         oscmd(cmd)
 
     if os.path.isfile("/tmp/Info_plist"):
