@@ -454,7 +454,6 @@ if (COMPILER=="MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
     if (PkgSkip("PHYSX")==0):
-        DefSymbol("PHYSX", SDK["PHYSXVERSION"], "1")
         LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/PhysXLoader.lib")
         LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/NxCharacter.lib")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
@@ -630,7 +629,6 @@ if (COMPILER=="LINUX"):
             if (sys.platform == "darwin"):
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
     if (PkgSkip("PHYSX")==0):
-        DefSymbol("PHYSX", SDK["PHYSXVERSION"], "1")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")

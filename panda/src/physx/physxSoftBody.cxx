@@ -591,7 +591,7 @@ get_sleep_linear_velocity() const {
   return _ptr->getSleepLinearVelocity();
 }
 
-#ifndef PHYSX281
+#if NX_SDK_VERSION_NUMBER > 281
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSoftBody::set_self_collision_thickness
 //       Access: Published
@@ -641,7 +641,7 @@ get_hard_stretch_limitation_factor() const {
   nassertr(_error_type == ET_ok, 0.0f);
   return ptr()->getHardStretchLimitationFactor();
 }
-#endif // PHYSX281
+#endif // NX_SDK_VERSION_NUMBER > 281
 
 
 

@@ -48,7 +48,7 @@ PUBLISHED:
   void set_group(unsigned int group);
   void set_solver_iterations(unsigned int iterations);
   void set_particle_radius(float radius);
-#ifndef PHYSX281
+#if NX_SDK_VERSION_NUMBER > 281
   void set_self_collision_thickness(float thickness);
   void set_hard_stretch_limitation_factor(float factor);
 #endif
@@ -68,7 +68,7 @@ PUBLISHED:
   float get_particle_radius() const;
   float get_density() const;
   float get_relative_grid_spacing() const;
-#ifndef PHYSX281
+#if NX_SDK_VERSION_NUMBER > 281
   float get_self_collision_thickness() const;
   float get_hard_stretch_limitation_factor() const;
 #endif

@@ -107,10 +107,10 @@
 #define NX_FORCE_FIELD_CUSTOM_KERNEL_EPSILON 97
 #define NX_IMPROVED_SPRING_SOLVER 98
 
-#ifndef PHYSX281
+#if NX_SDK_VERSION_NUMBER > 281
 #define NX_FAST_MASSIVE_BP_VOLUME_DELETION 99
 #define NX_LEGACY_JOINT_DRIVE 100
-#endif /* PHYSX281 */
+#endif /* NX_SDK_VERSION_NUMBER > 281 */
 
 // PhysxActorFlag
 #define NX_AF_DISABLE_COLLISION 1<<0
@@ -383,7 +383,7 @@ PUBLISHED:
     P_force_field_custom_kernel_epsilon     = NX_FORCE_FIELD_CUSTOM_KERNEL_EPSILON,
     P_improved_spring_solver                = NX_IMPROVED_SPRING_SOLVER,
 
-#ifndef PHYSX281
+#if NX_SDK_VERSION_NUMBER > 281
     P_fast_massive_bp_volume_deletion       = NX_FAST_MASSIVE_BP_VOLUME_DELETION,
     P_legacy_joint_drive                    = NX_LEGACY_JOINT_DRIVE,
 #endif

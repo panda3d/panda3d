@@ -1263,7 +1263,7 @@ def GetSdkDir(sdkname, sdkkey = None):
     sdir += "/" + sdkname
 
     # If it does not exist, try the old location.
-    if (sdkkey and not os.path.isdir(sdir)):
+    if (not os.path.isdir(sdir)):
         sdir = "sdks/" + sdir
         if (sys.platform.startswith("linux")):
             sdir += "-linux"
@@ -1271,7 +1271,7 @@ def GetSdkDir(sdkname, sdkkey = None):
         elif (sys.platform == "darwin"):
             sdir += "-osx"
 
-    if (os.path.isdir(sdir)):
+    if (sdkkey and os.path.isdir(sdir)):
         SDK[sdkkey] = sdir
 
     return sdir
@@ -1467,28 +1467,37 @@ def SdkLocateMacOSX(osxtarget=None):
     else:
         SDK["MACOSX"] = ""
 
+# Latest first
 PHYSXVERSIONINFO=[
-    ("PHYSX281","v2.8.1"),
-    ("PHYSX283","v2.8.3"),
     ("PHYSX284","v2.8.4"),
+    ("PHYSX283","v2.8.3"),
+    ("PHYSX281","v2.8.1"),
 ]
 
 def SdkLocatePhysX():
-    for (ver,key) in PHYSXVERSIONINFO:
+    # First check for a physx directory in sdks.
+    dir = GetSdkDir("physx")
+    if (dir and os.path.isdir(dir)):
+        SDK["PHYSX"] = dir
+        SDK["PHYSXLIBS"] = dir + "/lib"
+        return
+    
+    # Try to find a PhysX installation on the system.
+    for (ver, key) in PHYSXVERSIONINFO:
         if (sys.platform == "win32"):
             folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
             for folder in ListRegistryValues(folders):
                 if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
                    folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
                     SDK["PHYSX"] = folder
-                    SDK["PHYSXVERSION"] = ver
+                    return
         elif (sys.platform.startswith("linux")):
             incpath = "/usr/include/PhysX/%s/SDKs" % key
             libpath = "/usr/lib/PhysX/%s" % key
             if (os.path.isdir(incpath) and os.path.isdir(libpath)):
                 SDK["PHYSX"] = incpath
-                SDK["PHYSXVERSION"] = ver
                 SDK["PHYSXLIBS"] = libpath
+                return
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
