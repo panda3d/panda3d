@@ -258,7 +258,7 @@ if (RUNTIME):
             exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
 
 if (sys.platform.startswith("win")):
-    os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
+    os.environ["BISON_SIMPLE"] = GetThirdpartyBase()+"/win-util/bison.simple"
 
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
@@ -777,7 +777,7 @@ def CompileBison(wobj, wsrc, opts):
     wdstc = GetOutputDir()+"/tmp/" + ifile + ".cxx"
     pre = GetValueOption(opts, "BISONPREFIX_")
     if (COMPILER == "MSVC"):
-        oscmd('thirdparty/win-util/bison -y -d -o'+GetOutputDir()+'/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
+        oscmd(GetThirdpartyBase()+'/win-util/bison -y -d -o'+GetOutputDir()+'/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
         CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile+".c")
         CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
     if (COMPILER == "LINUX"):
@@ -798,8 +798,8 @@ def CompileFlex(wobj,wsrc,opts):
     pre = GetValueOption(opts, "BISONPREFIX_")
     dashi = opts.count("FLEXDASHI")
     if (COMPILER == "MSVC"):
-        if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+wdst+" "+wsrc)
-        else:       oscmd("thirdparty/win-util/flex    -P" + pre + " -o"+wdst+" "+wsrc)
+        if (dashi): oscmd(GetThirdpartyBase()+"/win-util/flex -i -P" + pre + " -o"+wdst+" "+wsrc)
+        else:       oscmd(GetThirdpartyBase()+"/win-util/flex    -P" + pre + " -o"+wdst+" "+wsrc)
     if (COMPILER == "LINUX"):
         if (dashi): oscmd("flex -i -P" + pre + " -o"+wdst+" "+wsrc)
         else:       oscmd("flex    -P" + pre + " -o"+wdst+" "+wsrc)
@@ -1878,8 +1878,8 @@ CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
 if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
-if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
-    CopyTree(GetOutputDir()+'/Pmw',         'thirdparty/Pmw')
+if (PkgSkip("PYTHON")==0 and os.path.isdir(GetThirdpartyBase()+"/Pmw")):
+    CopyTree(GetOutputDir()+'/Pmw',         GetThirdpartyBase()+'/Pmw')
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
@@ -4915,7 +4915,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     WriteFile(GetOutputDir()+"/tmp/__init__.py", "")
     psource=os.path.abspath(".")
     panda=os.path.abspath(GetOutputDir())
-    cmd="thirdparty/win-nsis/makensis /V2 "
+    cmd=GetThirdpartyBase()+"/win-nsis/makensis /V2 "
     cmd=cmd+'/DCOMPRESSOR="'+COMPRESSOR+'" '
     cmd=cmd+'/DNAME="'+fullname+'" '
     cmd=cmd+'/DSMDIRECTORY="'+smdirectory+'" '
@@ -4929,7 +4929,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     cmd=cmd+'/DPANDA="'+panda+'" '
     cmd=cmd+'/DPANDACONF="'+panda+'\\etc" '
     cmd=cmd+'/DPSOURCE="'+psource+'" '
-    cmd=cmd+'/DPYEXTRAS="'+psource+'\\thirdparty\\win-extras" '
+    cmd=cmd+'/DPYEXTRAS="'+os.path.abspath(GetThirdpartyBase())+'\\win-extras" '
     cmd=cmd+'"'+psource+'\\direct\\src\\directscripts\\packpanda.nsi"'
     oscmd(cmd)
     os.rename("nsis-output.exe", file)

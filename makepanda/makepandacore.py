@@ -19,6 +19,7 @@ STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
 CUSTOM_OUTPUTDIR=False
+THIRDPARTYBASE=None
 THIRDPARTYDIR=None
 OPTIMIZE="3"
 VERBOSE=False
@@ -768,29 +769,39 @@ def CheckPandaSourceTree():
 ##
 ########################################################################
 
+def GetThirdpartyBase():
+    global THIRDPARTYBASE
+    if (THIRDPARTYBASE != None):
+        return THIRDPARTYBASE
+    
+    THIRDPARTYBASE = "thirdparty"
+    if "MAKEPANDA_THIRDPARTY" in os.environ:
+        THIRDPARTYBASE = os.environ["MAKEPANDA_THIRDPARTY"]
+    return THIRDPARTYBASE
+
 def GetThirdpartyDir():
     global THIRDPARTYDIR
     if (THIRDPARTYDIR != None):
         return THIRDPARTYDIR
     if (sys.platform.startswith("win")):
         if (platform.architecture()[0] == "64bit"):
-            THIRDPARTYDIR="thirdparty/win-libs-vc9-x64/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/win-libs-vc9-x64/"
         else:
-            THIRDPARTYDIR="thirdparty/win-libs-vc9/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/win-libs-vc9/"
         if not os.path.isdir(THIRDPARTYDIR):
-            THIRDPARTYDIR="thirdparty/win-libs-vc9/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/win-libs-vc9/"
     elif (sys.platform == "darwin"):
-        THIRDPARTYDIR="thirdparty/darwin-libs-a/"
+        THIRDPARTYDIR=GetThirdpartyBase()+"/darwin-libs-a/"
     elif (sys.platform.startswith("linux")):
         if (platform.architecture()[0] == "64bit"):
-            THIRDPARTYDIR="thirdparty/linux-libs-x64/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-x64/"
         else:
-            THIRDPARTYDIR="thirdparty/linux-libs-a/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-a/"
     elif (sys.platform.startswith("freebsd")):
         if (platform.architecture()[0] == "64bit"):
-            THIRDPARTYDIR="thirdparty/freebsd-libs-x64/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-x64/"
         else:
-            THIRDPARTYDIR="thirdparty/freebsd-libs-a/"
+            THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-a/"
     else:
         print GetColor("red") + "WARNING:" + GetColor("Unsupported platform: " + sys.platform)
     return THIRDPARTYDIR
@@ -1251,7 +1262,11 @@ def GetSdkDir(sdkname, sdkkey = None):
     # Returns the default SDK directory. If it exists,
     # and sdkkey is not None, it is put in SDK[sdkkey].
     # Note: return value may not be an existing path.
-    sdir = "sdks"
+    sdkbase = "sdks"
+    if "MAKEPANDA_SDKS" in os.environ:
+        sdkbase = os.environ["MAKEPANDA_SDKS"]
+    
+    sdir = sdkbase[:]
     if (sys.platform.startswith("win")):
         sdir += "/win"
         sdir += platform.architecture()[0][:2]
@@ -1264,7 +1279,7 @@ def GetSdkDir(sdkname, sdkkey = None):
 
     # If it does not exist, try the old location.
     if (not os.path.isdir(sdir)):
-        sdir = "sdks/" + sdir
+        sdir = sdkbase + "/" + sdir
         if (sys.platform.startswith("linux")):
             sdir += "-linux"
             sdir += platform.architecture()[0][:2]
@@ -1363,7 +1378,7 @@ def SdkLocateMax():
 def SdkLocatePython(force_use_sys_executable = False):
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32" and not force_use_sys_executable):
-            SDK["PYTHON"] = "thirdparty/win-python"
+            SDK["PYTHON"] = GetThirdpartyBase()+"/win-python"
             if (GetOptimize() <= 2):
                 SDK["PYTHON"] += "-dbg"
             if (platform.architecture()[0] == "64bit" and os.path.isdir(SDK["PYTHON"] + "-x64")):
@@ -1645,10 +1660,10 @@ def LibDirectory(opt, dir):
     LIBDIRECTORIES.append((opt, dir))
 
 def LibName(opt, name):
-    #check to see if the lib file actually exists for the thrid party library given
-    #are we a thrid party library?
+    # Check to see if the lib file actually exists for the thirdparty library given
+    # Are we a thirdparty library?
     if name.startswith("thirdparty"):
-        #does this lib exists
+        # Does this lib exist?
         if not os.path.exists(name):
             PkgDisable(opt)
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
