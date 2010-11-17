@@ -17,34 +17,23 @@
 
 
 // Platform-specific defines
-#ifdef WIN32
-#if _WIN64 || __amd64__
-#define NX64 1
-#else
-#define NX32 1
+#if NATIVE_WORDSIZE == 64
+#define NX64
 #endif
+
+#if NATIVE_WORDSIZE == 32
+#define NX32
 #endif
 
 #ifdef IS_LINUX
 #define LINUX 1
-#ifdef _LP64
-#define NX64 1
-#else
-#define NX32 1
-#endif
 #define CORELIB 1
 #define NX_DISABLE_FLUIDS 1
 #define NX_DISABLE_HARDWARE 1
 #endif
 
-#ifdef IS_FREEBSD
-#endif
 
-#ifdef IS_OSX
-#endif
-
-
-// Undefine min and max before ay PhysX headers get included
+// Undefine min and max before any PhysX headers get included
 #undef min
 #undef max
 

@@ -636,8 +636,12 @@ if (COMPILER=="LINUX"):
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
         LibDirectory("PHYSX", SDK["PHYSXLIBS"])
-        LibName("PHYSX", "-lPhysXLoader")
-        LibName("PHYSX", "-lNxCharacter")
+        if (sys.platform == "darwin"):
+            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCooking.a")
+            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCore.a")
+        else:
+            LibName("PHYSX", "-lPhysXLoader")
+            LibName("PHYSX", "-lNxCharacter")
 
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
@@ -3349,7 +3353,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX']
+  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOPPC']
   TargetAdd('physx_composite.obj', opts=OPTS, input='physx_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
@@ -3361,7 +3365,7 @@ if (PkgSkip("PHYSX")==0):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOPPC']
   TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
 
   TargetAdd('libpandaphysx_module.obj', input='libpandaphysx.in')
@@ -3373,7 +3377,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('libpandaphysx.dll', input='physx_composite.obj')
   TargetAdd('libpandaphysx.dll', input='libpandaphysx_igate.obj')
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX'])
+  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOPPC'])
 
 #
 # DIRECTORY: panda/src/physics/
