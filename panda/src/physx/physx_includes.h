@@ -33,7 +33,6 @@
 #define NX_DISABLE_HARDWARE 1
 #if NX_SDK_VERSION_NUMBER <= 281
 // Defining this in 2.8.3.3 yields a crash.
-#error NX_SDK_VERSION_NUMBER
 #define NX_DISABLE_FLUIDS 1
 #endif
 #endif
