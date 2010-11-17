@@ -11,7 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \
-    config_physx.h \
+    config_physx.h physx_includes.h \
     physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
     physxBodyDesc.I physxBodyDesc.h \
@@ -265,7 +265,7 @@
     physxWheelShapeDesc.cxx \
 
   #define INSTALL_HEADERS \
-    config_physx.h \
+    config_physx.h physx_includes.h \
     physxActor.I physxActor.h \
     physxActorDesc.I physxActorDesc.h \
     physxBodyDesc.I physxBodyDesc.h \
