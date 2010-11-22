@@ -844,6 +844,15 @@ class Freezer:
         self.mf = PandaModuleFinder(excludes = excludeDict.keys())
 
         # Attempt to import the explicit modules into the modulefinder.
+
+        # First, ensure the includes are sorted in order so that
+        # packages appear before the modules they contain.  This
+        # resolves potential ordering issues, especially with modules
+        # that are discovered by filename rather than through import
+        # statements.
+        includes.sort(key = self.__sortModuleKey)
+
+        # Now walk through the list and import them all.
         for mdef in includes:
             try:
                 self.__loadModule(mdef)
@@ -893,6 +902,22 @@ class Freezer:
         if missing:
             missing.sort()
             print "There are some missing modules: %r" % missing
+
+    def __sortModuleKey(self, mdef):
+        """ A sort key function to sort a list of mdef's into order,
+        primarily to ensure that packages proceed their modules. """
+
+        if mdef.moduleName:
+            # If we have a moduleName, the key consists of the split
+            # tuple of packages names.  That way, parents always sort
+            # before children.
+            return ('a', mdef.moduleName.split('.'))
+        else:
+            # If we don't have a moduleName, the key doesn't really
+            # matter--we use filename--but we start with 'b' to ensure
+            # that all of non-named modules appear following all of
+            # the named modules.
+            return ('b', mdef.filename)
 
     def __loadModule(self, mdef):
         """ Adds the indicated module to the modulefinder. """
