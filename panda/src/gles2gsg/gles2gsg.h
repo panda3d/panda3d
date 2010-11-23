@@ -49,6 +49,8 @@
   #include <GLES2/gl2ext.h>
 #endif
 
+#include "panda_esgl2ext.h" 
+
 // This helps to keep the source clean of hundreds of #ifdefs.
 typedef char GLchar;
 #define GL_RENDERBUFFER_EXT GL_RENDERBUFFER
