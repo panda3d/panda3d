@@ -41,8 +41,13 @@
   #define OPENGLES_2
 #endif
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#ifdef IS_OSX
+  #include <OpenGLES/ES2/gl.h>
+  #include <OpenGLES/ES2/glext.h>
+#else
+  #include <GLES2/gl2.h>
+  #include <GLES2/gl2ext.h>
+#endif
 
 // This helps to keep the source clean of hundreds of #ifdefs.
 typedef char GLchar;
