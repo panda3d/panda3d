@@ -70,6 +70,7 @@ generate_block(unsigned short mx,
   // Create vertex data and writers
   PT(GeomVertexData) vdata = new GeomVertexData(_root.get_name(),
                    GeomVertexFormat::register_format(format), Geom::UH_stream);
+  vdata->set_num_rows((_block_size + 1) * (_block_size + 1));
   GeomVertexWriter cwriter;
   if (_has_color_map) {
     cwriter=GeomVertexWriter(vdata, "color"  );
