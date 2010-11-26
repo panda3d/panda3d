@@ -659,35 +659,32 @@ read_args() {
   pifstream proc("/proc/curproc/cmdline");
   if (proc.fail()) {
     cerr << "Cannot read /proc/curproc/cmdline; command-line arguments unavailable to config.\n";
-    return;
-  }
 #else
   pifstream proc("/proc/self/cmdline");
   if (proc.fail()) {
     cerr << "Cannot read /proc/self/cmdline; command-line arguments unavailable to config.\n";
-    return;
-  }
 #endif
+  } else {
+    int ch = proc.get();
+    int index = 0;
+    while (!proc.eof() && !proc.fail()) {
+      string arg;
 
-  int ch = proc.get();
-  int index = 0;
-  while (!proc.eof() && !proc.fail()) {
-    string arg;
+      while (!proc.eof() && !proc.fail() && ch != '\0') {
+        arg += (char)ch;
+        ch = proc.get();
+      }
 
-    while (!proc.eof() && !proc.fail() && ch != '\0') {
-      arg += (char)ch;
+      if (index == 0) {
+        if (_binary_name.empty())
+          _binary_name = arg;
+      } else {
+        _args.push_back(arg);
+      }
+      index++;
+
       ch = proc.get();
     }
-
-    if (index == 0) {
-      if (_binary_name.empty())
-        _binary_name = arg;
-    } else {
-      _args.push_back(arg);
-    }
-    index++;
-
-    ch = proc.get();
   }
 #endif
 
