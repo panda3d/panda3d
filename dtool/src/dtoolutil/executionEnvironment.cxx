@@ -44,6 +44,9 @@
 #ifdef IS_FREEBSD
 extern char **environ;
 
+// This is for Link_map.
+#include <link.h>
+
 // This is for sysctl.
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -464,6 +467,9 @@ read_environment_variables() {
 void ExecutionEnvironment::
 read_args() {
 
+  // First, we need to fill in _dtool_name.  This contains
+  // the full path to the p3dtool library.
+
 #ifdef WIN32_VC
 #ifdef _DEBUG
   HMODULE dllhandle = GetModuleHandle("libp3dtool_d.dll");
@@ -482,31 +488,9 @@ read_args() {
   }
 #endif
 
-#if defined(HAVE_PROC_SELF_MAPS) || defined(HAVE_PROC_CURPROC_MAP)
-  // This is how you tell whether or not libdtool.so is loaded,
-  // and if so, where it was loaded from.
-#ifdef HAVE_PROC_CURPROC_MAP
-  pifstream maps("/proc/curproc/map");
-#else
-  pifstream maps("/proc/self/maps");
-#endif
-  while (!maps.fail() && !maps.eof()) {
-    char buffer[PATH_MAX];
-    buffer[0] = 0;
-    maps.getline(buffer, PATH_MAX);
-    char *tail = strrchr(buffer, '/');
-    char *head = strchr(buffer, '/');
-    if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                      || strcmp(tail, "/libp3dtool.dylib") == 0
-                      || strcmp(tail, "/libdtool.dylib") == 0)) {
-      _dtool_name = head;
-    }
-  }
-  maps.close();
-#endif
-
-#ifdef __APPLE__
+#if defined(__APPLE__)
   // And on OSX we don't have /proc/self/maps, but some _dyld_* functions.
+
   if (_dtool_name.empty()) {
     uint32_t ic = _dyld_image_count();
     for (uint32_t i = 0; i < ic; ++i) {
@@ -521,29 +505,63 @@ read_args() {
   }
 #endif
 
-#ifdef WIN32_VC
-  static const DWORD buffer_size = 1024;
-  char buffer[buffer_size];
-  DWORD size = GetModuleFileName(NULL, buffer, buffer_size);
-  if (size != 0) {
-    Filename tmp = Filename::from_os_specific(string(buffer, size));
-    tmp.make_true_case();
-    _binary_name = tmp;
-  }
-#endif  // WIN32_VC
+#if defined(IS_FREEBSD)
+  // On FreeBSD, we can use dlinfo to get the linked libraries.
 
-#if defined(HAVE_PROC_SELF_EXE) || defined(HAVE_PROC_CURPROC_FILE)
-  // This is more reliable than using (argc,argv), so it given precedence.
-  if (_binary_name.empty()) {
-    char readlinkbuf[PATH_MAX];
-#ifdef HAVE_PROC_CURPROC_FILE
-    int pathlen = readlink("/proc/curproc/file",readlinkbuf,PATH_MAX-1);
-#else
-    int pathlen = readlink("/proc/self/exe",readlinkbuf,PATH_MAX-1);
+  if (_dtool_name.empty()) {
+    Link_map *map;
+    dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+
+    while (map != NULL) {
+      char *tail = strrchr(map->l_name, '/');
+      char *head = strchr(map->l_name, '/');
+      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
+                        || strcmp(tail, "/libp3dtool.so") == 0
+                        || strcmp(tail, "/libdtool.so") == 0)) {
+        _dtool_name = head;
+      }
+      map = map->l_next;
+    }
+  }
 #endif
-    if (pathlen > 0) {
-      readlinkbuf[pathlen] = 0;
-      _binary_name = readlinkbuf;
+
+#if defined(HAVE_PROC_SELF_MAPS) || defined(HAVE_PROC_CURPROC_MAP)
+  // Some operating systems provide a file in the /proc filesystem.
+
+  if (_dtool_name.empty()) {
+#ifdef HAVE_PROC_CURPROC_MAP
+    pifstream maps("/proc/curproc/map");
+#else
+    pifstream maps("/proc/self/maps");
+#endif
+    while (!maps.fail() && !maps.eof()) {
+      char buffer[PATH_MAX];
+      buffer[0] = 0;
+      maps.getline(buffer, PATH_MAX);
+      char *tail = strrchr(buffer, '/');
+      char *head = strchr(buffer, '/');
+      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
+                        || strcmp(tail, "/libp3dtool.so") == 0
+                        || strcmp(tail, "/libdtool.so") == 0)) {
+        _dtool_name = head;
+      }
+    }
+    maps.close();
+  }
+#endif
+
+  // Now, we need to fill in _binary_name.  This contains
+  // the full path to the currently running executable.
+
+#ifdef WIN32_VC
+  if (_binary_name.empty()) {
+    static const DWORD buffer_size = 1024;
+    char buffer[buffer_size];
+    DWORD size = GetModuleFileName(NULL, buffer, buffer_size);
+    if (size != 0) {
+      Filename tmp = Filename::from_os_specific(string(buffer, size));
+      tmp.make_true_case();
+      _binary_name = tmp;
     }
   }
 #endif
@@ -560,19 +578,44 @@ read_args() {
   }
 #endif
 
-#if defined(HAVE_GLOBAL_ARGV)
-  int argc = GLOBAL_ARGC;
+#if defined(IS_FREEBSD)
+  // In FreeBSD, we can use sysctl to determine the pathname.
 
-  if (_binary_name.empty() && argc > 0) {
-    _binary_name = GLOBAL_ARGV[0];
-    // This really needs to be resolved against PATH.
+  if (_binary_name.empty()) {
+    size_t bufsize = 4096;
+    char buffer[4096];
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+    mib[3] = getpid();
+    if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
+      perror("sysctl");
+    } else {
+      _binary_name = buffer;
+    }
   }
+#endif
 
-  for (int i = 1; i < argc; i++) {
-    _args.push_back(GLOBAL_ARGV[i]);
+#if defined(HAVE_PROC_SELF_EXE) || defined(HAVE_PROC_CURPROC_FILE)
+  // Some operating systems provide a symbolic link to the executable
+  // in the /proc filesystem.  Use readlink to resolve that link.
+
+  if (_binary_name.empty()) {
+    char readlinkbuf [PATH_MAX];
+#ifdef HAVE_PROC_CURPROC_FILE
+    int pathlen = readlink("/proc/curproc/file", readlinkbuf, PATH_MAX - 1);
+#else
+    int pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX - 1);
+#endif
+    if (pathlen > 0) {
+      readlinkbuf[pathlen] = 0;
+      _binary_name = readlinkbuf;
+    }
   }
+#endif
 
-#elif defined(IS_FREEBSD)
+  // Next we need to fill in _args, which is a vector containing
+  // the command-line arguments that the executable was invoked with.
+
+#if defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
   size_t bufsize = 4096;
@@ -591,6 +634,18 @@ read_args() {
       int newidx = strlen(buffer + idx);
       idx += newidx + 1;
     }
+  }
+
+#elif defined(HAVE_GLOBAL_ARGV)
+  int argc = GLOBAL_ARGC;
+
+  if (_binary_name.empty() && argc > 0) {
+    _binary_name = GLOBAL_ARGV[0];
+    // This really needs to be resolved against PATH.
+  }
+
+  for (int i = 1; i < argc; i++) {
+    _args.push_back(GLOBAL_ARGV[i]);
   }
 
 #elif defined(HAVE_PROC_SELF_CMDLINE) || defined(HAVE_PROC_CURPROC_CMDLINE)
@@ -633,6 +688,24 @@ read_args() {
     index++;
 
     ch = proc.get();
+  }
+#endif
+
+#ifndef WIN32
+  // Try to use realpath to get cleaner paths.
+
+  if (!_binary_name.empty()) {
+    char newpath [PATH_MAX + 1];
+    if (realpath(_binary_name.c_str(), newpath) != NULL) {
+      _binary_name = newpath;
+    }
+  }
+
+  if (!_dtool_name.empty()) {
+    char newpath [PATH_MAX + 1];
+    if (realpath(_dtool_name.c_str(), newpath) != NULL) {
+      _dtool_name = newpath;
+    }
   }
 #endif
 
