@@ -275,3 +275,4 @@ INLINE void PortalNode::set_max_depth(int value) {
 INLINE int PortalNode::get_max_depth() {
   return _max_depth;
 }
+
