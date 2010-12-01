@@ -6,17 +6,20 @@ REM and the python interpreter.  If we can find both, then
 REM run 'makepanda'.
 REM
 
+set thirdparty=thirdparty
+if defined MAKEPANDA_THIRDPARTY set thirdparty=%MAKEPANDA_THIRDPARTY%
+
 if not exist makepanda\makepanda.py goto :missing1
 if %PROCESSOR_ARCHITECTURE% == AMD64 goto :AMD64
 
-if not exist thirdparty\win-python\python.exe goto :missing2
-thirdparty\win-python\python.exe makepanda\makepanda.py %*
+if not exist %thirdparty%\win-python\python.exe goto :missing2
+%thirdparty%\win-python\python.exe makepanda\makepanda.py %*
 if errorlevel 1 if x%1 == x--slavebuild exit 1
 goto done
 
 :AMD64
-if not exist thirdparty\win-python-x64\python.exe goto :missing2
-thirdparty\win-python-x64\python.exe makepanda\makepanda.py %*
+if not exist %thirdparty%\win-python-x64\python.exe goto :missing2
+%thirdparty%\win-python-x64\python.exe makepanda\makepanda.py %*
 if errorlevel 1 if x%1 == x--slavebuild exit 1
 goto done
 

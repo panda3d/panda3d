@@ -6,9 +6,12 @@ REM and the python interpreter.  If we can find both, then
 REM run 'makedocs'.
 REM
 
+set thirdparty=thirdparty
+if defined MAKEPANDA_THIRDPARTY set thirdparty=%MAKEPANDA_THIRDPARTY%
+
 if not exist makepanda\makedocs.py goto :missing1
-if not exist thirdparty\win-python\python.exe goto :missing2
-thirdparty\win-python\python.exe makepanda\makedocs.py %*
+if not exist %thirdparty%\win-python\python.exe goto :missing2
+%thirdparty%\win-python\python.exe makepanda\makedocs.py %*
 goto done
 
 :missing1
