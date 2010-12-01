@@ -1662,12 +1662,17 @@ def LibDirectory(opt, dir):
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
     # Are we a thirdparty library?
-    if name.startswith("thirdparty"):
+    if name.startswith(GetThirdpartyDir()):
         # Does this lib exist?
         if not os.path.exists(name):
-            PkgDisable(opt)
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
-            return
+            if (opt in PkgListGet()):
+                print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower())
+                PkgDisable(opt)
+                return
+            else:
+                print "%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower())
+                exit()
     LIBNAMES.append((opt, name))
 
 def DefSymbol(opt, sym, val):
