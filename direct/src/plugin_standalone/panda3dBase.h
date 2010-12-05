@@ -89,6 +89,7 @@ protected:
   bool _reporting_download;
   bool _enable_security;
   bool _console_environment;
+  bool _prepend_filename_to_args;
 
   typedef pset<P3D_instance *> Instances;
   Instances _instances;

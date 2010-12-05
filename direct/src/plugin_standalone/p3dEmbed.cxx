@@ -28,6 +28,10 @@ P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
   // Since the Panda3DBase constructor no longer assigns _root_dir, we
   // have to do it here.
   _root_dir = find_root_dir();
+  
+  // We should leave the arguments intact, just pass them
+  // 1:1 as we've received them.
+  _prepend_filename_to_args = false;
 }
 
 ////////////////////////////////////////////////////////////////////

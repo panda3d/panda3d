@@ -72,6 +72,8 @@ Panda3DBase(bool console_environment) {
   // Seed the lame random number generator in rand(); we use it to
   // select a mirror for downloading.
   srand((unsigned int)time(NULL));
+  
+  _prepend_filename_to_args = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +381,9 @@ create_instance(const string &p3d, bool start_instance,
 
   // Build up the argument list, beginning with the p3d_filename.
   pvector<const char *> argv;
-  argv.push_back(os_p3d_filename.c_str());
+  if (_prepend_filename_to_args) {
+    argv.push_back(os_p3d_filename.c_str());
+  }
   for (int i = 0; i < num_args; ++i) {
     argv.push_back(args[i]);
   }
