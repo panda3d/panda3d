@@ -1925,6 +1925,9 @@ cg_get_profile_from_header(ShaderCaps& caps) {
       if ((int)buf.find("gp4vp") >= 0)
         caps._active_vprofile = cgGetProfile("gp4vp");
 
+      if ((int)buf.find("gp5vp") >= 0)
+        caps._active_vprofile = cgGetProfile("gp5vp");
+
       if ((int)buf.find("glslv") >= 0)
         caps._active_vprofile = cgGetProfile("glslv");
 
@@ -1955,9 +1958,15 @@ cg_get_profile_from_header(ShaderCaps& caps) {
       if ((int)buf.find("vs_4_0") >= 0)
         caps._active_vprofile = cgGetProfile("vs_4_0");
 
+      if ((int)buf.find("vs_5_0") >= 0)
+        caps._active_vprofile = cgGetProfile("vs_5_0");
+
       // Scan the line for known cg2 fragment program profiles
       if ((int)buf.find("gp4fp") >= 0)
         caps._active_fprofile = cgGetProfile("gp4fp");
+
+      if ((int)buf.find("gp5fp") >= 0)
+        caps._active_fprofile = cgGetProfile("gp5fp");
 
       if ((int)buf.find("glslf") >= 0)
         caps._active_fprofile = cgGetProfile("glslf");
@@ -1995,15 +2004,24 @@ cg_get_profile_from_header(ShaderCaps& caps) {
       if ((int)buf.find("ps_4_0") >= 0)
         caps._active_fprofile = cgGetProfile("ps_4_0");
 
+      if ((int)buf.find("ps_5_0") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_5_0");
+
       // Scan the line for known cg2 geometry program profiles
       if ((int)buf.find("gp4gp") >= 0)
         caps._active_gprofile = cgGetProfile("gp4gp");
+
+      if ((int)buf.find("gp5gp") >= 0)
+        caps._active_gprofile = cgGetProfile("gp5gp");
 
       if ((int)buf.find("glslg") >= 0)
         caps._active_gprofile = cgGetProfile("glslg");
 
       if ((int)buf.find("gs_4_0") >= 0)
         caps._active_gprofile = cgGetProfile("gs_4_0");
+
+      if ((int)buf.find("gs_5_0") >= 0)
+        caps._active_gprofile = cgGetProfile("gs_5_0");
     }
   } while(_parse > lastParse);
 
