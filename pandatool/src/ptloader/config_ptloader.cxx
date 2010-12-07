@@ -27,6 +27,7 @@
 #include "lwoToEggConverter.h"
 #include "dxfToEggConverter.h"
 #include "vrmlToEggConverter.h"
+#include "objToEggConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
 
@@ -89,6 +90,9 @@ init_libptloader() {
   init_libxfile();
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
+
+  ObjToEggConverter *obj = new ObjToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(obj));
 
 #ifdef HAVE_FCOLLADA
   DAEToEggConverter *dae = new DAEToEggConverter;
