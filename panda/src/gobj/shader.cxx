@@ -1849,7 +1849,10 @@ Shader(CPT(ShaderFile) filename, CPT(ShaderFile) text, const ShaderLanguage &lan
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
     _default_caps._ultimate_vprofile = cgGetProfile("glslv");
     _default_caps._ultimate_fprofile = cgGetProfile("glslf");
-    _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
+    _default_caps._ultimate_gprofile = cgGetProfile("glslg");
+    if (_default_caps._ultimate_gprofile == CG_PROFILE_UNKNOWN) {
+      _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
+    }
   }
 #endif
   
