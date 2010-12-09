@@ -2066,6 +2066,8 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/mayaegg')
     CopyAllHeaders('pandatool/src/maxegg')
     CopyAllHeaders('pandatool/src/maxprogs')
+    CopyAllHeaders('pandatool/src/objegg')
+    CopyAllHeaders('pandatool/src/objprogs')
     CopyAllHeaders('pandatool/src/vrml')
     CopyAllHeaders('pandatool/src/vrmlegg')
     CopyAllHeaders('pandatool/src/xfile')
@@ -4023,6 +4025,28 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg2dxf.exe', opts=['ADVAPI',  'FFTW'])
 
 #
+# DIRECTORY: pandatool/src/objegg/
+#
+
+if (PkgSkip("PANDATOOL")==0):
+  OPTS=['DIR:pandatool/src/objegg']
+  TargetAdd('objegg_objToEggConverter.obj', opts=OPTS, input='objToEggConverter.cxx')
+  TargetAdd('objegg_config_objegg.obj', opts=OPTS, input='config_objegg.cxx')
+  TargetAdd('libobjegg.lib', input='objegg_objToEggConverter.obj')
+  TargetAdd('libobjegg.lib', input='objegg_config_objegg.obj')
+
+#
+# DIRECTORY: pandatool/src/objprogs/
+#
+
+if (PkgSkip("PANDATOOL")==0):
+  OPTS=['DIR:pandatool/src/objprogs']
+  TargetAdd('obj2egg_objToEgg.obj', opts=OPTS, input='objToEgg.cxx')
+  TargetAdd('obj2egg.exe', input='obj2egg_objToEgg.obj')
+  TargetAdd('obj2egg.exe', input='libobjegg.lib')
+  TargetAdd('obj2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+
+#
 # DIRECTORY: pandatool/src/palettizer/
 #
 
@@ -4429,6 +4453,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='liblwo.lib')
     TargetAdd('libp3ptloader.dll', input='libdxfegg.lib')
     TargetAdd('libp3ptloader.dll', input='libdxf.lib')
+    TargetAdd('libp3ptloader.dll', input='libobjegg.lib')
     TargetAdd('libp3ptloader.dll', input='libvrmlegg.lib')
     TargetAdd('libp3ptloader.dll', input='libpvrml.lib')
     TargetAdd('libp3ptloader.dll', input='libxfileegg.lib')
@@ -4599,6 +4624,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='liblwo.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libdxfegg.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libdxf.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libobjegg.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libvrmlegg.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpvrml.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libxfileegg.lib')
