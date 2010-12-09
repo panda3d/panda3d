@@ -104,6 +104,9 @@ Options:
   -A "Your Company"
      Full name of the author of the application.
 
+  -e "you@your_company.com"
+     E-mail address of the maintainer of the application.
+
   -h
      Display this help
 
@@ -133,10 +136,11 @@ licensename = ""
 licensefile = Filename()
 authorid = ""
 authorname = ""
+authoremail = ""
 includeRequires = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:e:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -166,7 +170,9 @@ for opt, arg in opts:
         authorid = arg.strip()
     elif opt == '-A':
         authorname = arg.strip()
-        
+    elif opt == '-e':
+        authoremail = arg.strip()
+
     elif opt == '-h':
         usage(0)
     else:
@@ -236,6 +242,7 @@ elif deploy_mode == 'installer':
     i.licensefile = licensefile
     i.authorid = authorid
     i.authorname = authorname
+    i.authoremail = authoremail
     i.includeRequires = includeRequires
     
     if currentPlatform:

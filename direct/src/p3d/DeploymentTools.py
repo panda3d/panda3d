@@ -169,6 +169,7 @@ class Installer:
         self.licensename = ""
         self.authorid = "org.panda3d"
         self.authorname = ""
+        self.authoremail = ""
         self.licensefile = Filename()
         self.standalone = Standalone(p3dfile, tokens)
         self.http = self.standalone.http
@@ -374,6 +375,7 @@ class Installer:
         controlfile = open(Filename(tempdir, "control").toOsSpecific(), "w")
         print >>controlfile, "Package: %s" % self.shortname.lower()
         print >>controlfile, "Version: %s" % self.version
+        print >>controlfile, "Maintainer: %s <%s>" % (self.authorname, self.authoremail)
         print >>controlfile, "Section: games"
         print >>controlfile, "Priority: optional"
         print >>controlfile, "Architecture: %s" % arch
