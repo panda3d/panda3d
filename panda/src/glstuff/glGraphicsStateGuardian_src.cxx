@@ -5174,7 +5174,7 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
 ////////////////////////////////////////////////////////////////////
 string CLP(GraphicsStateGuardian)::
 get_error_string(GLenum error_code) {
-#ifdef HAVE_GLU
+#if defined(HAVE_GLU) && !defined(OPENGLES)
   const GLubyte *error_string = GLUP(ErrorString)(error_code);
   if (error_string != (const GLubyte *)NULL) {
     return string((const char *)error_string);
