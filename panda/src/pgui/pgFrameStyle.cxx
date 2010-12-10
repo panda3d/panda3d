@@ -644,7 +644,12 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
               min(_color[2] * top_color_scale, 1.0f),
               _color[3]);
 
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format;
+  if (has_texture()) {
+    format = GeomVertexFormat::get_v3cpt2();
+  } else {
+    format = GeomVertexFormat::get_v3cp();
+  }
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
   
@@ -716,17 +721,66 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   strip->close_primitive();
   
   strip->set_shade_model(Geom::SM_flat_last_vertex);
-  
+
+  if (has_texture()) {
+    // Generate UV's.
+    float left = uv_range[0];
+    float right = uv_range[1];
+    float bottom = uv_range[2];
+    float top = uv_range[3];
+
+    float cx = (left + right) * 0.5;
+    float cy = (top + bottom) * 0.5;
+
+    float mid_left = min(left + 0.5f * _width[0], cx);
+    float mid_right = max(right - 0.5f * _width[0], cx);
+    float mid_bottom = min(bottom + 0.5f * _width[1], cy);
+    float mid_top = max(top - 0.5f * _width[1], cy);
+
+    float inner_left = min(left + _width[0], cx);
+    float inner_right = max(right - _width[0], cx);
+    float inner_bottom = min(bottom + _width[1], cy);
+    float inner_top = max(top - _width[1], cy);
+
+    GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2f(mid_right, mid_bottom);
+    texcoord.add_data2f(left, bottom);
+    texcoord.add_data2f(mid_left, mid_bottom);
+    texcoord.add_data2f(left, top);
+    texcoord.add_data2f(mid_left, mid_top);
+    texcoord.add_data2f(right, top);
+    texcoord.add_data2f(mid_right, mid_top);
+
+    texcoord.add_data2f(mid_right, mid_bottom);
+    texcoord.add_data2f(inner_right, inner_bottom);
+    texcoord.add_data2f(mid_left, mid_bottom);
+    texcoord.add_data2f(inner_left, inner_bottom);
+    texcoord.add_data2f(mid_left, mid_top);
+    texcoord.add_data2f(inner_left, inner_top);
+    texcoord.add_data2f(mid_right, mid_top);
+    texcoord.add_data2f(inner_right, inner_top);
+
+    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2f(right, top);
+    texcoord.add_data2f(mid_right, mid_bottom);
+    texcoord.add_data2f(mid_right, mid_top);
+    texcoord.add_data2f(inner_right, inner_bottom);
+    texcoord.add_data2f(inner_right, inner_top);
+    texcoord.add_data2f(inner_left, inner_bottom);
+    texcoord.add_data2f(inner_left, inner_top);
+  }
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
   CPT(RenderState) state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
                                              ColorAttrib::make_vertex());
+  if (has_texture()) {
+    state = state->set_attrib(TextureAttrib::make(get_texture()));
+  }
   gnode->add_geom(geom, state);
-  
-  // For now, beveled and grooved geoms don't support textures.  Easy
-  // to add if anyone really wants this.
-  
+
   return gnode.p();
 }
 
