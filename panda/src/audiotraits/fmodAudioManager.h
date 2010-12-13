@@ -184,7 +184,7 @@ private:
   
  private:
   
-  static FMOD::System *_system; 
+  static FMOD::System *_system;
   static pset<FmodAudioManager *> _all_managers;
 
   static bool _system_is_valid;
@@ -192,6 +192,8 @@ private:
   static float _distance_factor;
   static float _doppler_factor;
   static float _drop_off_factor;
+
+  FMOD::ChannelGroup *_channelgroup;
 
   FMOD_VECTOR _position;
   FMOD_VECTOR _velocity;

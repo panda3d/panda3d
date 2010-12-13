@@ -171,6 +171,9 @@ FmodAudioManager() {
     _dlsname = dls_pathname.to_os_specific();
     _midi_info.dlsname = _dlsname.c_str();
   }
+
+  result = _system->createChannelGroup("UserGroup", &_channelgroup);
+  fmod_audio_errcheck("_system->createChannelGroup()", result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -342,41 +345,34 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
 void FmodAudioManager::
 update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
   const FilterProperties::ConfigVector &conf = config->get_config();
-  FMOD_RESULT res1,res2,res3,res4,res5;
+  FMOD_RESULT result;
+
   while (1) {
     int numinputs;
-    res1 = head->getNumInputs(&numinputs);
+    result = head->getNumInputs(&numinputs);
+    fmod_audio_errcheck("head->getNumInputs()", result);
     if (numinputs != 1) {
       break;
     }
     FMOD::DSP *prev;
-    res2 = head->getInput(0, &prev, NULL);
+    result = head->getInput(0, &prev, NULL);
+    fmod_audio_errcheck("head->getInput()", result);
     void *userdata;
-    res3 = prev->getUserData(&userdata);
+    result = prev->getUserData(&userdata);
+    fmod_audio_errcheck("prev->getUserData()", result);
     if (userdata != USER_DSP_MAGIC) {
       break;
     }
-    res4 = prev->remove();
-    res5 = prev->release();
-    if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||(res5!=FMOD_OK)) {
-      audio_error("Could not clean up DSP chain.");
-      return;
-    }
+    result = prev->remove();
+    fmod_audio_errcheck("prev->remove()", result);
+    result = prev->release();
+    fmod_audio_errcheck("prev->release()", result);
   }
-  
+
   for (int i=0; i<(int)(conf.size()); i++) {
     FMOD::DSP *dsp = make_dsp(conf[i]);
-    if (dsp == 0) break;
-    FMOD::DSP *prev;
-    res1 = head->getInput(0, &prev, NULL);
-    res2 = head->disconnectFrom(prev);
-    res3 = head->addInput(dsp, NULL);
-    res4 = dsp->addInput(prev, NULL);
-    res5 = dsp->setActive(true);
-    if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||(res5!=FMOD_OK)) {
-      audio_error("Could not update DSP chain.");
-      return;
-    }
+    result = _channelgroup->addDSP(dsp, NULL);
+    fmod_audio_errcheck("_channelgroup->addDSP()", result);
   }
 }
 
@@ -393,7 +389,7 @@ bool FmodAudioManager::
 configure_filters(FilterProperties *config) {
   FMOD_RESULT result;
   FMOD::DSP *head;
-  result = _system->getDSPHead(&head);
+  result = _channelgroup->getDSPHead(&head);
   if (result != 0) {
     audio_error("Getting DSP head: " << FMOD_ErrorString(result) );
     return false;
@@ -519,39 +515,27 @@ setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_volume(float volume)
 //       Access: Public
-//  Description: Sets the master volume.
+//  Description: Sets the volume of the AudioManager.
+//               It is not an override, but a multiplier.
 ////////////////////////////////////////////////////////////////////
-void FmodAudioManager::set_volume(float volume) {
-  FMOD::ChannelGroup *channelGroup;
-  FMOD_RESULT	result;
-  
-  result = _system->getMasterChannelGroup(&channelGroup);
-  if (result == FMOD_OK) {
-    channelGroup->setVolume(volume);
-  } else {
-    fmod_audio_errcheck("_system->getMasterChannelGroup()", result);
-  }
+void FmodAudioManager::
+set_volume(float volume) {
+  FMOD_RESULT result;
+  result = _channelgroup->setVolume(volume);
+  fmod_audio_errcheck("_channelgroup->setVolume()", result);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::get_volume()
 //       Access: Public
-//  Description: Returns the master volume.
+//  Description: Returns the AudioManager's volume.
 ////////////////////////////////////////////////////////////////////
 float FmodAudioManager::
 get_volume() const {
-  FMOD::ChannelGroup *channelGroup;
-  FMOD_RESULT result;
   float volume;
-
-  result = _system->getMasterChannelGroup(&channelGroup);
-  if (result == FMOD_OK) {
-    channelGroup->getVolume(&volume);
-  } else {
-    fmod_audio_errcheck("_system->getMasterChannelGroup()", result);
-    volume = 1.0;
-  }
-
+  FMOD_RESULT result;
+  result = _channelgroup->getVolume(&volume);
+  fmod_audio_errcheck("_channelgroup->getVolume()", result);
   return volume;
 }
 

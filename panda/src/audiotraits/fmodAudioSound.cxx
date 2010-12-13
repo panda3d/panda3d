@@ -164,9 +164,9 @@ play() {
 //               reference count of the associated FmodAudioSound.
 ////////////////////////////////////////////////////////////////////
 FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
-					  FMOD_CHANNEL_CALLBACKTYPE  type, 
-					  void *commanddata1, 
-					  void *commanddata2) {
+                      FMOD_CHANNEL_CALLBACKTYPE  type, 
+                      void *commanddata1, 
+                      void *commanddata2) {
   if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
     void *userdata = NULL;
@@ -383,6 +383,8 @@ start_playing() {
   if (_channel == 0) {
     result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
+    result = _channel->setChannelGroup(_manager->_channelgroup);
+    fmod_audio_errcheck("_channel->setChannelGroup()", result);
     result = _channel->setUserData(this);
     fmod_audio_errcheck("_channel->setUserData()", result);
     result = _channel->setCallback(sound_end_callback);
