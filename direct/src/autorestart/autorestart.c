@@ -233,6 +233,8 @@ do_watchdog(int *status_ptr) {
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "autorestart");
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, 1);
+  curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1);
 
   res = curl_easy_perform(curl);
   while (res == 0) {
