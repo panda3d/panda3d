@@ -805,7 +805,7 @@ steal_vrefs(EggGroup *other) {
 }
 
 
-#ifndef NDEBUG
+#ifdef _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::test_vref_integrity
@@ -826,7 +826,7 @@ test_vref_integrity() const {
   }
 }
 
-#endif  // NDEBUG
+#endif  // _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::add_group_ref

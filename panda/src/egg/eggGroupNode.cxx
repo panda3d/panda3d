@@ -857,6 +857,39 @@ mesh_triangles(int flags) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::make_point_primitives
+//       Access: Published
+//  Description: Creates PointLight primitives to reference any
+//               otherwise unreferences vertices discovered in this
+//               group or below.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+make_point_primitives() {
+  // Create a temporary node to hold the EggPoint objects we might
+  // create while we iterate.  (We don't add them during the iteration
+  // to avoid invalidating the iterator.)
+  PT(EggGroupNode) temp = new EggGroup("temp");
+
+  EggGroupNode::iterator ci;
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *group_child = DCAST(EggGroupNode, *ci);
+      group_child->make_point_primitives();
+
+    } else if ((*ci)->is_of_type(EggVertexPool::get_class_type())) {
+      EggVertexPool *vpool = DCAST(EggVertexPool, *ci);
+      PT(EggPrimitive) prim = new EggPoint;
+      vpool->add_unused_vertices_to_prim(prim);
+      if (!prim->empty()) {
+        temp->add_child(prim);
+      }
+    }
+  }
+
+  steal_children(*temp);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::rename_nodes
 //       Access: Published
 //  Description: Rename by stripping out the prefix

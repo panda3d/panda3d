@@ -142,6 +142,7 @@ PUBLISHED:
 
   int triangulate_polygons(int flags);
   void mesh_triangles(int flags);
+  void make_point_primitives();
 
   int rename_nodes(vector_string strip_prefix, bool recurse);
 

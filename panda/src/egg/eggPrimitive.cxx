@@ -638,12 +638,10 @@ remove_nonunique_verts() {
   Vertices new_vertices;
   int num_removed = 0;
 
+  pset<EggVertex *> unique_vertices;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
-    bool okflag = true;
-    for (vj = _vertices.begin(); vj != vi && okflag; ++vj) {
-      okflag = ((*vi) != (*vj));
-    }
-    if (okflag) {
+    bool inserted = unique_vertices.insert(*vi).second;
+    if (inserted) {
       new_vertices.push_back(*vi);
     } else {
       prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed,
@@ -803,7 +801,7 @@ copy_vertices(const EggPrimitive &other) {
   other.test_vref_integrity();
 }
 
-#ifndef NDEBUG
+#ifdef _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::test_vref_integrity
@@ -850,7 +848,7 @@ test_vref_integrity() const {
   }
 }
 
-#endif  // NDEBUG
+#endif  // _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::prepare_add_vertex

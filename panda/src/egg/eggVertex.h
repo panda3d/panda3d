@@ -129,13 +129,13 @@ public:
 PUBLISHED:
   int has_pref(const EggPrimitive *prim) const;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   void test_gref_integrity() const;
   void test_pref_integrity() const;
 #else
   void test_gref_integrity() const { }
   void test_pref_integrity() const { }
-#endif  // NDEBUG
+#endif  // _DEBUG
 
   void output(ostream &out) const;
 

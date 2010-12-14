@@ -651,6 +651,23 @@ remove_unused_vertices() {
   return num_removed;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::add_unused_vertices_to_prim
+//       Access: Public
+//  Description: Adds all of the unused vertices in this vertex pool
+//               to the indicated primitive, in ascending order.
+////////////////////////////////////////////////////////////////////
+void EggVertexPool::
+add_unused_vertices_to_prim(EggPrimitive *prim) {
+  IndexVertices::iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->pref_size() == 0) {
+      prim->add_vertex(vertex);
+    }
+  }
+}
+
 // A function object for split_vertex(), used in transform(), below.
 class IsLocalVertexSplitter {
 public:

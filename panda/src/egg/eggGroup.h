@@ -299,11 +299,11 @@ public:
   INLINE VertexRef::size_type vref_size() const;
 
 PUBLISHED:
-#ifndef NDEBUG
+#ifdef _DEBUG
   void test_vref_integrity() const;
 #else
   void test_vref_integrity() const { }
-#endif  // NDEBUG
+#endif  // _DEBUG
 
   void add_group_ref(EggGroup *group);
   int get_num_group_refs() const;

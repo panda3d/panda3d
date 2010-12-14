@@ -670,7 +670,7 @@ has_pref(const EggPrimitive *prim) const {
   return _pref.count((EggPrimitive *)prim);
 }
 
-#ifndef NDEBUG
+#ifdef _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::test_gref_integrity

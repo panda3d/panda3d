@@ -128,6 +128,7 @@ PUBLISHED:
 
   void remove_vertex(EggVertex *vertex);
   int remove_unused_vertices();
+  void add_unused_vertices_to_prim(EggPrimitive *prim);
 
   void transform(const LMatrix4d &mat);
 

@@ -182,11 +182,11 @@ PUBLISHED:
 
   virtual void write(ostream &out, int indent_level) const=0;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   void test_vref_integrity() const;
 #else
   void test_vref_integrity() const { }
-#endif  // NDEBUG
+#endif  // _DEBUG
 
 protected:
   Vertices _vertices;

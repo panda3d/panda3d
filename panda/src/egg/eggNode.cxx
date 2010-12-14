@@ -287,7 +287,7 @@ parse_egg(const string &egg_syntax) {
   return (egg_error_count() == 0);
 }
 
-#ifndef NDEBUG
+#ifdef _DEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::test_under_integrity
@@ -324,7 +324,7 @@ test_under_integrity() const {
   }
 }
 
-#endif  // NDEBUG
+#endif  // _DEBUG
 
 
 ////////////////////////////////////////////////////////////////////
