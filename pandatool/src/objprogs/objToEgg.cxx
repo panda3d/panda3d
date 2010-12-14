@@ -27,6 +27,7 @@ ObjToEgg() :
   SomethingToEgg("obj", ".obj")
 {
   add_units_options();
+  add_points_options();
   add_normals_options();
   add_transform_options();
 

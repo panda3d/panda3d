@@ -19,6 +19,7 @@
 
 #include "somethingToEggConverter.h"
 #include "eggVertexPool.h"
+#include "eggGroup.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ObjToEggConverter
@@ -46,6 +47,7 @@ protected:
   bool process_vt(vector_string &words);
   bool process_vn(vector_string &words);
   bool process_f(vector_string &words);
+  bool process_g(vector_string &words);
 
   EggVertex *get_vertex(int n);
   EggVertex *get_face_vertex(const string &face_reference);
@@ -53,6 +55,8 @@ protected:
   int _line_number;
   int _vi, _vti, _vni;
   PT(EggVertexPool) _vpool;
+  PT(EggGroup) _root_group;
+  EggGroup *_current_group;
 
   pset<string> _ignored_tags;
 };

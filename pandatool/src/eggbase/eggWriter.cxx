@@ -135,6 +135,11 @@ post_process_egg_file() {
     _data->transform(_transform);
   }
 
+  if (_make_points) {
+    nout << "Making points\n";
+    _data->make_point_primitives();
+  }
+
   bool needs_remove = false;
 
   switch (_normals_mode) {

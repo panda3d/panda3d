@@ -34,6 +34,7 @@ public:
   EggBase();
 
   void add_normals_options();
+  void add_points_options();
   void add_transform_options();
 
   static void convert_paths(EggNode *node, PathReplace *path_replace,
@@ -65,6 +66,8 @@ protected:
   vector_string _tbn_names;
   bool _got_tbnall;
   bool _got_tbnauto;
+  
+  bool _make_points;
 
   bool _got_transform;
   LMatrix4d _transform;

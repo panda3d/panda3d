@@ -19,6 +19,7 @@
 #include "streamReader.h"
 #include "virtualFileSystem.h"
 #include "eggPolygon.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::Constructor
@@ -130,12 +131,15 @@ process(const Filename &filename) {
     return false;
   }
 
-  _vi = 0;
-  _vti = 0;
-  _vni = 0;
+  _vi = 1;
+  _vti = 1;
+  _vni = 1;
 
   _vpool = new EggVertexPool("vpool");
   _egg_data->add_child(_vpool);
+  _root_group = new EggGroup("root");
+  _egg_data->add_child(_root_group);
+  _current_group = _root_group;
 
   StreamReader sr(strm, true);
   string line = sr.readline();
@@ -143,10 +147,12 @@ process(const Filename &filename) {
   while (!line.empty()) {
     line = trim(line);
     if (line.empty()) {
+      line = sr.readline();
       continue;
     }
 
     if (line[0] == '#') {
+      line = sr.readline();
       continue;
     }
 
@@ -180,6 +186,8 @@ process_line(const string &line) {
     return process_vn(words);
   } else if (tag == "f") {
     return process_f(words);
+  } else if (tag == "g") {
+    return process_g(words);
   } else {
     bool inserted = _ignored_tags.insert(tag).second;
     if (!inserted) {
@@ -250,13 +258,13 @@ process_vt(vector_string &words) {
     return false;
   }
 
-  EggVertex *vertex = get_vertex(_vi);
+  EggVertex *vertex = get_vertex(_vti);
   if (words.size() == 4) {
     vertex->set_uvw("", uvw);
   } else {
     vertex->set_uv("", TexCoordd(uvw[0], uvw[1]));
   }
-  ++_vi;
+  ++_vti;
 
   return true;
 }
@@ -287,9 +295,9 @@ process_vn(vector_string &words) {
   }
   normal.normalize();
 
-  EggVertex *vertex = get_vertex(_vi);
+  EggVertex *vertex = get_vertex(_vni);
   vertex->set_normal(normal);
-  ++_vi;
+  ++_vni;
 
   return true;
 }
@@ -297,7 +305,7 @@ process_vn(vector_string &words) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_f
 //       Access: Protected
-//  Description: 
+//  Description: Defines a face in the obj file.
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_f(vector_string &words) {
@@ -309,8 +317,37 @@ process_f(vector_string &words) {
     }
     poly->add_vertex(vertex);
   }
-  _egg_data->add_child(poly);
+  _current_group->add_child(poly);
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ObjToEggConverter::process_g
+//       Access: Protected
+//  Description: Defines a group in the obj file.
+////////////////////////////////////////////////////////////////////
+bool ObjToEggConverter::
+process_g(vector_string &words) {
+  EggGroup *group = _root_group;
+
+  // We assume the group names define a hierarchy of more-specific to
+  // less-specific group names, so that the first group name is the
+  // bottommost node, and the last group name is the topmost node.
+
+  // Thus, iterate from the back to the front.
+  size_t i = words.size();
+  while (i != 0) {
+    --i;
+    EggNode *child = group->find_child(words[i]);
+    if (child == NULL || !child->is_of_type(EggGroup::get_class_type())) {
+      child = new EggGroup(words[i]);
+      group->add_child(child);
+    }
+    group = DCAST(EggGroup, child);
+  }
+
+  _current_group = group;
   return true;
 }
 
@@ -322,6 +359,10 @@ process_f(vector_string &words) {
 ////////////////////////////////////////////////////////////////////
 EggVertex *ObjToEggConverter::
 get_vertex(int n) {
+  if (n < 0) {
+    // A negative index means to count backward from the end.
+    n = _vi + n;
+  }
   EggVertex *vertex = _vpool->get_vertex(n);
   if (vertex == NULL) {
     vertex = new EggVertex;

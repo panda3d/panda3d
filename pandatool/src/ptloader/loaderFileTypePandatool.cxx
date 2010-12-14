@@ -147,7 +147,9 @@ load_file(const Filename &path, const LoaderOptions &options,
       egg_data->transform(LMatrix4d::scale_mat(scale));
     }
 
-    if (!egg_data->has_normals()) {
+    if (!egg_data->has_primitives()) {
+      egg_data->make_point_primitives();
+    } else if (!egg_data->has_normals()) {
       egg_data->recompute_polygon_normals();
     }
 

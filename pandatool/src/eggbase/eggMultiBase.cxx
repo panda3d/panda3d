@@ -75,6 +75,13 @@ post_process_egg_files() {
     }
   }
 
+  if (_make_points) {
+    nout << "Making points\n";
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      (*ei)->make_point_primitives();
+    }
+  }
+
   switch (_normals_mode) {
   case NM_strip:
     nout << "Stripping normals.\n";

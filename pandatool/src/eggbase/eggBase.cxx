@@ -40,6 +40,7 @@ EggBase() {
 
   _got_tbnall = false;
   _got_tbnauto = false;
+  _make_points = false;
 
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
@@ -107,6 +108,19 @@ add_normals_options() {
     ("tbnauto", "", 48,
      "Compute tangent and binormal for all normal maps. ",
      &EggBase::dispatch_none, &_got_tbnauto);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBase::add_points_options
+//       Access: Public
+//  Description: Adds -points as a valid option for this program.
+////////////////////////////////////////////////////////////////////
+void EggBase::
+add_points_options() {
+  add_option
+    ("points", "", 46,
+     "Construct <PointLight> entries for any unreferenced vertices, to make them visible.",
+     &EggBase::dispatch_none, &_make_points);
 }
 
 ////////////////////////////////////////////////////////////////////
