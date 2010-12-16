@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableDouble.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(tform, EXPCL_PANDA_TFORM, EXPTP_PANDA_TFORM);
 
@@ -35,5 +36,7 @@ extern EXPCL_PANDA_TFORM ConfigVariableDouble drive_horizontal_ramp_up_time;
 extern EXPCL_PANDA_TFORM ConfigVariableDouble drive_horizontal_ramp_down_time;
 
 extern EXPCL_PANDA_TFORM ConfigVariableDouble inactivity_timeout;
+
+extern EXPCL_PANDA_TFORM ConfigVariableBool trackball_use_alt_keys;
 
 #endif

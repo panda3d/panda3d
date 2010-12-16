@@ -54,6 +54,13 @@ ConfigVariableDouble drive_horizontal_ramp_down_time
 ConfigVariableDouble inactivity_timeout
 ("inactivity-timeout", 0.0);
 
+ConfigVariableBool trackball_use_alt_keys
+("trackball-use-alt-keys", true,
+ PRC_DESC("Set this true to use the command and option/control keys in "
+	  "conjunction with the first mouse button to simulate the behavior of "
+	  "the second and third mouse buttons in trackball mode.  Particularly "
+	  "useful for Macs, or laptops with limited mouse buttons."));
+
 ConfigureFn(config_tform) {
   DriveInterface::init_type();
   ButtonThrower::init_type();

@@ -63,12 +63,13 @@ Trackball(const string &name) :
   watch_button(MouseButton::two());
   watch_button(MouseButton::three());
 
-#ifdef IS_OSX
-  // In OSX mode, we need to use the command and option key in
-  // conjunction with the (one) mouse button.
-  watch_button(KeyboardButton::meta());
-  watch_button(KeyboardButton::alt());
-#endif
+  if (trackball_use_alt_keys) {
+    // In OSX mode, we need to use the command and option key in
+    // conjunction with the (one) mouse button.
+    watch_button(KeyboardButton::control());
+    watch_button(KeyboardButton::meta());
+    watch_button(KeyboardButton::alt());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,15 +555,14 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     int this_button = 0;
     
     if (is_down(MouseButton::one())) {
-#ifdef IS_OSX
       if (is_down(KeyboardButton::alt())) {
         // B1 + alt (option) = B2.
         this_button |= B2_MASK;
-        if (is_down(KeyboardButton::meta())) {
+        if (is_down(KeyboardButton::meta()) || is_down(KeyboardButton::control())) {
           this_button |= B3_MASK;
         }
 
-      } else if (is_down(KeyboardButton::meta())) {
+      } else if (is_down(KeyboardButton::meta()) || is_down(KeyboardButton::control())) {
         // B1 + meta (command) = B3.
         this_button |= B3_MASK;
 
@@ -570,9 +570,6 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
         // Without a special key, B1 is B1.
         this_button |= B1_MASK;
       }
-#else   // IS_OSX
-      this_button |= B1_MASK;
-#endif  // IS_OSX
     }
     if (is_down(MouseButton::two())) {
       this_button |= B2_MASK;
