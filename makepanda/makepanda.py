@@ -56,7 +56,8 @@ if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
-  "OPENGL"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
+  "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
+  "EGL",                                               # OpenGL (ES) integration
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
   "ODE", "PHYSX",                                      # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -158,6 +159,9 @@ def parseopts(args):
             elif (option=="--host"): HOST_URL=value
             elif (option=="--debversion"): DEBVERSION=value
             elif (option=="--rpmrelease"): RPMRELEASE=value
+            # Backward compatibility, OPENGL was renamed to GL
+            elif (option=="--use-opengl"): PkgEnable("GL")
+            elif (option=="--no-opengl"): PkgDisable("GL")
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -395,8 +399,11 @@ if (COMPILER=="MSVC"):
     LibName("WINSHELL", "shell32.lib")
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
-    LibName("OPENGL", "opengl32.lib")
-    LibName("OPENGL", "glu32.lib")
+    LibName("GL", "opengl32.lib")
+    LibName("GL", "glu32.lib")
+    LibName("GLES", "libgles_cm.lib")
+    LibName("GLES2", "libGLESv2.lib")
+    LibName("EGL", "libEGL.lib")
     LibName("MSIMG", "msimg32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "strmiids.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
@@ -472,7 +479,7 @@ if (COMPILER=="MSVC"):
         else:
             libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9/"
             p64ext = ''
-            
+
         debugext = ''
         if (GetOptimize() <= 2 and sys.platform.startswith("win")): debugext = "_d"
         libsuffix = "_v%s_VC90MT%s_Static%s.lib" % (
@@ -494,7 +501,7 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
           IncDirectory("FREETYPE", "/usr/X11/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
-        IncDirectory("OPENGL", "/usr/X11R6/include")
+        IncDirectory("GL", "/usr/X11R6/include")
 
     if (os.path.isdir("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
@@ -523,7 +530,10 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        SmartPkgEnable("OPENGL",    "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
+        SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+        SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
         SmartPkgEnable("GTK2",      "gtk+-2.0")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
@@ -598,7 +608,7 @@ if (COMPILER=="LINUX"):
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
-        LibName("OPENGL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+        LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -715,12 +725,12 @@ def CompileCxx(obj,src,opts):
         if (platform.architecture()[0]=="64bit"):
             cmd += "/favor:blend "
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
-        
+
         # Enables Windows 7 mode if SDK is detected.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
         if platsdk and os.path.isdir(platsdk):
             cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
-            
+
         cmd += "/Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
@@ -1308,11 +1318,14 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
-    ("HAVE_GL",                        '1',                      '1'),
+    ("HAVE_GL",                        '1',                      'UNDEF'),
+    ("HAVE_GLES",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_GLES2",                     'UNDEF',                  'UNDEF'),
     ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
     ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
+    ("HAVE_EGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX8",                       'UNDEF',                  'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
@@ -1576,9 +1589,9 @@ def WriteConfigSettings():
             speedtree_parameters["SPEEDTREE_OPENGL"] = "1"
         elif SDK["SPEEDTREEAPI"] == "DirectX9":
             speedtree_parameters["SPEEDTREE_DIRECTX9"] = "1"
-            
+
         speedtree_parameters["SPEEDTREE_BIN_DIR"] = (SDK["SPEEDTREE"] + "/Bin")
-        
+
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
@@ -1816,7 +1829,7 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0):
 #
 ##########################################################################################
 
-confautoprc=ReadFile("makepanda/confauto.in")
+confautoprc = ReadFile("makepanda/confauto.in")
 if (PkgSkip("SPEEDTREE")==0):
     # If SpeedTree is available, enable it in the config file
     confautoprc = confautoprc.replace('#st#', '')
@@ -1825,9 +1838,9 @@ else:
     confautoprc = confautoprc.replace('#st#', '#')
 
 if (os.path.isfile("makepanda/myconfig.in")):
-  configprc=ReadFile("makepanda/myconfig.in")
+    configprc = ReadFile("makepanda/myconfig.in")
 else:
-  configprc=ReadFile("makepanda/config.in")
+    configprc = ReadFile("makepanda/config.in")
 
 if (sys.platform.startswith("win")):
     configprc = configprc.replace("$HOME/.panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
@@ -1996,6 +2009,8 @@ CopyAllHeaders('panda/src/framework')
 CopyAllHeaders('panda/metalibs/pandafx')
 CopyAllHeaders('panda/src/glstuff')
 CopyAllHeaders('panda/src/glgsg')
+CopyAllHeaders('panda/src/glesgsg')
+CopyAllHeaders('panda/src/gles2gsg')
 CopyAllHeaders('panda/metalibs/pandaegg')
 if (sys.platform.startswith("win")):
     CopyAllHeaders('panda/src/wgldisplay')
@@ -2004,7 +2019,10 @@ elif (sys.platform == "darwin"):
 else:
     CopyAllHeaders('panda/src/x11display')
     CopyAllHeaders('panda/src/glxdisplay')
+CopyAllHeaders('panda/src/egldisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
+CopyAllHeaders('panda/metalibs/pandagles')
+CopyAllHeaders('panda/metalibs/pandagles2')
 
 CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
@@ -3199,16 +3217,34 @@ if (not RUNTIME):
   TargetAdd('glstuff_glpure.obj', opts=OPTS, input='glpure.cxx')
   TargetAdd('libp3glstuff.dll', input='glstuff_glpure.obj')
   TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'OPENGL',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'GL',  'NVIDIACG', 'CGGL'])
 
 #
 # DIRECTORY: panda/src/glgsg/
 #
 
-if (not RUNTIME and PkgSkip("OPENGL")==0):
-  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'DIR:panda/src/gobj', 'BUILDING:PANDAGL',  'NVIDIACG']
+if (not RUNTIME and PkgSkip("GL")==0):
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG']
   TargetAdd('glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
+
+#
+# DIRECTORY: panda/src/glesgsg/
+#
+
+if (not RUNTIME and PkgSkip("GLES")==0):
+  OPTS=['DIR:panda/src/glesgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES']
+  TargetAdd('glesgsg_config_glesgsg.obj', opts=OPTS, input='config_glesgsg.cxx')
+  TargetAdd('glesgsg_glesgsg.obj', opts=OPTS, input='glesgsg.cxx')
+
+#
+# DIRECTORY: panda/src/gles2gsg/
+#
+
+if (not RUNTIME and PkgSkip("GLES2")==0):
+  OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2']
+  TargetAdd('gles2gsg_config_gles2gsg.obj', opts=OPTS, input='config_gles2gsg.cxx')
+  TargetAdd('gles2gsg_gles2gsg.obj', opts=OPTS, input='gles2gsg.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaegg/
@@ -3239,15 +3275,15 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/mesadisplay/
 #
 
-if (not sys.platform.startswith("win") and PkgSkip("OPENGL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL', 'OSMESA']
+if (not sys.platform.startswith("win") and PkgSkip("GL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GL', 'OSMESA']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'OPENGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GL']
   TargetAdd('libpandamesa.dll', input='mesadisplay_composite.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
   TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['MODULE', 'OPENGL', 'OSMESA'])
+  TargetAdd('libpandamesa.dll', opts=['MODULE', 'GL', 'OSMESA'])
 
 #
 # DIRECTORY: panda/src/x11display/
@@ -3261,10 +3297,10 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("X11")==0 a
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("OPENGL")==0 and PkgSkip("X11")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
+if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("GL")==0 and PkgSkip("X11")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='x11display_composite.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -3273,17 +3309,17 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("OPENGL")==
   TargetAdd('libpandagl.dll', input='glxdisplay_composite.obj')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
 #
 
-if (sys.platform == 'darwin' and PkgSkip("OPENGL")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
+if (sys.platform == 'darwin' and PkgSkip("GL")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('osxdisplay_composite1.obj', opts=OPTS, input='osxdisplay_composite1.cxx')
   TargetAdd('osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'OPENGL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')
@@ -3293,13 +3329,13 @@ if (sys.platform == 'darwin' and PkgSkip("OPENGL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'OPENGL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
 #
 
-if (sys.platform == "win32" and PkgSkip("OPENGL")==0 and not RUNTIME):
+if (sys.platform == "win32" and PkgSkip("GL")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/wgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
   TargetAdd('wgldisplay_composite.obj', opts=OPTS, input='wgldisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
@@ -3312,7 +3348,47 @@ if (sys.platform == "win32" and PkgSkip("OPENGL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'OPENGL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+
+#
+# DIRECTORY: panda/src/egldisplay/
+#
+
+if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTIME):
+  DefSymbol('GLES', 'OPENGLES_1', '')
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES',  'GLES', 'EGL']
+  TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='egldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
+  TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
+  # Uncomment this as soon as x11-specific stuff is removed from egldisplay
+  #TargetAdd('libpandagles.dll', input='x11display_composite.obj')
+  TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
+  TargetAdd('libpandagles.dll', input='glesgsg_config_glesgsg.obj')
+  TargetAdd('libpandagles.dll', input='glesgsg_glesgsg.obj')
+  TargetAdd('libpandagles.dll', input='pandagles_egldisplay_composite1.obj')
+  TargetAdd('libpandagles.dll', input='libp3glstuff.dll')
+  TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA'])
+
+#
+# DIRECTORY: panda/src/egldisplay/
+#
+
+if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNTIME):
+  DefSymbol('GLES2', 'OPENGLES_2', '')
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'EGL']
+  TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='egldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+  TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
+  # Uncomment this as soon as x11-specific stuff is removed from egldisplay
+  #TargetAdd('libpandagles2.dll', input='x11display_composite.obj')
+  TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
+  TargetAdd('libpandagles2.dll', input='gles2gsg_config_gles2gsg.obj')
+  TargetAdd('libpandagles2.dll', input='gles2gsg_gles2gsg.obj')
+  TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
+  TargetAdd('libpandagles2.dll', input='libp3glstuff.dll')
+  TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -3452,7 +3528,7 @@ if (PkgSkip("SPEEDTREE")==0):
   TargetAdd('libpandaspeedtree.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
   if SDK["SPEEDTREEAPI"] == 'OpenGL':
-      TargetAdd('libpandaspeedtree.dll', opts=['OPENGL', 'NVIDIACG', 'CGGL'])
+      TargetAdd('libpandaspeedtree.dll', opts=['GL', 'NVIDIACG', 'CGGL'])
   elif SDK["SPEEDTREEAPI"] == 'DirectX9':
       TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
 
