@@ -27,7 +27,7 @@ INLINE bool CLP(ShaderContext)::
 valid() {
   if (_shader->get_error_flag()) return false;
   if (_shader->get_language() == Shader::SL_none) return false;
-#ifdef HAVE_CG
+#if defined(HAVE_CG) && !defined(OPENGLES)
   if (_cg_context) return true;
 #endif
   if (_shader->get_language() == Shader::SL_GLSL && _glsl_program != 0) {
