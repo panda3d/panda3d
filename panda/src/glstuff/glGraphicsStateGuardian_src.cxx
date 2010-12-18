@@ -5169,8 +5169,7 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_error_string
 //       Access: Protected, Static
-//  Description: Returns gluGetErrorString(), if GLU is available;
-//               otherwise, returns some default error message.
+//  Description: Returns an error string for an OpenGL error code.
 ////////////////////////////////////////////////////////////////////
 string CLP(GraphicsStateGuardian)::
 get_error_string(GLenum error_code) {
@@ -5181,6 +5180,27 @@ get_error_string(GLenum error_code) {
   }
 #endif  // HAVE_GLU
 
+  // The idea with the error table was taken from SGI's sample implementation.
+  static const char *error_strings[GL_OUT_OF_MEMORY - GL_INVALID_ENUM + 1] = {
+    "invalid enumerant",
+    "invalid value",
+    "invalid operation",
+    "stack overflow",
+    "stack underflow",
+    "out of memory",
+  };
+
+  if (error_code == GL_NO_ERROR) {
+    return "no error";
+#ifndef OPENGLES
+  } else if (error_code == GL_TABLE_TOO_LARGE) {
+    return "table too large";
+#endif
+  } else if (error_code >= GL_INVALID_ENUM && error_code <= GL_OUT_OF_MEMORY) {
+    return error_strings[error_code - GL_INVALID_ENUM];
+  }
+
+  // Other error, somehow?  Just display the error code then.
   ostringstream strm;
   strm << "GL error " << (int)error_code;
 
