@@ -47,6 +47,7 @@ DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
 RPMRELEASE="1"
+P3DSUFFIX=""
 MAJOR_VERSION=None
 COREAPI_VERSION=None
 OSXTARGET=None
@@ -123,12 +124,13 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL,DEBVERSION,RPMRELEASE
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
+    global DEBVERSION,RPMRELEASE,P3DSUFFIX
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host=","debversion=","rpmrelease="]
+        "static","host=","debversion=","rpmrelease=","p3dsuffix="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -159,6 +161,7 @@ def parseopts(args):
             elif (option=="--host"): HOST_URL=value
             elif (option=="--debversion"): DEBVERSION=value
             elif (option=="--rpmrelease"): RPMRELEASE=value
+            elif (option=="--p3dsuffix"): P3DSUFFIX=value
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
@@ -1148,6 +1151,8 @@ def Package(target, inputs, opts):
     if (sys.platform == "darwin" and "MACOSX" in SDK and SDK["MACOSX"] != None and len(SDK["MACOSX"]) > 1):
         command += " -R \"%s\"" % SDK["MACOSX"]
     command += " -i \"" + GetOutputDir() + "/stage\""
+    if (P3DSUFFIX):
+        command += ' -a "' + P3DSUFFIX + '"'
     command += " " + inputs[0]
     oscmd(command)
 

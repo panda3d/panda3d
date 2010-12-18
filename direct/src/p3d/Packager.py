@@ -671,6 +671,7 @@ class Packager:
             self.packageDesc = self.packageBasename + '.xml'
             self.packageImportDesc = self.packageBasename + '.import.xml'
             if self.p3dApplication:
+                self.packageBasename += self.packager.p3dSuffix
                 self.packageBasename += '.p3d'
                 packageDir = ''
             else:
@@ -1971,6 +1972,10 @@ class Packager:
         # e.g. for testing and development.
         self.ignoreSetHost = False
 
+        # This will be appended to the basename of any .p3d package,
+        # before the .p3d extension.
+        self.p3dSuffix = ''
+
         # The download URL at which these packages will eventually be
         # hosted.
         self.hosts = {}
@@ -2168,6 +2173,8 @@ class Packager:
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
             GlobPattern('libGLcore.so*'),
+            GlobPattern('libGLES*.so*'),
+            GlobPattern('libEGL.so*'),
             GlobPattern('libX*.so*'),
             GlobPattern('libxcb*.so*'),
             GlobPattern('libc.so*'),
