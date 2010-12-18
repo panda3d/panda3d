@@ -353,6 +353,9 @@ if (COMPILER=="MSVC"):
     PkgDisable("X11")
     PkgDisable("XRANDR")
     PkgDisable("XF86DGA")
+    PkgDisable("GLES")
+    PkgDisable("GLES2")
+    PkgDisable("EGL")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
