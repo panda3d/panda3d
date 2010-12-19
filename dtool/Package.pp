@@ -221,9 +221,7 @@
 #set GL_IPATH $[unixfilename $[GL_IPATH]]
 #set GL_LPATH $[unixfilename $[GL_LPATH]]
 #set GL_LIBS $[GL_LIBS]
-#set GLU_LIBS $[GLU_LIBS]
 #set HAVE_GL $[HAVE_GL]
-#set HAVE_GLU $[HAVE_GLU]
 
 #set GLES_IPATH $[unixfilename $[GLES_IPATH]]
 #set GLES_LPATH $[unixfilename $[GLES_LPATH]]

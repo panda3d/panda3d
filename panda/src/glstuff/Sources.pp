@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
-#define USE_PACKAGES gl cggl
+
 // Most of the files here are not actually compiled into anything;
 // they're just included by various other directories.
 

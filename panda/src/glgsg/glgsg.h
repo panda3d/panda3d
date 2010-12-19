@@ -23,7 +23,6 @@
 #include "config_glgsg.h"
 
 #define GLP(name) gl##name
-#define GLUP(name) glu##name
 #define CLP(name) GL##name
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GL"
@@ -70,14 +69,8 @@
 
 #ifdef IS_OSX
   #include <OpenGL/gl.h>
-  #ifdef HAVE_GLU
-  #include <OpenGL/glu.h>
-  #endif
 #else
   #include <GL/gl.h>
-  #ifdef HAVE_GLU
-  #include <GL/glu.h>
-  #endif
 #endif
 
 #undef GL_GLEXT_VERSION

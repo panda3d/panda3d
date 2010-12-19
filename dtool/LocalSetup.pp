@@ -123,12 +123,18 @@
 #endif
 #if $[HAVE_GL]
 #print + OpenGL
-#elif $[HAVE_GLES2]
-#print + OpenGL ES 2
-#elif $[HAVE_GLES]
-#print + OpenGL ES
 #else
 #print - Did not find OpenGL
+#endif
+#if $[HAVE_GLES]
+#print + OpenGL ES 1
+#else
+#print - Did not find OpenGL ES 1
+#endif
+#if $[HAVE_GLES2]
+#print + OpenGL ES 2
+#else
+#print - Did not find OpenGL ES 2
 #endif
 #if $[HAVE_DX8]
 #print + DirectX8
@@ -341,7 +347,6 @@ $[cdefine HAVE_ZLIB]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
-$[cdefine HAVE_GLU]
 #if HAVE_GL
 # define MIN_GL_VERSION_MAJOR $[word 1,$[MIN_GL_VERSION]]
 # define MIN_GL_VERSION_MINOR $[word 2,$[MIN_GL_VERSION]]

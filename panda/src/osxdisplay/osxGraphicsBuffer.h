@@ -15,7 +15,6 @@
 
 #define __glext_h_
 #include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
 #include <AGL/agl.h>
 
 #include "pandabase.h"

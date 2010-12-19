@@ -406,7 +406,6 @@ if (COMPILER=="MSVC"):
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
     LibName("GL", "opengl32.lib")
-    LibName("GL", "glu32.lib")
     LibName("GLES", "libgles_cm.lib")
     LibName("GLES2", "libGLESv2.lib")
     LibName("EGL", "libEGL.lib")
@@ -536,7 +535,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-        SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h", "GL/glu.h"), framework = "OpenGL")
+        SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
         SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
         SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
         SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
@@ -3284,9 +3283,9 @@ if (not RUNTIME):
 #
 
 if (not sys.platform.startswith("win") and PkgSkip("GL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GL', 'OSMESA']
+  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL', 'OSMESA']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL']
   TargetAdd('libpandamesa.dll', input='mesadisplay_composite.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
   TargetAdd('libpandamesa.dll', input='libpandafx.dll')
@@ -3306,9 +3305,9 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("X11")==0 a
 #
 
 if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("GL")==0 and PkgSkip("X11")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='x11display_composite.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -3324,10 +3323,10 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("GL")==0 an
 #
 
 if (sys.platform == 'darwin' and PkgSkip("GL")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('osxdisplay_composite1.obj', opts=OPTS, input='osxdisplay_composite1.cxx')
   TargetAdd('osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')

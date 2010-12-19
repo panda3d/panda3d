@@ -22,7 +22,6 @@
 #include "config_gles2gsg.h"
 
 #define GLP(name) gl##name
-#define GLUP(name) glu##name
 #define CLP(name) GLES2##name
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GLES2"

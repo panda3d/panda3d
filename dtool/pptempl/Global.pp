@@ -123,7 +123,7 @@
   #define gl_ipath $[wildcard $[GL_IPATH]]
   #define gl_lpath $[wildcard $[GL_LPATH]]
   #define gl_cflags $[GL_CFLAGS]
-  #define gl_libs $[GL_LIBS] $[if $[HAVE_GLU],$[GLU_LIBS]]
+  #define gl_libs $[GL_LIBS]
   #define gl_framework $[GL_FRAMEWORK]
 #endif
 
@@ -197,13 +197,6 @@
   #define egl_lpath $[wildcard $[EGL_LPATH]]
   #define egl_cflags $[EGL_CFLAGS]
   #define egl_libs $[EGL_LIBS]
-#endif
-
-#if $[HAVE_GLUT]
-  #define glut_ipath $[wildcard $[GLUT_IPATH]]
-  #define glut_lpath $[wildcard $[GLUT_LPATH]]
-  #define glut_cflags $[GLUT_CFLAGS]
-  #define glut_libs $[GLUT_LIBS]
 #endif
 
 #if $[HAVE_DX8]

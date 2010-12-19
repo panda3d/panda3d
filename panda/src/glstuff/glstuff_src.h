@@ -19,15 +19,14 @@
 // file.
 
 // #define GLP(name): returns name prefixed by the gl prefix, e.g. gl##name
-// #define GLUP(name): returns name prefixed by the glu prefix, e.g. glu##name
 // #define CLP(name): returns name prefixed by the class prefix, e.g. GL##name
 // #define CLASSPREFIX_QUOTED: the quoted prefix of CLP, e.g. "GL"
 // #define CONFIGOBJ: a Configrc object, e.g. config_glgsg
 // #define GLCAT: a Notify category, e.g. glgsg_cat
 // #define EXPCL_GL, EXPTP_GL: according to the DLL currently being compiled.
 
-// Also, be sure you include the appropriate gl.h and glu.h header
-// files to get all the standard GL symbols declared.  GL extensions
+// Also, be sure you include the appropriate gl.h header
+// file to get all the standard GL symbols declared.  GL extensions
 // are included here via glext.h.
 
 // This file is not protected from multiple inclusion; it may need to
