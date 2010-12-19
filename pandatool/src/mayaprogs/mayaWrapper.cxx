@@ -320,6 +320,11 @@ int main(int argc, char **argv)
   _putenv(env1);
   _putenv(env2);
 #endif // _WIN32
+
+  // When this is set, Panda3D will try not to use any functions from the
+  // CPython API.  This is necessary because Maya links with its own copy
+  // of Python, which may be incompatible with ours.
+  _putenv("PANDA_INCOMPATIBLE_PYTHON=1");
   
 #ifdef _WIN32
   STARTUPINFO si; PROCESS_INFORMATION pi;
