@@ -41,6 +41,7 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
   PyObject *__reduce__(PyObject *self) const;
+  PyObject *__getattr__(const string &attr_name) const;
 #endif
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
