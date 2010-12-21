@@ -709,12 +709,19 @@
 #define XF86DGA_LIBS Xxf86dga
 #defer HAVE_XF86DGA $[libtest $[XF86DGA_LPATH],$[XF86DGA_LIBS]]
 
-// This defines if we have XF86DGA installed. This
+// This defines if we have XRANDR installed. This
 // enables resolution switching in x11display.
 #define XRANDR_IPATH /usr/include/X11/extensions
 #define XRANDR_LPATH /usr/lib
 #define XRANDR_LIBS Xrandr
 #defer HAVE_XRANDR $[libtest $[XRANDR_LPATH],$[XRANDR_LIBS]]
+
+// This defines if we have XCURSOR installed. This
+// enables resolution switching in x11display.
+#define XCURSOR_IPATH /usr/include/X11/extensions
+#define XCURSOR_LPATH /usr/lib
+#define XCURSOR_LIBS Xcursor
+#defer HAVE_XCURSOR $[libtest $[XCURSOR_LPATH],$[XCURSOR_LIBS]]
 
 // How about GLX?
 #define GLX_IPATH

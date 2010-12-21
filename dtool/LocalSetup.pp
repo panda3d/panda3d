@@ -413,6 +413,9 @@ $[cdefine HAVE_XF86DGA]
 /* Define if we have the XRandR extension. */
 $[cdefine HAVE_XRANDR]
 
+/* Define if we have the XCursor extension. */
+$[cdefine HAVE_XCURSOR]
+
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]
 

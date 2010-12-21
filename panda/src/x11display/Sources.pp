@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES x11 xf86dga xrandr
+#define USE_PACKAGES x11 xf86dga xrandr xcursor
 
 #begin lib_target
   #define TARGET x11display

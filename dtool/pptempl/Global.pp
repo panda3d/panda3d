@@ -171,6 +171,13 @@
   #define xrandr_libs $[XRANDR_LIBS]
 #endif
 
+#if $[HAVE_XCURSOR]
+  #define xcursor_ipath $[wildcard $[XCURSOR_IPATH]]
+  #define xcursor_lpath $[wildcard $[XCURSOR_LPATH]]
+  #define xcursor_cflags $[XCURSOR_CFLAGS]
+  #define xcursor_libs $[XCURSOR_LIBS]
+#endif
+
 #if $[HAVE_MESA]
   #define mesa_ipath $[wildcard $[MESA_IPATH]]
   #define mesa_lpath $[wildcard $[MESA_LPATH]]

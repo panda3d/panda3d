@@ -73,6 +73,9 @@ protected:
 
   void open_raw_mice();
   void poll_raw_mice();
+
+private:
+  Cursor get_cursor(const Filename &filename);
   
 protected:
   Display *_display;
@@ -124,6 +127,11 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  
+  // Since the Panda API requests icons and cursors by filename, we
+  // need a table mapping filenames to handles, so we can avoid
+  // re-reading the file each time we change icons.
+  pmap<Filename, Cursor> _cursor_filenames;
 };
 
 #include "x11GraphicsWindow.I"

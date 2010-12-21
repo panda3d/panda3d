@@ -69,7 +69,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM",                  # Augmented Reality
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX",                                        # Toolkit support
-  "OSMESA", "X11", "XF86DGA", "XRANDR",                # Unix platform support
+  "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "CONTRIB"                                            # Experimental
 ])
@@ -356,6 +356,7 @@ if (COMPILER=="MSVC"):
     PkgDisable("X11")
     PkgDisable("XRANDR")
     PkgDisable("XF86DGA")
+    PkgDisable("XCURSOR")
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
@@ -572,6 +573,7 @@ if (COMPILER=="LINUX"):
             SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
+            SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
 
     if (RUNTIME):
         # For the runtime, all packages are required
@@ -1410,6 +1412,7 @@ DTOOL_CONFIG=[
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("HAVE_XRANDR",                    'UNDEF',                  '1'),
     ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
+    ("HAVE_XCURSOR",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
@@ -1518,6 +1521,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["HAVE_XRANDR"] = 'UNDEF'
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
+        dtool_config["HAVE_XCURSOR"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -3316,7 +3320,7 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("GL")==0 an
   TargetAdd('libpandagl.dll', input='glxdisplay_composite.obj')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -3375,7 +3379,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('libpandagles.dll', input='pandagles_egldisplay_composite1.obj')
   TargetAdd('libpandagles.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA'])
+  TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -3395,7 +3399,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA'])
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -3574,7 +3578,7 @@ if (not RUNTIME and (sys.platform == "win32" or sys.platform == "darwin" or PkgS
     TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
   else:
     TargetAdd('libtinydisplay.dll', input='x11display_composite.obj')
-    TargetAdd('libtinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA'])
+    TargetAdd('libtinydisplay.dll', opts=['X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
   TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
   TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
   TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')

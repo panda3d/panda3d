@@ -32,6 +32,11 @@
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+
+#ifdef HAVE_XCURSOR
+#include <X11/Xcursor/Xcursor.h>
+#endif
+
 #ifdef HAVE_XF86DGA
 #include <X11/extensions/xf86dga.h>
 #endif
@@ -624,7 +629,21 @@ set_properties_now(WindowProperties &properties) {
     _awaiting_configure = true;
   }
 
+  // Load a custom cursor from a file.
+  if (properties.has_cursor_filename()) {
+    Filename filename = properties.get_cursor_filename();
+    Cursor cursor = get_cursor(filename);
+
+    _properties.set_cursor_filename(filename);
+    // Note that if the cursor fails to load, cursor will be None
+    XDefineCursor(_display, _xwindow, cursor);
+
+    properties.clear_cursor_filename();
+  }
+
   // We hide the cursor by setting it to an invisible pixmap.
+  // Do this check after setting the custom cursor, to hide the
+  // custom cursor if necessary.
   if (properties.has_cursor_hidden()) {
     _properties.set_cursor_hidden(properties.get_cursor_hidden());
     if (properties.get_cursor_hidden()) {
@@ -1803,6 +1822,7 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::button(index - 1);
   }
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: x11GraphicsWindow::check_event
 //       Access: Private, Static
@@ -1818,3 +1838,53 @@ check_event(Display *display, XEvent *event, char *arg) {
   // We accept any event that is sent to our window.
   return (event->xany.window == self->_xwindow);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsWindow::get_cursor
+//       Access: Private
+//  Description: Loads and returns an Cursor corresponding to the
+//               indicated filename.  If the file cannot be loaded,
+//               returns None.
+////////////////////////////////////////////////////////////////////
+Cursor x11GraphicsWindow::
+get_cursor(const Filename &filename) {
+  // First, look for the unresolved filename in our index.
+  pmap<Filename, Cursor>::iterator fi = _cursor_filenames.find(filename);
+  if (fi != _cursor_filenames.end()) {
+    return fi->second;
+  }
+
+  // If it wasn't found, resolve the filename and search for that.
+  Filename resolved = filename;
+  if (!resolved.resolve_filename(get_model_path())) {
+    // The filename doesn't exist.
+    x11display_cat.warning()
+      << "Could not find cursor filename " << filename << "\n";
+    return None;
+  }
+  fi = _cursor_filenames.find(resolved);
+  if (fi != _cursor_filenames.end()) {
+    _cursor_filenames[filename] = (*fi).second;
+    return fi->second;
+  }
+
+  Filename os = resolved.to_os_specific();
+
+#ifdef HAVE_XCURSOR
+  Cursor h = XcursorFilenameLoadCursor(_display, os.c_str());
+
+  if (h == None) {
+    x11display_cat.warning()
+      << "x11 cursor filename '" << os << "' could not be loaded!!\n";
+  }
+#else
+  // Can't support loading cursor from image, so fall back to default
+  Cursor h = None;
+#endif
+
+  _cursor_filenames[filename] = h;
+  _cursor_filenames[resolved] = h;
+  return h;
+}
+
+ 
