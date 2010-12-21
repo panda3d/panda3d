@@ -107,6 +107,11 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
+  pmap<Filename, Cursor>::iterator it;
+
+  for (it = _cursor_filenames.begin(); it != _cursor_filenames.end(); it++) {
+    XFreeCursor(_display, it->second);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
