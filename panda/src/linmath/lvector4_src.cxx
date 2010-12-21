@@ -85,7 +85,7 @@ __setattr__(PyObject *self, const string &attr_name, FLOATTYPE val) {
   // and assign the floating-point value to every one of them.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if ((*it) < 'w' || (*it) > 'z') {
-      PyTypeObject *tp = Py_TYPE(self);
+      PyTypeObject *tp = self->ob_type;
       PyErr_Format(PyExc_AttributeError,
                    "'%.100s' object has no attribute '%.200s'",
                    tp->tp_name, attr_name.c_str());
@@ -137,7 +137,7 @@ __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase2) val) {
   return 0;
 
 attrerr:
-  PyTypeObject *tp = Py_TYPE(self);
+  PyTypeObject *tp = self->ob_type;
   PyErr_Format(PyExc_AttributeError,
                "'%.100s' object has no attribute '%.200s'",
                tp->tp_name, attr_name.c_str());
@@ -183,7 +183,7 @@ __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase3) val) {
   return 0;
 
 attrerr:
-  PyTypeObject *tp = Py_TYPE(self);
+  PyTypeObject *tp = self->ob_type;
   PyErr_Format(PyExc_AttributeError,
                "'%.100s' object has no attribute '%.200s'",
                tp->tp_name, attr_name.c_str());
@@ -230,7 +230,7 @@ __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase4) val) {
   return 0;
 
 attrerr:
-  PyTypeObject *tp = Py_TYPE(self);
+  PyTypeObject *tp = self->ob_type;
   PyErr_Format(PyExc_AttributeError,
                "'%.100s' object has no attribute '%.200s'",
                tp->tp_name, attr_name.c_str());
