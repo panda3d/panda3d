@@ -717,7 +717,7 @@
 #defer HAVE_XRANDR $[libtest $[XRANDR_LPATH],$[XRANDR_LIBS]]
 
 // This defines if we have XCURSOR installed. This
-// enables resolution switching in x11display.
+// enables custom cursor support in x11display.
 #define XCURSOR_IPATH /usr/include/X11/extensions
 #define XCURSOR_LPATH /usr/lib
 #define XCURSOR_LIBS Xcursor
