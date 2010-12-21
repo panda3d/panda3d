@@ -22,7 +22,7 @@ TypeHandle FLOATNAME(LVecBase3)::_type_handle;
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
 #endif
-#endif
+#endif  // HAVE_PYTHON
 
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_zero =
   FLOATNAME(LVecBase3)(0.0f, 0.0f, 0.0f);
@@ -56,9 +56,7 @@ __reduce__(PyObject *self) const {
   Py_DECREF(this_class);
   return result;
 }
-#endif  // HAVE_PYTHON
 
-#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::__getattr__
 //       Access: Published
@@ -93,6 +91,123 @@ __getattr__(const string &attr_name) const {
   }
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::__setattr__
+//       Access: Published
+//  Description: This is used to implement write masks.
+////////////////////////////////////////////////////////////////////
+int FLOATNAME(LVecBase3)::
+__setattr__(PyObject *self, const string &attr_name, FLOATTYPE val) {
+#ifndef NDEBUG
+  // Loop through the components in the attribute name,
+  // and assign the floating-point value to every one of them.
+  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+    if ((*it) < 'x' || (*it) > 'z') {
+      PyTypeObject *tp = Py_TYPE(self);
+      PyErr_Format(PyExc_AttributeError,
+                   "'%.100s' object has no attribute '%.200s'",
+                   tp->tp_name, attr_name.c_str());
+      return -1;
+    }
+
+    _v.data[(*it) - 'x'] = val;
+  }
+#endif
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::__setattr__
+//       Access: Published
+//  Description: This is used to implement write masks.
+////////////////////////////////////////////////////////////////////
+int FLOATNAME(LVecBase3)::
+__setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase2) val) {
+#ifndef NDEBUG
+  // Validate the attribute name.
+  if (attr_name.size() > 3) {
+    goto attrerr;
+  }
+  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+    if ((*it) < 'x' || (*it) > 'z') {
+      goto attrerr;
+    }
+  }
+  
+  // Make sure the right type is passed for the right write mask length.
+  if (attr_name.size() == 1) {
+    PyErr_SetString(PyExc_AttributeError, "a float is required");
+    return -1;
+
+  } else if (attr_name.size() != 2) {
+    PyTypeObject &tp = FLOATNAME(Dtool_LVecBase2).As_PyTypeObject();
+    PyErr_Format(PyExc_AttributeError,
+                 "cannot assign '%s' to write mask '%s'",
+                 tp.tp_name, attr_name.c_str());
+    return -1;
+  }
+#endif
+
+  // Assign the components.
+  _v.data[attr_name[0] - 'x'] = val._v.v._0;
+  _v.data[attr_name[1] - 'x'] = val._v.v._1;
+  return 0;
+
+attrerr:
+  PyTypeObject *tp = Py_TYPE(self);
+  PyErr_Format(PyExc_AttributeError,
+               "'%.100s' object has no attribute '%.200s'",
+               tp->tp_name, attr_name.c_str());
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::__setattr__
+//       Access: Published
+//  Description: This is used to implement write masks.
+////////////////////////////////////////////////////////////////////
+int FLOATNAME(LVecBase3)::
+__setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase3) val) {
+#ifndef NDEBUG
+  // Validate the attribute name.
+  if (attr_name.size() > 3) {
+    goto attrerr;
+  }
+  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+    if ((*it) < 'x' || (*it) > 'z') {
+      goto attrerr;
+    }
+  }
+  
+  // Make sure the right type is passed for the right write mask length.
+  if (attr_name.size() == 1) {
+    PyErr_SetString(PyExc_AttributeError, "a float is required");
+    return -1;
+
+  } else if (attr_name.size() != 3) {
+    PyTypeObject &tp = FLOATNAME(Dtool_LVecBase3).As_PyTypeObject();
+    PyErr_Format(PyExc_AttributeError,
+                 "cannot assign '%s' to write mask '%s'",
+                 tp.tp_name, attr_name.c_str());
+    return -1;
+  }
+#endif
+
+  // Assign the components.
+  _v.data[attr_name[0] - 'x'] = val._v.v._0;
+  _v.data[attr_name[1] - 'x'] = val._v.v._1;
+  _v.data[attr_name[2] - 'x'] = val._v.v._2;
+  return 0;
+
+attrerr:
+  PyTypeObject *tp = Py_TYPE(self);
+  PyErr_Format(PyExc_AttributeError,
+               "'%.100s' object has no attribute '%.200s'",
+               tp->tp_name, attr_name.c_str());
+  return -1;
 }
 #endif  // HAVE_PYTHON
 

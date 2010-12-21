@@ -25,6 +25,12 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE x, FLOATTYPE y);
 
+#ifdef HAVE_PYTHON
+  PyObject *__getattr__(const string &attr_name) const;
+  int __setattr__(PyObject *self, const string &attr_name, FLOATTYPE val);
+  int __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase2) val);
+#endif
+
   INLINE_LINMATH static const FLOATNAME(LVector2) &zero();
   INLINE_LINMATH static const FLOATNAME(LVector2) &unit_x();
   INLINE_LINMATH static const FLOATNAME(LVector2) &unit_y();
