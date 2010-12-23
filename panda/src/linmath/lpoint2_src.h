@@ -26,6 +26,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y);
 
+#ifdef HAVE_PYTHON
+  PyObject *__getattr__(const string &attr_name) const;
+  int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
+#endif
+
   INLINE_LINMATH static const FLOATNAME(LPoint2) &zero();
   INLINE_LINMATH static const FLOATNAME(LPoint2) &unit_x();
   INLINE_LINMATH static const FLOATNAME(LPoint2) &unit_y();

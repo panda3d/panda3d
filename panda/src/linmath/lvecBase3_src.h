@@ -40,9 +40,7 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__getattr__(const string &attr_name) const;
-  int __setattr__(PyObject *self, const string &attr_name, FLOATTYPE val);
-  int __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase2) val);
-  int __setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase3) val);
+  int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
 #endif
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;

@@ -58,51 +58,8 @@ __getattr__(const string &attr_name) const {
 //  Description: This is used to implement write masks.
 ////////////////////////////////////////////////////////////////////
 int FLOATNAME(LVector2)::
-__setattr__(PyObject *self, const string &attr_name, FLOATTYPE val) {
-#ifndef NDEBUG
-  // Loop through the components in the attribute name,
-  // and assign the floating-point value to every one of them.
-  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
-    if ((*it) != 'x' && (*it) != 'y') {
-      PyTypeObject *tp = self->ob_type;
-      PyErr_Format(PyExc_AttributeError,
-                   "'%.100s' object has no attribute '%.200s'",
-                   tp->tp_name, attr_name.c_str());
-      return -1;
-    }
-
-    _v.data[(*it) - 'x'] = val;
-  }
-#endif
-
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::__setattr__
-//       Access: Published
-//  Description: This is used to implement write masks.
-////////////////////////////////////////////////////////////////////
-int FLOATNAME(LVector2)::
-__setattr__(PyObject *self, const string &attr_name, FLOATNAME(LVecBase2) val) {
-#ifndef NDEBUG
-  // Validate the attribute name.
-  if (attr_name == "x" || attr_name == "y") {
-    PyErr_SetString(PyExc_ValueError, "a float is required");
-    return -1;
-  }
-  if (attr_name != "xy" && attr_name != "yx") {
-    PyTypeObject *tp = self->ob_type;
-    PyErr_Format(PyExc_AttributeError,
-                 "'%.100s' object has no attribute '%.200s'",
-                 tp->tp_name, attr_name.c_str());
-    return -1;
-  }
-#endif
-
-  _v.data[attr_name[0] - 'x'] = val._v.v._0;
-  _v.data[attr_name[1] - 'x'] = val._v.v._1;
-  return 0;
+__setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
+  return FLOATNAME(LVecBase2)::__setattr__(self, attr_name, assign);
 }
 #endif  // HAVE_PYTHON
 
