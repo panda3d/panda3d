@@ -392,9 +392,6 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
 
   normal.normalize();
 
-  cerr << "p0 = " << p0 << "\np1 = " << p1 << "\np2 = " << p2
-       << "\nnormal = " << normal << "\n";
-
   // Compute the transform necessary to rotate all of the points into
   // the Y = 0 plane.
   LMatrix4f rotate;
