@@ -74,6 +74,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyModule_AddIntConstant(...);
   EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
   EXPCL_DTOOLCONFIG int PyModule_AddStringConstant(...);
+  EXPCL_DTOOLCONFIG int PyNumber_Float(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
   EXPCL_DTOOLCONFIG int PyObject_CallFunction(...);
@@ -94,6 +95,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyObject_Str(...);
   EXPCL_DTOOLCONFIG int PyObject_Type(...);
   EXPCL_DTOOLCONFIG int PySequence_Check(...);
+  EXPCL_DTOOLCONFIG int PySequence_Fast(...);
   EXPCL_DTOOLCONFIG int PySequence_GetItem(...);
   EXPCL_DTOOLCONFIG int PySequence_Size(...);
   EXPCL_DTOOLCONFIG int PySequence_Tuple(...);
@@ -209,6 +211,7 @@ int PyMapping_GetItemString(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
+int PyNumber_Float(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_Call(...) { return 0; }
 int PyObject_CallFunction(...) { return 0; }
@@ -229,6 +232,7 @@ int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
 int PyObject_Type(...) { return 0; }
 int PySequence_Check(...) { return 0; }
+int PySequence_Fast(...) { return 0; }
 int PySequence_GetItem(...) { return 0; }
 int PySequence_Size(...) { return 0; }
 int PySequence_Tuple(...) { return 0; }
