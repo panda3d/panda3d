@@ -1883,6 +1883,9 @@ check_event(Display *display, XEvent *event, char *arg) {
 ////////////////////////////////////////////////////////////////////
 Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
+#ifndef HAVE_XCURSOR
+  return None;
+#else
   // First, look for the unresolved filename in our index.
   pmap<Filename, Cursor>::iterator fi = _cursor_filenames.find(filename);
   if (fi != _cursor_filenames.end()) {
@@ -1925,7 +1928,6 @@ get_cursor(const Filename &filename) {
   Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {
     // X11 cursor.
-#ifdef HAVE_XCURSOR
     x11display_cat.debug()
       << "Loading X11 cursor " << filename << "\n";
     XcursorFile xcfile;
@@ -1939,7 +1941,6 @@ get_cursor(const Filename &filename) {
       h = XcursorImagesLoadCursor(_display, images);
       XcursorImagesDestroy(images);
     }
-#endif
 
   } else if (memcmp(magic, "\0\0\1\0", 4) == 0
           || memcmp(magic, "\0\0\2\0", 4) == 0) {
@@ -2006,9 +2007,7 @@ read_ico(istream &ico) {
   XcursorImage *image = NULL;
   Cursor ret = None;
 
-#ifdef HAVE_XCURSOR
   int def_size = XcursorGetDefaultSize(_display);
-#endif
 
   // Get our header, note that ICO = type 1 and CUR = type 2.
   ico.read(reinterpret_cast<char *>(&header), sizeof(IcoHeader));
@@ -2021,13 +2020,11 @@ read_ico(istream &ico) {
   ico.read(reinterpret_cast<char *>(entries), header.count * sizeof(IcoEntry));
   if (!ico.good()) goto cleanup;
   for (i = 1; i < header.count; i++) {
-#ifdef HAVE_XCURSOR
     if (entries[i].width == def_size && entries[i].height == def_size) {
       // Wait, this is the default cursor size.  This is perfect.
       entry = i;
       break;
     }
-#endif
     if (entries[i].width > entries[entry].width ||
         entries[i].height > entries[entry].height)
         entry = i;
@@ -2061,7 +2058,6 @@ read_ico(istream &ico) {
   ico.read(andBmp, andBmpSize);
   if (!ico.good()) goto cleanup;
 
-#ifdef HAVE_XCURSOR
   // If this is an actual CUR not an ICO set up the hotspot properly.
   image = XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
   if (header.type == 2) { image->xhot = entries[entry].xhot; image->yhot = entries[entry].yhot; }
@@ -2143,12 +2139,9 @@ read_ico(istream &ico) {
   }
 
   ret = XcursorImageLoadCursor(_display, image);
-#endif
 
 cleanup:
-#ifdef HAVE_XCURSOR
   XcursorImageDestroy(image);
-#endif
   delete[] entries;
   delete[] palette;
   delete[] xorBmp;
@@ -2156,4 +2149,5 @@ cleanup:
 
   return ret;
 }
+#endif  // HAVE_XCURSOR
 

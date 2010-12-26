@@ -76,7 +76,9 @@ protected:
 
 private:
   Cursor get_cursor(const Filename &filename);
+#ifdef HAVE_XCURSOR
   Cursor read_ico(istream &ico);
+#endif
   
 protected:
   Display *_display;
