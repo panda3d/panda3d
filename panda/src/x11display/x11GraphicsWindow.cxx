@@ -1904,7 +1904,8 @@ get_cursor(const Filename &filename) {
   }
 
   // Open the file through the virtual file system.
-  istream *str = VirtualFileSystem::get_global_ptr()->open_read_file(resolved, true);
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *str = vfs->open_read_file(resolved, true);
   if (str == NULL) {
     x11display_cat.warning()
       << "Could not open cursor file " << filename << "\n";
@@ -1946,8 +1947,9 @@ get_cursor(const Filename &filename) {
       << "Loading Windows cursor " << filename << "\n";
     h = read_ico(*str);
   }
-  
-  delete str;
+
+  // Delete the istream.
+  vfs->close_read_file(str);
 
   if (h == None) {
     x11display_cat.warning()
@@ -2010,9 +2012,9 @@ read_ico(istream &ico) {
   // Get our header, note that ICO = type 1 and CUR = type 2.
   ico.read(reinterpret_cast<char *>(&header), sizeof(IcoHeader));
   if (!ico.good()) goto cleanup;
-  cerr << header.type;
   if (header.type != 1 && header.type != 2) goto cleanup;
   if (header.count < 1) goto cleanup;
+
   // Read the entry table into memory, select the largest entry.
   entries = new IcoEntry[header.count];
   ico.read(reinterpret_cast<char *>(entries), header.count * sizeof(IcoEntry));
@@ -2042,6 +2044,10 @@ read_ico(istream &ico) {
 
   // Load the color palette, if one exists.
   colorCount = entries[entry].colorCount == 0 ? 256 : entries[entry].colorCount;
+  // FIXME: this is probably not a proper fix:
+  if (bitsPerPixel == 1) {
+    colorCount = 2;
+  }
   palette = new IcoColor[colorCount];
   if (bitsPerPixel <= 8) ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
   if (!ico.good()) goto cleanup;
