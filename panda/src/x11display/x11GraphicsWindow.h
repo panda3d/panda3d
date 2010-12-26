@@ -76,6 +76,7 @@ protected:
 
 private:
   Cursor get_cursor(const Filename &filename);
+  Cursor read_ico(istream &ico);
   
 protected:
   Display *_display;
