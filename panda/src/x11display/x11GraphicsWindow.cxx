@@ -2044,14 +2044,12 @@ read_ico(istream &ico) {
   if (infoHeader.compression != 0) goto cleanup;
 
   // Load the color palette, if one exists.
-  colorCount = entries[entry].colorCount == 0 ? 256 : entries[entry].colorCount;
-  // FIXME: this is probably not a proper fix:
-  if (bitsPerPixel == 1) {
-    colorCount = 2;
+  if (bitsPerPixel != 24 && bitsPerPixel != 32) {
+    colorCount = 1 << bitsPerPixel;
+    palette = new IcoColor[colorCount];
+    ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
+    if (!ico.good()) goto cleanup;
   }
-  palette = new IcoColor[colorCount];
-  if (bitsPerPixel <= 8) ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
-  if (!ico.good()) goto cleanup;
 
   // Read in the pixel data.
   xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
