@@ -1941,7 +1941,8 @@ get_cursor(const Filename &filename) {
     }
 #endif
 
-  } else {
+  } else if (memcmp(magic, "\0\0\1\0", 4) == 0
+          || memcmp(magic, "\0\0\2\0", 4) == 0) {
     // Windows .ico or .cur file.
     x11display_cat.debug()
       << "Loading Windows cursor " << filename << "\n";
