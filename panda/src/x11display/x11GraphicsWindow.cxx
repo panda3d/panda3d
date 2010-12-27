@@ -1885,6 +1885,7 @@ Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
 #ifndef HAVE_XCURSOR
   return None;
+}
 #else
   // First, look for the unresolved filename in our index.
   pmap<Filename, Cursor>::iterator fi = _cursor_filenames.find(filename);
