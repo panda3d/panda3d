@@ -664,29 +664,33 @@ set_properties_now(WindowProperties &properties) {
     _awaiting_configure = true;
   }
 
-  // Load a custom cursor from a file.
-  if (properties.has_cursor_filename()) {
-    Filename filename = properties.get_cursor_filename();
-    Cursor cursor = get_cursor(filename);
-
-    _properties.set_cursor_filename(filename);
-    // Note that if the cursor fails to load, cursor will be None
-    XDefineCursor(_display, _xwindow, cursor);
-
-    properties.clear_cursor_filename();
-  }
-
   // We hide the cursor by setting it to an invisible pixmap.
-  // Do this check after setting the custom cursor, to hide the
-  // custom cursor if necessary.
-  if (properties.has_cursor_hidden()) {
-    _properties.set_cursor_hidden(properties.get_cursor_hidden());
-    if (properties.get_cursor_hidden()) {
+  // We can also load a custom cursor from a file.
+  if (properties.has_cursor_hidden() || properties.has_cursor_filename()) {
+    if (properties.has_cursor_hidden()) {
+      _properties.set_cursor_hidden(properties.get_cursor_hidden());
+      properties.clear_cursor_hidden();
+    }
+    Filename cursor_filename;
+    if (properties.has_cursor_filename()) {
+      cursor_filename = properties.get_cursor_filename();
+      _properties.set_cursor_filename(cursor_filename);
+      properties.clear_cursor_filename();
+    }
+    Filename filename = properties.get_cursor_filename();
+    _properties.set_cursor_filename(filename);
+
+    if (_properties.get_cursor_hidden()) {
       XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
+
+    } else if (!cursor_filename.empty()) {
+      // Note that if the cursor fails to load, cursor will be None
+      Cursor cursor = get_cursor(cursor_filename);
+      XDefineCursor(_display, _xwindow, cursor);
+
     } else {
       XDefineCursor(_display, _xwindow, None);
     }
-    properties.clear_cursor_hidden();
   }
 
   if (properties.has_foreground()) {
@@ -941,6 +945,11 @@ open_window() {
 
   if (_properties.get_cursor_hidden()) {
     XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
+
+  } else if (_properties.has_cursor_filename() && !_properties.get_cursor_filename().empty()) {
+    // Note that if the cursor fails to load, cursor will be None
+    Cursor cursor = get_cursor(_properties.get_cursor_filename());
+    XDefineCursor(_display, _xwindow, cursor);
   }
   
   XMapWindow(_display, _xwindow);
@@ -1959,7 +1968,6 @@ get_cursor(const Filename &filename) {
       << "X11 cursor filename '" << resolved << "' could not be loaded!\n";
   }
 
-  _cursor_filenames[filename] = h;
   _cursor_filenames[resolved] = h;
   return h;
 }
