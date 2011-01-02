@@ -37,25 +37,29 @@ public:
   // Some of these flags clearly only make sense in certain contexts,
   // e.g. for a function or method.
   enum StorageClass {
-    SC_static       = 0x001,
-    SC_extern       = 0x002,
-    SC_c_binding    = 0x004,
-    SC_virtual      = 0x008,
-    SC_inline       = 0x010,
-    SC_explicit     = 0x020,
-    SC_register     = 0x040,
-    SC_pure_virtual = 0x080,
-    SC_volatile     = 0x100,
-    SC_mutable      = 0x200,
+    SC_static       = 0x0001,
+    SC_extern       = 0x0002,
+    SC_c_binding    = 0x0004,
+    SC_virtual      = 0x0008,
+    SC_inline       = 0x0010,
+    SC_explicit     = 0x0020,
+    SC_register     = 0x0040,
+    SC_pure_virtual = 0x0080,
+    SC_volatile     = 0x0100,
+    SC_mutable      = 0x0200,
 
     // This bit is only set by CPPStructType::check_virtual().
-    SC_inherited_virtual = 0x400,
+    SC_inherited_virtual = 0x0400,
 
     // This is a special "storage class" for methods tagged with the
     // BLOCKING macro (i.e. the special __blocking keyword).  These
     // are methods that might block and therefore need to release
     // Python threads for their duration.
-    SC_blocking     = 0x800,
+    SC_blocking     = 0x0800,
+
+    // And this is for methods tagged with __extension, which declares
+    // extension methods defined separately from the source code.
+    SC_extension    = 0x1000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);

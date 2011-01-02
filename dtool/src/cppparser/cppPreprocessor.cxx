@@ -1966,6 +1966,7 @@ check_keyword(const string &name) {
   if (name == "__end_publish") return KW_END_PUBLISH;
   if (name == "enum") return KW_ENUM;
   if (name == "extern") return KW_EXTERN;
+  if (name == "__extension") return KW_EXTENSION;
   if (name == "explicit") return KW_EXPLICIT;
   if (name == "__published") return KW_PUBLISHED;
   if (name == "false") return KW_FALSE;

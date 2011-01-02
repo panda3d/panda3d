@@ -44,6 +44,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _ForcedVoidReturn = false;
   _has_this = false;
   _blocking = false;
+  _extension = false;
   _const_method = false;
   _first_true_parameter = 0;
   _num_default_parameters = num_default_parameters;
@@ -115,10 +116,11 @@ string FunctionRemap::call_function(ostream &out, int indent_level, bool convert
       InterfaceMaker::indent(out, indent_level)
         << "unref_delete(" << container << ");\n";
     } else {
-        if(inside_python_native)
+        if (inside_python_native) {
           InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self); \n";
-        else
-            InterfaceMaker::indent(out, indent_level) << " delete " << container << ";\n";
+        } else {
+          InterfaceMaker::indent(out, indent_level) << " delete " << container << ";\n";
+        }
     }
 
   } else if (_type == T_typecast_method) {
@@ -376,8 +378,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << _expression;
     }
 
-  } else if (_type == T_setter) 
-  {
+  } else if (_type == T_setter) {
     if (!container.empty()) {
       call << "(" << container << ")->" << _expression;
     } else {
@@ -388,23 +389,41 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     _parameters[0]._remap->pass_parameter(call, get_parameter_expr(_first_true_parameter, pexprs));
 
   } else {
-
-    if (_type == T_constructor) {
-      // Constructors are called differently.
-      call << _cpptype->get_local_name(&parser);
-
-    } else if (_has_this && !container.empty()) {
-      // If we have a "this" parameter, the calling convention is also
-      // a bit different.
-      call << "(" << container << ")->" << _cppfunc->get_local_name();
-      
-    } else {
-      call << _cppfunc->get_local_name(&parser);
-    }
-
     const char *separator = "";
 
-    call << "(";
+    // If this function is marked as having an extension function,
+    // call that instead.  The naming convention of the extension
+    // function has to match the EXT_IMPL definition in dtoolbase.h.
+    if (_extension) {
+      if (_cpptype != NULL) {
+        call << "_ext_"  << _cpptype->get_local_name()
+                         << _cppfunc->get_local_name() << "(";
+      } else {
+        call << "_ext__" << _cppfunc->get_local_name() << "(";
+      }
+
+      if (_has_this && !container.empty()) {
+        call << container;
+        separator = ", ";
+      }
+    } else {
+
+      if (_type == T_constructor) {
+        // Constructors are called differently.
+        call << _cpptype->get_local_name(&parser);
+
+      } else if (_has_this && !container.empty()) {
+        // If we have a "this" parameter, the calling convention is also
+        // a bit different.
+        call << "(" << container << ")->" << _cppfunc->get_local_name();
+        
+      } else {
+        call << _cppfunc->get_local_name(&parser);
+      }
+
+      call << "(";
+    }
+
     if (_flags & F_explicit_self) {
       // Pass on the PyObject * that we stripped off above.
       call << separator << "self";
@@ -472,10 +491,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _type = T_setter;
   }
 
-  if (_cpptype != (CPPType *)NULL &&
-      ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0)) {
+  if ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0) {
     // If it's marked as a "blocking" method or function, record that.
     _blocking = true;
+  }
+  if ((_cppfunc->_storage_class & CPPInstance::SC_extension) != 0) {
+    // Same with functions or methods marked with "extension".
+    _extension = true;
   }
 
   string fname = _cppfunc->get_simple_name();

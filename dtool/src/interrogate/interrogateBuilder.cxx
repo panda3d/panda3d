@@ -376,10 +376,10 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
 
   declaration_bodies << "#include <sstream>\n";
 
-  if (build_python_native  )
-  {
-    if(library_name.size() > 1)
-        declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
+  if (build_python_native) {
+    if (library_name.size() > 1) {
+      declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
+    }
     declaration_bodies << "#include \"py_panda.h\"  \n";
   }
   declaration_bodies << "\n";
@@ -396,6 +396,12 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
       } else {
         declaration_bodies << "#include <" << filename << ">\n";
       }
+    // Check if it's a special extension file.
+    } else if (filename.length() > 6 && filename.substr(filename.length() - 6) == "_ext.I") {
+      declaration_bodies
+        << "#define this _ext_this\n"
+        << "#include \"" << filename << "\"\n"
+        << "#undef this\n";
     }
   }
   declaration_bodies << "\n";
@@ -921,7 +927,7 @@ in_noinclude(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 bool InterrogateBuilder::
 should_include(const string &filename) const {
-  // Don't directly include any .cxx or .I files.
+  // Don't directly include any .cxx or .I files, except for extensions.
   if (CPPFile::is_c_or_i_file(filename)) {
     return false;
   }

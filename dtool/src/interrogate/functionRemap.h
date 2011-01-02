@@ -97,6 +97,7 @@ public:
   bool _ForcedVoidReturn;
   bool _has_this;
   bool _blocking;
+  bool _extension;
   bool _const_method;
   int _first_true_parameter;
   int _num_default_parameters;
