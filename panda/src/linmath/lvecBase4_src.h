@@ -41,17 +41,13 @@ PUBLISHED:
 
   INLINE_LINMATH ~FLOATNAME(LVecBase4)();
 
-#ifdef HAVE_PYTHON
-  PyObject *__reduce__(PyObject *self) const;
-  PyObject *__getattr__(const string &attr_name) const;
-  int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-#endif
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-#ifdef HAVE_PYTHON
-  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
-#endif
+  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
@@ -135,9 +131,7 @@ PUBLISHED:
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
-#ifdef HAVE_PYTHON
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
-#endif
+  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;

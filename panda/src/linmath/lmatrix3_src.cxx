@@ -45,34 +45,6 @@ const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_lz_to_ry_mat =
 const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ly_to_rz_mat =
   FLOATNAME(LMatrix3)::_flip_z_mat * FLOATNAME(LMatrix3)::_y_to_z_up_mat;
 
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
-PyObject *FLOATNAME(LMatrix3)::
-__reduce__(PyObject *self) const {
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
-
-  PyObject *result = Py_BuildValue("(O(fffffffff))", this_class, 
-                                   _m.m._00, _m.m._01, _m.m._02,
-                                   _m.m._10, _m.m._11, _m.m._12,
-                                   _m.m._20, _m.m._21, _m.m._22);
-  Py_DECREF(this_class);
-  return result;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::set_scale_shear_mat
 //       Access: Public
@@ -431,29 +403,6 @@ write(ostream &out, int indent_level) const {
     << MAYBE_ZERO(_m.m._22)
     << "\n";
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::python_repr
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix3)::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "(" 
-      << MAYBE_ZERO(_m.m._00) << ", "
-      << MAYBE_ZERO(_m.m._01) << ", "
-      << MAYBE_ZERO(_m.m._02) << ", "
-
-      << MAYBE_ZERO(_m.m._10) << ", "
-      << MAYBE_ZERO(_m.m._11) << ", "
-      << MAYBE_ZERO(_m.m._12) << ", "
-
-      << MAYBE_ZERO(_m.m._20) << ", "
-      << MAYBE_ZERO(_m.m._21) << ", "
-      << MAYBE_ZERO(_m.m._22) << ")";
-}
-#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::generate_hash

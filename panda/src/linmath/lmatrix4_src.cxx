@@ -62,35 +62,6 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_lz_to_ry_mat =
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ly_to_rz_mat =
   FLOATNAME(LMatrix4)::_flip_z_mat * FLOATNAME(LMatrix4)::_y_to_z_up_mat;
 
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
-PyObject *FLOATNAME(LMatrix4)::
-__reduce__(PyObject *self) const {
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
-
-  PyObject *result = Py_BuildValue("(O(ffffffffffffffff))", this_class, 
-                                   _m.m._00, _m.m._01, _m.m._02, _m.m._03,
-                                   _m.m._10, _m.m._11, _m.m._12, _m.m._13,
-                                   _m.m._20, _m.m._21, _m.m._22, _m.m._23,
-                                   _m.m._30, _m.m._31, _m.m._32, _m.m._33);
-  Py_DECREF(this_class);
-  return result;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
 //       Access: Public, Static
@@ -367,37 +338,6 @@ output(ostream &out) const {
       << MAYBE_ZERO(_m.m._33)
       << " ]";
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::python_repr
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix4)::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "(" 
-      << MAYBE_ZERO(_m.m._00) << ", "
-      << MAYBE_ZERO(_m.m._01) << ", "
-      << MAYBE_ZERO(_m.m._02) << ", "
-      << MAYBE_ZERO(_m.m._03) << ", "
-
-      << MAYBE_ZERO(_m.m._10) << ", "
-      << MAYBE_ZERO(_m.m._11) << ", "
-      << MAYBE_ZERO(_m.m._12) << ", "
-      << MAYBE_ZERO(_m.m._13) << ", "
-
-      << MAYBE_ZERO(_m.m._20) << ", "
-      << MAYBE_ZERO(_m.m._21) << ", "
-      << MAYBE_ZERO(_m.m._22) << ", "
-      << MAYBE_ZERO(_m.m._23) << ", "
-
-      << MAYBE_ZERO(_m.m._30) << ", "
-      << MAYBE_ZERO(_m.m._31) << ", "
-      << MAYBE_ZERO(_m.m._32) << ", "
-      << MAYBE_ZERO(_m.m._33) << ")";
-}
-#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::write

@@ -44,19 +44,6 @@ operator [](int i) {
   return _row[i];
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::Row::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LMatrix3)::Row::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 3);
-  _row[i] = v;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Row::size
 //       Access: Public, Static

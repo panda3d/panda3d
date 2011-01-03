@@ -209,15 +209,3 @@ signed_angle_deg(const FLOATNAME(LVector2) &other) const {
   return rad_2_deg(signed_angle_rad(other));
 }
 
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::python_repr
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LVector2)::
-python_repr(ostream &out, const string &class_name) const {
-  FLOATNAME(LVecBase2)::python_repr(out, class_name);
-}
-#endif  // HAVE_PYTHON

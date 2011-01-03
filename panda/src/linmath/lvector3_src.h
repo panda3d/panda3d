@@ -31,10 +31,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
 
-#ifdef HAVE_PYTHON
-  PyObject *__getattr__(const string &attr_name) const;
-  int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-#endif
+  EXTENSION(PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LVector3) &zero();
   INLINE_LINMATH static const FLOATNAME(LVector3) &unit_x();
@@ -84,9 +82,7 @@ PUBLISHED:
   INLINE_LINMATH static FLOATNAME(LVector3) rfu(FLOATTYPE right,
                                         FLOATTYPE fwd,FLOATTYPE up,     CoordinateSystem cs = CS_default);
 
-#ifdef HAVE_PYTHON
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
-#endif
+  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 
 public:
   static TypeHandle get_class_type() {

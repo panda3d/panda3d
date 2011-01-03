@@ -30,11 +30,9 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH FLOATTYPE &operator [](int i);
-#ifdef HAVE_PYTHON
-    INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
-#endif
+    EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
     INLINE_LINMATH static int size();
-  private:
+  public:
     FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
   };
@@ -44,7 +42,7 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH static int size();
-  private:
+  public:
     const FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
   };
@@ -60,9 +58,7 @@ PUBLISHED:
                                      FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
-#ifdef HAVE_PYTHON
-  PyObject *__reduce__(PyObject *self) const;
-#endif
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
@@ -236,9 +232,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
-#ifdef HAVE_PYTHON
-  void python_repr(ostream &out, const string &class_name) const;
-#endif
+  EXTENSION(void python_repr(ostream &out, const string &class_name) const);
 
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;

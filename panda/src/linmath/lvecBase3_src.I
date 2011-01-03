@@ -156,19 +156,6 @@ operator [](int i) {
   return _v.data[i];
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LVecBase3)::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 3);
-  _v.data[i] = v;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::size
 //       Access: Public, Static
@@ -874,22 +861,6 @@ output(ostream &out) const {
       << MAYBE_ZERO(_v.v._1) << " "
       << MAYBE_ZERO(_v.v._2);
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::python_repr
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LVecBase3)::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "(" 
-      << MAYBE_ZERO(_v.v._0) << ", "
-      << MAYBE_ZERO(_v.v._1) << ", "
-      << MAYBE_ZERO(_v.v._2) << ")";
-}
-#endif  // HAVE_PYTHON
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::generate_hash

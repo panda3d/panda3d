@@ -14,7 +14,7 @@
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
      coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h  \
      flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
-     lcast_to_src.I lmatrix.h  lmatrix3_src.I  \
+     lcast_to_src.I lmatrix.h lmatrix_ext.I lmatrix3_src.I  \
      lmatrix3_src.cxx lmatrix3_src.h lmatrix4_src.I  \
      lmatrix4_src.cxx lmatrix4_src.h lorientation.h  \
      lorientation_src.I lorientation_src.cxx lorientation_src.h  \
@@ -26,14 +26,18 @@
      lrotation_src.cxx lrotation_src.h luse.I luse.N luse.h  \
      lvec2_ops.h lvec2_ops_src.I lvec2_ops_src.h lvec3_ops.h  \
      lvec3_ops_src.I lvec3_ops_src.h lvec4_ops.h lvec4_ops_src.I  \
-     lvec4_ops_src.h lvecBase2.h lvecBase2_src.I  \
-     lvecBase2_src.cxx lvecBase2_src.h lvecBase3.h  \
-     lvecBase3_src.I lvecBase3_src.cxx lvecBase3_src.h  \
-     lvecBase4.h lvecBase4_src.I lvecBase4_src.cxx  \
-     lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.cxx  \
-     lvector2_src.h lvector3.h lvector3_src.I lvector3_src.cxx  \
-     lvector3_src.h lvector4.h lvector4_src.I lvector4_src.cxx  \
-     lvector4_src.h mathNumbers.h mathNumbers.I vector_Colorf.h  \
+     lvec4_ops_src.h \
+     lvecBase2.h lvecBase2_src.I lvecBase2_src.cxx lvecBase2_src.h  \
+     lvecBase3.h lvecBase3_src.I lvecBase3_src.cxx lvecBase3_src.h  \
+     lvecBase4.h lvecBase4_src.I lvecBase4_src.cxx lvecBase4_src.h  \
+     lvector2.h lvector2_src.I lvector2_src.cxx lvector2_src.h  \
+     lvector3.h lvector3_src.I lvector3_src.cxx lvector3_src.h  \
+     lvector4.h lvector4_src.I lvector4_src.cxx lvector4_src.h  \
+     lvector4.h lvector4_src.I lvector4_src.cxx lvector4_src.h  \
+     lvecBase2_ext.I lvecBase3_ext.I lvecBase4_ext.I \
+     lpoint2_ext.I lpoint3_ext.I lpoint4_ext.I \
+     lvector2_ext.I lvector3_ext.I lvector4_ext.I \
+     mathNumbers.h mathNumbers.I vector_Colorf.h  \
      vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h  \
      vector_TexCoordf.h vector_Vertexf.h
     
