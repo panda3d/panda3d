@@ -396,8 +396,16 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     // function has to match the EXT_IMPL definition in dtoolbase.h.
     if (_extension) {
       if (_cpptype != NULL) {
-        call << "_ext_"  << _cpptype->get_local_name()
+        // Fix nested classes by replacing :: with __
+        char* nested_name = strdup(_cpptype->get_local_name(&parser).c_str());
+        for (int i = 0; i < strlen(nested_name); ++i) {
+          if (nested_name[i] == ':') {
+            nested_name[i] = '_';
+          }
+        }
+        call << "_ext_"  << nested_name << "_"
                          << _cppfunc->get_local_name() << "(";
+        delete[] nested_name;
       } else {
         call << "_ext__" << _cppfunc->get_local_name() << "(";
       }

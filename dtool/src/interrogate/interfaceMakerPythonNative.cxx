@@ -1580,7 +1580,10 @@ write_module_class(ostream &out,  Object *obj) {
         out << "       return NULL;\n";
         out << "    };\n";
         out << "     ostringstream os;\n";
-        if (need_repr == 2) {
+        if (need_repr == 3) {
+          out << "     _ext_" << ClassName << "_python_repr(local_this, os, \""
+              << classNameFromCppName(ClassName) << "\");\n";
+        } else if (need_repr == 2) {
           out << "     local_this->output(os);\n";
         } else {
           out << "     local_this->python_repr(os, \""
@@ -3651,6 +3654,9 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
 //               Returns 1 if the class defines python_repr(ostream, string).
 //
 //               Returns 2 if the class defines output(ostream).
+//
+//               Returns 3 if the class defines an extension
+//               function for python_repr(ostream, string).
 ////////////////////////////////////////////////////////////////////
 int InterfaceMakerPythonNative::
 NeedsAReprFunction(const InterrogateType &itype_class) {
@@ -3681,7 +3687,11 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
                   if (TypeManager::is_string(inst1->_type) ||
                       TypeManager::is_char_pointer(inst1->_type)) {
                     // python_repr(ostream, string)
-                    return 1;
+                    if ((cppinst->_storage_class & CPPInstance::SC_extension) != 0) {
+                      return 3;
+                    } else {
+                      return 1;
+                    }
                   }
                 }
               }

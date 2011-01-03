@@ -215,5 +215,32 @@ private:
 
 #endif  // USE_TAU
 
+#ifdef CPPPARSER
+#define EXT_METHOD(cl, m) cl::m()
+#define EXT_METHOD_ARGS(cl, m, ...) cl::m(__VA_ARGS__)
+#define EXT_CONST_METHOD(cl, m) cl::m() const
+#define EXT_CONST_METHOD_ARGS(cl, m, ...) cl::m(__VA_ARGS__) const
+#define EXT_NESTED_METHOD(cl1, cl2, m) cl1::cl2::m()
+#define EXT_NESTED_METHOD_ARGS(cl1, cl2, m, ...) cl1::cl2::m(__VA_ARGS__)
+#define EXT_NESTED_CONST_METHOD(cl1, cl2, m) cl1::cl2::m() const
+#define EXT_NESTED_CONST_METHOD_ARGS(cl1, cl2, m, ...) cl1::cl2::m(__VA_ARGS__) const
+#define CALL_EXT_METHOD(cl, m, obj, ...) (obj)-> m(__VA_ARGS__)
+#else
+/* If you change these, don't forget to also change it in interrogate itself. */
+#define __EXT_METHOD(cl, m) _ext_ ## cl ## _ ## m
+#define _EXT_METHOD(cl, m) __EXT_METHOD(cl, m)
+#define __EXT_NEST(cl1, cl2) cl1 ## __ ## cl2
+#define _EXT_NEST(cl1, cl2) __EXT_NEST(cl1, cl2)
+#define EXT_METHOD(cl, m) _EXT_METHOD(cl, m) (cl * _ext_this)
+#define EXT_METHOD_ARGS(cl, m, ...) _EXT_METHOD(cl, m) (cl * _ext_this, __VA_ARGS__)
+#define EXT_CONST_METHOD(cl, m) _EXT_METHOD(cl, m) (const cl * _ext_this)
+#define EXT_CONST_METHOD_ARGS(cl, m, ...) _EXT_METHOD(cl, m) (const cl * _ext_this, __VA_ARGS__)
+#define EXT_NESTED_METHOD(cl1, cl2, m) _EXT_METHOD(_EXT_NEST(cl1, cl2), m) (cl1::cl2 * _ext_this)
+#define EXT_NESTED_METHOD_ARGS(cl1, cl2, m, ...) _EXT_METHOD(_EXT_NEST(cl1, cl2), m) (cl1::cl2 * _ext_this, __VA_ARGS__)
+#define EXT_NESTED_CONST_METHOD(cl1, cl2, m) _EXT_METHOD(_EXT_NEST(cl1, cl2), m) (const cl1::cl2 * _ext_this)
+#define EXT_NESTED_CONST_METHOD_ARGS(cl1, cl2, m, ...) _EXT_METHOD(_EXT_NEST(cl1, cl2), m) (const cl1::cl2 * _ext_this, __VA_ARGS__)
+#define CALL_EXT_METHOD(cl, m, ...) _EXT_METHOD(cl, m) (__VA_ARGS__)
+#endif
+
 #endif  //  __cplusplus
 #endif

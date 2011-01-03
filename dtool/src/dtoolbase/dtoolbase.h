@@ -326,14 +326,11 @@
 #define BLOCKING __blocking
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #undef USE_STL_ALLOCATOR  /* Don't try to parse these template classes in interrogate. */
-#define EXTENSION(x) __extension x;
+#define EXTENSION(x) __extension x
 #define EXTEND __extension
 #define EXT_FUNC(func) ::func()
 #define EXT_FUNC_ARGS(func, ...) ::func(__VA_ARGS__)
-#define EXT_METHOD(cl, m) cl::m()
-#define EXT_METHOD_ARGS(cl, m, ...) cl::m(__VA_ARGS__)
-#define EXT_CONST_METHOD(cl, m) cl::m() const
-#define EXT_CONST_METHOD_ARGS(cl, m, ...) cl::m(__VA_ARGS__) const
+#define CALL_EXT_FUNC(func, ...) ::func (__VA_ARGS__)
 #else
 #define BEGIN_PUBLISH
 #define END_PUBLISH
@@ -341,13 +338,11 @@
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define EXTENSION(x)
 #define EXTEND
-/* If you change this, don't forget to also change it in interrogate itself. */
-#define EXT_FUNC(cl, m) _ext__ ## m ()
-#define EXT_FUNC_ARGS(cl, m, ...) _ext__ ## m (__VA_ARGS__)
-#define EXT_METHOD(cl, m) _ext_ ## cl ## _ ## m (cl * _ext_this)
-#define EXT_METHOD_ARGS(cl, m, ...) _ext_ ## cl ## _ ## m (cl * _ext_this, __VA_ARGS__)
-#define EXT_CONST_METHOD(cl, m) _ext_ ## cl ## _ ## m (const cl * _ext_this)
-#define EXT_CONST_METHOD_ARGS(cl, m, ...) _ext_ ## cl ## _ ## m (const cl * _ext_this, __VA_ARGS__)
+/* If you change these, don't forget to also change it in interrogate itself. */
+#define _EXT_FUNC(func) _ext__ ## func
+#define EXT_FUNC(func) _EXT_FUNC(func) ()
+#define EXT_FUNC_ARGS(func, ...) _EXT_FUNC(func) (__VA_ARGS__)
+#define CALL_EXT_FUNC(func, ...) _EXT_METHOD(cl, m) (__VA_ARGS__)
 #endif
 
 #ifdef __cplusplus

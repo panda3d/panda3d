@@ -621,7 +621,7 @@
 #defer get_igatescan \
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
      $[if $[eq $[IGATESCAN], all], \
-      $[filter-out %.I %.T %.lxx %.yxx %.N %_src.cxx,$[get_sources]], \
+      $[filter-out %.I %.T %.lxx %.yxx %.N %_src.cxx,$[get_sources]] $[filter %_ext.I,$[get_sources]], \
       $[IGATESCAN]]]
 
 // This variable returns the name of the interrogate database file
