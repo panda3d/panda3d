@@ -2421,7 +2421,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
   TargetAdd('linmath_composite.obj', opts=OPTS, input='linmath_composite.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_ext.I", "*_composite.cxx"])
   IGATEFILES.remove('lmat_ops_src.h')
   IGATEFILES.remove('cast_to_double.h')
   IGATEFILES.remove('lmat_ops.h')
