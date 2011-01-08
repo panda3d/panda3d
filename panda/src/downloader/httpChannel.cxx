@@ -46,9 +46,8 @@ HTTPChannel::
 HTTPChannel(HTTPClient *client) :
   _client(client)
 {
-  // This should be debug
-  if (downloader_cat.is_info()) {
-    downloader_cat.info()
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
       << _NOTIFY_HTTP_CHANNEL_ID 
     << "created.\n";
   }
@@ -122,9 +121,8 @@ HTTPChannel(HTTPClient *client) :
 ////////////////////////////////////////////////////////////////////
 HTTPChannel::
 ~HTTPChannel() {
-  // This should be debug
-  if (downloader_cat.is_info()) {
-    downloader_cat.info()
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
       << _NOTIFY_HTTP_CHANNEL_ID 
     << "destroyed.\n";
   }
@@ -309,9 +307,8 @@ write_headers(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run() {
-  // This should be spam
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
       << _NOTIFY_HTTP_CHANNEL_ID 
       << "run().\n";
   }
@@ -1039,9 +1036,8 @@ run_connecting() {
     return false;
   }
 
-  // This should be info or debug
-  if (downloader_cat.is_info()) {
-    downloader_cat.info()
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
       << _NOTIFY_HTTP_CHANNEL_ID 
       << "Connected to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
@@ -2735,9 +2731,8 @@ reconsider_proxy() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 reset_for_new_request() {
-  // This should be spam
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
       << _NOTIFY_HTTP_CHANNEL_ID 
       << "reset_for_new_request.\n";
   }
@@ -3976,9 +3971,8 @@ reset_download_to() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 reset_to_new() {
-  // This should be debug or spam
-  if (downloader_cat.is_info()) {
-    downloader_cat.info()
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
       << _NOTIFY_HTTP_CHANNEL_ID 
       << "reset_to_new.\n";
   }
