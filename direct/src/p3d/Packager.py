@@ -2292,6 +2292,8 @@ class Packager:
 
         path = ExecutionEnvironment.getEnvironmentVariable(varname)
         if len(path) == 0:
+            if varname not in os.environ:
+                return
             path = os.environ[varname]
         for dirname in path.split(';'):
             dirname = Filename.fromOsSpecific(dirname)
@@ -2304,6 +2306,8 @@ class Packager:
 
         path = ExecutionEnvironment.getEnvironmentVariable(varname)
         if len(path) == 0:
+            if varname not in os.environ:
+                return
             path = os.environ[varname]
         for dirname in path.split(':'):
             dirname = Filename.fromOsSpecific(dirname)
