@@ -700,7 +700,7 @@ def DeleteBuildFiles(dir):
     if dir == "": dir = "."
     for entry in os.listdir(dir):
         subdir = os.path.join(dir, entry)
-        if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in SUFFIX_INC+[".pp", ".moved"]):
+        if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".pp", ".moved"]):
             os.remove(subdir)
         elif (os.path.isdir(subdir)):
             if (os.path.basename(subdir)[:3] == "Opt" and os.path.basename(subdir)[4] == "-"):
