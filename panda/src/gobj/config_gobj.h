@@ -31,6 +31,7 @@ enum AutoTextureScale {
   ATS_none,
   ATS_down,
   ATS_up,
+  ATS_pad,
   ATS_UNSPECIFIED,
 };
 enum ShaderUtilization {

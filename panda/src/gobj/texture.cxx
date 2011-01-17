@@ -854,6 +854,130 @@ set_ram_image(CPTA_uchar image, Texture::CompressionMode compression,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_ram_image_as
+//       Access: Published
+//  Description: Replaces the current system-RAM image with the new
+//               data, converting it first if necessary from the
+//               indicated component-order format.  See
+//               get_ram_image_as() for specifications about the
+//               format.  This method cannot support compressed image
+//               data or sub-pages; use set_ram_image() for that.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
+  string format = upcase(supplied_format);
+
+  // Make sure we can grab something that's uncompressed.
+  int imgsize = _x_size * _y_size;
+  nassertv(image.size() == (size_t)(_component_width * format.size() * imgsize));
+
+  // Check if the format is already what we have internally.
+  if ((_num_components == 1 && format.size() == 1) ||
+      (_num_components == 2 && format.size() == 2 && format.at(1) == 'A' && format.at(0) != 'A') ||
+      (_num_components == 3 && format == "BGR") ||
+      (_num_components == 4 && format == "BGRA")) {
+    // The format string is already our format, so we just need to copy it.
+    set_ram_image(image);
+    return;
+  }
+
+  // Create a new empty array that can hold our image.
+  PTA_uchar newdata = PTA_uchar::empty_array(imgsize * _num_components * _component_width, get_class_type());
+
+  // These ifs are for optimization of commonly used image types.
+  if (format == "RGBA" && _num_components == 4 && _component_width == 1) {
+    imgsize *= 4;
+    for (int p = 0; p < imgsize; p += 4) {
+      newdata[p + 2] = image[p    ];
+      newdata[p + 1] = image[p + 1];
+      newdata[p    ] = image[p + 2];
+      newdata[p + 3] = image[p + 3];
+    }
+    set_ram_image(newdata);
+    return;
+  }
+  if (format == "RGB" && _num_components == 3 && _component_width == 1) {
+    imgsize *= 3;
+    for (int p = 0; p < imgsize; p += 3) {
+      newdata[p + 2] = image[p    ];
+      newdata[p + 1] = image[p + 1];
+      newdata[p    ] = image[p + 2];
+    }
+    set_ram_image(newdata);
+    return;
+  }
+  if (format == "A" && _component_width == 1 && _num_components != 3) {
+    // We can generally rely on alpha to be the last component.
+    int component = _num_components - 1;
+    for (int p = 0; p < imgsize; ++p) {
+      newdata[component] = image[p];
+    }
+    set_ram_image(newdata);
+    return;
+  }
+  if (_component_width == 1) {
+    for (int p = 0; p < imgsize; ++p) {
+      for (uchar s = 0; s < format.size(); ++s) {
+        signed char component = -1;
+        if (format.at(s) == 'B' || (_num_components <= 2 && format.at(s) != 'A')) {
+          component = 0;
+        } else if (format.at(s) == 'G') {
+          component = 1;
+        } else if (format.at(s) == 'R') {
+          component = 2;
+        } else if (format.at(s) == 'A') {
+          nassertv(_num_components != 3);
+          component = _num_components - 1;
+        } else if (format.at(s) == '0') {
+          // Ignore.
+        } else if (format.at(s) == '1') {
+          // Ignore.
+        } else {
+          gobj_cat.error() << "Unexpected component character '"
+            << format.at(s) << "', expected one of RGBA!\n";
+          return;
+        }
+        if (component >= 0) {
+          newdata[p * _num_components + component] = image[p * format.size() + s];
+        }
+      }
+    }
+    set_ram_image(newdata);
+    return;
+  }
+  for (int p = 0; p < imgsize; ++p) {
+    for (uchar s = 0; s < format.size(); ++s) {
+      signed char component = -1;
+      if (format.at(s) == 'B' || (_num_components <= 2 && format.at(s) != 'A')) {
+        component = 0;
+      } else if (format.at(s) == 'G') {
+        component = 1;
+      } else if (format.at(s) == 'R') {
+        component = 2;
+      } else if (format.at(s) == 'A') {
+        nassertv(_num_components != 3);
+        component = _num_components - 1;
+      } else if (format.at(s) == '0') {
+        // Ignore.
+      } else if (format.at(s) == '1') {
+        // Ignore.
+      } else {
+        gobj_cat.error() << "Unexpected component character '"
+          << format.at(s) << "', expected one of RGBA!\n";
+        return;
+      }
+      if (component >= 0) {
+        memcpy((void*)(newdata + (p * _num_components + component) * _component_width),
+               (void*)(image + (p * format.size() + s) * _component_width),
+               _component_width);
+      }
+    }
+  }
+  set_ram_image(newdata);
+  return;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_keep_ram_image
 //       Access: Published, Virtual
 //  Description: Returns the flag that indicates whether this Texture
@@ -1700,11 +1824,464 @@ void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
-  if (adjust_size(new_x_size, new_y_size, name)) {
+  if (adjust_size(new_x_size, new_y_size, name, false)) {
     pnmimage.set_read_size(new_x_size, new_y_size);
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_texture_type
+//       Access: Published, Static
+//  Description: Returns the indicated TextureType converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_texture_type(TextureType tt) {
+  switch (tt) {
+  case TT_1d_texture:
+    return "1d_texture";
+  case TT_2d_texture:
+    return "2d_texture";
+  case TT_3d_texture:
+    return "3d_texture";
+  case TT_2d_texture_array:
+    return "2d_texture_array";
+  case TT_cube_map:
+    return "cube_map";
+  }
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_texture_type
+//       Access: Published, Static
+//  Description: Returns the TextureType corresponding to the
+//               indicated string word.
+////////////////////////////////////////////////////////////////////
+Texture::TextureType Texture::
+string_texture_type(const string &str) {
+  if (cmp_nocase(str, "1d_texture") == 0) {
+    return TT_1d_texture;
+  } else if (cmp_nocase(str, "2d_texture") == 0) {
+    return TT_2d_texture;
+  } else if (cmp_nocase(str, "3d_texture") == 0) {
+    return TT_3d_texture;
+  } else if (cmp_nocase(str, "2d_texture_array") == 0) {
+    return TT_2d_texture_array;
+  } else if (cmp_nocase(str, "cube_map") == 0) {
+    return TT_cube_map;
+  }
+
+  gobj_cat->error()
+    << "Invalid Texture::TextureLevel value: " << str << "\n";
+  return TT_2d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_component_type
+//       Access: Published, Static
+//  Description: Returns the indicated ComponentType converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_component_type(ComponentType ct) {
+  switch (ct) {
+  case T_unsigned_byte:
+    return "unsigned_byte";
+  case T_unsigned_short:
+    return "unsigned_short";
+  case T_float:
+    return "float";
+  case T_unsigned_int_24_8:
+    return "unsigned_int_24_8";
+  }
+
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_component_type
+//       Access: Published, Static
+//  Description: Returns the ComponentType corresponding to the
+//               indicated string word.
+////////////////////////////////////////////////////////////////////
+Texture::ComponentType Texture::
+string_component_type(const string &str) {
+  if (cmp_nocase(str, "unsigned_byte") == 0) {
+    return T_unsigned_byte;
+  } else if (cmp_nocase(str, "unsigned_short") == 0) {
+    return T_unsigned_short;
+  } else if (cmp_nocase(str, "float") == 0) {
+    return T_float;
+  } else if (cmp_nocase(str, "unsigned_int_24_8") == 0) {
+    return T_unsigned_int_24_8;
+  }
+
+  gobj_cat->error()
+    << "Invalid Texture::ComponentType value: " << str << "\n";
+  return T_unsigned_byte;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_format
+//       Access: Published, Static
+//  Description: Returns the indicated Format converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_format(Format format) {
+  switch (format) {
+  case F_depth_stencil:
+    return "depth_stencil";
+  case F_depth_component:
+    return "depth_component";
+  case F_depth_component16:
+    return "depth_component16";
+  case F_depth_component24:
+    return "depth_component24";
+  case F_depth_component32:
+    return "depth_component32";
+  case F_color_index:
+    return "color_index";
+  case F_red:
+    return "red";
+  case F_green:
+    return "green";
+  case F_blue:
+    return "blue";
+  case F_alpha:
+    return "alpha";
+  case F_rgb:
+    return "rgb";
+  case F_rgb5:
+    return "rgb5";
+  case F_rgb8:
+    return "rgb8";
+  case F_rgb12:
+    return "rgb12";
+  case F_rgb332:
+    return "rgb332";
+  case F_rgba:
+    return "rgba";
+  case F_rgbm:
+    return "rgbm";
+  case F_rgba4:
+    return "rgba4";
+  case F_rgba5:
+    return "rgba5";
+  case F_rgba8:
+    return "rgba8";
+  case F_rgba12:
+    return "rgba12";
+  case F_luminance:
+    return "luminance";
+  case F_luminance_alpha:
+    return "luminance_alpha";
+  case F_luminance_alphamask:
+    return "luminance_alphamask";
+  case F_rgba16:
+    return "rgba16";
+  case F_rgba32:
+    return "rgba32";
+  }
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_format
+//       Access: Published, Static
+//  Description: Returns the Format corresponding to the
+//               indicated string word.
+////////////////////////////////////////////////////////////////////
+Texture::Format Texture::
+string_format(const string &str) {
+  if (cmp_nocase(str, "depth_stencil") == 0) {
+    return F_depth_stencil;
+  } else if (cmp_nocase(str, "depth_component") == 0) {
+    return F_depth_component;
+  } else if (cmp_nocase(str, "depth_component16") == 0) {
+    return F_depth_component16;
+  } else if (cmp_nocase(str, "depth_component24") == 0) {
+    return F_depth_component24;
+  } else if (cmp_nocase(str, "depth_component32") == 0) {
+    return F_depth_component32;
+  } else if (cmp_nocase(str, "color_index") == 0) {
+    return F_color_index;
+  } else if (cmp_nocase(str, "red") == 0) {
+    return F_red;
+  } else if (cmp_nocase(str, "green") == 0) {
+    return F_green;
+  } else if (cmp_nocase(str, "blue") == 0) {
+    return F_blue;
+  } else if (cmp_nocase(str, "alpha") == 0) {
+    return F_alpha;
+  } else if (cmp_nocase(str, "rgb") == 0) {
+    return F_rgb;
+  } else if (cmp_nocase(str, "rgb5") == 0) {
+    return F_rgb5;
+  } else if (cmp_nocase(str, "rgb8") == 0) {
+    return F_rgb8;
+  } else if (cmp_nocase(str, "rgb12") == 0) {
+    return F_rgb12;
+  } else if (cmp_nocase(str, "rgb332") == 0) {
+    return F_rgb332;
+  } else if (cmp_nocase(str, "rgba") == 0) {
+    return F_rgba;
+  } else if (cmp_nocase(str, "rgbm") == 0) {
+    return F_rgbm;
+  } else if (cmp_nocase(str, "rgba4") == 0) {
+    return F_rgba4;
+  } else if (cmp_nocase(str, "rgba5") == 0) {
+    return F_rgba5;
+  } else if (cmp_nocase(str, "rgba8") == 0) {
+    return F_rgba8;
+  } else if (cmp_nocase(str, "rgba12") == 0) {
+    return F_rgba12;
+  } else if (cmp_nocase(str, "luminance") == 0) {
+    return F_luminance;
+  } else if (cmp_nocase(str, "luminance_alpha") == 0) {
+    return F_luminance_alpha;
+  } else if (cmp_nocase(str, "luminance_alphamask") == 0) {
+    return F_luminance_alphamask;
+  } else if (cmp_nocase(str, "rgba16") == 0) {
+    return F_rgba16;
+  } else if (cmp_nocase(str, "rgba32") == 0) {
+    return F_rgba32;
+  }
+  
+  gobj_cat->error()
+    << "Invalid Texture::Format value: " << str << "\n";
+  return F_rgba;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_filter_type
+//       Access: Published, Static
+//  Description: Returns the indicated FilterType converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_filter_type(FilterType ft) {
+  switch (ft) {
+  case FT_nearest:
+    return "nearest";
+  case FT_linear:
+    return "linear";
+
+  case FT_nearest_mipmap_nearest:
+    return "nearest_mipmap_nearest";
+  case FT_linear_mipmap_nearest:
+    return "linear_mipmap_nearest";
+  case FT_nearest_mipmap_linear:
+    return "nearest_mipmap_linear";
+  case FT_linear_mipmap_linear:
+    return "linear_mipmap_linear";
+
+  case FT_shadow:
+    return "shadow";
+
+  case FT_default:
+    return "default";
+
+  case FT_invalid:
+    return "invalid";
+  }
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_filter_type
+//       Access: Public
+//  Description: Returns the FilterType value associated with the given
+//               string representation, or FT_invalid if the string
+//               does not match any known FilterType value.
+////////////////////////////////////////////////////////////////////
+Texture::FilterType Texture::
+string_filter_type(const string &string) {
+  if (cmp_nocase_uh(string, "nearest") == 0) {
+    return FT_nearest;
+  } else if (cmp_nocase_uh(string, "linear") == 0) {
+    return FT_linear;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_nearest") == 0) {
+    return FT_nearest_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_nearest") == 0) {
+    return FT_linear_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_linear") == 0) {
+    return FT_nearest_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_linear") == 0) {
+    return FT_linear_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "mipmap") == 0) {
+    return FT_linear_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "shadow") == 0) {
+    return FT_shadow;
+  } else if (cmp_nocase_uh(string, "default") == 0) {
+    return FT_default;
+  } else {
+    return FT_invalid;
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_wrap_mode
+//       Access: Published, Static
+//  Description: Returns the indicated WrapMode converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_wrap_mode(WrapMode wm) {
+  switch (wm) {
+  case WM_clamp:
+    return "clamp";
+  case WM_repeat:
+    return "repeat";
+  case WM_mirror:
+    return "mirror";
+  case WM_mirror_once:
+    return "mirror_once";
+  case WM_border_color:
+    return "border_color";
+
+  case WM_invalid:
+    return "invalid";
+  }
+
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_wrap_mode
+//       Access: Public
+//  Description: Returns the WrapMode value associated with the given
+//               string representation, or WM_invalid if the string
+//               does not match any known WrapMode value.
+////////////////////////////////////////////////////////////////////
+Texture::WrapMode Texture::
+string_wrap_mode(const string &string) {
+  if (cmp_nocase_uh(string, "repeat") == 0) {
+    return WM_repeat;
+  } else if (cmp_nocase_uh(string, "clamp") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "border_color") == 0) {
+    return WM_border_color;
+  } else {
+    return WM_invalid;
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_compression_mode
+//       Access: Published, Static
+//  Description: Returns the indicated CompressionMode converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_compression_mode(CompressionMode cm) {
+  switch (cm) {
+  case CM_default:
+    return "default";
+  case CM_off:
+    return "off";
+  case CM_on:
+    return "on";
+  case CM_fxt1:
+    return "fxt1";
+  case CM_dxt1:
+    return "dxt1";
+  case CM_dxt2:
+    return "dxt2";
+  case CM_dxt3:
+    return "dxt3";
+  case CM_dxt4:
+    return "dxt4";
+  case CM_dxt5:
+    return "dxt5";
+  }
+
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_compression_mode
+//       Access: Public
+//  Description: Returns the CompressionMode value associated with the
+//               given string representation.
+////////////////////////////////////////////////////////////////////
+Texture::CompressionMode Texture::
+string_compression_mode(const string &str) {
+  if (cmp_nocase_uh(str, "default") == 0) {
+    return CM_default;
+  } else if (cmp_nocase_uh(str, "off") == 0) {
+    return CM_off;
+  } else if (cmp_nocase_uh(str, "on") == 0) {
+    return CM_on;
+  } else if (cmp_nocase_uh(str, "fxt1") == 0) {
+    return CM_fxt1;
+  } else if (cmp_nocase_uh(str, "dxt1") == 0) {
+    return CM_dxt1;
+  } else if (cmp_nocase_uh(str, "dxt2") == 0) {
+    return CM_dxt2;
+  } else if (cmp_nocase_uh(str, "dxt3") == 0) {
+    return CM_dxt3;
+  } else if (cmp_nocase_uh(str, "dxt4") == 0) {
+    return CM_dxt4;
+  } else if (cmp_nocase_uh(str, "dxt5") == 0) {
+    return CM_dxt5;
+  }
+  
+  gobj_cat->error()
+    << "Invalid Texture::CompressionMode value: " << str << "\n";
+  return CM_default;
+}
+
+  
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::format_quality_level
+//       Access: Published, Static
+//  Description: Returns the indicated QualityLevel converted to a
+//               string word.
+////////////////////////////////////////////////////////////////////
+string Texture::
+format_quality_level(QualityLevel ql) {
+  switch (ql) {
+  case QL_default:
+    return "default";
+  case QL_fastest:
+    return "fastest";
+  case QL_normal:
+    return "normal";
+  case QL_best:
+    return "best";
+  }
+
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_quality_level
+//       Access: Public
+//  Description: Returns the QualityLevel value associated with the
+//               given string representation.
+////////////////////////////////////////////////////////////////////
+Texture::QualityLevel Texture::
+string_quality_level(const string &str) {
+  if (cmp_nocase(str, "default") == 0) {
+    return QL_default;
+  } else if (cmp_nocase(str, "fastest") == 0) {
+    return QL_fastest;
+  } else if (cmp_nocase(str, "normal") == 0) {
+    return QL_normal;
+  } else if (cmp_nocase(str, "best") == 0) {
+    return QL_best;
+  }
+
+  gobj_cat->error()
+    << "Invalid Texture::QualityLevel value: " << str << "\n";
+  return QL_default;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::texture_uploaded
@@ -1765,62 +2342,6 @@ has_cull_callback() const {
 bool Texture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::string_wrap_mode
-//       Access: Public
-//  Description: Returns the WrapMode value associated with the given
-//               string representation, or WM_invalid if the string
-//               does not match any known WrapMode value.
-////////////////////////////////////////////////////////////////////
-Texture::WrapMode Texture::
-string_wrap_mode(const string &string) {
-  if (cmp_nocase_uh(string, "repeat") == 0) {
-    return WM_repeat;
-  } else if (cmp_nocase_uh(string, "clamp") == 0) {
-    return WM_clamp;
-  } else if (cmp_nocase_uh(string, "mirror") == 0) {
-    return WM_clamp;
-  } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
-    return WM_clamp;
-  } else if (cmp_nocase_uh(string, "border_color") == 0) {
-    return WM_border_color;
-  } else {
-    return WM_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::string_filter_type
-//       Access: Public
-//  Description: Returns the FilterType value associated with the given
-//               string representation, or FT_invalid if the string
-//               does not match any known FilterType value.
-////////////////////////////////////////////////////////////////////
-Texture::FilterType Texture::
-string_filter_type(const string &string) {
-  if (cmp_nocase_uh(string, "nearest") == 0) {
-    return FT_nearest;
-  } else if (cmp_nocase_uh(string, "linear") == 0) {
-    return FT_linear;
-  } else if (cmp_nocase_uh(string, "nearest_mipmap_nearest") == 0) {
-    return FT_nearest_mipmap_nearest;
-  } else if (cmp_nocase_uh(string, "linear_mipmap_nearest") == 0) {
-    return FT_linear_mipmap_nearest;
-  } else if (cmp_nocase_uh(string, "nearest_mipmap_linear") == 0) {
-    return FT_nearest_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "linear_mipmap_linear") == 0) {
-    return FT_linear_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "mipmap") == 0) {
-    return FT_linear_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "shadow") == 0) {
-    return FT_shadow;
-  } else if (cmp_nocase_uh(string, "default") == 0) {
-    return FT_default;
-  } else {
-    return FT_invalid;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1911,7 +2432,8 @@ has_binary_alpha(Format format) {
 //               adjusted, or false if it is the same.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-adjust_size(int &x_size, int &y_size, const string &name) {
+adjust_size(int &x_size, int &y_size, const string &name,
+            bool for_padding) {
   bool exclude = false;
   int num_excludes = exclude_texture_scale.get_num_unique_values();
   for (int i = 0; i < num_excludes && !exclude; ++i) {
@@ -1934,13 +2456,22 @@ adjust_size(int &x_size, int &y_size, const string &name) {
     new_y_size = min(max(new_y_size, (int)texture_scale_limit), y_size);
   }
 
-  switch (get_textures_power_2()) {
+  AutoTextureScale ats = get_textures_power_2();
+  if (!for_padding && ats == ATS_pad) {
+    // If we're not calculating the padding size--that is, we're
+    // calculating the initial scaling size instead--then ignore
+    // ATS_pad, and treat it the same as ATS_none.
+    ats = ATS_none;
+  }
+
+  switch (ats) {
   case ATS_down:
     new_x_size = down_to_power_2(new_x_size);
     new_y_size = down_to_power_2(new_y_size);
     break;
 
   case ATS_up:
+  case ATS_pad:
     new_x_size = up_to_power_2(new_x_size);
     new_y_size = up_to_power_2(new_y_size);
     break;
@@ -1950,12 +2481,17 @@ adjust_size(int &x_size, int &y_size, const string &name) {
     break;
   }
 
-  switch (textures_square.get_value()) {
+  ats = textures_square.get_value();
+  if (!for_padding && ats == ATS_pad) {
+    ats = ATS_none;
+  }
+  switch (ats) {
   case ATS_down:
     new_x_size = new_y_size = min(new_x_size, new_y_size);
     break;
 
   case ATS_up:
+  case ATS_pad:
     new_x_size = new_y_size = max(new_x_size, new_y_size);
     break;
 
@@ -2425,7 +2961,29 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     }
   }
 
-  return do_load_one(image, fullpath.get_basename(), z, n, options);
+  // Now see if we want to pad the image within a larger power-of-2
+  // image.
+  int pad_x_size = 0;
+  int pad_y_size = 0;
+  if (get_textures_power_2() == ATS_pad) {
+    int new_x_size = image.get_x_size();
+    int new_y_size = image.get_y_size();
+    if (adjust_size(new_x_size, new_y_size, fullpath.get_basename(), true)) {
+      pad_x_size = new_x_size - image.get_x_size();
+      pad_y_size = new_y_size - image.get_y_size();
+      PNMImage new_image(new_x_size, new_y_size, image.get_num_channels(),
+                         image.get_maxval());
+      new_image.copy_sub_image(image, 0, new_y_size - image.get_y_size());
+      image.take_from(new_image);
+    }
+  }
+  
+  if (!do_load_one(image, fullpath.get_basename(), z, n, options)) {
+    return false;
+  }
+
+  do_set_pad_size(pad_x_size, pad_y_size, 0);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3271,7 +3829,7 @@ do_reload_ram_image(bool allow_compression) {
       // changed, and we want a different-sized texture now.
       int x_size = _orig_file_x_size;
       int y_size = _orig_file_y_size;
-      Texture::adjust_size(x_size, y_size, _filename.get_basename());
+      Texture::adjust_size(x_size, y_size, _filename.get_basename(), true);
       if (x_size != tex->get_x_size() || y_size != tex->get_y_size()) {
         if (gobj_cat.is_debug()) {
           gobj_cat.debug()
@@ -6498,20 +7056,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::TextureType tt) {
-  switch (tt) {
-  case Texture::TT_1d_texture:
-    return out << "1d_texture";
-  case Texture::TT_2d_texture:
-    return out << "2d_texture";
-  case Texture::TT_3d_texture:
-    return out << "3d_texture";
-  case Texture::TT_2d_texture_array:
-    return out << "2d_texture_array";
-  case Texture::TT_cube_map:
-    return out << "cube_map";
-  }
-
-  return out << "(**invalid Texture::TextureType(" << (int)tt << ")**)";
+  return out << Texture::format_texture_type(tt);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6520,18 +7065,7 @@ operator << (ostream &out, Texture::TextureType tt) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::ComponentType ct) {
-  switch (ct) {
-  case Texture::T_unsigned_byte:
-    return out << "unsigned_byte";
-  case Texture::T_unsigned_short:
-    return out << "unsigned_short";
-  case Texture::T_float:
-    return out << "float";
-  case Texture::T_unsigned_int_24_8:
-    return out << "unsigned_int_24_8";
-  }
-
-  return out << "(**invalid Texture::ComponentType(" << (int)ct << ")**)";
+  return out << Texture::format_component_type(ct);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6540,62 +7074,7 @@ operator << (ostream &out, Texture::ComponentType ct) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::Format f) {
-  switch (f) {
-  case Texture::F_depth_stencil:
-    return out << "depth_stencil";
-  case Texture::F_depth_component:
-    return out << "depth_component";
-  case Texture::F_depth_component16:
-    return out << "depth_component16";
-  case Texture::F_depth_component24:
-    return out << "depth_component24";
-  case Texture::F_depth_component32:
-    return out << "depth_component32";
-  case Texture::F_color_index:
-    return out << "color_index";
-  case Texture::F_red:
-    return out << "red";
-  case Texture::F_green:
-    return out << "green";
-  case Texture::F_blue:
-    return out << "blue";
-  case Texture::F_alpha:
-    return out << "alpha";
-  case Texture::F_rgb:
-    return out << "rgb";
-  case Texture::F_rgb5:
-    return out << "rgb5";
-  case Texture::F_rgb8:
-    return out << "rgb8";
-  case Texture::F_rgb12:
-    return out << "rgb12";
-  case Texture::F_rgb332:
-    return out << "rgb332";
-  case Texture::F_rgba:
-    return out << "rgba";
-  case Texture::F_rgbm:
-    return out << "rgbm";
-  case Texture::F_rgba4:
-    return out << "rgba4";
-  case Texture::F_rgba5:
-    return out << "rgba5";
-  case Texture::F_rgba8:
-    return out << "rgba8";
-  case Texture::F_rgba12:
-    return out << "rgba12";
-  case Texture::F_luminance:
-    return out << "luminance";
-  case Texture::F_luminance_alpha:
-    return out << "luminance_alpha";
-  case Texture::F_luminance_alphamask:
-    return out << "luminance_alphamask";
-  case Texture::F_rgba16:
-    return out << "rgba16";
-  case Texture::F_rgba32:
-    return out << "rgba32";
-  }
-
-  return out << "(**invalid Texture::Format(" << (int)f << ")**)";
+  return out << Texture::format_format(f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6604,32 +7083,7 @@ operator << (ostream &out, Texture::Format f) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::FilterType ft) {
-  switch (ft) {
-  case Texture::FT_nearest:
-    return out << "nearest";
-  case Texture::FT_linear:
-    return out << "linear";
-
-  case Texture::FT_nearest_mipmap_nearest:
-    return out << "nearest_mipmap_nearest";
-  case Texture::FT_linear_mipmap_nearest:
-    return out << "linear_mipmap_nearest";
-  case Texture::FT_nearest_mipmap_linear:
-    return out << "nearest_mipmap_linear";
-  case Texture::FT_linear_mipmap_linear:
-    return out << "linear_mipmap_linear";
-
-  case Texture::FT_shadow:
-    return out << "shadow";
-
-  case Texture::FT_default:
-    return out << "default";
-
-  case Texture::FT_invalid:
-    return out << "invalid";
-  }
-
-  return out << "(**invalid Texture::FilterType(" << (int)ft << ")**)";
+  return out << Texture::format_filter_type(ft);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6651,23 +7105,7 @@ operator >> (istream &in, Texture::FilterType &ft) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::WrapMode wm) {
-  switch (wm) {
-  case Texture::WM_clamp:
-    return out << "clamp";
-  case Texture::WM_repeat:
-    return out << "repeat";
-  case Texture::WM_mirror:
-    return out << "mirror";
-  case Texture::WM_mirror_once:
-    return out << "mirror_once";
-  case Texture::WM_border_color:
-    return out << "border_color";
-
-  case Texture::WM_invalid:
-    return out << "invalid";
-  }
-
-  return out << "(**invalid Texture::WrapMode(" << (int)wm << ")**)";
+  return out << Texture::format_wrap_mode(wm);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6689,28 +7127,7 @@ operator >> (istream &in, Texture::WrapMode &wm) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::CompressionMode cm) {
-  switch (cm) {
-  case Texture::CM_default:
-    return out << "default";
-  case Texture::CM_off:
-    return out << "off";
-  case Texture::CM_on:
-    return out << "on";
-  case Texture::CM_fxt1:
-    return out << "fxt1";
-  case Texture::CM_dxt1:
-    return out << "dxt1";
-  case Texture::CM_dxt2:
-    return out << "dxt2";
-  case Texture::CM_dxt3:
-    return out << "dxt3";
-  case Texture::CM_dxt4:
-    return out << "dxt4";
-  case Texture::CM_dxt5:
-    return out << "dxt5";
-  }
-
-  return out << "(**invalid Texture::CompressionMode(" << (int)cm << ")**)";
+  return out << Texture::format_compression_mode(cm);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6719,18 +7136,7 @@ operator << (ostream &out, Texture::CompressionMode cm) {
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, Texture::QualityLevel tql) {
-  switch (tql) {
-  case Texture::QL_default:
-    return out << "default";
-  case Texture::QL_fastest:
-    return out << "fastest";
-  case Texture::QL_normal:
-    return out << "normal";
-  case Texture::QL_best:
-    return out << "best";
-  }
-
-  return out << "**invalid Texture::QualityLevel (" << (int)tql << ")**";
+  return out << Texture::format_quality_level(tql);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6742,22 +7148,6 @@ operator >> (istream &in, Texture::QualityLevel &tql) {
   string word;
   in >> word;
 
-  if (cmp_nocase(word, "default") == 0) {
-    tql = Texture::QL_default;
-
-  } else if (cmp_nocase(word, "fastest") == 0) {
-    tql = Texture::QL_fastest;
-
-  } else if (cmp_nocase(word, "normal") == 0) {
-    tql = Texture::QL_normal;
-
-  } else if (cmp_nocase(word, "best") == 0) {
-    tql = Texture::QL_best;
-
-  } else {
-    gobj_cat->error() << "Invalid Texture::QualityLevel value: " << word << "\n";
-    tql = Texture::QL_default;
-  }
-
+  tql = Texture::string_quality_level(word);
   return in;
 }

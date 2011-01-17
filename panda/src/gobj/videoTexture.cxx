@@ -118,6 +118,9 @@ void VideoTexture::
 set_video_size(int video_width, int video_height) {
   _video_width = video_width;
   _video_height = video_height;
+  _orig_file_x_size = video_width;
+  _orig_file_y_size = video_height;
+
   do_set_pad_size(max(_x_size - _video_width, 0), 
                   max(_y_size - _video_height, 0),
                   0);

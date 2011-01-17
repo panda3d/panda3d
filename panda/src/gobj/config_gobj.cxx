@@ -551,6 +551,9 @@ operator << (ostream &out, AutoTextureScale ats) {
     
   case ATS_up:
     return out << "up";
+    
+  case ATS_pad:
+    return out << "pad";
 
   case ATS_UNSPECIFIED:
     return out << "UNSPECIFIED";
@@ -578,6 +581,9 @@ operator >> (istream &in, AutoTextureScale &ats) {
 
   } else if (cmp_nocase(word, "up") == 0) {
     ats = ATS_up;
+
+  } else if (cmp_nocase(word, "pad") == 0) {
+    ats = ATS_pad;
 
   } else {
     gobj_cat->error() << "Invalid AutoTextureScale value: " << word << "\n";

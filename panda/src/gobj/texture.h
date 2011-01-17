@@ -322,6 +322,7 @@ PUBLISHED:
   INLINE PTA_uchar make_ram_image();
   void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                      size_t page_size = 0);
+  void set_ram_image_as(CPTA_uchar image, const string &provided_format);
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -410,6 +411,7 @@ PUBLISHED:
   INLINE int get_pad_x_size() const;
   INLINE int get_pad_y_size() const;
   INLINE int get_pad_z_size() const;
+  INLINE LVecBase2f get_tex_scale() const;
   
   INLINE void set_pad_size(int x=0, int y=0, int z=0);
   void set_size_padded(int x=1, int y=1, int z=1);
@@ -445,14 +447,32 @@ PUBLISHED:
   void consider_rescale(PNMImage &pnmimage);
   static void consider_rescale(PNMImage &pnmimage, const string &name);
 
+  static string format_texture_type(TextureType tt);
+  static TextureType string_texture_type(const string &str);
+
+  static string format_component_type(ComponentType ct);
+  static ComponentType string_component_type(const string &str);
+
+  static string format_format(Format f);
+  static Format string_format(const string &str);
+  
+  static string format_filter_type(FilterType ft);
+  static FilterType string_filter_type(const string &str);
+  
+  static string format_wrap_mode(WrapMode wm);
+  static WrapMode string_wrap_mode(const string &str);
+  
+  static string format_compression_mode(CompressionMode cm);
+  static CompressionMode string_compression_mode(const string &str);
+
+  static string format_quality_level(QualityLevel tql);
+  static QualityLevel string_quality_level(const string &str);
+    
 public:
   void texture_uploaded();
   
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
-
-  static WrapMode string_wrap_mode(const string &string);
-  static FilterType string_filter_type(const string &string);
 
   static PT(Texture) make_texture();
 
@@ -461,7 +481,8 @@ public:
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
 
-  static bool adjust_size(int &x_size, int &y_size, const string &name);
+  static bool adjust_size(int &x_size, int &y_size, const string &name,
+                          bool for_padding);
 
 protected:
   virtual void reconsider_dirty();

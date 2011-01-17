@@ -518,6 +518,31 @@ get_pad_z_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_tex_scale
+//       Access: Published
+//  Description: Returns a scale pair that is suitable for applying to
+//               geometry via NodePath::set_tex_scale(), which will
+//               convert texture coordinates on the geometry from the
+//               range 0..1 into the appropriate range to render the
+//               video part of the texture.
+//
+//               This is necessary only if a padding size has been set
+//               via set_pad_size() (or implicitly via something like
+//               "textures-power-2 pad" in the config.prc file).  In
+//               this case, this is a convenient way to generate UV's
+//               that reflect the built-in padding size.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2f Texture::
+get_tex_scale() const {
+  if (_pad_x_size == 0 || _pad_y_size == 0 ||
+      _x_size == 0 || _y_size == 0) {
+    LVecBase2f(1.0f, 1.0f);
+  }
+  return LVecBase2f((float)(_x_size - _pad_x_size) / (float)_x_size,
+                    (float)(_y_size - _pad_y_size) / (float)_y_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_pad_size
 //       Access: Published
 //  Description: Sets the size of the pad region.
