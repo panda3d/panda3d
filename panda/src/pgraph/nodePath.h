@@ -904,7 +904,7 @@ PUBLISHED:
   INLINE void set_name(const string &name);
   INLINE string get_name() const;
 
-  BLOCKING bool write_bam_file(const string &filename) const;
+  BLOCKING bool write_bam_file(const Filename &filename) const;
   BLOCKING bool write_bam_stream(ostream &out) const;
 
   INLINE string encode_to_bam_stream() const;
