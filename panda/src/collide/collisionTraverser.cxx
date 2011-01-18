@@ -1195,21 +1195,24 @@ compare_collider_to_node(CollisionEntry &entry,
       << " which has " << num_solids << " collision solids.\n";
     for (int s = 0; s < num_solids; ++s) {
       entry._into = cnode->get_solid(s);
-      if (entry._from != entry._into) {
-        CPT(BoundingVolume) solid_bv = entry._into->get_bounds();
-        const GeometricBoundingVolume *solid_gbv = NULL;
-        if (num_solids > 1 &&
-            solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-          // Only bother to test against each solid's bounding
-          // volume if we have more than one solid in the node, as a
-          // slight optimization.  (If the node contains just one
-          // solid, then the node's bounding volume, which we just
-          // tested, is the same as the solid's bounding volume.)
-          DCAST_INTO_V(solid_gbv, solid_bv);
-        }
 
-        compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
+      // We should allow a collision test for solid into itself,
+      // because the solid might be simply instanced into multiple
+      // different CollisionNodes.  We are already filtering out tests
+      // for a CollisionNode into itself.
+      CPT(BoundingVolume) solid_bv = entry._into->get_bounds();
+      const GeometricBoundingVolume *solid_gbv = NULL;
+      if (num_solids > 1 &&
+          solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+        // Only bother to test against each solid's bounding
+        // volume if we have more than one solid in the node, as a
+        // slight optimization.  (If the node contains just one
+        // solid, then the node's bounding volume, which we just
+        // tested, is the same as the solid's bounding volume.)
+        DCAST_INTO_V(solid_gbv, solid_bv);
       }
+      
+      compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
     }
   }
 }
