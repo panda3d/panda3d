@@ -5060,7 +5060,7 @@ Priority: optional
 Architecture: ARCH
 Essential: no
 Depends: DEPENDS
-Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), python-pmw, RECOMMENDS
+Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-tk (>= PV), RECOMMENDS
 Provides: panda3d
 Conflicts: panda3d
 Replaces: panda3d
@@ -5244,7 +5244,8 @@ def MakeInstallerLinux():
             oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (libdir, MAJOR_VERSION, MAJOR_VERSION))
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
-            depends += ", " + PYTHONV
+            if PkgSkip("PYTHON")==0:
+                depends += ", " + PYTHONV + ", python-pmw"
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
         oscmd("rm -rf targetroot/debian")
         oscmd("chmod -R 755 targetroot/DEBIAN")
