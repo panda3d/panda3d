@@ -12,6 +12,7 @@ import string
 import types
 import getpass
 import platform
+import struct
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
 from direct.showbase import Loader
@@ -1062,7 +1063,7 @@ class Packager:
 
                 # Copy it every time, because the source file might
                 # have changed since last time we ran.
-                assert file.filename.exists(), "File doesn't exist: %s" % ffilename
+                assert file.filename.exists(), "File doesn't exist: %s" % file.filename
                 tmpfile = Filename.temporary('', "p3d_" + file.filename.getBasename())
                 file.filename.copyTo(tmpfile)
                 file.filename = tmpfile
@@ -1178,6 +1179,120 @@ class Packager:
 
             return filenames
 
+        def __readAndStripELF(self, file):
+            """ Reads the indicated ELF binary, and returns a list with
+            dependencies.  If it contains data that should be stripped,
+            it writes the stripped library to a temporary file.  Returns
+            None if the file failed to read (e.g. not an ELF file). """
+
+            # Read the first 16 bytes, which identify the ELF file.
+            elf = open(file.filename.toOsSpecific(), 'rb')
+            try:
+                ident = elf.read(16)
+            except IOError:
+                elf.close()
+                return None
+
+            if not ident.startswith("\177ELF"):
+                # Not an elf.  Beware of orcs.
+                return None
+
+            # Make sure we read in the correct endianness and integer size
+            byteOrder = "<>"[ord(ident[5]) - 1]
+            elfClass = ord(ident[4]) - 1 # 32-bits, 64-bits
+            headerStruct = byteOrder + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[elfClass]
+            sectionStruct = byteOrder + ("4xI8xIII8xI", "4xI16xQQI12xQ")[elfClass]
+            dynamicStruct = byteOrder + ("iI", "qQ")[elfClass]
+
+            type, machine, version, entry, phoff, shoff, flags, ehsize, phentsize, phnum, shentsize, shnum, shstrndx \
+              = struct.unpack(headerStruct, elf.read(struct.calcsize(headerStruct)))
+            dynamicSections = []
+            stringTables = {}
+
+            # Seek to the section header table and find the .dynamic section.
+            elf.seek(shoff)
+            for i in range(shnum):
+                type, offset, size, link, entsize = struct.unpack_from(sectionStruct, elf.read(shentsize))
+                if type == 6 and link != 0: # DYNAMIC type, links to string table
+                    dynamicSections.append((offset, size, link, entsize))
+                    stringTables[link] = None
+
+            # Read the relevant string tables.
+            for idx in stringTables.keys():
+                elf.seek(shoff + idx * shentsize)
+                type, offset, size, link, entsize = struct.unpack_from(sectionStruct, elf.read(shentsize))
+                if type != 3: continue
+                elf.seek(offset)
+                stringTables[idx] = elf.read(size)
+
+            # Loop through the dynamic sections and rewrite it if it has an rpath/runpath.
+            rewriteSections = []
+            filenames = []
+            rpath = []
+            for offset, size, link, entsize in dynamicSections:
+                elf.seek(offset)
+                data = elf.read(entsize)
+                tag, val = struct.unpack_from(dynamicStruct, data)
+                newSectionData = ""
+                startReplace = None
+                pad = 0
+
+                # Read tags until we find a NULL tag.
+                while tag != 0:
+                    if tag == 1: # A NEEDED entry.  Read it from the string table.
+                        filenames.append(stringTables[link][val : stringTables[link].find('\0', val)])
+
+                    elif tag == 15 or tag == 29:
+                        rpath += stringTables[link][val : stringTables[link].find('\0', val)].split(':')
+                        # An RPATH or RUNPATH entry.
+                        if not startReplace:
+                            startReplace = elf.tell() - entsize
+                        if startReplace:
+                            pad += entsize
+
+                    elif startReplace is not None:
+                        newSectionData += data
+
+                    data = elf.read(entsize)
+                    tag, val = struct.unpack_from(dynamicStruct, data)
+
+                if startReplace is not None:
+                    newSectionData += data + ("\0" * pad)
+                    rewriteSections.append((startReplace, newSectionData))
+            elf.close()
+
+            # No rpaths/runpaths found, so nothing to do any more.
+            if len(rewriteSections) == 0:
+                return filenames
+
+            # Attempt to resolve any of the directly
+            # dependent filenames along the RPATH.
+            for f in range(len(filenames)):
+                filename = filenames[f]
+                for rdir in rpath:
+                    if os.path.isfile(os.path.join(rdir, filename)):
+                        filenames[f] = os.path.join(rdir, filename)
+                        break
+
+            if not file.deleteTemp:
+                # Copy the file to a temporary location because we
+                # don't want to modify the original (there's a big
+                # chance that we break it).
+
+                tmpfile = Filename.temporary('', "p3d_" + file.filename.getBasename())
+                file.filename.copyTo(tmpfile)
+                file.filename = tmpfile
+                file.deleteTemp = True
+
+            # Open the temporary file and rewrite the dynamic sections.
+            elf = open(file.filename.toOsSpecific(), 'r+b')
+            for offset, data in rewriteSections:
+                elf.seek(offset)
+                elf.write(data)
+            elf.write("\0" * pad)
+            elf.close()
+            return filenames
+
         def __addImplicitDependenciesPosix(self):
             """ Walks through the list of files, looking for so's
             and executables that might include implicit dependencies
@@ -1195,19 +1310,24 @@ class Packager:
                     # Skip this file.
                     continue
 
-                tempFile = Filename.temporary('', 'p3d_', '.txt')
-                command = 'ldd "%s" >"%s"' % (
-                    file.filename.toOsSpecific(),
-                    tempFile.toOsSpecific())
-                try:
-                    os.system(command)
-                except:
-                    pass
-                filenames = None
+                # Check if this is an ELF binary.
+                filenames = self.__readAndStripELF(file)
 
-                if tempFile.exists():
-                    filenames = self.__parseDependenciesPosix(tempFile)
-                    tempFile.unlink()
+                # If that failed, perhaps ldd will help us.
+                if filenames is None:
+                    tempFile = Filename.temporary('', 'p3d_', '.txt')
+                    command = 'ldd "%s" >"%s"' % (
+                        file.filename.toOsSpecific(),
+                        tempFile.toOsSpecific())
+                    try:
+                        os.system(command)
+                    except:
+                        pass
+
+                    if tempFile.exists():
+                        filenames = self.__parseDependenciesPosix(tempFile)
+                        tempFile.unlink()
+
                 if filenames is None:
                     self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
                     continue
