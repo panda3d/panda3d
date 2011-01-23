@@ -61,6 +61,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyList_GetItem(...);
   EXPCL_DTOOLCONFIG int PyList_New(...);
   EXPCL_DTOOLCONFIG int PyList_SetItem(...);
+  EXPCL_DTOOLCONFIG int PyList_Type(...);
   EXPCL_DTOOLCONFIG int PyLong_AsLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLong(...);
@@ -198,6 +199,7 @@ int PyList_AsTuple(...) { return 0; }
 int PyList_GetItem(...) { return 0; }
 int PyList_New(...) { return 0; }
 int PyList_SetItem(...) { return 0; }
+int PyList_Type(...) { return 0; }
 int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
@@ -295,3 +297,4 @@ void *_Py_NotImplementedStruct = (void *)NULL;
 void
 pystub() {
 }
+
