@@ -166,7 +166,7 @@ bool wglGraphicsStateGuardian::
 get_properties_advanced(FrameBufferProperties &properties, 
                         HDC window_dc, int pfnum) {
   
-  static const int max_attrib_list = 256;
+  static const int max_attrib_list = 32;
   int iattrib_list[max_attrib_list];
   int ivalue_list[max_attrib_list];
   int ni = 0;
