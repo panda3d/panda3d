@@ -1216,14 +1216,14 @@ reset() {
     supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquation");
-  } else if (has_extension("GL_EXT_blend_minmax")) {
-    supports_blend_equation = true;
-    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
-      get_extension_func(GLPREFIX_QUOTED, "BlendEquationEXT");
   } else if (has_extension("GL_OES_blend_subtract")) {
     supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquationOES");
+  } else if (has_extension("GL_EXT_blend_minmax")) {
+    supports_blend_equation = true;
+    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BlendEquationEXT");
   }
   if (supports_blend_equation && _glBlendEquation == NULL) {
     GLCAT.warning()
