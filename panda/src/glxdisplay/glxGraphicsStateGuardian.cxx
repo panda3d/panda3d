@@ -296,7 +296,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int best_result = 0;
   FrameBufferProperties best_props;
 
-  static const int max_attrib_list = 32;
+  static const int max_attrib_list = 256;
   int attrib_list[max_attrib_list];
   int n = 0;
   attrib_list[n++] = GLX_STEREO;

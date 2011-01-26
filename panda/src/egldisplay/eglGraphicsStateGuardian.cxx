@@ -82,7 +82,7 @@ get_properties(FrameBufferProperties &properties,
   properties.clear();
 
   // Now update our framebuffer_mode and bit depth appropriately.
-  int red_size, green_size, blue_size,
+  EGLint red_size, green_size, blue_size,
     alpha_size,
     depth_size, stencil_size, samples, surface_type, caveat;
 
@@ -167,8 +167,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
   };
 
   int num_configs = 0;
-  EGLConfig configs[32];
-  if (!eglChooseConfig(_egl_display, attrib_list, configs, 32, &num_configs) || num_configs <= 0) {
+  EGLConfig configs[256];
+  if (!eglChooseConfig(_egl_display, attrib_list, configs, 256, &num_configs) || num_configs <= 0) {
     egldisplay_cat.error() << "eglChooseConfig failed: "
       << get_egl_error_string(eglGetError()) << "\n";
     return;
