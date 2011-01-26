@@ -166,11 +166,21 @@ choose_pixel_format(const FrameBufferProperties &properties,
     EGL_NONE
   };
 
-  int num_configs = 0;
-  EGLConfig configs[256];
-  if (!eglChooseConfig(_egl_display, attrib_list, configs, 256, &num_configs) || num_configs <= 0) {
+  // First get the number of matching configurations, so we know how much memory to allocate.
+  int num_configs = 0, returned_configs;
+  if (!eglChooseConfig(_egl_display, attrib_list, NULL, num_configs, &returned_configs) || returned_configs <= 0) {
     egldisplay_cat.error() << "eglChooseConfig failed: "
       << get_egl_error_string(eglGetError()) << "\n";
+    return;
+  }
+
+  num_configs = returned_configs;
+  EGLConfig *configs = new EGLConfig[num_configs];
+
+  if (!eglChooseConfig(_egl_display, attrib_list, configs, num_configs, &returned_configs) || returned_configs <= 0) {
+    egldisplay_cat.error() << "eglChooseConfig failed: "
+      << get_egl_error_string(eglGetError()) << "\n";
+    delete[] configs;
     return;
   }
 
@@ -178,34 +188,32 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int best_result = 0;
   FrameBufferProperties best_props;
 
-  if (configs != 0) {
-    for (int i = 0; i < num_configs; ++i) {
-      FrameBufferProperties fbprops;
-      bool pbuffer_supported, pixmap_supported, slow;
-      get_properties(fbprops, pbuffer_supported, pixmap_supported,
-                     slow, configs[i]);
-      // We're not protecting this code by an is_debug() check, because if we do,
-      // some weird compiler bug appears and somehow makes the quality always 0.
-      const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
-      const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
-      const char *slowtext = slow ? " (slow)" : "";
-      egldisplay_cat.debug()
-        << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
-      int quality = fbprops.get_quality(properties);
-      if ((quality > 0)&&(slow)) quality -= 10000000;
+  for (int i = 0; i < num_configs; ++i) {
+    FrameBufferProperties fbprops;
+    bool pbuffer_supported, pixmap_supported, slow;
+    get_properties(fbprops, pbuffer_supported, pixmap_supported,
+                   slow, configs[i]);
+    // We're not protecting this code by an is_debug() check, because if we do,
+    // some weird compiler bug appears and somehow makes the quality always 0.
+    const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
+    const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
+    const char *slowtext = slow ? " (slow)" : "";
+    egldisplay_cat.debug()
+      << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
+    int quality = fbprops.get_quality(properties);
+    if ((quality > 0)&&(slow)) quality -= 10000000;
 
-      if (need_pbuffer && !pbuffer_supported) {
-        continue;
-      }
-      if (need_pixmap && !pixmap_supported) {
-        continue;
-      }
+    if (need_pbuffer && !pbuffer_supported) {
+      continue;
+    }
+    if (need_pixmap && !pixmap_supported) {
+      continue;
+    }
 
-      if (quality > best_quality) {
-        best_quality = quality;
-        best_result = i;
-        best_props = fbprops;
-      }
+    if (quality > best_quality) {
+      best_quality = quality;
+      best_result = i;
+      best_props = fbprops;
     }
   }
   int depth = DefaultDepth(_display, _screen);
@@ -226,6 +234,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     if (_context && err == EGL_SUCCESS) {
       if (_visual) {
         _fbprops = best_props;
+        delete[] configs;
         return;
       }
     }
@@ -241,6 +250,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   egldisplay_cat.error() <<
     "Could not find a usable pixel format.\n";
+
+  delete[] configs;
 }
 
 ////////////////////////////////////////////////////////////////////
