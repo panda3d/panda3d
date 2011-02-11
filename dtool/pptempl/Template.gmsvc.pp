@@ -697,11 +697,11 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 #if $[or $[eq $[USE_COMPILER],MSVC8],$[eq $[USE_COMPILER],MSVC9],$[eq $[USE_COMPILER],MSVC9x64]]
 $[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;1
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]/
 #endif
+$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 
 #if $[build_pdbs]
 $[install_bin_dir]/$[TARGET].pdb : $[ODIR]/$[TARGET].pdb
