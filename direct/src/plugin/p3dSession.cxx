@@ -825,7 +825,20 @@ start_p3dpython(P3DInstance *inst) {
   // can fall back to loading and running the library directly.
   _p3dpython_exe = P3D_PLUGIN_P3DPYTHON;
   if (_p3dpython_exe.empty()) {
-    _p3dpython_exe = _python_root_dir + "/p3dpython";
+    string p3dpython_name = "p3dpython";
+
+    // Allow package to override the name of the p3dpython executable.
+    const TiXmlElement *panda3d_xconfig = inst->_panda3d->get_xconfig();
+    if (panda3d_xconfig != NULL) {
+      const char *p3dpython_name_x = panda3d_xconfig->Attribute("p3dpython_name");
+      if (p3dpython_name_x != NULL) {
+        nout << "p3dpython_name from panda3d xconfig: " << p3dpython_name_x << "\n";
+        p3dpython_name = p3dpython_name_x;
+      }
+    }
+
+    // Build full executable path.
+    _p3dpython_exe = _python_root_dir + "/" + p3dpython_name;
 #ifdef __APPLE__
     // On OSX, run from the packaged bundle, if it exists.
     string bundle_exe = _python_root_dir + "/P3DPython.app/Contents/MacOS/p3dpython";
@@ -841,6 +854,7 @@ start_p3dpython(P3DInstance *inst) {
   }
   _p3dpython_exe += ".exe";
 #endif
+  nout << "_p3dpython_exe: " << _p3dpython_exe << "\n";
 
   // Populate the new process' environment.
   _env = string();
