@@ -1054,31 +1054,49 @@ start_p3dpython(P3DInstance *inst) {
   }
 #endif  // _WIN32
 
-  // Check if we want to keep copies of recent logs on disk.
   // Get the log history count from the HTML tokens, or from the
   // p3d_info.xml file.
   int log_history = inst->get_fparams().lookup_token_int("log_history");
-  if (!log_basename.empty() && (log_history > 1)) {
-    // Append suffix separator
-    log_basename += "-";
 
-    // Delete all but the most recent 'log_history' logs
+  // Check if we want to keep copies of recent logs on disk.
+  if (!log_basename.empty()) {
+    // Get a list of all logs on disk
     vector<string> all_logs;
-    vector<string> matching_logs;
     string log_directory = inst_mgr->get_log_directory();
     inst_mgr->scan_directory(log_directory, all_logs);
+
+    // If keeping logs, only logs with a -timestamp suffix are valid.
+    if (log_history > 0) {
+      // Remove exact match (no suffix) file, if it is on disk
+      string log_exact_leafname = (log_basename + string(".log"));
+      for (int i=0; i<(int)all_logs.size(); ++i) {
+        if (all_logs[i] == log_exact_leafname) {
+          string log_exact_pathname = (log_directory + log_exact_leafname);
+          unlink(log_exact_pathname.c_str());
+          break;
+        }
+      }
+    }
+
+    // Remove all but the most recent log_history timestamped logs
+    string log_basename_dash = (log_basename + string("-"));
+    string log_matching_pathname;
+    vector<string> matching_logs;
     for (int i=0; i<(int)all_logs.size(); ++i) {
       if ((all_logs[i].size() > 4) &&
-          (all_logs[i].find(log_basename) == 0) &&
+          (all_logs[i].find(log_basename_dash) == 0) &&
           (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
-        matching_logs.push_back((log_directory + all_logs[i]));
+        log_matching_pathname = (log_directory + all_logs[i]);
+        matching_logs.push_back(log_matching_pathname);
       }
     }
     for (int i=0; i<(int)matching_logs.size()-log_history; ++i) {
       unlink(matching_logs[i].c_str());
     }
+  }
 
-    // Append a timestamp suffix to the log_basename
+  // Append a timestamp suffix to the log_basename
+  if (!log_basename.empty() && (log_history > 0)) {
 #ifdef _WIN32
     _tzset();
 #else
@@ -1097,6 +1115,7 @@ start_p3dpython(P3DInstance *inst) {
               (int)(log_time_local.tm_hour),
               (int)(log_time_local.tm_min),
               (int)(log_time_local.tm_sec));
+      log_basename += "-";
       log_basename += buffer;
     }
   }

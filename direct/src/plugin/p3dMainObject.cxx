@@ -546,46 +546,52 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   if (num_params > 3) {
     head_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[3]), 0);
   }
-  // Read the log data from the primary file
-  read_log_file(log_pathname, tail_bytes, head_bytes, log_data);
-  
-  // Read data from previous logs if requested
-  if ((tail_bytes_prev > 0) || (head_bytes_prev > 0)) {
-    // Determine the base of the log file names
-    string log_basename = log_pathname;
-    size_t slash = log_basename.rfind('/');
-    if (slash != string::npos) {
-      log_basename = log_basename.substr(slash + 1);
-    }
-#ifdef _WIN32
-    slash = log_basename.rfind('\\');
-    if (slash != string::npos) {
-      log_basename = log_basename.substr(slash + 1);
-    }
-#endif  // _WIN32
-    string log_basename_primary = log_basename;
-    int dash = log_basename.rfind("-");
-    if (dash != string::npos) {
-      log_basename = log_basename.substr(0, dash+1);
-    } else {
-      int dotLog = log_basename.rfind(".log");
-      if (dotLog != string::npos) {
-        log_basename = log_basename.substr(0, dotLog);
-        log_basename += "-";
-      }
-    }
 
-    // Find matching files
-    vector<string> all_logs;
-    inst_mgr->scan_directory(log_directory, all_logs);
-    for (int i=(int)all_logs.size()-1; i>=0; --i) {
-      if ((all_logs[i].find(log_basename) == 0) &&
-          (all_logs[i] != log_basename_primary) && 
-          (all_logs[i].size() > 4) &&
-          (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
-        read_log_file((log_directory+all_logs[i]), tail_bytes_prev, head_bytes_prev, log_data);
-      }
+  // Determine the base of the log file names
+  nout << "log_pathname: " << log_pathname << "\n";
+  string log_basename = log_pathname;
+  size_t slash = log_basename.rfind('/');
+  if (slash != string::npos) {
+    log_basename = log_basename.substr(slash + 1);
+  }
+#ifdef _WIN32
+  slash = log_basename.rfind('\\');
+  if (slash != string::npos) {
+    log_basename = log_basename.substr(slash + 1);
+  }
+#endif  // _WIN32
+  string log_leafname_primary = log_basename;
+  int dash = log_basename.rfind("-");
+  if (dash != string::npos) {
+    log_basename = log_basename.substr(0, dash+1);
+  } else {
+    int dotLog = log_basename.rfind(".log");
+    if (dotLog != string::npos) {
+      log_basename = log_basename.substr(0, dotLog);
+      log_basename += "-";
     }
+  }
+
+  // Read matching files
+  vector<string> all_logs;
+  int log_matches_found = 0; 
+  string log_matching_pathname;
+  inst_mgr->scan_directory(log_directory, all_logs);
+  for (int i=(int)all_logs.size()-1; i>=0; --i) {
+    if ((all_logs[i] == log_leafname_primary) ||
+        (all_logs[i].find(log_basename) == 0) &&
+        (all_logs[i].size() > 4) &&
+        (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
+      log_matches_found++;
+      log_matching_pathname = (log_directory + all_logs[i]);
+      read_log_file(log_matching_pathname, tail_bytes, head_bytes, log_data);
+      tail_bytes = tail_bytes_prev;
+      head_bytes = head_bytes_prev;
+    }
+  }
+
+  if (log_matches_found == 0) {
+    nout << "read_log: warning: no matching file(s) on disk." << "\n";
   }
 
   string log_data_str = log_data.str();
