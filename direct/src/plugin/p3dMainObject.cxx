@@ -540,11 +540,17 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   if (num_params > 2) {
     tail_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[2]), 0);
   }
+  // Check the fourth parameter, if any--if given, it specifies the
+  // first n bytes to retrieve from previous copies of this file.
+  size_t head_bytes_prev = 0;
+  if (num_params > 3) {
+    head_bytes_prev = (size_t)max(P3D_OBJECT_GET_INT(params[3]), 0);
+  }
   // Read the log data from the primary file
   read_log_file(log_pathname, tail_bytes, head_bytes, log_data);
   
   // Read data from previous logs if requested
-  if (tail_bytes_prev > 0) {
+  if ((tail_bytes_prev > 0) || (head_bytes_prev > 0)) {
     // Determine the base of the log file names
     string log_basename = log_pathname;
     size_t slash = log_basename.rfind('/');
@@ -577,7 +583,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
           (all_logs[i] != log_basename_primary) && 
           (all_logs[i].size() > 4) &&
           (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
-        read_log_file((log_directory+all_logs[i]), tail_bytes_prev, 0, log_data);
+        read_log_file((log_directory+all_logs[i]), tail_bytes_prev, head_bytes_prev, log_data);
       }
     }
   }
