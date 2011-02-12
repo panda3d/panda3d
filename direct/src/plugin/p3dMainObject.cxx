@@ -437,6 +437,7 @@ call_read_game_log(P3D_object *params[], int num_params) {
   }
 
   // No log available for us.
+  nout << "read_game_log: error: game log name unknown" << "\n";
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   return inst_mgr->new_undefined_object();
 }
@@ -467,6 +468,7 @@ call_read_log(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   if (num_params < 1) {
+    nout << "read_log: error: not enough parameters" << "\n";
     return inst_mgr->new_undefined_object();
   }
 
@@ -478,24 +480,28 @@ call_read_log(P3D_object *params[], int num_params) {
 
   if (log_filename.size() < 4 || log_filename.substr(log_filename.size() - 4) != string(".log")) {
     // Wrong filename extension.
+    nout << "read_log: error: invalid filename" << "\n";
     return inst_mgr->new_undefined_object();
   }
 
   size_t slash = log_filename.find('/');
   if (slash != string::npos) {
     // No slashes allowed.
+    nout << "read_log: error: invalid filename" << "\n";
     return inst_mgr->new_undefined_object();
   }
 
   slash = log_filename.find('\\');
   if (slash != string::npos) {
     // Nor backslashes.
+    nout << "read_log: error: invalid filename" << "\n";
     return inst_mgr->new_undefined_object();
   }
 
   size_t colon = log_filename.find(':');
   if (colon != string::npos) {
     // Nor colons, for that matter.
+    nout << "read_log: error: invalid filename" << "\n";
     return inst_mgr->new_undefined_object();
   }
 
@@ -536,7 +542,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   }
   // Read the log data from the primary file
   read_log_file(log_pathname, tail_bytes, head_bytes, log_data);
-
+  
   // Read data from previous logs if requested
   if (tail_bytes_prev > 0) {
     // Determine the base of the log file names
@@ -604,9 +610,16 @@ read_log_file(const string &log_pathname,
   }
 #endif  // _WIN32
 
+  // Render log file header to log_data
+  log_data << "=======================================";
+  log_data << "=======================================" << "\n";
+  log_data << "== PandaLog-" << log_pathname << "\n";
+
   // load file
   ifstream log(log_pathname.c_str(), ios::in);
   if (!log) {
+    log_data << "== PandaLog-" << "Error opening file";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
     return;
   }
 
@@ -616,6 +629,13 @@ read_log_file(const string &log_pathname,
   nout << "read_log: " << log_pathname << " is " << file_size
        << " bytes, tail_bytes = " << tail_bytes << ", head_bytes = "
        << head_bytes << "\n";
+
+  // Early out if the file is empty
+  if (file_size == (size_t)0) {
+    log_data << "== PandaLog-" << "Empty File";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
+    return;
+  }
 
   // Check if we are getting the full file
   size_t full_bytes = 0;
@@ -628,16 +648,13 @@ read_log_file(const string &log_pathname,
 
   // Allocate a temp buffer to hold file data
   size_t buffer_bytes = max(max(full_bytes, head_bytes), tail_bytes) + 1;
-  nout << "allocating " << buffer_bytes << " bytes to read from file.\n";
+  nout << "allocating " << buffer_bytes << " bytes to read at a time from file of size " << file_size << ".\n";
   char *buffer = new char[buffer_bytes];
   if (buffer == NULL) {
+    log_data << "== PandaLog-" << "Error allocating buffer";
+    log_data << " " << "(" << log_leafname << ")" << "\n";
     return;
   }
-
-  // Render log file header to log_data
-  log_data << "=======================================";
-  log_data << "=======================================" << "\n";
-  log_data << "== PandaLog-" << log_pathname << "\n";
 
   // Render log data if full file is to be fetched
   if (full_bytes > 0) {
