@@ -329,7 +329,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
     tex->set_format(Texture::F_depth_component);
     tex->set_match_framebuffer_format(true);
   } else if (plane == RTP_depth_stencil) {
-    tex->set_format(Texture::F_depth_component);
+    tex->set_format(Texture::F_depth_stencil);
     tex->set_match_framebuffer_format(true);
   } else if ((plane == RTP_color)||
              (plane == RTP_aux_rgba_0)||

@@ -164,7 +164,7 @@ get_renderbuffer_type(int rtp) {
   switch(rtp) {
   case RTP_stencil:        return RenderBuffer::T_stencil;
   case RTP_depth:          return RenderBuffer::T_depth;
-  case RTP_depth_stencil:  return RenderBuffer::T_depth;
+  case RTP_depth_stencil:  return RenderBuffer::T_depth | RenderBuffer::T_stencil;
   case RTP_color:          return RenderBuffer::T_color;
   case RTP_aux_rgba_0:     return RenderBuffer::T_aux_rgba_0;
   case RTP_aux_rgba_1:     return RenderBuffer::T_aux_rgba_1;

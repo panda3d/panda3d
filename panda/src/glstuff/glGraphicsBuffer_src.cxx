@@ -312,9 +312,16 @@ rebuild_bitplanes() {
       attach[plane] = tex;
     }
 
+    // Having both a depth texture and a depth_stencil texture is invalid: depth_stencil implies
+    // depth, and we can't bind them both.  Detect that case, normalize it, and complain.
+    if (( attach[RTP_depth] != NULL ) && ( attach[RTP_depth_stencil] != NULL )) {
+      attach[RTP_depth] = NULL;
+      GLCAT.warning() << "Attempt to bind both Depth and DepthStencil bitplanes.\n";
+    }
+
     // For all slots, update the slot.
 
-//    bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+    bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
     bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
     bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
 #ifndef OPENGLES
@@ -395,7 +402,6 @@ rebuild_bitplanes() {
         {            
           case RTP_depth:
           case RTP_depth_stencil:
-            // also case RTP_depth_stencil 
             for (int f = 0; f < 6; f++) {    
               glgsg->bind_fbo(_cubemap_fbo [f]);
               glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
@@ -565,7 +571,6 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     }
     
     _tex[slot] = tex;
-    _attach_point[slot] = attachpoint;
     
     // If there was a renderbuffer bound to this slot, delete it.
     if (_rb[slot] != 0) {
@@ -574,6 +579,9 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     }
     
   } else {
+
+    // Disconnect from any texture that was previously bound to this slot.
+    _tex[slot] = 0;
     
     // If a renderbuffer is already attached to the slot, and it's
     // the right size, then no update of this slot is needed.
@@ -581,6 +589,17 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       return;
     }
     
+#ifndef OPENGLES_2
+    // Check for the tricky case of a depth_stencil buffer:
+    // If we think we need one, but we have a texture bound in the depth slot,
+    // then we DON'T want to create a depth_stencil buffer here (because depth is
+    // a subset of depth_stencil).
+    if (( slot == RTP_depth_stencil ) && ( _gsg->get_supports_depth_stencil() != false ) &&
+        ( attach[RTP_depth] != NULL )) {
+        return;
+    }
+#endif
+
     // If there's no renderbuffer for this slot, create one.
     if (_rb[slot] == 0) {
       glgsg->_glGenRenderbuffers(1, &(_rb[slot]));
@@ -590,46 +609,61 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
 #ifndef OPENGLES_2
-      if (_gsg->get_supports_depth_stencil() && slot == RTP_depth_stencil) {
-        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
-                                      _rb_size_x, _rb_size_y);
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+      if ( _gsg->get_supports_depth_stencil() != false ) {
+        if ( slot == RTP_depth_stencil ) {
+          glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
+                                        _rb_size_x, _rb_size_y);
+          glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+  
+          GLuint rb;
+  
+          rb = _rb[slot];
+          if (_shared_depth_buffer) {
+            rb = _shared_depth_buffer -> _rb[slot];
+          }
+          
+          glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                            GL_RENDERBUFFER_EXT, rb);
+  
+          glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                            GL_RENDERBUFFER_EXT, rb);
 
-        GLuint rb;
+          return;
 
-        rb = _rb[slot];
-        if (_shared_depth_buffer) {
-          rb = _shared_depth_buffer -> _rb[slot];
+        } else if ( slot == RTP_depth ) {
+          // This is the uber-tricky case, where we DON'T want to bind a depth buffer
+          // if there's already any form of depth_stencil buffer bound (because depth_stencil
+          // is a superset that includes depth).
+          if (( _rb[RTP_depth_stencil] != NULL ) || ( attach[RTP_depth_stencil] != NULL )) {
+            return;
+          }
+
         }
-        
-        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, rb);
+      }
 
-        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, rb);
-      } else {
+      // We'll bail out before here if we set a depth_stencil buffer, or figure out that we're
+      // GOING to set a depth_stencil buffer.
+      // 
+      // If we get here, we're using the simple fallback case.
 #endif
 #ifdef OPENGLES
-        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16,
-                                      _rb_size_x, _rb_size_y);
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16,
+                                    _rb_size_x, _rb_size_y);
 #else
-        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
-                                      _rb_size_x, _rb_size_y);
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+                                    _rb_size_x, _rb_size_y);
 #endif
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
-        GLuint rb;
+      GLuint rb;
 
-        rb = _rb[slot];
-        if (_shared_depth_buffer) {
-          rb = _shared_depth_buffer -> _rb[slot];
-        }
-
-        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, rb);
-#ifndef OPENGLES_2
+      rb = _rb[slot];
+      if (_shared_depth_buffer) {
+        rb = _shared_depth_buffer -> _rb[slot];
       }
-#endif
+
+      glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                        GL_RENDERBUFFER_EXT, rb);
     } else {
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, glFormat,
                                     _rb_size_x, _rb_size_y);
@@ -637,10 +671,6 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
                                         GL_RENDERBUFFER_EXT, _rb[slot]);
     }
-    
-    // Toss any texture that was connected to the slot.
-    _tex[slot] = 0;
-    _attach_point[slot] = attachpoint;
   }
 }
   

@@ -110,7 +110,6 @@ private:
   int         _cube_face_active;
   PT(Texture) _tex[RTP_COUNT];
   GLuint      _rb[RTP_COUNT];
-  GLenum      _attach_point[RTP_COUNT];
   GLuint      _rbm[RTP_COUNT];  // A mirror of _rb, for the multisample FBO.
 
   GLuint      _cubemap_fbo [6];
