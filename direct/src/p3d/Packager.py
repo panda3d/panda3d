@@ -3095,7 +3095,7 @@ class Packager:
 
         self.currentPackage.signParams.append((certificate, chain, pkey, password))
 
-    def do_setupPanda3D(self, p3dpythonName=None):
+    def do_setupPanda3D(self, p3dpythonName=None, p3dpythonwName=None):
         """ A special convenience command that adds the minimum
         startup modules for a panda3d package, intended for developers
         producing their own custom panda3d for download.  Should be
@@ -3165,8 +3165,15 @@ class Packager:
             else:
                 self.do_config(p3dpython_name=p3dpythonName)
             self.do_file('p3dpython.exe', newName=p3dpythonName+'.exe')
+
+            # The "Windows" executable appends a 'w' to whatever name is used
+            # above, unless an override name is explicitly specified.
             if self.platform.startswith('win'):
-                self.do_file('p3dpythonw.exe', newName=p3dpythonName+'w.exe')
+                if p3dpythonwName is None:
+                    p3dpythonwName = p3dpythonName+'w'
+                else:
+                    self.do_config(p3dpythonw_name=p3dpythonwName)
+                self.do_file('p3dpythonw.exe', newName=p3dpythonwName+'.exe')
                 
         self.do_file('libp3dpython.dll')
 

@@ -824,21 +824,32 @@ start_p3dpython(P3DInstance *inst) {
   // and run the dynamic library.  If that fails for some reason, we
   // can fall back to loading and running the library directly.
   _p3dpython_exe = P3D_PLUGIN_P3DPYTHON;
+  string p3dpythonw_exe = _p3dpython_exe + "w";
   if (_p3dpython_exe.empty()) {
-    string p3dpython_name = "p3dpython";
-
-    // Allow package to override the name of the p3dpython executable.
+    // Allow package to override the name of the p3dpython executables.
+    const char *p3dpython_name_xconfig = NULL; 
+    const char *p3dpythonw_name_xconfig = NULL;
     const TiXmlElement *panda3d_xconfig = inst->_panda3d->get_xconfig();
     if (panda3d_xconfig != NULL) {
-      const char *p3dpython_name_x = panda3d_xconfig->Attribute("p3dpython_name");
-      if (p3dpython_name_x != NULL) {
-        nout << "p3dpython_name from panda3d xconfig: " << p3dpython_name_x << "\n";
-        p3dpython_name = p3dpython_name_x;
-      }
+        p3dpython_name_xconfig = panda3d_xconfig->Attribute("p3dpython_name");
+        p3dpythonw_name_xconfig = panda3d_xconfig->Attribute("p3dpythonw_name");
+    }
+
+    string p3dpython_name = "p3dpython";
+    if (p3dpython_name_xconfig != NULL) {
+      nout << "p3dpython_name from panda3d xconfig: " << p3dpython_name_xconfig << "\n";
+      p3dpython_name = p3dpython_name_xconfig;
+    }
+
+    string p3dpythonw_name = p3dpython_name + "w";
+    if (p3dpythonw_name_xconfig != NULL) {
+      nout << "p3dpythonw_name from panda3d xconfig: " << p3dpythonw_name_xconfig << "\n";
+      p3dpythonw_name = p3dpythonw_name_xconfig;
     }
 
     // Build full executable path.
     _p3dpython_exe = _python_root_dir + "/" + p3dpython_name;
+    p3dpythonw_exe = _python_root_dir + "/" + p3dpythonw_name;
 #ifdef __APPLE__
     // On OSX, run from the packaged bundle, if it exists.
     string bundle_exe = _python_root_dir + "/P3DPython.app/Contents/MacOS/p3dpython";
@@ -847,13 +858,13 @@ start_p3dpython(P3DInstance *inst) {
     }
 #endif
   }
-  replace_slashes(_p3dpython_exe);
 #ifdef _WIN32
   if (!inst_mgr->get_console_environment()) {
-    _p3dpython_exe += "w";
+    _p3dpython_exe = p3dpythonw_exe;
   }
   _p3dpython_exe += ".exe";
 #endif
+  replace_slashes(_p3dpython_exe);
   nout << "_p3dpython_exe: " << _p3dpython_exe << "\n";
 
   // Populate the new process' environment.
