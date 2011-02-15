@@ -306,6 +306,7 @@ class PackageInfo:
         if not self.__readDescFile():
             # Weird, it passed the hash check, but we still can't read
             # it.
+            filename = Filename(self.getPackageDir(), self.descFileBasename)
             self.notify.warning("Failure reading %s" % (filename))
             yield self.stepFailed; return
 

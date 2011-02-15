@@ -81,7 +81,7 @@ class Standalone:
                 p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
             else:
                 p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed" % package.platform)
-            
+
             if not vfs.exists(p3dembed):
                 Standalone.notify.warning("  -> %s failed for platform %s" % (package.packageName, package.platform))
                 continue
@@ -245,15 +245,21 @@ class Installer:
                 continue
         
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
+        imageHost = host
         if host.hostUrl != self.standalone.host.hostUrl:
-            host = HostInfo(self.standalone.host.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
-            if not host.hasContentsFile:
-                if not host.readContentsFile():
-                    if not host.downloadContentsFile(self.http):
-                        Installer.notify.error("couldn't read host %s" % host.hostUrl)
+            imageHost = HostInfo(self.standalone.host.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
+            if not imageHost.hasContentsFile:
+                if not imageHost.readContentsFile():
+                    if not imageHost.downloadContentsFile(self.http):
+                        Installer.notify.error("couldn't read host %s" % imageHost.hostUrl)
                         return
-        
-        for package in superHost.getPackages(name = "images") + host.getPackages(name = "images"):
+
+        imagePackages = []
+        if superHost:
+            imagePackages += superHost.getPackages(name = "images")
+        imagePackages += imageHost.getPackages(name = "images")
+            
+        for package in imagePackages:
             package.installed = True # Hack not to let it unnecessarily install itself
             packages.append(package)
             if not package.downloadDescFile(self.http):
@@ -275,8 +281,9 @@ class Installer:
                 mf = Multifile()
                 # Make sure that it isn't mounted before altering it, just to be safe
                 vfs.unmount(archive)
-                if not mf.openRead(archive):
-                    Installer.notify.warning("Failed to open archive " + archive)
+                os.chmod(archive.toOsSpecific(), 0600)
+                if not mf.openReadWrite(archive):
+                    Installer.notify.warning("Failed to open archive %s" % (archive))
                     continue
                 
                 # We don't iterate over getNumSubfiles because we're
@@ -285,6 +292,7 @@ class Installer:
                 for subfile in subfiles:
                     # We do *NOT* call vfs.exists here in case the package is mounted.
                     if Filename(package.getPackageDir(), subfile).exists():
+                        Installer.notify.debug("Removing already-extracted %s from multifile" % (subfile))
                         mf.removeSubfile(subfile)
                 
                 # This seems essential for mf.close() not to crash later.
@@ -292,11 +300,12 @@ class Installer:
                 
                 # If we have no subfiles left, we can just remove the multifile.
                 if mf.getNumSubfiles() == 0:
-                    Installer.notify.info("Removing empty archive " + package.uncompressedArchive.filename)
+                    Installer.notify.info("Removing empty archive %s" % (package.uncompressedArchive.filename))
                     mf.close()
                     archive.unlink()
                 else:
                     mf.close()
+                    os.chmod(archive.toOsSpecific(), 0400)
         
         # Write out our own contents.xml file.
         doc = TiXmlDocument()
@@ -673,7 +682,7 @@ class Installer:
         nsi.write('!define MUI_ABORTWARNING\n')
         nsi.write('!define MUI_FINISHPAGE_RUN\n')
         nsi.write('!define MUI_FINISHPAGE_RUN_FUNCTION launch\n')
-        nsi.write('!define MUI_FINISHPAGE_RUN_TEXT "Play %s"\n' % self.fullname)
+        nsi.write('!define MUI_FINISHPAGE_RUN_TEXT "Run %s"\n' % self.fullname)
         nsi.write('\n')
         nsi.write('Var StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
@@ -696,7 +705,7 @@ class Installer:
         for f in extrafiles:
             nsi.write('  File "%s"\n' % f.toOsSpecific())
         curdir = ""
-        for root, dirs, files in os.walk(hostDir.toOsSpecific()):
+        for root, dirs, files in self.os_walk(hostDir.toOsSpecific()):
             for name in files:
                 file = Filename.fromOsSpecific(os.path.join(root, name))
                 file.makeAbsolute()
@@ -710,6 +719,7 @@ class Installer:
         nsi.write('  ; Start menu items\n')
         nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
         nsi.write('    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"\n')
+        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe"\n' % (self.fullname, self.shortname))
         nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
         nsi.write('SectionEnd\n')
@@ -735,9 +745,14 @@ class Installer:
                 cmd += " /" + o
             else:
                 cmd += " -" + o
-        cmd += " " + nsifile.toOsSpecific()
+        cmd += " \"" + nsifile.toOsSpecific() + "\""
         print cmd
-        os.system(cmd)
+        try:
+            retcode = subprocess.call(cmd, shell = False)
+            if retcode != 0:
+                self.notify.warning("Failure invoking NSIS command.")
+        except OSError:
+            self.notify.warning("Unable to invoke NSIS command.")
 
         nsifile.unlink()
         try:
@@ -746,3 +761,27 @@ class Installer:
             try: shutil.rmtree(hostDir.toOsSpecific())
             except: pass
         return output
+
+    def os_walk(self, top):
+        """ Re-implements os.walk().  For some reason the built-in
+        definition is failing on Windows when this is run within a p3d
+        environment!? """
+
+        dirnames = []
+        filenames = []
+
+        dirlist = os.listdir(top)
+        if dirlist:
+            for file in dirlist:
+                path = os.path.join(top, file)
+                if os.path.isdir(path):
+                    dirnames.append(file)
+                else:
+                    filenames.append(file)
+
+        yield (top, dirnames, filenames)
+
+        for dir in dirnames:
+            next = os.path.join(top, dir)
+            for tuple in self.os_walk(next):
+                yield tuple
