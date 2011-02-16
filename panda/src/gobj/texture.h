@@ -446,6 +446,7 @@ PUBLISHED:
 
   void consider_rescale(PNMImage &pnmimage);
   static void consider_rescale(PNMImage &pnmimage, const string &name);
+  INLINE bool rescale_texture();
 
   static string format_texture_type(TextureType tt);
   static TextureType string_texture_type(const string &str);
@@ -537,6 +538,7 @@ protected:
   bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
                                       ComponentType component_type, int z,
                                       const LoaderOptions &options);
+  bool do_rescale_texture();
 
   virtual PT(Texture) do_make_copy();
   void do_assign(const Texture &copy);

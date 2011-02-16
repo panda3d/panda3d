@@ -1802,7 +1802,7 @@ down_to_power_2(int value) {
 //
 //               This method should be called after
 //               pnmimage.read_header() has been called, but before
-//               pnmimage.read().
+//               pnmimage.read().  Also see rescale_texture().
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage) {
@@ -1818,7 +1818,7 @@ consider_rescale(PNMImage &pnmimage) {
 //
 //               This method should be called after
 //               pnmimage.read_header() has been called, but before
-//               pnmimage.read().
+//               pnmimage.read().  Also see rescale_texture().
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
@@ -4359,6 +4359,80 @@ do_reconsider_image_properties(int x_size, int y_size, int num_components,
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_rescale_texture
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_rescale_texture() {
+  int new_x_size = _x_size;
+  int new_y_size = _y_size;
+  if (_z_size != 1) {
+    nassert_raise("rescale_texture() doesn't support 3-d textures.");
+    return false;
+  }
+
+  if (adjust_size(new_x_size, new_y_size, get_name(), false)) {
+    // OK, we have to scale the image.
+    PNMImage orig_image;
+    if (!do_store_one(orig_image, 0, 0)) {
+      gobj_cat.warning()
+        << "Couldn't get image in rescale_texture()\n";
+      return false;
+    }
+
+    gobj_cat.info()
+      << "Resizing " << get_name() << " to " << new_x_size << " x "
+      << new_y_size << "\n";
+    PNMImage new_image(new_x_size, new_y_size, orig_image.get_num_channels(),
+                       orig_image.get_maxval());
+    new_image.quick_filter_from(orig_image);
+
+    do_clear_ram_image();
+    ++_image_modified;
+    if (!do_load_one(new_image, get_name(), 0, 0, LoaderOptions())) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Maybe we should pad the image.
+  int pad_x_size = 0;
+  int pad_y_size = 0;
+  if (get_textures_power_2() == ATS_pad) {
+    new_x_size = _x_size;
+    new_y_size = _y_size;
+    if (adjust_size(new_x_size, new_y_size, get_name(), true)) {
+      pad_x_size = new_x_size - _x_size;
+      pad_y_size = new_y_size - _y_size;
+
+      PNMImage orig_image;
+      if (!do_store_one(orig_image, 0, 0)) {
+        gobj_cat.warning()
+          << "Couldn't get image in rescale_texture()\n";
+        return false;
+      }
+      PNMImage new_image(new_x_size, new_y_size, orig_image.get_num_channels(),
+                         orig_image.get_maxval());
+      new_image.copy_sub_image(orig_image, 0, new_y_size - orig_image.get_y_size());
+  
+      do_clear_ram_image();
+      ++_image_modified;
+      if (!do_load_one(new_image, get_name(), 0, 0, LoaderOptions())) {
+        return false;
+      }
+
+      do_set_pad_size(pad_x_size, pad_y_size, 0);
+      return true;
+    }
+  }
+
+  // No changes needed.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

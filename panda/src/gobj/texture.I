@@ -2011,6 +2011,24 @@ set_post_load_store_cache(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::rescale_texture
+//       Access: Published
+//  Description: This method is similar to consider_rescale(), but
+//               instead of scaling a separate PNMImage, it will ask
+//               the Texture to rescale its own internal image to a
+//               power of 2, according to the config file
+//               requirements.  This may be useful after loading a
+//               Texture image by hand, instead of reading it from a
+//               disk file.  Returns true if the texture is changed,
+//               false if it was not.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+rescale_texture() {
+  MutexHolder holder(_lock);
+  return do_rescale_texture();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_get_ram_image_size
 //       Access: Protected
 //  Description: 
