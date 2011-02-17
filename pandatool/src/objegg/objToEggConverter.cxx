@@ -190,7 +190,7 @@ process_line(const string &line) {
     return process_g(words);
   } else {
     bool inserted = _ignored_tags.insert(tag).second;
-    if (!inserted) {
+    if (inserted) {
       objegg_cat.info()
         << "Ignoring tag " << tag << "\n";
     }
