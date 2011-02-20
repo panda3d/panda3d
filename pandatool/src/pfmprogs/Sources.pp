@@ -1,6 +1,6 @@
 #define OTHER_LIBS \
     egg:c pandaegg:m \
-    pipeline:c event:c pstatclient:c panda:m \
+    pipeline:c event:c display:c gobj:c pgraph:c pstatclient:c panda:m \
     pandabase:c pnmimage:c mathutil:c linmath:c putil:c express:c \
     pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
