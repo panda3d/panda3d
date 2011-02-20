@@ -1,3 +1,17 @@
+------------------------  RELEASE 1.7.1  ------------------------
+
+This release introduces several significant bugfixes,
+but also introduces various minor new features. Although
+it is a minor release, it may also introduce new bugs.
+
+* Many improvements and bugfixes to pdeploy
+* Better webcam support on Linux using Video4Linux
+* Static functions that return a list are now properly wrapped
+* ODE objects now have getId() exposed to Python
+* Remove unnecessary dependency on GLU
+* Fixes a crash with the Maya converters
+* Several other bugfixes not listed here
+
 ------------------------  RELEASE 1.7.0  ------------------------
 
 This major release introduces tons of cool new features. As it
