@@ -422,7 +422,6 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
     if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
@@ -440,11 +439,16 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/ml.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cxcore.lib")
+    if (PkgSkip("AWESOMIUM")==0):LibName("AWESOMIUM",   GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec-51-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat-50-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil-49-panda.lib")
-    if (PkgSkip("AWESOMIUM")==0):LibName("AWESOMIUM",   GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
     if (PkgSkip("SWSCALE")==0):  PkgDisable("SWSCALE")
+    if (PkgSkip("OPENAL")==0):
+        if (os.path.exists(GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")):
+            LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
+        else:
+            LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/libOpenAL32.dll.a")
     if (PkgSkip("WX")==0):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
@@ -4837,18 +4841,24 @@ if (PkgSkip("DIRECT")==0 and not RUNTIME):
       model_extensions.append("*.flt")
 
   for model in GetDirectoryContents("dmodels/src/misc", model_extensions):
-      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
-      else: newname = model[:-4] + ".egg"
+      if (PkgSkip("ZLIB")==0 and PkgSkip("DEPLOYTOOLS")==0 and not RTDIST):
+          newname = model[:-4] + ".egg.pz"
+      else:
+          newname = model[:-4] + ".egg"
       TargetAdd(GetOutputDir()+"/models/misc/"+newname, input="dmodels/src/misc/"+model)
 
   for model in GetDirectoryContents("dmodels/src/gui", model_extensions):
-      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
-      else: newname = model[:-4] + ".egg"
+      if (PkgSkip("ZLIB")==0 and PkgSkip("DEPLOYTOOLS")==0 and not RTDIST):
+          newname = model[:-4] + ".egg.pz"
+      else:
+          newname = model[:-4] + ".egg"
       TargetAdd(GetOutputDir()+"/models/gui/"+newname, input="dmodels/src/gui/"+model)
 
   for model in GetDirectoryContents("models", model_extensions):
-      if (PkgSkip("ZLIB")==0 and not RTDIST): newname = model[:-4] + ".egg.pz"
-      else: newname = model[:-4] + ".egg"
+      if (PkgSkip("ZLIB")==0 and PkgSkip("DEPLOYTOOLS")==0 and not RTDIST):
+          newname = model[:-4] + ".egg.pz"
+      else:
+          newname = model[:-4] + ".egg"
       TargetAdd(GetOutputDir()+"/models/"+newname, input="models/"+model)
 
   CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
