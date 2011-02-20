@@ -13,16 +13,3 @@
 ////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::send_key_event
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-inline void osxGraphicsWindow::
-send_key_event(ButtonHandle key, bool down) {
-  if (down) {
-    _input_devices[0].button_down(key);
-  } else {
-    _input_devices[0].button_up(key);
-  }
-}
