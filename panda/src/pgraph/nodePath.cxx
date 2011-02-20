@@ -7878,7 +7878,9 @@ r_find_material(PandaNode *node, const RenderState *state,
         if (!ta->is_off()) {
           Material *material = ta->get_material();
           if (material != (Material *)NULL) {
-            return material;
+            if (glob.matches(material->get_name())) {
+              return material;
+            }
           }
         }
       }
