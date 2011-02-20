@@ -59,7 +59,7 @@ public:
 
 private:
   void release_system_resources(bool destructing);
-  void send_key_event(ButtonHandle key, bool down);
+  inline void send_key_event(ButtonHandle key, bool down);
 
 protected:
   virtual void close_window();

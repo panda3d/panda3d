@@ -615,29 +615,6 @@ release_system_resources(bool destructing) {
   _osx_window = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::send_key_event
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-inline void osxGraphicsWindow::
-send_key_event(ButtonHandle key, bool down) {
-  if (key == KeyboardButton::lcontrol() || key == KeyboardButton::rcontrol()) {
-    send_key_event (KeyboardButton::control(), down);
-  }
-  if (key == KeyboardButton::lshift() || key == KeyboardButton::rshift()) {
-    send_key_event (KeyboardButton::shift(), down);
-  }
-  if (key == KeyboardButton::lalt() || key == KeyboardButton::ralt()) {
-    send_key_event (KeyboardButton::alt(), down);
-  }
-
-  if (down) {
-    _input_devices[0].button_down(key);
-  } else {
-    _input_devices[0].button_up(key);
-  }
-}
 
 static int id_seed = 100;
 
@@ -1753,36 +1730,24 @@ void osxGraphicsWindow::
 handle_modifier_delta(UInt32 new_modifiers) {
   UInt32 changed = _last_key_modifiers ^ new_modifiers;
 
-  if ((changed & shiftKey) != 0) {
-    send_key_event(KeyboardButton::lshift(), (new_modifiers & shiftKey) != 0);
+  if ((changed & (shiftKey | rightShiftKey)) != 0) {
+    send_key_event(KeyboardButton::shift(),(new_modifiers & (shiftKey | rightShiftKey)) != 0) ;
   }
 
-  if ((changed & rightShiftKey) != 0) {
-    send_key_event(KeyboardButton::rshift(), (new_modifiers & rightShiftKey) != 0);
+  if ((changed & (optionKey | rightOptionKey)) != 0) {
+    send_key_event(KeyboardButton::alt(),(new_modifiers & (optionKey | rightOptionKey)) != 0);
   }
 
-  if ((changed & optionKey) != 0) {
-    send_key_event(KeyboardButton::lalt(), (new_modifiers & optionKey) != 0);
-  }
-
-  if ((changed & rightOptionKey) != 0) {
-    send_key_event(KeyboardButton::ralt(), (new_modifiers & rightOptionKey) != 0);
-  }
-
-  if ((changed & controlKey) != 0) {
-    send_key_event(KeyboardButton::lcontrol(), (new_modifiers & controlKey) != 0);
-  }
-
-  if ((changed & rightControlKey) != 0) {
-    send_key_event(KeyboardButton::rcontrol(), (new_modifiers & rightControlKey) != 0);
+  if ((changed & (controlKey | rightControlKey)) != 0) {
+    send_key_event(KeyboardButton::control(),(new_modifiers & (controlKey | rightControlKey)) != 0);
   }
 
   if ((changed & cmdKey) != 0) {
-    send_key_event(KeyboardButton::meta(), (new_modifiers & cmdKey) != 0);
+    send_key_event(KeyboardButton::meta(),(new_modifiers & cmdKey) != 0);
   }
  
   if ((changed & alphaLock) != 0) {
-    send_key_event(KeyboardButton::caps_lock(), (new_modifiers & alphaLock) != 0);
+    send_key_event(KeyboardButton::caps_lock(),(new_modifiers & alphaLock) != 0);
   }
  
   // save current state
