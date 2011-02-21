@@ -1076,16 +1076,21 @@ def GetLibCache():
                 if (".so " in lib):
                     lib = lib.split(".so", 1)[0][3:]
                     LD_CACHE.append(lib)
-        libs = glob.glob("/lib/*.so") + glob.glob("/usr/lib/*.so") + glob.glob("/usr/local/lib/*.so") + glob.glob("/usr/PCBSD/local/lib/*.so")
-        libs += glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a") + glob.glob("/usr/PCBSD/local/lib/*.a")
+        
+        libdirs = ["/lib", "/usr/lib", "/usr/local/lib", "/usr/PCBSD/local/lib", "/usr/X11/lib", "/usr/X11R6/lib"]
         if platform.architecture()[0] == "64bit":
-            libs += glob.glob("/lib64/*.so") + glob.glob("/usr/lib64/*.so")
-            libs += glob.glob("/lib64/*.a") + glob.glob("/usr/lib64/*.a")
-        if (sys.platform == "darwin"):
-            libs += glob.glob("/lib/*.dylib*") + glob.glob("/usr/lib/*.dylib*") + glob.glob("/usr/local/lib/*.dylib*")
-            libs += glob.glob("/usr/X11/lib/*.dylib*") + glob.glob("/usr/X11R6/lib/*.dylib*")
-            libs += glob.glob("/lib/*.a") + glob.glob("/usr/lib/*.a") + glob.glob("/usr/local/lib/*.a")
-            libs += glob.glob("/usr/X11/lib/*.a") + glob.glob("/usr/X11R6/lib/*.a")
+            libdirs += ["/lib64", "/usr/lib64"]
+        if "LD_LIBRARY_PATH" in os.environ:
+            libdirs += os.environ["LD_LIBRARY_PATH"].split(":")
+        libdirs = list(set(libdirs))
+        libs = []
+        for path in libdirs:
+            if os.path.isdir(path):
+                libs += glob.glob(path + "/lib*.so")
+                libs += glob.glob(path + "/lib*.a")
+                if (sys.platform == "darwin"):
+                    libs += glob.glob(path + "/lib*.dylib")
+        
         for l in libs:
             lib = os.path.basename(l).split(".so", 1)[0].split(".a", 1)[0].split(".dylib", 1)[0][3:]
             if lib not in LD_CACHE:
