@@ -442,7 +442,7 @@ private:
   typedef CopyOnWriteObj1< DownList, TypeHandle > Down;
 
   // Store a pointer to the down_list during the bam read pass.
-  class BamReaderAuxDataDown : public BamReaderAuxData {
+  class EXPCL_PANDA_PGRAPH BamReaderAuxDataDown : public BamReaderAuxData {
   public:
     INLINE BamReaderAuxDataDown();
     Down _down_list;
