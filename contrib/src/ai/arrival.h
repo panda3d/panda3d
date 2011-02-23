@@ -1,29 +1,27 @@
-// Filename: arrival.h
-// Created by:  Deepak, John, Navin (24Oct09)
-//
+////////////////////////////////////////////////////////////////////////
+// Filename    : arrival.h
+// Created by  : Deepak, John, Navin
+// Date        :  24 Oct 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
-#ifndef ARRIVAL_H
-#define ARRIVAL_H
+
+#ifndef _ARRIVAL_H
+#define _ARRIVAL_H
 
 #include "aiGlobals.h"
 #include "aiCharacter.h"
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Arrival
-// Description : This class handles all calls to the arrival behavior
-////////////////////////////////////////////////////////////////////
-class Arrival {
+class EXPCL_PANDAAI Arrival {
 
 public:
   AICharacter *_ai_char;
@@ -34,8 +32,7 @@ public:
   LVecBase3f _arrival_direction;
   bool _arrival_done;
 
-  // This flag specifies if the arrival behavior is being used with
-  // seek or pursue behavior.
+  // This flag specifies if the arrival behavior is being used with seek or pursue behavior.
   // True = used with pursue.
   // False = used with seek.
   bool _arrival_type;

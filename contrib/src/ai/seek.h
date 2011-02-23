@@ -1,30 +1,27 @@
-// Filename: seek.h
-// Created by:  Deepak, John, Navin (24Oct09)
-//
+////////////////////////////////////////////////////////////////////////
+// Filename    : seek.h
+// Created by  : Deepak, John, Navin
+// Date        :  24 Oct 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef SEEK_H
-#define SEEK_H
+#ifndef _SEEK_H
+#define _SEEK_H
 
 #include "aiGlobals.h"
 #include "aiCharacter.h"
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Seek
-// Description : This class handles all calls to the seek behavior
-////////////////////////////////////////////////////////////////////
-class Seek {
+class EXPCL_PANDAAI Seek {
 
 public:
   AICharacter *_ai_char;

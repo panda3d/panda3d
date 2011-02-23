@@ -1,30 +1,27 @@
-// Filename: evade.h
-// Created by:  Deepak, John, Navin (24Oct09)
-//
+////////////////////////////////////////////////////////////////////////
+// Filename    : evade.h
+// Created by  : Deepak, John, Navin
+// Date        :  24 Oct 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EVADE_H
-#define EVADE_H
+#ifndef _EVADE_H
+#define _EVADE_H
 
 #include "aiGlobals.h"
 #include "aiCharacter.h"
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Evade
-// Description : This class handles all calls to the evade behavior
-////////////////////////////////////////////////////////////////////
-class Evade {
+class EXPCL_PANDAAI Evade {
 
 public:
   AICharacter *_ai_char;

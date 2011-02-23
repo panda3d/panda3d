@@ -24,7 +24,7 @@
     evade.h \
     flee.h \
     flock.h \
-    globals.h \
+    aiGlobals.h \
     meshNode.h \
     obstacleAvoidance.h \
     pathFind.h \
@@ -67,7 +67,7 @@
     evade.h \
     flee.h \
     flock.h \
-    globals.h \
+    aiGlobals.h \
     meshNode.h \
     obstacleAvoidance.h \
     pathFind.h \

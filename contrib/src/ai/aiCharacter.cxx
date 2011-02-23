@@ -1,21 +1,21 @@
-// Filename: aiCharacter.cxx
-// Created by:  Deepak, John, Navin (08Sep09)
-//
+////////////////////////////////////////////////////////////////////////
+// Filename    :  aiCharacter.cxx
+// Created by  :  Deepak, John, Navin
+// Date        :  8 Sep 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised 
-// BSD license.  You should have received a copy of this license 
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
 
 #include "aiCharacter.h"
 
-AICharacter::AICharacter(string model_name, NodePath model_np, double mass,
-                                          double movt_force, double max_force) {
+AICharacter::AICharacter(string model_name, NodePath model_np, double mass, double movt_force, double max_force) {
   _name = model_name;
   _ai_char_np = model_np;
 
@@ -35,16 +35,18 @@ AICharacter::AICharacter(string model_name, NodePath model_np, double mass,
 AICharacter::~AICharacter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//  Description: Each character's update will update its ai and
-//               physics based on his resultant steering force.
-//               This also makes the character look in the
-//               direction of the force.
-////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// Function : update
+// Description : Each character's update will update its ai and physics
+//                based on his resultant steering force.
+//                This also makes the character  look at the direction of the force.
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void AICharacter::update() {
 
-if (!_steering->is_off(_steering->BT_none)) {
+  if(!_steering->is_off(_steering->_none)) {
 
     LVecBase3f old_pos = _ai_char_np.get_pos();
 
@@ -59,7 +61,7 @@ if (!_steering->is_off(_steering->BT_none)) {
 
     _ai_char_np.set_pos(old_pos + _velocity) ;
 
-    if (steering_force.length() > 0) {
+    if(steering_force.length() > 0) {
       _ai_char_np.look_at(old_pos + (direction * 5));
       _ai_char_np.set_h(_ai_char_np.get_h() + 180);
       _ai_char_np.set_p(-_ai_char_np.get_p());

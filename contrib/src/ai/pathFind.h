@@ -1,19 +1,21 @@
-// Filename: pathFind.h
-// Created by:  Deepak, John, Navin (12Oct09)
-//
+
+////////////////////////////////////////////////////////////////////////
+// Filename    : pathFind.h
+// Created by  : Deepak, John, Navin
+// Date        :  12 Oct 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PATHFIND_H
-#define PATHFIND_H
+#ifndef _PATHFIND_H
+#define _PATHFIND_H
 
 #include "aiGlobals.h"
 #include "aiCharacter.h"
@@ -22,16 +24,16 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathFind
-// Description : This class contains all the members and functions
-//               that are required to form an interface between
-//               the AIBehaviors class and the PathFinder class.
-//               An object (pointer) of this class is provided in
-//               the AIBehaviors class. It is only via this object
-//               that the user can activate pathfinding.
-////////////////////////////////////////////////////////////////////
-class PathFind {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Class : PathFind
+//  Description : This class contains all the members and functions that are required to form an interface between
+//                the AIBehaviors class and the PathFinder class. An object (pointer) of this class is provided in the
+//                AIBehaviors class. It is only via this object that the user can activate pathfinding.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class EXPCL_PANDAAI PathFind {
 public:
   AICharacter *_ai_char;
   PathFinder *_path_finder_obj;
@@ -52,7 +54,7 @@ public:
   ~PathFind();
 
   void clear_path();
-  void trace_path(AINode* src);
+  void trace_path(Node* src);
 
   void create_nav_mesh(const char* navmesh_filename);
   void assign_neighbor_nodes(const char* navmesh_filename);

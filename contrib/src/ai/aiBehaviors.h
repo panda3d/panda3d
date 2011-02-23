@@ -1,33 +1,38 @@
-// Filename: aiBehaviors.h
-// Created by:  Deepak, John, Navin (08Sep09)
-//
+////////////////////////////////////////////////////////////////////////
+// Filename    : aiBehaviors.cxx
+// Created by  : Deepak, John, Navin
+// Date        :  8 Sep 09
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef AIBEHAVIORS_H
-#define AIBEHAVIORS_H
+#pragma warning (disable:4996)
+#pragma warning (disable:4005)
+#pragma warning(disable:4275)
+
+#ifndef _AIBEHAVIORS_H
+#define _AIBEHAVIORS_H
 
 #include "aiGlobals.h"
-#include "aiCharacter.h"
 
-#include "seek.h"
-#include "flee.h"
-#include "pursue.h"
-#include "evade.h"
-#include "arrival.h"
-#include "flock.h"
-#include "wander.h"
-#include "pathFollow.h"
-#include "pathFind.h"
-#include "obstacleAvoidance.h"
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Class : AIBehaviors
+// Description : This class implements all the steering behaviors of the AI framework, such as
+//                seek, flee, pursue, evade, wander and flock. Each steering behavior has a weight which is used when more than
+//                one type of steering behavior is acting on the same ai character. The weight decides the contribution of each
+//                type of steering behavior. The AICharacter class has a handle to an object of this class and this allows to
+//                invoke the steering behaviors via the AICharacter. This class also provides functionality such as pausing, resuming
+//                and removing the AI behaviors of an AI character at anytime.
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class AICharacter;
 class Seek;
@@ -44,40 +49,24 @@ class ObstacleAvoidance;
 typedef list<Flee, allocator<Flee> > ListFlee;
 typedef list<Evade, allocator<Evade> > ListEvade;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AIBehaviors
-// Description : This class implements all the steering behaviors
-//               of the AI framework, such as seek, flee, pursue,
-//               evade, wander and flock. Each steering behavior
-//               has a weight which is used when more than one type
-//               of steering behavior is acting on the same AI
-//               character. The weight decides the contribution of
-//               each type of steering behavior. The AICharacter
-//               class has a handle to an object of this class and
-//               this allows to invoke the steering behaviors via
-//               the AICharacter. This class also provides
-//               functionality such as pausing, resuming and
-//               removing the AI behaviors of an AI character at
-//               any time.
-///////////////////////////////////////////////////////////////////
-class AIBehaviors {
+class EXPCL_PANDAAI AIBehaviors {
 
 public:
-  enum BehaviorType {
-    BT_none = 0x00000,
-    BT_seek = 0x00002,
-    BT_flee = 0x00004,
-    BT_flee_activate = 0x00100,
-    BT_arrival = 0x00008,
-    BT_arrival_activate = 0x01000,
-    BT_wander = 0x00010,
-    BT_pursue = 0x00040,
-    BT_evade = 0x00080,
-    BT_evade_activate = 0x00800,
-    BT_flock = 0x00200,
-    BT_flock_activate = 0x00400,
-    BT_obstacle_avoidance = 0x02000,
-    BT_obstacle_avoidance_activate = 0x04000,
+  enum _behavior_type {
+      _none = 0x00000,
+      _seek = 0x00002,
+      _flee = 0x00004,
+      _flee_activate = 0x00100,
+      _arrival = 0x00008,
+      _arrival_activate = 0x01000,
+      _wander = 0x00010,
+      _pursue = 0x00040,
+      _evade = 0x00080,
+      _evade_activate = 0x00800,
+      _flock = 0x00200,
+      _flock_activate = 0x00400,
+      _obstacle_avoidance = 0x02000,
+      _obstacle_avoidance_activate = 0x04000
   };
 
   AICharacter *_ai_char;
@@ -92,8 +81,7 @@ public:
   Flee *_flee_obj;
   LVecBase3f _flee_force;
 
-  // This list is used if the ai character needs to flee from
-  // multiple onjects.
+  //! This list is used if the ai character needs to flee from multiple onjects.
   ListFlee _flee_list;
   ListFlee::iterator _flee_itr;
 
@@ -103,16 +91,14 @@ public:
   Evade *_evade_obj;
   LVecBase3f _evade_force;
 
-  // This list is used if the ai character needs to evade from
-  // multiple onjects.
+  //! This list is used if the ai character needs to evade from multiple onjects.
   ListEvade _evade_list;
   ListEvade::iterator _evade_itr;
 
   Arrival *_arrival_obj;
   LVecBase3f _arrival_force;
 
-  // Since Flock is a collective behavior the variables are
-  // declared within the AIBehaviors class.
+  //! Since Flock is a collective behavior the variables are declared within the AIBehaviors class.
   float _flock_weight;
   LVecBase3f _flock_force;
   bool _flock_done;
@@ -132,11 +118,10 @@ public:
   AIBehaviors();
   ~AIBehaviors();
 
-  bool is_on(BehaviorType bt);
-  bool is_off(BehaviorType bt);
-  // special cases for pathfollow and pathfinding
-  bool is_on(string ai_type);
-  bool is_off(string ai_type);
+  bool is_on(_behavior_type bt);
+  bool is_on(string ai_type); // special cases for pathfollow and pathfinding
+  bool is_off(_behavior_type bt);
+  bool is_off(string ai_type); // special cases for pathfollow and pathfinding
   void turn_on(string ai_type);
   void turn_off(string ai_type);
 
@@ -154,34 +139,32 @@ PUBLISHED:
   void seek(NodePath target_object, float seek_wt = 1.0);
   void seek(LVecBase3f pos, float seek_wt = 1.0);
 
-  void flee(NodePath target_object, double panic_distance = 10.0,
-                   double relax_distance = 10.0, float flee_wt = 1.0);
-  void flee(LVecBase3f pos, double panic_distance = 10.0,
-                   double relax_distance = 10.0, float flee_wt = 1.0);
+  void flee(NodePath target_object, double panic_distance = 10.0, double relax_distance = 10.0, float flee_wt = 1.0);
+  void flee(LVecBase3f pos, double panic_distance = 10.0, double relax_distance = 10.0, float flee_wt = 1.0);
 
   void pursue(NodePath target_object, float pursue_wt = 1.0);
 
-  void evade(NodePath target_object, double panic_distance = 10.0,
-                  double relax_distance = 10.0, float evade_wt = 1.0);
+  void evade(NodePath target_object, double panic_distance = 10.0, double relax_distance = 10.0, float evade_wt = 1.0);
 
   void arrival(double distance = 10.0);
 
   void flock(float flock_wt);
 
-  void wander(double wander_radius = 5.0, int flag =0,
-                      double aoe = 0.0, float wander_weight = 1.0);
+  void wander(double wander_radius = 5.0, int flag =0, double aoe = 0.0, float wander_weight = 1.0);
 
   void obstacle_avoidance(float feeler_length = 1.0);
 
-  void path_follow(float follow_wt = 1.0);
+  void path_follow(float follow_wt);
   void add_to_path(LVecBase3f pos);
   void start_follow(string type = "normal");
 
+  // should have different function names.
   void init_path_find(const char* navmesh_filename);
   void path_find_to(LVecBase3f pos, string type = "normal");
   void path_find_to(NodePath target, string type = "normal");
   void add_static_obstacle(NodePath obstacle);
   void add_dynamic_obstacle(NodePath obstacle);
+  //
 
   void remove_ai(string ai_type);
   void pause_ai(string ai_type);
@@ -191,3 +174,14 @@ PUBLISHED:
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
+

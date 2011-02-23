@@ -18,3 +18,4 @@
 #include "aiNode.cxx"
 
 #include "aiPathFinder.cxx"
+#include "meshNode.cxx"

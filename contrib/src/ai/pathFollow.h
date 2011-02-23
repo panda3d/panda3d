@@ -1,32 +1,14 @@
-// Filename: pathFollow.h
-// Created by:  Deepak, John, Navin (24Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised
-// BSD license.  You should have received a copy of this license
-// along with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
 
-#ifndef PATHFOLLOW_H
-#define PATHFOLLOW_H
+#ifndef _PATHFOLLOW_H
+#define _PATHFOLLOW_H
 
 #include "aiGlobals.h"
 #include "aiCharacter.h"
-#include "aiNode.h"
+#include "meshNode.h"
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathFollow
-// Description : This class handles all calls to the path follow
-//               behavior and has functions to handle pathfinding
-////////////////////////////////////////////////////////////////////
-class PathFollow {
+class EXPCL_PANDAAI PathFollow {
 
 public:
   AICharacter *_ai_char;
