@@ -172,8 +172,14 @@ class panda3d_multisubmodule(type(sys)):
 
     def __load__(self):
         """ Forces the libraries to be loaded right now. """
+        err = []
         for lib in self.__libraries__:
-            self.__manager__.libimport(lib)
+            try:
+                self.__manager__.libimport(lib)
+            except ImportError, msg:
+                err.append(str(msg).rstrip('.'))
+        if len(err) > 0:
+            raise ImportError, ', '.join(err)
 
     def __getattr__(self, name):
         if name == "__all__":
@@ -203,8 +209,15 @@ class panda3d_module(type(sys)):
 
     def __load__(self):
         """ Force all the libraries to be loaded right now. """
+        err = []
         for module in self.modules:
-            self.__manager__.sys.modules["panda3d.%s" % module].__load__()
+            try:
+                self.__manager__.sys.modules["panda3d.%s" % module].__load__()
+            except ImportError, msg:
+                err.append(str(msg).rstrip('.'))
+        if len(err) > 0:
+            raise ImportError, ', '.join(err)
+
 
     def __getattr__(self, name):
         if name == "__all__":
