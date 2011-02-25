@@ -60,13 +60,13 @@ make_identity() {
 //  Description: Constructs a new LightRampAttrib object.  This 
 //               causes the luminance of the diffuse lighting
 //               contribution to be quantized using a single threshold:
-//
+//               @code
 //               if (original_luminance > threshold0) {
 //                 luminance = level0;
 //               } else {
 //                 luminance = 0.0;
 //               }
-//               
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_single_threshold(float thresh0, float val0) {
@@ -83,7 +83,7 @@ make_single_threshold(float thresh0, float val0) {
 //  Description: Constructs a new LightRampAttrib object.  This 
 //               causes the luminance of the diffuse lighting
 //               contribution to be quantized using two thresholds:
-//
+//               @code
 //               if (original_luminance > threshold1) {
 //                 luminance = level1;
 //               } else if (original_luminance > threshold0) {
@@ -91,7 +91,7 @@ make_single_threshold(float thresh0, float val0) {
 //               } else {
 //                 luminance = 0.0;
 //               }
-//
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
@@ -122,9 +122,9 @@ make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
 //               the range 0-1.  The HDR0 tone mapping operator 'steals'
 //               one quarter of that contrast to represent brightnesses in
 //               the range 1-infinity.
-//
+//               @code
 //               FINAL_RGB = (RGB^3 + RGB^2 + RGB) / (RGB^3 + RGB^2 + RGB + 1)
-//
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr0() {
@@ -151,9 +151,9 @@ make_hdr0() {
 //               the range 0-1.  The HDR1 tone mapping operator 'steals'
 //               one third of that contrast to represent brightnesses in
 //               the range 1-infinity.
-//
+//               @code
 //               FINAL_RGB = (RGB^2 + RGB) / (RGB^2 + RGB + 1)
-//
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr1() {
@@ -180,9 +180,9 @@ make_hdr1() {
 //               the range 0-1.  The HDR2 tone mapping operator 'steals'
 //               one half of that contrast to represent brightnesses in
 //               the range 1-infinity.
-//
+//               @code
 //               FINAL_RGB = (RGB) / (RGB + 1)
-//
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr2() {
