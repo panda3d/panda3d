@@ -57,10 +57,8 @@
 //               What follows are some examples that can be used in
 //               new classes that you create.
 //               
-//               ---------------------------------------------------
-//               In the class definition (.h file)
-//               ---------------------------------------------------
-//               
+//               @par In the class definition (.h file):
+//               @code
 //               public:
 //                 static TypeHandle get_class_type() {
 //                   return _type_handle;
@@ -81,25 +79,21 @@
 //               
 //               private:
 //                 static TypeHandle _type_handle;
+//               @endcode
 //               
-//               
-//               ----------------------
-//               In the class .cxx file
-//               ----------------------
-//               
+//               @par In the class .cxx file:
+//               @code
 //               TypeHandle <<<ThisClassStringName>>>::_type_handle;
+//               @endcode
 //               
-//               
-//               ----------------------------------------------
-//               In the class config_<<<PackageName>>>.cxx file
-//               ----------------------------------------------
-//               
+//               @par In the class config_<<<PackageName>>>.cxx file:
+//               @code
 //               ConfigureFn(config_<<<PackageName>>>) {
 //                 <<<ClassOne>>>::init_type();
 //                 <<<ClassTwo>>>::init_type();
 //                 <<<ClassN>>>::init_type();
 //               }
-//               
+//               @endcode
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL TypedObject : public MemoryBase {
 public:
