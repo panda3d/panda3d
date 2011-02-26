@@ -1020,6 +1020,7 @@ get_signature_friendly_name(int n) const {
 
   static const int nid_choices[] = {
     NID_pkcs9_emailAddress,
+    NID_subject_alt_name,
     NID_commonName,
     -1,
   };
