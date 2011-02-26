@@ -889,8 +889,15 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     SetFrontProcess(&psn);
   }
 
-  if (req_properties.has_fullscreen() && req_properties.get_fullscreen()) {
-    tinydisplay_cat.info() << "Creating full screen\n";
+
+  bool wants_fullscreen = req_properties.has_fullscreen() && req_properties.get_fullscreen();
+  if (req_properties.get_minimized()) {
+    // A minimized window can't be fullscreen.
+    wants_fullscreen = false;
+  }
+  
+  if (wants_fullscreen) {
+   tinydisplay_cat.info() << "Creating full screen\n";
 
     // capture the main display
     CGDisplayCapture(kCGDirectMainDisplay);
@@ -916,7 +923,10 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     }
 
     _properties.set_fullscreen(true);
-    _is_fullscreen   = true;
+    _properties.set_minimized(false);
+    _properties.set_foreground(true);
+ 
+    _is_fullscreen = true; 
     FullScreenWindow = this;
     req_properties.clear_fullscreen();
   } else {
@@ -1068,6 +1078,16 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
         _properties.set_undecorated(req_properties.get_undecorated());
         req_properties.clear_undecorated();
       }
+
+      _properties.set_minimized(false);
+      _properties.set_foreground(true);
+
+      if (req_properties.has_minimized()) {
+        CollapseWindow(_osx_window, req_properties.get_minimized());
+        _properties.set_minimized(req_properties.get_minimized());
+        _properties.set_foreground(!req_properties.get_minimized());
+        req_properties.clear_minimized();
+      }
     }
 
     // Now measure the size and placement of the window we
@@ -1084,8 +1104,6 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     set_icon_filename(req_properties.get_icon_filename());
   }
 
-  _properties.set_foreground(true);
-  _properties.set_minimized(false);
   _properties.set_open(true);
 
   if (_properties.has_size())
@@ -1680,6 +1698,13 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
         properties.get_y_size() != _properties.get_y_size()))) {
     need_full_rebuild = true;
   }
+ 
+  // If we are fullscreen and requesting a minimize change
+  if (_properties.get_fullscreen() && 
+      (properties.has_minimized() && 
+       (properties.get_minimized() != _properties.get_minimized()))) {
+    need_full_rebuild = true;
+  }
 
   if (need_full_rebuild) {
     // Logic here is ..  take a union of the properties .. with the
@@ -1737,6 +1762,13 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
       }
     }
     properties.clear_cursor_hidden();
+  }
+
+  if (properties.has_minimized()) {
+    if (_properties.get_minimized() != properties.get_minimized()) {
+      CollapseWindow(_osx_window, properties.get_minimized());
+    }
+    properties.clear_minimized();
   }
 
   if (tinydisplay_cat.is_debug()) {

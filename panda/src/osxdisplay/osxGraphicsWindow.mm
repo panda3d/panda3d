@@ -1115,8 +1115,14 @@ os_open_window(WindowProperties &req_properties) {
     }
     SetFrontProcess(&psn);
   }
-  
-  if (req_properties.has_fullscreen() && req_properties.get_fullscreen()) {
+
+  bool wants_fullscreen = req_properties.has_fullscreen() && req_properties.get_fullscreen();
+  if (req_properties.get_minimized()) {
+    // A minimized window can't be fullscreen.
+    wants_fullscreen = false;
+  }
+
+  if (wants_fullscreen) {
     if (osxdisplay_cat.is_debug()) {
       osxdisplay_cat.debug()
         << "Creating full screen\n";
@@ -1157,7 +1163,10 @@ os_open_window(WindowProperties &req_properties) {
     } 
     
     _properties.set_fullscreen(true);
-    _is_fullscreen =true; 
+    _properties.set_minimized(false);
+    _properties.set_foreground(true);
+
+    _is_fullscreen = true; 
     full_screen_window = this;
     req_properties.clear_fullscreen();
 
@@ -1280,7 +1289,7 @@ os_open_window(WindowProperties &req_properties) {
       SetWRefCon(_osx_window, (long) this);
       gWinEvtHandler = NewEventHandlerUPP(window_event_handler); 
       InstallWindowEventHandler(_osx_window, gWinEvtHandler, GetEventTypeCount(list), list, (void*)this, NULL); // add event handler
- 
+
       ShowWindow (_osx_window);
  
       if (osxdisplay_cat.is_debug()) {
@@ -1320,6 +1329,16 @@ os_open_window(WindowProperties &req_properties) {
         _properties.set_undecorated(req_properties.get_undecorated());
         req_properties.clear_undecorated();
       }
+
+      _properties.set_minimized(false);
+      _properties.set_foreground(true);
+
+      if (req_properties.has_minimized()) {
+        CollapseWindow(_osx_window, req_properties.get_minimized());
+        _properties.set_minimized(req_properties.get_minimized());
+        _properties.set_foreground(!req_properties.get_minimized());
+        req_properties.clear_minimized();
+      }
     }
 
     // Now measure the size and placement of the window we
@@ -1335,8 +1354,6 @@ os_open_window(WindowProperties &req_properties) {
     set_icon_filename(req_properties.get_icon_filename());
   }
     
-  _properties.set_foreground(true);
-  _properties.set_minimized(false);
   _properties.set_open(true);
 
   if (_properties.has_size()) {
@@ -1950,6 +1967,13 @@ set_properties_now(WindowProperties &properties) {
         properties.get_y_size() != _properties.get_y_size()))) {
     need_full_rebuild = true;
   }
+
+  // If we are fullscreen and requesting a minimize change
+  if (_properties.get_fullscreen() && 
+      (properties.has_minimized() && 
+       (properties.get_minimized() != _properties.get_minimized()))) {
+    need_full_rebuild = true;
+  }
  
   if (need_full_rebuild) {
     // Logic here is .. take a union of the properties .. with the
@@ -2009,6 +2033,13 @@ set_properties_now(WindowProperties &properties) {
     } 
     properties.clear_cursor_hidden(); 
   } 
+
+  if (properties.has_minimized()) {
+    if (_properties.get_minimized() != properties.get_minimized()) {
+      CollapseWindow(_osx_window, properties.get_minimized());
+    }
+    properties.clear_minimized();
+  }
 
   if (osxdisplay_cat.is_debug()) {
     osxdisplay_cat.debug()
