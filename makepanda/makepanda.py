@@ -448,7 +448,7 @@ if (COMPILER=="MSVC"):
         if (os.path.exists(GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")):
             LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
         else:
-            LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/libOpenAL32.dll.a")
+            LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
     if (PkgSkip("WX")==0):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
