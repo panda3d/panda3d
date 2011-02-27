@@ -8,6 +8,10 @@ installer or an HTML webpage. It will attempt to create packages
 for every platform, if possible.
 Note that pdeploy requires an internet connection to run.
 
+When used with the 'installer' option, it is strongly advisable
+to specify most if not all of the descriptive information that can
+be passed on the command-line.
+
 Usage:
 
   %(prog)s [opts] app.p3d standalone|installer|html
@@ -38,8 +42,8 @@ Options:
      If omitted, the basename of the p3d file is used.
 
   -N "Your Application"
-     Full name of the application or game. This value will
-     be used to display to the end-user.
+     Full name of the application or game. This is the name that
+     will be displayed to end-user.
      If omitted, the short name is used.
 
   -v version_number
@@ -58,8 +62,8 @@ Options:
   -t token=value
      Defines a web token or parameter to pass to the application.
      Use this to configure how the application will be run.
-     You can pass as many -t options as you need. Examples of
-     tokens are width, height, log_basename, auto_start, hidden.
+     You can pass as many -t options as you need. Some examples of
+     tokens are width, height, log_basename, auto_start and hidden.
 
   -P platform
      If this option is provided, it should specify a comma-
@@ -100,12 +104,18 @@ Options:
      Short identifier of the author of the application. The default
      is "org.panda3d", but you will most likely want to change
      it to your own name or that of your organization or company.
+     Only relevant when generating a graphical installer.
 
   -A "Your Company"
-     Full name of the author of the application.
+     Full name of the author of the application.  The default is
+     determined from the GECOS information of the current user if
+     available; if not, your username is used.
+     Only relevant when generating a graphical installer.
 
   -e "you@your_company.com"
-     E-mail address of the maintainer of the application.
+     E-mail address of the maintainer of the application.  The default
+     is username@hostname.
+     Only relevant when generating a graphical installer.
 
   -h
      Display this help

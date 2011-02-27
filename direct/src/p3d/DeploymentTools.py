@@ -4,7 +4,7 @@ to build for as many platforms as possible. """
 
 __all__ = ["Standalone", "Installer"]
 
-import os, sys, subprocess, tarfile, shutil, time, zipfile, glob
+import os, sys, subprocess, tarfile, shutil, time, zipfile, glob, socket, getpass
 from cStringIO import StringIO
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
@@ -13,6 +13,10 @@ from pandac.PandaModules import TiXmlDocument, TiXmlDeclaration, TiXmlElement, r
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
 import encodings
+try:
+    import pwd
+except ImportError:
+    pwd = None
 
 # Make sure this matches with the magic in p3dEmbed.cxx.
 P3DEMBED_MAGIC = "\xFF\x3D\x3D\x00"
@@ -198,10 +202,29 @@ class Installer:
         self.version = str(version)
         self.includeRequires = False
         self.licensename = ""
-        self.authorid = "org.panda3d"
-        self.authorname = ""
-        self.authoremail = ""
         self.licensefile = Filename()
+        self.authorid = "org.panda3d"
+        self.authorname = os.environ.get("DEBFULLNAME", "")
+        self.authoremail = os.environ.get("DEBEMAIL", "")
+
+        # Try to determine a default author name ourselves.
+        uname = None
+        if pwd is not None and hasattr(os, 'getuid'):
+            uinfo = pwd.getpwuid(os.getuid())
+            if uinfo:
+                uname = uinfo.pw_name
+                if not self.authorname:
+                    self.authorname = \
+                        uinfo.pw_gecos.split(',', 1)[0]
+
+        # Fallbacks in case that didn't work or wasn't supported.
+        if not uname:
+            uname = getpass.getuser()
+        if not self.authorname:
+            self.authorname = uname
+        if not self.authoremail and ' ' not in uname:
+            self.authoremail = "%s@%s" % (uname, socket.gethostname())
+
         self.standalone = Standalone(p3dfile, tokens)
         self.http = self.standalone.http
         self.tempDir = Filename.temporary("", self.shortname, "") + "/"
