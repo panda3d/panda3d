@@ -218,7 +218,7 @@ elif not outputDir.isDirectory():
 if deploy_mode == 'standalone':
     s = Standalone(appFilename, tokens)
     s.basename = shortname
-    
+
     if currentPlatform:
         platform = PandaSystem.getPlatform()
         if platform.startswith("win"):
@@ -244,7 +244,7 @@ elif deploy_mode == 'installer':
     i.authorname = authorname
     i.authoremail = authoremail
     i.includeRequires = includeRequires
-    
+
     if currentPlatform:
         platform = PandaSystem.getPlatform()
         if platform.startswith("win"):
