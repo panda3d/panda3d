@@ -59,21 +59,21 @@ class DirectNotify:
         to set the notify severity and then set that level. You cannot
         set these until config is set.
         """
-        # We cannot check dconfig variables until config has been
-        # set. Once config is set in ShowBase.py, it tries to set
-        # all the levels again in case some were created before config
-        # was created.
-        try:
-            config
-        except:
-            return 0
+
+        # We use ConfigVariableString instead of base.config, in case
+        # we're running before ShowBase has finished initializing; and
+        # we import it directly from libpandaexpress, in case we're
+        # running before libpanda.dll is available.
+        from libpandaexpress import ConfigVariableString
 
         dconfigParam = ("notify-level-" + categoryName)
-        level = config.GetString(dconfigParam, "")
+        cvar = ConfigVariableString(dconfigParam, "")
+        level = cvar.getValue()
 
         if not level:
             # see if there's an override of the default config level
-            level = config.GetString('default-directnotify-level', 'info')
+            cvar2 = ConfigVariableString('default-directnotify-level', 'info')
+            level = cvar2.getValue()
         if not level:
             level = 'error'
 
