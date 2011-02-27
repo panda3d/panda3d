@@ -240,6 +240,42 @@ class Installer:
             try: shutil.rmtree(self.tempDir.toOsSpecific())
             except: pass
 
+    def __installPackage(self, name, version, platform, host, superHost = None):
+        """ Internal function used by installPackagesInto.
+        Returns a *list* of packages, not a single one; None on failure. """
+
+        # Always try the super host first, if any.
+        package = None
+        if superHost:
+            if platform:
+                package = superHost.getPackage(name, version, platform)
+            if not package:
+                package = superHost.getPackage(name, version)
+
+        if not package and platform:
+            package = host.getPackage(name, version, platform)
+        if not package:
+            package = host.getPackage(name, version)
+        if not package:
+            Installer.notify.error("Package %s %s for %s not known on %s" % (
+                name, version, platform, host.hostUrl))
+            return []
+
+        package.installed = True # Hack not to let it unnecessarily install itself
+        if not package.downloadDescFile(self.http):
+            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return []
+        if not package.downloadPackage(self.http):
+            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return []
+
+        packages = [package]
+        # Check for any dependencies.
+        for rname, rversion, rhost in package.requires:
+            packages += self.__installPackage(rname, rversion, platform, rhost, superHost)
+
+        return packages
+
     def installPackagesInto(self, hostDir, platform):
         """ Installs the packages required by the .p3d file into
         the specified directory, for the given platform. """
@@ -266,27 +302,8 @@ class Installer:
                         superHost = None
 
         for name, version in self.requirements:
-            package = None
-            if superHost:
-                package = superHost.getPackage(name, version, platform)
-                if not package:
-                    package = superHost.getPackage(name, version)
-            if not package:
-                package = host.getPackage(name, version, platform)
-            if not package:
-                package = host.getPackage(name, version)
-            if not package:
-                Installer.notify.error("Package %s %s for %s not known on %s" % (
-                    name, version, platform, host.hostUrl))
-                continue
-            package.installed = True # Hack not to let it unnecessarily install itself
-            packages.append(package)
-            if not package.downloadDescFile(self.http):
-                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            if not package.downloadPackage(self.http):
-                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
+            packages += \
+                self.__installPackage(name, version, platform, host, superHost)
 
         # Also install the 'images' package from the same host that p3dembed was downloaded from.
         imageHost = host
@@ -325,7 +342,7 @@ class Installer:
                 mf = Multifile()
                 # Make sure that it isn't mounted before altering it, just to be safe
                 vfs.unmount(archive)
-                os.chmod(archive.toOsSpecific(), 0600)
+                os.chmod(archive.toOsSpecific(), 0644)
                 if not mf.openReadWrite(archive):
                     Installer.notify.warning("Failed to open archive %s" % (archive))
                     continue
@@ -349,7 +366,7 @@ class Installer:
                     archive.unlink()
                 else:
                     mf.close()
-                    os.chmod(archive.toOsSpecific(), 0400)
+                    os.chmod(archive.toOsSpecific(), 0444)
 
         # Write out our own contents.xml file.
         doc = TiXmlDocument()
