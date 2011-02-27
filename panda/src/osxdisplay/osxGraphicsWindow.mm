@@ -2037,6 +2037,8 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_minimized()) {
     if (_properties.get_minimized() != properties.get_minimized()) {
       CollapseWindow(_osx_window, properties.get_minimized());
+      _properties.set_minimized(properties.get_minimized());
+      _properties.set_foreground(!properties.get_minimized());
     }
     properties.clear_minimized();
   }
