@@ -269,8 +269,12 @@ class Installer:
             package = None
             if superHost:
                 package = superHost.getPackage(name, version, platform)
+                if not package:
+                    package = superHost.getPackage(name, version)
             if not package:
                 package = host.getPackage(name, version, platform)
+            if not package:
+                package = host.getPackage(name, version)
             if not package:
                 Installer.notify.error("Package %s %s for %s not known on %s" % (
                     name, version, platform, host.hostUrl))
@@ -535,7 +539,7 @@ class Installer:
         pkginfoinfo = TarInfoRoot(".PKGINFO")
         pkginfoinfo.mtime = modtime
         pkginfoinfo.size = pkginfo.tell()
-        pkginfoinfo.seek(0)
+        pkginfo.seek(0)
 
         # Create a temporary directory and write the launcher and dependencies to it.
         tempdir = self.__buildTempLinux(platform)
