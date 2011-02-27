@@ -86,7 +86,7 @@ class Packager:
                 self.extract = self.executable or (ext in packager.extractExtensions)
             if self.platformSpecific is None:
                 self.platformSpecific = self.executable or (ext in packager.platformSpecificExtensions)
-                
+
             if self.unprocessed is None:
                 self.unprocessed = self.executable or (ext in packager.unprocessedExtensions)
 
@@ -142,7 +142,7 @@ class Packager:
                     return True
 
             return False
-                
+
     class ExcludeFilename:
         def __init__(self, packager, filename, caseSensitive):
             self.packager = packager
@@ -166,7 +166,7 @@ class Packager:
     class PackageEntry:
         """ This corresponds to a <package> entry in the contents.xml
         file. """
-        
+
         def __init__(self):
             # The "seq" value increments automatically with each publish.
             self.packageSeq = SeqValue()
@@ -216,7 +216,7 @@ class Packager:
             if ximport:
                 self.importDescFile = FileSpec()
                 self.importDescFile.loadXml(ximport)
-            
+
 
         def makeXml(self):
             """ Returns a new TiXmlElement. """
@@ -237,7 +237,7 @@ class Packager:
                 ximport = TiXmlElement('import')
                 self.importDescFile.storeXml(ximport)
                 xpackage.InsertEndChild(ximport)
-            
+
             return xpackage
 
     class HostEntry:
@@ -305,7 +305,7 @@ class Packager:
         are constructing.  Don't confuse it with PackageEntry, above,
         which contains only the information found in the toplevel
         contents.xml file."""
-        
+
         def __init__(self, packageName, packager):
             self.packageName = packageName
             self.packager = packager
@@ -418,7 +418,7 @@ class Packager:
                 # If this flag is set, enable allow_python_dev.
                 if self.packager.allowPythonDev:
                     self.configs['allow_python_dev'] = True
-            
+
             if not self.p3dApplication and not self.version:
                 # If we don't have an implicit version, inherit the
                 # version from the 'panda3d' package on our require
@@ -437,7 +437,7 @@ class Packager:
                 allowPythonDev = self.configs.get('allow_python_dev', 0)
                 if int(allowPythonDev):
                     print "\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName)
-            
+
             return result
 
 
@@ -460,7 +460,7 @@ class Packager:
             if self.platform and self.platform.startswith('osx_'):
                 # Get the OSX "arch" specification.
                 self.arch = self.platform[4:]
-            
+
 
         def installMultifile(self):
             """ Installs the package, either as a p3d application, or
@@ -534,7 +534,7 @@ class Packager:
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
-            
+
             # But first, make sure that all required modules are present.
             missing = []
             moduleDict = dict(self.freezer.getModuleDefs()).keys()
@@ -545,7 +545,7 @@ class Packager:
                 self.notify.warning("Cannot build package %s, missing required modules: %r" % (self.packageName, missing))
                 self.cleanup()
                 return False
-            
+
             # OK, we can add it.
             self.freezer.addToMultifile(self.multifile, self.compressionLevel)
             self.addExtensionModules()
@@ -699,7 +699,7 @@ class Packager:
             # Also sign the multifile before we close it.
             for certificate, chain, pkey, password in self.signParams:
                 self.multifile.addSignature(certificate, chain or '', pkey or '', password or '')
-            
+
             self.multifile.close()
 
             if not multifileFilename.renameTo(self.packageFullpath):
@@ -728,7 +728,7 @@ class Packager:
                             self.packageDesc, self.packageImportDesc)
                 pe.packageSeq = self.packageSeq
                 pe.packageSetVer = self.packageSetVer
-                
+
                 self.packager.contents[pe.getKey()] = pe
                 self.packager.contentsChanged = True
 
@@ -774,7 +774,7 @@ class Packager:
 
             if len(files) != 1:
                 raise PackagerError, 'Multiple files in "solo" package %s' % (self.packageName)
-            
+
             Filename(installPath, '').makeDir()
 
             file = files[0]
@@ -802,7 +802,7 @@ class Packager:
 
             self.cleanup()
             return True
-               
+
         def cleanup(self):
             # Now that all the files have been packed, we can delete
             # the temporary files.
@@ -835,7 +835,7 @@ class Packager:
                 if not file.isExcluded(self):
                     self.packager.notify.warning("No such file: %s" % (file.filename))
                 return None
-            
+
             self.files.append(file)
             self.targetFilenames[lowerName] = file
 
@@ -859,7 +859,7 @@ class Packager:
             for file in self.files:
                 if not file.executable:
                     continue
-                
+
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
@@ -869,7 +869,7 @@ class Packager:
                     if filenames is None:
                         self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
                         continue
-                
+
                 else:
                     tempFile = Filename.temporary('', 'p3d_', '.txt')
                     command = 'dumpbin /dependents "%s" >"%s"' % (
@@ -920,7 +920,7 @@ class Packager:
                         newName = Filename(file.dependencyDir, mfile.getBasename())
                         self.addFile(mfile, newName = newName.cStr(),
                                      explicit = False, executable = True)
-                            
+
                     if afilenames is None and out != 31:
                         self.notify.warning("Unable to determine dependent assemblies from %s" % (file.filename))
 
@@ -940,7 +940,7 @@ class Packager:
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
                                  explicit = False, executable = True)
-                    
+
         def __parseDependenciesWindows(self, tempFile):
             """ Reads the indicated temporary file, the output from
             dumpbin /dependents, to determine the list of dll's this
@@ -978,7 +978,7 @@ class Packager:
 
             # At least we got some data.
             return filenames
-        
+
         def __parseManifest(self, tempFile):
             """ Reads the indicated application manifest file, to
             determine the list of dependent assemblies this
@@ -987,11 +987,11 @@ class Packager:
             doc = TiXmlDocument(tempFile.toOsSpecific())
             if not doc.LoadFile():
                 return None
-            
+
             assembly = doc.FirstChildElement("assembly")
             if not assembly:
                 return None
-            
+
             # Pick up assemblies that it depends on
             filenames = []
             dependency = assembly.FirstChildElement("dependency")
@@ -1003,9 +1003,9 @@ class Packager:
                         name = ident.Attribute("name")
                         if name:
                             filenames.append(name + ".manifest")
-                
+
                 dependency = dependency.NextSiblingElement("dependency")
-            
+
             # Pick up direct dll dependencies that it lists
             dfile = assembly.FirstChildElement("file")
             while dfile:
@@ -1013,18 +1013,18 @@ class Packager:
                 if name:
                     filenames.append(name)
                 dfile = dfile.NextSiblingElement("file")
-            
+
             return filenames
-        
+
         def __locateFrameworkLibrary(self, library):
             """ Locates the given library inside its framework on the
             default framework paths, and returns its location as Filename. """
-            
+
             # If it's already a full existing path, we
             # don't search for it anymore, of course.
             if Filename.fromOsSpecific(library).exists():
                 return Filename.fromOsSpecific(library)
-            
+
             # DSearchPath appears not to work well for directories.
             fpath = []
             fpath.append(Filename("/Library/Frameworks"))
@@ -1035,18 +1035,18 @@ class Packager:
                 fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
             ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
             ffilename = Filename(ffilename, library.split('.framework/', 1)[-1])
-            
+
             # Look under the system root first, if supplied.
             if self.packager.systemRoot:
                 for i in fpath:
                     fw = Filename(self.packager.systemRoot, i)
                     if Filename(fw, ffilename).exists():
                         return Filename(fw, ffilename)
-            
+
             for i in fpath:
                 if Filename(i, ffilename).exists():
                     return Filename(i, ffilename)
-            
+
             # Not found? Well, let's just return the framework + file
             # path, the user will be presented with a warning later.
             return ffilename
@@ -1068,7 +1068,7 @@ class Packager:
                 file.filename.copyTo(tmpfile)
                 file.filename = tmpfile
                 file.deleteTemp = True
-            
+
             # Alter the dependencies to have a relative path rather than absolute
             for filename in framework_deps:
                 if self.__locateFrameworkLibrary(filename) == file.filename:
@@ -1088,7 +1088,7 @@ class Packager:
             for file in self.files:
                 if not file.executable:
                     continue
-                
+
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
@@ -1124,11 +1124,11 @@ class Packager:
                 for filename in filenames:
                     if '.framework/' in filename:
                         framework_deps.append(filename)
-                
+
                 if len(framework_deps) > 0:
                     # Fixes dependencies like @executable_path/../Library/Frameworks/Cg.framework/Cg
                     self.__alterFrameworkDependencies(file, framework_deps)
-                
+
                 for filename in filenames:
                     if '.framework/' in filename:
                         # It references a framework, and besides the fact
@@ -1151,7 +1151,7 @@ class Packager:
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
                                  explicit = False, executable = True)
-                    
+
         def __parseDependenciesOSX(self, tempFile):
             """ Reads the indicated temporary file, the output from
             otool -L, to determine the list of dylib's this
@@ -1305,7 +1305,7 @@ class Packager:
             for file in self.files:
                 if not file.executable:
                     continue
-                
+
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
@@ -1342,14 +1342,14 @@ class Packager:
                     # supposed to be anywhere on the system.
                     if filename in ["linux-gate.so.1", "linux-vdso.so.1"]:
                         continue
-                    
+
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
                                  explicit = False, executable = True)
-                    
+
         def __parseDependenciesPosix(self, tempFile):
             """ Reads the indicated temporary file, the output from
             ldd, to determine the list of so's this executable file
@@ -1436,10 +1436,10 @@ class Packager:
             # It's important not to compress this file: the core API
             # runtime can't decode compressed subfiles.
             self.multifile.addSubfile('p3d_info.xml', filename, 0)
-            
+
             self.multifile.flush()
             filename.unlink()
-            
+
 
         def compressMultifile(self):
             """ Compresses the .mf file into an .mf.pz file. """
@@ -1468,12 +1468,12 @@ class Packager:
             self.patches = []
 
             self.oldCompressedBasename = None
-            
+
             packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
             doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not doc.LoadFile():
                 return
-            
+
             xpackage = doc.FirstChildElement('package')
             if not xpackage:
                 return
@@ -1502,7 +1502,7 @@ class Packager:
             xtop = xpackage.FirstChildElement('top_version')
             if xtop:
                 self.patches.append(xtop.Clone())
-                
+
             xpatch = xpackage.FirstChildElement('patch')
             while xpatch:
                 self.patches.append(xpatch.Clone())
@@ -1581,14 +1581,14 @@ class Packager:
                         xconfig.SetAttribute(variable, str(int(value)))
                     else:
                         xconfig.SetAttribute(variable, str(value))
-                        
+
                 xpackage.InsertEndChild(xconfig)
 
         def writeImportDescFile(self):
             """ Makes the package.import.xml file that describes the
             package and its contents, for other packages and
             applications that may wish to "require" this one. """
-        
+
             packageImportDescFullpath = Filename(self.packager.installDir, self.packageImportDesc)
             doc = TiXmlDocument(packageImportDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
@@ -1676,7 +1676,7 @@ class Packager:
                 exclude = int(xmodule.Attribute('exclude') or 0)
                 forbid = int(xmodule.Attribute('forbid') or 0)
                 allowChildren = int(xmodule.Attribute('allowChildren') or 0)
-                
+
                 if moduleName:
                     mdef = FreezeTool.Freezer.ModuleDef(
                         moduleName, exclude = exclude, forbid = forbid,
@@ -1689,7 +1689,7 @@ class Packager:
         def getFileSpec(self, element, pathname, newName):
             """ Returns an xcomponent or similar element with the file
             information for the indicated file. """
-            
+
             xspec = TiXmlElement(element)
 
             size = pathname.getFileSize()
@@ -1706,7 +1706,7 @@ class Packager:
 
             return xspec
 
-            
+
 
         def addPyFile(self, file):
             """ Adds the indicated python file, identified by filename
@@ -1804,7 +1804,7 @@ class Packager:
             # Flush it so the data gets written to disk immediately, so we
             # don't have to keep it around in ram.
             self.multifile.flush()
-            
+
             xcomponent = TiXmlElement('component')
             xcomponent.SetAttribute('filename', newName)
             self.components.append(('c', newName.lower(), xcomponent))
@@ -1849,7 +1849,7 @@ class Packager:
             final result automatically.  This is as close as we can
             come to "compiling" a dc file, since all of the remaining
             symbols are meaningful at runtime. """
-            
+
             # First, read in the dc file
             dcFile = DCFile()
             if not dcFile.read(file.filename):
@@ -1901,7 +1901,7 @@ class Packager:
                             self.freezer.addModule('%s.%s%s' % (moduleName, symbolName, suffix),
                                                    implicit = True)
 
-            
+
         def addPrcFile(self, file):
             """ Adds a prc file to the archive.  Like the dc file,
             this strips comments and such before adding.  It's also
@@ -1938,7 +1938,7 @@ class Packager:
                 if file.newName.endswith('.prc'):
                     # Change .prc -> .pre
                     file.newName = file.newName[:-1] + 'e'
-                
+
                 preFilename = Filename.temporary('', 'p3d_', '.pre')
                 tempFilename.setText()
                 encryptFile(tempFilename, preFilename, self.packager.prcEncryptionKey)
@@ -2030,7 +2030,7 @@ class Packager:
                 # we want anyway.
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
                 return True
-            
+
             if self.arch not in arches:
                 # The file doesn't support the architecture that we
                 # want at all.  Omit the file.
@@ -2053,7 +2053,7 @@ class Packager:
             file.filename = tfile
             file.deleteTemp = True
             return True
-            
+
 
         def requirePackage(self, package):
             """ Indicates a dependency on the given package.  This
@@ -2111,7 +2111,7 @@ class Packager:
         # with each modification to the contents.xml file.  There is
         # also a package seq for each package, which generally
         # increments with each modification to the package.
-        
+
         # The contents seq and package seq are used primarily for
         # documentation purposes, to note when a new version is
         # released.  The package seq value can also be used to verify
@@ -2153,7 +2153,7 @@ class Packager:
             self.executablePath.appendDirectory('/lib')
             self.executablePath.appendDirectory('/usr/lib')
             self.executablePath.appendDirectory('/usr/local/lib')
-        
+
         import platform
         if platform.uname()[1]=="pcbsd":
             self.executablePath.appendDirectory('/usr/PCBSD/local/lib')
@@ -2335,7 +2335,7 @@ class Packager:
         self.arch = None
         if self.platform.startswith('osx_'):
             self.arch = self.platform[4:]
-        
+
 
     def setHost(self, host, downloadUrl = None,
                 descriptiveName = None, hostDir = None,
@@ -2345,7 +2345,7 @@ class Packager:
 
         if not self.ignoreSetHost:
             self.host = host
-            
+
         self.addHost(host, downloadUrl = downloadUrl,
                      descriptiveName = descriptiveName, hostDir = hostDir,
                      mirrors = mirrors)
@@ -2386,7 +2386,7 @@ class Packager:
                 he.mirrors = mirrors
 
         return he
-        
+
     def addAltHost(self, keyword, altHost, origHost = None,
                    downloadUrl = None, descriptiveName = None,
                    hostDir = None, mirrors = None):
@@ -2538,7 +2538,7 @@ class Packager:
         statements = globals.get('__statements', [])
         if not statements:
             self.notify.info("No packages defined.")
-        
+
         try:
             for (lineno, stype, name, args, kw) in statements:
                 if stype == 'class':
@@ -2570,17 +2570,17 @@ class Packager:
             inst = sys.exc_info()[1]
             if not inst.args:
                 inst.args = ('Error',)
-                
+
             inst.args = (inst.args[0] + ' on line %s of %s' % (lineno, packageDef),)
             raise
-                    
+
         return packages
 
     def __evalFunc(self, name, args, kw):
         """ This is called from readPackageDef(), above, to call the
         function do_name(*args, **kw), as extracted from the pdef
         file. """
-        
+
         funcname = 'do_%s' % (name)
         func = getattr(self, funcname)
         try:
@@ -2621,7 +2621,7 @@ class Packager:
 
     def __parseArgs(self, words, argList):
         args = {}
-        
+
         while len(words) > 1:
             arg = words[-1]
             if '=' not in arg:
@@ -2640,8 +2640,8 @@ class Packager:
             args[parameter] = value
 
             del words[-1]
-                
-    
+
+
     def beginPackage(self, packageName, p3dApplication = False,
                      solo = False):
         """ Begins a new package specification.  packageName is the
@@ -2660,8 +2660,8 @@ class Packager:
         if not package.p3dApplication and not self.allowPackages:
             message = 'Cannot generate packages without an installDir; use -i'
             raise PackagerError, message
-                
-        
+
+
     def endPackage(self):
         """ Closes the current package specification.  This actually
         generates the package file.  Returns the finished package,
@@ -2672,7 +2672,7 @@ class Packager:
 
         package = self.currentPackage
         package.signParams += self.signParams[:]
-        
+
         self.currentPackage = None
         if not package.close():
             return None
@@ -2701,7 +2701,7 @@ class Packager:
         package = self.packages.get((packageName, platform or self.platform, version, host), None)
         if package:
             return package
-        
+
         # Look on the searchlist.
         for dirname in self.installSearch:
             package = self.__scanPackageDir(dirname, packageName, platform or self.platform, version, host, requires = requires)
@@ -2725,7 +2725,7 @@ class Packager:
             package = self.packages.setdefault((package.packageName, package.platform, package.version, package.host), package)
             self.packages[(packageName, platform or self.platform, version, host)] = package
             return package
-                
+
         return None
 
     def __scanPackageDir(self, rootDir, packageName, platform, version,
@@ -2806,7 +2806,7 @@ class Packager:
             # No explicit version is specified, first fallback: look
             # for the compiled-in version.
             packageInfo = host.getPackage(packageName, PandaSystem.getPackageVersionString(), platform = platform)
-            
+
         if not packageInfo and not version:
             # No explicit version is specified, second fallback: get
             # the highest-numbered version available.
@@ -2928,7 +2928,7 @@ class Packager:
         """ Returns the first package with the indicated name in the
         list of packages, or in the list of packages required by the
         packages in the list. """
-        
+
         for package in list:
             if package.packageName == packageName:
                 return package
@@ -3114,7 +3114,7 @@ class Packager:
         # disk.
         from direct.showbase import VFSImporter
         filename = Filename.fromOsSpecific(VFSImporter.__file__)
-        
+
         self.do_module('VFSImporter', filename = filename)
         self.do_freeze('_vfsimporter', compileToExe = False)
 
@@ -3154,7 +3154,7 @@ class Packager:
 ##                 found = filename.resolveFilename("models")
 ##             if found:
 ##                 resources.append(filename)
-            
+
             self.do_makeBundle('P3DPython.app', plist, executable = 'p3dpython',
                                resources = resources, dependencyDir = '')
 
@@ -3164,7 +3164,11 @@ class Packager:
                 p3dpythonName = 'p3dpython'
             else:
                 self.do_config(p3dpython_name=p3dpythonName)
-            self.do_file('p3dpython.exe', newName=p3dpythonName+'.exe')
+
+            if self.platform.startswith('win'):
+                self.do_file('p3dpython.exe', newName=p3dpythonName+'.exe')
+            else:
+                self.do_file('p3dpython.exe', newName=p3dpythonName)
 
             # The "Windows" executable appends a 'w' to whatever name is used
             # above, unless an override name is explicitly specified.
@@ -3173,8 +3177,12 @@ class Packager:
                     p3dpythonwName = p3dpythonName+'w'
                 else:
                     self.do_config(p3dpythonw_name=p3dpythonwName)
-                self.do_file('p3dpythonw.exe', newName=p3dpythonwName+'.exe')
-                
+
+                if self.platform.startswith('win'):
+                    self.do_file('p3dpythonw.exe', newName=p3dpythonwName+'.exe')
+                else:
+                    self.do_file('p3dpythonw.exe', newName=p3dpythonwName)
+
         self.do_file('libp3dpython.dll')
 
     def do_freeze(self, filename, compileToExe = False):
@@ -3247,8 +3255,8 @@ class Packager:
         if resources:
             self.addFiles(resources, newDir = contents + '/Resources',
                           extract = True, dependencyDir = dependencyDir)
-                
-        
+
+
 
     def do_file(self, *args, **kw):
         """ Adds the indicated file or files to the current package.
@@ -3302,11 +3310,11 @@ class Packager:
         expanded.  If this is false, then .dll or .exe files will be
         renamed to .dylib and no extension on OSX (or .so on Linux);
         and glob characters will be expanded.
-        
+
         If required is true, then the file is marked a vital part of
         the package.  The package will not be built if this file
         somehow cannot be added to the package.
-        
+
         """
 
         if not self.currentPackage:
@@ -3314,7 +3322,7 @@ class Packager:
 
         files = []
         explicit = True
-        
+
         for filename in filenames:
             filename = Filename(filename)
 
@@ -3363,7 +3371,7 @@ class Packager:
             prefix = Filename(newDir).cStr()
             if prefix and prefix[-1] != '/':
                 prefix += '/'
-        
+
         if newName:
             if len(files) != 1:
                 message = 'Cannot install multiple files on target filename %s' % (newName)
@@ -3382,7 +3390,7 @@ class Packager:
             name = newName
             if not name:
                 name = prefix + basename
-                
+
             self.currentPackage.addFile(
                 filename, newName = name, extract = extract,
                 explicit = explicit, executable = executable,
@@ -3494,14 +3502,14 @@ class Packager:
                 self.maxAge = int(maxAge)
 
             self.contentsSeq.loadXml(xcontents)
-                
+
             xhost = xcontents.FirstChildElement('host')
             if xhost:
                 he = self.HostEntry()
                 he.loadXml(xhost, self)
                 self.hosts[he.url] = he
                 self.host = he.url
-            
+
             xpackage = xcontents.FirstChildElement('package')
             while xpackage:
                 pe = self.PackageEntry()
@@ -3528,7 +3536,7 @@ class Packager:
 
         self.contentsSeq += 1
         self.contentsSeq.storeXml(xcontents)
-            
+
         if self.host:
             he = self.hosts.get(self.host, None)
             if he:
@@ -3543,7 +3551,7 @@ class Packager:
 
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
-        
+
 
 # The following class and function definitions represent a few sneaky
 # Python tricks to allow the pdef syntax to contain the pseudo-Python
@@ -3559,7 +3567,7 @@ class metaclass_def(type):
     when we encounter "class foo(p3d)" in the pdef file.  The callback
     actually happens after all of the code within the class scope has
     been parsed first. """
-    
+
     def __new__(self, name, bases, dict):
 
         # At the point of the callback, now, "name" is the name of the
@@ -3571,7 +3579,7 @@ class metaclass_def(type):
         # class_p3d or class_ppackage, below--skip it.  But if it
         # doesn't contain __metaclass__, then we must be parsing
         # "class foo(p3d)" (or whatever) from the pdef file.
-        
+
         if '__metaclass__' not in dict:
             # Get the context in which this class was created
             # (presumably, the module scope) out of the stack frame.
@@ -3583,7 +3591,7 @@ class metaclass_def(type):
             # context, so we can later resolve the class names in
             # the order they appeared in the file.
             mdict.setdefault('__statements', []).append((lineno, 'class', name, None, None))
-            
+
         return type.__new__(self, name, bases, dict)
 
 class class_p3d:
