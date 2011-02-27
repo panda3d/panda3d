@@ -360,13 +360,13 @@ class Installer:
                 mf.repack()
 
                 # If we have no subfiles left, we can just remove the multifile.
-                if mf.getNumSubfiles() == 0:
-                    Installer.notify.info("Removing empty archive %s" % (package.uncompressedArchive.filename))
-                    mf.close()
-                    archive.unlink()
-                else:
-                    mf.close()
-                    os.chmod(archive.toOsSpecific(), 0444)
+                #if mf.getNumSubfiles() == 0:
+                #    Installer.notify.info("Removing empty archive %s" % (package.uncompressedArchive.filename))
+                #    mf.close()
+                #    archive.unlink()
+                #else:
+                mf.close()
+                os.chmod(archive.toOsSpecific(), 0444)
 
         # Write out our own contents.xml file.
         doc = TiXmlDocument()
