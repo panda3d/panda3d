@@ -74,7 +74,7 @@ want-tk           #f
 want-pstats            #f
 show-frame-rate-meter  #f
 
-# Enable audio using the FMOD audio library by default:
+# Enable audio using the OpenAL audio library by default:
 
 audio-library-name p3openal_audio
 
