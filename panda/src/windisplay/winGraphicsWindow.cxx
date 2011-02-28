@@ -332,6 +332,19 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_foreground();
   }
 
+  if (properties.has_minimized()) {
+    if (_properties.get_minimized() != properties.get_minimized()) {
+      if (properties.get_minimized()) {
+        ShowWindow(_hWnd, SW_MINIMIZE);
+      } else {
+        ShowWindow(_hWnd, SW_RESTORE);
+      }
+      _properties.set_minimized(properties.get_minimized());
+      _properties.set_foreground(!properties.get_minimized());
+    }
+    properties.clear_minimized();
+  }
+
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen() && !is_fullscreen()) {
       if (do_fullscreen_switch()){
@@ -393,6 +406,7 @@ open_window() {
     _cursor = LoadCursor(NULL, IDC_ARROW);
   }
   bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
+  bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground;
 
   HWND old_foreground_window = GetForegroundWindow();
 
@@ -417,8 +431,13 @@ open_window() {
                SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
   
   // need to do twice to override any minimized flags in StartProcessInfo
-  ShowWindow(_hWnd, SW_SHOWNORMAL);
-  ShowWindow(_hWnd, SW_SHOWNORMAL);
+  if (want_minimized) {
+    ShowWindow(_hWnd, SW_MINIMIZE);
+    ShowWindow(_hWnd, SW_MINIMIZE);
+  } else {
+    ShowWindow(_hWnd, SW_SHOWNORMAL);
+    ShowWindow(_hWnd, SW_SHOWNORMAL);
+  }
 
   HWND new_foreground_window = _hWnd;
   if (!want_foreground) {
