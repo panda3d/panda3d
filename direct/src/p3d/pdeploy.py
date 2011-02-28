@@ -42,9 +42,10 @@ Options:
      If omitted, the basename of the p3d file is used.
 
   -N "Your Application"
-     Full name of the application or game. This is the name that
-     will be displayed to end-user.
-     If omitted, the short name is used.
+     Full name of the application or game. This is the
+     name that will be displayed to the end-user.
+     The 'display_name' config is used by default.  If it
+     is missing, the short name is used.
 
   -v version_number
      This should define the version number of your application
@@ -208,9 +209,6 @@ if shortname == '':
 if shortname.lower() != shortname or ' ' in shortname:
     print '\nProvided short name should be lowercase, and may not contain spaces!\n'
 
-if fullname == '':
-    fullname = shortname
-
 if version == '' and deploy_mode == 'installer':
     print '\nA version number is required in "installer" mode.\n'
     sys.exit(1)
@@ -247,7 +245,7 @@ if deploy_mode == 'standalone':
 elif deploy_mode == 'installer':
     if includeRequires:
         tokens["verify_contents"] = "never"
-    i = Installer(shortname, fullname, appFilename, version, tokens = tokens)
+    i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
     i.licensename = licensename
     i.licensefile = licensefile
     i.authorid = authorid

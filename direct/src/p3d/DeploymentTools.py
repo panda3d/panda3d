@@ -271,7 +271,9 @@ class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
     notify = directNotify.newCategory("Installer")
 
-    def __init__(self, shortname, fullname, p3dfile, version, tokens = {}):
+    def __init__(self, p3dfile, shortname, fullname, version, tokens = {}):
+        if not shortname:
+            shortname = p3dfile.getBasenameWoExtension()
         self.shortname = shortname
         self.fullname = fullname
         self.version = str(version)
@@ -333,6 +335,14 @@ class Installer:
                         p3dRequires.Attribute('version'),
                         p3dRequires.Attribute('host')))
                     p3dRequires = p3dRequires.NextSiblingElement('requires')
+
+                if not self.fullname:
+                    p3dConfig = p3dPackage.FirstChildElement('config')
+                    if p3dConfig:
+                        self.fullname = p3dConfig.Attribute('display_name')
+
+        if not self.fullname:
+            self.fullname = self.shortname
 
     def __del__(self):
         try:
