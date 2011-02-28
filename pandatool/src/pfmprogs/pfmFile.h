@@ -58,8 +58,11 @@ public:
   PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
   
   NodePath generate_vis_points() const;
+  NodePath generate_vis_mesh() const;
 
 private:
+  PT(Geom) make_vis_mesh_geom(bool inverted) const;
+
   void compute_sample_point(LPoint3f &result,
                             double x, double y, double sample_radius) const;
   void box_filter_region(LPoint3f &result,

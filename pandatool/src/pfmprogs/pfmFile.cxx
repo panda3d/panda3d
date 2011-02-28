@@ -24,6 +24,7 @@
 #include "geomVertexData.h"
 #include "geomVertexFormat.h"
 #include "geomPoints.h"
+#include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "look_at.h"
 
@@ -475,6 +476,148 @@ generate_vis_points() const {
   PT(GeomNode) gnode = new GeomNode("");
   gnode->add_geom(geom);
   return NodePath(gnode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::generate_vis_mesh
+//       Access: Public
+//  Description: Creates a triangle mesh with the points of the pfm as
+//               3-d coordinates in space, and texture coordinates
+//               ranging from 0 .. 1 based on the position within the
+//               pfm grid.
+////////////////////////////////////////////////////////////////////
+NodePath PfmFile::
+generate_vis_mesh() const {
+  nassertr(is_valid(), NodePath());
+  
+  PT(GeomNode) gnode = new GeomNode("");
+
+  PT(Geom) geom1 = make_vis_mesh_geom(false);
+  gnode->add_geom(geom1);
+
+  PT(Geom) geom2 = make_vis_mesh_geom(true);
+  gnode->add_geom(geom2);
+
+  return NodePath(gnode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::make_vis_mesh_geom
+//       Access: Private
+//  Description: Returns a triangle mesh for the pfm.  If inverted is
+//               true, the mesh is facing the opposite direction.
+////////////////////////////////////////////////////////////////////
+PT(Geom) PfmFile::
+make_vis_mesh_geom(bool inverted) const {
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("mesh", GeomVertexFormat::get_v3n3t2(),
+     Geom::UH_static);
+  int num_vertices = _x_size * _y_size;
+  vdata->set_num_rows(num_vertices);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      vertex.add_data3f(get_point(xi, yi));
+      texcoord.add_data2f(float(xi) / float(_x_size - 1),
+                          float(yi) / float(_y_size - 1));
+
+      // Calculate the normal based on two neighboring vertices.
+      LPoint3f v[3];
+      v[0] = get_point(xi, yi);
+      if (xi + 1 < _x_size) {
+        v[1] = get_point(xi + 1, yi);
+      } else {
+        v[1] = v[0];
+        v[0] = get_point(xi - 1, yi);
+      }
+
+      if (yi + 1 < _y_size) {
+        v[2] = get_point(xi, yi + 1);
+      } else {
+        v[2] = v[0];
+        v[0] = get_point(xi, yi - 1);
+      }
+
+      LVector3f n = LVector3f::zero();
+      for (int i = 0; i < 3; ++i) {
+        const LPoint3f &v0 = v[i];
+        const LPoint3f &v1 = v[(i + 1) % 3];
+        n[0] += v0[1] * v1[2] - v0[2] * v1[1];
+        n[1] += v0[2] * v1[0] - v0[0] * v1[2];
+        n[2] += v0[0] * v1[1] - v0[1] * v1[0];
+      }
+      n.normalize();
+      if (inverted) {
+        n = -n;
+      }
+      normal.add_data3f(n);
+    }
+  }
+  
+  PT(Geom) geom = new Geom(vdata);
+  PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+
+  if (num_vertices > 0xffff) {
+    // We need 32-bit indices.
+    tris->set_index_type(Geom::NT_uint32);
+  }
+
+  // We get direct access to the vertices data so we can speed things
+  // up by pre-specifying the number of vertices.  Need a better
+  // interface to do this same thing using the high-level access
+  // methods.
+  int num_indices = (_x_size - 1) * (_y_size - 1) * 6;
+
+  PT(GeomVertexArrayData) indices = tris->modify_vertices();
+  indices->set_num_rows(num_indices);
+  GeomVertexWriter index(indices, 0);
+
+  int actual_num_indices = 0;
+  for (int yi = 0; yi < _y_size - 1; ++yi) {
+    for (int xi = 0; xi < _x_size - 1; ++xi) {
+
+      if (_zero_special) {
+        if (get_point(xi, yi) == LPoint3f::zero() ||
+            get_point(xi, yi + 1) == LPoint3f::zero() ||
+            get_point(xi + 1, yi + 1) == LPoint3f::zero() ||
+            get_point(xi + 1, yi) == LPoint3f::zero()) {
+          continue;
+        }
+      }
+
+      int vi0 = ((xi) + (yi) * _x_size);
+      int vi1 = ((xi) + (yi + 1) * _x_size);
+      int vi2 = ((xi + 1) + (yi + 1) * _x_size);
+      int vi3 = ((xi + 1) + (yi) * _x_size);
+
+      if (inverted) {
+        index.add_data1i(vi2);
+        index.add_data1i(vi0);
+        index.add_data1i(vi1);
+        
+        index.add_data1i(vi3);
+        index.add_data1i(vi0);
+        index.add_data1i(vi2);
+      } else {
+        index.add_data1i(vi2);
+        index.add_data1i(vi1);
+        index.add_data1i(vi0);
+        
+        index.add_data1i(vi3);
+        index.add_data1i(vi2);
+        index.add_data1i(vi0);
+      }
+
+      actual_num_indices += 6;
+    }
+  }
+  indices->set_num_rows(actual_num_indices);
+  geom->add_primitive(tris);
+
+  return geom;
 }
 
 

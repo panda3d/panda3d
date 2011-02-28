@@ -142,13 +142,16 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (_got_vis_filename) {
-    NodePath mesh = file.generate_vis_points();
+    NodePath mesh = file.generate_vis_mesh();
     if (_got_vistex_filename) {
       PT(Texture) tex = TexturePool::load_texture(_vistex_filename);
       if (tex == NULL) {
         nout << "Couldn't find " << _vistex_filename << "\n";
       } else {
         mesh.set_texture(tex);
+      }
+      if (tex->has_alpha(tex->get_format())) {
+        mesh.set_transparency(TransparencyAttrib::M_dual);
       }
     }
     mesh.set_name(input_filename.get_basename_wo_extension());
