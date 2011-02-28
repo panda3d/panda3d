@@ -784,9 +784,16 @@ class Installer:
         # Check if we have makensis first
         makensis = None
         if (sys.platform.startswith("win")):
-            for p in os.defpath.split(";") + os.environ["PATH"].split(";"):
-                if os.path.isfile(os.path.join(p, "makensis.exe")):
-                    makensis = os.path.join(p, "makensis.exe")
+            syspath = os.defpath.split(";") + os.environ["PATH"].split(";")
+            for p in set(syspath):
+                p1 = os.path.join(p, "makensis.exe")
+                p2 = os.path.join(os.path.dirname(p), "nsis", "makensis.exe")
+                if os.path.isfile(p1):
+                    makensis = p1
+                    break
+                elif os.path.isfile(p2):
+                    makensis = p2
+                    break
             if not makensis:
                 import pandac
                 makensis = os.path.dirname(os.path.dirname(pandac.__file__))
