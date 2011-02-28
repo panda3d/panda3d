@@ -229,6 +229,7 @@ class Installer:
         self.http = self.standalone.http
         self.tempDir = Filename.temporary("", self.shortname, "") + "/"
         self.tempDir.makeDir()
+        self.__linuxRoot = None
 
         # Load the p3d file to read out the required packages
         mf = Multifile()
@@ -456,11 +457,12 @@ class Installer:
         """ Builds a filesystem for Linux.  Used so that buildDEB,
         buildRPM and buildArch can share the same temp directory. """
 
-        tempdir = Filename(self.tempDir, platform)
-        if tempdir.exists():
-            return tempdir
+        if self.__linuxRoot is not None:
+            return self.__linuxRoot
 
+        tempdir = Filename(self.tempDir, platform)
         tempdir.makeDir()
+
         Filename(tempdir, "usr/bin/").makeDir()
         if self.includeRequires:
             extraTokens = {"host_dir" : "/usr/lib/" + self.shortname.lower()}
@@ -477,7 +479,13 @@ class Installer:
             hostDir.makeDir()
             self.installPackagesInto(hostDir, platform)
 
-        return tempdir
+        totsize = 0
+        for root, dirs, files in self.os_walk(tempdir.toOsSpecific()):
+            for name in files:
+                totsize += os.path.getsize(os.path.join(root, name))
+
+        self.__linuxRoot = (tempdir, totsize)
+        return self.__linuxRoot
 
     def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
@@ -492,6 +500,9 @@ class Installer:
         Installer.notify.info("Creating %s..." % output)
         modtime = int(time.time())
 
+        # Create a temporary directory and write the launcher and dependencies to it.
+        tempdir, totsize = self.__buildTempLinux(platform)
+
         # Create a control file in memory.
         controlfile = StringIO()
         print >>controlfile, "Package: %s" % self.shortname.lower()
@@ -500,15 +511,13 @@ class Installer:
         print >>controlfile, "Section: games"
         print >>controlfile, "Priority: optional"
         print >>controlfile, "Architecture: %s" % arch
+        print >>controlfile, "Installed-Size: %d" % -(-totsize / 1024)
         print >>controlfile, "Description: %s" % self.fullname
         print >>controlfile, "Depends: libc6, libgcc1, libstdc++6, libx11-6"
         controlinfo = TarInfoRoot("control")
         controlinfo.mtime = modtime
         controlinfo.size = controlfile.tell()
         controlfile.seek(0)
-
-        # Create a temporary directory and write the launcher and dependencies to it.
-        tempdir = self.__buildTempLinux(platform)
 
         # Open the deb file and write to it. It's actually
         # just an AR file, which is very easy to make.
@@ -564,6 +573,9 @@ class Installer:
         Installer.notify.info("Creating %s..." % output)
         modtime = int(time.time())
 
+        # Create a temporary directory and write the launcher and dependencies to it.
+        tempdir, totsize = self.__buildTempLinux(platform)
+
         # Create a pkginfo file in memory.
         pkginfo = StringIO()
         print >>pkginfo, "# Generated using pdeploy"
@@ -573,6 +585,7 @@ class Installer:
         print >>pkginfo, "pkgdesc = %s" % self.fullname
         print >>pkginfo, "builddate = %s" % modtime
         print >>pkginfo, "packager = %s <%s>" % (self.authorname, self.authoremail)
+        print >>pkginfo, "size = %d" % totsize
         print >>pkginfo, "arch = %s" % arch
         if self.licensename != "":
             print >>pkginfo, "license = %s" % self.licensename
@@ -580,9 +593,6 @@ class Installer:
         pkginfoinfo.mtime = modtime
         pkginfoinfo.size = pkginfo.tell()
         pkginfo.seek(0)
-
-        # Create a temporary directory and write the launcher and dependencies to it.
-        tempdir = self.__buildTempLinux(platform)
 
         # Create the actual package now.
         pkgfile = tarfile.open(output.toOsSpecific(), "w:gz", tarinfo = TarInfoRoot)
