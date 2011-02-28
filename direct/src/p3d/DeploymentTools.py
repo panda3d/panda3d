@@ -192,6 +192,81 @@ class Standalone:
 
         return filenames
 
+
+class PackageTree:
+    """ A class used internally to build a temporary package
+    tree for inclusion into an installer. """
+
+    def __init__(self, platform, hostDir, hostUrl):
+        self.platform = ""
+        self.hosts = {}
+        self.packages = {}
+        self.hostUrl = hostUrl
+        self.hostDir = Filename(hostDir)
+        self.hostDir.makeDir()
+        self.http = HTTPClient.getGlobalPtr()
+
+    def getHost(self, hostUrl):
+        if hostUrl in self.hosts:
+            return self.hosts[hostUrl]
+
+        host = HostInfo(hostUrl, appRunner = appRunner, hostDir = self.hostDir, asMirror = False, perPlatform = False)
+        if not host.hasContentsFile:
+            if not host.readContentsFile():
+                if not host.downloadContentsFile(self.http):
+                    Installer.notify.error("couldn't read host %s" % host.hostUrl)
+                    return None
+        self.hosts[hostUrl] = host
+        return host
+
+    def installPackage(self, name, version, hostUrl = None):
+        """ Installs the named package into the tree. """
+
+        if hostUrl is None:
+            hostUrl = self.hostUrl
+
+        pkgIdent = (name, version)
+        if pkgIdent in self.packages:
+            return self.packages[pkgIdent]
+
+        package = None
+        # Always try the super host first, if any.
+        if appRunner and appRunner.superMirrorUrl:
+            superHost = self.getHost(appRunner.superMirrorUrl)
+            if self.platform:
+                package = superHost.getPackage(name, version, self.platform)
+            if not package:
+                package = superHost.getPackage(name, version)
+
+        if not package:
+            host = self.getHost(hostUrl)
+            if self.platform:
+                package = host.getPackage(name, version, self.platform)
+            if not package:
+                package = host.getPackage(name, version)
+
+        if not package:
+            Installer.notify.error("Package %s %s for %s not known on %s" % (
+                name, version, self.platform, hostUrl))
+            return
+
+        package.installed = True # Hack not to let it unnecessarily install itself
+        if not package.downloadDescFile(self.http):
+            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return
+        if not package.downloadPackage(self.http):
+            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
+            return
+
+        self.packages[pkgIdent] = package
+
+        # Check for any dependencies.
+        for rname, rversion, rhost in package.requires:
+            self.installPackage(rname, rversion, rhost)
+
+        return package
+
+
 class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
     notify = directNotify.newCategory("Installer")
@@ -226,7 +301,6 @@ class Installer:
             self.authoremail = "%s@%s" % (uname, socket.gethostname())
 
         self.standalone = Standalone(p3dfile, tokens)
-        self.http = self.standalone.http
         self.tempDir = Filename.temporary("", self.shortname, "") + "/"
         self.tempDir.makeDir()
         self.__linuxRoot = None
@@ -241,7 +315,7 @@ class Installer:
         self.hostUrl = PandaSystem.getPackageHostUrl()
         if not self.hostUrl:
             self.hostUrl = self.standalone.host.hostUrl
-        self.requirements = []
+        self.requires = []
         i = mf.findSubfile('p3d_info.xml')
         if i >= 0:
             stream = mf.openReadSubfile(i)
@@ -254,7 +328,10 @@ class Installer:
                     self.hostUrl = p3dHost.Attribute('url')
                 p3dRequires = p3dPackage.FirstChildElement('requires')
                 while p3dRequires:
-                    self.requirements.append((p3dRequires.Attribute('name'), p3dRequires.Attribute('version')))
+                    self.requires.append((
+                        p3dRequires.Attribute('name'),
+                        p3dRequires.Attribute('version'),
+                        p3dRequires.Attribute('host')))
                     p3dRequires = p3dRequires.NextSiblingElement('requires')
 
     def __del__(self):
@@ -264,42 +341,6 @@ class Installer:
             try: shutil.rmtree(self.tempDir.toOsSpecific())
             except: pass
 
-    def __installPackage(self, name, version, platform, host, superHost = None):
-        """ Internal function used by installPackagesInto.
-        Returns a *list* of packages, not a single one; None on failure. """
-
-        # Always try the super host first, if any.
-        package = None
-        if superHost:
-            if platform:
-                package = superHost.getPackage(name, version, platform)
-            if not package:
-                package = superHost.getPackage(name, version)
-
-        if not package and platform:
-            package = host.getPackage(name, version, platform)
-        if not package:
-            package = host.getPackage(name, version)
-        if not package:
-            Installer.notify.error("Package %s %s for %s not known on %s" % (
-                name, version, platform, host.hostUrl))
-            return []
-
-        package.installed = True # Hack not to let it unnecessarily install itself
-        if not package.downloadDescFile(self.http):
-            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-            return []
-        if not package.downloadPackage(self.http):
-            Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-            return []
-
-        packages = [package]
-        # Check for any dependencies.
-        for rname, rversion, rhost in package.requires:
-            packages += self.__installPackage(rname, rversion, platform, rhost, superHost)
-
-        return packages
-
     def installPackagesInto(self, hostDir, platform):
         """ Installs the packages required by the .p3d file into
         the specified directory, for the given platform. """
@@ -307,57 +348,15 @@ class Installer:
         if not self.includeRequires:
             return
 
-        packages = []
+        pkgTree = PackageTree(platform, hostDir, self.hostUrl)
+        pkgTree.installPackage("images", None, self.standalone.host.hostUrl)
 
-        host = HostInfo(self.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
-        if not host.hasContentsFile:
-            if not host.readContentsFile():
-                if not host.downloadContentsFile(self.http):
-                    Installer.notify.error("couldn't read host %s" % host.hostUrl)
-                    return
-
-        superHost = None
-        if appRunner.superMirrorUrl:
-            superHost = HostInfo(appRunner.superMirrorUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
-            if not superHost.hasContentsFile:
-                if not superHost.readContentsFile():
-                    if not superHost.downloadContentsFile(self.http):
-                        Installer.notify.warning("couldn't read supermirror host %s" % superHost.hostUrl)
-                        superHost = None
-
-        for name, version in self.requirements:
-            packages += \
-                self.__installPackage(name, version, platform, host, superHost)
-
-        # Also install the 'images' package from the same host that p3dembed was downloaded from.
-        imageHost = host
-        if host.hostUrl != self.standalone.host.hostUrl:
-            imageHost = HostInfo(self.standalone.host.hostUrl, appRunner = appRunner, hostDir = hostDir, asMirror = False, perPlatform = False)
-            if not imageHost.hasContentsFile:
-                if not imageHost.readContentsFile():
-                    if not imageHost.downloadContentsFile(self.http):
-                        Installer.notify.error("couldn't read host %s" % imageHost.hostUrl)
-                        return
-
-        imagePackages = []
-        if superHost:
-            imagePackages += superHost.getPackages(name = "images")
-        imagePackages += imageHost.getPackages(name = "images")
-
-        for package in imagePackages:
-            package.installed = True # Hack not to let it unnecessarily install itself
-            packages.append(package)
-            if not package.downloadDescFile(self.http):
-                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            if not package.downloadPackage(self.http):
-                Installer.notify.error("  -> %s failed for platform %s" % (package.packageName, package.platform))
-                continue
-            break
+        for name, version, hostUrl in self.requires:
+            pkgTree.installPackage(name, version, hostUrl)
 
         # Remove the extracted files from the compressed archive, to save space.
         vfs = VirtualFileSystem.getGlobalPtr()
-        for package in packages:
+        for package in pkgTree.packages.values():
             if package.uncompressedArchive:
                 archive = Filename(package.getPackageDir(), package.uncompressedArchive.filename)
                 if not archive.exists():
@@ -390,7 +389,8 @@ class Installer:
                 #    archive.unlink()
                 #else:
                 mf.close()
-                os.chmod(archive.toOsSpecific(), 0444)
+                try: os.chmod(archive.toOsSpecific(), 0444)
+                except: pass
 
         # Write out our own contents.xml file.
         doc = TiXmlDocument()
