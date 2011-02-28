@@ -198,7 +198,7 @@ class PackageTree:
     tree for inclusion into an installer. """
 
     def __init__(self, platform, hostDir, hostUrl):
-        self.platform = ""
+        self.platform = platform
         self.hosts = {}
         self.packages = {}
         self.hostUrl = hostUrl
@@ -413,6 +413,7 @@ class Installer:
             xpackage.SetAttribute('name', package.packageName)
             if package.platform:
                 xpackage.SetAttribute('platform', package.platform)
+                assert package.platform == platform
             if package.packageVersion:
                 xpackage.SetAttribute('version', version)
                 xpackage.SetAttribute('filename', package.packageName + "/" + package.packageVersion + "/" + package.descFileBasename)
