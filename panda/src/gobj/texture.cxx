@@ -4421,6 +4421,7 @@ do_rescale_texture() {
       new_image.copy_sub_image(orig_image, 0, new_y_size - orig_image.get_y_size());
   
       do_clear_ram_image();
+      _loaded_from_image = false;
       ++_image_modified;
       if (!do_load_one(new_image, get_name(), 0, 0, LoaderOptions())) {
         return false;
