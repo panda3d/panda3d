@@ -262,7 +262,7 @@ class PackageTree:
 
         # Check for any dependencies.
         for rname, rversion, rhost in package.requires:
-            self.installPackage(rname, rversion, rhost)
+            self.installPackage(rname, rversion, rhost.hostUrl)
 
         return package
 
