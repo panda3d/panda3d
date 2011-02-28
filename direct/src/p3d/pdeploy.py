@@ -246,6 +246,7 @@ elif deploy_mode == 'installer':
     if includeRequires:
         tokens["verify_contents"] = "never"
     i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
+    i.includeRequires = includeRequires
     i.licensename = licensename
     i.licensefile = licensefile
     if authorid:
@@ -254,7 +255,9 @@ elif deploy_mode == 'installer':
         i.authorname = authorname
     if authoremail:
         i.authoremail = authoremail
-    i.includeRequires = includeRequires
+    if not authorname or not authoremail or not authorid:
+        print "Using author \"%s\" <%s> with ID %s" % \
+            (i.authorname, i.authoremail, i.authorid)
 
     if currentPlatform:
         platform = PandaSystem.getPlatform()
