@@ -248,9 +248,12 @@ elif deploy_mode == 'installer':
     i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
     i.licensename = licensename
     i.licensefile = licensefile
-    i.authorid = authorid
-    i.authorname = authorname
-    i.authoremail = authoremail
+    if authorid:
+        i.authorid = authorid
+    if authorname:
+        i.authorname = authorname
+    if authoremail:
+        i.authoremail = authoremail
     i.includeRequires = includeRequires
 
     if currentPlatform:
