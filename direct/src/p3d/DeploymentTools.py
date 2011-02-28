@@ -408,7 +408,7 @@ class Installer:
         doc.InsertEndChild(decl)
 
         xcontents = TiXmlElement("contents")
-        for package in pkgTree.packages:
+        for package in pkgTree.packages.values():
             xpackage = TiXmlElement('package')
             xpackage.SetAttribute('name', package.packageName)
             if package.platform:
