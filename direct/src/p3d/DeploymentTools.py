@@ -36,7 +36,7 @@ def archiveFilter(info):
     # all other files are chmodded to 0644.
     # Somewhat hacky, but it's the only way
     # permissions can work on a Windows box.
-    if '.' in self.name.rsplit('/', 1)[-1]:
+    if info.type != DIRTYPE and '.' in info.name.rsplit('/', 1)[-1]:
         info.mode = 0644
     else:
         info.mode = 0755
@@ -51,7 +51,8 @@ class TarInfoRoot(tarfile.TarInfo):
     gid = property(lambda self: 0, lambda self, x: None)
     uname = property(lambda self: "root", lambda self, x: None)
     gname = property(lambda self: "root", lambda self, x: None)
-    mode = property(lambda self: 0644 if '.' in self.name.rsplit('/', 1)[-1] else 0755,
+    mode = property(lambda self: 0644 if self.type != DIRTYPE and \
+                    '.' in self.name.rsplit('/', 1)[-1] else 0755,
                     lambda self, x: None)
 
 # On OSX, the root group is named "wheel".
