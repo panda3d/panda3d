@@ -123,3 +123,29 @@ INLINE bool PfmFile::
 get_zero_special() const {
   return _zero_special;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_vis_inverse
+//       Access: Public
+//  Description: Sets the vis_inverse flag.  When this flag is true,
+//               vis meshes and point clouds are generated with the
+//               3-d depth value in the texture coordinates, and the
+//               2-d index value in the vertex position.  When it is
+//               false, meshes are generated normally, with the 3-d
+//               depth value in the vertex position and the 2-d index
+//               value in the texture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_vis_inverse(bool vis_inverse) {
+  _vis_inverse = vis_inverse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_vis_inverse
+//       Access: Public
+//  Description: Returns the vis_inverse flag.  See set_vis_inverse().
+////////////////////////////////////////////////////////////////////
+INLINE bool PfmFile::
+get_vis_inverse() const {
+  return _vis_inverse;
+}

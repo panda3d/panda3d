@@ -36,6 +36,7 @@
 PfmFile::
 PfmFile() {
   _zero_special = false;
+  _vis_inverse = false;
   clear();
 }
 
@@ -284,16 +285,18 @@ resize(int new_x_size, int new_y_size) {
 
   double from_x0, from_x1, from_y0, from_y1;
 
-  double x_scale = (double)_x_size / (double)new_x_size;
-  double y_scale = (double)_y_size / (double)new_y_size;
+  double x_scale = (double)(_x_size - 1) / (double)(new_x_size - 1);
+  double y_scale = (double)(_y_size - 1) / (double)(new_y_size - 1);
 
-  from_y0 = 0;
+  from_y0 = 0.0;
   for (int to_y = 0; to_y < new_y_size; ++to_y) {
-    from_y1 = (to_y+1) * y_scale;
+    from_y1 = (to_y + 0.5) * y_scale;
+    from_y1 = min(from_y1, _y_size);
 
-    from_x0 = 0;
+    from_x0 = 0.0;
     for (int to_x = 0; to_x < new_x_size; ++to_x) {
-      from_x1 = (to_x+1) * x_scale;
+      from_x1 = (to_x + 0.5) * x_scale;
+      from_x1 = min(from_x1, _x_size);
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
@@ -453,18 +456,37 @@ NodePath PfmFile::
 generate_vis_points() const {
   nassertr(is_valid(), NodePath());
 
+  CPT(GeomVertexFormat) format;
+  if (_vis_inverse) {
+    // We need a 3-d texture coordinate if we're inverted the vis.
+    GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
+      (InternalName::get_vertex(), 3, 
+       Geom::NT_float32, Geom::C_point,
+       InternalName::get_texcoord(), 3, 
+       Geom::NT_float32, Geom::C_texcoord);
+    format = GeomVertexFormat::register_format(v3t3);
+  } else {
+    format = GeomVertexFormat::get_v3t2();
+  }
+
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("points", GeomVertexFormat::get_v3t2(),
-     Geom::UH_static);
+    ("points", format, Geom::UH_static);
   vdata->set_num_rows(_x_size * _y_size);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      vertex.add_data3f(get_point(xi, yi));
-      texcoord.add_data2f(float(xi) / float(_x_size - 1),
-                          float(yi) / float(_y_size - 1));
+      const LPoint3f &point = get_point(xi, yi);
+      LPoint2f uv(float(xi) / float(_x_size - 1),
+                  float(yi) / float(_y_size - 1));
+      if (_vis_inverse) {
+        vertex.add_data2f(uv);
+        texcoord.add_data3f(point);
+      } else {
+        vertex.add_data3f(point);
+        texcoord.add_data2f(uv);
+      }
     }
   }
   
@@ -509,9 +531,25 @@ generate_vis_mesh() const {
 ////////////////////////////////////////////////////////////////////
 PT(Geom) PfmFile::
 make_vis_mesh_geom(bool inverted) const {
+
+  CPT(GeomVertexFormat) format;
+  if (_vis_inverse) {
+    // We need a 3-d texture coordinate if we're inverted the vis.
+    // But we don't need normals in that case.
+    GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
+      (InternalName::get_vertex(), 3, 
+       Geom::NT_float32, Geom::C_point,
+       InternalName::get_texcoord(), 3, 
+       Geom::NT_float32, Geom::C_texcoord);
+    format = GeomVertexFormat::register_format(v3t3);
+  } else {
+    // Otherwise, we only need a 2-d texture coordinate, and we do
+    // want normals.
+    format = GeomVertexFormat::get_v3n3t2();
+  }
+
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("mesh", GeomVertexFormat::get_v3n3t2(),
-     Geom::UH_static);
+    ("mesh", format, Geom::UH_static);
   int num_vertices = _x_size * _y_size;
   vdata->set_num_rows(num_vertices);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -520,40 +558,48 @@ make_vis_mesh_geom(bool inverted) const {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      vertex.add_data3f(get_point(xi, yi));
-      texcoord.add_data2f(float(xi) / float(_x_size - 1),
-                          float(yi) / float(_y_size - 1));
+      const LPoint3f &point = get_point(xi, yi);
+      LPoint2f uv(float(xi) / float(_x_size - 1),
+                  float(yi) / float(_y_size - 1));
 
-      // Calculate the normal based on two neighboring vertices.
-      LPoint3f v[3];
-      v[0] = get_point(xi, yi);
-      if (xi + 1 < _x_size) {
-        v[1] = get_point(xi + 1, yi);
+      if (_vis_inverse) {
+        vertex.add_data2f(uv);
+        texcoord.add_data3f(point);
       } else {
-        v[1] = v[0];
-        v[0] = get_point(xi - 1, yi);
-      }
+        vertex.add_data3f(point);
+        texcoord.add_data2f(uv);
 
-      if (yi + 1 < _y_size) {
-        v[2] = get_point(xi, yi + 1);
-      } else {
-        v[2] = v[0];
-        v[0] = get_point(xi, yi - 1);
+        // Calculate the normal based on two neighboring vertices.
+        LPoint3f v[3];
+        v[0] = get_point(xi, yi);
+        if (xi + 1 < _x_size) {
+          v[1] = get_point(xi + 1, yi);
+        } else {
+          v[1] = v[0];
+          v[0] = get_point(xi - 1, yi);
+        }
+        
+        if (yi + 1 < _y_size) {
+          v[2] = get_point(xi, yi + 1);
+        } else {
+          v[2] = v[0];
+          v[0] = get_point(xi, yi - 1);
+        }
+        
+        LVector3f n = LVector3f::zero();
+        for (int i = 0; i < 3; ++i) {
+          const LPoint3f &v0 = v[i];
+          const LPoint3f &v1 = v[(i + 1) % 3];
+          n[0] += v0[1] * v1[2] - v0[2] * v1[1];
+          n[1] += v0[2] * v1[0] - v0[0] * v1[2];
+          n[2] += v0[0] * v1[1] - v0[1] * v1[0];
+        }
+        n.normalize();
+        if (inverted) {
+          n = -n;
+        }
+        normal.add_data3f(n);
       }
-
-      LVector3f n = LVector3f::zero();
-      for (int i = 0; i < 3; ++i) {
-        const LPoint3f &v0 = v[i];
-        const LPoint3f &v1 = v[(i + 1) % 3];
-        n[0] += v0[1] * v1[2] - v0[2] * v1[1];
-        n[1] += v0[2] * v1[0] - v0[0] * v1[2];
-        n[2] += v0[0] * v1[1] - v0[1] * v1[0];
-      }
-      n.normalize();
-      if (inverted) {
-        n = -n;
-      }
-      normal.add_data3f(n);
     }
   }
   

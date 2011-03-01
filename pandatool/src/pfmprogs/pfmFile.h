@@ -56,7 +56,10 @@ public:
   void xform(const LMatrix4f &transform);
 
   PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
-  
+
+  INLINE void set_vis_inverse(bool vis_inverse);
+  INLINE bool get_vis_inverse() const;
+
   NodePath generate_vis_points() const;
   NodePath generate_vis_mesh() const;
 
@@ -83,6 +86,7 @@ private:
   int _num_channels;
 
   bool _zero_special;
+  bool _vis_inverse;
 };
 
 #include "pfmFile.I"

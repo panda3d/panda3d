@@ -86,6 +86,12 @@ PfmTrans() {
      &PfmTrans::dispatch_filename, &_got_vis_filename, &_vis_filename);
 
   add_option
+    ("visinv", "", 60,
+     "Inverts the visualization, generating a uniform 2-d mesh with the "
+     "3-d depth values encoded in the texture coordinates.",
+     &PfmTrans::dispatch_none, &_got_vis_inverse);
+
+  add_option
     ("vistex", "texture.jpg", 60,
      "Specifies the name of the texture to apply to the visualization.",
      &PfmTrans::dispatch_filename, &_got_vistex_filename, &_vistex_filename);
@@ -128,6 +134,7 @@ run() {
 bool PfmTrans::
 process_pfm(const Filename &input_filename, PfmFile &file) {
   file.set_zero_special(_got_zero_special);
+  file.set_vis_inverse(_got_vis_inverse);
 
   if (_got_resize) {
     file.resize(_resize[0], _resize[1]);
