@@ -13,6 +13,7 @@ from pandac.PandaModules import TiXmlDocument, TiXmlDeclaration, TiXmlElement, r
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
 import encodings
+
 try:
     import pwd
 except ImportError:
@@ -31,6 +32,15 @@ def archiveFilter(info):
     info.uid = info.gid = 0
     info.uname = info.gname = "root"
 
+    # All files without an extension get mode 0755,
+    # all other files are chmodded to 0644.
+    # Somewhat hacky, but it's the only way
+    # permissions can work on a Windows box.
+    if '.' in self.name.rsplit('/', 1)[-1]:
+        info.mode = 0644
+    else:
+        info.mode = 0755
+
     return info
 
 # Hack to make all files in a tar file owned by root.
@@ -41,6 +51,8 @@ class TarInfoRoot(tarfile.TarInfo):
     gid = property(lambda self: 0, lambda self, x: None)
     uname = property(lambda self: "root", lambda self, x: None)
     gname = property(lambda self: "root", lambda self, x: None)
+    mode = property(lambda self: 0644 if '.' in self.name.rsplit('/', 1)[-1] else 0755,
+                    lambda self, x: None)
 
 # On OSX, the root group is named "wheel".
 class TarInfoRootOSX(TarInfoRoot):
