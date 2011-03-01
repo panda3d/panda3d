@@ -538,8 +538,13 @@ reset() {
     _glDrawRangeElements = null_glDrawRangeElements;
   }
 
+#ifdef OPENGLES
+  _supports_depth_texture = has_extension("GL_OES_depth_texture") ||
+    has_extension("GL_OES_depth24") || has_extension("GL_OES_depth32");
+#else
   _supports_depth_texture =
     has_extension("GL_ARB_depth_texture") || is_at_least_gl_version(1, 4);
+#endif
 
   _supports_depth_stencil = false;
   if (_supports_depth_texture) {
@@ -564,7 +569,7 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "TexImage3DEXT");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DEXT");
-  } else if (has_extension("GL_OES_texture3D")) {
+  } else if (has_extension("GL_OES_texture3D") || has_extension("GL_OES_texture_3D")) {
     _supports_3d_texture = true;
 
     _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
@@ -599,7 +604,28 @@ reset() {
 
   _supports_compressed_texture = false;
 
-#ifndef OPENGLES
+#ifdef OPENGLES
+  _supports_compressed_texture = true;
+
+  // Supported in the core.  1D textures are not supported by OpenGL ES.
+  _glCompressedTexImage1D = NULL;
+  _glCompressedTexImage2D = glCompressedTexImage2D;
+  _glCompressedTexSubImage1D = NULL;
+  _glCompressedTexSubImage2D = glCompressedTexSubImage2D;
+  _glGetCompressedTexImage = NULL;
+
+  _glCompressedTexImage3D = NULL;
+  _glCompressedTexSubImage3D = NULL;
+#ifdef OPENGLES_2
+  if (_supports_3d_texture) {
+    _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage3DOES");
+    _glCompressedTexSubImage3D = (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImageOES");
+  }
+#endif
+
+#else
   if (is_at_least_gl_version(1, 3)) {
     _supports_compressed_texture = true;
 
@@ -650,9 +676,12 @@ reset() {
       _supports_compressed_texture = false;
     }
   }
+#endif
 
   if (_supports_compressed_texture) {
+#ifndef OPENGLES
     _compressed_texture_formats.set_bit(Texture::CM_on);
+#endif
 
     GLint num_compressed_formats = 0;
     GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
@@ -660,11 +689,22 @@ reset() {
     GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
     for (int i = 0; i < num_compressed_formats; ++i) {
       switch (formats[i]) {
+#ifndef OPENGLES_1
       case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
       case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
         _compressed_texture_formats.set_bit(Texture::CM_dxt1);
         break;
-
+#endif
+#ifdef OPENGLES
+      case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+      case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+        _compressed_texture_formats.set_bit(Texture::CM_pvr1_2bpp);
+        break;
+      case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+      case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+        _compressed_texture_formats.set_bit(Texture::CM_pvr1_4bpp);
+        break;
+#else
       case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
         _compressed_texture_formats.set_bit(Texture::CM_dxt3);
         break;
@@ -677,6 +717,7 @@ reset() {
       case GL_COMPRESSED_RGBA_FXT1_3DFX:
         _compressed_texture_formats.set_bit(Texture::CM_fxt1);
         break;
+#endif
 
       default:
         break;
@@ -684,7 +725,6 @@ reset() {
     }
     PANDA_FREE_ARRAY(formats);
   }
-#endif
 
 #ifdef OPENGLES_2
   _supports_bgr = false;
@@ -718,8 +758,13 @@ reset() {
     _supports_mesa_6 = true;
   }
 
+#ifdef OPENGLES
+  _supports_tex_non_pow2 =
+    has_extension("GL_OES_texture_npot");
+#else
   _supports_tex_non_pow2 =
     has_extension("GL_ARB_texture_non_power_of_two");
+#endif
 
 #ifdef OPENGLES_2 // OpenGL ES 2.0 doesn't support multitexturing.
   _supports_multitexture = false;
@@ -1396,7 +1441,7 @@ reset() {
         GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
           switch (formats[i]) {
-#ifndef OPENGLES
+#ifndef OPENGLES_1
           case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
             break;
@@ -1404,7 +1449,24 @@ reset() {
           case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
             break;
+#endif
+#ifdef OPENGLES
+          case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG\n";
+            break;
 
+          case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG\n";
+            break;
+
+          case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG\n";
+            break;
+
+          case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG\n";
+            break;
+#else
           case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
             break;
@@ -5904,11 +5966,11 @@ get_component_type(Texture::ComponentType component_type) {
 GLint CLP(GraphicsStateGuardian)::
 get_external_image_format(Texture *tex) const {
   Texture::CompressionMode compression = tex->get_ram_image_compression();
-#ifndef OPENGLES
   if (compression != Texture::CM_off &&
       get_supports_compressed_texture_format(compression)) {
     switch (compression) {
     case Texture::CM_on:
+#ifndef OPENGLES
       switch (tex->get_format()) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
@@ -5945,15 +6007,19 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_luminance_alphamask:
         return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
+#endif
       break;
-      
+
+#ifndef OPENGLES_1
     case Texture::CM_dxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
       }
+#endif
 
+#ifndef OPENGLES
     case Texture::CM_dxt3:
       return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 
@@ -5967,6 +6033,22 @@ get_external_image_format(Texture *tex) const {
         return GL_COMPRESSED_RGB_FXT1_3DFX;
       }
 
+#else
+    case Texture::CM_pvr1_2bpp:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+      } else {
+        return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+      }
+
+    case Texture::CM_pvr1_4bpp:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+      } else {
+        return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+      }
+#endif
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -5976,7 +6058,6 @@ get_external_image_format(Texture *tex) const {
       break;
     }
   }
-#endif
 
   switch (tex->get_format()) {
 #ifndef OPENGLES
@@ -6059,9 +6140,10 @@ get_internal_image_format(Texture *tex) const {
   bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture ||
                 tex->get_texture_type() == Texture::TT_2d_texture_array);
 
-#ifndef OPENGLES
   if (get_supports_compressed_texture_format(compression)) {
     switch (compression) {
+    // For now, we don't support generic compression with OpenGL ES.
+#ifndef OPENGLES
     case Texture::CM_on:
       // The user asked for just generic compression.  OpenGL supports
       // requesting just generic compression, but we'd like to go ahead
@@ -6081,18 +6163,16 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_RGBA;
         }
+        return GL_COMPRESSED_RGBA;
         
       case Texture::F_rgba4:
         if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_RGBA;
         }
+        return GL_COMPRESSED_RGBA;
         
       case Texture::F_rgba:
       case Texture::F_rgba8:
@@ -6101,9 +6181,8 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_RGBA;
         }
+        return GL_COMPRESSED_RGBA;
         
       case Texture::F_rgb:
       case Texture::F_rgb5:
@@ -6115,18 +6194,16 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_RGB;
         }
+        return GL_COMPRESSED_RGB;
         
       case Texture::F_alpha:
         if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_ALPHA;
         }
+        return GL_COMPRESSED_ALPHA;
         
       case Texture::F_red:
       case Texture::F_green:
@@ -6136,29 +6213,31 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_LUMINANCE;
         }
-        
+        return GL_COMPRESSED_LUMINANCE;
+
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
         if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
-        } else {
-          return GL_COMPRESSED_LUMINANCE_ALPHA;
         }
+        return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
-      
+#endif
+
+#ifndef OPENGLES_1
     case Texture::CM_dxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
       }
+#endif
 
+#ifndef OPENGLES
     case Texture::CM_dxt3:
       return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 
@@ -6171,6 +6250,21 @@ get_internal_image_format(Texture *tex) const {
       } else {
         return GL_COMPRESSED_RGB_FXT1_3DFX;
       }
+#else
+    case Texture::CM_pvr1_2bpp:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+      } else {
+        return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+      }
+
+    case Texture::CM_pvr1_4bpp:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+      } else {
+        return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+      }
+#endif
 
     case Texture::CM_default:
     case Texture::CM_off:
@@ -6180,7 +6274,6 @@ get_internal_image_format(Texture *tex) const {
       break;
     }
   }
-#endif
 
   switch (tex->get_format()) {
 #ifndef OPENGLES
@@ -6313,27 +6406,33 @@ is_mipmap_filter(GLenum min_filter) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 is_compressed_format(GLenum format) {
-#ifndef OPENGLES
   switch (format) {
+#ifndef OPENGLES_1
+  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+#endif
+#ifdef OPENGLES
+  case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+  case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+  case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+  case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+#else
+  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+  case GL_COMPRESSED_RGB_FXT1_3DFX:
+  case GL_COMPRESSED_RGBA_FXT1_3DFX:
+
   case GL_COMPRESSED_RGB:
   case GL_COMPRESSED_RGBA:
   case GL_COMPRESSED_ALPHA:
   case GL_COMPRESSED_LUMINANCE:
   case GL_COMPRESSED_LUMINANCE_ALPHA:
-  case GL_COMPRESSED_RGB_FXT1_3DFX:
-  case GL_COMPRESSED_RGBA_FXT1_3DFX:
-  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+#endif
     return true;
 
   default:
     return false;
   }
-#else
-  return false;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -9339,7 +9438,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_ALPHA:
     format = Texture::F_alpha;
     break;
-#ifndef OPENGLES
   case GL_LUMINANCE:
   case 1:
     format = Texture::F_luminance;
@@ -9349,6 +9447,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_luminance_alpha;
     break;
 
+#ifndef OPENGLES
   case GL_COMPRESSED_RGB:
     format = Texture::F_rgb;
     compression = Texture::CM_on;
@@ -9369,7 +9468,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_luminance_alpha;
     compression = Texture::CM_on;
     break;
+#endif
 
+#ifndef OPENGLES_1
   case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     format = Texture::F_rgb;
     compression = Texture::CM_dxt1;
@@ -9378,6 +9479,25 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgbm;
     compression = Texture::CM_dxt1;
     break;
+#endif
+#ifdef OPENGLES
+  case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    format = Texture::F_rgb;
+    compression = Texture::CM_pvr1_2bpp;
+    break;
+  case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+    format = Texture::F_rgba;
+    compression = Texture::CM_pvr1_2bpp;
+    break;
+  case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    format = Texture::F_rgb;
+    compression = Texture::CM_pvr1_4bpp;
+    break;
+  case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    format = Texture::F_rgba;
+    compression = Texture::CM_pvr1_4bpp;
+    break;
+#else
   case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
     format = Texture::F_rgba;
     compression = Texture::CM_dxt3;

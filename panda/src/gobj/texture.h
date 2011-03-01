@@ -183,6 +183,8 @@ PUBLISHED:
     CM_dxt3,
     CM_dxt4,
     CM_dxt5,
+    CM_pvr1_2bpp,
+    CM_pvr1_4bpp,
   };
 
   enum QualityLevel {
