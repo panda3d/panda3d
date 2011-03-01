@@ -5,12 +5,24 @@ but also introduces various minor new features. Although
 it is a minor release, it may also introduce new bugs.
 
 * Many improvements and bugfixes to pdeploy
+* Vectors now support swizzle/write masks (e.g vec.xz)
+* Fixes for depth buffer instabilities on Windows
 * Better webcam support on Linux using Video4Linux
+* Custom cursor support in X11
 * Static functions that return a list are now properly wrapped
 * ODE objects now have getId() exposed to Python
+* NodePath.findMaterial now works properly
 * Remove unnecessary dependency on GLU
-* Fixes a crash with the Maya converters
-* Several other bugfixes not listed here
+* Arithmetic operators to PNMImage
+* Various OpenGL ES-related bugfixes
+* Support for EGL and OpenGL ES in makepanda
+* Fix a crash with the Maya converters
+* Include missing p3d tools on Windows
+* Include tinyxml as part of the source
+* Updates to PandAI
+* Compile issues with latest OpenSSL fixed
+* Fix static-init ordering issues with OpenSSL
+* Several other bugfixes and features not listed here
 
 ------------------------  RELEASE 1.7.0  ------------------------
 
@@ -239,7 +251,7 @@ This release incorporates lots of small, incremental
 improvements.
 
 * Model-cache enabled by default in prepackaged release.
-* Now compiling with visual studio 2005. 
+* Now compiling with visual studio 2005.
 * Plugin installation now slightly harder --- see instructions in plugins dir.
 * Improved OSX support: mouselook, fmod fixes, icon filename.
 * Better memory usage tracking from pstats.
