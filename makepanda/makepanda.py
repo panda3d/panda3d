@@ -762,8 +762,10 @@ def CompileCxx(obj,src,opts):
         cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
-        if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
-        else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
+        cc = os.environ.get('CC', 'gcc')
+        cxx = os.environ.get('CXX', 'g++')
+        if (src.endswith(".c")): cmd = cc +' -fPIC -c -o ' + obj
+        else:                    cmd = cxx+' -ftemplate-depth-30 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
@@ -779,6 +781,7 @@ def CompileCxx(obj,src,opts):
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
+        cmd += " -pthread"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
@@ -990,17 +993,18 @@ def CompileLink(dll, obj, opts):
         else:                          mtcmd = mtcmd + ";1"
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
-        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+        cxx = os.environ.get('CXX', 'g++')
+        if (GetOrigExt(dll)==".exe"): cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup'
+                cmd = cxx + ' -undefined dynamic_lookup'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
                 else:
                     cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared'
+                cmd = cxx + ' -shared'
                 if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         for x in obj:
@@ -1029,7 +1033,7 @@ def CompileLink(dll, obj, opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + BracketNameWithQuotes(name)
-        cmd += " -lpthread"
+        cmd += " -pthread"
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
 
