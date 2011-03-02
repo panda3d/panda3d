@@ -44,8 +44,9 @@
 #ifdef IS_FREEBSD
 extern char **environ;
 
-// This is for Link_map.
+// For Link_map and dlinfo.
 #include <link.h>
+#include <dlfcn.h>
 
 // This is for sysctl.
 #include <sys/types.h>
