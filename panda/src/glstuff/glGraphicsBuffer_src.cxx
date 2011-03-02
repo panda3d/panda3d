@@ -95,7 +95,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
 CLP(GraphicsBuffer)::
 ~CLP(GraphicsBuffer)() {
   // unshare shared depth buffer if any
-  this -> unshare_depth_buffer();  
+  this->unshare_depth_buffer();
 
   // unshare all buffers that are sharing this object's depth buffer
   {
@@ -105,15 +105,15 @@ CLP(GraphicsBuffer)::
     graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     while (graphics_buffer_iterator != _shared_depth_buffer_list.end( )) {
       graphics_buffer = (*graphics_buffer_iterator);
-      if (graphics_buffer) {      
+      if (graphics_buffer) {
         // this call removes the entry from the list
         graphics_buffer -> unshare_depth_buffer();
-      }      
+      }
       graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     }
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::begin_frame
 //       Access: Public, Virtual
@@ -128,7 +128,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
 
   check_host_valid();
-  
+
   if (!_is_valid) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
@@ -144,7 +144,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
     return false;
   }
-  
+
   // Figure out the desired size of the  buffer.
   if (mode == FM_render) {
     rebuild_bitplanes();
@@ -166,7 +166,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::check_fbo
 //       Access: Private
-//  Description: Calls 'glCheckFramebufferStatus'.  On error, 
+//  Description: Calls 'glCheckFramebufferStatus'.  On error,
 //               prints out an appropriate error message and unbinds
 //               the fbo.  Returns true for OK or false for error.
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ check_fbo() {
       GLCAT.error() << "UNKNOWN PROBLEM " << status; break;
     }
     GLCAT.error(false) << " for " << get_name() << "\n";
-    
+
     glgsg->bind_fbo(0);
     report_my_gl_errors();
     return false;
@@ -225,7 +225,7 @@ rebuild_bitplanes() {
   if (_gsg == 0) {
     return;
   }
-  
+
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
@@ -235,7 +235,7 @@ rebuild_bitplanes() {
   if (tex == 0) {
     return;
   }
-  
+
   if (tex->get_texture_type() != Texture::TT_cube_map) {
     if (_fbo == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo);
@@ -302,7 +302,7 @@ rebuild_bitplanes() {
       }
       // If I can't find an appropriate slot, or if there's
       // already a texture bound to this slot, then punt
-      // this texture.  
+      // this texture.
 
       if (attach[plane]) {
         _textures[i]._rtm_mode = RTM_copy_texture;
@@ -367,7 +367,7 @@ rebuild_bitplanes() {
   } else {
     // make an FBO for each cubemap face
     int update;
-    
+
     update = false;
     for (int f = 0; f < 6; f++) {
       if (_cubemap_fbo [f] == 0) {
@@ -376,10 +376,10 @@ rebuild_bitplanes() {
         if (_cubemap_fbo [f] == 0) {
           report_my_gl_errors();
           return;
-        }    
+        }
       }
     }
-    
+
     if (update) {
       int color_attachment = GL_COLOR_ATTACHMENT0_EXT;
 
@@ -398,11 +398,10 @@ rebuild_bitplanes() {
 
         RenderTexturePlane plane = get_texture_plane(i);
 
-        switch (plane)
-        {            
+        switch (plane) {
           case RTP_depth:
           case RTP_depth_stencil:
-            for (int f = 0; f < 6; f++) {    
+            for (int f = 0; f < 6; f++) {
               glgsg->bind_fbo(_cubemap_fbo [f]);
               glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                              GL_TEXTURE_CUBE_MAP_POSITIVE_X + f,
@@ -431,13 +430,13 @@ rebuild_bitplanes() {
             }
             color_attachment++;
             break;
-            
+
           default:
             break;
         }
       }
     }
-    
+
     glgsg->bind_fbo(_cubemap_fbo [0]);
   }
 
@@ -445,7 +444,7 @@ rebuild_bitplanes() {
   if (_initial_clear) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	  _initial_clear = false;
+    _initial_clear = false;
   }
 
 #ifndef OPENGLES
@@ -504,7 +503,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       tex->set_pad_size(_rb_size_x - _x_size, _rb_size_y - _y_size);
       return;
     }
-    
+
     // Bind the texture to the slot.
     tex->set_x_size(_rb_size_x);
     tex->set_y_size(_rb_size_y);
@@ -520,8 +519,8 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       glgsg->update_texture(tc, true);
 #ifndef OPENGLES
-	    GLclampf priority = 1.0f;
-	    glPrioritizeTextures(1, &gtc->_index, &priority);
+      GLclampf priority = 1.0f;
+      glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
@@ -556,8 +555,8 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 #ifndef OPENGLES
-	    GLclampf priority = 1.0f;
-	    glPrioritizeTextures(1, &gtc->_index, &priority);
+      GLclampf priority = 1.0f;
+      glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
       glgsg->update_texture(tc, true);
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
@@ -569,26 +568,26 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
                                        gtc->_index, 0);
       }
     }
-    
+
     _tex[slot] = tex;
-    
+
     // If there was a renderbuffer bound to this slot, delete it.
     if (_rb[slot] != 0) {
       glgsg->_glDeleteRenderbuffers(1, &(_rb[slot]));
       _rb[slot] = 0;
     }
-    
+
   } else {
 
     // Disconnect from any texture that was previously bound to this slot.
     _tex[slot] = 0;
-    
+
     // If a renderbuffer is already attached to the slot, and it's
     // the right size, then no update of this slot is needed.
     if (_shared_depth_buffer == 0 && (_rb[slot] != 0)&&(!rb_resize)) {
       return;
     }
-    
+
 #ifndef OPENGLES_2
     // Check for the tricky case of a depth_stencil buffer:
     // If we think we need one, but we have a texture bound in the depth slot,
@@ -604,7 +603,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     if (_rb[slot] == 0) {
       glgsg->_glGenRenderbuffers(1, &(_rb[slot]));
     }
-    
+
     // Allocate and bind the renderbuffer.
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
@@ -614,17 +613,17 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
           glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
                                         _rb_size_x, _rb_size_y);
           glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-  
+
           GLuint rb;
-  
+
           rb = _rb[slot];
           if (_shared_depth_buffer) {
             rb = _shared_depth_buffer -> _rb[slot];
           }
-          
+
           glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                             GL_RENDERBUFFER_EXT, rb);
-  
+
           glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
                                             GL_RENDERBUFFER_EXT, rb);
 
@@ -643,7 +642,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
 
       // We'll bail out before here if we set a depth_stencil buffer, or figure out that we're
       // GOING to set a depth_stencil buffer.
-      // 
+      //
       // If we get here, we're using the simple fallback case.
 #endif
 #ifdef OPENGLES
@@ -673,11 +672,11 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     }
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::bind_slot_multisample
 //       Access: Private
-//  Description: Attaches incoming Texture or renderbuffer to the 
+//  Description: Attaches incoming Texture or renderbuffer to the
 //               required bitplanes for the 2 FBOs comprising a
 //               multisample graphics buffer.
 ////////////////////////////////////////////////////////////////////
@@ -791,7 +790,7 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
 //     Function: glGraphicsBuffer::generate_mipmaps
 //       Access: Private
 //  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  
+//               after rendering is completed for a given frame.
 //               If we've just rendered into level zero of a mipmapped
 //               texture, then all subsequent mipmap levels will now
 //               be calculated.
@@ -836,7 +835,7 @@ void CLP(GraphicsBuffer)::end_frame(FrameMode mode, Thread *current_thread) {
   // Unbind the FBO
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
-  
+
   // Resolve Multisample rendering if using it.
   if (_requested_multisamples && _fbo_multisample) {
     glgsg->report_my_gl_errors();
@@ -855,13 +854,13 @@ void CLP(GraphicsBuffer)::end_frame(FrameMode mode, Thread *current_thread) {
            graphics_buffer_iterator != _shared_depth_buffer_list.end();
            graphics_buffer_iterator++) {
         graphics_buffer = (*graphics_buffer_iterator);
-        if (graphics_buffer) {      
+        if (graphics_buffer) {
           // this call removes the entry from the list
           if ( graphics_buffer->get_sort() >= max_sort_order ) {
             max_sort_order = graphics_buffer->get_sort();
             highest_sort_graphics_buffer = graphics_buffer;
           }
-        }      
+        }
       }
       if (max_sort_order == this->get_sort()) {
         do_depth_blit = 1;
@@ -870,12 +869,12 @@ void CLP(GraphicsBuffer)::end_frame(FrameMode mode, Thread *current_thread) {
       do_depth_blit = 1;
     }
     if (do_depth_blit) {
-      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y, 
-                                GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, 
+      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                                GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
                                 GL_NEAREST);
     } else {
-      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y, 
-                                GL_COLOR_BUFFER_BIT, 
+      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                                GL_COLOR_BUFFER_BIT,
                                 GL_NEAREST);
     }
 #ifndef OPENGLES
@@ -884,25 +883,25 @@ void CLP(GraphicsBuffer)::end_frame(FrameMode mode, Thread *current_thread) {
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       glReadBuffer( next );
       glDrawBuffer( next );
-      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y, 
+      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
       next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
       glReadBuffer( next );
       glDrawBuffer( next );
-      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y, 
+      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
       next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_float(); i++) {
       glReadBuffer( next );
       glDrawBuffer( next );
-      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y, 
+      glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
       next += 1;
     }
-    
+
     glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
 #endif
@@ -945,7 +944,7 @@ select_cube_map(int cube_map_index) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  glgsg->bind_fbo(_cubemap_fbo [cube_map_index]);  
+  glgsg->bind_fbo(_cubemap_fbo [cube_map_index]);
 
   report_my_gl_errors();
 }
@@ -976,9 +975,9 @@ open_buffer() {
   if (!glgsg->_supports_framebuffer_object) {
     return false;
   }
-  
-  // Describe the framebuffer properties of the FBO.  
-  // 
+
+  // Describe the framebuffer properties of the FBO.
+  //
   // The rule is that the properties should be as close
   // as possible to those requested, subject to the limits
   // of the implementation.  This particular implementation
@@ -1002,7 +1001,7 @@ open_buffer() {
   _fb_properties.set_stereo(0);
   _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
   _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
-  
+
   _is_valid = true;
   report_my_gl_errors();
   return true;
@@ -1019,12 +1018,12 @@ close_buffer() {
 
   check_host_valid();
   report_my_gl_errors();
-  
+
   _active = false;
   if (_gsg == 0) {
     return;
   }
-  
+
   // Get the glgsg.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
@@ -1049,7 +1048,7 @@ close_buffer() {
   _rb_size_x = 0;
   _rb_size_y = 0;
   report_my_gl_errors();
-  
+
   // Delete the FBO itself.
   if (_fbo != 0) {
     glgsg->_glDeleteFramebuffers(1, &_fbo);
@@ -1064,7 +1063,7 @@ close_buffer() {
       report_my_gl_errors();
     }
   }
-  
+
   // Release the Gsg
   _gsg.clear();
 
@@ -1073,49 +1072,49 @@ close_buffer() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::share_depth_buffer
-//       Access: Published 
+//       Access: Published
 //  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly 
-//               the same. 
+//               graphics_output. The buffer sizes must be exactly
+//               the same.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsBuffer)::
 share_depth_buffer(GraphicsOutput *graphics_output) {
 
   bool state;
   CLP(GraphicsBuffer) *input_graphics_output;
-  
+
   state = false;
   input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
   if (this != input_graphics_output && input_graphics_output) {
 
     state = true;
     this -> unshare_depth_buffer();
-    
+
     // check buffer sizes
-    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {    
+    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {
       GLCAT.error() << "share_depth_buffer: non matching width \n";
-      state = false;    
+      state = false;
     }
 
-    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {     
+    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {
       GLCAT.error() << "share_depth_buffer: non matching height \n";
-      state = false;    
+      state = false;
     }
 
     // Check multisample compatibility.
     if ( this->get_multisample_count() != input_graphics_output->get_multisample_count() ) {
       GLCAT.error() << "share_depth_buffer: non matching multisamples \n";
-      state = false;    
+      state = false;
     }
 
     if ( this->get_coverage_sample_count() != input_graphics_output->get_coverage_sample_count() ) {
       GLCAT.error() << "share_depth_buffer: non matching multisamples \n";
-      state = false;    
+      state = false;
     }
 
-    if (state) {    
-      // let the input GraphicsOutput know that there is an object 
-      // sharing its depth buffer      
+    if (state) {
+      // let the input GraphicsOutput know that there is an object
+      // sharing its depth buffer
       input_graphics_output -> register_shared_depth_buffer(this);
       _shared_depth_buffer = input_graphics_output;
       state = true;
@@ -1127,7 +1126,7 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::unshare_depth_buffer
-//       Access: Published 
+//       Access: Published
 //  Description: Discontinue sharing the depth buffer.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
@@ -1135,7 +1134,7 @@ unshare_depth_buffer() {
   if (_shared_depth_buffer) {
     // let the GraphicsOutput know that this object is no longer
     // sharing its depth buffer
-    _shared_depth_buffer -> unregister_shared_depth_buffer(this);  
+    _shared_depth_buffer -> unregister_shared_depth_buffer(this);
     _shared_depth_buffer = 0;
   }
 }
@@ -1148,10 +1147,10 @@ unshare_depth_buffer() {
 void CLP(GraphicsBuffer)::
 register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
-  
+
   input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
   if (input_graphics_output) {
-    // add to list  
+    // add to list
     _shared_depth_buffer_list.push_back(input_graphics_output);
   }
 }
@@ -1164,10 +1163,10 @@ register_shared_depth_buffer(GraphicsOutput *graphics_output) {
 void CLP(GraphicsBuffer)::
 unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
-  
+
   input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
   if (input_graphics_output) {
-    // remove from list  
+    // remove from list
     _shared_depth_buffer_list.remove(input_graphics_output);
   }
 }
