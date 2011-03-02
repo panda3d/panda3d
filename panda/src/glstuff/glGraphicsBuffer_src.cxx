@@ -634,7 +634,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
           // This is the uber-tricky case, where we DON'T want to bind a depth buffer
           // if there's already any form of depth_stencil buffer bound (because depth_stencil
           // is a superset that includes depth).
-          if (( _rb[RTP_depth_stencil] != NULL ) || ( attach[RTP_depth_stencil] != NULL )) {
+          if (( _rb[RTP_depth_stencil] != 0 ) || ( attach[RTP_depth_stencil] != NULL )) {
             return;
           }
 
