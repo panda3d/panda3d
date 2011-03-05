@@ -1701,7 +1701,7 @@ GROUPING ENTRIES
 
       i, j, k - scale in x, y, z directions, respectively
       a, b, c - shear in xy, xz, and yz planes, respectively
-      r, p, h - rotate by pitch, heading, roll
+      r, p, h - rotate by roll, pitch, heading
       x, y, z - translate in x, y, z directions
 
     The net transformation matrix specified by each row of the table
