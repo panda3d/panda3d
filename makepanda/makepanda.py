@@ -5259,6 +5259,8 @@ def MakeInstallerLinux():
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             if PkgSkip("PYTHON")==0:
                 depends += ", " + PYTHONV + ", python-pmw"
+            if PkgSkip("NVIDIACG")==0:
+                depends += ", nvidia-cg-toolkit"
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
         oscmd("rm -rf targetroot/debian")
         oscmd("chmod -R 755 targetroot/DEBIAN")
