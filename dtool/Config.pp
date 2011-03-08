@@ -700,7 +700,7 @@
 #define X11_IPATH
 #define X11_LPATH /usr/X11R6/lib
 #define X11_LIBS X11
-#defer HAVE_X11 $[and $[IS_LINUX],$[libtest $[X11_LPATH],$[X11_LIBS]]]
+#defer HAVE_X11 $[and $[UNIX_PLATFORM],$[libtest $[X11_LPATH],$[X11_LIBS]]]
 
 // This defines if we have XF86DGA installed. This enables smooth
 // FPS-style mouse in x11display, when mouse mode M_relative is used.
