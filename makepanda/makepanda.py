@@ -5204,9 +5204,9 @@ def MakeInstallerLinux():
 
     # Invoke installpanda.py to install it into a temporary dir
     if RUNTIME:
-        InstallRuntime(destdir = "targetroot", outputdir = GetOutputDir())
+        InstallRuntime(destdir = "targetroot", prefix = "/usr", outputdir = GetOutputDir())
     else:
-        InstallPanda(destdir = "targetroot", outputdir = GetOutputDir())
+        InstallPanda(destdir = "targetroot", prefix = "/usr", outputdir = GetOutputDir())
         oscmd("chmod -R 755 targetroot/usr/share/panda3d")
 
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
@@ -5529,15 +5529,24 @@ def MakeInstallerFreeBSD():
     else:
         descr_txt = INSTALLER_PKG_DESCR_FILE[1:]
     descr_txt = descr_txt.replace("VERSION", VERSION)
-    plist_txt = "@name panda3d-%s\n" % VERSION
+    if (RUNTIME):
+        plist_txt = "@name panda3d-runtime-%s\n" % VERSION
+    else:
+        plist_txt = "@name panda3d-%s\n" % VERSION
     for root, dirs, files in os.walk("targetroot/usr/local/", True):
         for f in files:
             plist_txt += os.path.join(root, f)[21:] + "\n"
-    for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
-        for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):
-            for d in dirs:
-                plist_txt += "@dirrm %s\n" % os.path.join(root, d)[21:]
-        plist_txt += "@dirrm %s\n" % remdir
+
+    if (not RUNTIME):
+        plist_txt += "@exec /sbin/ldconfig -m /usr/local/lib\n"
+        plist_txt += "@unexec /sbin/ldconfig -R\n"
+
+        for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
+            for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):
+                for d in dirs:
+                    plist_txt += "@dirrm %s\n" % os.path.join(root, d)[21:]
+            plist_txt += "@dirrm %s\n" % remdir
+
     WriteFile("pkg-plist", plist_txt)
     WriteFile("pkg-descr", descr_txt)
     cmd = "pkg_create"

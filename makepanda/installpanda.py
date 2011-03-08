@@ -118,6 +118,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+PPATH)
     if (sys.platform.startswith("freebsd")):
         oscmd("mkdir -p "+destdir+prefix+"/etc")
+        oscmd("mkdir -p "+destdir+"/usr/local/libdata/ldconfig")
     else:
         oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
     WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
@@ -147,7 +148,9 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
     oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+PPATH+"/panda3d.pth")
     oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
-    if (not sys.platform.startswith("freebsd")):
+    if (sys.platform.startswith("freebsd")):
+        oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
+    else:
         oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
         oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
     oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
