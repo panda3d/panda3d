@@ -13,7 +13,7 @@
 #define OSXGRAPHICSPIPE_H
 
 #include "pandabase.h"
-#include "graphicspipe.h"
+#include "graphicsPipe.h"
 
 #include <Carbon/Carbon.h>
 
