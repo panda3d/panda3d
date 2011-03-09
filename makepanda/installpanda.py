@@ -180,7 +180,7 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/applications")
     if (os.path.exists(outputdir+"/plugins/nppanda3d.so")):
         oscmd("cp "+outputdir+"/plugins/nppanda3d.so "+destdir+prefix+libdir+"/nppanda3d.so")
-        if (sys.platform.startswith("freebsd"):
+        if sys.platform.startswith("freebsd"):
             oscmd("mkdir -p "+destdir+prefix+libdir+"/browser_plugins/symlinks/gecko19")
             oscmd("mkdir -p "+destdir+prefix+libdir+"/libxul/plugins")
             oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/browser_plugins/symlinks/gecko19/nppanda3d.so")
