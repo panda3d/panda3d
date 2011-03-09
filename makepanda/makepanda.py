@@ -3819,7 +3819,7 @@ if (RTDIST or RUNTIME):
       OPTS.append("FLTK")
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['NOSTRIP', 'OPENSSL', 'FLTK']
+      OPTS=['NOSTRIP', 'OPENSSL', 'FLTK', 'WINCOMCTL', 'WINSOCK']
     else:
       OPTS.append("WX")
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert_wx.cxx')
