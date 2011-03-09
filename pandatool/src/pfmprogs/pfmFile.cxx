@@ -200,7 +200,7 @@ read(istream &in) {
   if (in.fail() && !in.eof()) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -291,12 +291,12 @@ resize(int new_x_size, int new_y_size) {
   from_y0 = 0.0;
   for (int to_y = 0; to_y < new_y_size; ++to_y) {
     from_y1 = (to_y + 0.5) * y_scale;
-    from_y1 = min(from_y1, _y_size);
+    from_y1 = min(from_y1, (double) _y_size);
 
     from_x0 = 0.0;
     for (int to_x = 0; to_x < new_x_size; ++to_x) {
       from_x1 = (to_x + 0.5) * x_scale;
-      from_x1 = min(from_x1, _x_size);
+      from_x1 = min(from_x1, (double) _x_size);
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
@@ -328,7 +328,7 @@ reverse_rows() {
   for (int yi = 0; yi < _y_size; ++yi) {
     int source_yi = _y_size - 1 - yi;
     int start = source_yi * _x_size;
-    reversed.insert(reversed.end(), 
+    reversed.insert(reversed.end(),
                     _table.begin() + start, _table.begin() + start + _x_size);
   }
 
@@ -460,9 +460,9 @@ generate_vis_points() const {
   if (_vis_inverse) {
     // We need a 3-d texture coordinate if we're inverted the vis.
     GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, 
+      (InternalName::get_vertex(), 3,
        Geom::NT_float32, Geom::C_point,
-       InternalName::get_texcoord(), 3, 
+       InternalName::get_texcoord(), 3,
        Geom::NT_float32, Geom::C_texcoord);
     format = GeomVertexFormat::register_format(v3t3);
   } else {
@@ -474,7 +474,7 @@ generate_vis_points() const {
   vdata->set_num_rows(_x_size * _y_size);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
       const LPoint3f &point = get_point(xi, yi);
@@ -489,12 +489,12 @@ generate_vis_points() const {
       }
     }
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
   points->add_next_vertices(_x_size * _y_size);
   geom->add_primitive(points);
-  
+
   PT(GeomNode) gnode = new GeomNode("");
   gnode->add_geom(geom);
   return NodePath(gnode);
@@ -511,7 +511,7 @@ generate_vis_points() const {
 NodePath PfmFile::
 generate_vis_mesh() const {
   nassertr(is_valid(), NodePath());
-  
+
   PT(GeomNode) gnode = new GeomNode("");
 
   PT(Geom) geom1 = make_vis_mesh_geom(false);
@@ -537,9 +537,9 @@ make_vis_mesh_geom(bool inverted) const {
     // We need a 3-d texture coordinate if we're inverted the vis.
     // But we don't need normals in that case.
     GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, 
+      (InternalName::get_vertex(), 3,
        Geom::NT_float32, Geom::C_point,
-       InternalName::get_texcoord(), 3, 
+       InternalName::get_texcoord(), 3,
        Geom::NT_float32, Geom::C_texcoord);
     format = GeomVertexFormat::register_format(v3t3);
   } else {
@@ -578,14 +578,14 @@ make_vis_mesh_geom(bool inverted) const {
           v[1] = v[0];
           v[0] = get_point(xi - 1, yi);
         }
-        
+
         if (yi + 1 < _y_size) {
           v[2] = get_point(xi, yi + 1);
         } else {
           v[2] = v[0];
           v[0] = get_point(xi, yi - 1);
         }
-        
+
         LVector3f n = LVector3f::zero();
         for (int i = 0; i < 3; ++i) {
           const LPoint3f &v0 = v[i];
@@ -602,7 +602,7 @@ make_vis_mesh_geom(bool inverted) const {
       }
     }
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
 
@@ -643,7 +643,7 @@ make_vis_mesh_geom(bool inverted) const {
         index.add_data1i(vi2);
         index.add_data1i(vi0);
         index.add_data1i(vi1);
-        
+
         index.add_data1i(vi3);
         index.add_data1i(vi0);
         index.add_data1i(vi2);
@@ -651,7 +651,7 @@ make_vis_mesh_geom(bool inverted) const {
         index.add_data1i(vi2);
         index.add_data1i(vi1);
         index.add_data1i(vi0);
-        
+
         index.add_data1i(vi3);
         index.add_data1i(vi2);
         index.add_data1i(vi0);
@@ -733,7 +733,7 @@ box_filter_region(LPoint3f &result,
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::box_filter_line
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 box_filter_line(LPoint3f &result, double &coverage,
@@ -762,7 +762,7 @@ box_filter_line(LPoint3f &result, double &coverage,
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::box_filter_point
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 box_filter_point(LPoint3f &result, double &coverage,
