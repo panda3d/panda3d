@@ -569,7 +569,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FLTK",  tool = "fltk-config")
     if (RUNTIME):
         if (sys.platform.startswith("freebsd")):
-            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner", "nspr*/prtypes.h", "nspr*"))
+            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
         else:
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
     if (sys.platform != "darwin"):
