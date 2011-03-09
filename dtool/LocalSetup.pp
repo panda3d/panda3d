@@ -121,6 +121,11 @@
 #else
 #print - Did not find WxWidgets
 #endif
+#if $[HAVE_FLTK]
+#print + FLTK
+#else
+#print - Did not find FLTK
+#endif
 #if $[HAVE_GL]
 #print + OpenGL
 #else

@@ -401,6 +401,15 @@
   #define wx_framework $[WX_FRAMEWORK]
 #endif
 
+#if $[HAVE_FLTK]
+  #define fltk_ipath $[wildcard $[FLTK_IPATH]]
+  #define fltk_lpath $[wildcard $[FLTK_LPATH]]
+  #define fltk_cflags $[FLTK_CFLAGS]
+  #define fltk_lflags $[FLTK_LFLAGS]
+  #define fltk_libs $[FLTK_LIBS]
+  #define fltk_framework $[FLTK_FRAMEWORK]
+#endif
+
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]
   #define maya_ipath $[MAYA_LOCATION]/include
   #define maya_lpath $[MAYA_LOCATION]/lib

@@ -340,6 +340,13 @@
 #set WX_LPATH $[unixfilename $[WX_LPATH]]
 #set WX_LIBS $[WX_LIBS]
 
+#set FLTK_CONFIG $[FLTK_CONFIG]
+#set HAVE_FLTK $[HAVE_FLTK]
+#set FLTK_CFLAGS $[FLTK_CFLAGS]
+#set FLTK_IPATH $[unixfilename $[FLTK_IPATH]]
+#set FLTK_LPATH $[unixfilename $[FLTK_LPATH]]
+#set FLTK_LIBS $[FLTK_LIBS]
+
 
 #set MAYA_LOCATION $[unixfilename $[MAYA_LOCATION]]
 #set HAVE_MAYA $[HAVE_MAYA]
@@ -387,6 +394,17 @@
   #define WX_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
   #define WX_LFLAGS $[filter-out -l%,$[libs]]
   #define WX_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
+#endif
+
+#if $[and $[HAVE_FLTK],$[FLTK_CONFIG]]
+  #define cflags $[shell $[FLTK_CONFIG] --cflags]
+  #define libs $[shell $[FLTK_CONFIG] --ldflags]
+
+  #define FLTK_CFLAGS $[filter-out -I%,$[cflags]]
+  #define FLTK_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
+  #define FLTK_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
+  #define FLTK_LFLAGS $[filter-out -l%,$[libs]]
+  #define FLTK_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
 #if $[HAVE_PHYSX]

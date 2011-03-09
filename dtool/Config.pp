@@ -5,7 +5,7 @@
 // into the various make scripts.  It is processed by ppremake (along
 // with the Sources.pp files in each of the various directories) to
 // generate build scripts appropriate to each environment.
-// 
+//
 
 // *******************************************************************
 // NOTE: you should not attempt to copy this file verbatim as your own
@@ -70,7 +70,7 @@
 //
 //  unix      - Generate makefiles suitable for most Unix platforms.
 //  msvc      - Generate Visual C++ project files (still a work in progress)
-//  nmake     - Generate makefiles for Microsoft Visual C++, using 
+//  nmake     - Generate makefiles for Microsoft Visual C++, using
 //              Microsoft's nmake utility.
 //  gmsvc     - Generate makefiles similar to the above, using Microsoft
 //              Visual C++, but uses the Cygwin-supplied GNU make
@@ -335,7 +335,7 @@
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure
 // interfaces like libpandaegg and libpandafx.
-#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx libp3vision $[if $[HAVE_ODE],libpandaode] 
+#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx libp3vision $[if $[HAVE_ODE],libpandaode]
 
 // Normally, Python source files are copied into the INSTALL_LIB_DIR
 // defined above, along with the compiled C++ library objects, when
@@ -543,7 +543,7 @@
 
 // Is Cg installed, and where?
 #if $[WINDOWS_PLATFORM]
-  #define CG_IPATH 
+  #define CG_IPATH
   #define CG_LPATH
   #define CG_LIBS cg.lib
 #else
@@ -987,10 +987,10 @@
 #defer FREETYPE_CONFIG $[if $[not $[WINDOWS_PLATFORM]],freetype-config]
 #defer HAVE_FREETYPE $[or $[libtest $[FREETYPE_LPATH],$[FREETYPE_LIBS]],$[bintest $[FREETYPE_CONFIG]]]
 
-#define FREETYPE_CFLAGS 
+#define FREETYPE_CFLAGS
 #define FREETYPE_IPATH
-#define FREETYPE_LPATH 
-#define FREETYPE_LIBS 
+#define FREETYPE_LPATH
+#define FREETYPE_LIBS
 
 // Define this true to compile in a default font, so every TextNode
 // will always have a font available without requiring the user to
@@ -1009,10 +1009,22 @@
 #defer WX_CONFIG $[if $[not $[WINDOWS_PLATFORM]],wx-config]
 #defer HAVE_WX $[or $[libtest $[WX_LPATH],$[WX_LIBS]],$[bintest $[WX_CONFIG]]]
 
-#define WX_CFLAGS 
+#define WX_CFLAGS
 #define WX_IPATH
-#define WX_LPATH 
-#define WX_LIBS 
+#define WX_LPATH
+#define WX_LIBS
+
+// We use FLTK--the C++ library, not the Python library--for
+// building the application p3dcert, which is needed only when
+// building the plugin/runtime system.  This uses a fltk-config program,
+// similar to freetype, above.
+#defer FLTK_CONFIG $[if $[not $[WINDOWS_PLATFORM]],fltk-config]
+#defer HAVE_FLTK $[or $[libtest $[FLTK_LPATH],$[FLTK_LIBS]],$[bintest $[FLTK_CONFIG]]]
+
+#define FLTK_CFLAGS
+#define FLTK_IPATH
+#define FLTK_LPATH
+#define FLTK_LIBS
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 

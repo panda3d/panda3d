@@ -159,12 +159,17 @@
 // red "play" button to approve an unknown certificate.  Considered
 // part of the Core API, though it is a separate download.
 //
-
+#if $[HAVE_FLTK]
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_FLTK],$[HAVE_OPENSSL]]
+  #define USE_PACKAGES fltk openssl
+  #define SOURCES p3dCert.cxx p3dCert.h
+#else
   #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_WX],$[HAVE_OPENSSL]]
   #define USE_PACKAGES wx openssl
+  #define SOURCES p3dCert_wx.cxx p3dCert_wx.h
+#endif
   #define TARGET p3dcert
 
-  #define SOURCES p3dCert.cxx p3dCert.h
   #define OSX_SYS_FRAMEWORKS Carbon
 
 #end bin_target

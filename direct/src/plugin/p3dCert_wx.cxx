@@ -1,5 +1,5 @@
 // Filename: p3dCert.cxx
-// Created by:  rdb (08Mar11)
+// Created by:  drose (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,95 +12,128 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dCert.h"
-
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Return_Button.H>
-#include <Fl/Fl_Text_Display.H>
-
-#include <cassert>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#define BUTTON_WIDTH 120
-#define BUTTON_SPACE 10
+#include "p3dCert_wx.h"
+#include "wx/cmdline.h"
+#include "wx/filename.h"
 
 #include "ca_bundle_data_src.c"
 
-#ifdef _WIN32
-#define snprintf sprintf_s
-#endif
+static const wxString
+self_signed_cert_text =
+  _T("This Panda3D application uses a self-signed certificate.  ")
+  _T("This means the author's name can't be verified, and you have ")
+  _T("no way of knowing for sure who wrote it.\n\n")
 
-static const char
-self_signed_cert_text[] =
-  "This Panda3D application uses a self-signed certificate.  "
-  "This means the author's name can't be verified, and you have "
-  "no way of knowing for sure who wrote it.\n\n"
+  _T("We recommend you click Cancel to avoid running this application.");
 
-  "We recommend you click Cancel to avoid running this application.";
+static const wxString
+unknown_auth_cert_text =
+  _T("This Panda3D application has been signed, but we don't recognize ")
+  _T("the authority that verifies the signature.  This means the author's ")
+  _T("name can't be trusted, and you have no way of knowing ")
+  _T("for sure who wrote it.\n\n")
 
-static const char
-unknown_auth_cert_text[] =
-  "This Panda3D application has been signed, but we don't recognize "
-  "the authority that verifies the signature.  This means the author's "
-  "name can't be trusted, and you have no way of knowing "
-  "for sure who wrote it.\n\n"
+  _T("We recommend you click Cancel to avoid running this application.");
 
-  "We recommend you click Cancel to avoid running this application.";
+static const wxString
+verified_cert_text =
+  _T("This Panda3D application has been signed by %s. ")
+  _T("If you trust %s, then click the Run button below ")
+  _T("to run this application on your computer.  This will also ")
+  _T("automatically approve this and any other applications signed by ")
+  _T("%s in the future.\n\n")
 
-static const char
-verified_cert_text[] =
-  "This Panda3D application has been signed by %s. "
-  "If you trust %s, then click the Run button below "
-  "to run this application on your computer.  This will also "
-  "automatically approve this and any other applications signed by "
-  "%s in the future.\n\n"
+  _T("If you are unsure about this application, ")
+  _T("you should click Cancel instead.");
 
-  "If you are unsure about this application, "
-  "you should click Cancel instead.";
+static const wxString
+expired_cert_text =
+  _T("This Panda3D application has been signed by %s, ")
+  _T("but the certificate has expired.\n\n")
 
-static const char
-expired_cert_text[] =
-  "This Panda3D application has been signed by %s, "
-  "but the certificate has expired.\n\n"
+  _T("You should check the current date set on your computer's clock ")
+  _T("to make sure it is correct.\n\n")
 
-  "You should check the current date set on your computer's clock "
-  "to make sure it is correct.\n\n"
+  _T("If your computer's date is correct, we recommend ")
+  _T("you click Cancel to avoid running this application.");
 
-  "If your computer's date is correct, we recommend "
-  "you click Cancel to avoid running this application.";
+static const wxString
+generic_error_cert_text =
+  _T("This Panda3D application has been signed, but there is a problem ")
+  _T("with the certificate (OpenSSL error code %d).\n\n")
 
-static const char
-generic_error_cert_text[] =
-  "This Panda3D application has been signed, but there is a problem "
-  "with the certificate (OpenSSL error code %d).\n\n"
+  _T("We recommend you click Cancel to avoid running this application.");
 
-  "We recommend you click Cancel to avoid running this application.";
+static const wxString
+no_cert_text =
+  _T("This Panda3D application has not been signed.  This means you have ")
+  _T("no way of knowing for sure who wrote it.\n\n")
 
-static const char
-no_cert_text[] =
-  "This Panda3D application has not been signed.  This means you have "
-  "no way of knowing for sure who wrote it.\n\n"
+  _T("Click Cancel to avoid running this application.");
 
-  "Click Cancel to avoid running this application.";
+// wxWidgets boilerplate macro to define main() and start up the
+// application.
+IMPLEMENT_APP(P3DCertApp)
 
-int main(int argc, char **argv) {
-  OpenSSL_add_all_algorithms();
-
-  if (argc != 3) {
-    cerr << "usage: p3dcert cert_filename cert_dir\n";
-    return 1;
+////////////////////////////////////////////////////////////////////
+//     Function: P3DCertApp::OnInit
+//       Access: Public, Virtual
+//  Description: The "main" of a wx application.  This is the first
+//               entry point.
+////////////////////////////////////////////////////////////////////
+bool P3DCertApp::
+OnInit() {
+  // call the base class initialization method, currently it only parses a
+  // few common command-line options but it could be do more in the future
+  if (!wxApp::OnInit()) {
+    return false;
   }
 
-  string cert_filename (argv[1]);
-  string cert_dir (argv[2]);
+  OpenSSL_add_all_algorithms();
 
-  AuthDialog *dialog = new AuthDialog(cert_filename, cert_dir);
-  dialog->show(1, argv);
+  AuthDialog *dialog = new AuthDialog(_cert_filename, _cert_dir);
+  SetTopWindow(dialog);
+  dialog->Show(true);
+  dialog->SetFocus();
+  dialog->Raise();
 
-  return Fl::run();
+  // Return true to enter the main loop and wait for user input.
+  return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DCertApp::OnInitCmdLine
+//       Access: Public, Virtual
+//  Description: A callback to initialize the parser with the command
+//               line options.
+////////////////////////////////////////////////////////////////////
+void P3DCertApp::
+OnInitCmdLine(wxCmdLineParser &parser) {
+  parser.AddParam();
+  parser.AddParam();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DCertApp::OnCmdLineParsed
+//       Access: Public, Virtual
+//  Description: A callback after the successful parsing of the
+//               command line.
+////////////////////////////////////////////////////////////////////
+bool P3DCertApp::
+OnCmdLineParsed(wxCmdLineParser &parser) {
+  _cert_filename = parser.GetParam(0);
+  _cert_dir = parser.GetParam(1);
+  return true;
+}
+
+
+// The event table for AuthDialog.
+#define VIEW_CERT_BUTTON  (wxID_HIGHEST + 1)
+BEGIN_EVENT_TABLE(AuthDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, AuthDialog::run_clicked)
+    EVT_BUTTON(VIEW_CERT_BUTTON, AuthDialog::view_cert_clicked)
+    EVT_BUTTON(wxID_CANCEL, AuthDialog::cancel_clicked)
+END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AuthDialog::Constructor
@@ -108,8 +141,12 @@ int main(int argc, char **argv) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AuthDialog::
-AuthDialog(const string &cert_filename, const string &cert_dir) :
-  Fl_Window(435, 242, "New Panda3D Application"),
+AuthDialog(const wxString &cert_filename, const wxString &cert_dir) :
+  // I hate stay-on-top dialogs, but if we don't set this flag, it
+  // doesn't come to the foreground on OSX, and might be lost behind
+  // the browser window.
+  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition,
+           wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP),
   _cert_dir(cert_dir)
 {
   _view_cert_dialog = NULL;
@@ -132,7 +169,7 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
 AuthDialog::
 ~AuthDialog() {
   if (_view_cert_dialog != NULL) {
-    _view_cert_dialog->hide();
+    _view_cert_dialog->Destroy();
   }
 
   if (_cert != NULL) {
@@ -151,9 +188,8 @@ AuthDialog::
 //  Description: The user clicks the "Run" button.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-run_clicked(Fl_Widget *w, void *data) {
-  AuthDialog *dlg = (AuthDialog *) data;
-  dlg->approve_cert();
+run_clicked(wxCommandEvent &event) {
+  approve_cert();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,15 +198,13 @@ run_clicked(Fl_Widget *w, void *data) {
 //  Description: The user clicks the "View Certificate" button.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-view_cert_clicked(Fl_Widget *w, void *data) {
-  AuthDialog *dlg = (AuthDialog *) data;
-
-  if (dlg->_view_cert_dialog != NULL) {
-    dlg->_view_cert_dialog->hide();
+view_cert_clicked(wxCommandEvent &event) {
+  if (_view_cert_dialog != NULL) {
+    _view_cert_dialog->Destroy();
   }
-  dlg->hide();
-  dlg->_view_cert_dialog = new ViewCertDialog(dlg, dlg->_cert);
-  dlg->_view_cert_dialog->show();
+  Hide();
+  _view_cert_dialog = new ViewCertDialog(this, _cert);
+  _view_cert_dialog->Show();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,9 +213,8 @@ view_cert_clicked(Fl_Widget *w, void *data) {
 //  Description: The user clicks the "Cancel" button.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-cancel_clicked(Fl_Widget *w, void *data) {
-  AuthDialog *dlg = (AuthDialog *) data;
-  dlg->hide();
+cancel_clicked(wxCommandEvent &event) {
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,42 +229,27 @@ approve_cert() {
   assert(_cert != NULL);
 
   // Make sure the directory exists.
-#ifdef _WIN32
-  mkdir(_cert_dir.c_str());
-#else
-  mkdir(_cert_dir.c_str(), 0755);
-#endif
+  wxFileName::Mkdir(_cert_dir, 0777, wxPATH_MKDIR_FULL);
 
   // Look for an unused filename.
-  string pathname;
+  wxString pathname;
   int i = 1;
-  char buf [PATH_MAX];
   while (true) {
-    sprintf(buf, "%s/p%d.crt", _cert_dir.c_str(), i);
-
-    // Check if it already exists.  If not, take it.
-#ifdef _WIN32
-    DWORD results = GetFileAttributes(buf);
-    if (results == -1) {
+    pathname.Printf(wxT("%s/p%d.crt"), _cert_dir.c_str(), i);
+    if (!wxFileName::FileExists(pathname)) {
       break;
     }
-#else
-    struct stat statbuf;
-    if (stat(pathname.c_str(), &statbuf) != 0) {
-      break;
-    }
-#endif
     ++i;
   }
 
   // Sure, there's a slight race condition right now: another process
   // might attempt to create the same filename.  So what.
-  FILE *fp = fopen(pathname.c_str(), "w");
+  FILE *fp = fopen(pathname.mb_str(), "w");
   if (fp != NULL) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
   }
-  hide();
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,15 +259,15 @@ approve_cert() {
 //               passed on the command line into _cert and _stack.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-read_cert_file(const string &cert_filename) {
-  FILE *fp = fopen(cert_filename.c_str(), "r");
+read_cert_file(const wxString &cert_filename) {
+  FILE *fp = fopen(cert_filename.mb_str(), "r");
   if (fp == NULL) {
-    cerr << "Couldn't read " << cert_filename.c_str() << "\n";
+    cerr << "Couldn't read " << cert_filename.mb_str() << "\n";
     return;
   }
   _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
   if (_cert == NULL) {
-    cerr << "Could not read certificate in " << cert_filename.c_str() << ".\n";
+    cerr << "Could not read certificate in " << cert_filename.mb_str() << ".\n";
     fclose(fp);
     return;
   }
@@ -308,7 +326,7 @@ get_friendly_name() {
 
             char *pp;
             long pp_size = BIO_get_mem_data(mbio, &pp);
-            _friendly_name = string(pp, pp_size);
+            _friendly_name = wxString(pp, wxConvUTF8, pp_size);
             BIO_free(mbio);
             return;
           }
@@ -353,7 +371,7 @@ verify_cert() {
 
   X509_STORE_free(store);
 
-  cerr << "Got certificate from " << _friendly_name.c_str()
+  cerr << "Got certificate from " << _friendly_name.mb_str()
        << ", verify_result = " << _verify_result << "\n";
 }
 
@@ -402,45 +420,51 @@ load_certificates_from_der_ram(X509_STORE *store,
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
 layout() {
-  get_text(_header, sizeof _header, _text, sizeof _text);
+  wxString header, text;
+  get_text(header, text);
 
-  if (strlen(_header) > 0) {
-    Fl_Box *text0 = new Fl_Box(w() / 2, 35, 0, 25, _header);
-    text0->align(FL_ALIGN_TOP | FL_ALIGN_CENTER);
-    text0->labelfont(FL_BOLD);
-    text0->labelsize(text0->labelsize() * 1.5);
+  wxPanel *panel = new wxPanel(this);
+  wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
+
+  wxFont font = panel->GetFont();
+  wxFont *bold_font = wxTheFontList->FindOrCreateFont
+    ((int)(font.GetPointSize() * 1.5),
+     font.GetFamily(), font.GetStyle(), wxFONTWEIGHT_BOLD);
+
+  if (!header.IsEmpty()) {
+    wxStaticText *text0 = new wxStaticText
+      (panel, wxID_ANY, header, wxDefaultPosition, wxDefaultSize,
+       wxALIGN_CENTER);
+    text0->SetFont(*bold_font);
+    vsizer->Add(text0, 0, wxCENTER | wxALL, 10);
   }
 
-  Fl_Box *text1 = new Fl_Box(17, 55, 400, 120, _text);
-  text1->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+  wxStaticText *text1 = new wxStaticText
+    (panel, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+  text1->Wrap(400);
+  vsizer->Add(text1, 0, wxCENTER | wxALL, 10);
 
-  short nbuttons = 1;
-  if (_cert != NULL) {
-    nbuttons++;
-    if (_verify_result == 0) {
-      nbuttons++;
-    }
-  }
-  short bx = (w() - nbuttons * BUTTON_WIDTH - (nbuttons - 1) * BUTTON_SPACE) / 2;
+  // Create the run / cancel buttons.
+  wxBoxSizer *bsizer = new wxBoxSizer(wxHORIZONTAL);
 
   if (_verify_result == 0 && _cert != NULL) {
-    Fl_Return_Button *run_button = new Fl_Return_Button(bx, 200, BUTTON_WIDTH, 25, "Run");
-    run_button->callback(this->run_clicked, this);
-    bx += BUTTON_WIDTH + BUTTON_SPACE;
+    wxButton *run_button = new wxButton(panel, wxID_OK, _T("Run"));
+    bsizer->Add(run_button, 0, wxALIGN_CENTER | wxALL, 5);
   }
 
   if (_cert != NULL) {
-    Fl_Button *view_button = new Fl_Button(bx, 200, BUTTON_WIDTH, 25, "View Certificate");
-    view_button->callback(this->view_cert_clicked, this);
-    bx += BUTTON_WIDTH + BUTTON_SPACE;
+    wxButton *view_button = new wxButton(panel, VIEW_CERT_BUTTON, _T("View Certificate"));
+    bsizer->Add(view_button, 0, wxALIGN_CENTER | wxALL, 5);
   }
 
-  Fl_Button *cancel_button;
-  cancel_button = new Fl_Button(bx, 200, BUTTON_WIDTH, 25, "Cancel");
-  cancel_button->callback(this->cancel_clicked, this);
+  wxButton *cancel_button = new wxButton(panel, wxID_CANCEL, _T("Cancel"));
+  bsizer->Add(cancel_button, 0, wxALIGN_CENTER | wxALL, 5);
 
-  end();
-  set_modal();
+  vsizer->Add(bsizer, 0, wxALIGN_CENTER | wxALL, 5);
+
+  panel->SetSizer(vsizer);
+  panel->SetAutoLayout(true);
+  vsizer->Fit(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -450,42 +474,48 @@ layout() {
 //               dialog box, based on the certificate read so far.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-get_text(char *header, size_t hlen, char *text, size_t tlen) {
+get_text(wxString &header, wxString &text) {
   switch (_verify_result) {
   case -1:
-    strncpy(header, "No signature!", hlen);
-    strncpy(text, no_cert_text, tlen);
+    header = _T("No signature!");
+    text = no_cert_text;
     break;
 
   case 0:
-    snprintf(text, tlen, verified_cert_text, _friendly_name.c_str(),
-                        _friendly_name.c_str(), _friendly_name.c_str());
+    text.Printf(verified_cert_text, _friendly_name.c_str(), _friendly_name.c_str(), _friendly_name.c_str());
     break;
 
   case X509_V_ERR_CERT_NOT_YET_VALID:
   case X509_V_ERR_CERT_HAS_EXPIRED:
   case X509_V_ERR_CRL_NOT_YET_VALID:
   case X509_V_ERR_CRL_HAS_EXPIRED:
-    strncpy(header, "Expired signature!", hlen);
-    snprintf(text, tlen, expired_cert_text, _friendly_name.c_str());
+    header = _T("Expired signature!");
+    text.Printf(expired_cert_text, _friendly_name.c_str());
     break;
 
   case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-    strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, unknown_auth_cert_text, _friendly_name.c_str());
+    header = _T("Unverified signature!");
+    text.Printf(unknown_auth_cert_text, _friendly_name.c_str());
     break;
 
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
   case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-    strncpy(header, "Unverified signature!", hlen);
-    strncpy(text, self_signed_cert_text, tlen);
+    header = _T("Unverified signature!");
+    text = self_signed_cert_text;
     break;
 
   default:
-    strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, generic_error_cert_text, _verify_result);
+    header = _T("Unverified signature!");
+    text.Printf(generic_error_cert_text, _verify_result);
   }
 }
+
+
+// The event table for ViewCertDialog.
+BEGIN_EVENT_TABLE(ViewCertDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, ViewCertDialog::run_clicked)
+    EVT_BUTTON(wxID_CANCEL, ViewCertDialog::cancel_clicked)
+END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ViewCertDialog::Constructor
@@ -494,7 +524,8 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
 ////////////////////////////////////////////////////////////////////
 ViewCertDialog::
 ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
-  Fl_Window(600, 400, "View Certificate"),
+wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition,
+         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
   _auth_dialog(auth_dialog),
   _cert(cert)
 {
@@ -519,12 +550,11 @@ ViewCertDialog::
 //  Description: The user clicks the "Run" button.
 ////////////////////////////////////////////////////////////////////
 void ViewCertDialog::
-run_clicked(Fl_Widget *w, void *data) {
-  ViewCertDialog *dlg = (ViewCertDialog *) data;
-  if (dlg->_auth_dialog != NULL){
-    dlg->_auth_dialog->approve_cert();
+run_clicked(wxCommandEvent &event) {
+  if (_auth_dialog != NULL){
+    _auth_dialog->approve_cert();
   }
-  dlg->hide();
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -533,12 +563,11 @@ run_clicked(Fl_Widget *w, void *data) {
 //  Description: The user clicks the "Cancel" button.
 ////////////////////////////////////////////////////////////////////
 void ViewCertDialog::
-cancel_clicked(Fl_Widget *w, void *data) {
-  ViewCertDialog *dlg = (ViewCertDialog *) data;
-  if (dlg->_auth_dialog != NULL){
-    dlg->_auth_dialog->hide();
+cancel_clicked(wxCommandEvent &event) {
+  if (_auth_dialog != NULL){
+    _auth_dialog->Destroy();
   }
-  dlg->hide();
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -556,25 +585,43 @@ layout() {
 
   char *pp;
   long pp_size = BIO_get_mem_data(mbio, &pp);
-  string cert_body(pp, pp_size);
+  wxString cert_body(pp, wxConvUTF8, pp_size);
   BIO_free(mbio);
 
-  Fl_Text_Buffer *buffer = new Fl_Text_Buffer;
-  buffer->append(cert_body.c_str());
+  wxPanel *panel = new wxPanel(this);
+  wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
 
-  Fl_Text_Display *text = new Fl_Text_Display(20, 20, 565, 320);
-  text->buffer(buffer);
+  wxScrolledWindow *slwin = new wxScrolledWindow
+    (panel, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxHSCROLL | wxBORDER_SUNKEN);
+  slwin->SetScrollRate(20, 20);
 
-  short bx = (w() - BUTTON_WIDTH * 2 - BUTTON_SPACE) / 2;
+  wxBoxSizer *slsizer = new wxBoxSizer(wxVERTICAL);
 
-  Fl_Return_Button *run_button = new Fl_Return_Button(bx, 360, BUTTON_WIDTH, 25, "Run");
-  run_button->callback(this->run_clicked, this);
+  wxStaticText *text1 = new wxStaticText
+    (slwin, wxID_ANY, cert_body, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+  slsizer->Add(text1, 0, wxEXPAND, 0);
+  slwin->SetSizer(slsizer);
 
-  bx += BUTTON_WIDTH + BUTTON_SPACE;
+  vsizer->Add(slwin, 1, wxEXPAND | wxALL, 10);
 
-  Fl_Button *cancel_button = new Fl_Button(bx, 360, BUTTON_WIDTH, 25, "Cancel");
-  cancel_button->callback(this->cancel_clicked, this);
+  // Create the run / cancel buttons.
+  wxBoxSizer *bsizer = new wxBoxSizer(wxHORIZONTAL);
 
-  end();
-  set_modal();
+  wxButton *run_button = new wxButton(panel, wxID_OK, _T("Run"));
+  bsizer->Add(run_button, 0, wxALIGN_CENTER | wxALL, 5);
+
+  wxButton *cancel_button = new wxButton(panel, wxID_CANCEL, _T("Cancel"));
+  bsizer->Add(cancel_button, 0, wxALIGN_CENTER | wxALL, 5);
+
+  vsizer->Add(bsizer, 0, wxALIGN_CENTER | wxALL, 5);
+
+  panel->SetSizer(vsizer);
+  panel->SetAutoLayout(true);
+  vsizer->Fit(this);
+
+  // Make sure the resulting window is at least a certain size.
+  int width, height;
+  GetSize(&width, &height);
+  SetSize(max(width, 600), max(height, 400));
 }
+

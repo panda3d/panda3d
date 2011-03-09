@@ -1,5 +1,5 @@
 // Filename: p3dCert.h
-// Created by:  rdb (08Mar11)
+// Created by:  drose (11Sep09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,11 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DCERT_H
-#define P3DCERT_H
+#ifndef P3DCERT_WX_H
+#define P3DCERT_WX_H
 
-#include <Fl/Fl.H>
-#include <Fl/Fl_Window.H>
+#include "wx/wx.h"
 
 #define OPENSSL_NO_KRB5
 #include "openssl/x509.h"
@@ -42,6 +41,21 @@ class ViewCertDialog;
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//       Class : P3DCertApp
+// Description : This is the wxApp that drives this application.
+////////////////////////////////////////////////////////////////////
+class P3DCertApp : public wxApp {
+public:
+  virtual bool OnInit();
+  virtual void OnInitCmdLine(wxCmdLineParser &parser);
+  virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
+
+private:
+  wxString _cert_filename;
+  wxString _cert_dir;
+};
+
+////////////////////////////////////////////////////////////////////
 //       Class : AuthDialog
 // Description : This is the primary dialog of this application.
 //
@@ -51,39 +65,39 @@ class ViewCertDialog;
 //               application's signature, and invites the user to
 //               approve the signature or cancel.
 ////////////////////////////////////////////////////////////////////
-class AuthDialog : public Fl_Window {
+class AuthDialog : public wxDialog {
 public:
-  AuthDialog(const string &cert_filename, const string &cert_dir);
+  AuthDialog(const wxString &cert_filename, const wxString &cert_dir);
   virtual ~AuthDialog();
 
-  static void run_clicked(Fl_Widget *w, void *data);
-  static void view_cert_clicked(Fl_Widget *w, void *data);
-  static void cancel_clicked(Fl_Widget *w, void *data);
+  void run_clicked(wxCommandEvent &event);
+  void view_cert_clicked(wxCommandEvent &event);
+  void cancel_clicked(wxCommandEvent &event);
 
   void approve_cert();
 
 private:
-  void read_cert_file(const string &cert_filename);
+  void read_cert_file(const wxString &cert_filename);
   void get_friendly_name();
   void verify_cert();
   int load_certificates_from_der_ram(X509_STORE *store,
                                      const char *data, size_t data_size);
 
   void layout();
-  void get_text(char *header, size_t hlen, char *text, size_t tlen);
+  void get_text(wxString &header, wxString &text);
 
 public:
   ViewCertDialog *_view_cert_dialog;
 
 private:
-  string _cert_dir;
+  // any class wishing to process wxWidgets events must use this macro
+  DECLARE_EVENT_TABLE()
+
+  wxString _cert_dir;
   X509 *_cert;
   STACK_OF(X509) *_stack;
 
-  char _header[32];
-  char _text[512];
-
-  string _friendly_name;
+  wxString _friendly_name;
   int _verify_result;
 };
 
@@ -92,18 +106,20 @@ private:
 // Description : This is the detailed view of the particular
 //               certificate.
 ////////////////////////////////////////////////////////////////////
-class ViewCertDialog : public Fl_Window {
+class ViewCertDialog : public wxDialog {
 public:
   ViewCertDialog(AuthDialog *auth_dialog, X509 *cert);
   virtual ~ViewCertDialog();
 
-  static void run_clicked(Fl_Widget *w, void *data);
-  static void cancel_clicked(Fl_Widget *w, void *data);
+  void run_clicked(wxCommandEvent &event);
+  void cancel_clicked(wxCommandEvent &event);
 
 private:
   void layout();
 
 private:
+  DECLARE_EVENT_TABLE()
+
   AuthDialog *_auth_dialog;
   X509 *_cert;
 };

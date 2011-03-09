@@ -68,7 +68,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "FFTW", "SWSCALE",                                   # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM",                  # Augmented Reality
   "NPAPI", "AWESOMIUM",                                # Browser embedding
-  "GTK2", "WX",                                        # Toolkit support
+  "GTK2", "WX", "FLTK",                                # Toolkit support
   "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "CONTRIB"                                            # Experimental
@@ -276,8 +276,8 @@ if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME):
 if (RTDIST) and (PkgSkip("JPEG")):
     exit("Cannot build rtdist without jpeg")
 
-if (RTDIST) and (PkgSkip("WX")):
-    exit("Cannot build rtdist without wx")
+if (RTDIST) and (PkgSkip("WX") and PkgSkip("FLTK")):
+    exit("Cannot build rtdist without wx or fltk")
 
 if (RUNTIME):
     SetLinkAllStatic(True)
@@ -455,6 +455,8 @@ if (COMPILER=="MSVC"):
         DefSymbol("WX",     "__WXMSW__", "")
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
+    if (PkgSkip("FLTK")==0):
+        LibName("FLTK",     GetThirdpartyDir() + "fltk/lib/fltk.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
@@ -564,6 +566,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RTDIST):
         SmartPkgEnable("WX",    tool = "wx-config")
+        SmartPkgEnable("FLTK",  tool = "fltk-config")
     if (RUNTIME):
         if (sys.platform.startswith("freebsd")):
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner", "nspr*/prtypes.h", "nspr*"))
@@ -3810,11 +3813,19 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
-    OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL', 'WX']
+    OPTS=['DIR:direct/src/plugin', 'DIR:panda/src/express', 'OPENSSL']
     if (sys.platform=="darwin"): OPTS += ['OPT:2']
-    TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
-    TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-    OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+    if (PkgSkip("FLTK")==0):
+      OPTS.append("FLTK")
+      TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
+      TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
+      OPTS=['NOSTRIP', 'OPENSSL', 'FLTK']
+    else:
+      OPTS.append("WX")
+      TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert_wx.cxx')
+      TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
+      OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+
     if (sys.platform=="darwin"): OPTS += ['OPT:2']
     TargetAdd('p3dcert.exe', opts=OPTS)
 
