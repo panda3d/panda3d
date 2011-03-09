@@ -773,7 +773,7 @@ def GetThirdpartyBase():
     global THIRDPARTYBASE
     if (THIRDPARTYBASE != None):
         return THIRDPARTYBASE
-    
+
     THIRDPARTYBASE = "thirdparty"
     if "MAKEPANDA_THIRDPARTY" in os.environ:
         THIRDPARTYBASE = os.environ["MAKEPANDA_THIRDPARTY"]
@@ -982,13 +982,16 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
+    elif (tool == "fltk-config"):
+        handle = os.popen(LocateBinary("fltk-config") + " --ldflags")
     else:
         handle = os.popen(LocateBinary(tool) + " --libs")
     result = handle.read().strip()
     handle.close()
     libs = []
     for l in result.split(" "):
-        libs.append(l)
+        if l.startswith("-l"):
+            libs.append(l)
     return libs
 
 def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
@@ -1076,7 +1079,7 @@ def GetLibCache():
                 if (".so " in lib):
                     lib = lib.split(".so", 1)[0][3:]
                     LD_CACHE.append(lib)
-        
+
         libdirs = ["/lib", "/usr/lib", "/usr/local/lib", "/usr/PCBSD/local/lib", "/usr/X11/lib", "/usr/X11R6/lib"]
         if platform.architecture()[0] == "64bit":
             libdirs += ["/lib64", "/usr/lib64"]
@@ -1090,7 +1093,7 @@ def GetLibCache():
                 libs += glob.glob(path + "/lib*.a")
                 if (sys.platform == "darwin"):
                     libs += glob.glob(path + "/lib*.dylib")
-        
+
         for l in libs:
             lib = os.path.basename(l).split(".so", 1)[0].split(".a", 1)[0].split(".dylib", 1)[0][3:]
             if lib not in LD_CACHE:
@@ -1270,7 +1273,7 @@ def GetSdkDir(sdkname, sdkkey = None):
     sdkbase = "sdks"
     if "MAKEPANDA_SDKS" in os.environ:
         sdkbase = os.environ["MAKEPANDA_SDKS"]
-    
+
     sdir = sdkbase[:]
     if (sys.platform.startswith("win")):
         sdir += "/win"
@@ -1501,7 +1504,7 @@ def SdkLocatePhysX():
         SDK["PHYSX"] = dir
         SDK["PHYSXLIBS"] = dir + "/lib"
         return
-    
+
     # Try to find a PhysX installation on the system.
     for (ver, key) in PHYSXVERSIONINFO:
         if (sys.platform == "win32"):
@@ -1535,13 +1538,13 @@ def SdkLocateSpeedTree():
     if not speedtrees:
         # No installed SpeedTree SDK.
         return
-    
+
     speedtrees.sort()
     version, dirname = speedtrees[-1]
     SDK["SPEEDTREE"] = os.path.join(dir, dirname)
     SDK["SPEEDTREEAPI"] = "OpenGL"
     SDK["SPEEDTREEVERSION"] = '%s.%s' % (version[0], version[1])
-            
+
 ########################################################################
 ##
 ## SDK Auto-Disables
