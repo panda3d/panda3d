@@ -2298,10 +2298,12 @@ class Packager:
             GlobPattern('libX*.so*'),
             GlobPattern('libxcb*.so*'),
             GlobPattern('libc.so*'),
+            GlobPattern('libgcc_s.so*'),
             GlobPattern('libdl.so*'),
             GlobPattern('libm.so*'),
             GlobPattern('libnvidia*.so*'),
             GlobPattern('libpthread.so*'),
+            GlobPattern('libthr.so*'),
             ]
 
         # A Loader for loading models.
