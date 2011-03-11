@@ -883,7 +883,9 @@ class Installer:
         nsi.write('Var StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
         if not self.licensefile.empty():
-            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % self.licensefile.toOsSpecific())
+            abs = Filename(self.licensefile)
+            abs.makeAbsolute()
+            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % abs.toOsSpecific())
         nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
         nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
