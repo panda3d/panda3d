@@ -203,7 +203,6 @@ approve_cert() {
 #endif
 
   // Look for an unused filename.
-  string pathname;
   int i = 1;
   char buf [PATH_MAX];
   while (true) {
@@ -217,7 +216,7 @@ approve_cert() {
     }
 #else
     struct stat statbuf;
-    if (stat(pathname.c_str(), &statbuf) != 0) {
+    if (stat(buf, &statbuf) != 0) {
       break;
     }
 #endif
@@ -226,7 +225,7 @@ approve_cert() {
 
   // Sure, there's a slight race condition right now: another process
   // might attempt to create the same filename.  So what.
-  FILE *fp = fopen(pathname.c_str(), "w");
+  FILE *fp = fopen(buf, "w");
   if (fp != NULL) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
