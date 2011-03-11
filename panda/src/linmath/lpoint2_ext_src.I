@@ -36,14 +36,12 @@ python_repr, ostream &out, const string &class_name) {
 ////////////////////////////////////////////////////////////////////
 INLINE PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LPoint2),
 __getattr__, const string &attr_name) {
-#ifndef NDEBUG
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it != 'x' && *it != 'y') {
       return NULL;
     }
   }
-#endif
 
   if (attr_name.size() == 1) {
     return PyFloat_FromDouble(this->_v.data[attr_name[0] - 'x']);

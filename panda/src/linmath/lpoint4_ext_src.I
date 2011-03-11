@@ -26,7 +26,7 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint4);
 ////////////////////////////////////////////////////////////////////
 INLINE void EXT_CONST_METHOD_ARGS(FLOATNAME(LPoint4),
 python_repr, ostream &out, const string &class_name) {
-  out << class_name << "(" 
+  out << class_name << "("
       << MAYBE_ZERO(this->_v.v._0) << ", "
       << MAYBE_ZERO(this->_v.v._1) << ", "
       << MAYBE_ZERO(this->_v.v._2) << ", "
@@ -40,14 +40,12 @@ python_repr, ostream &out, const string &class_name) {
 ////////////////////////////////////////////////////////////////////
 INLINE PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LPoint4),
 __getattr__, const string &attr_name) {
-#ifndef NDEBUG
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'w' || *it > 'z') {
       return NULL;
     }
   }
-#endif
 
   if (attr_name.size() == 1) {
     if (attr_name[0] == 'w') {

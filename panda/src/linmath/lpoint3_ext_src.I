@@ -25,7 +25,7 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint3);
 ////////////////////////////////////////////////////////////////////
 INLINE void EXT_CONST_METHOD_ARGS(FLOATNAME(LPoint3),
 python_repr, ostream &out, const string &class_name) {
-  out << class_name << "(" 
+  out << class_name << "("
       << MAYBE_ZERO(this->_v.v._0) << ", "
       << MAYBE_ZERO(this->_v.v._1) << ", "
       << MAYBE_ZERO(this->_v.v._2) << ")";
@@ -38,14 +38,12 @@ python_repr, ostream &out, const string &class_name) {
 ////////////////////////////////////////////////////////////////////
 PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LPoint3),
 __getattr__, const string &attr_name) {
-#ifndef NDEBUG
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'x' || *it > 'z') {
       return NULL;
     }
   }
-#endif
 
   if (attr_name.size() == 1) {
     return PyFloat_FromDouble(this->_v.data[attr_name[0] - 'x']);
