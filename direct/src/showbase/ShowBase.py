@@ -432,7 +432,7 @@ class ShowBase(DirectObject.DirectObject):
 
         This function is designed to be safe to call multiple times."""
 
-        for cb in self.finalExitCallbacks:
+        for cb in self.finalExitCallbacks[:]:
             cb()
 
         # [gjeon] restore sticky key settings
