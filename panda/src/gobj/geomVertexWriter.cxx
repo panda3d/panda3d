@@ -66,6 +66,37 @@ set_column(int array, const GeomVertexColumn *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::reserve_num_rows
+//       Access: Published
+//  Description: This ensures that enough memory space for num_rows is
+//               allocated, so that you may add up to num_rows rows
+//               without causing a new memory allocation.  This is a
+//               performance optimization only; it is especially
+//               useful when you know the number of rows you will be
+//               adding ahead of time.
+////////////////////////////////////////////////////////////////////
+bool GeomVertexWriter::
+reserve_num_rows(int num_rows) {
+  bool result;
+
+  if (_vertex_data != (GeomVertexData *)NULL) {
+    // If we have a whole GeomVertexData, we must set the length of
+    // all its arrays at once.
+    GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
+    writer.check_array_writers();
+    result = writer.reserve_num_rows(num_rows);
+    _handle = writer.get_array_writer(_array);
+    
+  } else {
+    // Otherwise, we can get away with modifying only the one array
+    // we're using.
+    result = _handle->reserve_num_rows(num_rows);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::output
 //       Access: Published
 //  Description: 

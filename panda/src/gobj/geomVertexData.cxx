@@ -542,6 +542,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
   }
 
   // Now make sure the arrays we didn't share are all filled in.
+  reserve_num_rows(num_rows);
   set_num_rows(num_rows);
 
   // Now go back through and copy any data that's left over.
@@ -2273,8 +2274,9 @@ unclean_set_num_rows(int n) {
 
   for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
     if (_array_writers[i]->get_num_rows() != n) {
-      _array_writers[i]->unclean_set_num_rows(n);
-      any_changed = true;
+      if (_array_writers[i]->unclean_set_num_rows(n)) {
+        any_changed = true;
+      }
     }
   }
 
@@ -2282,6 +2284,27 @@ unclean_set_num_rows(int n) {
     _object->clear_cache_stage();
     _cdata->_modified = Geom::get_next_modified();
     _cdata->_animated_vertices.clear();
+  }
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::reserve_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineWriter::
+reserve_num_rows(int n) {
+  nassertr(_got_array_writers, false);
+  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+
+  bool any_changed = false;
+
+  for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
+    if (_array_writers[i]->reserve_num_rows(n)) {
+      any_changed = true;
+    }
   }
 
   return any_changed;

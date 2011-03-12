@@ -24,6 +24,7 @@
 #include "configVariableInt.h"
 #include "simpleAllocator.h"
 #include "vertexDataBuffer.h"
+#include "texture.h"
 
 ConfigVariableInt max_independent_vertex_data
 ("max-independent-vertex-data", -1,
@@ -641,12 +642,14 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
     PTA_uchar new_data;
     READ_PTA(manager, scan, array_data->read_raw_data, new_data);
     _buffer.unclean_realloc(new_data.size());
+    _buffer.set_size(new_data.size());
     memcpy(_buffer.get_write_pointer(), &new_data[0], new_data.size());
 
   } else {
     // Now, the array data is just stored directly.
     size_t size = scan.get_uint32();
     _buffer.unclean_realloc(size);
+    _buffer.set_size(size);
 
     const unsigned char *source_data = 
       (const unsigned char *)scan.get_datagram().get_data();
@@ -712,8 +715,29 @@ set_num_rows(int n) {
   size_t new_size = n * stride;
   size_t orig_size = _cdata->_buffer.get_size();
 
+  if (gobj_cat.is_spam()) {
+    gobj_cat.spam()
+      << _object << ".set_num_rows(" << n << "), size = " << new_size << "\n";
+  }
+
   if (new_size != orig_size) {
-    _cdata->_buffer.clean_realloc(new_size);
+    size_t orig_reserved_size = _cdata->_buffer.get_reserved_size();
+    if (new_size > orig_reserved_size) {
+      // Add more rows.  Go up to the next power of two bytes, mainly
+      // to reduce the number of allocs needed.
+      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)new_size);
+      nassertr(new_reserved_size >= new_size, false);
+
+      _cdata->_buffer.clean_realloc(new_reserved_size);
+
+    } else if (new_size == 0) {
+      // If we set the number of rows to 0, go ahead and clear the
+      // buffer altogether, and let the user build it up again from
+      // nothing, to try to reduce frivolous memory waste.
+      _cdata->_buffer.clear();
+    }
+
+    _cdata->_buffer.set_size(new_size);
 
     // Now ensure that the newly-added rows are initialized to 0.
     if (new_size > orig_size) {
@@ -726,9 +750,12 @@ set_num_rows(int n) {
     if (get_current_thread()->get_pipeline_stage() == 0) {
       _object->set_lru_size(_cdata->_buffer.get_size());
     }
+
+    nassertr(get_num_rows() == n, true);
     return true;
   }
   
+  nassertr(get_num_rows() == n, false);
   return false;
 }
 
@@ -745,20 +772,62 @@ unclean_set_num_rows(int n) {
   int stride = _object->_array_format->get_stride();
   size_t new_size = n * stride;
   size_t orig_size = _cdata->_buffer.get_size();
+  size_t orig_reserved_size = _cdata->_buffer.get_reserved_size();
 
-  if (new_size != orig_size) {
+  if (new_size != orig_size || new_size != orig_reserved_size) {
+    // Since this is unclean_set_num_rows(), we won't be using it to
+    // incrementally increase the array; instead, it will generally be
+    // used only to create an array initially.  So it makes sense to
+    // set the reserved size to precisely the same as the target size.
+
     _cdata->_buffer.unclean_realloc(new_size);
+    _cdata->_buffer.set_size(new_size);
+
     // No need to fill to zero or copy the old buffer, since this is
     // unclean_set_num_rows().
 
-    _cdata->_modified = Geom::get_next_modified();
+    if (new_size != orig_size) {
+      _cdata->_modified = Geom::get_next_modified();
 
-    if (get_current_thread()->get_pipeline_stage() == 0) {
-      _object->set_lru_size(_cdata->_buffer.get_size());
+      if (get_current_thread()->get_pipeline_stage() == 0) {
+        _object->set_lru_size(_cdata->_buffer.get_size());
+      }
     }
     return true;
   }
   
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::reserve_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexArrayDataHandle::
+reserve_num_rows(int n) {
+  nassertr(_writable, false);
+  mark_used();
+
+  int stride = _object->_array_format->get_stride();
+  size_t new_reserved_size = n * stride;
+  new_reserved_size = max(_cdata->_buffer.get_size(), new_reserved_size);
+  size_t orig_reserved_size = _cdata->_buffer.get_reserved_size();
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << _object << ".reserve_num_rows(" << n << "), size = " << new_reserved_size << "\n";
+  }
+
+  if (new_reserved_size != orig_reserved_size) {
+    // We allow the user to set the alloc point smaller with this
+    // call, assuming the user knows what he's doing.  This allows the
+    // user to reduce wasted memory after completely filling up a
+    // buffer.
+    _cdata->_buffer.clean_realloc(new_reserved_size);
+    return true;
+  }
+
   return false;
 }
 
@@ -773,11 +842,12 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
   mark_used();
   other->mark_used();
 
-  _cdata->_buffer.unclean_realloc(other->_cdata->_buffer.get_size());
+  size_t size = other->_cdata->_buffer.get_size();
+  _cdata->_buffer.unclean_realloc(size);
+  _cdata->_buffer.set_size(size);
 
   unsigned char *dest = _cdata->_buffer.get_write_pointer();
   const unsigned char *source = other->_cdata->_buffer.get_read_pointer(true);
-  size_t size = other->_cdata->_buffer.get_size();
   memcpy(dest, source, size);
 
   _cdata->_modified = Geom::get_next_modified();
@@ -819,11 +889,18 @@ copy_subdata_from(size_t to_start, size_t to_size,
     memmove(pointer + to_start + to_size, 
             pointer + to_start + from_size,
             to_buffer_orig_size - (to_start + to_size));
-    to_buffer.clean_realloc(to_buffer_orig_size + from_size - to_size);
+    to_buffer.set_size(to_buffer_orig_size + from_size - to_size);
 
   } else if (to_size < from_size) {
     // Expand the array.
-    to_buffer.clean_realloc(to_buffer_orig_size + from_size - to_size);
+    size_t needed_size = to_buffer_orig_size + from_size - to_size;
+    size_t to_buffer_orig_reserved_size = to_buffer.get_reserved_size();
+    if (needed_size > to_buffer_orig_reserved_size) {
+      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)needed_size);
+      to_buffer.clean_realloc(new_reserved_size);
+    }
+    to_buffer.set_size(needed_size);
+
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + to_start + to_size, 
             pointer + to_start + from_size,
@@ -854,6 +931,7 @@ set_data(const string &data) {
   mark_used();
 
   _cdata->_buffer.unclean_realloc(data.size());
+  _cdata->_buffer.set_size(data.size());
   memcpy(_cdata->_buffer.get_write_pointer(), data.data(), data.size());
 
   _cdata->_modified = Geom::get_next_modified();
@@ -891,11 +969,18 @@ set_subdata(size_t start, size_t size, const string &data) {
     memmove(pointer + start + from_size, 
             pointer + start + size,
             to_buffer_orig_size - (start + size));
-    to_buffer.clean_realloc(to_buffer_orig_size + from_size - size);
+    to_buffer.set_size(to_buffer_orig_size + from_size - size);
 
   } else if (size < from_size) {
     // Expand the array.
-    to_buffer.clean_realloc(to_buffer_orig_size + from_size - size);
+    size_t needed_size = to_buffer_orig_size + from_size - size;
+    size_t to_buffer_orig_reserved_size = to_buffer.get_reserved_size();
+    if (needed_size > to_buffer_orig_reserved_size) {
+      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)needed_size);
+      to_buffer.clean_realloc(new_reserved_size);
+    }
+    to_buffer.set_size(needed_size);
+
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + start + from_size, 
             pointer + start + size,

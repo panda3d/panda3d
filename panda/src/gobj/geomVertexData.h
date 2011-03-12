@@ -105,6 +105,7 @@ PUBLISHED:
   INLINE int get_num_rows() const;
   INLINE bool set_num_rows(int n);
   INLINE bool unclean_set_num_rows(int n);
+  INLINE bool reserve_num_rows(int n);
   void clear_rows();
 
   INLINE int get_num_arrays() const;
@@ -487,6 +488,7 @@ public:
   int get_num_rows() const;
   bool set_num_rows(int n);
   bool unclean_set_num_rows(int n);
+  bool reserve_num_rows(int n);
 
 private:
   void make_array_writers();

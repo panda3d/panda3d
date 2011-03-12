@@ -107,6 +107,21 @@ unclean_set_num_rows(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::reserve_num_rows
+//       Access: Published
+//  Description: This ensures that enough memory space for n rows is
+//               allocated, so that you may increase the number of
+//               rows to n without causing a new memory allocation.
+//               This is a performance optimization only; it is
+//               especially useful when you know ahead of time that
+//               you will be adding n rows to the data.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexArrayData::
+reserve_num_rows(int n) {
+  return modify_handle()->reserve_num_rows(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::clear_rows
 //       Access: Published
 //  Description: Removes all of the rows in the array.

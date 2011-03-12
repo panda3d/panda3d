@@ -173,18 +173,21 @@ private:
   typedef pvector<CurveVertex> CurveSegment;
   typedef pvector<CurveSegment> CurveSegments;
 
-  void get_connected_segments(CurveSegments &curve_segments,
-                              const NurbsCurveResult *result) const;
+  int get_connected_segments(CurveSegments &curve_segments,
+                             const NurbsCurveResult *result) const;
 
   void compute_thread_vertices(GeomVertexData *vdata,
-                               const CurveSegments &curve_segments) const;
+                               const CurveSegments &curve_segments,
+                               int num_curve_verts) const;
   void compute_billboard_vertices(GeomVertexData *vdata,
                                   const LVector3f &camera_vec,
                                   const CurveSegments &curve_segments,
+                                  int num_curve_verts,
                                   NurbsCurveResult *result) const;
   void compute_tube_vertices(GeomVertexData *vdata,
                              int &num_verts_per_slice,
                              const CurveSegments &curve_segments,
+                             int num_curve_verts,
                              NurbsCurveResult *result) const;
 
   static void compute_tangent(LVector3f &tangent, const CurveSegment &segment,

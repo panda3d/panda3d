@@ -144,6 +144,23 @@ unclean_set_num_rows(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::reserve_num_rows
+//       Access: Published
+//  Description: This ensures that enough memory space for n rows is
+//               allocated, so that you may increase the number of
+//               rows to n without causing a new memory allocation.
+//               This is a performance optimization only; it is
+//               especially useful when you know ahead of time that
+//               you will be adding n rows to the data.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexData::
+reserve_num_rows(int n) {
+  GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
+  writer.check_array_writers();
+  return writer.reserve_num_rows(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_num_arrays
 //       Access: Published
 //  Description: Returns the number of individual arrays stored within

@@ -26,7 +26,7 @@
 #include "datagramIterator.h"
 #include "pStatTimer.h"
 #include "geom.h"
-#include "geomLinestrips.h"
+#include "geomLines.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
@@ -352,27 +352,27 @@ void RopeNode::
 render_thread(CullTraverser *trav, CullTraverserData &data, 
               NurbsCurveResult *result) const {
   CurveSegments curve_segments;
-  get_connected_segments(curve_segments, result);
+  int num_curve_verts = get_connected_segments(curve_segments, result);
 
   // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back through and calculate the vertices on
-  // either side.
+  // thread.  These map directly to primitive vertices.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
-  
-  compute_thread_vertices(vdata, curve_segments);
-  
-  PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
-  CurveSegments::const_iterator si;
-  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
-    const CurveSegment &segment = (*si);
-    
-    strip->add_next_vertices(segment.size());
-    strip->close_primitive();
+  compute_thread_vertices(vdata, curve_segments, num_curve_verts);
+
+  // We use GeomLines instead of GeomLinestrips, since that can more
+  // easily be rendered directly.
+  PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
+  lines->reserve_num_vertices((num_curve_verts - 1) * 2);
+
+  for (int vi = 0; vi < num_curve_verts - 1; ++vi) {
+    lines->add_vertex(vi);
+    lines->add_vertex(vi + 1);
+    lines->close_primitive();
   }
   
   PT(Geom) geom = new Geom(vdata);
-  geom->add_primitive(strip);
+  geom->add_primitive(lines);
   
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
   CPT(RenderState) state = data._state->add_attrib(thick);
@@ -402,7 +402,7 @@ void RopeNode::
 render_tape(CullTraverser *trav, CullTraverserData &data, 
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
-  get_connected_segments(curve_segments, result);
+  int num_curve_verts = get_connected_segments(curve_segments, result);
 
   // Now we have stored one or more sequences of vertices down the
   // center strips.  Go back through and calculate the vertices on
@@ -411,8 +411,10 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     ("rope", get_format(false), Geom::UH_stream);
   
   compute_billboard_vertices(vdata, -get_tube_up(), 
-                             curve_segments, result);
-  
+                             curve_segments, num_curve_verts, result);
+
+  // Since this will be a nonindexed primitive, no need to pre-reserve
+  // the number of vertices.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
@@ -459,7 +461,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   LVector3f camera_vec = LVector3f::forward() * rel_transform->get_mat();
 
   CurveSegments curve_segments;
-  get_connected_segments(curve_segments, result);
+  int num_curve_verts = get_connected_segments(curve_segments, result);
 
   // Now we have stored one or more sequences of vertices down the
   // center strips.  Go back through and calculate the vertices on
@@ -468,8 +470,10 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     ("rope", get_format(false), Geom::UH_stream);
   
   compute_billboard_vertices(vdata, camera_vec, 
-                             curve_segments, result);
+                             curve_segments, num_curve_verts, result);
   
+  // Since this will be a nonindexed primitive, no need to pre-reserve
+  // the number of vertices.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
@@ -508,7 +512,7 @@ void RopeNode::
 render_tube(CullTraverser *trav, CullTraverserData &data, 
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
-  get_connected_segments(curve_segments, result);
+  int num_curve_verts = get_connected_segments(curve_segments, result);
 
   // Now, we build up a table of vertices, in a series of rings
   // around the circumference of the tube.
@@ -520,11 +524,13 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     ("rope", get_format(true), Geom::UH_stream);
   
   compute_tube_vertices(vdata, num_verts_per_slice, 
-                        curve_segments, result);
+                        curve_segments, num_curve_verts, result);
   
+  // Finally, go through and build up the index array, to tie all the
+  // triangle strips together.  This is difficult to pre-calculate the
+  // number of vertices we'll use, so we'll just let it dynamically
+  // allocate.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
-  // Finally, go through build up the index array, to tie all the
-  // triangle strips together.
   int vi = 0;
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
@@ -571,10 +577,15 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
 //               segments from the NurbsCurveEvaluator into a single
 //               CurveSegment, if they happen to be connected (as most
 //               will be).
+//
+//               The return value is the total number of points across
+//               all segments.
 ////////////////////////////////////////////////////////////////////
-void RopeNode::
+int RopeNode::
 get_connected_segments(RopeNode::CurveSegments &curve_segments,
                        const NurbsCurveResult *result) const {
+  int num_curve_verts = 0;
+
   int num_verts = get_num_subdiv() + 1;
   int num_segments = result->get_num_segments();
   bool use_vertex_color = get_use_vertex_color();
@@ -610,6 +621,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       }
 
       curve_segment->push_back(vtx);
+      ++num_curve_verts;
     }
 
     // Store all the remaining points in this segment.
@@ -631,10 +643,13 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       }
 
       curve_segment->push_back(vtx);
+      ++num_curve_verts;
 
       last_point = vtx._p;
     }
   }
+
+  return num_curve_verts;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -646,7 +661,10 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 compute_thread_vertices(GeomVertexData *vdata,
-                        const RopeNode::CurveSegments &curve_segments) const {
+                        const RopeNode::CurveSegments &curve_segments,
+                        int num_curve_verts) const {
+  vdata->set_num_rows(num_curve_verts);
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
@@ -678,6 +696,8 @@ compute_thread_vertices(GeomVertexData *vdata,
       }
     }
   }
+
+  nassertv(vdata->get_num_rows() == num_curve_verts);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -691,7 +711,11 @@ void RopeNode::
 compute_billboard_vertices(GeomVertexData *vdata,
                            const LVector3f &camera_vec,
                            const RopeNode::CurveSegments &curve_segments,
+                           int num_curve_verts,
                            NurbsCurveResult *result) const {
+  int expected_num_verts = num_curve_verts * 2;
+  vdata->set_num_rows(expected_num_verts);
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
@@ -741,6 +765,8 @@ compute_billboard_vertices(GeomVertexData *vdata,
       }
     }
   }
+
+  nassertv(vdata->get_num_rows() == expected_num_verts);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -754,12 +780,8 @@ void RopeNode::
 compute_tube_vertices(GeomVertexData *vdata,
                       int &num_verts_per_slice,
                       const RopeNode::CurveSegments &curve_segments,
+                      int num_curve_verts,
                       NurbsCurveResult *result) const {
-  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  GeomVertexWriter normal(vdata, InternalName::get_normal());
-  GeomVertexWriter color(vdata, InternalName::get_color());
-  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-
   int num_slices = get_num_slices();
   num_verts_per_slice = num_slices;
 
@@ -779,6 +801,14 @@ compute_tube_vertices(GeomVertexData *vdata,
   if (uv_mode != UV_none) {
     ++num_verts_per_slice;
   }
+
+  int expected_num_verts = num_curve_verts * num_verts_per_slice;
+  vdata->set_num_rows(expected_num_verts);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   LVector3f up = get_tube_up();
 
@@ -827,6 +857,8 @@ compute_tube_vertices(GeomVertexData *vdata,
       }
     }
   }
+
+  nassertv(vdata->get_num_rows() == expected_num_verts);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -188,6 +188,11 @@ void GeomPrimitive::
 add_vertex(int vertex) {
   CDWriter cdata(_cycler, true);
 
+  if (gobj_cat.is_spam()) {
+    gobj_cat.spam()
+      << this << ".add_vertex(" << vertex << ")\n";
+  }
+
   consider_elevate_index_type(cdata, vertex);
 
   int num_primitives = get_num_primitives();
@@ -318,6 +323,42 @@ add_next_vertices(int num_vertices) {
   } else {
     add_consecutive_vertices(get_vertex(get_num_vertices() - 1) + 1, num_vertices);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::reserve_num_vertices
+//       Access: Published
+//  Description: This ensures that enough memory space for n vertices
+//               is allocated, so that you may increase the number of
+//               vertices to n without causing a new memory
+//               allocation.  This is a performance optimization only;
+//               it is especially useful when you know ahead of time
+//               that you will be adding n vertices to the primitive.
+//
+//               Note that the total you specify here should also
+//               include implicit vertices which may be added at each
+//               close_primitive() call, according to
+//               get_num_unused_vertices_per_primitive().
+//
+//               Note also that making this call will implicitly make
+//               the primitive indexed if it is not already, which
+//               could result in a performance *penalty*.  If you
+//               would prefer not to lose the nonindexed nature of
+//               your existing GeomPrimitives, check is_indexed()
+//               before making this call.
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+reserve_num_vertices(int num_vertices) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << this << ".reserve_num_vertices(" << num_vertices << ")\n";
+  }
+
+  CDWriter cdata(_cycler, true);
+  consider_elevate_index_type(cdata, num_vertices);
+  do_make_indexed(cdata);
+  PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
+  array_obj->reserve_num_rows(num_vertices);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1646,7 +1687,9 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
       cdata->_maxs = make_index_data();
       
       GeomVertexWriter mins(cdata->_mins.get_write_pointer(), 0);
+      mins.reserve_num_rows(cdata->_ends.size());
       GeomVertexWriter maxs(cdata->_maxs.get_write_pointer(), 0);
+      maxs.reserve_num_rows(cdata->_ends.size());
       
       int pi = 0;
       
@@ -1711,9 +1754,15 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
 void GeomPrimitive::
 do_make_indexed(CData *cdata) {
   if (cdata->_vertices.is_null()) {
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << this << ".make_indexed()\n";
+    }
+
     nassertv(cdata->_num_vertices != -1);
     cdata->_vertices = make_index_data();
     GeomVertexWriter index(cdata->_vertices.get_write_pointer(), 0);
+    index.reserve_num_rows(cdata->_num_vertices);
     for (int i = 0; i < cdata->_num_vertices; ++i) {
       index.add_data1i(i + cdata->_first_vertex);
     }
@@ -1761,6 +1810,11 @@ consider_elevate_index_type(CData *cdata, int vertex) {
 void GeomPrimitive::
 do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
   cdata->_index_type = index_type;
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << this << ".set_index_type(" << index_type << ")\n";
+  }
 
   if (!cdata->_vertices.is_null()) {
     CPT(GeomVertexArrayFormat) new_format = get_index_format();

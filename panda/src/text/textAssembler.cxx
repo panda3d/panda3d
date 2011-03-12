@@ -1584,6 +1584,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
   PT(GeomVertexData) vdata = 
     new GeomVertexData("text", format, Geom::UH_static);
+  vdata->reserve_num_rows(2);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
 

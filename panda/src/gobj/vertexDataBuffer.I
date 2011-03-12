@@ -21,7 +21,8 @@
 INLINE VertexDataBuffer::
 VertexDataBuffer() :
   _resident_data(NULL),
-  _size(0)
+  _size(0),
+  _reserved_size(0)
 {
 }
 
@@ -33,9 +34,11 @@ VertexDataBuffer() :
 INLINE VertexDataBuffer::
 VertexDataBuffer(size_t size) :
   _resident_data(NULL),
-  _size(0)
+  _size(0),
+  _reserved_size(0)
 {
   do_unclean_realloc(size);
+  _size = size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +49,8 @@ VertexDataBuffer(size_t size) :
 INLINE VertexDataBuffer::
 VertexDataBuffer(const VertexDataBuffer &copy) :
   _resident_data(NULL),
-  _size(0)
+  _size(0),
+  _reserved_size(0)
 {
   (*this) = copy;
 }
@@ -81,6 +85,7 @@ get_read_pointer(bool force) const {
   }
 
   nassertr(_block != (VertexDataBlock *)NULL, NULL);
+  nassertr(_reserved_size >= _size, NULL);
 
   // We don't necessarily need to page the buffer all the way into
   // independent status; it's sufficient just to return the block's
@@ -97,9 +102,10 @@ INLINE unsigned char *VertexDataBuffer::
 get_write_pointer() { 
   LightMutexHolder holder(_lock);
 
-  if (_resident_data == (unsigned char *)NULL && _size != 0) {
+  if (_resident_data == (unsigned char *)NULL && _reserved_size != 0) {
     do_page_in();
   }
+  nassertr(_reserved_size >= _size, NULL);
   return _resident_data;
 }
 
@@ -114,17 +120,58 @@ get_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBuffer::clean_realloc
+//     Function: VertexDataBuffer::get_reserved_size
 //       Access: Public
-//  Description: Changes the size of the buffer, preserving its data
-//               (except for any data beyond the new end of the
-//               buffer, if the buffer is being reduced).  If the
-//               buffer is expanded, the new data is uninitialized.
+//  Description: Returns the total number of bytes "reserved" in the
+//               buffer.  This may be greater than or equal to
+//               get_size().  If it is greater, the additional bytes
+//               are extra unused bytes in the buffer, and this
+//               indicates the maximum value that may be passed to
+//               set_size() without first calling one of the realloc
+//               methods.
+////////////////////////////////////////////////////////////////////
+INLINE size_t VertexDataBuffer::
+get_reserved_size() const {
+  return _reserved_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::set_size
+//       Access: Public
+//  Description: Changes the size of the buffer.  The new size must be
+//               less than or equal to the "reserved" size, which can
+//               only be changed via clean_realloc() or
+//               unclean_realloc().
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
-clean_realloc(size_t size) {
+set_size(size_t size) {
   LightMutexHolder holder(_lock);
-  do_clean_realloc(size);
+  nassertv(size <= _reserved_size);
+
+  if (size != _size) {
+    if (_resident_data == (unsigned char *)NULL && _reserved_size != 0) {
+      do_page_in();
+    }
+
+    _size = size;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::clean_realloc
+//       Access: Public
+//  Description: Changes the "reserved" size of the buffer, preserving
+//               its data (except for any data beyond the new end of
+//               the buffer, if the buffer is being reduced).  If the
+//               buffer is expanded, the new data is uninitialized.
+//
+//               It is an error to set the reserved size smaller than
+//               the size specified with set_size().
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataBuffer::
+clean_realloc(size_t reserved_size) {
+  LightMutexHolder holder(_lock);
+  do_clean_realloc(reserved_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,11 +180,14 @@ clean_realloc(size_t size) {
 //  Description: Changes the size of the buffer, without regard to
 //               preserving its data.  The buffer may contain random
 //               data after this call.
+//
+//               It is an error to set the reserved size smaller than
+//               the size specified with set_size().
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
-unclean_realloc(size_t size) {
+unclean_realloc(size_t reserved_size) {
   LightMutexHolder holder(_lock);
-  do_unclean_realloc(size);
+  do_unclean_realloc(reserved_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +197,9 @@ unclean_realloc(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 clear() {
-  unclean_realloc(0);
+  LightMutexHolder holder(_lock);
+  _size = 0;
+  do_unclean_realloc(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,28 +216,4 @@ INLINE void VertexDataBuffer::
 page_out(VertexDataBook &book) {
   LightMutexHolder holder(_lock);
   do_page_out(book);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBuffer::swap
-//       Access: Public
-//  Description: Swaps the data buffers between this one and the other
-//               one.
-////////////////////////////////////////////////////////////////////
-INLINE void VertexDataBuffer::
-swap(VertexDataBuffer &other) {
-  LightMutexHolder holder(_lock);
-  LightMutexHolder holder2(other._lock);
-
-  unsigned char *resident_data = _resident_data;
-  size_t size = _size;
-  PT(VertexDataBlock) block = _block;
-
-  _resident_data = other._resident_data;
-  _size = other._size;
-  _block = other._block;
-
-  other._resident_data = resident_data;
-  other._size = size;
-  other._block = block;
 }

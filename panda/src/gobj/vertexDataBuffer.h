@@ -33,14 +33,16 @@
 //
 //               independent - the buffer's memory is resident, and
 //               owned by the VertexDataBuffer object itself (in
-//               _resident_data).
+//               _resident_data).  In this state, _reserved_size might
+//               be greater than or equal to _size.
 //
 //               paged - the buffer's memory is owned by a
 //               VertexDataBlock.  That block might itself be
 //               resident, compressed, or paged to disk.  If it is
 //               resident, the memory may still be accessed directly
 //               from the block.  However, this memory is considered
-//               read-only.
+//               read-only.  In this state, _reserved_size will always
+//               equal _size.
 //
 //               VertexDataBuffers start out in independent state.
 //               They get moved to paged state when their owning
@@ -68,13 +70,15 @@ public:
   INLINE unsigned char *get_write_pointer();
 
   INLINE size_t get_size() const;
-  INLINE void clean_realloc(size_t size);
-  INLINE void unclean_realloc(size_t size);
+  INLINE size_t get_reserved_size() const;
+  INLINE void set_size(size_t size);
+  INLINE void clean_realloc(size_t reserved_size);
+  INLINE void unclean_realloc(size_t reserved_size);
   INLINE void clear();
 
   INLINE void page_out(VertexDataBook &book);
 
-  INLINE void swap(VertexDataBuffer &other);
+  void swap(VertexDataBuffer &other);
 
 private:
   void do_clean_realloc(size_t size);
@@ -85,6 +89,7 @@ private:
 
   unsigned char *_resident_data;
   size_t _size;
+  size_t _reserved_size;
   PT(VertexDataBlock) _block;
   LightMutex _lock;
 

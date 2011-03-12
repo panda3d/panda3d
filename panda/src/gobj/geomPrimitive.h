@@ -105,6 +105,7 @@ PUBLISHED:
   INLINE void add_vertices(int v1, int v2, int v3, int v4);
   void add_consecutive_vertices(int start, int num_vertices);
   void add_next_vertices(int num_vertices);
+  void reserve_num_vertices(int num_vertices);
   bool close_primitive();
   void clear_vertices();
   void offset_vertices(int offset);

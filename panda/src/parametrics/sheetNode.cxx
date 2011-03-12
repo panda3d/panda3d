@@ -300,18 +300,18 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
   }
   PT(GeomVertexData) vdata = new GeomVertexData
     ("sheet", format, Geom::UH_stream);
+  int expected_num_vertices = num_u_segments * (num_u_verts + 1) * num_v_segments * num_v_verts;
+  vdata->reserve_num_rows(expected_num_vertices);
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
-  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
+
   for (int ui = 0; ui < num_u_segments; ui++) {
-    for (int uni = 0; uni < num_u_verts; uni++) {
+    for (int uni = 0; uni <= num_u_verts; uni++) {
       float u0 = (float)uni / (float)num_u_verts;
-      float u1 = (float)(uni + 1) / (float)num_u_verts;
       float u0_tc = result->get_segment_u(ui, u0);
-      float u1_tc = result->get_segment_u(ui, u1);
       
       for (int vi = 0; vi < num_v_segments; vi++) {
         for (int vni = 0; vni < num_v_verts; vni++) {
@@ -326,26 +326,44 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
           normal.add_data3f(norm);
           texcoord.add_data2f(u0_tc, v_tc);
           
-          result->eval_segment_point(ui, vi, u1, v, point);
-          result->eval_segment_normal(ui, vi, u1, v, norm);
-          vertex.add_data3f(point);
-          normal.add_data3f(norm);
-          texcoord.add_data2f(u1_tc, v_tc);
-          
           if (use_vertex_color) {
-            Colorf c0, c1;
+            Colorf c0;
             result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
-            result->eval_segment_extended_points(ui, vi, u1, v, 0, &c1[0], 4);
-            
             color.add_data4f(c0);
-            color.add_data4f(c1);
           }
         }
-        strip->add_next_vertices(num_v_verts * 2);
+      }
+    }
+  }
+  nassertv(vdata->get_num_rows() == expected_num_vertices);
+  
+  PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
+
+  int expected_num_tristrips = num_u_segments * num_u_verts * num_v_segments;
+  int expected_verts_per_tristrip = num_v_verts * 2;
+
+  int expected_prim_vertices = (expected_num_tristrips - 1) * (expected_verts_per_tristrip + strip->get_num_unused_vertices_per_primitive()) + expected_verts_per_tristrip;
+
+  strip->reserve_num_vertices(expected_prim_vertices);
+
+  int verts_per_row = num_v_segments * num_v_verts;
+
+  for (int ui = 0; ui < num_u_segments; ui++) {
+    for (int uni = 0; uni < num_u_verts; uni++) {
+      int row_start_index = ((ui * (num_u_verts + 1)) + uni) * verts_per_row;
+
+      for (int vi = 0; vi < num_v_segments; vi++) {
+        for (int vni = 0; vni < num_v_verts; vni++) {
+          int vert_index_0 = row_start_index + (vi * num_v_verts) + vni;
+          int vert_index_1 = vert_index_0 + verts_per_row;
+          strip->add_vertex(vert_index_0);
+          strip->add_vertex(vert_index_1);
+        }
         strip->close_primitive();
       }
     }
   }
+  nassertv(strip->get_num_vertices() == expected_prim_vertices);
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);

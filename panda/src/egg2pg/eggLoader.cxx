@@ -411,7 +411,14 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
       // Add each new primitive to the Geom.
       Primitives::const_iterator pi;
       for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
-        GeomPrimitive *primitive = (*pi);
+        PT(GeomPrimitive) primitive = (*pi);
+
+        if (primitive->is_indexed()) {
+          // Since we may have over-allocated while we were filling up
+          // the primitives, down-allocate now.
+          primitive->reserve_num_vertices(primitive->get_num_vertices());
+        }
+
         geom->add_primitive(primitive);
       }
       
@@ -2313,6 +2320,7 @@ make_vertex_data(const EggRenderState *render_state,
   // dynamic.
   PT(GeomVertexData) vertex_data =
     new GeomVertexData(name, format, Geom::UH_static);
+  vertex_data->reserve_num_rows(vertex_pool->size());
 
   vertex_data->set_transform_blend_table(blend_table);
   if (slider_table != (SliderTable *)NULL) {
@@ -2543,6 +2551,12 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   if (result.second) {
     // This was the first primitive of this type.  Store it.
     primitives.push_back(primitive);
+
+    if (egg2pg_cat.is_debug()) {
+      egg2pg_cat.debug()
+        << "First primitive of type " << primitive->get_type() 
+        << ": " << primitive << "\n";
+    }
   }
 
   GeomPrimitive *orig_prim = (*result.first).second;
@@ -2556,6 +2570,12 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
     // If the old primitive is full, keep the new primitive from now
     // on.
     (*result.first).second = primitive;
+
+    if (egg2pg_cat.is_debug()) {
+      egg2pg_cat.debug()
+        << "Next primitive of type " << primitive->get_type() 
+        << ": " << primitive << "\n";
+    }
     primitives.push_back(primitive);
   }
 
