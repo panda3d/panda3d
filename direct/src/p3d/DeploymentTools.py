@@ -936,14 +936,13 @@ class Installer:
         nsi.write('SectionEnd')
         nsi.close()
 
-        options = ["V2"]
-        cmd = "\"" + makensis + "\""
-        for o in options:
+        cmd = [makensis]
+        for o in ["V2"]:
             if sys.platform.startswith("win"):
-                cmd += " /" + o
+                cmd.append("/" + o)
             else:
-                cmd += " -" + o
-        cmd += " \"" + nsifile.toOsSpecific() + "\""
+                cmd.append("-" + o)
+        cmd.append(nsifile.toOsSpecific())
         print cmd
         try:
             retcode = subprocess.call(cmd, shell = False)
