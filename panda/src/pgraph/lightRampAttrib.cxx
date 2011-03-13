@@ -207,7 +207,7 @@ output(ostream &out) const {
     out << "single_threshold(" << _level[0] << "," << _level[1] << "," << _threshold[0] << ")";
     break;
   case LRT_double_threshold:
-    out << "double_threshold(" << _level[0] << "," << _level[1] << "," << _level[2] << "," << _threshold[0] << "," << _threshold[0] << ")";
+    out << "double_threshold(" << _level[0] << "," << _level[1] << "," << _threshold[0] << "," << _threshold[1] << ")";
     break;
   }
 }
