@@ -20,6 +20,8 @@
 #include "nodePath.h"
 #include "boundingHexahedron.h"
 
+class GeomNode;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PfmFile
 // Description : Defines a pfm file, a 2-d table of floating-point
@@ -70,7 +72,7 @@ PUBLISHED:
   NodePath generate_vis_mesh(bool double_sided) const;
 
 private:
-  PT(Geom) make_vis_mesh_geom(bool inverted) const;
+  void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
   void compute_sample_point(LPoint3f &result,
                             double x, double y, double sample_radius) const;
