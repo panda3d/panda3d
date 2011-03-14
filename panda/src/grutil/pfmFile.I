@@ -180,3 +180,26 @@ INLINE bool PfmFile::
 get_vis_inverse() const {
   return _vis_inverse;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_vis_2d
+//       Access: Published
+//  Description: Sets the vis_2d flag.  When this flag is true,
+//               only the first two (x, y) value of each depth point
+//               is considered meaningful; the z component is ignored.
+//               This is only relevant for generating visualizations.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_vis_2d(bool vis_2d) {
+  _vis_2d = vis_2d;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_vis_2d
+//       Access: Published
+//  Description: Returns the vis_2d flag.  See set_vis_2d().
+////////////////////////////////////////////////////////////////////
+INLINE bool PfmFile::
+get_vis_2d() const {
+  return _vis_2d;
+}

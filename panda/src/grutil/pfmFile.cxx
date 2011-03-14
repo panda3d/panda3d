@@ -37,6 +37,7 @@ PfmFile::
 PfmFile() {
   _zero_special = false;
   _vis_inverse = false;
+  _vis_2d = false;
   clear();
 }
 
@@ -52,7 +53,9 @@ PfmFile(const PfmFile &copy) :
   _y_size(copy._y_size),
   _scale(copy._scale),
   _num_channels(copy._num_channels),
-  _zero_special(copy._zero_special)
+  _zero_special(copy._zero_special),
+  _vis_inverse(copy._vis_inverse),
+  _vis_2d(copy._vis_2d)
 {
 }
 
@@ -69,6 +72,8 @@ operator = (const PfmFile &copy) {
   _scale = copy._scale;
   _num_channels = copy._num_channels;
   _zero_special = copy._zero_special;
+  _vis_inverse = copy._vis_inverse;
+  _vis_2d = copy._vis_2d;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -613,13 +618,18 @@ generate_vis_points() const {
 
   CPT(GeomVertexFormat) format;
   if (_vis_inverse) {
-    // We need a 3-d texture coordinate if we're inverted the vis.
-    GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, 
-       Geom::NT_float32, Geom::C_point,
-       InternalName::get_texcoord(), 3, 
-       Geom::NT_float32, Geom::C_texcoord);
-    format = GeomVertexFormat::register_format(v3t3);
+    if (_vis_2d) {
+      format = GeomVertexFormat::get_v3t2();
+    } else {
+      // We need a 3-d texture coordinate if we're inverting the vis
+      // and it's 3-d.
+      GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
+        (InternalName::get_vertex(), 3, 
+         Geom::NT_float32, Geom::C_point,
+         InternalName::get_texcoord(), 3, 
+         Geom::NT_float32, Geom::C_texcoord);
+      format = GeomVertexFormat::register_format(v3t3);
+    }
   } else {
     format = GeomVertexFormat::get_v3t2();
   }
@@ -638,6 +648,9 @@ generate_vis_points() const {
       if (_vis_inverse) {
         vertex.add_data2f(uv);
         texcoord.add_data3f(point);
+      } else if (_vis_2d) {
+        vertex.add_data2f(point[0], point[1]);
+        texcoord.add_data2f(uv);
       } else {
         vertex.add_data3f(point);
         texcoord.add_data2f(uv);
@@ -724,19 +737,24 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   }
 
   CPT(GeomVertexFormat) format;
-  if (_vis_inverse) {
-    // We need a 3-d texture coordinate if we're inverting the vis.
-    // But we don't need normals in that case.
-    GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, 
-       Geom::NT_float32, Geom::C_point,
-       InternalName::get_texcoord(), 3, 
-       Geom::NT_float32, Geom::C_texcoord);
-    format = GeomVertexFormat::register_format(v3t3);
+  if (_vis_2d) {
+    // No normals needed if we're just generating a 2-d mesh.
+    format = GeomVertexFormat::get_v3t2();
   } else {
-    // Otherwise, we only need a 2-d texture coordinate, and we do
-    // want normals.
-    format = GeomVertexFormat::get_v3n3t2();
+    if (_vis_inverse) {
+      // We need a 3-d texture coordinate if we're inverting the vis
+      // and it's 3-d.  But we still don't need normals in that case.
+      GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
+        (InternalName::get_vertex(), 3, 
+         Geom::NT_float32, Geom::C_point,
+         InternalName::get_texcoord(), 3, 
+         Geom::NT_float32, Geom::C_texcoord);
+      format = GeomVertexFormat::register_format(v3t3);
+    } else {
+      // Otherwise, we only need a 2-d texture coordinate, and we do
+      // want normals.
+      format = GeomVertexFormat::get_v3n3t2();
+    }
   }
 
   for (int yci = 0; yci < num_y_cells; ++yci) {
@@ -783,6 +801,9 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
           if (_vis_inverse) {
             vertex.add_data2f(uv);
             texcoord.add_data3f(point);
+          } else if (_vis_2d) {
+            vertex.add_data2f(point[0], point[1]);
+            texcoord.add_data2f(uv);
           } else {
             vertex.add_data3f(point);
             texcoord.add_data2f(uv);

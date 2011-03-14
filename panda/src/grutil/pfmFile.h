@@ -67,6 +67,8 @@ PUBLISHED:
 
   INLINE void set_vis_inverse(bool vis_inverse);
   INLINE bool get_vis_inverse() const;
+  INLINE void set_vis_2d(bool vis_2d);
+  INLINE bool get_vis_2d() const;
 
   NodePath generate_vis_points() const;
   NodePath generate_vis_mesh(bool double_sided) const;
@@ -104,6 +106,7 @@ private:
 
   bool _zero_special;
   bool _vis_inverse;
+  bool _vis_2d;
 };
 
 #include "pfmFile.I"
