@@ -19,17 +19,6 @@
 Configure(config_pfm);
 NotifyCategoryDef(pfm, "");
 
-ConfigVariableBool pfm_force_littleendian
-("pfm-force-littleendian", false,
- PRC_DESC("This forces a pfm file to be read as a sequence of little-endian "
-          "floats, even if its scale factor is given as a positive number."));
-
-ConfigVariableBool pfm_reverse_dimensions
-("pfm-reverse-dimensions", false,
- PRC_DESC("Understands that the width and height of a pfm file are given "
-          "backwards, in the form height width instead of width height, "
-          "on input.  Does not affect output, which is always written width height."));
-
 ConfigVariableDouble pfm_bba_dist
 ("pfm-bba-dist", "0.2 0.05",
  PRC_DESC("Specifies the point_dist and sample_radius, in UV space, for "

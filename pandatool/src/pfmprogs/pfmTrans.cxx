@@ -73,12 +73,6 @@ PfmTrans() {
      &PfmTrans::dispatch_filename, &_got_output_dirname, &_output_dirname);
 
   add_option
-    ("bba", "", 50,
-     "Generates a .bba file alongside each output file that lists the "
-     "planar bounding volume of each pfm file's data.",
-     &PfmTrans::dispatch_none, &_got_bba);
-
-  add_option
     ("vis", "filename.bam", 60,
      "Generates a bam file that represents a visualization of the pfm file "
      "as a 3-D geometric mesh.  If -vistex is specified, the mesh is "
@@ -149,7 +143,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (_got_vis_filename) {
-    NodePath mesh = file.generate_vis_mesh();
+    NodePath mesh = file.generate_vis_mesh(true);
     if (_got_vistex_filename) {
       PT(Texture) tex = TexturePool::load_texture(_vistex_filename);
       if (tex == NULL) {
@@ -173,34 +167,6 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (!output_filename.empty()) {
-    if (_got_bba) {
-      Filename bba_filename = output_filename;
-      bba_filename.set_text();
-      bba_filename.set_extension("bba");
-      PT(BoundingHexahedron) bounds = file.compute_planar_bounds(pfm_bba_dist[0], pfm_bba_dist[1]);
-      nassertr(bounds != (BoundingHexahedron *)NULL, false);
-
-      pofstream out;
-      if (!bba_filename.open_write(out)) {
-        pfm_cat.error()
-          << "Unable to open " << bba_filename << "\n";
-        return false;
-      }
-
-      // This is the order expected by our existing bba system.
-      static const int ri = 0;
-      static const int reorder_points[][8] = {
-	{ 0, 1, 2, 3, 4, 5, 6, 7 },  // unfiltered
-	{ 7, 5, 1, 3, 6, 4, 0, 2 },  // front, floor
-	{ 4, 6, 2, 0, 5, 7, 3, 1 },  // left
-	{ 7, 5, 1, 3, 2, 0, 4, 6 },  // right
-      };
-      
-      for (int i = 0; i < bounds->get_num_points(); ++i) {
-        LPoint3f p = bounds->get_point(reorder_points[ri][i]);
-        out << p[0] << "," << p[1] << "," << p[2] << "\n";
-      }
-    }
     return file.write(output_filename);
   }
 

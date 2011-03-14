@@ -23,8 +23,6 @@
 
 NotifyCategoryDeclNoExport(pfm);
 
-extern ConfigVariableBool pfm_force_littleendian;
-extern ConfigVariableBool pfm_reverse_dimensions;
 extern ConfigVariableDouble pfm_bba_dist;
 
 extern void init_libpfm();

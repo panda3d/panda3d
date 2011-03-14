@@ -15,7 +15,26 @@
 
   #define SOURCES \
     config_pfm.cxx config_pfm.h \
-    pfmFile.cxx pfmFile.h \
     pfmTrans.cxx pfmTrans.h
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET pfm-bba
+  #define LOCAL_LIBS progbase
+
+  #define SOURCES \
+    config_pfm.cxx config_pfm.h \
+    pfmBba.cxx pfmBba.h
+
+#end bin_target
+
+//#begin bin_target
+//  #define TARGET pfm-wallpaper
+//  #define LOCAL_LIBS progbase
+//
+//  #define SOURCES \
+//    config_pfm.cxx config_pfm.h \
+//    pfmWallpaper.cxx pfmWallpaper.h
+//
+//#end bin_target

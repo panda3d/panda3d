@@ -56,7 +56,6 @@ private:
   bool _got_vis_inverse;
   bool _got_resize;
   int _resize[2];
-  bool _got_bba;
 
   bool _got_output_filename;
   Filename _output_filename;
