@@ -16,6 +16,7 @@
 #include "cylindricalLens.h"
 #include "fisheyeLens.h"
 #include "pSphereLens.h"
+#include "oSphereLens.h"
 #include "projectionScreen.h"
 
 #include "dconfig.h"
@@ -55,5 +56,6 @@ init_libdistort() {
   CylindricalLens::init_type();
   FisheyeLens::init_type();
   PSphereLens::init_type();
+  OSphereLens::init_type();
   ProjectionScreen::init_type();
 }

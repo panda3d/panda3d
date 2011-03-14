@@ -14,11 +14,12 @@
     cylindricalLens.h cylindricalLens.I \
     fisheyeLens.h fisheyeLens.I \
     nonlinearImager.h nonlinearImager.I \
+    oSphereLens.h oSphereLens.I \
     pSphereLens.h pSphereLens.I
 
   #define INCLUDED_SOURCES \
     config_distort.cxx cylindricalLens.cxx fisheyeLens.cxx nonlinearImager.cxx \
-    projectionScreen.cxx pSphereLens.cxx 
+    projectionScreen.cxx oSphereLens.cxx pSphereLens.cxx
 
   #define INSTALL_HEADERS
 
