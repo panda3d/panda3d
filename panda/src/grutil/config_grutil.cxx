@@ -62,6 +62,17 @@ ConfigVariableDouble scene_graph_analyzer_meter_scale
 ConfigVariableDouble scene_graph_analyzer_meter_side_margins
 ("scene-graph-analyzer-meter-side-margins", 0.5);
 
+ConfigVariableBool pfm_force_littleendian
+("pfm-force-littleendian", false,
+ PRC_DESC("This forces a pfm file to be read as a sequence of little-endian "
+          "floats, even if its scale factor is given as a positive number."));
+
+ConfigVariableBool pfm_reverse_dimensions
+("pfm-reverse-dimensions", false,
+ PRC_DESC("Understands that the width and height of a pfm file are given "
+          "backwards, in the form height width instead of width height, "
+          "on input.  Does not affect output, which is always written width height."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at

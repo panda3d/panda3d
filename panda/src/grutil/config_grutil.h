@@ -35,6 +35,9 @@ extern ConfigVariableInt scene_graph_analyzer_meter_layer_sort;
 extern ConfigVariableDouble scene_graph_analyzer_meter_scale;
 extern ConfigVariableDouble scene_graph_analyzer_meter_side_margins;
 
+extern ConfigVariableBool pfm_force_littleendian;
+extern ConfigVariableBool pfm_reverse_dimensions;
+
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
 #endif
