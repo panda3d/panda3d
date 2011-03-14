@@ -206,7 +206,7 @@ process_line(const string &line) {
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_v(vector_string &words) {
-  if (words.size() != 4) {
+  if (words.size() != 4 && words.size() != 7) {
     objegg_cat.error()
       << "Wrong number of tokens at line " << _line_number << "\n";
     return false;
@@ -226,6 +226,23 @@ process_v(vector_string &words) {
 
   EggVertex *vertex = get_vertex(_vi);
   vertex->set_pos(pos);
+
+  // Meshlab format might include an RGB color following the vertex
+  // position.
+  if (words.size() == 7) {
+    double r, g, b;
+    okflag &= string_to_double(words[4], r);
+    okflag &= string_to_double(words[5], g);
+    okflag &= string_to_double(words[6], b);
+
+    if (!okflag) {
+      objegg_cat.error()
+        << "Invalid number at line " << _line_number << "\n";
+      return false;
+    }
+    vertex->set_color(Colorf(r, g, b, 1.0));
+  }
+
   ++_vi;
 
   return true;
