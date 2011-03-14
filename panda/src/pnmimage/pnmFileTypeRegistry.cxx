@@ -164,8 +164,15 @@ get_type_from_extension(const string &filename) const {
   Extensions::const_iterator ei;
   ei = _extensions.find(extension);
   if (ei == _extensions.end() || (*ei).second.empty()) {
-    // Nothing matches that string.
-    return NULL;
+    // Nothing matches that string.  Try again with a downcased string
+    // in case we got an all-uppercase filename (most of our
+    // extensions are downcased).
+    ei = _extensions.find(downcase(extension));
+
+    if (ei == _extensions.end() || (*ei).second.empty()) {
+      // Nothing matches that string.
+      return NULL;
+    }
   }
 
   // Return the first file type associated with the given extension.
