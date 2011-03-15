@@ -526,7 +526,8 @@ class PatchMaker:
             # Also copy the seq to the import desc file, for
             # documentation purposes.
 
-            importDescFullpath = Filename(self.patchMaker.installDir, self.packageDesc.cStr()[:-3] + 'import.xml')
+            importDescFilename = self.packageDesc.cStr()[:-3] + 'import.xml'
+            importDescFullpath = Filename(self.patchMaker.installDir, importDescFilename)
             doc = TiXmlDocument(importDescFullpath.toOsSpecific())
             if doc.LoadFile():
                 xpackage = doc.FirstChildElement('package')
@@ -543,6 +544,13 @@ class PatchMaker:
                 fileSpec = FileSpec()
                 fileSpec.fromFile(self.patchMaker.installDir, self.packageDesc)
                 fileSpec.storeXml(self.contentsDocPackage)
+
+                # Also important to update the import.xml hash.
+                ximport = self.contentsDocPackage.FirstChildElement('import')
+                if ximport:
+                    fileSpec = FileSpec()
+                    fileSpec.fromFile(self.patchMaker.installDir, importDescFilename)
+                    fileSpec.storeXml(ximport)
 
                 # Also copy the package seq value into the
                 # contents.xml file, mainly for documentation purposes
