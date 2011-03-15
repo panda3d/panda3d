@@ -179,6 +179,7 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/application-registry")
     oscmd("mkdir -p "+destdir+prefix+"/share/applications")
     if (os.path.exists(outputdir+"/plugins/nppanda3d.so")):
+        oscmd("mkdir -p "+destdir+prefix+libdir)
         oscmd("cp "+outputdir+"/plugins/nppanda3d.so "+destdir+prefix+libdir+"/nppanda3d.so")
         if sys.platform.startswith("freebsd"):
             oscmd("mkdir -p "+destdir+prefix+libdir+"/browser_plugins/symlinks/gecko19")
