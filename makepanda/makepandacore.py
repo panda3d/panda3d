@@ -983,7 +983,7 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
     elif (tool == "fltk-config"):
-        handle = os.popen(LocateBinary("fltk-config") + " --ldflags")
+        handle = os.popen(LocateBinary("fltk-config") + " --ldstaticflags")
     else:
         handle = os.popen(LocateBinary(tool) + " --libs")
     result = handle.read().strip()
