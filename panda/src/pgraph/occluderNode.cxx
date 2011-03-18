@@ -61,7 +61,7 @@ OccluderNode(const string &name) :
   set_cull_callback();
   // OccluderNodes are hidden by default.
   set_overall_hidden(true);
-
+  set_double_sided(false);
   set_vertices(LPoint3f::rfu(-1.0, 0.0, -1.0),
                LPoint3f::rfu(1.0, 0.0, -1.0),
                LPoint3f::rfu(1.0, 0.0, 1.0),
@@ -76,7 +76,8 @@ OccluderNode(const string &name) :
 OccluderNode::
 OccluderNode(const OccluderNode &copy) :
   PandaNode(copy),
-  _vertices(copy._vertices)
+  _vertices(copy._vertices),
+  _double_sided(copy._double_sided)
 {
 }
 
@@ -323,12 +324,18 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
       (ColorAttrib::make_flat(LVecBase4f(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha),
        DepthOffsetAttrib::make(),
-       CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
-    viz_state = viz_state->set_attrib(TextureAttrib::make(_viz_tex));
+       TextureAttrib::make(_viz_tex));
     viz_state = viz_state->adjust_all_priorities(1);
   }
 
-  return data._state->compose(viz_state);
+  CPT(RenderState) state = viz_state;
+  if (is_double_sided()) {
+    state = viz_state->set_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_none), 1);
+  } else {
+    state = viz_state->set_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise), 1);
+  }
+
+  return state->compose(viz_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -424,6 +431,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
   int num_vertices = scan.get_uint16();
+  _vertices.clear();
   _vertices.reserve(num_vertices);
   for (int i = 0; i < num_vertices; i++) {
     LPoint3f vertex;

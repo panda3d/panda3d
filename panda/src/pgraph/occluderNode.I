@@ -52,3 +52,21 @@ get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3f::zero());
   return _vertices[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: OccluderNode::set_double_sided
+//       Access: Published
+//  Description: If true, the back-face will also be used to occlude
+////////////////////////////////////////////////////////////////////
+INLINE void OccluderNode::set_double_sided(bool value) {
+  _double_sided = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OccluderNode::is_double_sided
+//       Access: Published
+//  Description: Is this occluder double-sided
+////////////////////////////////////////////////////////////////////
+INLINE bool OccluderNode::is_double_sided() {
+  return _double_sided;
+}

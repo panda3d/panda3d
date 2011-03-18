@@ -163,11 +163,13 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           occluder_gbv->xform(composed_transform->get_mat());
         }
 
-        int occluder_result = data->_view_frustum->contains(occluder_gbv);
-        if (occluder_result == BoundingVolume::IF_no_intersection) {
-          // This occluder is outside the view frustum; ignore it.
-          continue;
-        }
+	if (data->_view_frustum != (GeometricBoundingVolume *)NULL) {
+	  int occluder_result = data->_view_frustum->contains(occluder_gbv);
+	  if (occluder_result == BoundingVolume::IF_no_intersection) {
+	    // This occluder is outside the view frustum; ignore it.
+	    continue;
+	  }
+	}
 
         // Also check if the new occluder is completely within any of
         // our existing occluder volumes.
@@ -198,8 +200,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         
         Planef plane(points_near[0], points_near[1], points_near[2]);
         if (plane.get_normal().dot(LVector3f::forward()) >= 0.0) {
-          // This occluder is facing the wrong direction.  Ignore it.
-          continue;
+          if (occluder_node->is_double_sided()) {
+            swap(points_near[0], points_near[3]);
+            swap(points_near[1], points_near[2]);
+            plane = Planef(points_near[0], points_near[1], points_near[2]);
+          } else {
+            // This occluder is facing the wrong direction.  Ignore it.
+            continue;
+          }
         }
 
         float near_clip = scene->get_lens()->get_near();

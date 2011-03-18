@@ -51,6 +51,8 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
+  INLINE void set_double_sided(bool value);
+  INLINE bool is_double_sided();
   INLINE void set_vertices(const LPoint3f &v0, const LPoint3f &v1,
                            const LPoint3f &v2, const LPoint3f &v3);
   INLINE int get_num_vertices() const;
@@ -67,6 +69,7 @@ protected:
   CPT(RenderState) get_frame_viz_state(CullTraverser *trav, CullTraverserData &data);
 
 private:
+  bool _double_sided;
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
 
