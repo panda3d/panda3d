@@ -19,6 +19,7 @@
 #include "dataGraphTraverser.h"
 #include "depthOffsetAttrib.h"
 #include "collisionNode.h"
+#include "occluderNode.h"
 #include "config_framework.h"
 #include "graphicsPipeSelection.h"
 #include "nodePathCollection.h"
@@ -712,15 +713,16 @@ set_background_type(WindowFramework::BackgroundType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::hide_collision_solids
 //       Access: Public
-//  Description: Hides any collision solids which are visible in the
-//               indicated scene graph.  Returns the number of
-//               collision solids hidden.
+//  Description: Hides any collision solids, or occluders, which are
+//               visible in the indicated scene graph.  Returns the
+//               number of nodes hidden.
 ////////////////////////////////////////////////////////////////////
 int PandaFramework::
 hide_collision_solids(NodePath node) {
   int num_changed = 0;
 
-  if (node.node()->is_of_type(CollisionNode::get_class_type())) {
+  if (node.node()->is_of_type(CollisionNode::get_class_type()) ||
+      node.node()->is_of_type(OccluderNode::get_class_type())) {
     if (!node.is_hidden()) {
       node.hide();
       num_changed++;
@@ -738,15 +740,16 @@ hide_collision_solids(NodePath node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::show_collision_solids
 //       Access: Public
-//  Description: Shows any collision solids which are directly hidden
-//               in the indicated scene graph.  Returns the number of
-//               collision solids shown.
+//  Description: Shows any collision solids, or occluders, which are
+//               directly hidden in the indicated scene graph.
+//               Returns the number of nodes shown.
 ////////////////////////////////////////////////////////////////////
 int PandaFramework::
 show_collision_solids(NodePath node) {
   int num_changed = 0;
 
-  if (node.node()->is_of_type(CollisionNode::get_class_type())) {
+  if (node.node()->is_of_type(CollisionNode::get_class_type()) ||
+      node.node()->is_of_type(OccluderNode::get_class_type())) {
     if (node.get_hidden_ancestor() == node) {
       node.show();
       num_changed++;

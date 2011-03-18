@@ -126,6 +126,11 @@ void OccluderNode::
 xform(const LMatrix4f &mat) {
   nassertv(!mat.is_nan());
 
+  for (Vertices::iterator vi = _vertices.begin();
+       vi != _vertices.end();
+       ++vi) {
+    (*vi) = (*vi) * mat;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

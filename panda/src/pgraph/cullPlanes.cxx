@@ -16,6 +16,7 @@
 #include "cullTraverserData.h"
 #include "clipPlaneAttrib.h"
 #include "occluderEffect.h"
+#include "boundingBox.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -156,17 +157,48 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         }
 
         // Compare the occluder node's bounding volume to the view
-        // frustum.
-        PT(GeometricBoundingVolume) occluder_gbv = DCAST(GeometricBoundingVolume, occluder_node->get_internal_bounds()->make_copy());
-        {
-          CPT(TransformState) composed_transform = occluder_transform->compose(center_transform);
-          occluder_gbv->xform(composed_transform->get_mat());
+        // frustum.  We construct a new bounding volume because (a)
+        // the node's existing bounding volume is in the coordinate
+        // space of its parent, which isn't what we have here, and (b)
+        // we might as well make a BoundingBox, which is as tight as
+        // possible, and creating one isn't any less efficient than
+        // transforming the existing bounding volume.
+	PT(BoundingBox) occluder_gbv;
+	{
+	  // Get a transform from the occluder directly to this node's
+	  // space for comparing with the current view frustum.
+	  CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
+	  const LMatrix4f &composed_mat = composed_transform->get_mat();
+	  LPoint3f ccp[4];
+	  ccp[0] = occluder_node->get_vertex(0) * composed_mat;
+	  ccp[1] = occluder_node->get_vertex(1) * composed_mat;
+	  ccp[2] = occluder_node->get_vertex(2) * composed_mat;
+	  ccp[3] = occluder_node->get_vertex(3) * composed_mat;
+
+	  LPoint3f ccp_min(min(min(ccp[0][0], ccp[1][0]), 
+			       min(ccp[2][0], ccp[3][0])),
+			   min(min(ccp[0][1], ccp[1][1]), 
+			       min(ccp[2][1], ccp[3][1])),
+			   min(min(ccp[0][2], ccp[1][2]), 
+			       min(ccp[2][2], ccp[3][2])));
+	  LPoint3f ccp_max(max(max(ccp[0][0], ccp[1][0]), 
+			       max(ccp[2][0], ccp[3][0])),
+			   max(max(ccp[0][1], ccp[1][1]), 
+			       max(ccp[2][1], ccp[3][1])),
+			   max(max(ccp[0][2], ccp[1][2]), 
+			       max(ccp[2][2], ccp[3][2])));
+			   			   
+	  occluder_gbv = new BoundingBox(ccp_min, ccp_max);
         }
 
 	if (data->_view_frustum != (GeometricBoundingVolume *)NULL) {
 	  int occluder_result = data->_view_frustum->contains(occluder_gbv);
 	  if (occluder_result == BoundingVolume::IF_no_intersection) {
 	    // This occluder is outside the view frustum; ignore it.
+	    if (pgraph_cat.is_spam()) {
+	      pgraph_cat.spam()
+		<< "Ignoring occluder " << occluder << ": outside view frustum.\n";
+	    }
 	    continue;
 	  }
 	}
@@ -185,6 +217,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         if (is_enclosed) {
           // No reason to add this occluder; it's behind an existing
           // occluder.
+	  if (pgraph_cat.is_spam()) {
+	    pgraph_cat.spam()
+	      << "Ignoring occluder " << occluder << ": behind another.\n";
+	  }
           continue;
         }
         // TODO: perhaps we should also check whether any existing
@@ -192,7 +228,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         
         // Get the occluder geometry in cull-center space.
         const LMatrix4f &occluder_mat = occluder_transform->get_mat();
-        Vertexf points_near[4];
+        LPoint3f points_near[4];
         points_near[0] = occluder_node->get_vertex(0) * occluder_mat;
         points_near[1] = occluder_node->get_vertex(1) * occluder_mat;
         points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
@@ -206,6 +242,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
             plane = Planef(points_near[0], points_near[1], points_near[2]);
           } else {
             // This occluder is facing the wrong direction.  Ignore it.
+	    if (pgraph_cat.is_spam()) {
+	      pgraph_cat.spam()
+		<< "Ignoring occluder " << occluder << ": wrong direction.\n";
+	    }
             continue;
           }
         }
@@ -213,6 +253,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         float near_clip = scene->get_lens()->get_near();
         if (plane.dist_to_plane(LPoint3f::zero()) <= near_clip) {
           // This occluder is behind the camera's near plane.  Ignore it.
+	  if (pgraph_cat.is_spam()) {
+	    pgraph_cat.spam()
+	      << "Ignoring occluder " << occluder << ": behind near plane.\n";
+	  }
           continue;
         }
 
@@ -223,6 +267,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         if (d0 <= near_clip && d1 <= near_clip && d2 <= near_clip && d3 <= near_clip) {
           // All four corners of the occluder are behind the camera's
           // near plane.  Ignore it.
+	  if (pgraph_cat.is_spam()) {
+	    pgraph_cat.spam()
+	      << "Ignoring occluder " << occluder << ": behind near plane (test 2).\n";
+	  }
           continue;
         }
 
@@ -232,11 +280,15 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // proper fix for this is to clip the polygon against the near
         // plane, producing a smaller polygon, and use that to
         // generate the frustum.  But maybe it doesn't matter.  In
-        // lieu of this, we just toss out any polygon with *any*
+        // lieu of this, we just toss out any occluder with *any*
         // corner behind the y = 0 plane.
         if (d0 <= 0.0 || d1 <= 0.0 || d2 <= 0.0 || d3 <= 0.0) {
           // One of the corners is behind the y = 0 plane.  We can't
           // handle this case.  Ignore it.
+	  if (pgraph_cat.is_spam()) {
+	    pgraph_cat.spam()
+	      << "Ignoring occluder " << occluder << ": partly behind zero plane.\n";
+	  }
           continue;
         }
 

@@ -233,19 +233,19 @@ write(ostream &out, int indent_level) const {
   }
 
   if(get_scroll_u() != 0) {
-    indent(out, indent_level) 
+    indent(out, indent_level + 2) 
       << "<Scalar> scroll_u { " << get_scroll_u() << " }\n";
 
   }
 
   if(get_scroll_v() != 0) {
-    indent(out, indent_level) 
+    indent(out, indent_level + 2) 
       << "<Scalar> scroll_v { " << get_scroll_v() << " }\n";
 
   }
 
   if(get_scroll_r() != 0) {
-    indent(out, indent_level) 
+    indent(out, indent_level + 2) 
       << "<Scalar> scroll_r { " << get_scroll_r() << " }\n";
 
   }
@@ -257,46 +257,46 @@ write(ostream &out, int indent_level) const {
   write_render_mode(out, indent_level + 2);
 
   if (get_portal_flag()) {
-    indent(out, indent_level) << "<Scalar> portal { 1 }\n";
+    indent(out, indent_level + 2) << "<Scalar> portal { 1 }\n";
   }
 
   if (get_occluder_flag()) {
-    indent(out, indent_level) << "<Scalar> occluder { 1 }\n";
+    indent(out, indent_level + 2) << "<Scalar> occluder { 1 }\n";
   }
 
   if (get_polylight_flag()) {
-    indent(out, indent_level) << "<Scalar> polylight { 1 }\n";
+    indent(out, indent_level + 2) << "<Scalar> polylight { 1 }\n";
   }
 
   if (has_indexed_flag()) {
-    indent(out, indent_level) 
+    indent(out, indent_level + 2) 
       << "<Scalar> indexed { " << get_indexed_flag() << " }\n";
   }
 
   if (get_blend_mode() != BM_unspecified) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blend { " << get_blend_mode() << " }\n";
   }
 
   if (get_blend_operand_a() != BO_unspecified) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blendop-a { " << get_blend_operand_a() << " }\n";
   }
 
   if (get_blend_operand_b() != BO_unspecified) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blendop-b { " << get_blend_operand_b() << " }\n";
   }
 
   if (has_blend_color()) {
     const Colorf &c = get_blend_color();
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blendr { " << c[0] << " }\n";
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blendg { " << c[1] << " }\n";
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blendb { " << c[2] << " }\n";
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "<Scalar> blenda { " << c[3] << " }\n";
   }
 

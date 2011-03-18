@@ -1320,6 +1320,15 @@ GROUPING ENTRIES
     is constant-color or a related option, this defines the constant
     color that will be used.
 
+  <Scalar> occluder { boolean-value }
+
+    This makes the first (or only) polygon within this group node into
+    an occluder.  The polygon must have exactly four vertices.  An
+    occluder polygon is invisible.  When the occluder is activated
+    with model.set_occluder(occluder), objects that are behind the
+    occluder will not be drawn.  This can be a useful rendering
+    optimization for complex scenes, but should not be overused or
+    performance can suffer.
 
   OTHER GROUP ATTRIBUTES
 
