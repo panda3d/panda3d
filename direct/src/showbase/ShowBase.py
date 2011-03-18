@@ -2131,11 +2131,11 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeCamera.clearMat()
 
             # Make the regular MouseInterface node respond only when
-            # the control button is pressed.  And the oobe node will
-            # respond only when control is *not* pressed.
+            # the shift button is pressed.  And the oobe node will
+            # respond only when shift is *not* pressed.
 
-            self.mouseInterfaceNode.requireButton(KeyboardButton.control(), True)
-            self.oobeTrackball.node().requireButton(KeyboardButton.control(), False)
+            self.mouseInterfaceNode.requireButton(KeyboardButton.shift(), True)
+            self.oobeTrackball.node().requireButton(KeyboardButton.shift(), False)
             self.oobeTrackball.reparentTo(self.mouseWatcher)
 
             # Set our initial OOB position to be just behind the camera.
