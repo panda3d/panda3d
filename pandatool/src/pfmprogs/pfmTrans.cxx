@@ -86,6 +86,11 @@ PfmTrans() {
      &PfmTrans::dispatch_none, &_got_vis_inverse);
 
   add_option
+    ("vis2d", "", 60,
+     "Respect only the first two components of each depth value, ignoring z.",
+     &PfmTrans::dispatch_none, &_got_vis_2d);
+
+  add_option
     ("vistex", "texture.jpg", 60,
      "Specifies the name of the texture to apply to the visualization.",
      &PfmTrans::dispatch_filename, &_got_vistex_filename, &_vistex_filename);
@@ -129,6 +134,7 @@ bool PfmTrans::
 process_pfm(const Filename &input_filename, PfmFile &file) {
   file.set_zero_special(_got_zero_special);
   file.set_vis_inverse(_got_vis_inverse);
+  file.set_vis_2d(_got_vis_2d);
 
   if (_got_resize) {
     file.resize(_resize[0], _resize[1]);
