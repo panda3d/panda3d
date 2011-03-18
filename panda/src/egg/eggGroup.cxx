@@ -260,6 +260,10 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level) << "<Scalar> portal { 1 }\n";
   }
 
+  if (get_occluder_flag()) {
+    indent(out, indent_level) << "<Scalar> occluder { 1 }\n";
+  }
+
   if (get_polylight_flag()) {
     indent(out, indent_level) << "<Scalar> polylight { 1 }\n";
   }

@@ -43,6 +43,7 @@
 #include "lightAttrib.h"
 #include "stencilAttrib.h"
 #include "scissorAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "fog.h"
 #include "throw_event.h"
 #include "geomVertexFormat.h"

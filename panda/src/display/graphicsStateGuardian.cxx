@@ -53,6 +53,7 @@
 #include "lightLensNode.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
+#include "clipPlaneAttrib.h"
 
 #include <algorithm>
 #include <limits.h>

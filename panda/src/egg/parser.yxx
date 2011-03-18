@@ -1292,6 +1292,9 @@ group_body:
   } else if (cmp_nocase_uh(name, "portal") == 0) {
     group->set_portal_flag(value != 0);
 
+  } else if (cmp_nocase_uh(name, "occluder") == 0) {
+    group->set_occluder_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "polylight") == 0) {
     group->set_polylight_flag(value != 0);
 

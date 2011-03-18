@@ -499,6 +499,30 @@ get_portal_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_occluder_flag
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_occluder_flag(bool flag) {
+  if (flag) {
+    _flags2 |= F2_occluder_flag;
+  } else {
+    _flags2 &= ~F2_occluder_flag;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_occluder_flag
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+get_occluder_flag() const {
+  return ((_flags2 & F2_occluder_flag) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_polylight_flag
 //       Access: Published
 //  Description:

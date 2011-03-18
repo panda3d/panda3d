@@ -17,6 +17,8 @@
 #include "nodePathCollection.cxx"
 #include "nodePathComponent.cxx"
 #include "nodePathLerps.cxx"
+#include "occluderEffect.cxx"
+#include "occluderNode.cxx"
 #include "pandaNode.cxx"
 #include "pandaNodeChain.cxx"
 #include "planeNode.cxx"

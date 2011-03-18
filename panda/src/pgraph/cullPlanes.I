@@ -29,7 +29,8 @@ CullPlanes() {
 ////////////////////////////////////////////////////////////////////
 INLINE CullPlanes::
 CullPlanes(const CullPlanes &copy) :
-  _planes(copy._planes)
+  _planes(copy._planes),
+  _occluders(copy._occluders)
 {
 }
 
@@ -41,6 +42,7 @@ CullPlanes(const CullPlanes &copy) :
 INLINE void CullPlanes::
 operator = (const CullPlanes &copy) {
   _planes = copy._planes;
+  _occluders = copy._occluders;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,5 +62,6 @@ INLINE CullPlanes::
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullPlanes::
 is_empty() const {
-  return _planes.empty();
+  return _planes.empty() && _occluders.empty();
+
 }

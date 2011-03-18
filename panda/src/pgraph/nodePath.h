@@ -583,6 +583,11 @@ PUBLISHED:
   void clear_scissor();
   bool has_scissor() const;
 
+  void set_occluder(const NodePath &occluder);
+  void clear_occluder();
+  void clear_occluder(const NodePath &occluder);
+  bool has_occluder(const NodePath &occluder) const;
+
   void set_bin(const string &bin_name, int draw_order, int priority = 0);
   void clear_bin();
   bool has_bin() const;

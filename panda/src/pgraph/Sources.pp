@@ -74,6 +74,8 @@
     nodePathCollection.I nodePathCollection.h \
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
+    occluderEffect.I occluderEffect.h \
+    occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
     pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
@@ -171,6 +173,8 @@
     nodePathCollection.cxx \
     nodePathComponent.cxx \
     nodePathLerps.cxx \
+    occluderEffect.cxx \
+    occluderNode.cxx \
     pandaNode.cxx \
     pandaNodeChain.cxx \
     planeNode.cxx \
@@ -266,6 +270,8 @@
     nodePathCollection.I nodePathCollection.h \
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
+    occluderEffect.I occluderEffect.h \
+    occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
     pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \

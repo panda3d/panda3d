@@ -31,6 +31,7 @@
 #include "materialCollection.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "occluderEffect.h"
 #include "polylightEffect.h"
 #include "fogAttrib.h"
 #include "renderModeAttrib.h"
@@ -50,6 +51,7 @@
 #include "scissorEffect.h"
 #include "texturePool.h"
 #include "planeNode.h"
+#include "occluderNode.h"
 #include "lensNode.h"
 #include "materialPool.h"
 #include "look_at.h"
@@ -3183,6 +3185,105 @@ has_clip_plane_off(const NodePath &clip_plane) const {
     }
   }
   nassert_raise("Not a PlaneNode object.");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_occluder
+//       Access: Published
+//  Description: Adds the indicated occluder to the list of
+//               occluders that apply to geometry at this node and below.
+//               The occluder itself, an OccluderNode, should be
+//               parented into the scene graph elsewhere, to represent
+//               the occluder's position in space; but until
+//               set_occluder() is called it will clip no geometry.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_occluder(const NodePath &occluder) {
+  nassertv_always(!is_empty());
+  if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
+    const RenderEffect *effect =
+      node()->get_effect(OccluderEffect::get_class_type());
+    if (effect != (const RenderEffect *)NULL) {
+      const OccluderEffect *la = DCAST(OccluderEffect, effect);
+      
+      // Modify the existing OccluderEffect to add the indicated
+      // occluder.
+      node()->set_effect(la->add_on_occluder(occluder));
+      
+    } else {
+      // Create a new OccluderEffect for this node.
+      CPT(OccluderEffect) la = DCAST(OccluderEffect, OccluderEffect::make());
+      node()->set_effect(la->add_on_occluder(occluder));
+    }
+    return;
+  }
+  nassert_raise("Not an OccluderNode object.");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_occluder
+//       Access: Published
+//  Description: Completely removes any occluders that may have been
+//               set via set_occluder() from this particular node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_occluder() {
+  nassertv_always(!is_empty());
+  node()->clear_effect(OccluderEffect::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_occluder
+//       Access: Published
+//  Description: Removes any reference to the indicated occluder
+//               from the NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_occluder(const NodePath &occluder) {
+  nassertv_always(!is_empty());
+
+  if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
+    const RenderEffect *effect =
+      node()->get_effect(OccluderEffect::get_class_type());
+    if (effect != (const RenderEffect *)NULL) {
+      CPT(OccluderEffect) la = DCAST(OccluderEffect, effect);
+      la = DCAST(OccluderEffect, la->remove_on_occluder(occluder));
+        
+      if (la->is_identity()) {
+        node()->clear_effect(OccluderEffect::get_class_type());
+          
+      } else {
+        node()->set_effect(la);
+      }
+    }
+    return;
+  }
+  nassert_raise("Not an OccluderNode object.");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_occluder
+//       Access: Published
+//  Description: Returns true if the indicated occluder has been
+//               specifically applied to this particular node.  This
+//               means that someone called set_occluder() on this
+//               node with the indicated occluder.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_occluder(const NodePath &occluder) const {
+  nassertr_always(!is_empty(), false);
+
+  if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
+    const RenderEffect *effect =
+      node()->get_effect(OccluderEffect::get_class_type());
+    if (effect != (const RenderEffect *)NULL) {
+      const OccluderEffect *la = DCAST(OccluderEffect, effect);
+      return la->has_on_occluder(occluder);
+    }
+    return false;
+  }
+  nassert_raise("Not an OccluderNode object.");
   return false;
 }
 

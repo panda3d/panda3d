@@ -43,6 +43,7 @@
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
+#include "occluderNode.h"
 #include "polylightNode.h"
 #include "lodNode.h"
 #include "modelNode.h"
@@ -1860,7 +1861,20 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       egg2pg_cat.warning()
         << "Portal " << egg_group->get_name() << " has no vertices!\n";
     }
-    
+
+  } else if (egg_group->get_occluder_flag()) {
+    // Create an occluder instead of a regular polyset.  Scan the
+    // children of this node looking for a polygon, the same as the
+    // portal polygon case, above.
+    OccluderNode *pnode = new OccluderNode(egg_group->get_name());
+    node = pnode;
+
+    set_occluder_polygon(egg_group, pnode);
+    if (pnode->get_num_vertices() == 0) {
+      egg2pg_cat.warning()
+        << "Occluder " << egg_group->get_name() << " has no vertices!\n";
+    }
+
   } else if (egg_group->get_polylight_flag()) {
     // Create a polylight instead of a regular polyset.
     // use make_sphere to get the center, radius and color
@@ -2605,6 +2619,35 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
     for (vi = poly->begin(); vi != poly->end(); ++vi) {
       Vertexd vert = (*vi)->get_pos3() * mat;
       pnode->add_vertex(LCAST(float, vert));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::set_occluder_polygon
+//       Access: Private
+//  Description: Defines the OccluderNode from the first polygon found
+//               within this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
+  PT(EggPolygon) poly = find_first_polygon(egg_group);
+  if (poly != (EggPolygon *)NULL) {
+    if (poly->size() != 4) {
+      egg2pg_cat.error()
+        << "Invalid number of vertices for " << egg_group->get_name() << "\n";
+    } else {
+      LMatrix4d mat = poly->get_vertex_to_node();
+
+      EggPolygon::const_iterator vi;
+      LPoint3d v0 = (*poly)[0]->get_pos3() * mat;
+      LPoint3d v1 = (*poly)[1]->get_pos3() * mat;
+      LPoint3d v2 = (*poly)[2]->get_pos3() * mat;
+      LPoint3d v3 = (*poly)[3]->get_pos3() * mat;
+      pnode->set_vertices(LCAST(float, v0),
+                          LCAST(float, v1),
+                          LCAST(float, v2),
+                          LCAST(float, v3));
     }
   }
 }

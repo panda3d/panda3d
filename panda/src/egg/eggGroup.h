@@ -222,6 +222,9 @@ PUBLISHED:
   INLINE void set_portal_flag(bool flag);
   INLINE bool get_portal_flag() const;
 
+  INLINE void set_occluder_flag(bool flag);
+  INLINE bool get_occluder_flag() const;
+
   INLINE void set_polylight_flag(bool flag);
   INLINE bool get_polylight_flag() const;
 
@@ -361,8 +364,8 @@ private:
     F2_polylight_flag        = 0x00000100,
     F2_indexed_flag          = 0x00000200,
     F2_has_indexed_flag      = 0x00000400,
-
     F2_has_blend_color       = 0x00000800,
+    F2_occluder_flag         = 0x00001000,
   };
 
   int _flags;

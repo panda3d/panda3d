@@ -37,6 +37,7 @@
 #include "nodePath.h"
 #include "shaderAttrib.h"
 #include "colorAttrib.h"
+#include "clipPlaneAttrib.h"
 
 TypeHandle LODNode::_type_handle;
 

@@ -117,7 +117,8 @@ apply_transform_and_state(CullTraverser *trav,
   if (clip_plane_cull) {
     _cull_planes = _cull_planes->apply_state(trav, this, 
                                              DCAST(ClipPlaneAttrib, node_state->get_attrib(ClipPlaneAttrib::get_class_slot())),
-                                             DCAST(ClipPlaneAttrib, off_clip_planes));
+                                             DCAST(ClipPlaneAttrib, off_clip_planes),
+                                             DCAST(OccluderEffect, node_effects->get_effect(OccluderEffect::get_class_type())));
   }
 }
 
@@ -198,12 +199,17 @@ is_in_view_impl() {
     
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
-      return false;
+      if (!fake_view_frustum_cull) {
+        return false;
+      }
+      _cull_planes = CullPlanes::make_empty();
+      CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
+      _state = _state->compose(fake_state);
       
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely in front of all
-      // of the clip planes.  The do_cull() call should therefore have
-      // removed all of the clip planes.
+      // of the clip planes and occluders.  The do_cull() call should
+      // therefore have removed all of the clip planes and occluders.
       nassertr(_cull_planes->is_empty(), true);
     }
   }

@@ -34,6 +34,7 @@ extern ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool clip_plane_cull;
 extern ConfigVariableBool allow_portal_cull;
 extern ConfigVariableBool debug_portal_cull;
+extern ConfigVariableBool show_occluder_volumes;
 extern ConfigVariableBool unambiguous_graph;
 extern ConfigVariableBool detect_graph_cycles;
 extern ConfigVariableBool no_unsupported_copy;

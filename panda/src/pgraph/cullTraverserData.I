@@ -167,7 +167,7 @@ is_in_view(const DrawMask &camera_mask) {
   if (_view_frustum == (GeometricBoundingVolume *)NULL &&
       _cull_planes->is_empty()) {
     // If the transform is valid, but we don't have a frustum or any
-    // clip planes, it's always in.
+    // clip planes or occluders, it's always in.
     return true;
   }
 

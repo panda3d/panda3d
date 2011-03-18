@@ -89,7 +89,7 @@ PUBLISHED:
 
   void draw_bounding_volume(const BoundingVolume *vol, 
                             const TransformState *net_transform,
-                            const TransformState *modelview_transform);
+                            const TransformState *modelview_transform) const;
 
 protected:
   virtual bool is_in_view(CullTraverserData &data);
@@ -103,13 +103,13 @@ public:
 
 private:
   void show_bounds(CullTraverserData &data, bool tight);
-  PT(Geom) make_bounds_viz(const BoundingVolume *vol);
-  PT(Geom) make_tight_bounds_viz(PandaNode *node);
+  static PT(Geom) make_bounds_viz(const BoundingVolume *vol);
+  PT(Geom) make_tight_bounds_viz(PandaNode *node) const;
   static Vertexf compute_point(const BoundingSphere *sphere, 
                                float latitude, float longitude);
-  CPT(RenderState) get_bounds_outer_viz_state();
-  CPT(RenderState) get_bounds_inner_viz_state();
-  CPT(RenderState) get_depth_offset_state();
+  static CPT(RenderState) get_bounds_outer_viz_state();
+  static CPT(RenderState) get_bounds_inner_viz_state();
+  static CPT(RenderState) get_depth_offset_state();
   void start_decal(const CullTraverserData &data);
   CullableObject *r_get_decals(CullTraverserData &data,
                                CullableObject *decals);

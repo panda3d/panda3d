@@ -34,6 +34,7 @@
 #include "geomTristrips.h"
 #include "geomTriangles.h"
 #include "geomLinestrips.h"
+#include "geomLines.h"
 #include "geomVertexWriter.h"
 
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
@@ -224,7 +225,6 @@ traverse(CullTraverserData &data) {
           return;
         }
       }
-
       traverse_below(data);
     }
   }
@@ -313,7 +313,7 @@ end_traverse() {
 void CullTraverser::
 draw_bounding_volume(const BoundingVolume *vol, 
                      const TransformState *net_transform,
-                     const TransformState *modelview_transform) {
+                     const TransformState *modelview_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
   
   if (bounds_viz != (Geom *)NULL) {
@@ -387,7 +387,7 @@ show_bounds(CullTraverserData &data, bool tight) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::make_bounds_viz
-//       Access: Private
+//       Access: Private, Static
 //  Description: Returns an appropriate visualization of the indicated
 //               bounding volume.
 ////////////////////////////////////////////////////////////////////
@@ -426,6 +426,37 @@ make_bounds_viz(const BoundingVolume *vol) {
     
     geom = new Geom(vdata);
     geom->add_primitive(strip);
+
+  } else if (vol->is_of_type(BoundingHexahedron::get_class_type())) {
+    const BoundingHexahedron *fvol = DCAST(BoundingHexahedron, vol);
+
+    PT(GeomVertexData) vdata = new GeomVertexData
+      ("bounds", GeomVertexFormat::get_v3(),
+       Geom::UH_stream);
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+
+    for (int i = 0; i < 8; ++i ) {
+      vertex.add_data3f(fvol->get_point(i));
+    }
+    
+    PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
+    lines->add_vertices(0, 1); lines->close_primitive();
+    lines->add_vertices(1, 2); lines->close_primitive();
+    lines->add_vertices(2, 3); lines->close_primitive();
+    lines->add_vertices(3, 0); lines->close_primitive();
+
+    lines->add_vertices(4, 5); lines->close_primitive();
+    lines->add_vertices(5, 6); lines->close_primitive();
+    lines->add_vertices(6, 7); lines->close_primitive();
+    lines->add_vertices(7, 4); lines->close_primitive();
+
+    lines->add_vertices(0, 4); lines->close_primitive();
+    lines->add_vertices(1, 5); lines->close_primitive();
+    lines->add_vertices(2, 6); lines->close_primitive();
+    lines->add_vertices(3, 7); lines->close_primitive();
+
+    geom = new Geom(vdata);
+    geom->add_primitive(lines);
 
   } else if (vol->is_of_type(FiniteBoundingVolume::get_class_type())) {
     const FiniteBoundingVolume *fvol = DCAST(FiniteBoundingVolume, vol);
@@ -487,7 +518,7 @@ make_bounds_viz(const BoundingVolume *vol) {
 //               node's "tight" bounding volume.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) CullTraverser::
-make_tight_bounds_viz(PandaNode *node) {
+make_tight_bounds_viz(PandaNode *node) const {
   PT(Geom) geom;
 
   NodePath np = NodePath::any_path(node);

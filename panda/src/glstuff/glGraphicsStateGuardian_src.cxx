@@ -61,6 +61,7 @@
 #include "stencilAttrib.h"
 #include "lightAttrib.h"
 #include "scissorAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
 

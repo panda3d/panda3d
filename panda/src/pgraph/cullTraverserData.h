@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "drawMask.h"
 #include "cullTraverser.h"
+#include "pvector.h"
 
 class PandaNode;
 
@@ -87,7 +88,6 @@ public:
 
 private:
   bool is_in_view_impl();
-
   static CPT(RenderState) get_fake_view_frustum_cull_state();
 };
 

@@ -53,6 +53,7 @@ class CollisionNode;
 class CollisionPlane;
 class CollisionPolygon;
 class PortalNode;
+class OccluderNode;
 class PolylightNode;
 class EggRenderState;
 class CharacterMaker;
@@ -156,6 +157,7 @@ private:
                       bool has_overall_color, const Colorf &overall_color);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
+  void set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode);
   PT(EggPolygon) find_first_polygon(EggGroup *egg_group);
 
   bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,

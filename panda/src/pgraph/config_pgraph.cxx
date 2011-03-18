@@ -63,6 +63,8 @@
 #include "polylightEffect.h"
 #include "polylightNode.h"
 #include "portalNode.h"
+#include "occluderEffect.h"
+#include "occluderNode.h"
 #include "portalClipper.h"
 #include "renderAttrib.h"
 #include "renderEffect.h"
@@ -108,8 +110,7 @@ ConfigVariableBool clip_plane_cull
 ("clip-plane-cull", true,
  PRC_DESC("This is normally true; set it false to disable culling of objects "
           "that are completely behind one or more clip planes (primarily "
-          "useful for debugging)."));
-
+          "useful for debugging)  This also disables the use of occluders."));
 
 ConfigVariableBool allow_portal_cull
 ("allow-portal-cull", false,
@@ -123,6 +124,10 @@ ConfigVariableBool debug_portal_cull
           "(You first need to enable portal culling, using the allow-portal-cull"
           "variable.)"));
 
+ConfigVariableBool show_occluder_volumes
+("show-occluder-volumes", false,
+ PRC_DESC("Set this true to enable debug visualization of the volumes used "
+          "to cull objects behind an occluder."));
 
 ConfigVariableBool unambiguous_graph
 ("unambiguous-graph", false,
@@ -454,6 +459,8 @@ init_libpgraph() {
   PolylightNode::init_type();
   PolylightEffect::init_type();
   PortalNode::init_type();
+  OccluderEffect::init_type();
+  OccluderNode::init_type();
   PortalClipper::init_type();
   RenderAttrib::init_type();
   RenderEffect::init_type();
@@ -515,6 +522,8 @@ init_libpgraph() {
   PlaneNode::register_with_read_factory();
   PolylightNode::register_with_read_factory();
   PortalNode::register_with_read_factory();
+  OccluderEffect::register_with_read_factory();
+  OccluderNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();

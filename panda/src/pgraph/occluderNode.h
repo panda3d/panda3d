@@ -1,0 +1,105 @@
+// Filename: occluderNode.h
+// Created by:  jenes (11Mar11)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef OCCLUDERNODE_H
+#define OCCLUDERNODE_H
+
+#include "pandabase.h"
+
+#include "pandaNode.h"
+#include "nodePath.h"
+#include "pvector.h"
+#include "geom.h"
+#include "texture.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : OccluderNode 
+// Description : A node in the scene graph that can hold an 
+//               occluder polygon, which must be a rectangle.  When
+//               the occluder is activated with something like
+//               render.set_occluder(), then objects whose bouding
+//               volume lies entirely behind the occluder will not be
+//               rendered.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
+PUBLISHED:
+  OccluderNode(const string &name);
+
+protected:
+  OccluderNode(const OccluderNode &copy);
+
+public:
+  virtual ~OccluderNode();
+  virtual PandaNode *make_copy() const;
+  virtual bool preserve_name() const;
+  virtual void xform(const LMatrix4f &mat);
+
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual bool is_renderable() const;
+
+  virtual void output(ostream &out) const;
+
+PUBLISHED:
+  INLINE void set_vertices(const LPoint3f &v0, const LPoint3f &v1,
+                           const LPoint3f &v2, const LPoint3f &v3);
+  INLINE int get_num_vertices() const;
+  INLINE const LPoint3f &get_vertex(int n) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+
+protected:
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
+                                       Thread *current_thread) const;
+  PT(Geom) get_occluder_viz(CullTraverser *trav, CullTraverserData &data);
+  CPT(RenderState) get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data);
+  CPT(RenderState) get_frame_viz_state(CullTraverser *trav, CullTraverserData &data);
+
+private:
+  typedef pvector<LPoint3f> Vertices;
+  Vertices _vertices;
+
+  PT(Geom) _occluder_viz, _frame_viz;
+  static PT(Texture) _viz_tex;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    PandaNode::init_type();
+    register_type(_type_handle, "OccluderNode",
+                  PandaNode::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "OccluderNode.I"
+
+#endif
