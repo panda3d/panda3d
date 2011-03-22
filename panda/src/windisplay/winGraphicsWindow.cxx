@@ -2689,9 +2689,13 @@ static HCURSOR get_cursor(const Filename &filename);
 ////////////////////////////////////////////////////////////////////
 const WinGraphicsWindow::WindowClass &WinGraphicsWindow::
 register_window_class(const WindowProperties &props) {
-  pair<WindowClasses::iterator, bool> found = 
-    _window_classes.insert(WindowClass(props));
-  WindowClass &wclass = (*found.first);
+  WindowClass wcreg(props);
+  ostringstream wclass_name;
+  wclass_name << "WinGraphicsWindow" << _window_class_index;
+  wcreg._name = wclass_name.str();
+
+  pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
+  const WindowClass &wclass = (*found.first);
 
   if (!found.second) {
     // We have already created a window class.
@@ -2699,10 +2703,7 @@ register_window_class(const WindowProperties &props) {
   }
 
   // We have not yet created this window class.
-  ostringstream wclass_name;
-  wclass_name << "WinGraphicsWindow" << _window_class_index;
   _window_class_index++;
-  wclass._name = wclass_name.str();
 
   WNDCLASS wc;
 

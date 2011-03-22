@@ -1,24 +1,22 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+/* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
-
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -29,7 +27,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -47,7 +45,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.3"
+#define YYBISON_VERSION "2.4.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -55,17 +53,127 @@
 /* Pure parsers.  */
 #define YYPURE 0
 
+/* Push parsers.  */
+#define YYPUSH 0
+
+/* Pull parsers.  */
+#define YYPULL 1
+
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
-#define yyparse dcyyparse
-#define yylex   dcyylex
-#define yyerror dcyyerror
-#define yylval  dcyylval
-#define yychar  dcyychar
-#define yydebug dcyydebug
-#define yynerrs dcyynerrs
+#define yyparse         dcyyparse
+#define yylex           dcyylex
+#define yyerror         dcyyerror
+#define yylval          dcyylval
+#define yychar          dcyychar
+#define yydebug         dcyydebug
+#define yynerrs         dcyynerrs
+
+
+/* Copy the first part of user declarations.  */
+
+/* Line 189 of yacc.c  */
+#line 6 "dcParser.yxx"
+
+#include "dcLexerDefs.h"
+#include "dcParserDefs.h"
+#include "dcFile.h"
+#include "dcClass.h"
+#include "dcSwitch.h"
+#include "dcAtomicField.h"
+#include "dcMolecularField.h"
+#include "dcClassParameter.h"
+#include "dcSwitchParameter.h"
+#include "dcArrayParameter.h"
+#include "dcSimpleParameter.h"
+#include "dcTypedef.h"
+#include "dcKeyword.h"
+#include "dcPacker.h"
+#include "dcNumericRange.h"
+
+// Because our token type contains objects of type string, which
+// require correct copy construction (and not simply memcpying), we
+// cannot use bison's built-in auto-stack-grow feature.  As an easy
+// solution, we ensure here that we have enough yacc stack to start
+// with, and that it doesn't ever try to grow.
+#define YYINITDEPTH 1000
+#define YYMAXDEPTH 1000
+
+DCFile *dc_file = (DCFile *)NULL;
+static DCClass *current_class = (DCClass *)NULL;
+static DCSwitch *current_switch = (DCSwitch *)NULL;
+static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
+static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
+static DCParameter *current_parameter = (DCParameter *)NULL;
+static DCKeywordList current_keyword_list;
+static DCPacker default_packer;
+static DCPacker *current_packer;
+static DCDoubleRange double_range;
+static DCUnsignedIntRange uint_range;
+static DCField *parameter_description = (DCField *)NULL;
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the parser.
+////////////////////////////////////////////////////////////////////
+
+void
+dc_init_parser(istream &in, const string &filename, DCFile &file) {
+  dc_file = &file;
+  dc_init_lexer(in, filename);
+}
+
+void
+dc_init_parser_parameter_value(istream &in, const string &filename, 
+                               DCPacker &packer) {
+  dc_file = NULL;
+  current_packer = &packer;
+  dc_init_lexer(in, filename);
+  dc_start_parameter_value();
+}
+
+void
+dc_init_parser_parameter_description(istream &in, const string &filename,
+                                     DCFile *file) {
+  dc_file = file;
+  dc_init_lexer(in, filename);
+  parameter_description = NULL;
+  dc_start_parameter_description();
+}
+
+DCField *
+dc_get_parameter_description() {
+  return parameter_description;
+}
+
+void
+dc_cleanup_parser() {
+  dc_file = (DCFile *)NULL;
+}
+
+
+
+/* Line 189 of yacc.c  */
+#line 159 "y.tab.c"
+
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+
+/* Enabling verbose error messages.  */
+#ifdef YYERROR_VERBOSE
+# undef YYERROR_VERBOSE
+# define YYERROR_VERBOSE 1
+#else
+# define YYERROR_VERBOSE 0
+#endif
+
+/* Enabling the token table.  */
+#ifndef YYTOKEN_TABLE
+# define YYTOKEN_TABLE 0
+#endif
 
 
 /* Tokens.  */
@@ -161,118 +269,18 @@
 
 
 
-/* Copy the first part of user declarations.  */
-#line 6 "dcParser.yxx"
-
-#include "dcLexerDefs.h"
-#include "dcParserDefs.h"
-#include "dcFile.h"
-#include "dcClass.h"
-#include "dcSwitch.h"
-#include "dcAtomicField.h"
-#include "dcMolecularField.h"
-#include "dcClassParameter.h"
-#include "dcSwitchParameter.h"
-#include "dcArrayParameter.h"
-#include "dcSimpleParameter.h"
-#include "dcTypedef.h"
-#include "dcKeyword.h"
-#include "dcPacker.h"
-#include "dcNumericRange.h"
-
-// Because our token type contains objects of type string, which
-// require correct copy construction (and not simply memcpying), we
-// cannot use bison's built-in auto-stack-grow feature.  As an easy
-// solution, we ensure here that we have enough yacc stack to start
-// with, and that it doesn't ever try to grow.
-#define YYINITDEPTH 1000
-#define YYMAXDEPTH 1000
-
-DCFile *dc_file = (DCFile *)NULL;
-static DCClass *current_class = (DCClass *)NULL;
-static DCSwitch *current_switch = (DCSwitch *)NULL;
-static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
-static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCParameter *current_parameter = (DCParameter *)NULL;
-static DCKeywordList current_keyword_list;
-static DCPacker default_packer;
-static DCPacker *current_packer;
-static DCDoubleRange double_range;
-static DCUnsignedIntRange uint_range;
-static DCField *parameter_description = (DCField *)NULL;
-
-////////////////////////////////////////////////////////////////////
-// Defining the interface to the parser.
-////////////////////////////////////////////////////////////////////
-
-void
-dc_init_parser(istream &in, const string &filename, DCFile &file) {
-  dc_file = &file;
-  dc_init_lexer(in, filename);
-}
-
-void
-dc_init_parser_parameter_value(istream &in, const string &filename, 
-                               DCPacker &packer) {
-  dc_file = NULL;
-  current_packer = &packer;
-  dc_init_lexer(in, filename);
-  dc_start_parameter_value();
-}
-
-void
-dc_init_parser_parameter_description(istream &in, const string &filename,
-                                     DCFile *file) {
-  dc_file = file;
-  dc_init_lexer(in, filename);
-  parameter_description = NULL;
-  dc_start_parameter_description();
-}
-
-DCField *
-dc_get_parameter_description() {
-  return parameter_description;
-}
-
-void
-dc_cleanup_parser() {
-  dc_file = (DCFile *)NULL;
-}
-
-
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
 #endif
-
 
 
 /* Copy the second part of user declarations.  */
 
 
-/* Line 216 of yacc.c.  */
-#line 276 "y.tab.c"
+/* Line 264 of yacc.c  */
+#line 284 "y.tab.c"
 
 #ifdef short
 # undef short
@@ -347,14 +355,14 @@ typedef short int yytype_int16;
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static int
-YYID (int i)
+YYID (int yyi)
 #else
 static int
-YYID (i)
-    int i;
+YYID (yyi)
+    int yyi;
 #endif
 {
-  return i;
+  return yyi;
 }
 #endif
 
@@ -435,9 +443,9 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss;
-  YYSTYPE yyvs;
-  };
+  yytype_int16 yyss_alloc;
+  YYSTYPE yyvs_alloc;
+};
 
 /* The size of the maximum gap between one aligned stack and the next.  */
 # define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
@@ -471,12 +479,12 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack)					\
+# define YYSTACK_RELOCATE(Stack_alloc, Stack)				\
     do									\
       {									\
 	YYSIZE_T yynewbytes;						\
-	YYCOPY (&yyptr->Stack, Stack, yysize);				\
-	Stack = &yyptr->Stack;						\
+	YYCOPY (&yyptr->Stack_alloc, Stack, yysize);			\
+	Stack = &yyptr->Stack_alloc;					\
 	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
 	yyptr += yynewbytes / sizeof (*yyptr);				\
       }									\
@@ -667,24 +675,24 @@ static const char *const yytname[] =
   "START_DC", "START_PARAMETER_VALUE", "START_PARAMETER_DESCRIPTION",
   "';'", "'/'", "'.'", "'*'", "','", "'{'", "'}'", "':'", "'('", "')'",
   "'='", "'%'", "'-'", "'['", "']'", "$accept", "grammar", "dc",
-  "slash_identifier", "import_identifier", "import", "@1",
+  "slash_identifier", "import_identifier", "import", "$@1",
   "import_symbol_list_or_star", "import_symbol_list", "typedef_decl",
   "keyword_decl", "keyword_decl_list", "dclass_or_struct", "dclass", "@2",
   "dclass_name", "dclass_derivation", "dclass_base_list", "dclass_fields",
   "dclass_field", "struct", "@3", "struct_name", "struct_derivation",
   "struct_base_list", "struct_fields", "struct_field", "atomic_field",
   "@4", "parameter_list", "nonempty_parameter_list", "atomic_element",
-  "named_parameter", "@5", "unnamed_parameter",
-  "named_parameter_with_default", "@6", "unnamed_parameter_with_default",
-  "@7", "parameter", "parameter_with_default", "parameter_or_atomic",
+  "named_parameter", "$@5", "unnamed_parameter",
+  "named_parameter_with_default", "$@6", "unnamed_parameter_with_default",
+  "$@7", "parameter", "parameter_with_default", "parameter_or_atomic",
   "parameter_description", "simple_type_name", "type_name", "double_range",
   "uint_range", "type_definition", "parameter_definition", "char_or_uint",
   "small_unsigned_integer", "small_negative_integer", "signed_integer",
-  "unsigned_integer", "number", "char_or_number", "parameter_value", "@8",
-  "parameter_actual_value", "@9", "@10", "@11", "array", "maybe_comma",
+  "unsigned_integer", "number", "char_or_number", "parameter_value", "$@8",
+  "parameter_actual_value", "$@9", "$@10", "$@11", "array", "maybe_comma",
   "array_def", "type_token", "keyword_list", "no_keyword_list",
-  "molecular_field", "@12", "atomic_name", "molecular_atom_list",
-  "optional_name", "switch", "@13", "switch_fields", "switch_case", "@14",
+  "molecular_field", "$@12", "atomic_name", "molecular_atom_list",
+  "optional_name", "switch", "@13", "switch_fields", "switch_case", "$@14",
   "switch_default", "switch_break", "switch_field", "empty", 0
 };
 #endif
@@ -1001,9 +1009,18 @@ static const yytype_uint8 yystos[] =
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
    to ease the transition to the new meaning of YYERROR, for GCC.
-   Once GCC version 2 has supplanted version 1, this can go.  */
+   Once GCC version 2 has supplanted version 1, this can go.  However,
+   YYFAIL appears to be in use.  Nevertheless, it is formally deprecated
+   in Bison 2.4.2's NEWS entry, where a plan to phase it out is
+   discussed.  */
 
 #define YYFAIL		goto yyerrlab
+#if defined YYFAIL
+  /* This is here to suppress warnings from the GCC cpp's
+     -Wunused-macros.  Normally we don't worry about that warning, but
+     some users do, and we want to make it easy for users to remove
+     YYFAIL uses, which will produce warnings from Bison 2.5.  */
+#endif
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
@@ -1171,17 +1188,20 @@ yy_symbol_print (yyoutput, yytype, yyvaluep)
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_stack_print (yytype_int16 *bottom, yytype_int16 *top)
+yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
 #else
 static void
-yy_stack_print (bottom, top)
-    yytype_int16 *bottom;
-    yytype_int16 *top;
+yy_stack_print (yybottom, yytop)
+    yytype_int16 *yybottom;
+    yytype_int16 *yytop;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
-  for (; bottom <= top; ++bottom)
-    YYFPRINTF (stderr, " %d", *bottom);
+  for (; yybottom <= yytop; yybottom++)
+    {
+      int yybot = *yybottom;
+      YYFPRINTF (stderr, " %d", yybot);
+    }
   YYFPRINTF (stderr, "\n");
 }
 
@@ -1215,11 +1235,11 @@ yy_reduce_print (yyvsp, yyrule)
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
-      fprintf (stderr, "   $%d = ", yyi + 1);
+      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(yyvsp[(yyi + 1) - (yynrhs)])
 		       		       );
-      fprintf (stderr, "\n");
+      YYFPRINTF (stderr, "\n");
     }
 }
 
@@ -1499,10 +1519,8 @@ yydestruct (yymsg, yytype, yyvaluep)
 	break;
     }
 }
-
 
 /* Prevent warnings from -Wmissing-prototypes.  */
-
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
 int yyparse (void *YYPARSE_PARAM);
@@ -1518,11 +1536,10 @@ int yyparse ();
 #endif /* ! YYPARSE_PARAM */
 
 
-
-/* The look-ahead symbol.  */
+/* The lookahead symbol.  */
 int yychar;
 
-/* The semantic value of the look-ahead symbol.  */
+/* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
 
 /* Number of syntax errors so far.  */
@@ -1530,9 +1547,9 @@ int yynerrs;
 
 
 
-/*----------.
-| yyparse.  |
-`----------*/
+/*-------------------------.
+| yyparse or yypush_parse.  |
+`-------------------------*/
 
 #ifdef YYPARSE_PARAM
 #if (defined __STDC__ || defined __C99__FUNC__ \
@@ -1556,14 +1573,39 @@ yyparse ()
 #endif
 #endif
 {
-  
-  int yystate;
+
+
+    int yystate;
+    /* Number of tokens to shift before error messages enabled.  */
+    int yyerrstatus;
+
+    /* The stacks and their tools:
+       `yyss': related to states.
+       `yyvs': related to semantic values.
+
+       Refer to the stacks thru separate pointers, to allow yyoverflow
+       to reallocate them elsewhere.  */
+
+    /* The state stack.  */
+    yytype_int16 yyssa[YYINITDEPTH];
+    yytype_int16 *yyss;
+    yytype_int16 *yyssp;
+
+    /* The semantic value stack.  */
+    YYSTYPE yyvsa[YYINITDEPTH];
+    YYSTYPE *yyvs;
+    YYSTYPE *yyvsp;
+
+    YYSIZE_T yystacksize;
+
   int yyn;
   int yyresult;
-  /* Number of tokens to shift before error messages enabled.  */
-  int yyerrstatus;
-  /* Look-ahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  /* Lookahead token as an internal (translated) token number.  */
+  int yytoken;
+  /* The variables used to return semantic value and location from the
+     action routines.  */
+  YYSTYPE yyval;
+
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
@@ -1571,51 +1613,28 @@ yyparse ()
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
-  /* Three stacks and their tools:
-     `yyss': related to states,
-     `yyvs': related to semantic values,
-     `yyls': related to locations.
-
-     Refer to the stacks thru separate pointers, to allow yyoverflow
-     to reallocate them elsewhere.  */
-
-  /* The state stack.  */
-  yytype_int16 yyssa[YYINITDEPTH];
-  yytype_int16 *yyss = yyssa;
-  yytype_int16 *yyssp;
-
-  /* The semantic value stack.  */
-  YYSTYPE yyvsa[YYINITDEPTH];
-  YYSTYPE *yyvs = yyvsa;
-  YYSTYPE *yyvsp;
-
-
-
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
-
-  YYSIZE_T yystacksize = YYINITDEPTH;
-
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
-
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
+
+  yytoken = 0;
+  yyss = yyssa;
+  yyvs = yyvsa;
+  yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yystate = 0;
   yyerrstatus = 0;
   yynerrs = 0;
-  yychar = YYEMPTY;		/* Cause a token to be read.  */
+  yychar = YYEMPTY; /* Cause a token to be read.  */
 
   /* Initialize stack pointers.
      Waste one element of value and location stack
      so that they stay on the same level as the state stack.
      The wasted elements are never initialized.  */
-
   yyssp = yyss;
   yyvsp = yyvs;
 
@@ -1645,7 +1664,6 @@ yyparse ()
 	YYSTYPE *yyvs1 = yyvs;
 	yytype_int16 *yyss1 = yyss;
 
-
 	/* Each stack pointer address is followed by the size of the
 	   data in use in that stack, in bytes.  This used to be a
 	   conditional around just the two extra args, but that might
@@ -1653,7 +1671,6 @@ yyparse ()
 	yyoverflow (YY_("memory exhausted"),
 		    &yyss1, yysize * sizeof (*yyssp),
 		    &yyvs1, yysize * sizeof (*yyvsp),
-
 		    &yystacksize);
 
 	yyss = yyss1;
@@ -1676,9 +1693,8 @@ yyparse ()
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
 	  goto yyexhaustedlab;
-	YYSTACK_RELOCATE (yyss);
-	YYSTACK_RELOCATE (yyvs);
-
+	YYSTACK_RELOCATE (yyss_alloc, yyss);
+	YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
 	if (yyss1 != yyssa)
 	  YYSTACK_FREE (yyss1);
@@ -1689,7 +1705,6 @@ yyparse ()
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
 		  (unsigned long int) yystacksize));
 
@@ -1699,6 +1714,9 @@ yyparse ()
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
+  if (yystate == YYFINAL)
+    YYACCEPT;
+
   goto yybackup;
 
 /*-----------.
@@ -1707,16 +1725,16 @@ yyparse ()
 yybackup:
 
   /* Do appropriate processing given the current state.  Read a
-     look-ahead token if we need one and don't already have one.  */
+     lookahead token if we need one and don't already have one.  */
 
-  /* First try to decide what to do without reference to look-ahead token.  */
+  /* First try to decide what to do without reference to lookahead token.  */
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a look-ahead token if don't already have one.  */
+  /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -1748,20 +1766,16 @@ yybackup:
       goto yyreduce;
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   /* Count tokens shifted since error; after three, turn off error
      status.  */
   if (yyerrstatus)
     yyerrstatus--;
 
-  /* Shift the look-ahead token.  */
+  /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-  /* Discard the shifted token unless it is eof.  */
-  if (yychar != YYEOF)
-    yychar = YYEMPTY;
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
 
   yystate = yyn;
   *++yyvsp = yylval;
@@ -1801,6 +1815,8 @@ yyreduce:
   switch (yyn)
     {
         case 4:
+
+/* Line 1464 of yacc.c  */
 #line 171 "dcParser.yxx"
     {
   parameter_description = (yyvsp[(2) - (2)].u.field);
@@ -1808,6 +1824,8 @@ yyreduce:
     break;
 
   case 7:
+
+/* Line 1464 of yacc.c  */
 #line 180 "dcParser.yxx"
     {
   if (!dc_file->add_class((yyvsp[(2) - (2)].u.dclass))) {
@@ -1822,6 +1840,8 @@ yyreduce:
     break;
 
   case 8:
+
+/* Line 1464 of yacc.c  */
 #line 191 "dcParser.yxx"
     {
   if (!dc_file->add_switch((yyvsp[(2) - (2)].u.dswitch))) {
@@ -1831,6 +1851,8 @@ yyreduce:
     break;
 
   case 13:
+
+/* Line 1464 of yacc.c  */
 #line 204 "dcParser.yxx"
     {
   (yyval.str) = (yyvsp[(1) - (3)].str) + string("/") + (yyvsp[(3) - (3)].str);
@@ -1838,6 +1860,8 @@ yyreduce:
     break;
 
   case 15:
+
+/* Line 1464 of yacc.c  */
 #line 212 "dcParser.yxx"
     {
   (yyval.str) = (yyvsp[(1) - (3)].str) + string(".") + (yyvsp[(3) - (3)].str);
@@ -1845,6 +1869,8 @@ yyreduce:
     break;
 
   case 16:
+
+/* Line 1464 of yacc.c  */
 #line 219 "dcParser.yxx"
     {
   dc_file->add_import_module((yyvsp[(2) - (2)].str));
@@ -1852,6 +1878,8 @@ yyreduce:
     break;
 
   case 17:
+
+/* Line 1464 of yacc.c  */
 #line 223 "dcParser.yxx"
     {
   dc_file->add_import_module((yyvsp[(2) - (3)].str));
@@ -1859,6 +1887,8 @@ yyreduce:
     break;
 
   case 20:
+
+/* Line 1464 of yacc.c  */
 #line 232 "dcParser.yxx"
     {
   dc_file->add_import_symbol("*");
@@ -1866,6 +1896,8 @@ yyreduce:
     break;
 
   case 21:
+
+/* Line 1464 of yacc.c  */
 #line 239 "dcParser.yxx"
     {
   dc_file->add_import_symbol((yyvsp[(1) - (1)].str));
@@ -1873,6 +1905,8 @@ yyreduce:
     break;
 
   case 22:
+
+/* Line 1464 of yacc.c  */
 #line 243 "dcParser.yxx"
     {
   dc_file->add_import_symbol((yyvsp[(3) - (3)].str));
@@ -1880,6 +1914,8 @@ yyreduce:
     break;
 
   case 23:
+
+/* Line 1464 of yacc.c  */
 #line 250 "dcParser.yxx"
     {
   if ((yyvsp[(2) - (2)].u.parameter) != (DCParameter *)NULL) {
@@ -1898,6 +1934,8 @@ yyreduce:
     break;
 
   case 26:
+
+/* Line 1464 of yacc.c  */
 #line 273 "dcParser.yxx"
     {
   dc_file->add_keyword((yyvsp[(2) - (2)].str));
@@ -1905,6 +1943,8 @@ yyreduce:
     break;
 
   case 27:
+
+/* Line 1464 of yacc.c  */
 #line 277 "dcParser.yxx"
     {
   // This keyword has already been defined.  But since we are now
@@ -1916,6 +1956,8 @@ yyreduce:
     break;
 
   case 30:
+
+/* Line 1464 of yacc.c  */
 #line 293 "dcParser.yxx"
     {
   current_class = new DCClass(dc_file, (yyvsp[(2) - (2)].str), false, false);
@@ -1923,6 +1965,8 @@ yyreduce:
     break;
 
   case 31:
+
+/* Line 1464 of yacc.c  */
 #line 297 "dcParser.yxx"
     {
   (yyval.u.dclass) = current_class;
@@ -1931,6 +1975,8 @@ yyreduce:
     break;
 
   case 32:
+
+/* Line 1464 of yacc.c  */
 #line 305 "dcParser.yxx"
     {
   if (dc_file == (DCFile *)NULL) {
@@ -1954,6 +2000,8 @@ yyreduce:
     break;
 
   case 35:
+
+/* Line 1464 of yacc.c  */
 #line 333 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].u.dclass) != (DCClass *)NULL) {
@@ -1963,6 +2011,8 @@ yyreduce:
     break;
 
   case 36:
+
+/* Line 1464 of yacc.c  */
 #line 339 "dcParser.yxx"
     {
   if (!dc_multiple_inheritance) {
@@ -1977,6 +2027,8 @@ yyreduce:
     break;
 
   case 39:
+
+/* Line 1464 of yacc.c  */
 #line 355 "dcParser.yxx"
     {
   if ((yyvsp[(2) - (3)].u.field) == (DCField *)NULL) {
@@ -1990,6 +2042,8 @@ yyreduce:
     break;
 
   case 40:
+
+/* Line 1464 of yacc.c  */
 #line 368 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (2)].u.field) != (DCField *)NULL) {
@@ -2003,6 +2057,8 @@ yyreduce:
     break;
 
   case 42:
+
+/* Line 1464 of yacc.c  */
 #line 379 "dcParser.yxx"
     {
   yyerror("Unnamed parameters are not allowed on a dclass");
@@ -2014,6 +2070,8 @@ yyreduce:
     break;
 
   case 43:
+
+/* Line 1464 of yacc.c  */
 #line 387 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (2)].u.parameter) != (DCField *)NULL) {
@@ -2024,6 +2082,8 @@ yyreduce:
     break;
 
   case 44:
+
+/* Line 1464 of yacc.c  */
 #line 397 "dcParser.yxx"
     {
   current_class = new DCClass(dc_file, (yyvsp[(2) - (2)].str), true, false);
@@ -2031,6 +2091,8 @@ yyreduce:
     break;
 
   case 45:
+
+/* Line 1464 of yacc.c  */
 #line 401 "dcParser.yxx"
     {
   (yyval.u.dclass) = current_class;
@@ -2039,6 +2101,8 @@ yyreduce:
     break;
 
   case 46:
+
+/* Line 1464 of yacc.c  */
 #line 409 "dcParser.yxx"
     {
   if (dc_file == (DCFile *)NULL) {
@@ -2062,6 +2126,8 @@ yyreduce:
     break;
 
   case 49:
+
+/* Line 1464 of yacc.c  */
 #line 437 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].u.dclass) != (DCClass *)NULL) {
@@ -2071,6 +2137,8 @@ yyreduce:
     break;
 
   case 50:
+
+/* Line 1464 of yacc.c  */
 #line 443 "dcParser.yxx"
     {
   if ((yyvsp[(3) - (3)].u.dclass) != (DCClass *)NULL) {
@@ -2080,6 +2148,8 @@ yyreduce:
     break;
 
   case 53:
+
+/* Line 1464 of yacc.c  */
 #line 454 "dcParser.yxx"
     {
   if ((yyvsp[(2) - (3)].u.field) == (DCField *)NULL) {
@@ -2091,6 +2161,8 @@ yyreduce:
     break;
 
   case 54:
+
+/* Line 1464 of yacc.c  */
 #line 465 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (2)].u.field)->get_name().empty()) {
@@ -2101,6 +2173,8 @@ yyreduce:
     break;
 
   case 56:
+
+/* Line 1464 of yacc.c  */
 #line 473 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (2)].u.parameter);
@@ -2108,6 +2182,8 @@ yyreduce:
     break;
 
   case 57:
+
+/* Line 1464 of yacc.c  */
 #line 477 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (2)].u.parameter);
@@ -2115,6 +2191,8 @@ yyreduce:
     break;
 
   case 58:
+
+/* Line 1464 of yacc.c  */
 #line 484 "dcParser.yxx"
     {
   if (current_class == (DCClass *)NULL) {
@@ -2128,6 +2206,8 @@ yyreduce:
     break;
 
   case 59:
+
+/* Line 1464 of yacc.c  */
 #line 494 "dcParser.yxx"
     {
   (yyval.u.field) = current_atomic;
@@ -2136,6 +2216,8 @@ yyreduce:
     break;
 
   case 64:
+
+/* Line 1464 of yacc.c  */
 #line 512 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].u.parameter) != (DCParameter *)NULL) {
@@ -2145,6 +2227,8 @@ yyreduce:
     break;
 
   case 65:
+
+/* Line 1464 of yacc.c  */
 #line 521 "dcParser.yxx"
     {
   current_parameter = (yyvsp[(1) - (1)].u.parameter);
@@ -2152,6 +2236,8 @@ yyreduce:
     break;
 
   case 66:
+
+/* Line 1464 of yacc.c  */
 #line 525 "dcParser.yxx"
     {
   (yyval.u.parameter) = (yyvsp[(3) - (3)].u.parameter);
@@ -2159,6 +2245,8 @@ yyreduce:
     break;
 
   case 69:
+
+/* Line 1464 of yacc.c  */
 #line 537 "dcParser.yxx"
     {
   current_packer = &default_packer;
@@ -2170,6 +2258,8 @@ yyreduce:
     break;
 
   case 70:
+
+/* Line 1464 of yacc.c  */
 #line 545 "dcParser.yxx"
     {
   bool is_valid = false;
@@ -2191,6 +2281,8 @@ yyreduce:
     break;
 
   case 72:
+
+/* Line 1464 of yacc.c  */
 #line 567 "dcParser.yxx"
     {
   current_packer = &default_packer;
@@ -2202,6 +2294,8 @@ yyreduce:
     break;
 
   case 73:
+
+/* Line 1464 of yacc.c  */
 #line 575 "dcParser.yxx"
     {
   bool is_valid = false;
@@ -2223,6 +2317,8 @@ yyreduce:
     break;
 
   case 78:
+
+/* Line 1464 of yacc.c  */
 #line 606 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (1)].u.parameter);
@@ -2230,6 +2326,8 @@ yyreduce:
     break;
 
   case 79:
+
+/* Line 1464 of yacc.c  */
 #line 610 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (1)].u.field);
@@ -2237,6 +2335,8 @@ yyreduce:
     break;
 
   case 80:
+
+/* Line 1464 of yacc.c  */
 #line 617 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (2)].u.field);
@@ -2244,6 +2344,8 @@ yyreduce:
     break;
 
   case 81:
+
+/* Line 1464 of yacc.c  */
 #line 621 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (2)].u.parameter);
@@ -2251,6 +2353,8 @@ yyreduce:
     break;
 
   case 82:
+
+/* Line 1464 of yacc.c  */
 #line 625 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (2)].u.parameter);
@@ -2258,6 +2362,8 @@ yyreduce:
     break;
 
   case 83:
+
+/* Line 1464 of yacc.c  */
 #line 632 "dcParser.yxx"
     {
   (yyval.u.parameter) = new DCSimpleParameter((yyvsp[(1) - (1)].u.subatomic));
@@ -2265,6 +2371,8 @@ yyreduce:
     break;
 
   case 84:
+
+/* Line 1464 of yacc.c  */
 #line 636 "dcParser.yxx"
     {
   DCSimpleParameter *simple_param = (yyvsp[(1) - (4)].u.parameter)->as_simple_parameter();
@@ -2277,6 +2385,8 @@ yyreduce:
     break;
 
   case 85:
+
+/* Line 1464 of yacc.c  */
 #line 645 "dcParser.yxx"
     {
   DCSimpleParameter *simple_param = (yyvsp[(1) - (3)].u.parameter)->as_simple_parameter();
@@ -2296,6 +2406,8 @@ yyreduce:
     break;
 
   case 86:
+
+/* Line 1464 of yacc.c  */
 #line 661 "dcParser.yxx"
     { 
   DCSimpleParameter *simple_param = (yyvsp[(1) - (3)].u.parameter)->as_simple_parameter();
@@ -2311,6 +2423,8 @@ yyreduce:
     break;
 
   case 88:
+
+/* Line 1464 of yacc.c  */
 #line 677 "dcParser.yxx"
     {
   if (dc_file == (DCFile *)NULL) {
@@ -2346,6 +2460,8 @@ yyreduce:
     break;
 
   case 89:
+
+/* Line 1464 of yacc.c  */
 #line 709 "dcParser.yxx"
     {
   // This is an inline struct definition.
@@ -2365,6 +2481,8 @@ yyreduce:
     break;
 
   case 90:
+
+/* Line 1464 of yacc.c  */
 #line 725 "dcParser.yxx"
     {
   // This is an inline switch definition.
@@ -2384,6 +2502,8 @@ yyreduce:
     break;
 
   case 91:
+
+/* Line 1464 of yacc.c  */
 #line 744 "dcParser.yxx"
     {
   double_range.clear();
@@ -2391,6 +2511,8 @@ yyreduce:
     break;
 
   case 92:
+
+/* Line 1464 of yacc.c  */
 #line 748 "dcParser.yxx"
     {
   double_range.clear();
@@ -2401,6 +2523,8 @@ yyreduce:
     break;
 
   case 93:
+
+/* Line 1464 of yacc.c  */
 #line 755 "dcParser.yxx"
     {
   double_range.clear();
@@ -2411,6 +2535,8 @@ yyreduce:
     break;
 
   case 94:
+
+/* Line 1464 of yacc.c  */
 #line 762 "dcParser.yxx"
     {
   double_range.clear();
@@ -2423,6 +2549,8 @@ yyreduce:
     break;
 
   case 95:
+
+/* Line 1464 of yacc.c  */
 #line 771 "dcParser.yxx"
     {
   if (!double_range.add_range((yyvsp[(3) - (3)].u.real), (yyvsp[(3) - (3)].u.real))) {
@@ -2432,6 +2560,8 @@ yyreduce:
     break;
 
   case 96:
+
+/* Line 1464 of yacc.c  */
 #line 777 "dcParser.yxx"
     {
   if (!double_range.add_range((yyvsp[(3) - (5)].u.real), (yyvsp[(5) - (5)].u.real))) {
@@ -2441,6 +2571,8 @@ yyreduce:
     break;
 
   case 97:
+
+/* Line 1464 of yacc.c  */
 #line 783 "dcParser.yxx"
     {
   if ((yyvsp[(4) - (4)].u.real) >= 0) {
@@ -2452,6 +2584,8 @@ yyreduce:
     break;
 
   case 98:
+
+/* Line 1464 of yacc.c  */
 #line 794 "dcParser.yxx"
     {
   uint_range.clear();
@@ -2459,6 +2593,8 @@ yyreduce:
     break;
 
   case 99:
+
+/* Line 1464 of yacc.c  */
 #line 798 "dcParser.yxx"
     {
   uint_range.clear();
@@ -2469,6 +2605,8 @@ yyreduce:
     break;
 
   case 100:
+
+/* Line 1464 of yacc.c  */
 #line 805 "dcParser.yxx"
     {
   uint_range.clear();
@@ -2479,6 +2617,8 @@ yyreduce:
     break;
 
   case 101:
+
+/* Line 1464 of yacc.c  */
 #line 812 "dcParser.yxx"
     {
   uint_range.clear();
@@ -2489,6 +2629,8 @@ yyreduce:
     break;
 
   case 102:
+
+/* Line 1464 of yacc.c  */
 #line 819 "dcParser.yxx"
     {
   if (!uint_range.add_range((yyvsp[(3) - (3)].u.s_uint), (yyvsp[(3) - (3)].u.s_uint))) {
@@ -2498,6 +2640,8 @@ yyreduce:
     break;
 
   case 103:
+
+/* Line 1464 of yacc.c  */
 #line 825 "dcParser.yxx"
     {
   if (!uint_range.add_range((yyvsp[(3) - (5)].u.s_uint), (yyvsp[(5) - (5)].u.s_uint))) {
@@ -2507,6 +2651,8 @@ yyreduce:
     break;
 
   case 104:
+
+/* Line 1464 of yacc.c  */
 #line 831 "dcParser.yxx"
     {
   if (!uint_range.add_range((yyvsp[(3) - (4)].u.s_uint), (yyvsp[(4) - (4)].u.s_uint))) {
@@ -2516,6 +2662,8 @@ yyreduce:
     break;
 
   case 106:
+
+/* Line 1464 of yacc.c  */
 #line 841 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (4)].u.parameter) == (DCParameter *)NULL) {
@@ -2527,6 +2675,8 @@ yyreduce:
     break;
 
   case 107:
+
+/* Line 1464 of yacc.c  */
 #line 852 "dcParser.yxx"
     {
   current_parameter->set_name((yyvsp[(1) - (1)].str));
@@ -2535,6 +2685,8 @@ yyreduce:
     break;
 
   case 108:
+
+/* Line 1464 of yacc.c  */
 #line 857 "dcParser.yxx"
     {
   DCSimpleParameter *simple_param = (yyvsp[(1) - (3)].u.parameter)->as_simple_parameter();
@@ -2553,6 +2705,8 @@ yyreduce:
     break;
 
   case 109:
+
+/* Line 1464 of yacc.c  */
 #line 872 "dcParser.yxx"
     {
   DCSimpleParameter *simple_param = (yyvsp[(1) - (3)].u.parameter)->as_simple_parameter();
@@ -2571,6 +2725,8 @@ yyreduce:
     break;
 
   case 110:
+
+/* Line 1464 of yacc.c  */
 #line 887 "dcParser.yxx"
     {
   (yyval.u.parameter) = (yyvsp[(1) - (4)].u.parameter)->append_array_specification(uint_range);
@@ -2578,6 +2734,8 @@ yyreduce:
     break;
 
   case 111:
+
+/* Line 1464 of yacc.c  */
 #line 894 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].str).length() != 1) {
@@ -2590,6 +2748,8 @@ yyreduce:
     break;
 
   case 113:
+
+/* Line 1464 of yacc.c  */
 #line 907 "dcParser.yxx"
     {
   (yyval.u.s_uint) = (unsigned int)(yyvsp[(1) - (1)].u.uint64);
@@ -2601,6 +2761,8 @@ yyreduce:
     break;
 
   case 114:
+
+/* Line 1464 of yacc.c  */
 #line 918 "dcParser.yxx"
     {
   (yyval.u.s_uint) = (unsigned int)-(yyvsp[(1) - (1)].u.int64);
@@ -2615,6 +2777,8 @@ yyreduce:
     break;
 
   case 117:
+
+/* Line 1464 of yacc.c  */
 #line 940 "dcParser.yxx"
     {
   (yyval.u.real) = (double)(yyvsp[(1) - (1)].u.uint64);
@@ -2622,6 +2786,8 @@ yyreduce:
     break;
 
   case 118:
+
+/* Line 1464 of yacc.c  */
 #line 944 "dcParser.yxx"
     {
   (yyval.u.real) = (double)(yyvsp[(1) - (1)].u.int64);
@@ -2629,6 +2795,8 @@ yyreduce:
     break;
 
   case 120:
+
+/* Line 1464 of yacc.c  */
 #line 952 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].str).length() != 1) {
@@ -2641,12 +2809,16 @@ yyreduce:
     break;
 
   case 122:
+
+/* Line 1464 of yacc.c  */
 #line 966 "dcParser.yxx"
     {
 }
     break;
 
   case 123:
+
+/* Line 1464 of yacc.c  */
 #line 969 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (2)].str) != current_packer->get_current_field_name()) {
@@ -2659,12 +2831,16 @@ yyreduce:
     break;
 
   case 124:
+
+/* Line 1464 of yacc.c  */
 #line 978 "dcParser.yxx"
     {
 }
     break;
 
   case 125:
+
+/* Line 1464 of yacc.c  */
 #line 984 "dcParser.yxx"
     {
   current_packer->pack_int64((yyvsp[(1) - (1)].u.int64));
@@ -2672,6 +2848,8 @@ yyreduce:
     break;
 
   case 126:
+
+/* Line 1464 of yacc.c  */
 #line 988 "dcParser.yxx"
     {
   current_packer->pack_uint64((yyvsp[(1) - (1)].u.uint64));
@@ -2679,6 +2857,8 @@ yyreduce:
     break;
 
   case 127:
+
+/* Line 1464 of yacc.c  */
 #line 992 "dcParser.yxx"
     {
   current_packer->pack_double((yyvsp[(1) - (1)].u.real));
@@ -2686,6 +2866,8 @@ yyreduce:
     break;
 
   case 128:
+
+/* Line 1464 of yacc.c  */
 #line 996 "dcParser.yxx"
     {
   current_packer->pack_string((yyvsp[(1) - (1)].str));
@@ -2693,6 +2875,8 @@ yyreduce:
     break;
 
   case 129:
+
+/* Line 1464 of yacc.c  */
 #line 1000 "dcParser.yxx"
     {
   current_packer->pack_literal_value((yyvsp[(1) - (1)].str));
@@ -2700,6 +2884,8 @@ yyreduce:
     break;
 
   case 130:
+
+/* Line 1464 of yacc.c  */
 #line 1004 "dcParser.yxx"
     {
   current_packer->push();
@@ -2707,6 +2893,8 @@ yyreduce:
     break;
 
   case 131:
+
+/* Line 1464 of yacc.c  */
 #line 1008 "dcParser.yxx"
     {
   current_packer->pop();
@@ -2714,6 +2902,8 @@ yyreduce:
     break;
 
   case 132:
+
+/* Line 1464 of yacc.c  */
 #line 1012 "dcParser.yxx"
     {
   current_packer->push();
@@ -2721,6 +2911,8 @@ yyreduce:
     break;
 
   case 133:
+
+/* Line 1464 of yacc.c  */
 #line 1016 "dcParser.yxx"
     {
   current_packer->pop();
@@ -2728,6 +2920,8 @@ yyreduce:
     break;
 
   case 134:
+
+/* Line 1464 of yacc.c  */
 #line 1020 "dcParser.yxx"
     {
   current_packer->push();
@@ -2735,6 +2929,8 @@ yyreduce:
     break;
 
   case 135:
+
+/* Line 1464 of yacc.c  */
 #line 1024 "dcParser.yxx"
     {
   current_packer->pop();
@@ -2742,6 +2938,8 @@ yyreduce:
     break;
 
   case 136:
+
+/* Line 1464 of yacc.c  */
 #line 1028 "dcParser.yxx"
     {
   for (unsigned int i = 0; i < (yyvsp[(3) - (3)].u.s_uint); i++) {
@@ -2751,6 +2949,8 @@ yyreduce:
     break;
 
   case 137:
+
+/* Line 1464 of yacc.c  */
 #line 1034 "dcParser.yxx"
     {
   for (unsigned int i = 0; i < (yyvsp[(3) - (3)].u.s_uint); i++) {
@@ -2760,6 +2960,8 @@ yyreduce:
     break;
 
   case 138:
+
+/* Line 1464 of yacc.c  */
 #line 1040 "dcParser.yxx"
     {
   for (unsigned int i = 0; i < (yyvsp[(3) - (3)].u.s_uint); i++) {
@@ -2769,6 +2971,8 @@ yyreduce:
     break;
 
   case 139:
+
+/* Line 1464 of yacc.c  */
 #line 1046 "dcParser.yxx"
     {
   for (unsigned int i = 0; i < (yyvsp[(3) - (3)].u.s_uint); i++) {
@@ -2778,6 +2982,8 @@ yyreduce:
     break;
 
   case 146:
+
+/* Line 1464 of yacc.c  */
 #line 1070 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int8;
@@ -2785,6 +2991,8 @@ yyreduce:
     break;
 
   case 147:
+
+/* Line 1464 of yacc.c  */
 #line 1074 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int16;
@@ -2792,6 +3000,8 @@ yyreduce:
     break;
 
   case 148:
+
+/* Line 1464 of yacc.c  */
 #line 1078 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int32;
@@ -2799,6 +3009,8 @@ yyreduce:
     break;
 
   case 149:
+
+/* Line 1464 of yacc.c  */
 #line 1082 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int64;
@@ -2806,6 +3018,8 @@ yyreduce:
     break;
 
   case 150:
+
+/* Line 1464 of yacc.c  */
 #line 1086 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint8;
@@ -2813,6 +3027,8 @@ yyreduce:
     break;
 
   case 151:
+
+/* Line 1464 of yacc.c  */
 #line 1090 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint16;
@@ -2820,6 +3036,8 @@ yyreduce:
     break;
 
   case 152:
+
+/* Line 1464 of yacc.c  */
 #line 1094 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint32;
@@ -2827,6 +3045,8 @@ yyreduce:
     break;
 
   case 153:
+
+/* Line 1464 of yacc.c  */
 #line 1098 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint64;
@@ -2834,6 +3054,8 @@ yyreduce:
     break;
 
   case 154:
+
+/* Line 1464 of yacc.c  */
 #line 1102 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_float64;
@@ -2841,6 +3063,8 @@ yyreduce:
     break;
 
   case 155:
+
+/* Line 1464 of yacc.c  */
 #line 1106 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_string;
@@ -2848,6 +3072,8 @@ yyreduce:
     break;
 
   case 156:
+
+/* Line 1464 of yacc.c  */
 #line 1110 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_blob;
@@ -2855,6 +3081,8 @@ yyreduce:
     break;
 
   case 157:
+
+/* Line 1464 of yacc.c  */
 #line 1114 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_blob32;
@@ -2862,6 +3090,8 @@ yyreduce:
     break;
 
   case 158:
+
+/* Line 1464 of yacc.c  */
 #line 1118 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int8array;
@@ -2869,6 +3099,8 @@ yyreduce:
     break;
 
   case 159:
+
+/* Line 1464 of yacc.c  */
 #line 1122 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int16array;
@@ -2876,6 +3108,8 @@ yyreduce:
     break;
 
   case 160:
+
+/* Line 1464 of yacc.c  */
 #line 1126 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_int32array;
@@ -2883,6 +3117,8 @@ yyreduce:
     break;
 
   case 161:
+
+/* Line 1464 of yacc.c  */
 #line 1130 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint8array;
@@ -2890,6 +3126,8 @@ yyreduce:
     break;
 
   case 162:
+
+/* Line 1464 of yacc.c  */
 #line 1134 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint16array;
@@ -2897,6 +3135,8 @@ yyreduce:
     break;
 
   case 163:
+
+/* Line 1464 of yacc.c  */
 #line 1138 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint32array;
@@ -2904,6 +3144,8 @@ yyreduce:
     break;
 
   case 164:
+
+/* Line 1464 of yacc.c  */
 #line 1142 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_uint32uint8array;
@@ -2911,6 +3153,8 @@ yyreduce:
     break;
 
   case 165:
+
+/* Line 1464 of yacc.c  */
 #line 1146 "dcParser.yxx"
     {
   (yyval.u.subatomic) = ST_char;
@@ -2918,6 +3162,8 @@ yyreduce:
     break;
 
   case 166:
+
+/* Line 1464 of yacc.c  */
 #line 1153 "dcParser.yxx"
     {
   current_keyword_list.clear_keywords();
@@ -2925,6 +3171,8 @@ yyreduce:
     break;
 
   case 167:
+
+/* Line 1464 of yacc.c  */
 #line 1157 "dcParser.yxx"
     {
   current_keyword_list.add_keyword((yyvsp[(2) - (2)].u.keyword));
@@ -2932,6 +3180,8 @@ yyreduce:
     break;
 
   case 168:
+
+/* Line 1464 of yacc.c  */
 #line 1164 "dcParser.yxx"
     {
   if (current_keyword_list.get_num_keywords() != 0) {
@@ -2941,6 +3191,8 @@ yyreduce:
     break;
 
   case 169:
+
+/* Line 1464 of yacc.c  */
 #line 1173 "dcParser.yxx"
     {
   current_molecular = new DCMolecularField((yyvsp[(1) - (2)].str), current_class);
@@ -2948,6 +3200,8 @@ yyreduce:
     break;
 
   case 170:
+
+/* Line 1464 of yacc.c  */
 #line 1177 "dcParser.yxx"
     {
   (yyval.u.field) = current_molecular;
@@ -2955,6 +3209,8 @@ yyreduce:
     break;
 
   case 171:
+
+/* Line 1464 of yacc.c  */
 #line 1184 "dcParser.yxx"
     {
   DCField *field = current_class->get_field_by_name((yyvsp[(1) - (1)].str));
@@ -2982,6 +3238,8 @@ yyreduce:
     break;
 
   case 172:
+
+/* Line 1464 of yacc.c  */
 #line 1211 "dcParser.yxx"
     {
   if ((yyvsp[(1) - (1)].u.atomic) != (DCAtomicField *)NULL) {
@@ -2991,6 +3249,8 @@ yyreduce:
     break;
 
   case 173:
+
+/* Line 1464 of yacc.c  */
 #line 1217 "dcParser.yxx"
     {
   if ((yyvsp[(3) - (3)].u.atomic) != (DCAtomicField *)NULL) {
@@ -3005,6 +3265,8 @@ yyreduce:
     break;
 
   case 174:
+
+/* Line 1464 of yacc.c  */
 #line 1231 "dcParser.yxx"
     {
   (yyval.str) = "";
@@ -3012,6 +3274,8 @@ yyreduce:
     break;
 
   case 176:
+
+/* Line 1464 of yacc.c  */
 #line 1239 "dcParser.yxx"
     {
   current_switch = new DCSwitch((yyvsp[(2) - (6)].str), (yyvsp[(4) - (6)].u.field));
@@ -3019,6 +3283,8 @@ yyreduce:
     break;
 
   case 177:
+
+/* Line 1464 of yacc.c  */
 #line 1243 "dcParser.yxx"
     {
   (yyval.u.dswitch) = current_switch;
@@ -3027,6 +3293,8 @@ yyreduce:
     break;
 
   case 183:
+
+/* Line 1464 of yacc.c  */
 #line 1257 "dcParser.yxx"
     {
   if (!current_switch->is_field_valid()) {
@@ -3040,6 +3308,8 @@ yyreduce:
     break;
 
   case 184:
+
+/* Line 1464 of yacc.c  */
 #line 1270 "dcParser.yxx"
     {
   current_packer = &default_packer;
@@ -3049,6 +3319,8 @@ yyreduce:
     break;
 
   case 185:
+
+/* Line 1464 of yacc.c  */
 #line 1276 "dcParser.yxx"
     {
   if (!current_packer->end_pack()) {
@@ -3064,6 +3336,8 @@ yyreduce:
     break;
 
   case 186:
+
+/* Line 1464 of yacc.c  */
 #line 1291 "dcParser.yxx"
     {
   if (!current_switch->add_default()) {
@@ -3073,6 +3347,8 @@ yyreduce:
     break;
 
   case 187:
+
+/* Line 1464 of yacc.c  */
 #line 1300 "dcParser.yxx"
     {
   current_switch->add_break();
@@ -3080,6 +3356,8 @@ yyreduce:
     break;
 
   case 188:
+
+/* Line 1464 of yacc.c  */
 #line 1307 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (1)].u.parameter);
@@ -3087,6 +3365,8 @@ yyreduce:
     break;
 
   case 189:
+
+/* Line 1464 of yacc.c  */
 #line 1311 "dcParser.yxx"
     {
   (yyval.u.field) = (yyvsp[(1) - (1)].u.parameter);
@@ -3094,8 +3374,9 @@ yyreduce:
     break;
 
 
-/* Line 1267 of yacc.c.  */
-#line 3099 "y.tab.c"
+
+/* Line 1464 of yacc.c  */
+#line 3380 "y.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -3105,7 +3386,6 @@ yyreduce:
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
-
 
   /* Now `shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -3171,7 +3451,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse look-ahead token after an
+      /* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -3188,7 +3468,7 @@ yyerrlab:
 	}
     }
 
-  /* Else will try to reuse look-ahead token after shifting the error
+  /* Else will try to reuse lookahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -3245,9 +3525,6 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   *++yyvsp = yylval;
 
 
@@ -3272,7 +3549,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#ifndef yyoverflow
+#if !defined(yyoverflow) || YYERROR_VERBOSE
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -3283,7 +3560,7 @@ yyexhaustedlab:
 #endif
 
 yyreturn:
-  if (yychar != YYEOF && yychar != YYEMPTY)
+  if (yychar != YYEMPTY)
      yydestruct ("Cleanup: discarding lookahead",
 		 yytoken, &yylval);
   /* Do not reclaim the symbols of the rule which action triggered

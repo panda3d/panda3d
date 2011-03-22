@@ -2774,7 +2774,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *inp = NULL;
+static istream *input_p = NULL;
 
 // This is the name of the vrml file we're parsing.  We keep it so we
 // can print it out for error messages.
@@ -2801,7 +2801,7 @@ static MFArray *mfarray;
 
 void
 vrml_init_lexer(istream &in, const string &filename) {
-  inp = &in;
+  input_p = &in;
   vrml_filename = filename;
   line_number = 0;
   error_count = 0;
@@ -2847,10 +2847,10 @@ vrmlyywarning(const string &msg) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  nassertv(inp != NULL);
-  if (*inp) {
-    inp->read(buffer, max_size);
-    result = inp->gcount();
+  nassertv(input_p != NULL);
+  if (*input_p) {
+    input_p->read(buffer, max_size);
+    result = input_p->gcount();
     if (result >= 0 && result < max_size) {
       // Truncate at the end of the read.
       buffer[result] = '\0';
@@ -2878,7 +2878,14 @@ input_chars(char *buffer, int &result, int max_size) {
   }
 }
 #undef YY_INPUT
-#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+// Define this macro carefully, since different flex versions call it
+// with a different type for result.
+#define YY_INPUT(buffer, result, max_size) { \
+  int int_result; \
+  input_chars((buffer), int_result, (max_size)); \
+  (result) = int_result; \
+}
 
 int extract_int() {
   return strtol(vrmlyytext, NULL, 0);
@@ -2916,7 +2923,7 @@ void extract_vec(double vec[], int num_elements) {
 /* Legal other characters in an identifier */
 /*idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2e\x5b-\x5d\x7b\x7d])*/
 /* Allow hyphen (0x2d) in identifiers. */
-#line 2920 "lex.yy.c"
+#line 2927 "lex.yy.c"
 
 #define INITIAL 0
 #define NODE 1
@@ -3118,7 +3125,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 210 "vrmlLexer.lxx"
+#line 217 "vrmlLexer.lxx"
 
 
 
@@ -3166,7 +3173,7 @@ YY_DECL
 
     /* This is more complicated than they really need to be because */
     /* I was ambitious and made the whitespace-matching rule aggressive */
-#line 3171 "lex.yy.c"
+#line 3178 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -3252,7 +3259,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 257 "vrmlLexer.lxx"
+#line 264 "vrmlLexer.lxx"
 {
   BEGIN NODE; 
 }
@@ -3262,68 +3269,68 @@ YY_RULE_SETUP
 /* or when parsing the contents of SFNode or MFNode fields. */
 case 2:
 YY_RULE_SETUP
-#line 264 "vrmlLexer.lxx"
+#line 271 "vrmlLexer.lxx"
 { return PROTO; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 265 "vrmlLexer.lxx"
+#line 272 "vrmlLexer.lxx"
 { return EXTERNPROTO; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 266 "vrmlLexer.lxx"
+#line 273 "vrmlLexer.lxx"
 { return DEF; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 267 "vrmlLexer.lxx"
+#line 274 "vrmlLexer.lxx"
 { return USE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 268 "vrmlLexer.lxx"
+#line 275 "vrmlLexer.lxx"
 { return TO; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 269 "vrmlLexer.lxx"
+#line 276 "vrmlLexer.lxx"
 { return IS; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 270 "vrmlLexer.lxx"
+#line 277 "vrmlLexer.lxx"
 { return ROUTE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 271 "vrmlLexer.lxx"
+#line 278 "vrmlLexer.lxx"
 { return SFN_NULL; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 272 "vrmlLexer.lxx"
+#line 279 "vrmlLexer.lxx"
 { return EVENTIN; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 273 "vrmlLexer.lxx"
+#line 280 "vrmlLexer.lxx"
 { return EVENTOUT; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 274 "vrmlLexer.lxx"
+#line 281 "vrmlLexer.lxx"
 { return FIELD; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 275 "vrmlLexer.lxx"
+#line 282 "vrmlLexer.lxx"
 { return EXPOSEDFIELD; }
 	YY_BREAK
 /* Legal identifiers: */
 case 14:
 YY_RULE_SETUP
-#line 278 "vrmlLexer.lxx"
+#line 285 "vrmlLexer.lxx"
 {
   vrmlyylval.string = strdup(vrmlyytext);
   return IDENTIFIER; 
@@ -3335,7 +3342,7 @@ YY_RULE_SETUP
       will keep them sorted out. */
 case 15:
 YY_RULE_SETUP
-#line 286 "vrmlLexer.lxx"
+#line 293 "vrmlLexer.lxx"
 {
   vrmlyylval.string = strdup(vrmlyytext);
   return IDENTIFIER; 
@@ -3344,7 +3351,7 @@ YY_RULE_SETUP
 /* All fields may have an IS declaration: */
 case 16:
 YY_RULE_SETUP
-#line 292 "vrmlLexer.lxx"
+#line 299 "vrmlLexer.lxx"
 {
   BEGIN NODE;
   expectToken = 0;
@@ -3353,7 +3360,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 298 "vrmlLexer.lxx"
+#line 305 "vrmlLexer.lxx"
 {
   BEGIN NODE;
   expectToken = 0;
@@ -3365,7 +3372,7 @@ YY_RULE_SETUP
 /* share the same rules for open and closing brackets: */
 case 18:
 YY_RULE_SETUP
-#line 307 "vrmlLexer.lxx"
+#line 314 "vrmlLexer.lxx"
 {
   if (parsing_mf) vrmlyyerror("Double [");
   parsing_mf = 1;
@@ -3374,7 +3381,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 313 "vrmlLexer.lxx"
+#line 320 "vrmlLexer.lxx"
 {
   if (!parsing_mf) vrmlyyerror("Unmatched ]");
   int fieldType = expectToken;
@@ -3387,7 +3394,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 323 "vrmlLexer.lxx"
+#line 330 "vrmlLexer.lxx"
 {
   BEGIN NODE;
   expectToken = 0;
@@ -3397,7 +3404,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 330 "vrmlLexer.lxx"
+#line 337 "vrmlLexer.lxx"
 { 
   BEGIN NODE; 
   expectToken = 0; 
@@ -3407,7 +3414,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 337 "vrmlLexer.lxx"
+#line 344 "vrmlLexer.lxx"
 {
   BEGIN NODE; 
   expectToken = 0; 
@@ -3417,7 +3424,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 344 "vrmlLexer.lxx"
+#line 351 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   v._sfint32 = extract_int();
@@ -3435,7 +3442,7 @@ YY_RULE_SETUP
 /* All the floating-point types are pretty similar: */
 case 24:
 YY_RULE_SETUP
-#line 359 "vrmlLexer.lxx"
+#line 366 "vrmlLexer.lxx"
 {
   BEGIN NODE; 
   expectToken = 0; 
@@ -3445,7 +3452,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 366 "vrmlLexer.lxx"
+#line 373 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   v._sffloat = extract_float();
@@ -3465,7 +3472,7 @@ YY_RULE_SETUP
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 382 "vrmlLexer.lxx"
+#line 389 "vrmlLexer.lxx"
 { 
   BEGIN NODE;
   expectToken = 0;
@@ -3476,7 +3483,7 @@ YY_RULE_SETUP
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
-#line 389 "vrmlLexer.lxx"
+#line 396 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   extract_vec(v._sfvec, 2);
@@ -3494,7 +3501,7 @@ YY_RULE_SETUP
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 403 "vrmlLexer.lxx"
+#line 410 "vrmlLexer.lxx"
 { 
   BEGIN NODE;
   expectToken = 0;
@@ -3505,7 +3512,7 @@ YY_RULE_SETUP
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 410 "vrmlLexer.lxx"
+#line 417 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   extract_vec(v._sfvec, 3);
@@ -3523,7 +3530,7 @@ YY_RULE_SETUP
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 424 "vrmlLexer.lxx"
+#line 431 "vrmlLexer.lxx"
 { 
   BEGIN NODE;
   expectToken = 0;
@@ -3534,7 +3541,7 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 431 "vrmlLexer.lxx"
+#line 438 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   extract_vec(v._sfvec, 4);
@@ -3552,7 +3559,7 @@ YY_RULE_SETUP
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 445 "vrmlLexer.lxx"
+#line 452 "vrmlLexer.lxx"
 { 
   BEGIN NODE;
   expectToken = 0;
@@ -3563,7 +3570,7 @@ YY_RULE_SETUP
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 452 "vrmlLexer.lxx"
+#line 459 "vrmlLexer.lxx"
 { 
   VrmlFieldValue v;
   extract_vec(v._sfvec, 3);
@@ -3580,7 +3587,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 466 "vrmlLexer.lxx"
+#line 473 "vrmlLexer.lxx"
 {
   BEGIN NODE; 
   expectToken = 0; 
@@ -3591,7 +3598,7 @@ YY_RULE_SETUP
 /* SFString/MFString */
 case 35:
 YY_RULE_SETUP
-#line 474 "vrmlLexer.lxx"
+#line 481 "vrmlLexer.lxx"
 {
   BEGIN IN_SFS;
   quoted_string = ""; 
@@ -3599,7 +3606,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 479 "vrmlLexer.lxx"
+#line 486 "vrmlLexer.lxx"
 {
   BEGIN IN_MFS;
   quoted_string = ""; 
@@ -3608,7 +3615,7 @@ YY_RULE_SETUP
 /* Anything besides open-quote (or whitespace) is an error: */
 case 37:
 YY_RULE_SETUP
-#line 485 "vrmlLexer.lxx"
+#line 492 "vrmlLexer.lxx"
 {
   vrmlyyerror("String missing open-quote");
   BEGIN NODE; 
@@ -3620,7 +3627,7 @@ YY_RULE_SETUP
 /* Expect open-quote, open-bracket, or whitespace: */
 case 38:
 YY_RULE_SETUP
-#line 494 "vrmlLexer.lxx"
+#line 501 "vrmlLexer.lxx"
 {
   vrmlyyerror("String missing open-quote");
   BEGIN NODE;
@@ -3631,7 +3638,7 @@ YY_RULE_SETUP
 /* Backslashed-quotes are OK: */
 case 39:
 YY_RULE_SETUP
-#line 502 "vrmlLexer.lxx"
+#line 509 "vrmlLexer.lxx"
 {
   quoted_string += '"'; 
 }
@@ -3642,7 +3649,7 @@ YY_RULE_SETUP
 /* rule that applies to everything. */
 case 40:
 YY_RULE_SETUP
-#line 510 "vrmlLexer.lxx"
+#line 517 "vrmlLexer.lxx"
 { 
   quoted_string += vrmlyytext; 
 }
@@ -3650,7 +3657,7 @@ YY_RULE_SETUP
 /* Quote ends the string: */
 case 41:
 YY_RULE_SETUP
-#line 515 "vrmlLexer.lxx"
+#line 522 "vrmlLexer.lxx"
 { 
   BEGIN NODE;
   expectToken = 0;
@@ -3660,7 +3667,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 522 "vrmlLexer.lxx"
+#line 529 "vrmlLexer.lxx"
 {
   VrmlFieldValue v;
   v._sfstring = strdup(quoted_string.c_str());
@@ -3681,7 +3688,7 @@ YY_RULE_SETUP
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 539 "vrmlLexer.lxx"
+#line 546 "vrmlLexer.lxx"
 { int w, h;
                           sscanf(vrmlyytext, "%d %d", &w, &h);
                           sfImageIntsExpected = 1+w*h;
@@ -3691,7 +3698,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 545 "vrmlLexer.lxx"
+#line 552 "vrmlLexer.lxx"
 { ++sfImageIntsParsed;
                           if (sfImageIntsParsed == sfImageIntsExpected) {
                             BEGIN NODE; expectToken = 0; return SFIMAGE;
@@ -3701,7 +3708,7 @@ YY_RULE_SETUP
 /* Whitespace and catch-all rules apply to all start states: */
 case 45:
 YY_RULE_SETUP
-#line 552 "vrmlLexer.lxx"
+#line 559 "vrmlLexer.lxx"
 ;
 	YY_BREAK
 /* A newline is also whitespace, but we'll keep track of line number */
@@ -3709,7 +3716,7 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 556 "vrmlLexer.lxx"
+#line 563 "vrmlLexer.lxx"
 {
   // Save a copy of the line so we can print it out for the benefit of
   // the user in case we get an error.
@@ -3726,17 +3733,17 @@ YY_RULE_SETUP
 /* the above: */
 case 47:
 YY_RULE_SETUP
-#line 570 "vrmlLexer.lxx"
+#line 577 "vrmlLexer.lxx"
 { 
   return vrmlyytext[0]; 
 }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 574 "vrmlLexer.lxx"
+#line 581 "vrmlLexer.lxx"
 ECHO;
 	YY_BREAK
-#line 3741 "lex.yy.c"
+#line 3748 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(NODE):
 case YY_STATE_EOF(SFB):
@@ -4755,4 +4762,4 @@ void vrmlyyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 574 "vrmlLexer.lxx"
+#line 581 "vrmlLexer.lxx"

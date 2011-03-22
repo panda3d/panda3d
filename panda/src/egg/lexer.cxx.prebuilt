@@ -984,7 +984,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *inp = NULL;
+static istream *input_p = NULL;
 
 // This is the name of the egg file we're parsing.  We keep it so we
 // can print it out for error messages.
@@ -1000,7 +1000,7 @@ static int initial_token;
 
 void
 egg_init_lexer(istream &in, const string &filename) {
-  inp = &in;
+  input_p = &in;
   egg_filename = filename;
   line_number = 0;
   col_number = 0;
@@ -1102,10 +1102,10 @@ eggyywarning(ostringstream &strm) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  nassertv(inp != NULL);
-  if (*inp) {
-    inp->read(buffer, max_size);
-    result = inp->gcount();
+  nassertv(input_p != NULL);
+  if (*input_p) {
+    input_p->read(buffer, max_size);
+    result = input_p->gcount();
 
     if (line_number == 0) {
       // This is a special case.  If we are reading the very first bit
@@ -1132,7 +1132,14 @@ input_chars(char *buffer, int &result, int max_size) {
   Thread::consider_yield();
 }
 #undef YY_INPUT
-#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+// Define this macro carefully, since different flex versions call it
+// with a different type for result.
+#define YY_INPUT(buffer, result, max_size) { \
+  int int_result; \
+  input_chars((buffer), int_result, (max_size)); \
+  (result) = int_result; \
+}
 
 // read_char reads and returns a single character, incrementing the
 // supplied line and column numbers as appropriate.  A convenience
@@ -1225,7 +1232,7 @@ INLINE void accept() {
   col_number += eggyyleng;
 }
 
-#line 1229 "lex.yy.c"
+#line 1236 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -1406,7 +1413,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 295 "lexer.lxx"
+#line 302 "lexer.lxx"
 
 
 
@@ -1417,7 +1424,7 @@ YY_DECL
   }
 
 
-#line 1422 "lex.yy.c"
+#line 1429 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -1503,7 +1510,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 305 "lexer.lxx"
+#line 312 "lexer.lxx"
 {
   // New line.  Save a copy of the line so we can print it out for the
   // benefit of the user in case we get an error.
@@ -1520,7 +1527,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 319 "lexer.lxx"
+#line 326 "lexer.lxx"
 { 
   // Eat whitespace.
   accept();
@@ -1528,7 +1535,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 324 "lexer.lxx"
+#line 331 "lexer.lxx"
 { 
   // Eat C++-style comments.
   accept();
@@ -1536,7 +1543,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 329 "lexer.lxx"
+#line 336 "lexer.lxx"
 {
   // Eat C-style comments.
   accept();
@@ -1545,7 +1552,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 335 "lexer.lxx"
+#line 342 "lexer.lxx"
 {
   // Send curly braces as themselves.
   accept(); 
@@ -1554,7 +1561,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 343 "lexer.lxx"
+#line 350 "lexer.lxx"
 {
   accept();
   return ANIMPRELOAD;
@@ -1562,7 +1569,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 347 "lexer.lxx"
+#line 354 "lexer.lxx"
 {
   accept();
   return BEZIERCURVE;
@@ -1570,7 +1577,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 351 "lexer.lxx"
+#line 358 "lexer.lxx"
 {
   accept();
   return BFACE;
@@ -1578,7 +1585,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 355 "lexer.lxx"
+#line 362 "lexer.lxx"
 {
   accept();
   return BILLBOARD;
@@ -1586,7 +1593,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 359 "lexer.lxx"
+#line 366 "lexer.lxx"
 {
   accept();
   return BILLBOARDCENTER;
@@ -1594,7 +1601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 363 "lexer.lxx"
+#line 370 "lexer.lxx"
 {
   accept();
   return BINORMAL;
@@ -1602,7 +1609,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 367 "lexer.lxx"
+#line 374 "lexer.lxx"
 {
   accept();
   return BUNDLE;
@@ -1610,7 +1617,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 371 "lexer.lxx"
+#line 378 "lexer.lxx"
 {
   accept();
   return SCALAR;
@@ -1618,7 +1625,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 375 "lexer.lxx"
+#line 382 "lexer.lxx"
 {
   accept();
   return CLOSED;
@@ -1626,7 +1633,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 379 "lexer.lxx"
+#line 386 "lexer.lxx"
 {
   accept();
   return COLLIDE;
@@ -1634,7 +1641,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 383 "lexer.lxx"
+#line 390 "lexer.lxx"
 {
   accept();
   return COMMENT;
@@ -1642,7 +1649,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 387 "lexer.lxx"
+#line 394 "lexer.lxx"
 {
   accept();
   return COMPONENT;
@@ -1650,7 +1657,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 391 "lexer.lxx"
+#line 398 "lexer.lxx"
 {
   accept();
   return COORDSYSTEM;
@@ -1658,7 +1665,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 395 "lexer.lxx"
+#line 402 "lexer.lxx"
 {
   accept();
   return CV;
@@ -1666,7 +1673,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 399 "lexer.lxx"
+#line 406 "lexer.lxx"
 {
   accept();
   return DART;
@@ -1674,7 +1681,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 403 "lexer.lxx"
+#line 410 "lexer.lxx"
 {
   accept();
   return DNORMAL;
@@ -1682,7 +1689,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 407 "lexer.lxx"
+#line 414 "lexer.lxx"
 {
   accept();
   return DRGBA;
@@ -1690,7 +1697,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 411 "lexer.lxx"
+#line 418 "lexer.lxx"
 {
   accept();
   return DUV;
@@ -1698,7 +1705,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 415 "lexer.lxx"
+#line 422 "lexer.lxx"
 {
   accept();
   return DXYZ;
@@ -1706,7 +1713,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 419 "lexer.lxx"
+#line 426 "lexer.lxx"
 {
   accept();
   return DCS;
@@ -1714,7 +1721,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 423 "lexer.lxx"
+#line 430 "lexer.lxx"
 {
   accept();
   return DISTANCE;
@@ -1722,7 +1729,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 427 "lexer.lxx"
+#line 434 "lexer.lxx"
 {
   accept();
   return DTREF;
@@ -1730,7 +1737,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 431 "lexer.lxx"
+#line 438 "lexer.lxx"
 {
   accept();
   return DYNAMICVERTEXPOOL;
@@ -1738,7 +1745,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 435 "lexer.lxx"
+#line 442 "lexer.lxx"
 {
   accept();
   return EXTERNAL_FILE;
@@ -1746,7 +1753,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 439 "lexer.lxx"
+#line 446 "lexer.lxx"
 {
   accept();
   return GROUP;
@@ -1754,7 +1761,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 443 "lexer.lxx"
+#line 450 "lexer.lxx"
 {
   accept();
   return DEFAULTPOSE;
@@ -1762,7 +1769,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 447 "lexer.lxx"
+#line 454 "lexer.lxx"
 {
   accept();
   return JOINT;
@@ -1770,7 +1777,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 451 "lexer.lxx"
+#line 458 "lexer.lxx"
 {
   accept();
   return KNOTS;
@@ -1778,7 +1785,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 455 "lexer.lxx"
+#line 462 "lexer.lxx"
 {
   accept();
   return INCLUDE;
@@ -1786,7 +1793,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 459 "lexer.lxx"
+#line 466 "lexer.lxx"
 {
   accept();
   return INSTANCE;
@@ -1794,7 +1801,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 463 "lexer.lxx"
+#line 470 "lexer.lxx"
 {
   accept();
   return LINE;
@@ -1802,7 +1809,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 467 "lexer.lxx"
+#line 474 "lexer.lxx"
 {
   accept();
   return LOOP;
@@ -1810,7 +1817,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 471 "lexer.lxx"
+#line 478 "lexer.lxx"
 {
   accept();
   return MATERIAL;
@@ -1818,7 +1825,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 475 "lexer.lxx"
+#line 482 "lexer.lxx"
 {
   accept();
   return MATRIX3;
@@ -1826,7 +1833,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 479 "lexer.lxx"
+#line 486 "lexer.lxx"
 {
   accept();
   return MATRIX4;
@@ -1834,7 +1841,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 483 "lexer.lxx"
+#line 490 "lexer.lxx"
 {
   accept();
   return MODEL;
@@ -1842,7 +1849,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 487 "lexer.lxx"
+#line 494 "lexer.lxx"
 {
   accept();
   return MREF;
@@ -1850,7 +1857,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 491 "lexer.lxx"
+#line 498 "lexer.lxx"
 {
   accept();
   return NORMAL;
@@ -1858,7 +1865,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 495 "lexer.lxx"
+#line 502 "lexer.lxx"
 {
   accept();
   return NURBSCURVE;
@@ -1866,7 +1873,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 499 "lexer.lxx"
+#line 506 "lexer.lxx"
 {
   accept();
   return NURBSSURFACE;
@@ -1874,7 +1881,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 503 "lexer.lxx"
+#line 510 "lexer.lxx"
 {
   accept();
   return OBJECTTYPE;
@@ -1882,7 +1889,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 507 "lexer.lxx"
+#line 514 "lexer.lxx"
 {
   accept();
   return ORDER;
@@ -1890,7 +1897,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 511 "lexer.lxx"
+#line 518 "lexer.lxx"
 {
   accept();
   return OUTTANGENT;
@@ -1898,7 +1905,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 515 "lexer.lxx"
+#line 522 "lexer.lxx"
 {
   accept();
   return POINTLIGHT;
@@ -1906,7 +1913,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 519 "lexer.lxx"
+#line 526 "lexer.lxx"
 {
   accept();
   return POLYGON;
@@ -1914,7 +1921,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 523 "lexer.lxx"
+#line 530 "lexer.lxx"
 {
   accept();
   return REF;
@@ -1922,7 +1929,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 527 "lexer.lxx"
+#line 534 "lexer.lxx"
 {
   accept();
   return RGBA;
@@ -1930,7 +1937,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 531 "lexer.lxx"
+#line 538 "lexer.lxx"
 {
   accept();
   return ROTATE;
@@ -1938,7 +1945,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 535 "lexer.lxx"
+#line 542 "lexer.lxx"
 {
   accept();
   return ROTX;
@@ -1946,7 +1953,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 539 "lexer.lxx"
+#line 546 "lexer.lxx"
 {
   accept();
   return ROTY;
@@ -1954,7 +1961,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 543 "lexer.lxx"
+#line 550 "lexer.lxx"
 {
   accept();
   return ROTZ;
@@ -1962,7 +1969,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 547 "lexer.lxx"
+#line 554 "lexer.lxx"
 {
   accept();
   return SANIM;
@@ -1970,7 +1977,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 551 "lexer.lxx"
+#line 558 "lexer.lxx"
 {
   accept();
   return SCALAR;
@@ -1978,7 +1985,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 555 "lexer.lxx"
+#line 562 "lexer.lxx"
 {
   accept();
   return SCALE;
@@ -1986,7 +1993,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 559 "lexer.lxx"
+#line 566 "lexer.lxx"
 {
   accept();
   return SEQUENCE;
@@ -1994,7 +2001,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 563 "lexer.lxx"
+#line 570 "lexer.lxx"
 {
   accept();
   return SHADING;
@@ -2002,7 +2009,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 567 "lexer.lxx"
+#line 574 "lexer.lxx"
 {
   accept();
   return SWITCH;
@@ -2010,7 +2017,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 571 "lexer.lxx"
+#line 578 "lexer.lxx"
 {
   accept();
   return SWITCHCONDITION;
@@ -2018,7 +2025,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 575 "lexer.lxx"
+#line 582 "lexer.lxx"
 {
   accept();
   return TABLE;
@@ -2026,7 +2033,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 579 "lexer.lxx"
+#line 586 "lexer.lxx"
 {
   accept();
   return TABLE_V;
@@ -2034,7 +2041,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 583 "lexer.lxx"
+#line 590 "lexer.lxx"
 {
   accept();
   return TAG;
@@ -2042,7 +2049,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 587 "lexer.lxx"
+#line 594 "lexer.lxx"
 {
   accept();
   return TANGENT;
@@ -2050,7 +2057,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 591 "lexer.lxx"
+#line 598 "lexer.lxx"
 {
   accept();
   return TEXLIST;
@@ -2058,7 +2065,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 595 "lexer.lxx"
+#line 602 "lexer.lxx"
 {
   accept();
   return TEXTURE;
@@ -2066,7 +2073,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 599 "lexer.lxx"
+#line 606 "lexer.lxx"
 {
   accept();
   return TLENGTHS;
@@ -2074,7 +2081,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 603 "lexer.lxx"
+#line 610 "lexer.lxx"
 {
   accept();
   return TRANSFORM;
@@ -2082,7 +2089,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 607 "lexer.lxx"
+#line 614 "lexer.lxx"
 {
   accept();
   return TRANSLATE;
@@ -2090,7 +2097,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 611 "lexer.lxx"
+#line 618 "lexer.lxx"
 {
   accept();
   return TREF;
@@ -2098,7 +2105,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 615 "lexer.lxx"
+#line 622 "lexer.lxx"
 {
   accept();
   return TRIANGLEFAN;
@@ -2106,7 +2113,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 619 "lexer.lxx"
+#line 626 "lexer.lxx"
 {
   accept();
   return TRIANGLESTRIP;
@@ -2114,7 +2121,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 623 "lexer.lxx"
+#line 630 "lexer.lxx"
 {
   accept();
   return TRIM;
@@ -2122,7 +2129,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 627 "lexer.lxx"
+#line 634 "lexer.lxx"
 {
   accept();
   return TXT;
@@ -2130,7 +2137,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 631 "lexer.lxx"
+#line 638 "lexer.lxx"
 {
   accept();
   return UKNOTS;
@@ -2138,7 +2145,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 635 "lexer.lxx"
+#line 642 "lexer.lxx"
 {
   accept();
   return UKNOTS;
@@ -2146,7 +2153,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 639 "lexer.lxx"
+#line 646 "lexer.lxx"
 {
   accept();
   return UV;
@@ -2154,7 +2161,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 643 "lexer.lxx"
+#line 650 "lexer.lxx"
 {
   accept();
   return VKNOTS;
@@ -2162,7 +2169,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 647 "lexer.lxx"
+#line 654 "lexer.lxx"
 {
   accept();
   return VKNOTS;
@@ -2170,7 +2177,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 651 "lexer.lxx"
+#line 658 "lexer.lxx"
 {
   accept();
   return VERTEX;
@@ -2178,7 +2185,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 655 "lexer.lxx"
+#line 662 "lexer.lxx"
 {
   accept();
   return VERTEXANIM;
@@ -2186,7 +2193,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 659 "lexer.lxx"
+#line 666 "lexer.lxx"
 {
   accept();
   return VERTEXPOOL;
@@ -2194,7 +2201,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 663 "lexer.lxx"
+#line 670 "lexer.lxx"
 {
   accept();
   return VERTEXREF;
@@ -2202,7 +2209,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 667 "lexer.lxx"
+#line 674 "lexer.lxx"
 {
   accept();
   return XFMANIM;
@@ -2210,7 +2217,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 671 "lexer.lxx"
+#line 678 "lexer.lxx"
 {
   accept();
   return XFMSANIM;
@@ -2218,7 +2225,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 678 "lexer.lxx"
+#line 685 "lexer.lxx"
 { 
   // An integer or floating-point number.
   accept(); 
@@ -2229,7 +2236,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 686 "lexer.lxx"
+#line 693 "lexer.lxx"
 {
   // A hexadecimal integer number.
   accept(); 
@@ -2240,7 +2247,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 694 "lexer.lxx"
+#line 701 "lexer.lxx"
 {
   // A binary integer number.
   accept(); 
@@ -2251,7 +2258,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 702 "lexer.lxx"
+#line 709 "lexer.lxx"
 {
   // not-a-number.  These sometimes show up in egg files accidentally.
   accept(); 
@@ -2263,7 +2270,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 711 "lexer.lxx"
+#line 718 "lexer.lxx"
 { 
   // infinity.  As above.
   accept(); 
@@ -2274,7 +2281,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 719 "lexer.lxx"
+#line 726 "lexer.lxx"
 {
   // minus infinity.  As above.
   accept(); 
@@ -2285,7 +2292,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 727 "lexer.lxx"
+#line 734 "lexer.lxx"
 { 
   // infinity, on Win32.  As above.
   accept(); 
@@ -2296,7 +2303,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 735 "lexer.lxx"
+#line 742 "lexer.lxx"
 {
   // minus infinity, on Win32.  As above.
   accept(); 
@@ -2307,7 +2314,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 744 "lexer.lxx"
+#line 751 "lexer.lxx"
 {
   // Quoted string.
   accept();
@@ -2317,7 +2324,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 751 "lexer.lxx"
+#line 758 "lexer.lxx"
 { 
   // Unquoted string.
   accept();
@@ -2327,10 +2334,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 757 "lexer.lxx"
+#line 764 "lexer.lxx"
 ECHO;
 	YY_BREAK
-#line 2335 "lex.yy.c"
+#line 2342 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -3328,4 +3335,4 @@ void eggyyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 757 "lexer.lxx"
+#line 764 "lexer.lxx"

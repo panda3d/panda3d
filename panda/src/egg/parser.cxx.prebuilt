@@ -1,24 +1,22 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+/* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
-
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -29,7 +27,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -47,7 +45,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.3"
+#define YYBISON_VERSION "2.4.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -55,17 +53,200 @@
 /* Pure parsers.  */
 #define YYPURE 0
 
+/* Push parsers.  */
+#define YYPUSH 0
+
+/* Pull parsers.  */
+#define YYPULL 1
+
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
-#define yyparse eggyyparse
-#define yylex   eggyylex
-#define yyerror eggyyerror
-#define yylval  eggyylval
-#define yychar  eggyychar
-#define yydebug eggyydebug
-#define yynerrs eggyynerrs
+#define yyparse         eggyyparse
+#define yylex           eggyylex
+#define yyerror         eggyyerror
+#define yylval          eggyylval
+#define yychar          eggyychar
+#define yydebug         eggyydebug
+#define yynerrs         eggyynerrs
+
+
+/* Copy the first part of user declarations.  */
+
+/* Line 189 of yacc.c  */
+#line 6 "parser.yxx"
+
+
+#include "pandabase.h"
+#include "config_egg.h"
+#include "parserDefs.h"
+#include "lexerDefs.h"
+#include "eggObject.h"
+#include "eggGroup.h"
+#include "eggVertex.h"
+#include "eggVertexPool.h"
+#include "eggVertexUV.h"
+#include "eggPolygon.h"
+#include "eggCompositePrimitive.h"
+#include "eggTriangleFan.h"
+#include "eggTriangleStrip.h"
+#include "eggPoint.h"
+#include "eggLine.h"
+#include "eggNurbsSurface.h"
+#include "eggNurbsCurve.h"
+#include "eggTable.h"
+#include "eggSAnimData.h"
+#include "eggXfmSAnim.h"
+#include "eggXfmAnimData.h"
+#include "eggTexture.h"
+#include "eggMaterial.h"
+#include "eggComment.h"
+#include "eggCoordinateSystem.h"
+#include "eggExternalReference.h"
+#include "eggData.h"
+#include "eggAnimPreload.h"
+#include "eggTransform.h"
+#include "pt_EggTexture.h"
+#include "pt_EggMaterial.h"
+
+#include "string_utils.h"
+#include "filename.h"
+#include "luse.h"
+#include "lmatrix.h"
+#include "coordinateSystem.h"
+#include "pvector.h"
+#include "dcast.h"
+#include "thread.h"
+
+// Because our token type contains objects of type string, which
+// require correct copy construction (and not simply memcpying), we
+// cannot use bison's built-in auto-stack-grow feature.  As an easy
+// solution, we ensure here that we have enough yacc stack to start
+// with, and that it doesn't ever try to grow.
+#define YYINITDEPTH 1000
+#define YYMAXDEPTH 1000
+
+// We need a stack of EggObject pointers.  Each time we encounter a
+// nested EggObject of some kind, we'll allocate a new one of these
+// and push it onto the stack.  At any given time, the top of the
+// stack is the EggObject we are currently scanning.
+
+typedef pvector< PT(EggObject) > EggStack;
+static EggStack egg_stack;
+
+// This is used just when parsing a <Transform> or <DefaultPose> entry.
+static EggTransform *egg_top_transform;
+
+// There's one "top-level" egg node, which is where we should parent
+// things (e.g. implicit textures) encountered in the egg file that
+// don't have an explicit place in the tree.  If this is NULL, such
+// things won't be parented anywhere.
+static EggGroupNode *egg_top_node;
+
+// We need a table mapping vertex pool names to vertex pools.
+typedef pmap<string,  PT(EggVertexPool) > VertexPools;
+static VertexPools vertex_pools;
+
+// And another one mapping texture names to textures.
+typedef pmap<string,  PT_EggTexture > Textures;
+static Textures textures;
+
+// And again for material names to materials.
+typedef pmap<string,  PT_EggMaterial > Materials;
+static Materials materials;
+
+// Group names to groups.
+typedef pmap<string,  PT(EggGroup) > Groups;
+static Groups groups;
+
+// We need to be able to save the index number requested for a vertex
+// temporarily.
+static int vertex_index;
+
+// We need to hold a matrix for a little bit while parsing the
+// <Transform> entries.
+static LMatrix3d matrix_2d;
+
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the parser.
+////////////////////////////////////////////////////////////////////
+
+void
+egg_init_parser(istream &in, const string &filename,
+                EggObject *tos, EggGroupNode *top_node) {
+  egg_init_lexer(in, filename);
+
+  egg_stack.clear();
+  vertex_pools.clear();
+  textures.clear();
+  materials.clear();
+  groups.clear();
+
+  egg_stack.push_back(tos);
+  egg_top_node = top_node;
+}
+
+void
+egg_cleanup_parser() {
+  // Check for undefined vertex pools.
+  VertexPools::const_iterator vpi;
+  for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
+    EggVertexPool *pool = (*vpi).second;
+    if (pool->has_forward_vertices()) {
+      if (!pool->has_defined_vertices()) {
+        eggyyerror("Undefined vertex pool " + pool->get_name());
+      } else {
+        eggyyerror("Undefined vertices in pool " + pool->get_name());
+        
+        egg_cat.error(false)
+          << "Undefined vertex index numbers:";
+        EggVertexPool::const_iterator vi;
+        for (vi = pool->begin(); vi != pool->end(); ++vi) {
+          EggVertex *vertex = (*vi);
+          if (vertex->is_forward_reference()) {
+            egg_cat.error(false)
+              << " " << vertex->get_index();
+          }
+        }
+        egg_cat.error(false) 
+          << "\n";
+      }
+    }
+  }
+
+  // Clean these out after we're done, so we don't keep big memory
+  // structures around needlessly.
+  egg_stack.clear();
+  vertex_pools.clear();
+  textures.clear();
+  materials.clear();
+  groups.clear();
+}
+
+
+
+/* Line 189 of yacc.c  */
+#line 232 "y.tab.c"
+
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+
+/* Enabling verbose error messages.  */
+#ifdef YYERROR_VERBOSE
+# undef YYERROR_VERBOSE
+# define YYERROR_VERBOSE 1
+#else
+# define YYERROR_VERBOSE 0
+#endif
+
+/* Enabling the token table.  */
+#ifndef YYTOKEN_TABLE
+# define YYTOKEN_TABLE 0
+#endif
 
 
 /* Tokens.  */
@@ -255,191 +436,18 @@
 
 
 
-/* Copy the first part of user declarations.  */
-#line 6 "parser.yxx"
-
-
-#include "pandabase.h"
-#include "config_egg.h"
-#include "parserDefs.h"
-#include "lexerDefs.h"
-#include "eggObject.h"
-#include "eggGroup.h"
-#include "eggVertex.h"
-#include "eggVertexPool.h"
-#include "eggVertexUV.h"
-#include "eggPolygon.h"
-#include "eggCompositePrimitive.h"
-#include "eggTriangleFan.h"
-#include "eggTriangleStrip.h"
-#include "eggPoint.h"
-#include "eggLine.h"
-#include "eggNurbsSurface.h"
-#include "eggNurbsCurve.h"
-#include "eggTable.h"
-#include "eggSAnimData.h"
-#include "eggXfmSAnim.h"
-#include "eggXfmAnimData.h"
-#include "eggTexture.h"
-#include "eggMaterial.h"
-#include "eggComment.h"
-#include "eggCoordinateSystem.h"
-#include "eggExternalReference.h"
-#include "eggData.h"
-#include "eggAnimPreload.h"
-#include "eggTransform.h"
-#include "pt_EggTexture.h"
-#include "pt_EggMaterial.h"
-
-#include "string_utils.h"
-#include "filename.h"
-#include "luse.h"
-#include "lmatrix.h"
-#include "coordinateSystem.h"
-#include "pvector.h"
-#include "dcast.h"
-#include "thread.h"
-
-// Because our token type contains objects of type string, which
-// require correct copy construction (and not simply memcpying), we
-// cannot use bison's built-in auto-stack-grow feature.  As an easy
-// solution, we ensure here that we have enough yacc stack to start
-// with, and that it doesn't ever try to grow.
-#define YYINITDEPTH 1000
-#define YYMAXDEPTH 1000
-
-// We need a stack of EggObject pointers.  Each time we encounter a
-// nested EggObject of some kind, we'll allocate a new one of these
-// and push it onto the stack.  At any given time, the top of the
-// stack is the EggObject we are currently scanning.
-
-typedef pvector< PT(EggObject) > EggStack;
-static EggStack egg_stack;
-
-// This is used just when parsing a <Transform> or <DefaultPose> entry.
-static EggTransform *egg_top_transform;
-
-// There's one "top-level" egg node, which is where we should parent
-// things (e.g. implicit textures) encountered in the egg file that
-// don't have an explicit place in the tree.  If this is NULL, such
-// things won't be parented anywhere.
-static EggGroupNode *egg_top_node;
-
-// We need a table mapping vertex pool names to vertex pools.
-typedef pmap<string,  PT(EggVertexPool) > VertexPools;
-static VertexPools vertex_pools;
-
-// And another one mapping texture names to textures.
-typedef pmap<string,  PT_EggTexture > Textures;
-static Textures textures;
-
-// And again for material names to materials.
-typedef pmap<string,  PT_EggMaterial > Materials;
-static Materials materials;
-
-// Group names to groups.
-typedef pmap<string,  PT(EggGroup) > Groups;
-static Groups groups;
-
-// We need to be able to save the index number requested for a vertex
-// temporarily.
-static int vertex_index;
-
-// We need to hold a matrix for a little bit while parsing the
-// <Transform> entries.
-static LMatrix3d matrix_2d;
-
-
-////////////////////////////////////////////////////////////////////
-// Defining the interface to the parser.
-////////////////////////////////////////////////////////////////////
-
-void
-egg_init_parser(istream &in, const string &filename,
-                EggObject *tos, EggGroupNode *top_node) {
-  egg_init_lexer(in, filename);
-
-  egg_stack.clear();
-  vertex_pools.clear();
-  textures.clear();
-  materials.clear();
-  groups.clear();
-
-  egg_stack.push_back(tos);
-  egg_top_node = top_node;
-}
-
-void
-egg_cleanup_parser() {
-  // Check for undefined vertex pools.
-  VertexPools::const_iterator vpi;
-  for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
-    EggVertexPool *pool = (*vpi).second;
-    if (pool->has_forward_vertices()) {
-      if (!pool->has_defined_vertices()) {
-        eggyyerror("Undefined vertex pool " + pool->get_name());
-      } else {
-        eggyyerror("Undefined vertices in pool " + pool->get_name());
-        
-        egg_cat.error(false)
-          << "Undefined vertex index numbers:";
-        EggVertexPool::const_iterator vi;
-        for (vi = pool->begin(); vi != pool->end(); ++vi) {
-          EggVertex *vertex = (*vi);
-          if (vertex->is_forward_reference()) {
-            egg_cat.error(false)
-              << " " << vertex->get_index();
-          }
-        }
-        egg_cat.error(false) 
-          << "\n";
-      }
-    }
-  }
-
-  // Clean these out after we're done, so we don't keep big memory
-  // structures around needlessly.
-  egg_stack.clear();
-  vertex_pools.clear();
-  textures.clear();
-  materials.clear();
-  groups.clear();
-}
-
-
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
 #endif
-
 
 
 /* Copy the second part of user declarations.  */
 
 
-/* Line 216 of yacc.c.  */
-#line 443 "y.tab.c"
+/* Line 264 of yacc.c  */
+#line 451 "y.tab.c"
 
 #ifdef short
 # undef short
@@ -514,14 +522,14 @@ typedef short int yytype_int16;
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static int
-YYID (int i)
+YYID (int yyi)
 #else
 static int
-YYID (i)
-    int i;
+YYID (yyi)
+    int yyi;
 #endif
 {
-  return i;
+  return yyi;
 }
 #endif
 
@@ -602,9 +610,9 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss;
-  YYSTYPE yyvs;
-  };
+  yytype_int16 yyss_alloc;
+  YYSTYPE yyvs_alloc;
+};
 
 /* The size of the maximum gap between one aligned stack and the next.  */
 # define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
@@ -638,12 +646,12 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack)					\
+# define YYSTACK_RELOCATE(Stack_alloc, Stack)				\
     do									\
       {									\
 	YYSIZE_T yynewbytes;						\
-	YYCOPY (&yyptr->Stack, Stack, yysize);				\
-	Stack = &yyptr->Stack;						\
+	YYCOPY (&yyptr->Stack_alloc, Stack, yysize);			\
+	Stack = &yyptr->Stack_alloc;					\
 	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
 	yyptr += yynewbytes / sizeof (*yyptr);				\
       }									\
@@ -875,31 +883,31 @@ static const yytype_uint16 yyrline[] =
        0,   231,   231,   232,   233,   234,   245,   246,   262,   263,
      264,   265,   266,   267,   268,   269,   270,   271,   272,   273,
      274,   275,   276,   277,   278,   279,   290,   313,   328,   327,
-     355,   356,   688,   700,   699,   726,   727,   822,   829,   850,
-     849,   889,   890,   902,   901,   913,   912,   958,   962,   966,
-     970,   975,   974,   989,   990,   991,   999,  1018,  1022,  1026,
-    1034,  1042,  1050,  1058,  1066,  1084,  1088,  1096,  1114,  1118,
-    1126,  1145,  1144,  1170,  1169,  1191,  1190,  1215,  1216,  1346,
-    1358,  1363,  1370,  1376,  1389,  1396,  1409,  1415,  1421,  1427,
-    1432,  1438,  1439,  1440,  1441,  1442,  1451,  1465,  1495,  1496,
-    1519,  1518,  1535,  1534,  1555,  1556,  1557,  1558,  1559,  1560,
-    1561,  1562,  1563,  1564,  1565,  1566,  1567,  1571,  1578,  1585,
-    1592,  1599,  1606,  1613,  1620,  1627,  1634,  1641,  1645,  1646,
-    1658,  1662,  1663,  1685,  1718,  1722,  1747,  1759,  1764,  1782,
-    1781,  1801,  1800,  1820,  1819,  1839,  1838,  1858,  1857,  1877,
-    1876,  1896,  1895,  1915,  1916,  1917,  1928,  1930,  1929,  1950,
-    1951,  1952,  1953,  1954,  1955,  1956,  1957,  2030,  2031,  2032,
-    2033,  2034,  2035,  2036,  2037,  2038,  2039,  2040,  2041,  2047,
-    2048,  2112,  2113,  2114,  2115,  2116,  2117,  2118,  2119,  2120,
-    2121,  2122,  2191,  2208,  2248,  2265,  2269,  2277,  2295,  2299,
-    2307,  2325,  2341,  2372,  2390,  2410,  2430,  2435,  2446,  2452,
-    2471,  2487,  2509,  2508,  2532,  2531,  2552,  2553,  2557,  2561,
-    2565,  2569,  2585,  2584,  2605,  2606,  2618,  2633,  2632,  2653,
-    2654,  2671,  2686,  2685,  2706,  2707,  2722,  2738,  2737,  2758,
-    2759,  2783,  2787,  2801,  2805,  2819,  2840,  2861,  2886,  2907,
-    2912,  2924,  2936,  2941,  2952,  2956,  2970,  2974,  2978,  2991,
-    2995,  3011,  3015,  3029,  3030,  3045,  3051,  3057,  3074,  3082,
-    3088
+     355,   356,   691,   703,   702,   729,   730,   825,   832,   853,
+     852,   892,   893,   905,   904,   916,   915,   961,   965,   969,
+     973,   978,   977,   992,   993,   994,  1002,  1021,  1025,  1029,
+    1037,  1045,  1053,  1061,  1069,  1087,  1091,  1099,  1117,  1121,
+    1129,  1148,  1147,  1173,  1172,  1194,  1193,  1218,  1219,  1364,
+    1376,  1381,  1388,  1394,  1407,  1414,  1427,  1433,  1439,  1445,
+    1450,  1456,  1457,  1458,  1459,  1460,  1469,  1483,  1513,  1514,
+    1537,  1536,  1553,  1552,  1573,  1574,  1575,  1576,  1577,  1578,
+    1579,  1580,  1581,  1582,  1583,  1584,  1585,  1589,  1596,  1603,
+    1610,  1617,  1624,  1631,  1638,  1645,  1652,  1659,  1663,  1664,
+    1676,  1680,  1681,  1703,  1736,  1740,  1765,  1777,  1782,  1800,
+    1799,  1819,  1818,  1838,  1837,  1857,  1856,  1876,  1875,  1895,
+    1894,  1914,  1913,  1933,  1934,  1935,  1946,  1948,  1947,  1968,
+    1969,  1970,  1971,  1972,  1973,  1974,  1975,  2050,  2051,  2052,
+    2053,  2054,  2055,  2056,  2057,  2058,  2059,  2060,  2061,  2067,
+    2068,  2134,  2135,  2136,  2137,  2138,  2139,  2140,  2141,  2142,
+    2143,  2144,  2215,  2232,  2272,  2289,  2293,  2301,  2319,  2323,
+    2331,  2349,  2365,  2396,  2414,  2434,  2454,  2459,  2470,  2476,
+    2495,  2511,  2533,  2532,  2556,  2555,  2576,  2577,  2581,  2585,
+    2589,  2593,  2609,  2608,  2629,  2630,  2642,  2657,  2656,  2677,
+    2678,  2695,  2710,  2709,  2730,  2731,  2746,  2762,  2761,  2782,
+    2783,  2807,  2811,  2825,  2829,  2843,  2864,  2885,  2910,  2931,
+    2936,  2948,  2960,  2965,  2976,  2980,  2994,  2998,  3002,  3015,
+    3019,  3035,  3039,  3053,  3054,  3069,  3075,  3081,  3098,  3106,
+    3112
 };
 #endif
 
@@ -924,29 +932,29 @@ static const char *const yytname[] =
   "VERTEXANIM", "VERTEXPOOL", "VERTEXREF", "XFMANIM", "XFMSANIM",
   "START_EGG", "START_GROUP_BODY", "START_TEXTURE_BODY",
   "START_PRIMITIVE_BODY", "'{'", "'}'", "$accept", "grammar", "egg",
-  "node", "coordsystem", "comment", "texture", "@1", "texture_body",
-  "material", "@2", "material_body", "external_reference", "vertex_pool",
-  "@3", "vertex_pool_body", "vertex", "@4", "@5", "vertex_body", "@6",
+  "node", "coordsystem", "comment", "texture", "$@1", "texture_body",
+  "material", "$@2", "material_body", "external_reference", "vertex_pool",
+  "$@3", "vertex_pool_body", "vertex", "$@4", "$@5", "vertex_body", "$@6",
   "vertex_uv_body", "vertex_normal_body", "vertex_color_body", "group",
-  "@7", "joint", "@8", "instance", "@9", "group_body", "cs_type",
-  "collide_flags", "transform", "@10", "default_pose", "@11",
+  "$@7", "joint", "$@8", "instance", "$@9", "group_body", "cs_type",
+  "collide_flags", "transform", "$@10", "default_pose", "$@11",
   "transform_body", "translate2d", "translate3d", "rotate2d", "rotx",
   "roty", "rotz", "rotate3d", "scale2d", "scale3d", "uniform_scale",
   "matrix3", "matrix3_body", "matrix4", "matrix4_body", "group_vertex_ref",
   "group_vertex_membership", "switchcondition", "switchcondition_body",
-  "polygon", "@12", "trianglefan", "@13", "trianglestrip", "@14",
-  "point_light", "@15", "line", "@16", "nurbs_surface", "@17",
-  "nurbs_curve", "@18", "primitive_component_body", "primitive_body",
-  "@19", "nurbs_surface_body", "nurbs_curve_body", "primitive_tref_body",
+  "polygon", "$@12", "trianglefan", "$@13", "trianglestrip", "$@14",
+  "point_light", "$@15", "line", "$@16", "nurbs_surface", "$@17",
+  "nurbs_curve", "$@18", "primitive_component_body", "primitive_body",
+  "$@19", "nurbs_surface_body", "nurbs_curve_body", "primitive_tref_body",
   "primitive_texture_body", "primitive_material_body",
   "primitive_normal_body", "primitive_color_body", "primitive_bface_body",
   "primitive_vertex_ref", "nurbs_surface_order_body",
   "nurbs_surface_uknots_body", "nurbs_surface_vknots_body",
   "nurbs_surface_trim_body", "nurbs_surface_trim_loop_body",
-  "nurbs_curve_order_body", "nurbs_curve_knots_body", "table", "@20",
-  "bundle", "@21", "table_body", "sanim", "@22", "sanim_body", "xfmanim",
-  "@23", "xfmanim_body", "xfm_s_anim", "@24", "xfm_s_anim_body",
-  "anim_preload", "@25", "anim_preload_body", "integer_list", "real_list",
+  "nurbs_curve_order_body", "nurbs_curve_knots_body", "table", "$@20",
+  "bundle", "$@21", "table_body", "sanim", "$@22", "sanim_body", "xfmanim",
+  "$@23", "xfmanim_body", "xfm_s_anim", "$@24", "xfm_s_anim_body",
+  "anim_preload", "$@25", "anim_preload_body", "integer_list", "real_list",
   "texture_name", "material_name", "vertex_pool_name", "group_name",
   "required_name", "optional_name", "required_string", "optional_string",
   "string", "repeated_string", "repeated_string_body", "real",
@@ -1616,9 +1624,18 @@ static const yytype_uint8 yystos[] =
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
    to ease the transition to the new meaning of YYERROR, for GCC.
-   Once GCC version 2 has supplanted version 1, this can go.  */
+   Once GCC version 2 has supplanted version 1, this can go.  However,
+   YYFAIL appears to be in use.  Nevertheless, it is formally deprecated
+   in Bison 2.4.2's NEWS entry, where a plan to phase it out is
+   discussed.  */
 
 #define YYFAIL		goto yyerrlab
+#if defined YYFAIL
+  /* This is here to suppress warnings from the GCC cpp's
+     -Wunused-macros.  Normally we don't worry about that warning, but
+     some users do, and we want to make it easy for users to remove
+     YYFAIL uses, which will produce warnings from Bison 2.5.  */
+#endif
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
@@ -1786,17 +1803,20 @@ yy_symbol_print (yyoutput, yytype, yyvaluep)
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_stack_print (yytype_int16 *bottom, yytype_int16 *top)
+yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
 #else
 static void
-yy_stack_print (bottom, top)
-    yytype_int16 *bottom;
-    yytype_int16 *top;
+yy_stack_print (yybottom, yytop)
+    yytype_int16 *yybottom;
+    yytype_int16 *yytop;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
-  for (; bottom <= top; ++bottom)
-    YYFPRINTF (stderr, " %d", *bottom);
+  for (; yybottom <= yytop; yybottom++)
+    {
+      int yybot = *yybottom;
+      YYFPRINTF (stderr, " %d", yybot);
+    }
   YYFPRINTF (stderr, "\n");
 }
 
@@ -1830,11 +1850,11 @@ yy_reduce_print (yyvsp, yyrule)
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
-      fprintf (stderr, "   $%d = ", yyi + 1);
+      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(yyvsp[(yyi + 1) - (yynrhs)])
 		       		       );
-      fprintf (stderr, "\n");
+      YYFPRINTF (stderr, "\n");
     }
 }
 
@@ -2114,10 +2134,8 @@ yydestruct (yymsg, yytype, yyvaluep)
 	break;
     }
 }
-
 
 /* Prevent warnings from -Wmissing-prototypes.  */
-
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
 int yyparse (void *YYPARSE_PARAM);
@@ -2133,11 +2151,10 @@ int yyparse ();
 #endif /* ! YYPARSE_PARAM */
 
 
-
-/* The look-ahead symbol.  */
+/* The lookahead symbol.  */
 int yychar;
 
-/* The semantic value of the look-ahead symbol.  */
+/* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
 
 /* Number of syntax errors so far.  */
@@ -2145,9 +2162,9 @@ int yynerrs;
 
 
 
-/*----------.
-| yyparse.  |
-`----------*/
+/*-------------------------.
+| yyparse or yypush_parse.  |
+`-------------------------*/
 
 #ifdef YYPARSE_PARAM
 #if (defined __STDC__ || defined __C99__FUNC__ \
@@ -2171,14 +2188,39 @@ yyparse ()
 #endif
 #endif
 {
-  
-  int yystate;
+
+
+    int yystate;
+    /* Number of tokens to shift before error messages enabled.  */
+    int yyerrstatus;
+
+    /* The stacks and their tools:
+       `yyss': related to states.
+       `yyvs': related to semantic values.
+
+       Refer to the stacks thru separate pointers, to allow yyoverflow
+       to reallocate them elsewhere.  */
+
+    /* The state stack.  */
+    yytype_int16 yyssa[YYINITDEPTH];
+    yytype_int16 *yyss;
+    yytype_int16 *yyssp;
+
+    /* The semantic value stack.  */
+    YYSTYPE yyvsa[YYINITDEPTH];
+    YYSTYPE *yyvs;
+    YYSTYPE *yyvsp;
+
+    YYSIZE_T yystacksize;
+
   int yyn;
   int yyresult;
-  /* Number of tokens to shift before error messages enabled.  */
-  int yyerrstatus;
-  /* Look-ahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  /* Lookahead token as an internal (translated) token number.  */
+  int yytoken;
+  /* The variables used to return semantic value and location from the
+     action routines.  */
+  YYSTYPE yyval;
+
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
@@ -2186,51 +2228,28 @@ yyparse ()
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
-  /* Three stacks and their tools:
-     `yyss': related to states,
-     `yyvs': related to semantic values,
-     `yyls': related to locations.
-
-     Refer to the stacks thru separate pointers, to allow yyoverflow
-     to reallocate them elsewhere.  */
-
-  /* The state stack.  */
-  yytype_int16 yyssa[YYINITDEPTH];
-  yytype_int16 *yyss = yyssa;
-  yytype_int16 *yyssp;
-
-  /* The semantic value stack.  */
-  YYSTYPE yyvsa[YYINITDEPTH];
-  YYSTYPE *yyvs = yyvsa;
-  YYSTYPE *yyvsp;
-
-
-
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
-
-  YYSIZE_T yystacksize = YYINITDEPTH;
-
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
-
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
+
+  yytoken = 0;
+  yyss = yyssa;
+  yyvs = yyvsa;
+  yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yystate = 0;
   yyerrstatus = 0;
   yynerrs = 0;
-  yychar = YYEMPTY;		/* Cause a token to be read.  */
+  yychar = YYEMPTY; /* Cause a token to be read.  */
 
   /* Initialize stack pointers.
      Waste one element of value and location stack
      so that they stay on the same level as the state stack.
      The wasted elements are never initialized.  */
-
   yyssp = yyss;
   yyvsp = yyvs;
 
@@ -2260,7 +2279,6 @@ yyparse ()
 	YYSTYPE *yyvs1 = yyvs;
 	yytype_int16 *yyss1 = yyss;
 
-
 	/* Each stack pointer address is followed by the size of the
 	   data in use in that stack, in bytes.  This used to be a
 	   conditional around just the two extra args, but that might
@@ -2268,7 +2286,6 @@ yyparse ()
 	yyoverflow (YY_("memory exhausted"),
 		    &yyss1, yysize * sizeof (*yyssp),
 		    &yyvs1, yysize * sizeof (*yyvsp),
-
 		    &yystacksize);
 
 	yyss = yyss1;
@@ -2291,9 +2308,8 @@ yyparse ()
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
 	  goto yyexhaustedlab;
-	YYSTACK_RELOCATE (yyss);
-	YYSTACK_RELOCATE (yyvs);
-
+	YYSTACK_RELOCATE (yyss_alloc, yyss);
+	YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
 	if (yyss1 != yyssa)
 	  YYSTACK_FREE (yyss1);
@@ -2304,7 +2320,6 @@ yyparse ()
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
 		  (unsigned long int) yystacksize));
 
@@ -2314,6 +2329,9 @@ yyparse ()
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
+  if (yystate == YYFINAL)
+    YYACCEPT;
+
   goto yybackup;
 
 /*-----------.
@@ -2322,16 +2340,16 @@ yyparse ()
 yybackup:
 
   /* Do appropriate processing given the current state.  Read a
-     look-ahead token if we need one and don't already have one.  */
+     lookahead token if we need one and don't already have one.  */
 
-  /* First try to decide what to do without reference to look-ahead token.  */
+  /* First try to decide what to do without reference to lookahead token.  */
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a look-ahead token if don't already have one.  */
+  /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -2363,20 +2381,16 @@ yybackup:
       goto yyreduce;
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   /* Count tokens shifted since error; after three, turn off error
      status.  */
   if (yyerrstatus)
     yyerrstatus--;
 
-  /* Shift the look-ahead token.  */
+  /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-  /* Discard the shifted token unless it is eof.  */
-  if (yychar != YYEOF)
-    yychar = YYEMPTY;
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
 
   yystate = yyn;
   *++yyvsp = yylval;
@@ -2416,6 +2430,8 @@ yyreduce:
   switch (yyn)
     {
         case 7:
+
+/* Line 1464 of yacc.c  */
 #line 247 "parser.yxx"
     {
   assert(!egg_stack.empty());
@@ -2424,6 +2440,8 @@ yyreduce:
     break;
 
   case 26:
+
+/* Line 1464 of yacc.c  */
 #line 291 "parser.yxx"
     {
   string strval = (yyvsp[(3) - (4)]._string);
@@ -2440,6 +2458,8 @@ yyreduce:
     break;
 
   case 27:
+
+/* Line 1464 of yacc.c  */
 #line 314 "parser.yxx"
     {
   (yyval._egg) = new EggComment((yyvsp[(2) - (5)]._string), (yyvsp[(4) - (5)]._string));
@@ -2447,6 +2467,8 @@ yyreduce:
     break;
 
   case 28:
+
+/* Line 1464 of yacc.c  */
 #line 328 "parser.yxx"
     {
   string tref_name = (yyvsp[(2) - (4)]._string);
@@ -2463,6 +2485,8 @@ yyreduce:
     break;
 
   case 29:
+
+/* Line 1464 of yacc.c  */
 #line 341 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
@@ -2471,6 +2495,8 @@ yyreduce:
     break;
 
   case 31:
+
+/* Line 1464 of yacc.c  */
 #line 357 "parser.yxx"
     {
   EggTexture *texture = DCAST(EggTexture, egg_stack.back());
@@ -2784,6 +2810,9 @@ yyreduce:
       texture->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    texture->set_depth_offset((int)value);
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     texture->set_draw_order((int)value);
 
@@ -2806,7 +2835,9 @@ yyreduce:
     break;
 
   case 33:
-#line 700 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 703 "parser.yxx"
     {
   string mref_name = (yyvsp[(2) - (3)]._string);
   EggMaterial *material = new EggMaterial(mref_name);
@@ -2821,7 +2852,9 @@ yyreduce:
     break;
 
   case 34:
-#line 712 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 715 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -2829,7 +2862,9 @@ yyreduce:
     break;
 
   case 36:
-#line 728 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 731 "parser.yxx"
     {
   EggMaterial *material = DCAST(EggMaterial, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -2916,7 +2951,9 @@ yyreduce:
     break;
 
   case 37:
-#line 823 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 826 "parser.yxx"
     {
   string node_name = (yyvsp[(2) - (5)]._string);
   Filename filename = (yyvsp[(4) - (5)]._string);
@@ -2926,7 +2963,9 @@ yyreduce:
     break;
 
   case 38:
-#line 830 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 833 "parser.yxx"
     {
   if (cmp_nocase_uh((yyvsp[(1) - (6)]._string), "group") != 0) {
     eggyyerror("keyword 'group' expected");
@@ -2939,7 +2978,9 @@ yyreduce:
     break;
 
   case 39:
-#line 850 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 853 "parser.yxx"
     {
   string name = (yyvsp[(2) - (2)]._string);
   EggVertexPool *pool = NULL;
@@ -2966,7 +3007,9 @@ yyreduce:
     break;
 
   case 40:
-#line 874 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 877 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -2974,14 +3017,18 @@ yyreduce:
     break;
 
   case 43:
-#line 902 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 905 "parser.yxx"
     {
   egg_stack.push_back(new EggVertex);
 }
     break;
 
   case 44:
-#line 906 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 909 "parser.yxx"
     {
   PT(EggVertex) vtx = DCAST(EggVertex, egg_stack.back());
   egg_stack.pop_back();
@@ -2991,7 +3038,9 @@ yyreduce:
     break;
 
   case 45:
-#line 913 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 916 "parser.yxx"
     {
   vertex_index = (int)(yyvsp[(2) - (2)]._number);
   EggVertexPool *pool = DCAST(EggVertexPool, egg_stack.back());
@@ -3019,7 +3068,9 @@ yyreduce:
     break;
 
   case 46:
-#line 938 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 941 "parser.yxx"
     {
   PT(EggVertex) vtx = DCAST(EggVertex, egg_stack.back());
   egg_stack.pop_back();
@@ -3032,35 +3083,45 @@ yyreduce:
     break;
 
   case 47:
-#line 959 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 962 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_pos((yyvsp[(1) - (1)]._number));
 }
     break;
 
   case 48:
-#line 963 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 966 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint2d((yyvsp[(1) - (2)]._number), (yyvsp[(2) - (2)]._number)));
 }
     break;
 
   case 49:
-#line 967 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 970 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint3d((yyvsp[(1) - (3)]._number), (yyvsp[(2) - (3)]._number), (yyvsp[(3) - (3)]._number)));
 }
     break;
 
   case 50:
-#line 971 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 974 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint4d((yyvsp[(1) - (4)]._number), (yyvsp[(2) - (4)]._number), (yyvsp[(3) - (4)]._number), (yyvsp[(4) - (4)]._number)));
 }
     break;
 
   case 51:
-#line 975 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 978 "parser.yxx"
     {
   EggVertex *vertex = DCAST(EggVertex, egg_stack.back());
   EggVertexUV *uv = new EggVertexUV((yyvsp[(3) - (4)]._string), TexCoordd::zero());
@@ -3074,14 +3135,18 @@ yyreduce:
     break;
 
   case 52:
-#line 986 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 989 "parser.yxx"
     {
   egg_stack.pop_back();
 }
     break;
 
   case 55:
-#line 992 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 995 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dxyzs.
     insert(EggMorphVertex((yyvsp[(3) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3092,7 +3157,9 @@ yyreduce:
     break;
 
   case 56:
-#line 1000 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1003 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dxyzs.
     insert(EggMorphVertex((yyvsp[(4) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3103,21 +3170,27 @@ yyreduce:
     break;
 
   case 57:
-#line 1019 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1022 "parser.yxx"
     {
   DCAST(EggVertexUV, egg_stack.back())->set_uv(TexCoordd((yyvsp[(1) - (2)]._number), (yyvsp[(2) - (2)]._number)));
 }
     break;
 
   case 58:
-#line 1023 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1026 "parser.yxx"
     {
   DCAST(EggVertexUV, egg_stack.back())->set_uvw(LVecBase3d((yyvsp[(1) - (3)]._number), (yyvsp[(2) - (3)]._number), (yyvsp[(3) - (3)]._number)));
 }
     break;
 
   case 59:
-#line 1027 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1030 "parser.yxx"
     {
   if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
     eggyywarning("Ignoring repeated tangent");
@@ -3128,7 +3201,9 @@ yyreduce:
     break;
 
   case 60:
-#line 1035 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1038 "parser.yxx"
     {
   if (DCAST(EggVertexUV, egg_stack.back())->has_binormal()) {
     eggyywarning("Ignoring repeated binormal");
@@ -3139,7 +3214,9 @@ yyreduce:
     break;
 
   case 61:
-#line 1043 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1046 "parser.yxx"
     {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[(3) - (7)]._string), LVector3d((yyvsp[(5) - (7)]._number), (yyvsp[(6) - (7)]._number), 0.0))).second;
@@ -3150,7 +3227,9 @@ yyreduce:
     break;
 
   case 62:
-#line 1051 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1054 "parser.yxx"
     {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[(3) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3161,7 +3240,9 @@ yyreduce:
     break;
 
   case 63:
-#line 1059 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1062 "parser.yxx"
     {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[(4) - (7)]._string), LVector3d((yyvsp[(5) - (7)]._number), (yyvsp[(6) - (7)]._number), 0.0))).second;
@@ -3172,7 +3253,9 @@ yyreduce:
     break;
 
   case 64:
-#line 1067 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1070 "parser.yxx"
     {
   bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[(4) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3183,14 +3266,18 @@ yyreduce:
     break;
 
   case 65:
-#line 1085 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1088 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_normal(Normald((yyvsp[(1) - (3)]._number), (yyvsp[(2) - (3)]._number), (yyvsp[(3) - (3)]._number)));
 }
     break;
 
   case 66:
-#line 1089 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1092 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[(3) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3201,7 +3288,9 @@ yyreduce:
     break;
 
   case 67:
-#line 1097 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1100 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[(4) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -3212,14 +3301,18 @@ yyreduce:
     break;
 
   case 68:
-#line 1115 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1118 "parser.yxx"
     {
   DCAST(EggVertex, egg_stack.back())->set_color(Colorf((yyvsp[(1) - (4)]._number), (yyvsp[(2) - (4)]._number), (yyvsp[(3) - (4)]._number), (yyvsp[(4) - (4)]._number)));
 }
     break;
 
   case 69:
-#line 1119 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1122 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[(3) - (9)]._string), LVector4f((yyvsp[(5) - (9)]._number), (yyvsp[(6) - (9)]._number), (yyvsp[(7) - (9)]._number), (yyvsp[(8) - (9)]._number)))).second;
@@ -3230,7 +3323,9 @@ yyreduce:
     break;
 
   case 70:
-#line 1127 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1130 "parser.yxx"
     {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[(4) - (9)]._string), LVector4f((yyvsp[(5) - (9)]._number), (yyvsp[(6) - (9)]._number), (yyvsp[(7) - (9)]._number), (yyvsp[(8) - (9)]._number)))).second;
@@ -3241,7 +3336,9 @@ yyreduce:
     break;
 
   case 71:
-#line 1145 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1148 "parser.yxx"
     {
   EggGroup *group = new EggGroup((yyvsp[(2) - (2)]._string));
   egg_stack.push_back(group);
@@ -3249,7 +3346,9 @@ yyreduce:
     break;
 
   case 72:
-#line 1150 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1153 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   (yyval._egg) = group;
@@ -3262,7 +3361,9 @@ yyreduce:
     break;
 
   case 73:
-#line 1170 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1173 "parser.yxx"
     {
   EggGroup *group = new EggGroup((yyvsp[(2) - (2)]._string));
   group->set_group_type(EggGroup::GT_joint);
@@ -3271,7 +3372,9 @@ yyreduce:
     break;
 
   case 74:
-#line 1176 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1179 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3279,7 +3382,9 @@ yyreduce:
     break;
 
   case 75:
-#line 1191 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1194 "parser.yxx"
     {
   EggGroup *group = new EggGroup((yyvsp[(2) - (2)]._string));
   group->set_group_type(EggGroup::GT_instance);
@@ -3288,7 +3393,9 @@ yyreduce:
     break;
 
   case 76:
-#line 1197 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1200 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   (yyval._egg) = group;
@@ -3300,7 +3407,9 @@ yyreduce:
     break;
 
   case 78:
-#line 1217 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1220 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -3355,6 +3464,9 @@ yyreduce:
       group->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    group->set_depth_offset(ulong_value);
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order(ulong_value);
 
@@ -3373,11 +3485,23 @@ yyreduce:
   } else if (cmp_nocase_uh(name, "portal") == 0) {
     group->set_portal_flag(value != 0);
 
+  } else if (cmp_nocase_uh(name, "occluder") == 0) {
+    group->set_occluder_flag(value != 0);
+
   } else if (cmp_nocase_uh(name, "polylight") == 0) {
     group->set_polylight_flag(value != 0);
 
   } else if (cmp_nocase_uh(name, "indexed") == 0) {
     group->set_indexed_flag(value != 0);
+
+  } else if (cmp_nocase_uh(name, "scroll_u") == 0) {
+    group->set_scroll_u(value);
+
+  } else if (cmp_nocase_uh(name, "scroll_v") == 0) {
+    group->set_scroll_v(value);
+
+  } else if (cmp_nocase_uh(name, "scroll_r") == 0) {
+    group->set_scroll_r(value);
 
   } else if (cmp_nocase_uh(name, "blend") == 0) {
     EggGroup::BlendMode blend_mode =
@@ -3433,7 +3557,9 @@ yyreduce:
     break;
 
   case 79:
-#line 1347 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1365 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = (yyvsp[(4) - (5)]._string);
@@ -3448,7 +3574,9 @@ yyreduce:
     break;
 
   case 80:
-#line 1359 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1377 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_billboard_center(LPoint3d((yyvsp[(4) - (7)]._number), (yyvsp[(5) - (7)]._number), (yyvsp[(6) - (7)]._number)));
@@ -3456,7 +3584,9 @@ yyreduce:
     break;
 
   case 81:
-#line 1364 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1382 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = (yyvsp[(3) - (7)]._string);
@@ -3466,7 +3596,9 @@ yyreduce:
     break;
 
   case 82:
-#line 1371 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1389 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)(yyvsp[(4) - (5)]._number);
@@ -3475,7 +3607,9 @@ yyreduce:
     break;
 
   case 83:
-#line 1377 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1395 "parser.yxx"
     {
   // The special flavor of DCS, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -3491,7 +3625,9 @@ yyreduce:
     break;
 
   case 84:
-#line 1390 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1408 "parser.yxx"
     {
   // The traditional flavor of DART, with { 0 } or { 1 }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -3501,7 +3637,9 @@ yyreduce:
     break;
 
   case 85:
-#line 1397 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1415 "parser.yxx"
     {
   // The special flavor of DART, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -3517,7 +3655,9 @@ yyreduce:
     break;
 
   case 86:
-#line 1410 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1428 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)(yyvsp[(4) - (5)]._number);
@@ -3526,7 +3666,9 @@ yyreduce:
     break;
 
   case 87:
-#line 1416 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1434 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string type = (yyvsp[(4) - (5)]._string);
@@ -3535,7 +3677,9 @@ yyreduce:
     break;
 
   case 88:
-#line 1422 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1440 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)(yyvsp[(4) - (5)]._number);
@@ -3544,7 +3688,9 @@ yyreduce:
     break;
 
   case 89:
-#line 1428 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1446 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_tag((yyvsp[(3) - (6)]._string), (yyvsp[(5) - (6)]._string));
@@ -3552,7 +3698,9 @@ yyreduce:
     break;
 
   case 90:
-#line 1433 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1451 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)(yyvsp[(4) - (5)]._number);
@@ -3561,7 +3709,9 @@ yyreduce:
     break;
 
   case 95:
-#line 1443 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1461 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   if (group->get_group_type() != EggGroup::GT_instance) {
@@ -3573,14 +3723,18 @@ yyreduce:
     break;
 
   case 96:
-#line 1452 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1470 "parser.yxx"
     {
   DCAST(EggGroup, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 97:
-#line 1466 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1484 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = (yyvsp[(1) - (1)]._string);
@@ -3603,7 +3757,9 @@ yyreduce:
     break;
 
   case 99:
-#line 1497 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1515 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = (yyvsp[(2) - (2)]._string);
@@ -3618,7 +3774,9 @@ yyreduce:
     break;
 
   case 100:
-#line 1519 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1537 "parser.yxx"
     {
   egg_top_transform = egg_stack.back()->as_transform();
   egg_top_transform->clear_transform();
@@ -3626,7 +3784,9 @@ yyreduce:
     break;
 
   case 102:
-#line 1535 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1553 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   if (group->get_group_type() != EggGroup::GT_joint) {
@@ -3638,77 +3798,99 @@ yyreduce:
     break;
 
   case 117:
-#line 1572 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1590 "parser.yxx"
     {
   egg_top_transform->add_translate2d(LVector2d((yyvsp[(3) - (5)]._number), (yyvsp[(4) - (5)]._number)));
 }
     break;
 
   case 118:
-#line 1579 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1597 "parser.yxx"
     {
   egg_top_transform->add_translate3d(LVector3d((yyvsp[(3) - (6)]._number), (yyvsp[(4) - (6)]._number), (yyvsp[(5) - (6)]._number)));
 }
     break;
 
   case 119:
-#line 1586 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1604 "parser.yxx"
     {
   egg_top_transform->add_rotate2d((yyvsp[(3) - (4)]._number));
 }
     break;
 
   case 120:
-#line 1593 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1611 "parser.yxx"
     {
   egg_top_transform->add_rotx((yyvsp[(3) - (4)]._number));
 }
     break;
 
   case 121:
-#line 1600 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1618 "parser.yxx"
     {
   egg_top_transform->add_roty((yyvsp[(3) - (4)]._number));
 }
     break;
 
   case 122:
-#line 1607 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1625 "parser.yxx"
     {
   egg_top_transform->add_rotz((yyvsp[(3) - (4)]._number));
 }
     break;
 
   case 123:
-#line 1614 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1632 "parser.yxx"
     {
   egg_top_transform->add_rotate3d((yyvsp[(3) - (7)]._number), LVector3d((yyvsp[(4) - (7)]._number), (yyvsp[(5) - (7)]._number), (yyvsp[(6) - (7)]._number)));
 }
     break;
 
   case 124:
-#line 1621 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1639 "parser.yxx"
     {
   egg_top_transform->add_scale2d(LVecBase2d((yyvsp[(3) - (5)]._number), (yyvsp[(4) - (5)]._number)));
 }
     break;
 
   case 125:
-#line 1628 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1646 "parser.yxx"
     {
   egg_top_transform->add_scale3d(LVecBase3d((yyvsp[(3) - (6)]._number), (yyvsp[(4) - (6)]._number), (yyvsp[(5) - (6)]._number)));
 }
     break;
 
   case 126:
-#line 1635 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1653 "parser.yxx"
     {
   egg_top_transform->add_uniform_scale((yyvsp[(3) - (4)]._number));
 }
     break;
 
   case 129:
-#line 1649 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1667 "parser.yxx"
     {
   egg_top_transform->add_matrix3
     (LMatrix3d((yyvsp[(1) - (9)]._number), (yyvsp[(2) - (9)]._number), (yyvsp[(3) - (9)]._number),
@@ -3718,7 +3900,9 @@ yyreduce:
     break;
 
   case 132:
-#line 1667 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1685 "parser.yxx"
     {
   egg_top_transform->add_matrix4
     (LMatrix4d((yyvsp[(1) - (16)]._number), (yyvsp[(2) - (16)]._number), (yyvsp[(3) - (16)]._number), (yyvsp[(4) - (16)]._number),
@@ -3729,7 +3913,9 @@ yyreduce:
     break;
 
   case 133:
-#line 1686 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1704 "parser.yxx"
     {
   if ((yyvsp[(7) - (9)]._egg) != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, (yyvsp[(7) - (9)]._egg));
@@ -3754,14 +3940,18 @@ yyreduce:
     break;
 
   case 134:
-#line 1719 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1737 "parser.yxx"
     {
   (yyval._number) = 1.0;
 }
     break;
 
   case 135:
-#line 1723 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1741 "parser.yxx"
     {
   string name = (yyvsp[(3) - (6)]._string);
   double value = (yyvsp[(5) - (6)]._number);
@@ -3778,7 +3968,9 @@ yyreduce:
     break;
 
   case 137:
-#line 1760 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1778 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance((yyvsp[(3) - (11)]._number), (yyvsp[(4) - (11)]._number), LPoint3d((yyvsp[(7) - (11)]._number), (yyvsp[(8) - (11)]._number), (yyvsp[(9) - (11)]._number))));
@@ -3786,7 +3978,9 @@ yyreduce:
     break;
 
   case 138:
-#line 1765 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1783 "parser.yxx"
     {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance((yyvsp[(3) - (12)]._number), (yyvsp[(4) - (12)]._number), LPoint3d((yyvsp[(8) - (12)]._number), (yyvsp[(9) - (12)]._number), (yyvsp[(10) - (12)]._number)), (yyvsp[(5) - (12)]._number)));
@@ -3794,14 +3988,18 @@ yyreduce:
     break;
 
   case 139:
-#line 1782 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1800 "parser.yxx"
     {
   egg_stack.push_back(new EggPolygon((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 140:
-#line 1786 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1804 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3809,14 +4007,18 @@ yyreduce:
     break;
 
   case 141:
-#line 1801 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1819 "parser.yxx"
     {
   egg_stack.push_back(new EggTriangleFan((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 142:
-#line 1805 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1823 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3824,14 +4026,18 @@ yyreduce:
     break;
 
   case 143:
-#line 1820 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1838 "parser.yxx"
     {
   egg_stack.push_back(new EggTriangleStrip((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 144:
-#line 1824 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1842 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3839,14 +4045,18 @@ yyreduce:
     break;
 
   case 145:
-#line 1839 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1857 "parser.yxx"
     {
   egg_stack.push_back(new EggPoint((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 146:
-#line 1843 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1861 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3854,14 +4064,18 @@ yyreduce:
     break;
 
   case 147:
-#line 1858 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1876 "parser.yxx"
     {
   egg_stack.push_back(new EggLine((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 148:
-#line 1862 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1880 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3869,14 +4083,18 @@ yyreduce:
     break;
 
   case 149:
-#line 1877 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1895 "parser.yxx"
     {
   egg_stack.push_back(new EggNurbsSurface((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 150:
-#line 1881 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1899 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3884,14 +4102,18 @@ yyreduce:
     break;
 
   case 151:
-#line 1896 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1914 "parser.yxx"
     {
   egg_stack.push_back(new EggNurbsCurve((yyvsp[(2) - (2)]._string)));
 }
     break;
 
   case 152:
-#line 1900 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1918 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -3899,7 +4121,9 @@ yyreduce:
     break;
 
   case 157:
-#line 1930 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1948 "parser.yxx"
     {
   if (!egg_stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
     eggyyerror("Not a composite primitive; components are not allowed here.");
@@ -3916,7 +4140,9 @@ yyreduce:
     break;
 
   case 158:
-#line 1944 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1962 "parser.yxx"
     {
   PT(EggPrimitive) prim = DCAST(EggPrimitive, egg_stack.back());
   egg_stack.pop_back();
@@ -3926,7 +4152,9 @@ yyreduce:
     break;
 
   case 166:
-#line 1958 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 1976 "parser.yxx"
     {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -3967,6 +4195,8 @@ yyreduce:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -3992,7 +4222,9 @@ yyreduce:
     break;
 
   case 178:
-#line 2042 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2062 "parser.yxx"
     {
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, (yyvsp[(2) - (2)]._egg));
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
@@ -4001,7 +4233,9 @@ yyreduce:
     break;
 
   case 180:
-#line 2049 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2069 "parser.yxx"
     {
   EggNurbsSurface *primitive = DCAST(EggNurbsSurface, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4042,6 +4276,8 @@ yyreduce:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -4057,7 +4293,9 @@ yyreduce:
     break;
 
   case 191:
-#line 2123 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2145 "parser.yxx"
     {
   EggNurbsCurve *primitive = DCAST(EggNurbsCurve, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4098,6 +4336,8 @@ yyreduce:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -4119,7 +4359,9 @@ yyreduce:
     break;
 
   case 192:
-#line 2192 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2216 "parser.yxx"
     {
   if ((yyvsp[(1) - (1)]._egg) != (EggTexture *)NULL) {
     EggTexture *texture = DCAST(EggTexture, (yyvsp[(1) - (1)]._egg));
@@ -4129,7 +4371,9 @@ yyreduce:
     break;
 
   case 193:
-#line 2209 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2233 "parser.yxx"
     {
   EggTexture *texture = NULL;
 
@@ -4162,7 +4406,9 @@ yyreduce:
     break;
 
   case 194:
-#line 2249 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2273 "parser.yxx"
     {
   if ((yyvsp[(1) - (1)]._egg) != (EggMaterial *)NULL) {
     EggMaterial *material = DCAST(EggMaterial, (yyvsp[(1) - (1)]._egg));
@@ -4172,14 +4418,18 @@ yyreduce:
     break;
 
   case 195:
-#line 2266 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2290 "parser.yxx"
     {
   DCAST(EggPrimitive, egg_stack.back())->set_normal(Normald((yyvsp[(1) - (3)]._number), (yyvsp[(2) - (3)]._number), (yyvsp[(3) - (3)]._number)));
 }
     break;
 
   case 196:
-#line 2270 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2294 "parser.yxx"
     {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[(3) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -4190,7 +4440,9 @@ yyreduce:
     break;
 
   case 197:
-#line 2278 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2302 "parser.yxx"
     {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[(4) - (8)]._string), LVector3d((yyvsp[(5) - (8)]._number), (yyvsp[(6) - (8)]._number), (yyvsp[(7) - (8)]._number)))).second;
@@ -4201,14 +4453,18 @@ yyreduce:
     break;
 
   case 198:
-#line 2296 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2320 "parser.yxx"
     {
   DCAST(EggPrimitive, egg_stack.back())->set_color(Colorf((yyvsp[(1) - (4)]._number), (yyvsp[(2) - (4)]._number), (yyvsp[(3) - (4)]._number), (yyvsp[(4) - (4)]._number)));
 }
     break;
 
   case 199:
-#line 2300 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2324 "parser.yxx"
     {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[(3) - (9)]._string), LVector4f((yyvsp[(5) - (9)]._number), (yyvsp[(6) - (9)]._number), (yyvsp[(7) - (9)]._number), (yyvsp[(8) - (9)]._number)))).second;
@@ -4219,7 +4475,9 @@ yyreduce:
     break;
 
   case 200:
-#line 2308 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2332 "parser.yxx"
     {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[(4) - (9)]._string), LVector4f((yyvsp[(5) - (9)]._number), (yyvsp[(6) - (9)]._number), (yyvsp[(7) - (9)]._number), (yyvsp[(8) - (9)]._number)))).second;
@@ -4230,7 +4488,9 @@ yyreduce:
     break;
 
   case 201:
-#line 2326 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2350 "parser.yxx"
     {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   int value = (int)(yyvsp[(1) - (1)]._number);
@@ -4239,7 +4499,9 @@ yyreduce:
     break;
 
   case 202:
-#line 2342 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2366 "parser.yxx"
     {
   if ((yyvsp[(6) - (8)]._egg) != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, (yyvsp[(6) - (8)]._egg));
@@ -4263,7 +4525,9 @@ yyreduce:
     break;
 
   case 203:
-#line 2373 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2397 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   int u_order = (int)(yyvsp[(1) - (2)]._number);
@@ -4274,7 +4538,9 @@ yyreduce:
     break;
 
   case 204:
-#line 2391 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2415 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = (yyvsp[(1) - (1)]._number_list);
@@ -4287,7 +4553,9 @@ yyreduce:
     break;
 
   case 205:
-#line 2411 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2435 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = (yyvsp[(1) - (1)]._number_list);
@@ -4300,7 +4568,9 @@ yyreduce:
     break;
 
   case 206:
-#line 2431 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2455 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nurbs->_trims.push_back(EggNurbsSurface::Trim());
@@ -4308,7 +4578,9 @@ yyreduce:
     break;
 
   case 208:
-#line 2447 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2471 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -4317,7 +4589,9 @@ yyreduce:
     break;
 
   case 209:
-#line 2453 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2477 "parser.yxx"
     {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -4328,7 +4602,9 @@ yyreduce:
     break;
 
   case 210:
-#line 2472 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2496 "parser.yxx"
     {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   int order = (int)(yyvsp[(1) - (1)]._number);
@@ -4337,7 +4613,9 @@ yyreduce:
     break;
 
   case 211:
-#line 2488 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2512 "parser.yxx"
     {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   PTA_double nums = (yyvsp[(1) - (1)]._number_list);
@@ -4350,7 +4628,9 @@ yyreduce:
     break;
 
   case 212:
-#line 2509 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2533 "parser.yxx"
     {
   EggTable *table = new EggTable((yyvsp[(2) - (2)]._string));
   table->set_table_type(EggTable::TT_table);
@@ -4359,7 +4639,9 @@ yyreduce:
     break;
 
   case 213:
-#line 2515 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2539 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4368,7 +4650,9 @@ yyreduce:
     break;
 
   case 214:
-#line 2532 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2556 "parser.yxx"
     {
   EggTable *table = new EggTable((yyvsp[(2) - (2)]._string));
   table->set_table_type(EggTable::TT_bundle);
@@ -4377,7 +4661,9 @@ yyreduce:
     break;
 
   case 215:
-#line 2538 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2562 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4385,42 +4671,54 @@ yyreduce:
     break;
 
   case 217:
-#line 2554 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2578 "parser.yxx"
     {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 218:
-#line 2558 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2582 "parser.yxx"
     {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 219:
-#line 2562 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2586 "parser.yxx"
     {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 220:
-#line 2566 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2590 "parser.yxx"
     {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 221:
-#line 2570 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2594 "parser.yxx"
     {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 222:
-#line 2585 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2609 "parser.yxx"
     {
   EggSAnimData *anim_data = new EggSAnimData((yyvsp[(2) - (2)]._string));
   egg_stack.push_back(anim_data);
@@ -4428,7 +4726,9 @@ yyreduce:
     break;
 
   case 223:
-#line 2590 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2614 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4436,7 +4736,9 @@ yyreduce:
     break;
 
   case 225:
-#line 2607 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2631 "parser.yxx"
     {
   EggSAnimData *anim_data = DCAST(EggSAnimData, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4451,14 +4753,18 @@ yyreduce:
     break;
 
   case 226:
-#line 2619 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2643 "parser.yxx"
     {
   DCAST(EggSAnimData, egg_stack.back())->set_data((yyvsp[(4) - (5)]._number_list));
 }
     break;
 
   case 227:
-#line 2633 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2657 "parser.yxx"
     {
   EggXfmAnimData *anim_data = new EggXfmAnimData((yyvsp[(2) - (2)]._string));
   egg_stack.push_back(anim_data);
@@ -4466,7 +4772,9 @@ yyreduce:
     break;
 
   case 228:
-#line 2638 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2662 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4474,7 +4782,9 @@ yyreduce:
     break;
 
   case 230:
-#line 2655 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2679 "parser.yxx"
     {
   EggXfmAnimData *anim_data = DCAST(EggXfmAnimData, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4494,14 +4804,18 @@ yyreduce:
     break;
 
   case 231:
-#line 2672 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2696 "parser.yxx"
     {
   DCAST(EggXfmAnimData, egg_stack.back())->set_data((yyvsp[(4) - (5)]._number_list));
 }
     break;
 
   case 232:
-#line 2686 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2710 "parser.yxx"
     {
   EggXfmSAnim *anim_group = new EggXfmSAnim((yyvsp[(2) - (2)]._string));
   egg_stack.push_back(anim_group);
@@ -4509,7 +4823,9 @@ yyreduce:
     break;
 
   case 233:
-#line 2691 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2715 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4517,7 +4833,9 @@ yyreduce:
     break;
 
   case 235:
-#line 2708 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2732 "parser.yxx"
     {
   EggXfmSAnim *anim_group = DCAST(EggXfmSAnim, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4535,14 +4853,18 @@ yyreduce:
     break;
 
   case 236:
-#line 2723 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2747 "parser.yxx"
     {
   DCAST(EggXfmSAnim, egg_stack.back())->add_child(DCAST(EggNode, (yyvsp[(2) - (2)]._egg)));
 }
     break;
 
   case 237:
-#line 2738 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2762 "parser.yxx"
     {
   EggAnimPreload *anim_preload = new EggAnimPreload((yyvsp[(2) - (2)]._string));
   egg_stack.push_back(anim_preload);
@@ -4550,7 +4872,9 @@ yyreduce:
     break;
 
   case 238:
-#line 2743 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2767 "parser.yxx"
     {
   (yyval._egg) = egg_stack.back();
   egg_stack.pop_back();
@@ -4558,7 +4882,9 @@ yyreduce:
     break;
 
   case 240:
-#line 2760 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2784 "parser.yxx"
     {
   EggAnimPreload *anim_preload = DCAST(EggAnimPreload, egg_stack.back());
   string name = (yyvsp[(3) - (6)]._string);
@@ -4575,35 +4901,45 @@ yyreduce:
     break;
 
   case 241:
-#line 2784 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2808 "parser.yxx"
     {
   (yyval._number_list) = PTA_double::empty_array(0);
 }
     break;
 
   case 242:
-#line 2788 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2812 "parser.yxx"
     {
   (yyval._number_list).push_back((double)(yyvsp[(2) - (2)]._number));
 }
     break;
 
   case 243:
-#line 2802 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2826 "parser.yxx"
     {
   (yyval._number_list) = PTA_double::empty_array(0);
 }
     break;
 
   case 244:
-#line 2806 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2830 "parser.yxx"
     {
   (yyval._number_list).push_back((yyvsp[(2) - (2)]._number));
 }
     break;
 
   case 245:
-#line 2820 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2844 "parser.yxx"
     {
   string name = (yyvsp[(1) - (1)]._string);
   Textures::iterator vpi = textures.find(name);
@@ -4617,7 +4953,9 @@ yyreduce:
     break;
 
   case 246:
-#line 2841 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2865 "parser.yxx"
     {
   string name = (yyvsp[(1) - (1)]._string);
   Materials::iterator vpi = materials.find(name);
@@ -4631,7 +4969,9 @@ yyreduce:
     break;
 
   case 247:
-#line 2862 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2886 "parser.yxx"
     {
   string name = (yyvsp[(1) - (1)]._string);
   VertexPools::iterator vpi = vertex_pools.find(name);
@@ -4649,7 +4989,9 @@ yyreduce:
     break;
 
   case 248:
-#line 2887 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2911 "parser.yxx"
     {
   string name = (yyvsp[(1) - (1)]._string);
   Groups::iterator vpi = groups.find(name);
@@ -4663,7 +5005,9 @@ yyreduce:
     break;
 
   case 249:
-#line 2908 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2932 "parser.yxx"
     {
   eggyyerror("Name required.");
   (yyval._string) = "";
@@ -4671,7 +5015,9 @@ yyreduce:
     break;
 
   case 252:
-#line 2937 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2961 "parser.yxx"
     {
   eggyyerror("String required.");
   (yyval._string) = "";
@@ -4679,63 +5025,81 @@ yyreduce:
     break;
 
   case 254:
-#line 2953 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2977 "parser.yxx"
     {
   (yyval._string) = "";
 }
     break;
 
   case 256:
-#line 2971 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2995 "parser.yxx"
     {
   (yyval._string) = (yyvsp[(1) - (1)]._string);
 }
     break;
 
   case 257:
-#line 2975 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 2999 "parser.yxx"
     {
   (yyval._string) = (yyvsp[(1) - (1)]._string);
 }
     break;
 
   case 259:
-#line 2992 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3016 "parser.yxx"
     {
   (yyval._string) = "";
 }
     break;
 
   case 260:
-#line 2996 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3020 "parser.yxx"
     {
   (yyval._string) = (yyvsp[(1) - (1)]._string);
 }
     break;
 
   case 261:
-#line 3012 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3036 "parser.yxx"
     {
   (yyval._string) = (yyvsp[(1) - (1)]._string);
 }
     break;
 
   case 262:
-#line 3016 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3040 "parser.yxx"
     {
   (yyval._string) = (yyvsp[(1) - (2)]._string) + "\n" + (yyvsp[(2) - (2)]._string);
 }
     break;
 
   case 264:
-#line 3031 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3055 "parser.yxx"
     {
   (yyval._number) = (yyvsp[(1) - (1)]._ulong);
 }
     break;
 
   case 265:
-#line 3046 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3070 "parser.yxx"
     {
   (yyval._number) = (yyvsp[(1) - (1)]._number);
   (yyval._ulong) = (unsigned long)(yyvsp[(1) - (1)]._number);
@@ -4744,7 +5108,9 @@ yyreduce:
     break;
 
   case 266:
-#line 3052 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3076 "parser.yxx"
     {
   (yyval._number) = (yyvsp[(1) - (1)]._ulong);
   (yyval._ulong) = (yyvsp[(1) - (1)]._ulong);
@@ -4753,7 +5119,9 @@ yyreduce:
     break;
 
   case 267:
-#line 3058 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3082 "parser.yxx"
     {
   (yyval._number) = 0.0;
   (yyval._ulong) = 0;
@@ -4762,7 +5130,9 @@ yyreduce:
     break;
 
   case 268:
-#line 3075 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3099 "parser.yxx"
     {
   int i = (int)(yyvsp[(1) - (1)]._number);
   if ((double)i != (yyvsp[(1) - (1)]._number)) {
@@ -4773,15 +5143,18 @@ yyreduce:
     break;
 
   case 269:
-#line 3083 "parser.yxx"
+
+/* Line 1464 of yacc.c  */
+#line 3107 "parser.yxx"
     {
   (yyval._number) = (yyvsp[(1) - (1)]._ulong);
 }
     break;
 
 
-/* Line 1267 of yacc.c.  */
-#line 4785 "y.tab.c"
+
+/* Line 1464 of yacc.c  */
+#line 5158 "y.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4791,7 +5164,6 @@ yyreduce:
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
-
 
   /* Now `shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -4857,7 +5229,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse look-ahead token after an
+      /* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -4874,7 +5246,7 @@ yyerrlab:
 	}
     }
 
-  /* Else will try to reuse look-ahead token after shifting the error
+  /* Else will try to reuse lookahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -4931,9 +5303,6 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
-  if (yyn == YYFINAL)
-    YYACCEPT;
-
   *++yyvsp = yylval;
 
 
@@ -4958,7 +5327,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#ifndef yyoverflow
+#if !defined(yyoverflow) || YYERROR_VERBOSE
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -4969,7 +5338,7 @@ yyexhaustedlab:
 #endif
 
 yyreturn:
-  if (yychar != YYEOF && yychar != YYEMPTY)
+  if (yychar != YYEMPTY)
      yydestruct ("Cleanup: discarding lookahead",
 		 yytoken, &yylval);
   /* Do not reclaim the symbols of the rule which action triggered
