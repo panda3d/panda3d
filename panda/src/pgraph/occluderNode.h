@@ -103,6 +103,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "OccluderNode.I"
+#include "occluderNode.I"
 
 #endif
