@@ -191,7 +191,7 @@ protected:
   virtual float film_to_fov(float film_size, float focal_length, bool horiz) const;
 
 private:
-  static void resequence_fov_triad(char &newest, char &older_a, char &older_b);
+  void resequence_fov_triad(char &newest, char &older_a, char &older_b) const;
   int define_geom_data();
   static void build_shear_mat(LMatrix4f &shear_mat,
                               const LPoint3f &cul, const LPoint3f &cur,

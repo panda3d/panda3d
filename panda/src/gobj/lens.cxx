@@ -388,13 +388,13 @@ set_fov(const LVecBase2f &fov) {
 
   if (_focal_length_seq == 0) {
     // Throw out focal length if it's oldest.
-    adjust_user_flags(UF_focal_length | UF_film_height | UF_aspect_ratio,
-                      UF_hfov | UF_vfov | UF_min_fov);
+    adjust_user_flags(UF_focal_length | UF_film_height | UF_min_fov | UF_aspect_ratio,
+                      UF_hfov | UF_vfov);
   } else {
     // Otherwise, throw out film size.
     nassertv(_film_size_seq == 0);
-    adjust_user_flags(UF_film_width | UF_film_height | UF_aspect_ratio,
-                      UF_hfov | UF_vfov | UF_min_fov);
+    adjust_user_flags(UF_film_width | UF_film_height | UF_min_fov | UF_aspect_ratio,
+                      UF_hfov | UF_vfov);
   }
   adjust_comp_flags(CF_mat | CF_focal_length | CF_film_size | CF_aspect_ratio,
                     CF_fov);
@@ -1785,7 +1785,7 @@ film_to_fov(float, float, bool) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::resequence_fov_triad
-//       Access: Private, Static
+//       Access: Private
 //  Description: Called whenever the user changes one of the three FOV
 //               parameters: fov, focal length, or film size.  This
 //               rearranges the three sequence numbers so the newest
@@ -1798,7 +1798,7 @@ film_to_fov(float, float, bool) const {
 //               this third value which should be discarded.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-resequence_fov_triad(char &newest, char &older_a, char &older_b) {
+resequence_fov_triad(char &newest, char &older_a, char &older_b) const {
   nassertv(newest + older_a + older_b == 3);
   switch (newest) {
   case 0:
@@ -1806,7 +1806,7 @@ resequence_fov_triad(char &newest, char &older_a, char &older_b) {
     older_a--;
     older_b--;
     nassertv(older_a + older_b == 1);
-    return;
+    break;
 
   case 1:
     newest = 2;
@@ -1817,18 +1817,37 @@ resequence_fov_triad(char &newest, char &older_a, char &older_b) {
       nassertv(older_a == 0 && older_b == 2);
       older_b = 1;
     }
-    return;
+    break;
 
   case 2:
     nassertv(older_a + older_b == 1);
-    return;
+    break;
 
   default:
     gobj_cat.error()
-      << "Invalid fov sequence numbers in lens: " << newest << ", " << older_a
-      << ", " << older_b << "\n";
+      << "Invalid fov sequence numbers in lens: "
+      << (int)newest << ", " << (int)older_a << ", " << (int)older_b << "\n";
     nassertv(false);
     return;
+  }
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Lens.resequence_fov_triad():";
+    for (int i = 2; i >= 0; --i) {
+      if (_fov_seq == i) {
+        gobj_cat.debug(false)
+          << " fov";
+      } else if (_focal_length_seq == i) {
+        gobj_cat.debug(false)
+          << " focal_length";
+      } else if (_film_size_seq == i) {
+        gobj_cat.debug(false)
+          << " film_size";
+      }
+    }
+    gobj_cat.debug(false)
+      << "\n";
   }
 }
 
