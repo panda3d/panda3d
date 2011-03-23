@@ -67,6 +67,7 @@ install_rdf = """<?xml version="1.0"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>%(package_id)s</em:id>
+    <em:unpack>true</em:unpack>
     <em:name>Panda3D Game Engine Plug-In</em:name>
     <em:description>Runs 3-D games and interactive applets</em:description>
     <em:version>%(version)s</em:version>
@@ -149,8 +150,11 @@ def makeXpiFile():
         platform = FirefoxPlatformMap.get(subdir, None)
         path = os.path.join(root, subdir)
         if platform and os.path.isdir(path):
-            # Create the XPI directory platform/<platform name>/plugins
-            pluginsXpiDir = 'platform/%s/plugins' % (platform)
+            if subdir in ['win32', 'osx_i386']:
+                pluginsXpiDir = 'plugins'
+            else:
+                # Create the XPI directory platform/<platform name>/plugins
+                pluginsXpiDir = 'platform/%s/plugins' % (platform)
 
             # Copy the Firefox plugin into this directory.
             if subdir.startswith('win32'):
