@@ -34,6 +34,7 @@ private:
   ~P3DHost();
 
 public:
+  inline bool has_host_dir() const;
   inline const string &get_host_dir() const;
   inline const string &get_host_url() const;
   inline const string &get_host_url_prefix() const;

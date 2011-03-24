@@ -14,14 +14,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::has_host_dir
+//       Access: Public
+//  Description: Returns true if the host_dir has already been set,
+//               false if not.  If this returns true it is safe to
+//               call get_host_dir().
+////////////////////////////////////////////////////////////////////
+inline bool P3DHost::
+has_host_dir() const {
+  return (!_host_dir.empty());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::get_host_dir
 //       Access: Public
 //  Description: Returns the local directory into which files
-//               downloaded from this host will be installed.
+//               downloaded from this host will be installed.  It may
+//               not be safe to call this before the host has fully
+//               bootstrapped; if there is some danger of calling this
+//               early in the initialization process, you should check
+//               has_host_dir() first.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DHost::
 get_host_dir() const {
-  assert(!_host_dir.empty());
+  assert(has_host_dir());
   return _host_dir;
 }
 

@@ -413,7 +413,10 @@ class Packager:
 
                 # Every p3dapp requires panda3d.
                 if 'panda3d' not in map(lambda p: p.packageName, self.requires):
+                    assert not self.packager.currentPackage
+                    self.packager.currentPackage = self
                     self.packager.do_require('panda3d')
+                    self.packager.currentPackage = None
 
                 # If this flag is set, enable allow_python_dev.
                 if self.packager.allowPythonDev:
@@ -1605,6 +1608,9 @@ class Packager:
             self.packageSeq.storeXml(xpackage, 'seq')
             self.packageSetVer.storeXml(xpackage, 'set_ver')
 
+            requireHosts = {}
+            requireHosts[self.host] = True
+
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
@@ -1612,10 +1618,19 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                xrequires.SetAttribute('host', package.host)
                 package.packageSeq.storeXml(xrequires, 'seq')
                 package.packageSetVer.storeXml(xrequires, 'set_ver')
-                xrequires.SetAttribute('host', package.host)
+                requireHosts[package.host] = True
                 xpackage.InsertEndChild(xrequires)
+
+            # Make sure we also write the full host descriptions for
+            # any hosts we reference, so we can find these guys later.
+            for host in requireHosts.keys():
+                he = self.packager.hosts.get(host, None)
+                if he:
+                    xhost = he.makeXml(packager = self.packager)
+                    xpackage.InsertEndChild(xhost)
 
             self.components.sort()
             for type, name, xcomponent in self.components:
@@ -1642,6 +1657,15 @@ class Packager:
             self.platform = xpackage.Attribute('platform')
             self.version = xpackage.Attribute('version')
             self.host = xpackage.Attribute('host')
+
+            # Get any new host descriptors.
+            xhost = xpackage.FirstChildElement('host')
+            while xhost:
+                he = self.packager.HostEntry()
+                he.loadXml(xhost, self)
+                if he.url not in self.packager.hosts:
+                    self.packager.hosts[he.url] = he
+                xhost = xhost.NextSiblingElement('host')
 
             self.packageSeq.loadXml(xpackage, 'seq')
             self.packageSetVer.loadXml(xpackage, 'set_ver')

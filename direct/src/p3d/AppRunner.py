@@ -824,8 +824,17 @@ class AppRunner(DirectObject):
             host.readContentsFile()
 
         if not host.downloadContentsFile(self.http):
+            # Couldn't download?  Must have failed to download in the
+            # plugin as well.  But since we launched, we probably have
+            # a copy already local; let's use it.
             message = "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
-            raise OSError, message
+            if not host.hasContentsFile:
+                # This is weird.  How did we launch without having
+                # this file at all?
+                raise OSError, message
+
+            # Just make it a warning and continue.
+            self.notify.warning(message)
 
         if name == 'panda3d' and not self.pandaHostUrl:
             # A special case: in case we don't have the PackageHostUrl

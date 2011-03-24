@@ -446,11 +446,20 @@ contents_file_download_finished(bool success) {
       }
 
       // Maybe we can read an already-downloaded contents.xml file.
-      string standard_filename = _host->get_host_dir() + "/contents.xml";
-      if (_host->get_host_dir().empty() || 
-          !_host->read_contents_file(standard_filename, false)) {
-        // Couldn't even read that.  Fail.
-        nout << "Couldn't read " << standard_filename << "\n";
+      bool success = false;
+      if (_host->has_host_dir()) {
+        string standard_filename = _host->get_host_dir() + "/contents.xml";
+        if (_host->read_contents_file(standard_filename, false)) {
+          success = true;
+        } else {
+          nout << "Couldn't read " << standard_filename << "\n";
+        }
+      } else {
+        nout << "No host_dir available for " << _host->get_host_url()
+             << "\n";
+      }
+      if (!success) {
+        // Couldn't read an already-downloaded file either.  Fail.
         report_done(false);
         if (_temp_contents_file) {
           delete _temp_contents_file;
