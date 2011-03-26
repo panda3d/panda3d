@@ -793,12 +793,16 @@ def GetThirdpartyDir():
     elif (sys.platform == "darwin"):
         THIRDPARTYDIR=GetThirdpartyBase()+"/darwin-libs-a/"
     elif (sys.platform.startswith("linux")):
-        if (platform.architecture()[0] == "64bit"):
+        if (platform.machine().startswith("arm")):
+            THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-arm/"
+        elif (platform.architecture()[0] == "64bit"):
             THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-x64/"
         else:
             THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-a/"
     elif (sys.platform.startswith("freebsd")):
-        if (platform.architecture()[0] == "64bit"):
+        if (platform.machine().startswith("arm")):
+            THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-arm/"
+        elif (platform.architecture()[0] == "64bit"):
             THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-x64/"
         else:
             THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-a/"
