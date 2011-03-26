@@ -1958,6 +1958,11 @@ void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
   disable_standard_vertex_arrays();
   unbind_buffers();
+
+  // Some callbacks may quite reasonably assume that the active
+  // texture stage is still set to stage 0.  CEGUI, in particular,
+  // makes this assumption.
+  _glActiveTexture(GL_TEXTURE0);
 }
 
 ////////////////////////////////////////////////////////////////////
