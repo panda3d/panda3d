@@ -267,9 +267,15 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
   }
 
   if (chan_cat.is_debug()) {
-    chan_cat.debug()
-      << "binding " << *this << " to " << *anim << ", is_included = "
-      << is_included << "\n";
+    if (anim == (AnimGroup *)NULL) {
+      chan_cat.debug()
+        << "binding " << *this << " to NULL, is_included = "
+        << is_included << "\n";
+    } else {
+      chan_cat.debug()
+        << "binding " << *this << " to " << *anim << ", is_included = "
+        << is_included << "\n";
+    }
   }
   while ((int)_channels.size() <= channel_index) {
     _channels.push_back((AnimChannelBase*)NULL);
