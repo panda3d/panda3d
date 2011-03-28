@@ -53,6 +53,8 @@ public:
 PUBLISHED:
   INLINE void set_double_sided(bool value);
   INLINE bool is_double_sided();
+  INLINE void set_min_coverage(float value);
+  INLINE float get_min_coverage();
   INLINE void set_vertices(const LPoint3f &v0, const LPoint3f &v1,
                            const LPoint3f &v2, const LPoint3f &v3);
   INLINE int get_num_vertices() const;
@@ -70,6 +72,7 @@ protected:
 
 private:
   bool _double_sided;
+  float _min_coverage;
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
 

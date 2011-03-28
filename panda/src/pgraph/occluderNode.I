@@ -70,3 +70,24 @@ INLINE void OccluderNode::set_double_sided(bool value) {
 INLINE bool OccluderNode::is_double_sided() {
   return _double_sided;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: OccluderNode::set_min_coverage
+//       Access: Published
+//  Description: Minimum screen coverage needed before occluder used.
+//               Range should be 0 to 1. For example, setting to 0.2
+//               would mean that the occluder needs to cover 20% of
+//               the screen to be considered.
+////////////////////////////////////////////////////////////////////
+INLINE void OccluderNode::set_min_coverage(float value) {
+  _min_coverage = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OccluderNode::get_min_coverage
+//       Access: Published
+//  Description: Returns the minimum screen coverage.
+////////////////////////////////////////////////////////////////////
+INLINE float OccluderNode::get_min_coverage() {
+  return _min_coverage;
+}

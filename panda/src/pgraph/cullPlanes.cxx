@@ -130,6 +130,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
   if (node_effect != (OccluderEffect *)NULL) {
     CPT(TransformState) center_transform = NULL;
+    // We'll need to know the occluder's frustum in cull-center
+    // space.
+    SceneSetup *scene = trav->get_scene();
+    const Lens *lens = scene->get_lens();
 
     int num_on_occluders = node_effect->get_num_on_occluders();
     for (int i = 0; i < num_on_occluders; ++i) {
@@ -139,10 +143,6 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // Here's a new occluder; consider adding it to the list.
         OccluderNode *occluder_node = DCAST(OccluderNode, occluder.node());
         nassertr(occluder_node->get_num_vertices() == 4, new_planes);
-        
-        // We'll need to know the occluder's frustum in cull-center
-        // space.
-        SceneSetup *scene = trav->get_scene();
 
         CPT(TransformState) occluder_transform = occluder.get_transform(scene->get_cull_center());
 
@@ -163,45 +163,137 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // we might as well make a BoundingBox, which is as tight as
         // possible, and creating one isn't any less efficient than
         // transforming the existing bounding volume.
-	PT(BoundingBox) occluder_gbv;
-	{
-	  // Get a transform from the occluder directly to this node's
-	  // space for comparing with the current view frustum.
-	  CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
-	  const LMatrix4f &composed_mat = composed_transform->get_mat();
-	  LPoint3f ccp[4];
-	  ccp[0] = occluder_node->get_vertex(0) * composed_mat;
-	  ccp[1] = occluder_node->get_vertex(1) * composed_mat;
-	  ccp[2] = occluder_node->get_vertex(2) * composed_mat;
-	  ccp[3] = occluder_node->get_vertex(3) * composed_mat;
+        PT(BoundingBox) occluder_gbv;
+        // Get a transform from the occluder directly to this node's
+        // space for comparing with the current view frustum.
+        CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
+        const LMatrix4f &composed_mat = composed_transform->get_mat();
+        LPoint3f ccp[4];
+        ccp[0] = occluder_node->get_vertex(0) * composed_mat;
+        ccp[1] = occluder_node->get_vertex(1) * composed_mat;
+        ccp[2] = occluder_node->get_vertex(2) * composed_mat;
+        ccp[3] = occluder_node->get_vertex(3) * composed_mat;
 
-	  LPoint3f ccp_min(min(min(ccp[0][0], ccp[1][0]), 
-			       min(ccp[2][0], ccp[3][0])),
-			   min(min(ccp[0][1], ccp[1][1]), 
-			       min(ccp[2][1], ccp[3][1])),
-			   min(min(ccp[0][2], ccp[1][2]), 
-			       min(ccp[2][2], ccp[3][2])));
-	  LPoint3f ccp_max(max(max(ccp[0][0], ccp[1][0]), 
-			       max(ccp[2][0], ccp[3][0])),
-			   max(max(ccp[0][1], ccp[1][1]), 
-			       max(ccp[2][1], ccp[3][1])),
-			   max(max(ccp[0][2], ccp[1][2]), 
-			       max(ccp[2][2], ccp[3][2])));
-			   			   
-	  occluder_gbv = new BoundingBox(ccp_min, ccp_max);
+        LPoint3f ccp_min(min(min(ccp[0][0], ccp[1][0]), 
+                     min(ccp[2][0], ccp[3][0])),
+                 min(min(ccp[0][1], ccp[1][1]), 
+                     min(ccp[2][1], ccp[3][1])),
+                 min(min(ccp[0][2], ccp[1][2]), 
+                     min(ccp[2][2], ccp[3][2])));
+        LPoint3f ccp_max(max(max(ccp[0][0], ccp[1][0]), 
+                     max(ccp[2][0], ccp[3][0])),
+                 max(max(ccp[0][1], ccp[1][1]), 
+                     max(ccp[2][1], ccp[3][1])),
+                 max(max(ccp[0][2], ccp[1][2]), 
+                     max(ccp[2][2], ccp[3][2])));
+
+        occluder_gbv = new BoundingBox(ccp_min, ccp_max);
+
+        if (data->_view_frustum != (GeometricBoundingVolume *)NULL) {
+          int occluder_result = data->_view_frustum->contains(occluder_gbv);
+          if (occluder_result == BoundingVolume::IF_no_intersection) {
+            // This occluder is outside the view frustum; ignore it.
+            if (pgraph_cat.is_spam()) {
+              pgraph_cat.spam()
+            << "Ignoring occluder " << occluder << ": outside view frustum.\n";
+            }
+            continue;
+          }
         }
 
-	if (data->_view_frustum != (GeometricBoundingVolume *)NULL) {
-	  int occluder_result = data->_view_frustum->contains(occluder_gbv);
-	  if (occluder_result == BoundingVolume::IF_no_intersection) {
-	    // This occluder is outside the view frustum; ignore it.
-	    if (pgraph_cat.is_spam()) {
-	      pgraph_cat.spam()
-		<< "Ignoring occluder " << occluder << ": outside view frustum.\n";
-	    }
-	    continue;
-	  }
-	}
+        // Get the occluder geometry in cull-center space.
+        const LMatrix4f &occluder_mat = occluder_transform->get_mat();
+        LPoint3f points_near[4];
+        points_near[0] = occluder_node->get_vertex(0) * occluder_mat;
+        points_near[1] = occluder_node->get_vertex(1) * occluder_mat;
+        points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
+        points_near[3] = occluder_node->get_vertex(3) * occluder_mat;
+        Planef plane(points_near[0], points_near[1], points_near[2]);
+        
+        if (plane.get_normal().dot(LVector3f::forward()) >= 0.0) {
+          if (occluder_node->is_double_sided()) {
+            swap(points_near[0], points_near[3]);
+            swap(points_near[1], points_near[2]);
+            plane = Planef(points_near[0], points_near[1], points_near[2]);
+          } else {
+            // This occluder is facing the wrong direction.  Ignore it.
+            if (pgraph_cat.is_spam()) {
+              pgraph_cat.spam()
+                << "Ignoring occluder " << occluder << ": wrong direction.\n";
+            }
+            continue;
+          }
+        }
+
+        float near_clip = lens->get_near();
+        if (plane.dist_to_plane(LPoint3f::zero()) <= near_clip) {
+          // This occluder is behind the camera's near plane.  Ignore it.
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
+              << "Ignoring occluder " << occluder << ": behind near plane.\n";
+          }
+          continue;
+        }
+
+        float d0 = points_near[0].dot(LVector3f::forward());
+        float d1 = points_near[1].dot(LVector3f::forward());
+        float d2 = points_near[2].dot(LVector3f::forward());
+        float d3 = points_near[3].dot(LVector3f::forward());
+
+        if (d0 <= near_clip && d1 <= near_clip && d2 <= near_clip && d3 <= near_clip) {
+          // All four corners of the occluder are behind the camera's
+          // near plane.  Ignore it.
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
+              << "Ignoring occluder " << occluder << ": behind near plane (test 2).\n";
+        }
+          continue;
+        }
+
+        // TODO: it's possible for part of the occlusion polygon to
+        // intersect the camera's y = 0 plane.  If this happens, the
+        // frustum will go insane and the occluder won't work.  The
+        // proper fix for this is to clip the polygon against the near
+        // plane, producing a smaller polygon, and use that to
+        // generate the frustum.  But maybe it doesn't matter.  In
+        // lieu of this, we just toss out any occluder with *any*
+        // corner behind the y = 0 plane.
+        if (d0 <= 0.0 || d1 <= 0.0 || d2 <= 0.0 || d3 <= 0.0) {
+          // One of the corners is behind the y = 0 plane.  We can't
+          // handle this case.  Ignore it.
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
+              << "Ignoring occluder " << occluder << ": partly behind zero plane.\n";
+          }
+          continue;
+        }
+
+        if (occluder_node->get_min_coverage()) {
+          LPoint3f coords[4];
+          lens->project(points_near[0], coords[0]);
+          lens->project(points_near[1], coords[1]);
+          lens->project(points_near[2], coords[2]);
+          lens->project(points_near[3], coords[3]);
+          coords[0][0] = max(-1, min(1, coords[0][0]));
+          coords[0][1] = max(-1, min(1, coords[0][1]));
+          coords[1][0] = max(-1, min(1, coords[1][0]));
+          coords[1][1] = max(-1, min(1, coords[1][1]));
+          coords[2][0] = max(-1, min(1, coords[2][0]));
+          coords[2][1] = max(-1, min(1, coords[2][1]));
+          coords[3][0] = max(-1, min(1, coords[3][0]));
+          coords[3][1] = max(-1, min(1, coords[3][1]));
+          float coverage = ((coords[0] - coords[1]).cross(coords[0] - coords[2]).length()
+                          + (coords[3] - coords[1]).cross(coords[3] - coords[2]).length())
+                          * 0.125;
+          if (coverage < occluder_node->get_min_coverage()) {
+            // The occluder does not cover enough screen space.  Ignore it.
+            if (pgraph_cat.is_spam()) {
+              pgraph_cat.spam()
+                << "Ignoring occluder " << occluder << ": coverage less than minimum.\n";
+            }
+            continue;
+          }
+        }
 
         // Also check if the new occluder is completely within any of
         // our existing occluder volumes.
@@ -217,80 +309,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         if (is_enclosed) {
           // No reason to add this occluder; it's behind an existing
           // occluder.
-	  if (pgraph_cat.is_spam()) {
-	    pgraph_cat.spam()
-	      << "Ignoring occluder " << occluder << ": behind another.\n";
-	  }
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
+              << "Ignoring occluder " << occluder << ": behind another.\n";
+          }
           continue;
         }
         // TODO: perhaps we should also check whether any existing
         // occluders are fully contained within this new one.
-        
-        // Get the occluder geometry in cull-center space.
-        const LMatrix4f &occluder_mat = occluder_transform->get_mat();
-        LPoint3f points_near[4];
-        points_near[0] = occluder_node->get_vertex(0) * occluder_mat;
-        points_near[1] = occluder_node->get_vertex(1) * occluder_mat;
-        points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
-        points_near[3] = occluder_node->get_vertex(3) * occluder_mat;
-        
-        Planef plane(points_near[0], points_near[1], points_near[2]);
-        if (plane.get_normal().dot(LVector3f::forward()) >= 0.0) {
-          if (occluder_node->is_double_sided()) {
-            swap(points_near[0], points_near[3]);
-            swap(points_near[1], points_near[2]);
-            plane = Planef(points_near[0], points_near[1], points_near[2]);
-          } else {
-            // This occluder is facing the wrong direction.  Ignore it.
-	    if (pgraph_cat.is_spam()) {
-	      pgraph_cat.spam()
-		<< "Ignoring occluder " << occluder << ": wrong direction.\n";
-	    }
-            continue;
-          }
-        }
-
-        float near_clip = scene->get_lens()->get_near();
-        if (plane.dist_to_plane(LPoint3f::zero()) <= near_clip) {
-          // This occluder is behind the camera's near plane.  Ignore it.
-	  if (pgraph_cat.is_spam()) {
-	    pgraph_cat.spam()
-	      << "Ignoring occluder " << occluder << ": behind near plane.\n";
-	  }
-          continue;
-        }
-
-        float d0 = points_near[0].dot(LVector3f::forward());
-        float d1 = points_near[1].dot(LVector3f::forward());
-        float d2 = points_near[2].dot(LVector3f::forward());
-        float d3 = points_near[3].dot(LVector3f::forward());
-        if (d0 <= near_clip && d1 <= near_clip && d2 <= near_clip && d3 <= near_clip) {
-          // All four corners of the occluder are behind the camera's
-          // near plane.  Ignore it.
-	  if (pgraph_cat.is_spam()) {
-	    pgraph_cat.spam()
-	      << "Ignoring occluder " << occluder << ": behind near plane (test 2).\n";
-	  }
-          continue;
-        }
-
-        // TODO: it's possible for part of the occlusion polygon to
-        // intersect the camera's y = 0 plane.  If this happens, the
-        // frustum will go insane and the occluder won't work.  The
-        // proper fix for this is to clip the polygon against the near
-        // plane, producing a smaller polygon, and use that to
-        // generate the frustum.  But maybe it doesn't matter.  In
-        // lieu of this, we just toss out any occluder with *any*
-        // corner behind the y = 0 plane.
-        if (d0 <= 0.0 || d1 <= 0.0 || d2 <= 0.0 || d3 <= 0.0) {
-          // One of the corners is behind the y = 0 plane.  We can't
-          // handle this case.  Ignore it.
-	  if (pgraph_cat.is_spam()) {
-	    pgraph_cat.spam()
-	      << "Ignoring occluder " << occluder << ": partly behind zero plane.\n";
-	  }
-          continue;
-        }
 
         // Project those four lines to the camera's far plane.
         float far_clip = scene->get_lens()->get_far();

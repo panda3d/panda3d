@@ -62,6 +62,7 @@ OccluderNode(const string &name) :
   // OccluderNodes are hidden by default.
   set_overall_hidden(true);
   set_double_sided(false);
+  set_min_coverage(0.0);
   set_vertices(LPoint3f::rfu(-1.0, 0.0, -1.0),
                LPoint3f::rfu(1.0, 0.0, -1.0),
                LPoint3f::rfu(1.0, 0.0, 1.0),
@@ -77,7 +78,8 @@ OccluderNode::
 OccluderNode(const OccluderNode &copy) :
   PandaNode(copy),
   _vertices(copy._vertices),
-  _double_sided(copy._double_sided)
+  _double_sided(copy._double_sided),
+  _min_coverage(copy._min_coverage)
 {
 }
 
