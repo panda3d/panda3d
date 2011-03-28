@@ -274,14 +274,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           lens->project(points_near[1], coords[1]);
           lens->project(points_near[2], coords[2]);
           lens->project(points_near[3], coords[3]);
-          coords[0][0] = max(-1, min(1, coords[0][0]));
-          coords[0][1] = max(-1, min(1, coords[0][1]));
-          coords[1][0] = max(-1, min(1, coords[1][0]));
-          coords[1][1] = max(-1, min(1, coords[1][1]));
-          coords[2][0] = max(-1, min(1, coords[2][0]));
-          coords[2][1] = max(-1, min(1, coords[2][1]));
-          coords[3][0] = max(-1, min(1, coords[3][0]));
-          coords[3][1] = max(-1, min(1, coords[3][1]));
+          coords[0][0] = max(-1.f, min(1.f, coords[0][0]));
+          coords[0][1] = max(-1.f, min(1.f, coords[0][1]));
+          coords[1][0] = max(-1.f, min(1.f, coords[1][0]));
+          coords[1][1] = max(-1.f, min(1.f, coords[1][1]));
+          coords[2][0] = max(-1.f, min(1.f, coords[2][0]));
+          coords[2][1] = max(-1.f, min(1.f, coords[2][1]));
+          coords[3][0] = max(-1.f, min(1.f, coords[3][0]));
+          coords[3][1] = max(-1.f, min(1.f, coords[3][1]));
           float coverage = ((coords[0] - coords[1]).cross(coords[0] - coords[2]).length()
                           + (coords[3] - coords[1]).cross(coords[3] - coords[2]).length())
                           * 0.125;
