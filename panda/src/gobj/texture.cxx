@@ -885,37 +885,37 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
   PTA_uchar newdata = PTA_uchar::empty_array(imgsize * _num_components * _component_width, get_class_type());
 
   // These ifs are for optimization of commonly used image types.
-  if (format == "RGBA" && _num_components == 4 && _component_width == 1) {
-    imgsize *= 4;
-    for (int p = 0; p < imgsize; p += 4) {
-      newdata[p + 2] = image[p    ];
-      newdata[p + 1] = image[p + 1];
-      newdata[p    ] = image[p + 2];
-      newdata[p + 3] = image[p + 3];
-    }
-    set_ram_image(newdata);
-    return;
-  }
-  if (format == "RGB" && _num_components == 3 && _component_width == 1) {
-    imgsize *= 3;
-    for (int p = 0; p < imgsize; p += 3) {
-      newdata[p + 2] = image[p    ];
-      newdata[p + 1] = image[p + 1];
-      newdata[p    ] = image[p + 2];
-    }
-    set_ram_image(newdata);
-    return;
-  }
-  if (format == "A" && _component_width == 1 && _num_components != 3) {
-    // We can generally rely on alpha to be the last component.
-    int component = _num_components - 1;
-    for (int p = 0; p < imgsize; ++p) {
-      newdata[component] = image[p];
-    }
-    set_ram_image(newdata);
-    return;
-  }
   if (_component_width == 1) {
+    if (format == "RGBA" && _num_components == 4) {
+      imgsize *= 4;
+      for (int p = 0; p < imgsize; p += 4) {
+        newdata[p + 2] = image[p    ];
+        newdata[p + 1] = image[p + 1];
+        newdata[p    ] = image[p + 2];
+        newdata[p + 3] = image[p + 3];
+      }
+      set_ram_image(newdata);
+      return;
+    }
+    if (format == "RGB" && _num_components == 3) {
+      imgsize *= 3;
+      for (int p = 0; p < imgsize; p += 3) {
+        newdata[p + 2] = image[p    ];
+        newdata[p + 1] = image[p + 1];
+        newdata[p    ] = image[p + 2];
+      }
+      set_ram_image(newdata);
+      return;
+    }
+    if (format == "A" && _num_components != 3) {
+      // We can generally rely on alpha to be the last component.
+      int component = _num_components - 1;
+      for (int p = 0; p < imgsize; ++p) {
+        newdata[component] = image[p];
+      }
+      set_ram_image(newdata);
+      return;
+    }
     for (int p = 0; p < imgsize; ++p) {
       for (uchar s = 0; s < format.size(); ++s) {
         signed char component = -1;
@@ -1094,7 +1094,7 @@ set_ram_mipmap_pointer(int n, void *image, size_t page_size) {
     _ram_images.push_back(RamImage());
   }
 
-  _ram_images[n]._page_size = page_size; 
+  _ram_images[n]._page_size = page_size;
   //_ram_images[n]._image.clear(); wtf is going on?!
   _ram_images[n]._pointer_image = image;
   ++_image_modified;
@@ -1487,11 +1487,11 @@ write(ostream &out, int indent_level) const {
   case TT_3d_texture:
     out << "3-d, " << _x_size << " x " << _y_size << " x " << _z_size;
     break;
-  
+
   case TT_2d_texture_array:
     out << "2-d array, " << _x_size << " x " << _y_size << " x " << _z_size;
     break;
-  
+
   case TT_cube_map:
     out << "cube map, " << _x_size << " x " << _y_size;
     break;
@@ -1624,7 +1624,7 @@ write(ostream &out, int indent_level) const {
   case TT_2d_texture_array:
     out << _wrap_u << " x " << _wrap_v << " x " << _wrap_w << ", ";
     break;
-  
+
   case TT_cube_map:
     break;
   }
@@ -2048,7 +2048,7 @@ string_format(const string &str) {
   } else if (cmp_nocase(str, "rgba32") == 0) {
     return F_rgba32;
   }
-  
+
   gobj_cat->error()
     << "Invalid Texture::Format value: " << str << "\n";
   return F_rgba;
@@ -2120,7 +2120,7 @@ string_filter_type(const string &string) {
     return FT_invalid;
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::format_wrap_mode
 //       Access: Published, Static
@@ -2171,7 +2171,7 @@ string_wrap_mode(const string &string) {
     return WM_invalid;
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::format_compression_mode
 //       Access: Published, Static
@@ -2231,13 +2231,13 @@ string_compression_mode(const string &str) {
   } else if (cmp_nocase_uh(str, "dxt5") == 0) {
     return CM_dxt5;
   }
-  
+
   gobj_cat->error()
     << "Invalid Texture::CompressionMode value: " << str << "\n";
   return CM_default;
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::format_quality_level
 //       Access: Published, Static
@@ -2977,7 +2977,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       image.take_from(new_image);
     }
   }
-  
+
   if (!do_load_one(image, fullpath.get_basename(), z, n, options)) {
     return false;
   }
@@ -3346,8 +3346,8 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
           header.pf.a_mask == 0xff000000U) {
         func = read_dds_level_rgba8;
 
-      } else if (header.pf.r_mask != 0 && 
-                 header.pf.g_mask == 0 && 
+      } else if (header.pf.r_mask != 0 &&
+                 header.pf.g_mask == 0 &&
                  header.pf.b_mask == 0) {
         func = read_dds_level_luminance_uncompressed;
         format = F_luminance_alpha;
@@ -3365,14 +3365,14 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
                  header.pf.b_mask == 0x00ff0000) {
         func = read_dds_level_rgb8;
 
-      } else if (header.pf.r_mask != 0 && 
-                 header.pf.g_mask == 0 && 
+      } else if (header.pf.r_mask != 0 &&
+                 header.pf.g_mask == 0 &&
                  header.pf.b_mask == 0) {
         func = read_dds_level_luminance_uncompressed;
         format = F_luminance;
       }
     }
-      
+
   }
 
   do_setup_texture(texture_type, header.width, header.height, header.depth,
@@ -3824,7 +3824,7 @@ do_reload_ram_image(bool allow_compression) {
     if (record != (BamCacheRecord *)NULL &&
         record->has_data()) {
       PT(Texture) tex = DCAST(Texture, record->get_data());
-      
+
       // But don't use the cache record if the config parameters have
       // changed, and we want a different-sized texture now.
       int x_size = _orig_file_x_size;
@@ -4122,8 +4122,8 @@ do_compress_ram_image(Texture::CompressionMode compression,
   }
 
 #ifdef HAVE_SQUISH
-  if (_texture_type != TT_3d_texture && 
-      _texture_type != TT_2d_texture_array && 
+  if (_texture_type != TT_3d_texture &&
+      _texture_type != TT_2d_texture_array &&
       _component_type == T_unsigned_byte) {
     int squish_flags = 0;
     switch (compression) {
@@ -4183,8 +4183,8 @@ bool Texture::
 do_uncompress_ram_image() {
 
 #ifdef HAVE_SQUISH
-  if (_texture_type != TT_3d_texture && 
-      _texture_type != TT_2d_texture_array && 
+  if (_texture_type != TT_3d_texture &&
+      _texture_type != TT_2d_texture_array &&
       _component_type == T_unsigned_byte) {
     int squish_flags = 0;
     switch (_ram_image_compression) {
@@ -4364,7 +4364,7 @@ do_reconsider_image_properties(int x_size, int y_size, int num_components,
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_rescale_texture
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_rescale_texture() {
@@ -4419,7 +4419,7 @@ do_rescale_texture() {
       PNMImage new_image(new_x_size, new_y_size, orig_image.get_num_channels(),
                          orig_image.get_maxval());
       new_image.copy_sub_image(orig_image, 0, new_y_size - orig_image.get_y_size());
-  
+
       do_clear_ram_image();
       _loaded_from_image = false;
       ++_image_modified;
@@ -4536,7 +4536,7 @@ do_setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 
   case TT_2d_texture_array:
     break;
-  
+
   case TT_cube_map:
     // Cube maps must always consist of six square images.
     nassertv(x_size == y_size && z_size == 6);
@@ -5341,7 +5341,7 @@ do_can_reload() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_reload
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_reload() {
@@ -6808,11 +6808,11 @@ make_from_bam(const FactoryParams &params) {
       case TT_3d_texture:
         me = TexturePool::load_3d_texture(filename, false, options);
         break;
-      
+
       case TT_2d_texture_array:
         me = TexturePool::load_2d_texture_array(filename, false, options);
         break;
-      
+
       case TT_cube_map:
         me = TexturePool::load_cube_map(filename, false, options);
         break;
