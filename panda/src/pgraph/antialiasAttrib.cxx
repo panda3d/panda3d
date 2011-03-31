@@ -35,7 +35,7 @@ int AntialiasAttrib::_attrib_slot;
 //               M_faster to specify a performance/quality tradeoff
 //               hint.
 //
-//               If M_none is specified, no antialiasing is performed.  
+//               If M_none is specified, no antialiasing is performed.
 //
 //               If M_multisample is specified, it means to use the
 //               special framebuffer multisample bits for
@@ -74,18 +74,22 @@ make(unsigned short mode) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AntialiasAttrib::
 make_default() {
-  return return_new(new AntialiasAttrib(M_none));
+  if (default_antialias_enable) {
+    return return_new(new AntialiasAttrib(M_auto));
+  } else {
+    return return_new(new AntialiasAttrib(M_none));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AntialiasAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AntialiasAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  
+
   int type = get_mode_type();
   char sep = ' ';
 
