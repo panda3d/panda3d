@@ -21,7 +21,7 @@ class EXPCL_PANDA_MATHUTIL FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)();
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, 
+  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a,
                                    const FLOATNAME(LPoint3) &b,
                                    const FLOATNAME(LPoint3) &c);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
@@ -42,7 +42,7 @@ PUBLISHED:
 
   INLINE_MATHUTIL FLOATTYPE dist_to_plane(const FLOATNAME(LPoint3) &point) const;
   INLINE_MATHUTIL FLOATNAME(LPoint3) project(const FLOATNAME(LPoint3) &point) const;
-
+  INLINE_MATHUTIL void flip();
 
   INLINE_MATHUTIL bool intersects_line(FLOATNAME(LPoint3) &intersection_point,
                                        const FLOATNAME(LPoint3) &p1,

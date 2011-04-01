@@ -66,7 +66,7 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, 
+FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
                  const FLOATNAME(LPoint3) &point) {
   FLOATNAME(LVector3) p = ::normalize(normal);
 
@@ -175,6 +175,20 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 INLINE_MATHUTIL FLOATNAME(LPoint3) FLOATNAME(Plane)::
 project(const FLOATNAME(LPoint3) &point) const {
   return point - get_normal() * dist_to_plane(point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::flip
+//       Access: Published
+//  Description: Convenience method that flips the plane in-place.
+//               This is done by simply flipping the normal vector.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL void FLOATNAME(Plane)::
+flip() {
+  _v.v._0 = -_v.v._0;
+  _v.v._1 = -_v.v._1;
+  _v.v._2 = -_v.v._2;
+  // We don't flip D, that would make the plane flip over the origin.
 }
 
 ////////////////////////////////////////////////////////////////////

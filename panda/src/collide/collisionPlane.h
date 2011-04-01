@@ -55,6 +55,8 @@ PUBLISHED:
   INLINE void set_plane(const Planef &plane);
   INLINE const Planef &get_plane() const;
 
+  INLINE void flip();
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

@@ -99,3 +99,13 @@ INLINE const Planef &CollisionPlane::
 get_plane() const {
   return _plane;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::flip
+//       Access: Published
+//  Description: Convenience method to flip the plane in-place.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPlane::
+flip() {
+  _plane.flip();
+}
