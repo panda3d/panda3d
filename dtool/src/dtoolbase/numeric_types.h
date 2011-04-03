@@ -52,20 +52,12 @@ typedef uint64_t PN_uint64;
 typedef signed char PN_int8;
 typedef short int PN_int16;
 typedef int PN_int32;
-#if NATIVE_WORDSIZE == 64
-typedef long int PN_int64;
-#else
 typedef long long int PN_int64;
-#endif
 
 typedef unsigned char PN_uint8;
 typedef unsigned short int PN_uint16;
 typedef unsigned int PN_uint32;
-#if NATIVE_WORDSIZE == 64
-typedef unsigned long int PN_uint64;
-#else
 typedef unsigned long long int PN_uint64;
-#endif
 
 #endif
 
