@@ -32,6 +32,14 @@
   #define EXPTP_CFTALK extern
 #endif
 
+#ifdef BUILDING_COLLADA
+  #define EXPCL_COLLADA __declspec(dllexport)
+  #define EXPTP_COLLADA
+#else
+  #define EXPCL_COLLADA __declspec(dllimport)
+  #define EXPTP_COLLADA extern
+#endif
+
 #ifdef BUILDING_FRAMEWORK
   #define EXPCL_FRAMEWORK __declspec(dllexport)
   #define EXPTP_FRAMEWORK
@@ -244,6 +252,9 @@
 
 #define EXPCL_CFTALK
 #define EXPTP_CFTALK
+
+#define EXPCL_COLLADA
+#define EXPTP_COLLADA
 
 #define EXPCL_FRAMEWORK
 #define EXPTP_FRAMEWORK
