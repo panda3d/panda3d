@@ -479,10 +479,16 @@
   #define fcollada_libs $[FCOLLADA_LIBS]
 #endif
 
-#if $[HAVE_COLLADADOM]
-  #define colladadom_ipath $[wildcard $[COLLADADOM_IPATH]]
-  #define colladadom_lpath $[wildcard $[COLLADADOM_LPATH]]
-  #define colladadom_libs $[COLLADADOM_LIBS]
+#if $[HAVE_COLLADA14DOM]
+  #define collada14dom_ipath $[wildcard $[COLLADA14DOM_IPATH]]
+  #define collada14dom_lpath $[wildcard $[COLLADA14DOM_LPATH]]
+  #define collada14dom_libs $[COLLADA14DOM_LIBS]
+#endif
+
+#if $[HAVE_COLLADA15DOM]
+  #define collada15dom_ipath $[wildcard $[COLLADA15DOM_IPATH]]
+  #define collada15dom_lpath $[wildcard $[COLLADA15DOM_LPATH]]
+  #define collada15dom_libs $[COLLADA15DOM_LIBS]
 #endif
 
 #if $[HAVE_ARTOOLKIT]

@@ -205,7 +205,7 @@
 #else
 #print - Did not find FCollada
 #endif
-#if $[HAVE_COLLADADOM]
+#if $[or $[HAVE_COLLADA14DOM],$[HAVE_COLLADA15DOM]]
 #print + COLLADA DOM
 #else
 #print - Did not find COLLADA DOM

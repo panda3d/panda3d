@@ -1054,10 +1054,16 @@
 #defer HAVE_FCOLLADA $[libtest $[FCOLLADA_LPATH],$[FCOLLADA_LIBS]]
 
 // Is the COLLADA DOM installed? This is for the native COLLADA loader.
-#define COLLADADOM_IPATH /usr/local/include/collada-dom /usr/local/include/collada-dom/1.5
-#define COLLADADOM_LPATH /usr/local/lib
-#define COLLADADOM_LIBS collada15dom xml2 boost_filesystem
-#defer HAVE_COLLADADOM $[libtest $[COLLADADOM_LPATH],$[COLLADADOM_LIBS]]
+// This defines the versions that your copy of COLLADA DOM supports.
+#define COLLADA14DOM_IPATH /usr/local/include/collada-dom /usr/local/include/collada-dom/1.4
+#define COLLADA14DOM_LPATH /usr/local/lib
+#define COLLADA14DOM_LIBS collada14dom xml2 boost_filesystem
+#defer HAVE_COLLADA14DOM $[libtest $[COLLADA14DOM_LPATH],$[COLLADA14DOM_LIBS]]
+
+#define COLLADA15DOM_IPATH /usr/local/include/collada-dom /usr/local/include/collada-dom/1.5
+#define COLLADA15DOM_LPATH /usr/local/lib
+#define COLLADA15DOM_LIBS collada15dom xml2 boost_filesystem
+#defer HAVE_COLLADA15DOM $[libtest $[COLLADA15DOM_LPATH],$[COLLADA15DOM_LIBS]]
 
 // Also for the ARToolKit library, for augmented reality
 #define ARTOOLKIT_IPATH
