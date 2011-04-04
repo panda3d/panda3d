@@ -1053,6 +1053,12 @@
 #define FCOLLADA_LIBS FColladaSD
 #defer HAVE_FCOLLADA $[libtest $[FCOLLADA_LPATH],$[FCOLLADA_LIBS]]
 
+// Is the COLLADA DOM installed? This is for the native COLLADA loader.
+#define COLLADADOM_IPATH /usr/local/include/collada-dom /usr/local/include/collada-dom/1.5
+#define COLLADADOM_LPATH /usr/local/lib
+#define COLLADADOM_LIBS collada15dom xml2 boost_filesystem
+#defer HAVE_COLLADADOM $[libtest $[COLLADADOM_LPATH],$[COLLADADOM_LIBS]]
+
 // Also for the ARToolKit library, for augmented reality
 #define ARTOOLKIT_IPATH
 #define ARTOOLKIT_LPATH

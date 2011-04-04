@@ -205,6 +205,11 @@
 #else
 #print - Did not find FCollada
 #endif
+#if $[HAVE_COLLADADOM]
+#print + COLLADA DOM
+#else
+#print - Did not find COLLADA DOM
+#endif
 #if $[HAVE_ARTOOLKIT]
 #print + ARToolKit
 #else
