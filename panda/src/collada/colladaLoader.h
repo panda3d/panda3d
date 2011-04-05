@@ -24,6 +24,7 @@
 #include "pta_LVecBase4f.h"
 
 class BamCacheRecord;
+class LightNode;
 
 class domCOLLADA;
 class domNode;
@@ -57,13 +58,14 @@ public:
 private:
   const domCOLLADA* _collada;
   DAE* _dae;
+  pvector<LightNode*> _lights;
 
   void load_visual_scene(domVisual_scene &scene, PandaNode *parent);
   void load_node(domNode &node, PandaNode *parent);
   void load_tags(domExtra &extra, PandaNode *node);
   void load_camera(domCamera &cam, PandaNode *parent);
   void load_geometry(domGeometry &geom, PandaNode *parent);
-  CPT(InternalName) load_input(GeomVertexArrayFormat *fmt, PTA_LVecBase4f &values, const string &semantic, domSource &src);
+  CPT(InternalName) load_input(GeomVertexArrayFormat *fmt, PTA_LVecBase4f &values, const string &semantic, domSource &src, unsigned int set=0);
   void load_light(domLight &light, PandaNode *parent);
 };
 

@@ -19,6 +19,12 @@
 #include "geomNode.h"
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
+#include "lightNode.h"
+#include "lightAttrib.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotlight.h"
 
 // Ugh, undef some macros that conflict with COLLADA.
 #undef INLINE
@@ -136,6 +142,18 @@ load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
   domNode_Array &nodes = scene.getNode_array();
   for (size_t i = 0; i < nodes.getCount(); ++i) {
     load_node(*nodes[i], pnode);
+  }
+
+  // Apply any lights we've encountered to the visual scene.
+  if (_lights.size() > 0) {
+    CPT(LightAttrib) lattr = DCAST(LightAttrib, LightAttrib::make());
+    pvector<LightNode*>::iterator it;
+    for (it = _lights.begin(); it != _lights.end(); ++it) {
+      lattr = DCAST(LightAttrib, lattr->add_light(*it));
+    }
+    pnode->set_state(RenderState::make(lattr));
+
+    _lights.clear();
   }
 }
 
@@ -348,6 +366,7 @@ load_geometry(domGeometry &geom, PandaNode *parent) {
     vtx_names[i] = load_input(vtx_aformat, vtx_values[i], semantic, *source);
   }
 
+  //TODO: support other than just triangles.
   domTriangles_Array &triangles_array = mesh->getTriangles_array();
   for (size_t i = 0; i < triangles_array.getCount(); ++i) {
     domTriangles &tris = *triangles_array[i];
@@ -374,7 +393,7 @@ load_geometry(domGeometry &geom, PandaNode *parent) {
       domSource *source = daeSafeCast<domSource>(inputs[in]->getSource().getElement());
       nassertd(source != NULL) continue;
 
-      names[in] = load_input(aformat, values[in], semantic, *source);
+      names[in] = load_input(aformat, values[in], semantic, *source, inputs[i]->getSet());
 
       if (inputs[in]->getOffset() >= stride) {
         stride = inputs[in]->getOffset() + 1;
@@ -442,10 +461,13 @@ load_geometry(domGeometry &geom, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 CPT(InternalName) ColladaLoader::
 load_input(GeomVertexArrayFormat *fmt, PTA_LVecBase4f &values,
-           const string &semantic, domSource &source) {
+           const string &semantic, domSource &source, unsigned int set) {
 
   PT(InternalName) cname;
   GeomEnums::Contents contents = GeomEnums::C_other;
+
+  ostringstream setstr;
+  setstr << set;
 
   if (semantic == "POSITION") {
     cname = InternalName::get_vertex();
@@ -455,6 +477,15 @@ load_input(GeomVertexArrayFormat *fmt, PTA_LVecBase4f &values,
     contents = GeomEnums::C_color;
   } else if (semantic == "NORMAL") {
     cname = InternalName::get_normal();
+    contents = GeomEnums::C_vector;
+  } else if (semantic == "TEXCOORD") {
+    cname = InternalName::get_texcoord_name(setstr.str());
+    contents = GeomEnums::C_texcoord;
+  } else if (semantic == "TEXBINORMAL") {
+    cname = InternalName::get_binormal_name(setstr.str());
+    contents = GeomEnums::C_vector;
+  } else if (semantic == "TEXTANGENT") {
+    cname = InternalName::get_tangent_name(setstr.str());
     contents = GeomEnums::C_vector;
   } else {
     collada_cat.warning() << "Unrecognized semantic " << semantic << "\n";
@@ -507,5 +538,68 @@ load_light(domLight &light, PandaNode *parent) {
     return;
   }
 
-  //TODO
+  PT(LightNode) lnode;
+  domLight::domTechnique_common &tc = *light.getTechnique_common();
+
+  domLight::domTechnique_common::domAmbientRef ambient = tc.getAmbient();
+  if (ambient != NULL) {
+    PT(AmbientLight) alight = new AmbientLight(light.getName());
+    lnode = DCAST(LightNode, alight);
+
+    domFloat3 &color = ambient->getColor()->getValue();
+    alight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+  }
+
+  domLight::domTechnique_common::domDirectionalRef directional = tc.getDirectional();
+  if (directional != NULL) {
+    PT(DirectionalLight) dlight = new DirectionalLight(light.getName());
+    lnode = DCAST(LightNode, dlight);
+
+    domFloat3 &color = directional->getColor()->getValue();
+    dlight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    dlight->set_direction(LVector3f(0, 0, -1));
+  }
+
+  domLight::domTechnique_common::domPointRef point = tc.getPoint();
+  if (point != NULL) {
+    PT(PointLight) plight = new PointLight(light.getName());
+    lnode = DCAST(LightNode, plight);
+
+    domFloat3 &color = point->getColor()->getValue();
+    plight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    plight->set_attenuation(LVecBase3f(
+      point->getConstant_attenuation()->getValue(),
+      point->getLinear_attenuation()->getValue(),
+      point->getQuadratic_attenuation()->getValue()
+    ));
+  }
+
+  domLight::domTechnique_common::domSpotRef spot = tc.getSpot();
+  if (spot != NULL) {
+    PT(Spotlight) slight = new Spotlight(light.getName());
+    lnode = DCAST(LightNode, slight);
+
+    domFloat3 &color = spot->getColor()->getValue();
+    slight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    slight->set_attenuation(LVecBase3f(
+      spot->getConstant_attenuation()->getValue(),
+      spot->getLinear_attenuation()->getValue(),
+      spot->getQuadratic_attenuation()->getValue()
+    ));
+    slight->get_lens()->set_fov(spot->getFalloff_angle()->getValue());
+    slight->set_exponent(spot->getFalloff_exponent()->getValue());
+  }
+
+  if (lnode == NULL) {
+    return;
+  }
+  parent->add_child(lnode);
+  _lights.push_back(lnode);
+  light.setUserData((void*) lnode);
+
+  // Load in any tags.
+  domExtra_Array &extras = light.getExtra_array();
+  for (size_t i = 0; i < extras.getCount(); ++i) {
+    load_tags(*extras[i], lnode);
+  }
 }
