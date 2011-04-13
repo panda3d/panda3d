@@ -266,24 +266,20 @@ choose_pixel_format(const FrameBufferProperties &properties,
   if (!_supports_fbconfig) {
     // We have a good OpenGL context, but it doesn't support the
     // FBConfig interface, so we'll stop there.
-    if (glxdisplay_cat.is_debug()) {
-      glxdisplay_cat.debug()
-        <<" No FBConfig supported; using XVisual only.\n";
+    glxdisplay_cat.debug()
+      <<" No FBConfig supported; using XVisual only.\n"
+      << _fbprops << "\n";
 
-      glxdisplay_cat.debug()
-        << _fbprops << "\n";
+    _context = _temp_context;
+    _temp_context = (GLXContext)NULL;
 
-      _context = _temp_context;
-      _temp_context = (GLXContext)NULL;
+    // By convention, every indirect XVisual that can render to a
+    // window can also render to a GLXPixmap.  Direct visuals we're
+    // not as sure about.
+    _context_has_pixmap = !glXIsDirect(_display, _context);
 
-      // By convention, every indirect XVisual that can render to a
-      // window can also render to a GLXPixmap.  Direct visuals we're
-      // not as sure about.
-      _context_has_pixmap = !glXIsDirect(_display, _context);
-
-      // Pbuffers aren't supported at all with the XVisual interface.
-      _context_has_pbuffer = false;
-    }
+    // Pbuffers aren't supported at all with the XVisual interface.
+    _context_has_pbuffer = false;
     return;
   }
 

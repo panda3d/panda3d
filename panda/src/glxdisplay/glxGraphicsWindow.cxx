@@ -179,6 +179,13 @@ open_window() {
     }
   }
   
+  if (glxgsg->_context == NULL) {
+    // We're supposed to have a context at this point.
+    glxdisplay_cat.error()
+      << "No GLX context: cannot open window.\n";
+    return false;
+  }
+  
   _visual_info = glxgsg->_visual;
   if (_visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
