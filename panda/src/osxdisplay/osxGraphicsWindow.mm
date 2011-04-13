@@ -1523,16 +1523,18 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
       {
         GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
         if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
-          GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL , (void*) &global_point);
-          MouseData currMouse = get_pointer(0);
-          global_point.h += currMouse.get_x();
-          global_point.v += currMouse.get_y();
-        } else {
-          GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL , (void*) &global_point); 
-          system_point_to_local_point(global_point);
-        }
+          HIPoint delta;
+          GetEventParameter(event, kEventParamMouseDelta, typeHIPoint, NULL, sizeof(HIPoint), NULL, (void*) &delta);
 
-        set_pointer_in_window((int)global_point.h, (int)global_point.v);
+          MouseData currMouse = get_pointer(0);
+          delta.x += currMouse.get_x();
+          delta.y += currMouse.get_y();
+          set_pointer_in_window((int)delta.x, (int)delta.y);
+        } else {
+          GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL , (void*) &global_point); 
+          system_point_to_local_point(global_point);
+          set_pointer_in_window((int)global_point.h, (int)global_point.v);
+        }
 
         UInt32 new_buttons = GetCurrentEventButtonState();
         handle_button_delta(new_buttons);
@@ -1542,23 +1544,26 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
 
     case kEventMouseMoved: 
     case kEventMouseDragged:
-      if (_properties.get_mouse_mode()==WindowProperties::M_relative) {
-        GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL , (void*) &global_point);
+      if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
+        HIPoint delta;
+        GetEventParameter(event, kEventParamMouseDelta, typeHIPoint, NULL, sizeof(HIPoint), NULL, (void*) &delta);
         
-        MouseData currMouse=get_pointer(0);
-        global_point.h+=currMouse.get_x();
-        global_point.v+=currMouse.get_y();
-      } else { 
-        GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL , (void*) &global_point);
-        system_point_to_local_point(global_point);
-      }
-      if (kind == kEventMouseMoved && 
-          (global_point.h < 0 || global_point.v < 0)) {
-        // Moving into the titlebar region.
-        set_pointer_out_of_window();
+        MouseData currMouse = get_pointer(0);
+        delta.x += currMouse.get_x();
+        delta.y += currMouse.get_y();
+        set_pointer_in_window((int)delta.x, (int)delta.y);
       } else {
-        // Moving within the window itself (or dragging anywhere).
-        set_pointer_in_window((int)global_point.h, (int)global_point.v);
+        GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL, sizeof(Point), NULL, (void*) &global_point);
+        system_point_to_local_point(global_point);
+
+        if (kind == kEventMouseMoved && 
+            (global_point.h < 0 || global_point.v < 0)) {
+          // Moving into the titlebar region.
+          set_pointer_out_of_window();
+        } else {
+          // Moving within the window itself (or dragging anywhere).
+          set_pointer_in_window((int)global_point.h, (int)global_point.v);
+        }
       }
       result = noErr;
       break;
