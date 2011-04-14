@@ -994,7 +994,7 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     handle.close()
     libs = []
     for l in result.split(" "):
-        if l.startswith("-l"):
+        if l.startswith("-l") or not l.startswith("-"):
             libs.append(l)
     return libs
 
