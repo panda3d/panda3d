@@ -64,7 +64,8 @@ Options:
      Defines a web token or parameter to pass to the application.
      Use this to configure how the application will be run.
      You can pass as many -t options as you need. Some examples of
-     tokens are width, height, log_basename, auto_start and hidden.
+     useful token names are width, height, log_basename, auto_start,
+     hidden and console_environment.
 
   -P platform
      If this option is provided, it should specify a comma-

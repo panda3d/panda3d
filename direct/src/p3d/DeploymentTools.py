@@ -125,7 +125,14 @@ class Standalone:
 
             # Figure out where p3dembed might be now.
             if package.platform.startswith("win"):
-                p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
+                # Use p3dembedw unless console_environment was set.
+                if extraTokens.get("console_environment", self.tokens.get("console_environment", 0)) != 0:
+                    p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
+                else:
+                    p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembedw.exe" % package.platform)
+                    # Fallback for older p3dembed versions
+                    if not vfs.exists(p3dembed):
+                        Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
             else:
                 p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed" % package.platform)
 
@@ -195,7 +202,7 @@ class Standalone:
         filenames = []
         vfs = VirtualFileSystem.getGlobalPtr()
         for e in package.extracts:
-            if e.basename not in ["p3dembed", "p3dembed.exe", "p3dembed.exe.manifest"]:
+            if e.basename not in ["p3dembed", "p3dembed.exe", "p3dembed.exe.manifest", "p3dembedw.exe", "p3dembedw.exe.manifest"]:
                 filename = Filename(package.getPackageDir(), e.filename)
                 filename.makeAbsolute()
                 if vfs.exists(filename):

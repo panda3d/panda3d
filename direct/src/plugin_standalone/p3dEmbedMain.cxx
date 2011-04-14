@@ -14,8 +14,12 @@
 
 #include "p3dEmbed.h"
 
+#ifdef P3DEMBEDW
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
+
 #ifdef _WIN32
-volatile unsigned long p3d_offset = 0xFF3D3D00;
+volatile unsigned __int32 p3d_offset = 0xFF3D3D00;
 #else
 #include <stdint.h>
 volatile uint32_t p3d_offset = 0xFF3D3D00;
@@ -23,7 +27,11 @@ volatile uint32_t p3d_offset = 0xFF3D3D00;
 
 int
 main(int argc, char *argv[]) {
+#ifdef P3DEMBEDW
+  P3DEmbed program(false);
+#else
   P3DEmbed program(true);
+#endif
   return program.run_embedded(p3d_offset, argc, argv);
 }
 

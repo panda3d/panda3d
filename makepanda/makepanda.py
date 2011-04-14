@@ -3994,6 +3994,28 @@ if (RTDIST):
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
   TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
+  if (sys.platform.startswith("win")):
+    OPTS.append("P3DEMBEDW")
+    DefSymbol("P3DEMBEDW", "P3DEMBEDW", "")
+    TargetAdd('plugin_standalone_p3dEmbedWinMain.obj', opts=OPTS, input='p3dEmbedMain.cxx')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_panda3dBase.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_p3dEmbedWinMain.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_p3dEmbed.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_pystub.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolbase_composite1.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolbase_composite2.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_lookup3.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_indent.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolutil_composite.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_prc_composite.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_dconfig_composite.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_express_composite.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_standalone_downloader_composite.obj')
+    TargetAdd('p3dembedw.exe', input='plugin_common.obj')
+    TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
+    TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
+    TargetAdd('p3dembedw.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
+
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
 #

@@ -119,3 +119,6 @@ class p3dembed(package):
 
     config(platform_specific = True)
     file('p3dembed.exe', required = True)
+
+    if platform.startswith('win'):
+        file('p3dembedw.exe', required = True)
