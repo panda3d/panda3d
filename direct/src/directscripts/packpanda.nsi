@@ -90,6 +90,7 @@ Section "${SMDIRECTORY}" SecCore
         File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
         File /r "${PANDA}\bin\*.dll"
+        File /r "${PANDA}\bin\*.pyd"
         File /r "${PANDA}\bin\Microsoft.*.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
