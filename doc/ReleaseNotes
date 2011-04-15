@@ -14,6 +14,7 @@ This release fixes several bugs that were found in 1.7.1.
 * Fix disappearing windows with CEGUI's OpenGL renderer
 * Fixes for makepanda on FreeBSD
 * Fix LightRampAttrib crash
+* Fix bug with two-parameter Lens::set_fov
 
 ------------------------  RELEASE 1.7.1  ------------------------
 
