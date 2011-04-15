@@ -38,7 +38,7 @@ extern "C" {
 #else
   static int       pandavfs_write(URLContext *h, const unsigned char *buf, int size);
 #endif
-  static PN_int64  pandavfs_seek(URLContext *h, PN_int64 pos, int whence);
+  static int64_t   pandavfs_seek(URLContext *h, int64_t pos, int whence);
   static int       pandavfs_close(URLContext *h);
 }
 
