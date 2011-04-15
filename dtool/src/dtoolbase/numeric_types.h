@@ -32,23 +32,8 @@ typedef unsigned __int16 PN_uint16;
 typedef unsigned __int32 PN_uint32;
 typedef unsigned __int64 PN_uint64;
 
-#elif defined(PHAVE_STDINT_H)
-
-#include <stdint.h>
-
-typedef int8_t  PN_int8;
-typedef int16_t PN_int16;
-typedef int32_t PN_int32;
-typedef int64_t PN_int64;
-
-typedef uint8_t  PN_uint8;
-typedef uint16_t PN_uint16;
-typedef uint32_t PN_uint32;
-typedef uint64_t PN_uint64;
-
 #else
 
-// This is risky, but we have no other choice.
 typedef signed char PN_int8;
 typedef short int PN_int16;
 typedef int PN_int32;
