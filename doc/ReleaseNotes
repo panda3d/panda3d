@@ -1,3 +1,20 @@
+------------------------  RELEASE 1.7.2  ------------------------
+
+This release fixes several bugs that were found in 1.7.1.
+
+* Fix crash on GLX implementations that have no FBConfig support
+* Fix trouble with buffers on Mac OS X
+* Un-break shadow samplers in Cg shaders
+* Fixes for relative mouse mode on OSX
+* Pdeployed apps on Windows no longer show a console window
+* Fix relative file paths for license files in pdeploy
+* Ppatcher no longer writes out faulty checksums
+* Fix plugin failure to read from cache
+* Include missing X11 extension libs in runtime distribution
+* Fix disappearing windows with CEGUI's OpenGL renderer
+* Fixes for makepanda on FreeBSD
+* Fix LightRampAttrib crash
+
 ------------------------  RELEASE 1.7.1  ------------------------
 
 This release introduces several significant bugfixes,
