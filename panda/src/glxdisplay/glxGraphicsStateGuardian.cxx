@@ -375,8 +375,20 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _visuals = 0;
   }
 
-  glxdisplay_cat.info()
-    << "No suitable FBConfig contexts available.\n";
+  glxdisplay_cat.warning()
+    << "No suitable FBConfig contexts available; using XVisual only.\n"
+    << _fbprops << "\n";
+
+  _context = _temp_context;
+  _temp_context = (GLXContext)NULL;
+
+  // By convention, every indirect XVisual that can render to a
+  // window can also render to a GLXPixmap.  Direct visuals we're
+  // not as sure about.
+  _context_has_pixmap = !glXIsDirect(_display, _context);
+
+  // Pbuffers aren't supported at all with the XVisual interface.
+  _context_has_pbuffer = false;
 }
 
 ////////////////////////////////////////////////////////////////////
