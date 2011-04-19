@@ -1,5 +1,6 @@
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
+from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import *
 import copy
 import shutil
@@ -15,6 +16,8 @@ class PackageMerger:
     hosts are in sync, so that the file across all builds with the
     most recent timestamp (indicated in the contents.xml file) is
     always the most current version of the file. """
+
+    notify = directNotify.newCategory("PackageMerger")
  
     class PackageEntry:
         """ This corresponds to a <package> entry in the contents.xml
@@ -42,6 +45,10 @@ class PackageMerger:
             self.descFile = FileSpec()
             self.descFile.loadXml(xpackage)
 
+            self.validatePackageContents()
+            
+            self.descFile.quickVerify(packageDir = self.sourceDir, notify = PackageMerger.notify, correctSelf = True)
+
             self.packageSeq = SeqValue()
             self.packageSeq.loadXml(xpackage, 'seq')
             self.packageSetVer = SeqValue()
@@ -52,6 +59,7 @@ class PackageMerger:
             if ximport:
                 self.importDescFile = FileSpec()
                 self.importDescFile.loadXml(ximport)
+                self.importDescFile.quickVerify(packageDir = self.sourceDir, notify = PackageMerger.notify, correctSelf = True)
 
         def makeXml(self):
             """ Returns a new TiXmlElement. """
@@ -74,6 +82,50 @@ class PackageMerger:
                 xpackage.InsertEndChild(ximport)
             
             return xpackage
+
+        def validatePackageContents(self):
+            """ Validates the contents of the package directory itself
+            against the expected hashes and timestamps.  Updates
+            hashes and timestamps where needed. """
+
+            if self.solo:
+                return
+
+            needsChange = False
+            packageDescFullpath = Filename(self.sourceDir, self.descFile.filename)
+            packageDir = Filename(packageDescFullpath.getDirname())
+            doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
+            if not doc.LoadFile():
+                message = "Could not read XML file: %s" % (self.descFile.filename)
+                raise OSError, message
+
+            xpackage = doc.FirstChildElement('package')
+            if not xpackage:
+                message = "No package definition: %s" % (self.descFile.filename)
+                raise OSError, message
+
+            xcompressed = xpackage.FirstChildElement('compressed_archive')
+            if xcompressed:
+                spec = FileSpec()
+                spec.loadXml(xcompressed)
+                if not spec.quickVerify(packageDir = packageDir, notify = PackageMerger.notify, correctSelf = True):
+                    spec.storeXml(xcompressed)
+                    needsChange = True
+
+            xpatch = xpackage.FirstChildElement('patch')
+            while xpatch:
+                spec = FileSpec()
+                spec.loadXml(xpatch)
+                if not spec.quickVerify(packageDir = packageDir, notify = PackageMerger.notify, correctSelf = True):
+                    spec.storeXml(xpatch)
+                    needsChange = True
+
+                xpatch = xpatch.NextSiblingElement('patch')
+
+            if needsChange:
+                PackageMerger.notify.info("Rewriting %s" % (self.descFile.filename))
+                doc.SaveFile()
+                self.descFile.quickVerify(packageDir = self.sourceDir, notify = PackageMerger.notify, correctSelf = True)
 
     # PackageMerger constructor
     def __init__(self, installDir):
@@ -161,7 +213,7 @@ class PackageMerger:
         there. """
 
         dirname = Filename(pe.descFile.filename).getDirname()
-        print "copying %s" % (dirname)
+        self.notify.info("copying %s" % (dirname))
         sourceDirname = Filename(pe.sourceDir, dirname)
         targetDirname = Filename(self.installDir, dirname)
 
@@ -208,6 +260,13 @@ class PackageMerger:
             # Copying a regular file.
             sourceFilename.copyTo(targetFilename)
 
+            # Also try to copy the timestamp, but don't fuss too much
+            # if it doesn't work.
+            try:
+                st = os.stat(sourceFilename.toOsSpecific())
+                os.utime(targetFilename.toOsSpecific(), (st.st_atime, st.st_mtime))
+            except OSError:
+                pass
 
     def merge(self, sourceDir):
         """ Adds the contents of the indicated source directory into

@@ -1,4 +1,5 @@
 import os
+import time
 from pandac.PandaModules import Filename, HashVal, VirtualFileSystem
 
 class FileSpec:
@@ -88,13 +89,18 @@ class FileSpec:
             xelement.SetAttribute('hash', self.hash)
             
     def quickVerify(self, packageDir = None, pathname = None,
-                    notify = None):
+                    notify = None, correctSelf = False):
         """ Performs a quick test to ensure the file has not been
         modified.  This test is vulnerable to people maliciously
         attempting to fool the program (by setting datestamps etc.).
 
-        Returns true if it is intact, false if it needs to be
-        redownloaded. """
+        if correctSelf is True, then any discrepency is corrected by
+        updating the appropriate fields internally, making the
+        assumption that the file on disk is the authoritative version.
+
+        Returns true if it is intact, false if it is incorrect.  If
+        correctSelf is true, raises OSError if the self-update is
+        impossible (for instance, because the file does not exist)."""
 
         if not pathname:
             pathname = Filename(packageDir, self.filename)
@@ -104,12 +110,16 @@ class FileSpec:
             # If the file is missing, the file fails.
             if notify:
                 notify.debug("file not found: %s" % (pathname))
+                if correctSelf:
+                    raise
             return False
 
         if st.st_size != self.size:
             # If the size is wrong, the file fails.
             if notify:
                 notify.debug("size wrong: %s" % (pathname))
+            if correctSelf:
+                self.__correctHash(packageDir, pathname, st, notify)
             return False
 
         if st.st_mtime == self.timestamp:
@@ -129,6 +139,8 @@ class FileSpec:
             if notify:
                 notify.debug("hash check wrong: %s" % (pathname))
                 notify.debug("  found %s, expected %s" % (self.actualFile.hash, self.hash))
+            if correctSelf:
+                self.__correctHash(packageDir, pathname, st, notify)
             return False
 
         if notify:
@@ -137,7 +149,12 @@ class FileSpec:
         # The hash is OK after all.  Change the file's timestamp back
         # to what we expect it to be, so we can quick-verify it
         # successfully next time.
-        self.__updateTimestamp(pathname, st)
+        if correctSelf:
+            # Or update our own timestamp.
+            self.__correctTimestamp(pathname, st, notify)
+            return False
+        else:
+            self.__updateTimestamp(pathname, st)
 
         return True
         
@@ -194,6 +211,14 @@ class FileSpec:
         except OSError:
             pass
 
+    def __correctTimestamp(self, pathname, st, notify):
+        """ Corrects the internal timestamp to match the one on
+        disk. """
+        if notify:
+            notify.info("Correcting timestamp of %s to %d (%s)" % (
+                self.filename, st.st_mtime, time.asctime(time.localtime(st.st_mtime))))
+        self.timestamp = st.st_mtime
+
     def checkHash(self, packageDir, pathname, st):
         """ Returns true if the file has the expected md5 hash, false
         otherwise.  As a side effect, stores a FileSpec corresponding
@@ -205,4 +230,15 @@ class FileSpec:
         self.actualFile = fileSpec
 
         return (fileSpec.hash == self.hash)
-    
+
+    def __correctHash(self, packageDir, pathname, st, notify):
+        """ Corrects the internal hash to match the one on disk. """
+        if not self.actualFile:
+            self.checkHash(packageDir, pathname, st)
+            
+        if notify:
+            notify.info("Correcting hash %s to %s" % (
+                self.filename, self.actualFile.hash))
+        self.hash = self.actualFile.hash
+        self.size = self.actualFile.size
+        self.timestamp = self.actualFile.timestamp

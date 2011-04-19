@@ -4,7 +4,9 @@ usageText = """
 
 This script can be used to merge together the contents of two or more
 separately-built stage directories, built independently via ppackage,
-or via Packager.py.
+or via Packager.py.  This script also verifies the hash, file size,
+and timestamp values in the stage directory as it runs, so it can be
+run on a single standalone directory just to perform this validation.
 
 This script is actually a wrapper around Panda's PackageMerger.py.
 
@@ -24,7 +26,9 @@ Options:
   -i install_dir
      The full path to the final install directory.  This may also
      contain some pre-existing contents; if so, it is merged with all
-     of the input directories as well.
+     of the input directories as well.  The contents of this directory
+     are checked for self-consistency with regards to hashes and
+     timestamps.
 
   -h
      Display this help
@@ -62,9 +66,11 @@ inputDirs = []
 for arg in args:
     inputDirs.append(Filename.fromOsSpecific(arg))
 
-if not inputDirs:
-    print "no input directories specified."
-    sys.exit(1)
+# It's now legal to have no input files if you only want to verify
+# timestamps and hashes.
+## if not inputDirs:
+##     print "no input directories specified."
+##     sys.exit(1)
 
 try:
     pm = PackageMerger.PackageMerger(installDir)
