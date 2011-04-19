@@ -30,7 +30,10 @@ class tk(package):
     #config(gui_app = True)
     require('panda3d')
 
-    module('Tkinter', required = True)
+    module('Tkinter', '_tkinter', required = True)
+    module('Tkconstants', 'Tkdnd', 'tkColorChooser',
+           'tkCommonDialog', 'tkFileDialog', 'tkFont',
+           'tkMessageBox', 'tkSimpleDialog')
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
            'direct.tkwidgets')
