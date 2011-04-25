@@ -12,6 +12,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+INLINE OdeTriMeshData::TriMeshDataMap &OdeTriMeshData::
+get_tri_mesh_data_map() {
+  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+    _tri_mesh_data_map = new TriMeshDataMap;
+  }
+  return *_tri_mesh_data_map;
+}
+
 INLINE dTriMeshDataID OdeTriMeshData::
 get_id() const {
   return _id;

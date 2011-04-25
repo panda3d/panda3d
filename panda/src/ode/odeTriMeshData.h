@@ -42,7 +42,8 @@ public:
 
 private:
   typedef pmap<dGeomID, PT(OdeTriMeshData)> TriMeshDataMap;
-  static TriMeshDataMap _tri_mesh_data_map;
+  static TriMeshDataMap *_tri_mesh_data_map;
+  static INLINE TriMeshDataMap &get_tri_mesh_data_map();
 
 PUBLISHED:
 

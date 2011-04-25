@@ -15,18 +15,19 @@
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
-OdeTriMeshData::TriMeshDataMap OdeTriMeshData::_tri_mesh_data_map;
+OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = NULL;
 
 void OdeTriMeshData::
 link_data(dGeomID id, PT(OdeTriMeshData) data) {
   odetrimeshdata_cat.debug() << get_class_type() << "::link_data(" << id << "->" << data << ")" << "\n";
-  _tri_mesh_data_map[id] = data;
+  get_tri_mesh_data_map()[id] = data;
 }
 
 PT(OdeTriMeshData) OdeTriMeshData::
 get_data(dGeomID id) {
-  TriMeshDataMap::iterator iter = _tri_mesh_data_map.find(id);
-  if (iter != _tri_mesh_data_map.end()) {
+  const TriMeshDataMap &data_map = get_tri_mesh_data_map();
+  TriMeshDataMap::const_iterator iter = data_map.find(id);
+  if (iter != data_map.end()) {
     return iter->second;
   }
   return 0;
@@ -35,17 +36,19 @@ get_data(dGeomID id) {
 void OdeTriMeshData::
 unlink_data(dGeomID id) {
   odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
-  TriMeshDataMap::iterator iter = _tri_mesh_data_map.find(id);
-  if (iter != _tri_mesh_data_map.end()) {
-    _tri_mesh_data_map.erase(iter);
+  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
+  TriMeshDataMap::iterator iter = _tri_mesh_data_map->find(id);
+  if (iter != _tri_mesh_data_map->end()) {
+    _tri_mesh_data_map->erase(iter);
   }
 }
 
 void OdeTriMeshData::
 print_data(const string &marker) {
-  odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
-  TriMeshDataMap::iterator iter = _tri_mesh_data_map.begin();
-  for (;iter != _tri_mesh_data_map.end(); ++iter) {
+  odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n"; 
+  const TriMeshDataMap &data_map = get_tri_mesh_data_map();
+  TriMeshDataMap::const_iterator iter = data_map.begin();
+  for (;iter != data_map.end(); ++iter) {
     odetrimeshdata_cat.debug() << "\t" << iter->first << " : " << iter->second << "\n";
   }
 }
@@ -53,21 +56,22 @@ print_data(const string &marker) {
 void OdeTriMeshData::
 remove_data(OdeTriMeshData *data) {
   odetrimeshdata_cat.debug() << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
+  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
   TriMeshDataMap::iterator iter;
   
-  for (iter = _tri_mesh_data_map.begin();
-       iter != _tri_mesh_data_map.end();
+  for (iter = _tri_mesh_data_map->begin();
+       iter != _tri_mesh_data_map->end();
        ++iter) {
     if ( iter->second == data ) {
       break;
     }
   }
   
-  while (iter != _tri_mesh_data_map.end()) {
-    _tri_mesh_data_map.erase(iter);
+  while (iter != _tri_mesh_data_map->end()) {
+    _tri_mesh_data_map->erase(iter);
     
-    for (iter = _tri_mesh_data_map.begin();
-         iter != _tri_mesh_data_map.end();
+    for (iter = _tri_mesh_data_map->begin();
+         iter != _tri_mesh_data_map->end();
          ++iter) {
       if ( iter->second == data ) {
         break;

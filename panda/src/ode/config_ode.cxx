@@ -50,12 +50,12 @@
 
 Configure(config_ode);
 NotifyCategoryDef(ode, "");
-NotifyCategoryDef(odeworld, "");
-NotifyCategoryDef(odebody, "");
-NotifyCategoryDef(odejoint, "");
-NotifyCategoryDef(odespace, "");
-NotifyCategoryDef(odegeom, "");
-NotifyCategoryDef(odetrimeshdata, "");
+NotifyCategoryDef(odeworld, "ode");
+NotifyCategoryDef(odebody, "ode");
+NotifyCategoryDef(odejoint, "ode");
+NotifyCategoryDef(odespace, "ode");
+NotifyCategoryDef(odegeom, "ode");
+NotifyCategoryDef(odetrimeshdata, "ode");
 
 ConfigureFn(config_ode) {
   init_libode();
