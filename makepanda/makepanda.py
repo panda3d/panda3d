@@ -569,7 +569,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
     if (RTDIST):
         SmartPkgEnable("WX",    tool = "wx-config")
-        SmartPkgEnable("FLTK",  tool = "fltk-config")
+        SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
     if (RUNTIME):
         if (sys.platform.startswith("freebsd")):
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
