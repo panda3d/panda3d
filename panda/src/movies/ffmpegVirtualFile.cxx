@@ -21,7 +21,6 @@
 extern "C" {
   #include "libavformat/avio.h"
 }
-#include <stdint.h>
 
 #ifndef AVSEEK_SIZE
   #define AVSEEK_SIZE 0x10000
