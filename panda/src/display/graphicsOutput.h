@@ -196,6 +196,7 @@ PUBLISHED:
   INLINE bool save_screenshot(
       const Filename &filename, const string &image_comment = "");
   INLINE bool get_screenshot(PNMImage &image);
+  INLINE PT(Texture) get_screenshot();
 
   NodePath get_texture_card();
 

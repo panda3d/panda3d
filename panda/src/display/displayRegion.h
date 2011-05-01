@@ -131,6 +131,7 @@ PUBLISHED:
   bool save_screenshot(
     const Filename &filename, const string &image_comment = "");
   bool get_screenshot(PNMImage &image);
+  PT(Texture) get_screenshot();
 
   virtual PT(PandaNode) make_cull_result_graph();
 

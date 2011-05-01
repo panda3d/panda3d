@@ -508,6 +508,28 @@ save_screenshot(const Filename &filename, const string &image_comment) {
 ////////////////////////////////////////////////////////////////////
 bool DisplayRegion::
 get_screenshot(PNMImage &image) {
+  PT(Texture) tex = get_screenshot();
+
+  if (tex == NULL) {
+    return false;
+  }
+  
+  if (!tex->store(image)) {
+    return false;
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_screenshot
+//       Access: Published
+//  Description: Captures the most-recently rendered image from the
+//               framebuffer and returns it as a Texture, or NULL
+//               on failure.
+////////////////////////////////////////////////////////////////////
+PT(Texture) DisplayRegion::
+get_screenshot() {
   Thread *current_thread = Thread::get_current_thread();
 
   GraphicsOutput *window = get_window();
@@ -517,25 +539,20 @@ get_screenshot(PNMImage &image) {
   nassertr(gsg != (GraphicsStateGuardian *)NULL, false);
   
   if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
-    return false;
+    return NULL;
   }
 
-  // Create a temporary texture to receive the framebuffer image.
   PT(Texture) tex = new Texture;
   
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
                                                _window->get_fb_properties());
   if (!gsg->framebuffer_copy_to_ram(tex, -1, this, buffer)) {
-    return false;
+    return NULL;
   }
   
   window->end_frame(GraphicsOutput::FM_refresh, current_thread);
   
-  if (!tex->store(image)) {
-    return false;
-  }
-  
-  return true;
+  return tex;
 }
 
 ////////////////////////////////////////////////////////////////////

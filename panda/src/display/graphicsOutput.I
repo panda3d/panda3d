@@ -767,6 +767,18 @@ get_screenshot(PNMImage &image) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_screenshot
+//       Access: Published
+//  Description: Captures the most-recently rendered image from the
+//               framebuffer and returns it as Texture, or NULL on
+//               failure.
+////////////////////////////////////////////////////////////////////
+INLINE PT(Texture) GraphicsOutput::
+get_screenshot() {
+  return _overlay_display_region->get_screenshot();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::flip_ready
 //       Access: Public
 //  Description: Returns true if a frame has been rendered and needs
