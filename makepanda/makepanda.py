@@ -5600,7 +5600,7 @@ def MakeInstallerFreeBSD():
     if (RUNTIME):
         cmd += " -c -\"The Panda3D free 3D engine runtime\" -o graphics/panda3d-runtime"
     else:
-        cmd += " -c -\"The Panda3D free 3D engine SDK\" -o devel/panda3d
+        cmd += " -c -\"The Panda3D free 3D engine SDK\" -o devel/panda3d"
     cmd += " -d pkg-descr -f pkg-plist panda3d-%s" % VERSION
     oscmd(cmd)
 
