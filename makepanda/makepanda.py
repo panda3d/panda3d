@@ -5236,7 +5236,7 @@ def MakeInstallerLinux():
     PV = PYTHONV.replace("python", "")
     if (os.path.isdir("targetroot")): oscmd("chmod -R 755 targetroot")
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
-    oscmd("mkdir targetroot")
+    oscmd("mkdir --mode=0755 targetroot")
 
     # Invoke installpanda.py to install it into a temporary dir
     if RUNTIME:
