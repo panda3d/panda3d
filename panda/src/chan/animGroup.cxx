@@ -69,7 +69,7 @@ AnimGroup(AnimGroup *parent, const AnimGroup &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates the AnimGroup, and adds it to the indicated
 //               parent.  The only way to delete it subsequently is to
 //               delete the entire hierarchy.
@@ -87,7 +87,7 @@ AnimGroup(AnimGroup *parent, const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 AnimGroup::
@@ -97,7 +97,7 @@ AnimGroup::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::get_num_children
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of child nodes of the group.
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
@@ -108,7 +108,7 @@ get_num_children() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::get_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth child of the group.
 ////////////////////////////////////////////////////////////////////
 AnimGroup *AnimGroup::
@@ -119,7 +119,7 @@ get_child(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::get_child_named
-//       Access: Public
+//       Access: Published
 //  Description: Returns the first child found with the indicated
 //               name, or NULL if no such child exists.  This method
 //               searches only the children of this particular
@@ -141,7 +141,7 @@ get_child_named(const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::find_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the first descendant found with the indicated
 //               name, or NULL if no such descendant exists.  This
 //               method searches the entire graph beginning at this
@@ -164,20 +164,6 @@ find_child(const string &name) const {
   return (AnimGroup *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimGroup::get_value_type
-//       Access: Public, Virtual
-//  Description: Returns the TypeHandle associated with the ValueType
-//               we are concerned with.  This is provided to allow a
-//               bit of run-time checking that joints and channels are
-//               matching properly in type.
-////////////////////////////////////////////////////////////////////
-TypeHandle AnimGroup::
-get_value_type() const {
-  return TypeHandle::none();
-}
-
-
 // An STL object to sort a list of children into alphabetical order.
 class AnimGroupAlphabeticalOrder {
 public:
@@ -188,7 +174,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::sort_descendants
-//       Access: Public
+//       Access: Published
 //  Description: Sorts the children nodes at each level of the
 //               hierarchy into alphabetical order.  This should be
 //               done after creating the hierarchy, to guarantee that
@@ -207,8 +193,21 @@ sort_descendants() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimGroup::output
+//     Function: AnimGroup::get_value_type
 //       Access: Public, Virtual
+//  Description: Returns the TypeHandle associated with the ValueType
+//               we are concerned with.  This is provided to allow a
+//               bit of run-time checking that joints and channels are
+//               matching properly in type.
+////////////////////////////////////////////////////////////////////
+TypeHandle AnimGroup::
+get_value_type() const {
+  return TypeHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::output
+//       Access: Published, Virtual
 //  Description: Writes a one-line description of the group.
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
@@ -218,7 +217,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes a brief description of the group and all of
 //               its descendants.
 ////////////////////////////////////////////////////////////////////

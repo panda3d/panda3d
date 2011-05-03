@@ -29,7 +29,7 @@ TypeHandle PartGroup::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates the PartGroup, and adds it to the indicated
 //               parent.  The only way to delete it subsequently is to
 //               delete the entire hierarchy.
@@ -46,7 +46,7 @@ PartGroup(PartGroup *parent, const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PartGroup::
@@ -55,7 +55,7 @@ PartGroup::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::is_character_joint
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if this part is a CharacterJoint, false
 //               otherwise.  This is a tiny optimization over
 //               is_of_type(CharacterType::get_class_type()).
@@ -67,7 +67,7 @@ is_character_joint() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::make_copy
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Allocates and returns a new copy of the node.
 //               Children are not copied, but see copy_subgraph().
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::copy_subgraph
-//       Access: Public
+//       Access: Published
 //  Description: Allocates and returns a new copy of this node and of
 //               all of its children.
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ copy_subgraph() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_num_children
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of child nodes of the group.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::
@@ -114,7 +114,7 @@ get_num_children() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth child of the group.
 ////////////////////////////////////////////////////////////////////
 PartGroup *PartGroup::
@@ -125,7 +125,7 @@ get_child(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_child_named
-//       Access: Public
+//       Access: Published
 //  Description: Returns the first child found with the indicated
 //               name, or NULL if no such child exists.  This method
 //               searches only the children of this particular
@@ -147,7 +147,7 @@ get_child_named(const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::find_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the first descendant found with the indicated
 //               name, or NULL if no such descendant exists.  This
 //               method searches the entire graph beginning at this
@@ -168,6 +168,33 @@ find_child(const string &name) const {
   }
 
   return (PartGroup *)NULL;
+}
+
+// An STL object to sort a list of children into alphabetical order.
+class PartGroupAlphabeticalOrder {
+public:
+  bool operator()(const PT(PartGroup) &a, const PT(PartGroup) &b) const {
+    return a->get_name() < b->get_name();
+  }
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::sort_descendants
+//       Access: Published
+//  Description: Sorts the children nodes at each level of the
+//               hierarchy into alphabetical order.  This should be
+//               done after creating the hierarchy, to guarantee that
+//               the correct names will match up together when the
+//               AnimBundle is later bound to a PlayerRoot.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+sort_descendants() {
+  stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->sort_descendants();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,6 +292,35 @@ get_forced_channel() const {
   return NULL;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::write
+//       Access: Published, Virtual
+//  Description: Writes a brief description of the group and all of
+//               its descendants.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << get_type() << " " << get_name() << " {\n";
+  write_descendants(out, indent_level + 2);
+  indent(out, indent_level) << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::write_with_value
+//       Access: Published, Virtual
+//  Description: Writes a brief description of the group, showing its
+//               current value, and that of all of its descendants.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+write_with_value(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << get_type() << " " << get_name() << " {\n";
+  write_descendants_with_value(out, indent_level + 2);
+  indent(out, indent_level) << "}\n";
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_value_type
 //       Access: Public, Virtual
@@ -276,34 +332,6 @@ get_forced_channel() const {
 TypeHandle PartGroup::
 get_value_type() const {
   return TypeHandle::none();
-}
-
-
-// An STL object to sort a list of children into alphabetical order.
-class PartGroupAlphabeticalOrder {
-public:
-  bool operator()(const PT(PartGroup) &a, const PT(PartGroup) &b) const {
-    return a->get_name() < b->get_name();
-  }
-};
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::sort_descendants
-//       Access: Public
-//  Description: Sorts the children nodes at each level of the
-//               hierarchy into alphabetical order.  This should be
-//               done after creating the hierarchy, to guarantee that
-//               the correct names will match up together when the
-//               AnimBundle is later bound to a PlayerRoot.
-////////////////////////////////////////////////////////////////////
-void PartGroup::
-sort_descendants() {
-  stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
-
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    (*ci)->sort_descendants();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -484,34 +512,6 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the group and all of
-//               its descendants.
-////////////////////////////////////////////////////////////////////
-void PartGroup::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level)
-    << get_type() << " " << get_name() << " {\n";
-  write_descendants(out, indent_level + 2);
-  indent(out, indent_level) << "}\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::write_with_value
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the group, showing its
-//               current value, and that of all of its descendants.
-////////////////////////////////////////////////////////////////////
-void PartGroup::
-write_with_value(ostream &out, int indent_level) const {
-  indent(out, indent_level)
-    << get_type() << " " << get_name() << " {\n";
-  write_descendants_with_value(out, indent_level + 2);
-  indent(out, indent_level) << "}\n";
 }
 
 

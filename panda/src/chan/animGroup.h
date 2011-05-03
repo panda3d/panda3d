@@ -49,10 +49,10 @@ PUBLISHED:
 
   AnimGroup *get_child_named(const string &name) const;
   AnimGroup *find_child(const string &name) const;
+  void sort_descendants();
 
 public:
   virtual TypeHandle get_value_type() const;
-  void sort_descendants();
 
 PUBLISHED:
   virtual void output(ostream &out) const;

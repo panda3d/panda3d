@@ -77,6 +77,7 @@ PUBLISHED:
 
   PartGroup *get_child_named(const string &name) const;
   PartGroup *find_child(const string &name) const;
+  void sort_descendants();
 
   bool apply_freeze(const TransformState *transform);
   virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
@@ -91,7 +92,6 @@ PUBLISHED:
 public:
   virtual TypeHandle get_value_type() const;
 
-  void sort_descendants();
   bool check_hierarchy(const AnimGroup *anim,
                        const PartGroup *parent,
                        int hierarchy_match_flags = 0) const;
