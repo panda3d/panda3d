@@ -570,13 +570,13 @@ operator >> (istream &in, AutoTextureScale &ats) {
   if (cmp_nocase(word, "none") == 0 ||
       cmp_nocase(word, "0") == 0 ||
       cmp_nocase(word, "#f") == 0 ||
-      tolower(word[0] == 'f')) {
+      (!word.empty() && tolower(word[0]) == 'f')) {
     ats = ATS_none;
 
   } else if (cmp_nocase(word, "down") == 0 ||
-          cmp_nocase(word, "1") == 0 ||
-          cmp_nocase(word, "#t") == 0 ||
-          tolower(word[0] == 't')) {
+	     cmp_nocase(word, "1") == 0 ||
+	     cmp_nocase(word, "#t") == 0 ||
+	     (!word.empty() && tolower(word[0]) == 't')) {
     ats = ATS_down;
 
   } else if (cmp_nocase(word, "up") == 0) {
@@ -620,13 +620,13 @@ operator >> (istream &in, ShaderUtilization &sgc) {
   if (cmp_nocase(word, "none") == 0 ||
       cmp_nocase(word, "0") == 0 ||
       cmp_nocase(word, "#f") == 0 ||
-      tolower(word[0] == 'f')) {
+      (!word.empty() && tolower(word[0]) == 'f')) {
     sgc = SUT_none;
 
   } else if (cmp_nocase(word, "basic") == 0 ||
-          cmp_nocase(word, "1") == 0 ||
-          cmp_nocase(word, "#t") == 0 ||
-          tolower(word[0] == 't')) {
+	     cmp_nocase(word, "1") == 0 ||
+	     cmp_nocase(word, "#t") == 0 ||
+	     (!word.empty() && tolower(word[0]) == 't')) {
     sgc = SUT_basic;
 
   } else if (cmp_nocase(word, "advanced") == 0) {
