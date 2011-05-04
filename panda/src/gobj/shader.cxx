@@ -1473,6 +1473,26 @@ cg_compile_shader(const ShaderCaps &caps) {
     return false;
   }
 
+  // DEBUG: output the generated program
+  if (gobj_cat.is_debug()) {
+    const char *vertex_program;
+    const char *pixel_program;
+    const char *geometry_program;
+
+    if (_cg_vprogram != 0) {
+      vertex_program   = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug() << vertex_program << "\n";
+    }
+    if (_cg_fprogram != 0) {
+      pixel_program    = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug() << pixel_program << "\n";
+    }
+    if (_cg_gprogram != 0) {
+      geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug() << geometry_program << "\n";
+    }
+  }
+
   return true;
 }
 
@@ -1576,26 +1596,6 @@ cg_analyze_shader(const ShaderCaps &caps) {
   for (int i=0; i<(int)_ptr_spec.size(); i++) {
     _ptr_spec[i]._id._seqno = seqno++; 
     _ptr_spec[i]._info._id = _ptr_spec[i]._id;
-  }
-
-  // DEBUG: output the generated program
-  if (gobj_cat.is_debug()) {
-    const char *vertex_program;
-    const char *pixel_program;
-    const char *geometry_program;
-
-    if (_cg_vprogram != 0) {
-      vertex_program   = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << vertex_program << "\n";
-    }
-    if (_cg_fprogram != 0) {
-      pixel_program    = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << pixel_program << "\n";
-    }
-    if (_cg_gprogram != 0) {
-      geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << geometry_program << "\n";
-    }
   }
 
   //  // The following code is present to work around a bug in the Cg compiler.
