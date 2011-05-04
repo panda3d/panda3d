@@ -19,8 +19,10 @@ load-display pandagl
 #load-display tinydisplay
 
 # These control the placement and size of the default rendering window.
+# A value of -2 for the origin means to center it on the screen,
+# while -1 lets the window manager choose the position.
 
-win-origin 50 50
+win-origin -2 -2
 win-size 800 600
 
 # Uncomment this line if you want to run Panda fullscreen instead of
@@ -95,8 +97,5 @@ model-cache-textures #f
 # Setting it to #t makes them arbvp1 and arbfp1, since these
 # seem to be most reliable. Setting it to #f makes Panda use
 # the latest profile available.
-# This default profile can be overriden by any profile setting
-# from within the application.
 
-basic-shaders-only #t
-
+basic-shaders-only #f
