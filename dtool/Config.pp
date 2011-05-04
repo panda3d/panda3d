@@ -1065,6 +1065,12 @@
 #define COLLADA15DOM_LIBS collada15dom xml2 boost_filesystem
 #defer HAVE_COLLADA15DOM $[libtest $[COLLADA15DOM_LPATH],$[COLLADA15DOM_LIBS]]
 
+// The Assimp library loads various model formats.
+#define ASSIMP_IPATH /usr/local/include/assimp
+#define ASSIMP_LPATH /usr/local/lib
+#define ASSIMP_LIBS assimp
+#define HAVE_ASSIMP $[libtest $[ASSIMP_LPATH],$[ASSIMP_LIBS]]
+
 // Also for the ARToolKit library, for augmented reality
 #define ARTOOLKIT_IPATH
 #define ARTOOLKIT_LPATH

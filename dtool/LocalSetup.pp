@@ -210,6 +210,11 @@
 #else
 #print - Did not find COLLADA DOM
 #endif
+#if $[HAVE_ASSIMP]
+#print + Assimp
+#else
+#print - Did not find Assimp
+#endif
 #if $[HAVE_ARTOOLKIT]
 #print + ARToolKit
 #else

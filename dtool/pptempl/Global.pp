@@ -491,6 +491,12 @@
   #define collada15dom_libs $[COLLADA15DOM_LIBS]
 #endif
 
+#if $[HAVE_ASSIMP]
+  #define assimp_ipath $[wildcard $[ASSIMP_IPATH]]
+  #define assimp_lpath $[wildcard $[ASSIMP_LPATH]]
+  #define assimp_libs $[ASSIMP_LIBS]
+#endif
+
 #if $[HAVE_ARTOOLKIT]
   #define artoolkit_ipath $[wildcard $[ARTOOLKIT_IPATH]]
   #define artoolkit_lpath $[wildcard $[ARTOOLKIT_LPATH]]
