@@ -61,7 +61,9 @@ register_type(LoaderFileType *type) {
 
   _types.push_back(type);
 
-  record_extension(type->get_extension(), type);
+  if (!type->get_extension().empty()) {
+    record_extension(type->get_extension(), type);
+  }
 
   vector_string words;
   extract_words(type->get_additional_extensions(), words);
@@ -208,8 +210,26 @@ write(ostream &out, int indent_level) const {
       LoaderFileType *type = (*ti);
       string name = type->get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0))
-        << "  ." << type->get_extension() << "\n";
+      indent(out, max(30 - (int)name.length(), 0)) << " ";
+
+      bool comma = false;
+      if (!type->get_extension().empty()) {
+        out << " ." << type->get_extension();
+        comma = true;
+      }
+
+      vector_string words;
+      extract_words(type->get_additional_extensions(), words);
+      vector_string::const_iterator wi;
+      for (wi = words.begin(); wi != words.end(); ++wi) {
+        if (comma) {
+          out << ",";
+        } else {
+          comma = true;
+        }
+        out << " ." << *wi;
+      }
+      out << "\n";
     }
   }
 
