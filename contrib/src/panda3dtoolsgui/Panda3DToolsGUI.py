@@ -348,6 +348,8 @@ class main(wx.Frame):
         self.tbnallChk = wx.CheckBox(self.panelGenOpts, -1, "Calculate Tangent and Binormal (-tbnall)")
         self.useSubsetChk = wx.CheckBox(self.panelGenOpts, -1, "Export Specified Subsets")
         self.subsetsTxt = wx.TextCtrl(self.panelGenOpts, -1, "")
+        self.useExcludeChk = wx.CheckBox(self.panelGenOpts, -1, "Exclude Specified Subsets")
+        self.excludesTxt = wx.TextCtrl(self.panelGenOpts, -1, "")
         
         self.animpane = PCP.PyCollapsiblePane(self.maya2eggPanel,-1, style = PCP.CP_GTK_EXPANDER )
         self.animopts_main_panel = wx.Panel(self.animpane.GetPane(), -1)
@@ -596,9 +598,11 @@ class main(wx.Frame):
         self.pandaUnitsLBL.SetToolTipString("defaults to cm")
         self.pandaUnitsCombo.SetSelection(1)
         self.backfaceChk.SetToolTipString("enable/disable backface rendering of polygons in the egg file (default is off)")
-        self.tbnallChk.SetToolTipString("calculate the tangets and normals for every polygon to be exported (for normal maps, etc)")
-        self.useSubsetChk.SetToolTipString("Export susets of a hierarchy contained in the maya scene file")
+        self.tbnallChk.SetToolTipString("calculate the tangents and normals for every polygon to be exported (for normal maps, etc)")
+        self.useSubsetChk.SetToolTipString("Export subsets of a hierarchy contained in the maya scene file")
+        self.useExcludeChk.SetToolTipString("Excludes subsets of a hierarchy contained in the maya scene file")
         self.subsetsTxt.SetMinSize((200, 21))
+        self.excludesTxt.SetMinSize((200, 21))
         self.animOptChoice.SetToolTipString("Select the particular animation to written to egg file (if any)")
         self.animOptChoice.SetSelection(1)
         self.charTxt.SetMinSize((200, 21))
@@ -749,6 +753,7 @@ class main(wx.Frame):
         genopts_static_sizer = wx.BoxSizer(wx.HORIZONTAL)
         units_sizer = wx.FlexGridSizer(5, 1, 0, 0)
         subset_sizer = wx.FlexGridSizer(1, 3, 0, 0)
+        exclude_sizer = wx.FlexGridSizer(1, 3, 0, 0)
         self.units_child_sizer_staticbox.Lower()
         units_child_sizer = wx.StaticBoxSizer(self.units_child_sizer_staticbox, wx.HORIZONTAL)
         units_child_flex_sizer = wx.FlexGridSizer(2, 2, 0, 0)
@@ -763,7 +768,10 @@ class main(wx.Frame):
         units_sizer.Add(self.tbnallChk, 0, wx.ALIGN_CENTER_VERTICAL | wx.TOP, 3)
         subset_sizer.Add(self.useSubsetChk, 0, wx.ALIGN_CENTER | wx.TOP, 3)
         subset_sizer.Add(self.subsetsTxt, 0, wx.TOP|wx.ALIGN_CENTER_HORIZONTAL, 2)
+        exclude_sizer.Add(self.useExcludeChk, 0, wx.ALIGN_CENTER | wx.TOP, 3)
+        exclude_sizer.Add(self.excludesTxt, 0, wx.TOP|wx.ALIGN_CENTER_HORIZONTAL, 2)
         units_sizer.Add(subset_sizer, 1, wx.EXPAND, 0)
+        units_sizer.Add(exclude_sizer, 1, wx.EXPAND, 0)
         genopts_static_sizer.Add(units_sizer, 1, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 0)
         self.panelGenOpts.SetSizerAndFit(genopts_static_sizer)
         maya2egg_sizer.Add(self.genpane, 1, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 0)
@@ -1555,6 +1563,9 @@ class main(wx.Frame):
         if (self.useSubrootsChk.GetValue()):
             result += ' -subroot ' + self.subrootsTxt.GetValue()
             
+        if (self.useExcludeChk.GetValue()):
+            result += ' -subset ' + self.excludesTxt.GetValue()
+           
         if (self.sfChk.GetValue()):
             result += ' -sf ' + str(self.sfSpin.GetValue())
                         
@@ -1831,6 +1842,8 @@ class main(wx.Frame):
         tbnall = newdoc.createTextNode(str(int(self.tbnallChk.GetValue())))
         subsets = newdoc.createTextNode(str(int(self.useSubsetChk.GetValue())))
         subsetsval = newdoc.createTextNode(str(self.subsetsTxt.GetValue()))
+        excludes = newdoc.createTextNode(str(int(self.useExcludeChk.GetValue())))
+        excludesval = newdoc.createTextNode(str(self.excludesTxt.GetValue()))
         
         inunitsElem = newdoc.createElement('inunits')
         outunitsElem = newdoc.createElement('outunits')
@@ -1838,6 +1851,8 @@ class main(wx.Frame):
         tbnallElem = newdoc.createElement('tbnall')
         subsetsElem = newdoc.createElement('subsets')
         subnamesElem = newdoc.createElement('subnames')
+        excludesElem = newdoc.createElement('excludes')
+        exnamesElem = newdoc.createElement('excludesval')
         
         inunitsElem.appendChild(inunits)
         outunitsElem.appendChild(outunits)
@@ -1845,6 +1860,8 @@ class main(wx.Frame):
         tbnallElem.appendChild(tbnall)
         subsetsElem.appendChild(subsets)
         subnamesElem.appendChild(subsetsval)
+        excludesElem.appendChild(excludes)
+        exnamesElem.appendChild(exnamesElem)
         
         genitem.appendChild(inunitsElem)
         genitem.appendChild(outunitsElem)
@@ -1852,6 +1869,8 @@ class main(wx.Frame):
         genitem.appendChild(tbnallElem)
         genitem.appendChild(subsetsElem)
         genitem.appendChild(subnamesElem)
+        genitem.appendChild(excludesElem)
+        genitem.appendChild(exnamesElem)
         
         
         modeloptsElem = newdoc.createElement('modelopts')
@@ -2068,6 +2087,8 @@ class main(wx.Frame):
         self.tbnallChk.SetValue(bool(int(prefs['tbnall'])))
         self.useSubsetChk.SetValue(bool(int(prefs['subsets'])))
         self.subsetsTxt.SetValue(prefs['subnames'])
+        self.useExcludeChk.SetValue(bool(int(prefs['excludes'])))
+        self.excludesTxt.SetValue(prefs['exnames'])
         self.animOptChoice.SetSelection(int(prefs['modelopts']))
         self.charChk.SetValue(bool(int(prefs['cn'])))
         self.charTxt.SetValue(prefs['charname'])
