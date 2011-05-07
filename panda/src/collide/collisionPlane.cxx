@@ -149,8 +149,6 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f from_normal = get_normal() * entry.get_inv_wrt_mat();
-
   LVector3f normal = (
     has_effective_normal() && sphere->get_respect_effective_normal())
     ? get_effective_normal() : get_normal();
@@ -281,7 +279,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   float dist_a = _plane.dist_to_plane(from_a);
   float dist_b = _plane.dist_to_plane(from_b);
 
-  if (dist_a >= 0.0f && dist_b >= 0.0f)
+  if (dist_a >= 0.0f && dist_b >= 0.0f) {
     // Entirely in front of the plane means no intersection.
     return NULL;
   }
@@ -296,7 +294,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
   new_entry->set_surface_normal(normal);
 
-  if (_plane.intersects_line(t, from_a, from_b - from_a)) {
+  float t;
+  LVector3f from_direction = from_b - from_a;
+  if (_plane.intersects_line(t, from_a, from_direction)) {
     // It intersects the plane.
     if (t >= 0.0f && t <= 1.0f) {
       // Within the segment!  Yay, that means we have a surface point.
@@ -314,7 +314,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   } else {
     // Let's be fair and choose the center of the segment.
-    new_entry->set_interior_point((from_a * from_b) * 0.5);
+    new_entry->set_interior_point((from_a + from_b) * 0.5);
   }
 
   return new_entry;
