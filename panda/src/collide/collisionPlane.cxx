@@ -277,26 +277,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   LPoint3f from_a = segment->get_point_a() * wrt_mat;
   LPoint3f from_b = segment->get_point_b() * wrt_mat;
-  LVector3f from_direction = from_b - from_a;
 
-  float t;
-  if (_plane.dist_to_plane(from_a) < 0.0f) {
-    // The first point of the line segment is behind the plane, so we
-    // don't need to test further.
-    t = 0.0f;
+  float dist_a = _plane.dist_to_plane(from_a);
+  float dist_b = _plane.dist_to_plane(from_b);
 
-  } else {
-    if (!_plane.intersects_line(t, from_a, from_direction)) {
-      // No intersection.  The line segment is parallel to the plane.
-      return NULL;
-    }
-
-    if (t < 0.0f || t > 1.0f) {
-      // The intersection point is before the start of the segment or
-      // after the end of the segment.  Therefore, the line segment is
-      // entirely in front of the plane.
-      return NULL;
-    }
+  if (dist_a >= 0.0f && dist_b >= 0.0f)
+    // Entirely in front of the plane means no intersection.
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -306,12 +293,29 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_a + t * from_direction;
-
   LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
-
   new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_intersection_point);
+
+  if (_plane.intersects_line(t, from_a, from_b - from_a)) {
+    // It intersects the plane.
+    if (t >= 0.0f && t <= 1.0f) {
+      // Within the segment!  Yay, that means we have a surface point.
+      new_entry->set_surface_point(from_a + t * from_direction);
+    }
+  }
+
+  if (dist_a < dist_b) {
+    // Point A penetrates deeper.
+    new_entry->set_interior_point(from_a);
+
+  } else if (dist_b < dist_a) {
+    // No, point B does.
+    new_entry->set_interior_point(from_b);
+
+  } else {
+    // Let's be fair and choose the center of the segment.
+    new_entry->set_interior_point((from_a * from_b) * 0.5);
+  }
 
   return new_entry;
 }
