@@ -196,6 +196,15 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _size_x = _format->fmt.pix.width;
   _size_y = _format->fmt.pix.height;
 
+  struct v4l2_streamparm streamparm;
+  memset(&streamparm, 0, sizeof streamparm);
+  streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  streamparm.parm.capture.timeperframe.numerator = 1;
+  streamparm.parm.capture.timeperframe.denominator = src->_fps;
+  if (ioctl(_fd, VIDIOC_S_PARM, &streamparm) < 0) {
+    vision_cat.error() << "Driver rejected framerate!\n";
+  }
+
   struct v4l2_requestbuffers req;
   memset(&req, 0, sizeof req);
   req.count = 4;
