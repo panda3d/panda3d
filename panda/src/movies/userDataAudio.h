@@ -25,12 +25,17 @@ class UserDataAudioCursor;
 ////////////////////////////////////////////////////////////////////
 //       Class : UserDataAudio
 // Description : A UserDataAudio is a way for the user to manually
-//               supply raw audio samples. 
+//               supply raw audio samples. remove_after_read means the
+//               data will be removed if read once. Else data will
+//               be stored (enable looping and seeking).
+//               Expects data as 16 bit signed (word); Example for stereo:
+//               1.word = 1.channel,2.word = 2.channel,
+//               3.word = 1.channel,4.word = 2.channel, etc.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
 
  PUBLISHED:
-  UserDataAudio(int rate, int channels);
+  UserDataAudio(int rate, int channels, bool remove_after_read=true);
   virtual ~UserDataAudio();
   virtual PT(MovieAudioCursor) open();
 
@@ -47,6 +52,7 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   UserDataAudioCursor *_cursor;
   pdeque<PN_int16> _data;
   bool _aborted;
+  bool _remove_after_read;
   friend class UserDataAudioCursor;
   
  public:

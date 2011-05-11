@@ -27,9 +27,13 @@ UserDataAudioCursor(UserDataAudio *src) :
 {
   _audio_rate = src->_desired_rate;
   _audio_channels = src->_desired_channels;
-  _can_seek = false;
-  _can_seek_fast = false;
+  _can_seek = !src->_remove_after_read;
+  _can_seek_fast = !src->_remove_after_read;
   _aborted = false;
+  if(!src->_remove_after_read) {
+    assert(src->_aborted && "UserData was not closed before by a done() call");
+    _length = static_cast<double>(src->_data.size() / _audio_channels) / _audio_rate;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,8 +58,41 @@ UserDataAudioCursor::
 void UserDataAudioCursor::
 read_samples(int n, PN_int16 *data) {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
-  source->read_samples(n, data);
+  
+  if(source->_remove_after_read) {
+    source->read_samples(n, data);
+  }
+  else {
+    int offset = _samples_read * _audio_channels;
+    int avail = source->_data.size() - offset;
+    int desired = n * _audio_channels;
+    if (avail > desired) avail = desired;
+
+    for (int i=0; i<avail; i++) {
+      data[i] = source->_data[i+offset];
+    }
+    for (int i=avail; i<desired; i++) {
+      data[i] = 0;
+    }
+  }
+
   _samples_read += n;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UserDataAudioCursor::ready
+//       Access: Published
+//  Description: Set the offset if possible.
+////////////////////////////////////////////////////////////////////
+void UserDataAudioCursor::
+seek(double t) {
+  if(_can_seek && 0 <= t && _length <= t) {
+    _samples_read = static_cast<int>(t * _audio_rate * _audio_channels + 0.5f);
+  }
+  else {
+    _samples_read = 0;
+  }
+  _last_seek = t;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,5 +105,7 @@ int UserDataAudioCursor::
 ready() const {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
   ((UserDataAudioCursor*)this)->_aborted = source->_aborted;
-  return (source->_data.size()) / _audio_channels;
+
+  if(source->_remove_after_read) return source->_data.size() / _audio_channels;
+  else                     return source->_data.size() / _audio_channels - _samples_read;
 }

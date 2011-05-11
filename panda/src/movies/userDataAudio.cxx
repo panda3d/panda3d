@@ -24,12 +24,13 @@ TypeHandle UserDataAudio::_type_handle;
 //               a means to supply raw audio samples manually.
 ////////////////////////////////////////////////////////////////////
 UserDataAudio::
-UserDataAudio(int rate, int channels) :
+UserDataAudio(int rate, int channels, bool remove_after_read) :
   MovieAudio("User Data Audio"),
   _desired_rate(rate),
   _desired_channels(channels),
   _cursor(NULL),
-  _aborted(false)
+  _aborted(false),
+  _remove_after_read(remove_after_read)
 {
 }
 

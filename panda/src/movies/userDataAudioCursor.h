@@ -35,7 +35,7 @@ PUBLISHED:
 public:
   virtual void read_samples(int n, PN_int16 *data);
   virtual int ready() const;
-  friend class UserDataAudio;
+  virtual void seek(double offset);
 
 public:
   static TypeHandle get_class_type() {
