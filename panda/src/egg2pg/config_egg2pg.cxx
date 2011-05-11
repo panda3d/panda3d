@@ -155,7 +155,7 @@ ConfigVariableInt egg_max_indices
           "added to any one GeomPrimitive by the egg loader."));
 
 ConfigVariableBool egg_emulate_bface
-("egg-emulate-bface", false,
+("egg-emulate-bface", true,
  PRC_DESC("When this is true, the bface flag applied to a polygon will "
           "cause two different polygons to be created, back-to-back.  When "
           "it is false, a single polygon will be created with the two_sided "
