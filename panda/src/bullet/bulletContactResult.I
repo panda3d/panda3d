@@ -1,0 +1,115 @@
+// Filename: bulletContactResult.I
+// Created by:  enn0x (08Mar10)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_node0
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNode *BulletContact::
+get_node0() const {
+
+  return _obj0 ? (PandaNode *)_obj0->getUserPointer() : NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_node1
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNode *BulletContact::
+get_node1() const {
+
+  return _obj1 ? (PandaNode *)_obj1->getUserPointer() : NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_manifold_point
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const BulletManifoldPoint *BulletContact::
+get_manifold_point() const {
+
+  return new BulletManifoldPoint(*_mp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_idx0
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const int BulletContact::
+get_idx0() const {
+
+  return _idx0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_idx1
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const int BulletContact::
+get_idx1() const {
+
+  return _idx1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_part_id0
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const int BulletContact::
+get_part_id0() const {
+
+  return _part_id0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_part_id1
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const int BulletContact::
+get_part_id1() const {
+
+  return _part_id1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_num_contacts
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int BulletContactResult::
+get_num_contacts() const {
+
+  return _contacts.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::get_contact
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const BulletContact &BulletContactResult::
+get_contact(int idx) const {
+
+  nassertr(idx >= 0 && idx < (int)_contacts.size(), _empty);
+  return _contacts[idx];
+}
+

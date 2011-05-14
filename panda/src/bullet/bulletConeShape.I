@@ -1,0 +1,47 @@
+// Filename: bulletConeShape.I
+// Created by:  enn0x (24Jan10)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeShape::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletConeShape::
+~BulletConeShape() {
+
+  delete _shape;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeShape::get_radius
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float BulletConeShape::
+get_radius() const {
+
+  return _shape->getRadius();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeShape::get_height
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float BulletConeShape::
+get_height() const {
+
+  return _shape->getHeight();
+}
+

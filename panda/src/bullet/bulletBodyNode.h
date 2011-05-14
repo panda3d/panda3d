@@ -1,0 +1,152 @@
+// Filename: bulletBodyNode.h
+// Created by:  enn0x (19Nov10)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef __BULLET_BODY_NODE_H__
+#define __BULLET_BODY_NODE_H__
+
+#include "pandabase.h"
+
+#include "bullet_includes.h"
+#include "bullet_utils.h"
+
+#include "pandaNode.h"
+#include "collideMask.h"
+#include "collisionNode.h"
+#include "transformState.h"
+
+class BulletShape;
+
+////////////////////////////////////////////////////////////////////
+//       Class : BulletBodyNode
+// Description : 
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
+
+PUBLISHED:
+  BulletBodyNode(const char *name);
+  INLINE ~BulletBodyNode();
+
+  // Shapes
+  void add_shape(BulletShape *shape, CPT(TransformState) xform=NULL);
+  void remove_shape(BulletShape *shape);
+
+  INLINE int get_num_shapes() const;
+  INLINE BulletShape *get_shape(int idx) const;
+  MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
+
+  LPoint3f get_shape_pos(int idx) const;
+  LMatrix4f get_shape_mat(int idx) const;
+
+  void add_shapes_from_collision_solids(CollisionNode *cnode);
+
+  // Static and kinematic
+  INLINE bool is_static() const;
+  INLINE bool is_kinematic() const;
+
+  INLINE void set_static(bool value);
+  INLINE void set_kinematic(bool value);
+
+  // Contacts
+  INLINE void notify_collisions(bool value);
+  INLINE bool notifies_collisions() const;
+
+  bool check_collision_with(PandaNode *node);
+
+  bool has_contact_response() const;
+
+  float get_contact_processing_threshold() const;
+  void set_contact_processing_threshold(float threshold);
+
+  // Deactivation
+  bool is_active() const;
+  void set_active(bool active, bool force=false);
+
+  void set_deactivation_time(float dt);
+  float get_deactivation_time() const;
+
+  void set_disable_deactivation(bool disable, bool force=false);
+  bool get_disable_deactivation() const;
+
+  // Friction and Restitution
+  INLINE float get_restitution() const;
+  INLINE void set_restitution(float restitution);
+
+  INLINE float get_friction() const;
+  INLINE void set_friction(float friction);
+
+  INLINE bool has_anisotropic_friction() const;
+  void set_anisotropic_friction(const LVecBase3f &friction);
+  LVecBase3f get_anisotropic_friction() const;
+
+  // CCD
+  float get_ccd_swept_sphere_radius() const;
+  float get_ccd_motion_threshold() const;
+  void set_ccd_swept_sphere_radius(float radius);
+  void set_ccd_motion_threshold(float threshold);
+
+public:
+  virtual btCollisionObject *get_object() const = 0;
+
+  virtual CollideMask get_legal_collide_mask() const;
+
+  virtual bool safe_to_flatten() const;
+  virtual bool safe_to_transform() const;
+  virtual bool safe_to_modify_transform() const;
+  virtual bool safe_to_combine() const;
+  virtual bool safe_to_combine_children() const;
+  virtual bool safe_to_flatten_below() const;
+
+protected:
+  INLINE void set_collision_flag(int flag, bool value);
+  INLINE bool get_collision_flag(int flag) const;
+
+  btCollisionShape *_shape;
+
+  typedef PTA(PT(BulletShape)) BulletShapes;
+  BulletShapes _shapes;
+
+  bool _disable_transform_changed;
+  virtual void transform_changed();
+
+private:
+  virtual void shape_changed();
+
+  static bool is_identity(btTransform &trans);
+
+////////////////////////////////////////////////////////////////////
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    PandaNode::init_type();
+    register_type(_type_handle, "BulletBodyNode", 
+                  PandaNode::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {
+    init_type();
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "bulletBodyNode.I"
+
+#endif // __BULLET_BODY_NODE_H__
+

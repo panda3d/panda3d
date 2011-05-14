@@ -69,6 +69,7 @@ class panda3d(package):
     # except for skel - this is useless in a shipped game anyways.
     excludeModule('libpandaegg')
     excludeModule('libpandaode')
+    excludeModule('libpandabullet')
     excludeModule('libp3vision')
     excludeModule('libpandaskel')
     excludeModule('libpandaphysx')
@@ -263,6 +264,16 @@ class ode(package):
     require('panda3d')
 
     file('libpandaode.dll', required = True)
+
+class bullet(package):
+    # This package contains the code for the Bullet integration.
+    # As not every application uses the Bullet layers, and to cut down
+    # the download size, it is provided as separate package.
+
+    config(display_name = "Panda3D Bullet integration")
+    require('panda3d')
+
+    file('libpandabullet.dll', required = True)
 
 class physx(package):
     # This package contains the code for the NVIDIA PhysX integration.

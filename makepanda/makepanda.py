@@ -60,7 +60,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "EGL",                                               # OpenGL (ES) integration
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
-  "ODE", "PHYSX",                                      # Physics
+  "ODE", "PHYSX", "BULLET",                            # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA",       # 3D Formats support
@@ -506,6 +506,12 @@ if (COMPILER=="MSVC"):
         if (SDK["SPEEDTREEAPI"] == "OpenGL"):
             LibName("SPEEDTREE",  "%sglew32.lib" % (libdir))
         IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
+    if (PkgSkip("BULLET")==0):
+        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/LinearMath.lib")
+        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletCollision.lib")
+        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletDynamics.lib")
+        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody.lib")
+        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletMultiThreaded.lib")
 
 if (COMPILER=="LINUX"):
     PkgDisable("AWESOMIUM")
@@ -670,6 +676,9 @@ if (COMPILER=="LINUX"):
             LibName("PHYSX", "-lPhysXLoader")
             LibName("PHYSX", "-lNxCharacter")
 
+    #if (PkgSkip("BULLET")==0):
+    #    TODO
+
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
@@ -744,8 +753,10 @@ def CompileCxx(obj,src,opts):
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
 
         # Enables Windows 7 mode if SDK is detected.
+        # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
-        if platsdk and os.path.isdir(platsdk):
+        winver = sys.getwindowsversion()
+        if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
             cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
 
         cmd += "/Fo" + obj + " /nologo /c"
@@ -1472,6 +1483,7 @@ DTOOL_CONFIG=[
     ("_SECURE_SCL",                    '1',                      'UNDEF'),
     ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
+    ("HAVE_BULLET",                    'UNDEF',                  'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
@@ -2056,6 +2068,10 @@ CopyAllHeaders('panda/src/testbed')
 if (PkgSkip("PHYSX")==0):
     CopyAllHeaders('panda/src/physx')
     CopyAllHeaders('panda/metalibs/pandaphysx')
+
+if (PkgSkip("BULLET")==0):
+    CopyAllHeaders('panda/src/bullet')
+    CopyAllHeaders('panda/metalibs/pandabullet')
 
 if (PkgSkip("SPEEDTREE")==0):
     CopyAllHeaders('panda/src/speedtree')
@@ -3449,6 +3465,35 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('libpandaode.dll', input='libpandaode_igate.obj')
   TargetAdd('libpandaode.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaode.dll', opts=['WINUSER', 'ODE'])
+
+#
+# DIRECTORY: panda/src/bullet/
+#
+if (PkgSkip("BULLET")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/bullet', 'BUILDING:PANDABULLET', 'BULLET']
+  TargetAdd('bullet_composite.obj', opts=OPTS, input='bullet_composite.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/bullet', ["*.h", "*_composite.cxx"])
+  TargetAdd('libpandabullet.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libpandabullet.in', opts=['IMOD:pandabullet', 'ILIB:libpandabullet', 'SRCDIR:panda/src/bullet'])
+  TargetAdd('libpandabullet_igate.obj', input='libpandabullet.in', opts=["DEPENDENCYONLY"])
+
+#
+# DIRECTORY: panda/metalibs/pandabullet/
+#
+if (PkgSkip("BULLET")==0 and not RUNTIME):
+  OPTS=['DIR:panda/metalibs/pandabullet', 'BUILDING:PANDABULLET', 'BULLET']
+  TargetAdd('pandabullet_pandabullet.obj', opts=OPTS, input='pandabullet.cxx')
+
+  TargetAdd('libpandabullet_module.obj', input='libpandabullet.in')
+  TargetAdd('libpandabullet_module.obj', opts=OPTS)
+  TargetAdd('libpandabullet_module.obj', opts=['IMOD:pandabullet', 'ILIB:libpandabullet'])
+
+  TargetAdd('libpandabullet.dll', input='pandabullet_pandabullet.obj')
+  TargetAdd('libpandabullet.dll', input='libpandabullet_module.obj')
+  TargetAdd('libpandabullet.dll', input='bullet_composite.obj')
+  TargetAdd('libpandabullet.dll', input='libpandabullet_igate.obj')
+  TargetAdd('libpandabullet.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandabullet.dll', opts=['WINUSER', 'BULLET'])
 
 #
 # DIRECTORY: panda/src/physx/
@@ -4869,6 +4914,8 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
     TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
+  if (PkgSkip("BULLET")==0):
+    TargetAdd('PandaModules.py', input='libpandabullet.dll')
 
 #
 # Generate the models directory and samples directory

@@ -9,6 +9,7 @@ panda3d_modules = {
     "direct"      : "libp3direct",
     "egg"         : "libpandaegg",
     "ode"         : "libpandaode",
+    "bullet"      : "libpandabullet",
     "vision"      : "libp3vision",
     "physx"       : "libpandaphysx",
     "ai"          : "libpandaai",
