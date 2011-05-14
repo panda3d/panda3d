@@ -675,9 +675,9 @@ if (COMPILER=="LINUX"):
         else:
             LibName("PHYSX", "-lPhysXLoader")
             LibName("PHYSX", "-lNxCharacter")
-
-    #if (PkgSkip("BULLET")==0):
-    #    TODO
+    if (PkgSkip("BULLET")==0):
+        IncDirectory("BULLET", "/usr/local/include/bullet")
+        LibDirectory("BULLET", "/usr/lib/panda3d/bullet/lib")
 
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
