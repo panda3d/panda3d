@@ -677,7 +677,11 @@ if (COMPILER=="LINUX"):
             LibName("PHYSX", "-lNxCharacter")
     if (PkgSkip("BULLET")==0):
         IncDirectory("BULLET", "/usr/local/include/bullet")
-        LibDirectory("BULLET", "/usr/lib/panda3d/bullet/lib")
+        LibName("BULLET", "-lLinearMath")
+        LibName("BULLET", "-lBulletCollision")
+        LibName("BULLET", "-lBulletDynamics")
+        LibName("BULLET", "-lBulletSoftBody")
+        LibName("BULLET", "-lBulletMultiThreaded")
 
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
