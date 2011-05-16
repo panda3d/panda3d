@@ -4351,6 +4351,11 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('egg-retarget-anim.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
   TargetAdd('egg-retarget-anim.exe', opts=['ADVAPI'])
 
+  TargetAdd('egg-list-textures_eggListTextures.obj', opts=OPTS, input='eggListTextures.cxx')
+  TargetAdd('egg-list-textures.exe', input='egg-list-textures_eggListTextures.obj')
+  TargetAdd('egg-list-textures.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+  TargetAdd('egg-list-textures.exe', opts=['ADVAPI'])
+
 #
 # DIRECTORY: pandatool/src/flt/
 #
