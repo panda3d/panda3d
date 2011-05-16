@@ -58,6 +58,7 @@ struct { char *ver, *key; } maya_versions[] = {
   { "MAYA2009", "2009" },
   { "MAYA2010", "2010" },
   { "MAYA2011", "2011"},
+  { "MAYA2012", "2012"},
   { 0, 0 },
 };
 
@@ -288,8 +289,8 @@ int main(int argc, char **argv)
   // bin\python25.zip (within loc)
   // Python\lib\site-packages (within loc)
   // ...so set PYTHONPATH accordingly:
-  if (strcmp(key, "2011") == 0) {
-    //Maya 2011 is built against Python 2.6 so look for that one instead
+  if (strcmp(key, "2011") == 0 || strcmp(key, "2012") == 0) {
+    //Maya 2011 and 2012 are built against Python 2.6 so look for that one instead
     sprintf(env4, "PYTHONPATH=%s\\bin\\python26.zip;%s\\Python\\lib\\site-packages", loc, loc);
   } else {
     sprintf(env4, "PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\lib\\site-packages", loc, loc);
