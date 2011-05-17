@@ -2597,7 +2597,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/cull', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/cull', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('cull_composite.obj', opts=OPTS, input='cull_composite.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite.cxx"])
   TargetAdd('libcull.in', opts=OPTS, input=IGATEFILES)
