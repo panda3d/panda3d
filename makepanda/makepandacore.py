@@ -601,8 +601,8 @@ def ListRegistryValues(path):
         _winreg.CloseKey(key)
     return result
 
-def GetRegistryKey(path, subkey):
-    if (platform.architecture()[0]=="64bit"):
+def GetRegistryKey(path, subkey, override64=True):
+    if (platform.architecture()[0]=="64bit" and override64==True):
         path = path.replace("SOFTWARE\\", "SOFTWARE\\Wow6432Node\\")
     k1=0
     key = TryRegistryKey(path)
@@ -1356,7 +1356,7 @@ def SdkLocateMaya():
                 if (sys.platform == "win32"):
                     for dev in ["Alias|Wavefront","Alias","Autodesk"]:
                         fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
-                        res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION")
+                        res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION", override64=False)
                         if (res != 0):
                             res = res.replace("\\", "/").rstrip("/")
                             SDK[ver] = res
