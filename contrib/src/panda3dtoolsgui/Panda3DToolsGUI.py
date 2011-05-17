@@ -52,7 +52,8 @@ MAYA_VERSIONS = ['MAYA VERSION',
                  '85',
                  '2008',
                  '2009',
-                 '2010'] 
+                 '2010',
+                 '2012'] 
 
 TOOLS = ['Maya2Egg',
          'Egg2Bam',
