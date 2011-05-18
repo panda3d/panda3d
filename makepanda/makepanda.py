@@ -1487,7 +1487,6 @@ DTOOL_CONFIG=[
     ("_SECURE_SCL",                    '1',                      'UNDEF'),
     ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
-    ("HAVE_BULLET",                    'UNDEF',                  'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
