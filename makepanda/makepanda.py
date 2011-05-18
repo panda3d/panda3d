@@ -591,6 +591,8 @@ if (COMPILER=="LINUX"):
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
             SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
 
+    SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
+
     if (RUNTIME):
         # For the runtime, all packages are required
         for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
@@ -675,13 +677,6 @@ if (COMPILER=="LINUX"):
         else:
             LibName("PHYSX", "-lPhysXLoader")
             LibName("PHYSX", "-lNxCharacter")
-    if (PkgSkip("BULLET")==0):
-        IncDirectory("BULLET", "/usr/local/include/bullet")
-        LibName("BULLET", "-lLinearMath")
-        LibName("BULLET", "-lBulletCollision")
-        LibName("BULLET", "-lBulletDynamics")
-        LibName("BULLET", "-lBulletSoftBody")
-        LibName("BULLET", "-lBulletMultiThreaded")
 
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
@@ -4922,8 +4917,6 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
     TargetAdd('PandaModules.py', input='libp3awesomium.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
-  if (PkgSkip("BULLET")==0):
-    TargetAdd('PandaModules.py', input='libpandabullet.dll')
 
 #
 # Generate the models directory and samples directory
