@@ -2578,6 +2578,8 @@ reset() {
 
   _max_texture_dimension = min(d3d_caps.MaxTextureWidth, d3d_caps.MaxTextureHeight);
 
+  _supports_tex_non_pow2 = !(d3d_caps.TextureCaps & D3DPTEXTURECAPS_POW2);
+
   _supports_texture_combine = ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0);
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_constant_color = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_PERSTAGECONSTANT) != 0);
