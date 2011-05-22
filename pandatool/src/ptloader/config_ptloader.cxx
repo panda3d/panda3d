@@ -94,10 +94,10 @@ init_libptloader() {
   ObjToEggConverter *obj = new ObjToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(obj));
 
-#ifdef HAVE_FCOLLADA
-  DAEToEggConverter *dae = new DAEToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(dae));
-#endif
+//#ifdef HAVE_FCOLLADA
+//  DAEToEggConverter *dae = new DAEToEggConverter;
+//  reg->register_type(new LoaderFileTypePandatool(dae));
+//#endif
 
 #ifdef HAVE_MAYA
   // Register the Maya converter as a deferred type.  We don't compile

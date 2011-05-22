@@ -19,6 +19,14 @@
 
 #if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 
+#ifdef BUILDING_ASSIMP
+  #define EXPCL_ASSIMP __declspec(dllexport)
+  #define EXPTP_ASSIMP
+#else
+  #define EXPCL_ASSIMP __declspec(dllimport)
+  #define EXPTP_ASSIMP extern
+#endif
+
 #ifdef BUILDING_PTLOADER
   #define EXPCL_PTLOADER __declspec(dllexport)
   #define EXPTP_PTLOADER
@@ -28,6 +36,9 @@
 #endif
 
 #else   /* !WIN32_VC */
+
+#define EXPCL_ASSIMP
+#define EXPTP_ASSIMP
 
 #define EXPCL_PTLOADER
 #define EXPTP_PTLOADER
