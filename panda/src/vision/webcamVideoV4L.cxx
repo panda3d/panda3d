@@ -32,7 +32,6 @@ TypeHandle WebcamVideoV4L::_type_handle;
 //               the global list _all_webcams.
 ////////////////////////////////////////////////////////////////////
 void find_all_webcams_v4l() {
-  struct video_capability cap;
   struct v4l2_capability cap2;
 
   vector_string devs;
