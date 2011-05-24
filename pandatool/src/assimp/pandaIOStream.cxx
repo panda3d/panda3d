@@ -31,7 +31,11 @@ PandaIOStream(istream &stream) : _istream(stream) {
 ////////////////////////////////////////////////////////////////////
 size_t PandaIOStream::
 FileSize() const {
-  nassertr(false, 0);
+  streampos cur = _istream.tellg();
+  _istream.seekg(0, ios::end);
+  streampos end = _istream.tellg();
+  _istream.seekg(cur, ios::beg);
+  return end;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +94,7 @@ Seek(size_t offset, aiOrigin origin) {
 ////////////////////////////////////////////////////////////////////
 size_t PandaIOStream::
 Tell() const {
-  _istream.tellg();
+  return _istream.tellg();
 }
 
 ////////////////////////////////////////////////////////////////////
