@@ -560,7 +560,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        SmartPkgEnable("OPENCV",    "",          ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
+        SmartPkgEnable("OPENCV",    "opencv",    ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
