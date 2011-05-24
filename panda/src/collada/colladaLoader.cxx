@@ -26,11 +26,10 @@
 #include "pointLight.h"
 #include "spotlight.h"
 
-// Ugh, undef some macros that conflict with COLLADA.
-#undef INLINE
-#undef tolower
+#include "colladaPrimitive.h"
 
-#include <dae.h>
+// Collada DOM includes.  No other includes beyond this point.
+#include "pre_collada_include.h"
 #include <dom/domCOLLADA.h>
 #include <dom/domNode.h>
 #include <dom/domVisual_scene.h>
@@ -43,11 +42,10 @@
 #else
 #include <dom/domInstanceWithExtra.h>
 #define domInstance_with_extra domInstanceWithExtra
-#define domInput_localRef domInputLocalRef
-#define domInput_local_offsetRef domInputLocalOffsetRef
-#define domList_of_uints domListOfUInts
-#define domList_of_floats domListOfFloats
+#define domTargetable_floatRef domTargetableFloatRef
 #endif
+
+#define TOSTRING(x) (x == NULL ? "" : x)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColladaLoader::Constructor
@@ -128,7 +126,7 @@ load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
     return;
   }
 
-  PT(PandaNode) pnode = new PandaNode(scene.getName());
+  PT(PandaNode) pnode = new PandaNode(TOSTRING(scene.getName()));
   scene.setUserData((void *) pnode);
   parent->add_child(pnode);
 
@@ -149,7 +147,7 @@ load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
     CPT(LightAttrib) lattr = DCAST(LightAttrib, LightAttrib::make());
     pvector<LightNode*>::iterator it;
     for (it = _lights.begin(); it != _lights.end(); ++it) {
-      lattr = DCAST(LightAttrib, lattr->add_light(*it));
+      lattr = DCAST(LightAttrib, lattr->add_on_light(*it));
     }
     pnode->set_state(RenderState::make(lattr));
 
@@ -171,7 +169,7 @@ load_node(domNode& node, PandaNode *parent) {
 
   // Create the node.
   PT(PandaNode) pnode;
-  pnode = new PandaNode(node.getName());
+  pnode = new PandaNode(TOSTRING(node.getName()));
   node.setUserData((void *) pnode);
   parent->add_child(pnode);
 
@@ -179,8 +177,8 @@ load_node(domNode& node, PandaNode *parent) {
   LMatrix4f transform (LMatrix4f::ident_mat());
 
   daeElementRefArray &elements = node.getContents();
-  for (size_t i = elements.getCount() - 1; i > 0; --i) {
-    daeElementRef &elem = elements[i];
+  for (size_t i = elements.getCount(); i > 0; --i) {
+    daeElementRef &elem = elements[i - 1];
 
     switch (elem->getElementType()) {
       case COLLADA_TYPE::LOOKAT: {
@@ -221,7 +219,7 @@ load_node(domNode& node, PandaNode *parent) {
         break;
       }
       case COLLADA_TYPE::SKEW:
-        // FIXME: implement skew
+        //FIXME: implement skew
         collada_cat.error() << "<skew> not supported yet\n";
         break;
       case COLLADA_TYPE::TRANSLATE: {
@@ -246,11 +244,22 @@ load_node(domNode& node, PandaNode *parent) {
     load_camera(*target, pnode);
   }
 
+  // See if this node instantiates any controllers.
+  domInstance_controller_Array &ctrlinst = node.getInstance_controller_array();
+  for (size_t i = 0; i < ctrlinst.getCount(); ++i) {
+    domController* target = daeSafeCast<domController> (ctrlinst[i]->getUrl().getElement());
+    //TODO: implement controllers.  For now, let's just read the geometry
+    if (target->getSkin() != NULL) {
+      domGeometry* geom = daeSafeCast<domGeometry> (target->getSkin()->getSource().getElement());
+      //TODO: bind_material stuff
+      load_geometry(*geom, pnode);
+    }
+  }
+
   // See if this node instantiates any geoms.
   domInstance_geometry_Array &ginst = node.getInstance_geometry_array();
   for (size_t i = 0; i < ginst.getCount(); ++i) {
-    domGeometry* target = daeSafeCast<domGeometry> (ginst[i]->getUrl().getElement());
-    load_geometry(*target, pnode);
+    load_instance_geometry(*ginst[i], pnode);
   }
 
   // See if this node instantiates any lights.
@@ -328,6 +337,26 @@ load_camera(domCamera &cam, PandaNode *parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColladaLoader::load_instance_geometry
+//  Description: Loads a COLLADA <instance_geometry> as a PandaNode
+//               object.
+////////////////////////////////////////////////////////////////////
+void ColladaLoader::
+load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
+  domGeometry* geom = daeSafeCast<domGeometry> (inst.getUrl().getElement());
+  nassertv(geom != NULL);
+
+  domBind_materialRef bind_mat = inst.getBind_material();
+  if (bind_mat == NULL) {
+    load_geometry(*geom, parent);
+    return;
+  }
+
+  domInstance_material_Array &mat_instances = bind_mat->getTechnique_common()->getInstance_material_array();
+  load_geometry(*geom, parent);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColladaLoader::load_geometry
 //  Description: Loads a COLLADA <geometry> as a GeomNode object.
 ////////////////////////////////////////////////////////////////////
@@ -346,184 +375,72 @@ load_geometry(domGeometry &geom, PandaNode *parent) {
   }
 
   // Create the node.
-  PT(GeomNode) gnode = new GeomNode(geom.getName());
+  PT(GeomNode) gnode = new GeomNode(TOSTRING(geom.getName()));
   geom.setUserData((void *) gnode);
   parent->add_child(gnode);
 
-  // First handle the <vertices> element.
-  domVertices &vertices = *mesh->getVertices();
-  daeTArray<domInput_localRef> &vtx_inputs = vertices.getInput_array();
-
-  PT(GeomVertexArrayFormat) vtx_aformat = new GeomVertexArrayFormat;
-  PTA_LVecBase4f *vtx_values = new PTA_LVecBase4f[vtx_inputs.getCount()];
-  CPT(InternalName) *vtx_names = new CPT(InternalName)[vtx_inputs.getCount()];
-
-  for (size_t i = 0; i < vtx_inputs.getCount(); ++i) {
-    const string semantic = vtx_inputs[i]->getSemantic();
-    domSource *source = daeSafeCast<domSource>(vtx_inputs[i]->getSource().getElement());
-    nassertd(source != NULL) continue;
-
-    vtx_names[i] = load_input(vtx_aformat, vtx_values[i], semantic, *source);
+  //TODO: support other than just triangles.
+  domLines_Array &lines_array = mesh->getLines_array();
+  for (size_t i = 0; i < lines_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*lines_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
   }
 
-  //TODO: support other than just triangles.
+  domLinestrips_Array &linestrips_array = mesh->getLinestrips_array();
+  for (size_t i = 0; i < linestrips_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*linestrips_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
+  }
+
+  domPolygons_Array &polygons_array = mesh->getPolygons_array();
+  for (size_t i = 0; i < polygons_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*polygons_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
+  }
+
+  domPolylist_Array &polylist_array = mesh->getPolylist_array();
+  for (size_t i = 0; i < polylist_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*polylist_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
+  }
+
   domTriangles_Array &triangles_array = mesh->getTriangles_array();
   for (size_t i = 0; i < triangles_array.getCount(); ++i) {
-    domTriangles &tris = *triangles_array[i];
-
-    if (tris.getP() == NULL) {
-      continue;
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*triangles_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
     }
-    domList_of_uints &p = tris.getP()->getValue();
-
-    // Read out the inputs.
-    daeTArray<domInput_local_offsetRef> &inputs = tris.getInput_array();
-
-    PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
-    PTA_LVecBase4f *values = new PTA_LVecBase4f[inputs.getCount()];
-    CPT(InternalName) *names = new CPT(InternalName)[inputs.getCount()];
-
-    domUint stride = 1;
-    for (size_t in = 0; in < inputs.getCount(); ++in) {
-      const string semantic = inputs[in]->getSemantic();
-      if (semantic == "VERTEX") {
-        names[in] = NULL;
-        continue;
-      }
-      domSource *source = daeSafeCast<domSource>(inputs[in]->getSource().getElement());
-      nassertd(source != NULL) continue;
-
-      names[in] = load_input(aformat, values[in], semantic, *source, inputs[i]->getSet());
-
-      if (inputs[in]->getOffset() >= stride) {
-        stride = inputs[in]->getOffset() + 1;
-      }
-    }
-
-    // Create the vertex data.
-    PT(GeomVertexFormat) format = new GeomVertexFormat();
-    format->add_array(vtx_aformat);
-    format->add_array(aformat);
-    PT(GeomVertexData) vdata = new GeomVertexData(geom.getName(), GeomVertexFormat::register_format(format), GeomEnums::UH_static);
-
-    // Time to go and write the data.
-    PT(GeomTriangles) gtris = new GeomTriangles(GeomEnums::UH_static);
-    for (size_t in = 0; in < inputs.getCount(); ++in) {
-      if (names[in] == NULL) {
-        // Refers to a <vertices> tag, so write the vertex inputs.
-        int counter = 0;
-        for (size_t in = 0; in < vtx_inputs.getCount(); ++in) {
-          GeomVertexWriter writer(vdata, vtx_names[in]);
-          for (size_t j = 0; j < p.getCount(); j += stride * 3) {
-            for (char v = 0; v < 3; ++v) {
-              int idx = p[j + v * stride];
-              writer.add_data4f(vtx_values[in][idx]);
-              gtris->add_vertex(counter++);
-            }
-            gtris->close_primitive();
-          }
-        }
-      } else {
-        GeomVertexWriter writer(vdata, names[in]);
-        for (size_t j = 0; j < p.getCount(); j += stride * 3) {
-          for (char v = 0; v < 3; ++v) {
-            int idx = p[j + v * stride + inputs[in]->getOffset()];
-            writer.add_data4f(values[in][idx]);
-          }
-        }
-      }
-    }
-
-    PT(Geom) geom = new Geom(vdata);
-    geom->add_primitive(gtris);
-    gnode->add_geom(geom);
-
-    delete[] values;
-    delete[] names;
   }
 
-  delete[] vtx_values;
-  delete[] vtx_names;
+  domTrifans_Array &trifans_array = mesh->getTrifans_array();
+  for (size_t i = 0; i < trifans_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*trifans_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
+  }
+
+  domTristrips_Array &tristrips_array = mesh->getTristrips_array();
+  for (size_t i = 0; i < tristrips_array.getCount(); ++i) {
+    PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*tristrips_array[i]);
+    if (prim != NULL) {
+      gnode->add_geom(prim->get_geom());
+    }
+  }
 
   // Load in any tags.
   domExtra_Array &extras = geom.getExtra_array();
   for (size_t i = 0; i < extras.getCount(); ++i) {
     load_tags(*extras[i], gnode);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_input
-//  Description: Takes a semantic and source URI, and adds a new
-//               column to the format.  Also fills up the values
-//               into the indicated PTA_LVecBase4f.
-//               Returns the InternalName of the input.
-////////////////////////////////////////////////////////////////////
-CPT(InternalName) ColladaLoader::
-load_input(GeomVertexArrayFormat *fmt, PTA_LVecBase4f &values,
-           const string &semantic, domSource &source, unsigned int set) {
-
-  PT(InternalName) cname;
-  GeomEnums::Contents contents = GeomEnums::C_other;
-
-  ostringstream setstr;
-  setstr << set;
-
-  if (semantic == "POSITION") {
-    cname = InternalName::get_vertex();
-    contents = GeomEnums::C_point;
-  } else if (semantic == "COLOR") {
-    cname = InternalName::get_color();
-    contents = GeomEnums::C_color;
-  } else if (semantic == "NORMAL") {
-    cname = InternalName::get_normal();
-    contents = GeomEnums::C_vector;
-  } else if (semantic == "TEXCOORD") {
-    cname = InternalName::get_texcoord_name(setstr.str());
-    contents = GeomEnums::C_texcoord;
-  } else if (semantic == "TEXBINORMAL") {
-    cname = InternalName::get_binormal_name(setstr.str());
-    contents = GeomEnums::C_vector;
-  } else if (semantic == "TEXTANGENT") {
-    cname = InternalName::get_tangent_name(setstr.str());
-    contents = GeomEnums::C_vector;
-  } else {
-    collada_cat.warning() << "Unrecognized semantic " << semantic << "\n";
-    cname = InternalName::make(downcase(semantic));
-  }
-
-  // Get this, get that
-  domFloat_array* float_array = source.getFloat_array();
-  nassertr(float_array != NULL, cname);
-  domList_of_floats &floats = float_array->getValue();
-  domAccessor &accessor = *source.getTechnique_common()->getAccessor();
-  domParam_Array &params = accessor.getParam_array();
-
-  // Count the number of params that have a name attribute.
-  domUint num_bound_params = 0;
-  for (size_t p = 0; p < params.getCount(); ++p) {
-    if (params[p]->getName()) {
-      ++num_bound_params;
-    }
-  }
-
-  domUint pos = accessor.getOffset();
-  for (domUint a = 0; a < accessor.getCount(); ++a) {
-    domUint c = 0;
-    // Yes, the last component defaults to 1 to work around a
-    // perspective divide that Panda3D does internally for points.
-    LVecBase4f v (0, 0, 0, 1);
-    for (domUint p = 0; p < params.getCount(); ++p) {
-      if (params[c]->getName()) {
-        v._v.data[c++] = floats[pos + p];
-      }
-    }
-    values.push_back(v);
-    pos += accessor.getStride();
-  }
-
-  fmt->add_column(cname, num_bound_params, GeomEnums::NT_float32, contents);
-  return cname;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -541,18 +458,20 @@ load_light(domLight &light, PandaNode *parent) {
   PT(LightNode) lnode;
   domLight::domTechnique_common &tc = *light.getTechnique_common();
 
+  // Check for an ambient light.
   domLight::domTechnique_common::domAmbientRef ambient = tc.getAmbient();
   if (ambient != NULL) {
-    PT(AmbientLight) alight = new AmbientLight(light.getName());
+    PT(AmbientLight) alight = new AmbientLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, alight);
 
     domFloat3 &color = ambient->getColor()->getValue();
     alight->set_color(Colorf(color[0], color[1], color[2], 1.0));
   }
 
+  // Check for a directional light.
   domLight::domTechnique_common::domDirectionalRef directional = tc.getDirectional();
   if (directional != NULL) {
-    PT(DirectionalLight) dlight = new DirectionalLight(light.getName());
+    PT(DirectionalLight) dlight = new DirectionalLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, dlight);
 
     domFloat3 &color = directional->getColor()->getValue();
@@ -560,34 +479,70 @@ load_light(domLight &light, PandaNode *parent) {
     dlight->set_direction(LVector3f(0, 0, -1));
   }
 
+  // Check for a point light.
   domLight::domTechnique_common::domPointRef point = tc.getPoint();
   if (point != NULL) {
-    PT(PointLight) plight = new PointLight(light.getName());
+    PT(PointLight) plight = new PointLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, plight);
 
     domFloat3 &color = point->getColor()->getValue();
     plight->set_color(Colorf(color[0], color[1], color[2], 1.0));
-    plight->set_attenuation(LVecBase3f(
-      point->getConstant_attenuation()->getValue(),
-      point->getLinear_attenuation()->getValue(),
-      point->getQuadratic_attenuation()->getValue()
-    ));
+
+    LVecBase3f atten (1.0f, 0.0f, 0.0f);
+    domTargetable_floatRef fval = point->getConstant_attenuation();
+    if (fval != NULL) {
+      atten[0] = fval->getValue();
+    }
+    fval = point->getLinear_attenuation();
+    if (fval != NULL) {
+      atten[1] = fval->getValue();
+    }
+    fval = point->getQuadratic_attenuation();
+    if (fval != NULL) {
+      atten[2] = fval->getValue();
+    }
+
+    plight->set_attenuation(atten);
   }
 
+  // Check for a spot light.
   domLight::domTechnique_common::domSpotRef spot = tc.getSpot();
   if (spot != NULL) {
-    PT(Spotlight) slight = new Spotlight(light.getName());
+    PT(Spotlight) slight = new Spotlight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, slight);
 
     domFloat3 &color = spot->getColor()->getValue();
     slight->set_color(Colorf(color[0], color[1], color[2], 1.0));
-    slight->set_attenuation(LVecBase3f(
-      spot->getConstant_attenuation()->getValue(),
-      spot->getLinear_attenuation()->getValue(),
-      spot->getQuadratic_attenuation()->getValue()
-    ));
-    slight->get_lens()->set_fov(spot->getFalloff_angle()->getValue());
-    slight->set_exponent(spot->getFalloff_exponent()->getValue());
+
+    LVecBase3f atten (1.0f, 0.0f, 0.0f);
+    domTargetable_floatRef fval = spot->getConstant_attenuation();
+    if (fval != NULL) {
+      atten[0] = fval->getValue();
+    }
+    fval = spot->getLinear_attenuation();
+    if (fval != NULL) {
+      atten[1] = fval->getValue();
+    }
+    fval = spot->getQuadratic_attenuation();
+    if (fval != NULL) {
+      atten[2] = fval->getValue();
+    }
+
+    slight->set_attenuation(atten);
+
+    fval = spot->getFalloff_angle();
+    if (fval != NULL) {
+      slight->get_lens()->set_fov(fval->getValue());
+    } else {
+      slight->get_lens()->set_fov(180.0f);
+    }
+
+    fval = spot->getFalloff_exponent();
+    if (fval != NULL) {
+      slight->set_exponent(fval->getValue());
+    } else {
+      slight->set_exponent(0.0f);
+    }
   }
 
   if (lnode == NULL) {
@@ -602,4 +557,14 @@ load_light(domLight &light, PandaNode *parent) {
   for (size_t i = 0; i < extras.getCount(); ++i) {
     load_tags(*extras[i], lnode);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColladaLoader::load_material
+//  Description: Loads a COLLADA <bind_material> as a RenderState
+//               object.
+////////////////////////////////////////////////////////////////////
+void ColladaLoader::
+load_material(domBind_material &bind_mat, PandaNode *node) {
+
 }

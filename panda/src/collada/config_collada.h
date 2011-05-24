@@ -20,6 +20,8 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
+template<class T> class daeTArray;
+template<class T> class daeSmartRef;
 
 ConfigureDecl(config_collada, EXPCL_COLLADA, EXPTP_COLLADA);
 NotifyCategoryDecl(collada, EXPCL_COLLADA, EXPTP_COLLADA);

@@ -33,7 +33,13 @@ LoaderFileTypeDae() {
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypeDae::
 get_name() const {
-  return "COLLADA Digital Asset Exchange";
+#if PANDA_COLLADA_VERSION == 14
+  return "COLLADA 1.4";
+#elif PANDA_COLLADA_VERSION == 15
+  return "COLLADA 1.5";
+#else
+  return "COLLADA";
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
