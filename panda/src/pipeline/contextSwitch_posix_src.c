@@ -91,7 +91,9 @@ init_thread_context(struct ThreadContext *context,
 
   pthread_attr_t attr; 
   pthread_attr_init(&attr); 
+  pthread_attr_setstacksize(&attr, stack_size);
   pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM); 
+
   pthread_create(&(context->_thread), &attr, thread_main, context); 
   pthread_attr_destroy(&attr); 
 }
