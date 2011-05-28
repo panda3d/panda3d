@@ -23,6 +23,7 @@
 
 #include "lpoint3.h"
 #include "lvector3.h"
+#include "lquaternion.h"
 
 class BulletRigidBodyNode;
 
@@ -54,6 +55,12 @@ PUBLISHED:
   void set_angular_only(bool value);
   void set_limit(float low, float high, float softness=0.9f, float bias=0.3f, float relaxation=1.0f);
   void set_axis(const LVector3f &axis);
+
+  void enable_angular_motor(bool enable, float target_velocity, float max_impulse);
+  void enable_motor(bool enable);
+  void set_max_motor_impulse(float max_impulse);
+  void set_motor_target(const LQuaternionf &quat, float dt);
+  void set_motor_target(float target_angle, float dt);
 
 public:
   virtual btTypedConstraint *ptr() const;

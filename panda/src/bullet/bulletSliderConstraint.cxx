@@ -73,7 +73,7 @@ ptr() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 float BulletSliderConstraint::
-get_lower_linear_limit() {
+get_lower_linear_limit() const {
 
   return _constraint->getLowerLinLimit();
 }
@@ -84,7 +84,7 @@ get_lower_linear_limit() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 float BulletSliderConstraint::
-get_upper_linear_limit() {
+get_upper_linear_limit() const {
 
   return _constraint->getUpperLinLimit();
 }
@@ -95,7 +95,7 @@ get_upper_linear_limit() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 float BulletSliderConstraint::
-get_lower_angular_limit() {
+get_lower_angular_limit() const {
 
   return rad_2_deg(_constraint->getLowerAngLimit());
 }
@@ -106,7 +106,7 @@ get_lower_angular_limit() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 float BulletSliderConstraint::
-get_upper_angular_limit() {
+get_upper_angular_limit() const {
 
   return rad_2_deg(_constraint->getUpperAngLimit());
 }
@@ -153,5 +153,159 @@ void BulletSliderConstraint::
 set_upper_angular_limit(float value) {
 
   _constraint->setUpperAngLimit(deg_2_rad(value));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_linear_pos
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_linear_pos() const {
+
+  return _constraint->getLinearPos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_angular_pos
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_angular_pos() const {
+
+  return _constraint->getAngularPos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_powered_linear_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_powered_linear_motor(bool on) {
+
+  _constraint->setPoweredLinMotor(on);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_target_linear_motor_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_target_linear_motor_velocity(float target_velocity) {
+
+  _constraint->setTargetLinMotorVelocity(target_velocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_max_linear_motor_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_max_linear_motor_force(float max_force) {
+
+  _constraint->setMaxLinMotorForce(max_force);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_powered_linear_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool BulletSliderConstraint::
+get_powered_linear_motor() const {
+
+  return _constraint->getPoweredLinMotor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_target_linear_motor_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_target_linear_motor_velocity() const {
+
+  return _constraint->getTargetLinMotorVelocity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_max_linear_motor_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_max_linear_motor_force() const {
+
+  return _constraint->getMaxLinMotorForce();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_powered_angular_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_powered_angular_motor(bool on) {
+
+  _constraint->setPoweredAngMotor(on);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_target_angular_motor_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_target_angular_motor_velocity(float target_velocity) {
+
+  _constraint->setTargetAngMotorVelocity(target_velocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_max_angular_motor_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_max_angular_motor_force(float max_force) {
+
+  _constraint->setMaxAngMotorForce(max_force);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_powered_angular_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool BulletSliderConstraint::
+get_powered_angular_motor() const {
+
+  return _constraint->getPoweredAngMotor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_target_angular_motor_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_target_angular_motor_velocity() const {
+
+  return _constraint->getTargetAngMotorVelocity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::get_max_angular_motor_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletSliderConstraint::
+get_max_angular_motor_force() const {
+
+  return _constraint->getMaxAngMotorForce();
 }
 

@@ -156,3 +156,58 @@ get_hinge_angle() {
   return rad_2_deg(_constraint->getHingeAngle());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::enable_angular_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+enable_angular_motor(bool enable, float target_velocity, float max_impulse) {
+
+  _constraint->enableAngularMotor(enable, target_velocity, max_impulse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::enable_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+enable_motor(bool enable) {
+
+  _constraint->enableMotor(enable);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::set_max_motor_impulse
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+set_max_motor_impulse(float max_impulse) {
+
+  _constraint->setMaxMotorImpulse(max_impulse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::set_motor_target
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+set_motor_target(const LQuaternionf &quat, float dt) {
+
+  _constraint->setMotorTarget(LQuaternionf_to_btQuat(quat), dt);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::set_motor_target
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+set_motor_target(float target_angle, float dt) {
+
+  _constraint->setMotorTarget(target_angle, dt);
+}
+

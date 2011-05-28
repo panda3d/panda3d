@@ -93,3 +93,91 @@ set_limit(float swing1, float swing2, float twist, float softness, float bias, f
   _constraint->setLimit(swing1, swing2, twist, softness, bias, relaxation);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_damping
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_damping(float damping) {
+ 
+  _constraint->setDamping(damping);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::get_fix_threshold
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+float BulletConeTwistConstraint::
+get_fix_threshold() const {
+ 
+  return _constraint->getFixThresh();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_fix_threshold
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_fix_threshold(float threshold) {
+ 
+  _constraint->setFixThresh(threshold);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::enable_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+enable_motor(bool enable) {
+ 
+  _constraint->enableMotor(enable);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_max_motor_impulse
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_max_motor_impulse(float max_impulse) {
+ 
+  _constraint->setMaxMotorImpulse(max_impulse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_max_motor_impulse_normalized
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_max_motor_impulse_normalized(float max_impulse) {
+ 
+  _constraint->setMaxMotorImpulseNormalized(max_impulse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_motor_target
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_motor_target(const LQuaternionf &quat) {
+ 
+  _constraint->setMotorTarget(LQuaternionf_to_btQuat(quat));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::set_motor_target_in_constraint_space
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConeTwistConstraint::
+set_motor_target_in_constraint_space(const LQuaternionf &quat) {
+ 
+  _constraint->setMotorTargetInConstraintSpace(LQuaternionf_to_btQuat(quat));
+}
+
