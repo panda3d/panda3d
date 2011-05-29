@@ -6,6 +6,8 @@
 #define COMBINED_SOURCES collada_composite1.cxx
 
 #define SOURCES \
+  colladaBindMaterial.cxx \
+  colladaBindMaterial.h \
   colladaInput.cxx \
   colladaInput.h colladaInput.I \
   colladaLoader.cxx \

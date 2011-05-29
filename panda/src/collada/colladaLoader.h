@@ -23,7 +23,9 @@
 #include "pvector.h"
 #include "pta_LVecBase4f.h"
 
+class ColladaBindMaterial;
 class BamCacheRecord;
+class GeomNode;
 class LightNode;
 
 class domBind_material;
@@ -67,9 +69,8 @@ private:
   void load_tags(domExtra &extra, PandaNode *node);
   void load_camera(domCamera &cam, PandaNode *parent);
   void load_instance_geometry(domInstance_geometry &inst, PandaNode *parent);
-  void load_geometry(domGeometry &geom, PandaNode *parent);
+  void load_geometry(domGeometry &geom, GeomNode *parent, ColladaBindMaterial &bind_mat);
   void load_light(domLight &light, PandaNode *parent);
-  void load_material(domBind_material &bind_mat, PandaNode *node);
 };
 
 #include "colladaLoader.I"

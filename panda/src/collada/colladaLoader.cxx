@@ -26,6 +26,7 @@
 #include "pointLight.h"
 #include "spotlight.h"
 
+#include "colladaBindMaterial.h"
 #include "colladaPrimitive.h"
 
 // Collada DOM includes.  No other includes beyond this point.
@@ -251,8 +252,8 @@ load_node(domNode& node, PandaNode *parent) {
     //TODO: implement controllers.  For now, let's just read the geometry
     if (target->getSkin() != NULL) {
       domGeometry* geom = daeSafeCast<domGeometry> (target->getSkin()->getSource().getElement());
-      //TODO: bind_material stuff
-      load_geometry(*geom, pnode);
+      //TODO
+      //load_geometry(*geom, ctrlinst[i]->getBind_material(), pnode);
     }
   }
 
@@ -286,6 +287,8 @@ load_node(domNode& node, PandaNode *parent) {
   domExtra_Array &extras = node.getExtra_array();
   for (size_t i = 0; i < extras.getCount(); ++i) {
     load_tags(*extras[i], pnode);
+    //TODO: load SI_Visibility under XSI profile
+    //TODO: support OpenSceneGraph's switch nodes
   }
 }
 
@@ -338,46 +341,52 @@ load_camera(domCamera &cam, PandaNode *parent) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColladaLoader::load_instance_geometry
-//  Description: Loads a COLLADA <instance_geometry> as a PandaNode
+//  Description: Loads a COLLADA <instance_geometry> as a GeomNode
 //               object.
 ////////////////////////////////////////////////////////////////////
 void ColladaLoader::
 load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
-  domGeometry* geom = daeSafeCast<domGeometry> (inst.getUrl().getElement());
-  nassertv(geom != NULL);
-
-  domBind_materialRef bind_mat = inst.getBind_material();
-  if (bind_mat == NULL) {
-    load_geometry(*geom, parent);
+  // If we already loaded it before, instantiate the stored node.
+  if (inst.getUserData() != NULL) {
+    parent->add_child((PandaNode *) inst.getUserData());
     return;
   }
 
-  domInstance_material_Array &mat_instances = bind_mat->getTechnique_common()->getInstance_material_array();
-  load_geometry(*geom, parent);
+  domGeometry* geom = daeSafeCast<domGeometry> (inst.getUrl().getElement());
+  nassertv(geom != NULL);
+
+  // Create the node.
+  PT(GeomNode) gnode = new GeomNode(TOSTRING(geom->getName()));
+  inst.setUserData((void *) gnode);
+  parent->add_child(gnode);
+
+  domBind_materialRef bind_mat = inst.getBind_material();
+  ColladaBindMaterial cbm;
+  if (bind_mat != NULL) {
+    cbm.load_bind_material(*bind_mat);
+  }
+
+  load_geometry(*geom, gnode, cbm);
+
+  // Load in any tags.
+  domExtra_Array &extras = geom->getExtra_array();
+  for (size_t i = 0; i < extras.getCount(); ++i) {
+    load_tags(*extras[i], gnode);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColladaLoader::load_geometry
-//  Description: Loads a COLLADA <geometry> as a GeomNode object.
+//  Description: Loads a COLLADA <geometry> and adds the primitives
+//               to the given GeomNode object.
 ////////////////////////////////////////////////////////////////////
 void ColladaLoader::
-load_geometry(domGeometry &geom, PandaNode *parent) {
-  // If we already loaded it before, instantiate the stored node.
-  if (geom.getUserData() != NULL) {
-    parent->add_child((PandaNode *) geom.getUserData());
-    return;
-  }
-
+load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat) {
   domMesh* mesh = geom.getMesh();
   if (mesh == NULL) {
     //TODO: support non-mesh geometry.
     return;
   }
-
-  // Create the node.
-  PT(GeomNode) gnode = new GeomNode(TOSTRING(geom.getName()));
-  geom.setUserData((void *) gnode);
-  parent->add_child(gnode);
 
   //TODO: support other than just triangles.
   domLines_Array &lines_array = mesh->getLines_array();
@@ -434,12 +443,6 @@ load_geometry(domGeometry &geom, PandaNode *parent) {
     if (prim != NULL) {
       gnode->add_geom(prim->get_geom());
     }
-  }
-
-  // Load in any tags.
-  domExtra_Array &extras = geom.getExtra_array();
-  for (size_t i = 0; i < extras.getCount(); ++i) {
-    load_tags(*extras[i], gnode);
   }
 }
 
@@ -557,14 +560,4 @@ load_light(domLight &light, PandaNode *parent) {
   for (size_t i = 0; i < extras.getCount(); ++i) {
     load_tags(*extras[i], lnode);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_material
-//  Description: Loads a COLLADA <bind_material> as a RenderState
-//               object.
-////////////////////////////////////////////////////////////////////
-void ColladaLoader::
-load_material(domBind_material &bind_mat, PandaNode *node) {
-
 }

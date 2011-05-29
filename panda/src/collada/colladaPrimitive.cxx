@@ -75,6 +75,7 @@ from_dom(domLines &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomLines(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -101,6 +102,7 @@ from_dom(domLinestrips &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomLinestrips(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -127,6 +129,7 @@ from_dom(domPolygons &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomTrifans(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -159,6 +162,7 @@ from_dom(domPolylist &prim) {
 
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(gprim, prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -195,6 +199,7 @@ from_dom(domTriangles &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomTriangles(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -221,6 +226,7 @@ from_dom(domTrifans &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomTrifans(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -244,6 +250,7 @@ from_dom(domTristrips &prim) {
   ColladaPrimitive *new_prim =
     new ColladaPrimitive(new GeomTristrips(GeomEnums::UH_static),
                          prim.getInput_array());
+  new_prim->_material = prim.getMaterial();
 
   prim.setUserData(new_prim);
 
@@ -296,3 +303,4 @@ load_primitives(domP_Array &p_array) {
     start_row += num_vertices;
   }
 }
+

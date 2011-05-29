@@ -27,9 +27,19 @@ add_input(ColladaInput *input) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColladaPrimitive::get_geom
-//  Description: Returns the Goem associated with this primitive.
+//  Description: Returns the Geom associated with this primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(Geom) ColladaPrimitive::
 get_geom() const {
   return _geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColladaPrimitive::get_material
+//  Description: Returns the name of this primitive's material, or
+//               the empty string if none was assigned.
+////////////////////////////////////////////////////////////////////
+INLINE const string &ColladaPrimitive::
+get_material() const {
+  return _material;
 }

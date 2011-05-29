@@ -50,6 +50,7 @@ public:
   unsigned int write_data(GeomVertexData *vdata, int start_row, domP &p);
 
   INLINE PT(Geom) get_geom() const;
+  INLINE const string &get_material() const;
 
 private:
   ColladaPrimitive(GeomPrimitive *prim, daeTArray<daeSmartRef<domInput_local_offset> > &inputs);
@@ -64,6 +65,7 @@ private:
   PT(Geom) _geom;
   PT(GeomVertexData) _vdata;
   PT(GeomPrimitive) _gprim;
+  string _material;
 };
 
 #include "colladaPrimitive.I"
