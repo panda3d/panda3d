@@ -140,6 +140,13 @@ PUBLISHED:
 
   void reload_config();
 
+  void set_wind(double strength, const LVector3f &direction);
+
+  INLINE void set_time_delta(double delta);
+  INLINE double get_time_delta() const;
+  INLINE static void set_global_time_delta(double delta);
+  INLINE static double get_global_time_delta();
+
   static bool authorize(const string &license = "");
 
 public:
@@ -247,6 +254,9 @@ private:
   };
   typedef pvector<ShadowInfo> ShadowInfos;
   ShadowInfos _shadow_infos;
+
+  double _time_delta;
+  static double _global_time_delta;
 
   static bool _authorized;
   static bool _done_first_init;

@@ -112,6 +112,58 @@ get_terrain() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::set_time_delta
+//       Access: Published
+//  Description: Specifies an offset that is to be added each frame to
+//               the global clock's frame_time for the purpose of
+//               animating the trees in this particular node.  Also
+//               see set_global_time_delta().
+////////////////////////////////////////////////////////////////////
+INLINE void SpeedTreeNode::
+set_time_delta(double delta) {
+  _time_delta = delta;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::get_time_delta
+//       Access: Published
+//  Description: Returns an offset that is to be added each frame to
+//               the global clock's frame_time for the purpose of
+//               animating the trees in this particular node.  Also
+//               see get_global_time_delta().
+////////////////////////////////////////////////////////////////////
+INLINE double SpeedTreeNode::
+get_time_delta() const {
+  return _time_delta;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::set_global_time_delta
+//       Access: Published, Static
+//  Description: Specifies an offset that is to be added each frame to
+//               the global clock's frame_time for the purpose of
+//               animating the trees in all SpeedTreeNodes.  Also
+//               see set_time_delta().
+////////////////////////////////////////////////////////////////////
+INLINE void SpeedTreeNode::
+set_global_time_delta(double delta) {
+  _global_time_delta = delta;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::get_global_time_delta
+//       Access: Published, Static
+//  Description: Returns an offset that is to be added each frame to
+//               the global clock's frame_time for the purpose of
+//               animating the trees in all SpeedTreeNodes.  Also
+//               see get_time_delta().
+////////////////////////////////////////////////////////////////////
+INLINE double SpeedTreeNode::
+get_global_time_delta() {
+  return _global_time_delta;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SpeedTreeNode::InstanceList::Constructor
 //       Access: Public
 //  Description:

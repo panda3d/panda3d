@@ -43,6 +43,7 @@
 #include "dxGraphicsStateGuardian9.h"
 #endif
 
+double SpeedTreeNode::_global_time_delta = 0.0;
 bool SpeedTreeNode::_authorized;
 bool SpeedTreeNode::_done_first_init;
 TypeHandle SpeedTreeNode::_type_handle;
@@ -65,13 +66,14 @@ PStatCollector SpeedTreeNode::_draw_speedtree_terrain_update_pcollector("Draw:Sp
 ////////////////////////////////////////////////////////////////////
 SpeedTreeNode::
 SpeedTreeNode(const string &name) :
-  PandaNode(name)
+  PandaNode(name),
 #ifdef ST_DELETE_FOREST_HACK
   // Early versions of SpeedTree don't destruct unused CForestRender
   // objects correctly.  To avoid crashes, we have to leak these
   // things.
-  , _forest_render(*(new SpeedTree::CForestRender))
+  _forest_render(*(new SpeedTree::CForestRender)),
 #endif
+  _time_delta(0.0)
 {
   init_node();
   // For now, set an infinite bounding volume.  Maybe in the future
@@ -92,14 +94,14 @@ SpeedTreeNode(const string &name) :
       shaders_dir = token_filename.get_dirname();
     } else {
       if (!shaders_dir.is_directory()) {
-	speedtree_cat.warning()
-	  << "speedtree-shaders-dir is set to " << shaders_dir
-	  << ", which doesn't exist.\n";
+        speedtree_cat.warning()
+          << "speedtree-shaders-dir is set to " << shaders_dir
+          << ", which doesn't exist.\n";
       } else {
-	speedtree_cat.warning()
-	  << "speedtree-shaders-dir is set to " << shaders_dir
-	  << ", which exists but doesn't contain " <<  token_filename
-	  << ".\n";
+        speedtree_cat.warning()
+          << "speedtree-shaders-dir is set to " << shaders_dir
+          << ", which exists but doesn't contain " <<  token_filename
+          << ".\n";
       }
     }
   }
@@ -169,7 +171,7 @@ add_tree(const STTree *tree) {
 
     if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to register tree " << tree->get_fullpath() << "\n";
+        << "Failed to register tree " << tree->get_fullpath() << "\n";
       write_error(speedtree_cat.warning());
     }
   }
@@ -225,7 +227,7 @@ remove_all_trees() {
     const STTree *tree = instance_list->get_tree();
     if (!_forest_render.UnregisterTree(tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to unregister tree " << tree->get_fullpath() << "\n";
+        << "Failed to unregister tree " << tree->get_fullpath() << "\n";
       write_error(speedtree_cat.warning());
     }
     delete instance_list;
@@ -313,7 +315,7 @@ void SpeedTreeNode::
 add_instances(const NodePath &root, const TransformState *transform) {
   nassertv(!root.is_empty());
   r_add_instances(root.node(), transform->compose(root.get_transform()),
-		  Thread::get_current_thread());
+                  Thread::get_current_thread());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,12 +363,12 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
       CPT(TransformState) new_trans = transform->compose(other_trans);
 
       if (speedtree_follow_terrain && has_terrain()) {
-	STTransform new_transform = new_trans;
-	new_transform._pos[2] = _terrain->get_height(new_transform._pos[0], new_transform._pos[1]);
-	this_instance_list.add_instance(new_transform);
+        STTransform new_transform = new_trans;
+        new_transform._pos[2] = _terrain->get_height(new_transform._pos[0], new_transform._pos[1]);
+        this_instance_list.add_instance(new_transform);
 
       } else {
-	this_instance_list.add_instance(new_trans.p());
+        this_instance_list.add_instance(new_trans.p());
       }
     }
   }
@@ -387,12 +389,12 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 add_random_instances(const STTree *tree, int quantity, 
-		     float x_min, float x_max, 
-		     float y_min, float y_max,
-		     float scale_min, float scale_max,
-		     float height_min, float height_max,
-		     float slope_min, float slope_max,
-		     Randomizer &randomizer) {
+                     float x_min, float x_max, 
+                     float y_min, float y_max,
+                     float scale_min, float scale_max,
+                     float height_min, float height_max,
+                     float slope_min, float slope_max,
+                     Randomizer &randomizer) {
   InstanceList &instance_list = add_tree(tree);
   _needs_repopulate = true;
 
@@ -407,12 +409,12 @@ add_random_instances(const STTree *tree, int quantity,
       // Spin till we find a valid match with terrain.
       int repeat_count = speedtree_max_random_try_count;
       while (!_terrain->placement_is_acceptable(transform._pos[0], transform._pos[1], height_min, height_max, slope_min, slope_max)) {
-	transform._pos[0] = randomizer.random_real(x_max - x_min) + x_min;
-	transform._pos[1] = randomizer.random_real(y_max - y_min) + y_min;
-	if (--repeat_count == 0) {
-	  nassert_raise("Exceeded speedtree-max-random-try-count; bad placement parameters?");
-	  return;
-	}
+        transform._pos[0] = randomizer.random_real(x_max - x_min) + x_min;
+        transform._pos[1] = randomizer.random_real(y_max - y_min) + y_min;
+        if (--repeat_count == 0) {
+          nassert_raise("Exceeded speedtree-max-random-try-count; bad placement parameters?");
+          return;
+        }
       }
       transform._pos[2] = _terrain->get_height(transform._pos[0], transform._pos[1]);
       
@@ -483,7 +485,7 @@ add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
 ////////////////////////////////////////////////////////////////////
 bool SpeedTreeNode::
 add_from_stf(istream &in, const Filename &pathname, 
-	     const LoaderOptions &options, Loader *loader) {
+             const LoaderOptions &options, Loader *loader) {
   if (loader == NULL) {
     loader = Loader::get_global_ptr();
   }
@@ -514,14 +516,14 @@ add_from_stf(istream &in, const Filename &pathname,
       PT(PandaNode) srt_root = loader->load_sync(srt_filename);
 
       if (srt_root != NULL) {
-	NodePath srt(srt_root);
-	NodePath srt_np = srt.find("**/+SpeedTreeNode");
-	if (!srt_np.is_empty()) {
-	  SpeedTreeNode *srt_node = DCAST(SpeedTreeNode, srt_np.node());
-	  if (srt_node->get_num_trees() >= 1) {
-	    tree = srt_node->get_tree(0);
-	  }
-	}
+        NodePath srt(srt_root);
+        NodePath srt_np = srt.find("**/+SpeedTreeNode");
+        if (!srt_np.is_empty()) {
+          SpeedTreeNode *srt_node = DCAST(SpeedTreeNode, srt_np.node());
+          if (srt_node->get_num_trees() >= 1) {
+            tree = srt_node->get_tree(0);
+          }
+        }
       }
       already_loaded[srt_filename] = tree;
     }
@@ -536,14 +538,14 @@ add_from_stf(istream &in, const Filename &pathname,
       in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale;
 
       if (!speedtree_5_2_stf) {
-	// 5.1 or earlier stf files also included these additional
-	// values, which we will ignore:
-	float height_min, height_max, slope_min, slope_max;
-	in >> height_min >> height_max >> slope_min >> slope_max;
+        // 5.1 or earlier stf files also included these additional
+        // values, which we will ignore:
+        float height_min, height_max, slope_min, slope_max;
+        in >> height_min >> height_max >> slope_min >> slope_max;
       }
 
       if (tree != NULL) {
-	add_instance(tree, STTransform(pos, rad_2_deg(rotate), scale));
+        add_instance(tree, STTransform(pos, rad_2_deg(rotate), scale));
       }
     }
     in >> os_filename;
@@ -664,19 +666,19 @@ snap_to_terrain() {
     int num_instances = instance_list->get_num_instances();
     if (_terrain != (STTerrain *)NULL) {
       for (int i = 0; i < num_instances; ++i) {
-	STTransform trans = instance_list->get_instance(i);
-	LPoint3f pos = trans.get_pos();
-	pos[2] = _terrain->get_height(pos[0], pos[1]);
-	trans.set_pos(pos);
-	instance_list->set_instance(i, trans);
+        STTransform trans = instance_list->get_instance(i);
+        LPoint3f pos = trans.get_pos();
+        pos[2] = _terrain->get_height(pos[0], pos[1]);
+        trans.set_pos(pos);
+        instance_list->set_instance(i, trans);
       }
     } else {
       for (int i = 0; i < num_instances; ++i) {
-	STTransform trans = instance_list->get_instance(i);
-	LPoint3f pos = trans.get_pos();
-	pos[2] = 0.0f;
-	trans.set_pos(pos);
-	instance_list->set_instance(i, trans);
+        STTransform trans = instance_list->get_instance(i);
+        LPoint3f pos = trans.get_pos();
+        pos[2] = 0.0f;
+        trans.set_pos(pos);
+        instance_list->set_instance(i, trans);
       }
     }
   }
@@ -746,10 +748,22 @@ reload_config() {
 
   _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
   _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
-			  speedtree_max_num_visible_cells);
+                          speedtree_max_num_visible_cells);
   _visible_terrain.Reserve(speedtree_max_num_visible_cells);
 
   _needs_repopulate = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SpeedTreeNode::set_wind
+//       Access: Published
+//  Description: Specifies the overall wind strength and direction.
+//               Gusts are controlled internally.
+////////////////////////////////////////////////////////////////////
+void SpeedTreeNode::
+set_wind(double strength, const LVector3f &direction) {
+  _forest_render.SetGlobalWindStrength(strength);
+  _forest_render.SetGlobalWindDirection(SpeedTree::Vec3(direction[0], direction[1], direction[2]));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -770,10 +784,10 @@ authorize(const string &license) {
       SpeedTree::CCore::Authorize(license.c_str());
     } else {
       if (!speedtree_license.empty()) {
-	SpeedTree::CCore::Authorize(speedtree_license.c_str());
+        SpeedTree::CCore::Authorize(speedtree_license.c_str());
       }
     }
-							     
+                                                             
     _authorized = SpeedTree::CCore::IsAuthorized();
 
     SpeedTree::CCore::SetTextureFlip(true);
@@ -791,13 +805,14 @@ SpeedTreeNode::
 SpeedTreeNode(const SpeedTreeNode &copy) :
   PandaNode(copy),
   _os_shaders_dir(copy._os_shaders_dir),
-  _shadow_infos(copy._shadow_infos)
+  _shadow_infos(copy._shadow_infos),
 #ifdef ST_DELETE_FOREST_HACK
   // Early versions of SpeedTree don't destruct unused CForestRender
   // objects correctly.  To avoid crashes, we have to leak these
   // things.
-  , _forest_render(*(new SpeedTree::CForestRender))
+  _forest_render(*(new SpeedTree::CForestRender)),
 #endif
+  _time_delta(copy._time_delta)
 {
   init_node();
 
@@ -807,7 +822,7 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
   // No way to copy these parameters, so we just re-assign them.
   _terrain_render.SetMaxAnisotropy(speedtree_max_anisotropy);
   _terrain_render.SetHint(SpeedTree::CTerrain::HINT_MAX_NUM_VISIBLE_CELLS, 
-			  speedtree_max_num_visible_cells);
+                          speedtree_max_num_visible_cells);
   _visible_terrain.Reserve(speedtree_max_num_visible_cells);
 
   Trees::const_iterator ti;
@@ -816,7 +831,7 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
     const STTree *tree = instance_list->get_tree();
     if (!_forest_render.RegisterTree((SpeedTree::CTree *)tree->get_tree())) {
       speedtree_cat.warning()
-	<< "Failed to register tree " << tree->get_fullpath() << "\n";
+        << "Failed to register tree " << tree->get_fullpath() << "\n";
       write_error(speedtree_cat.warning());
     }
 
@@ -916,8 +931,8 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       STInstances &instances = instance_list->_instances;
       STInstances::iterator sti;
       for (sti = instances.begin(); sti != instances.end(); ++sti) {
-	STTransform orig_transform = *sti;
-	(*sti) = orig_transform * xform;
+        STTransform orig_transform = *sti;
+        (*sti) = orig_transform * xform;
       }
     }
   }
@@ -963,7 +978,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   ClockObject *clock = ClockObject::get_global_clock();
-  _forest_render.SetGlobalTime(clock->get_frame_time());
+  _forest_render.SetGlobalTime(clock->get_frame_time() + _time_delta + _global_time_delta);
   _forest_render.AdvanceGlobalWind();
   
   // Compute the modelview and camera transforms, to pass to the
@@ -980,9 +995,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     lens->get_projection_mat();
   
   _view.Set(SpeedTree::Vec3(camera_pos[0], camera_pos[1], camera_pos[2]),
-	    SpeedTree::Mat4x4(projection_mat.get_data()),
-	    SpeedTree::Mat4x4(modelview_mat.get_data()),
-	    lens->get_near(), lens->get_far());
+            SpeedTree::Mat4x4(projection_mat.get_data()),
+            SpeedTree::Mat4x4(modelview_mat.get_data()),
+            lens->get_near(), lens->get_far());
 
   // Convert the render state to SpeedTree's input.
   const RenderState *state = data._state;
@@ -1012,17 +1027,17 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     for (int i = 0; i < la->get_num_on_lights(); ++i) {
       NodePath light = la->get_on_light(i);
       if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
-	// A directional light.
-	DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
-	if (dlight == NULL || light_obj->get_priority() > dlight->get_priority()) {
-	  // Here's the most important directional light.
-	  dlight = light_obj;
-	  dlight_np = light;
-	}
+        // A directional light.
+        DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
+        if (dlight == NULL || light_obj->get_priority() > dlight->get_priority()) {
+          // Here's the most important directional light.
+          dlight = light_obj;
+          dlight_np = light;
+        }
       } else if (!light.is_empty() && light.node()->is_of_type(AmbientLight::get_class_type())) {
-	// An ambient light.  We keep the color only.
-	AmbientLight *light_obj = DCAST(AmbientLight, light.node());
-	ambient_color += light_obj->get_color();
+        // An ambient light.  We keep the color only.
+        AmbientLight *light_obj = DCAST(AmbientLight, light.node());
+        ambient_color += light_obj->get_color();
       }
     }
   }
@@ -1105,9 +1120,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     // SpeedTree to render the forest during the actual draw.
     CullableObject *object = 
       new CullableObject(NULL, data._state,
-			 TransformState::make_identity(),
-			 TransformState::make_identity(),
-			 trav->get_gsg());
+                         TransformState::make_identity(),
+                         TransformState::make_identity(),
+                         trav->get_gsg());
     object->set_draw_callback(new DrawCallback(this));
     trav->get_cull_handler()->record_object(object, trav);
   }
@@ -1171,7 +1186,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   const SpeedTree::Vec3 &emin = extents.Min();
   const SpeedTree::Vec3 &emax = extents.Max();
   internal_bounds = new BoundingBox(LPoint3f(emin[0], emin[1], emin[2]),
-				    LPoint3f(emax[0], emax[1], emax[2]));
+                                    LPoint3f(emax[0], emax[1], emax[2]));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1277,9 +1292,12 @@ init_node() {
   }
 
   _forest_render.SetHint(SpeedTree::CForest::HINT_MAX_NUM_VISIBLE_CELLS, 
-			 speedtree_max_num_visible_cells);
+                         speedtree_max_num_visible_cells);
 
   _forest_render.SetCullCellSize(speedtree_cull_cell_size);
+
+  // Doesn't appear to be necessary to call this explicitly.
+  //_forest_render.EnableWind(true);
 
   _is_valid = true;
 }
@@ -1291,7 +1309,7 @@ init_node() {
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 r_add_instances(PandaNode *node, const TransformState *transform,
-		Thread *current_thread) {
+                Thread *current_thread) {
   if (node->is_of_type(SpeedTreeNode::get_class_type()) && node != this) {
     SpeedTreeNode *other = DCAST(SpeedTreeNode, node);
     add_instances_from(other, transform);
@@ -1331,8 +1349,8 @@ repopulate() {
 
     if (!_forest_render.AddInstances(tree->get_tree(), &instances[0], instances.size())) {
       speedtree_cat.warning()
-	<< "Failed to add " << instances.size()
-	<< " instances for " << *tree << "\n";
+        << "Failed to add " << instances.size()
+        << " instances for " << *tree << "\n";
       write_error(speedtree_cat.warning());
     }
   }
@@ -1361,10 +1379,10 @@ repopulate() {
   }
 
   _visible_trees.Reserve(_forest_render.GetBaseTrees(),
-			 _forest_render.GetBaseTrees().size(), 
-			 speedtree_max_num_visible_cells, 
-			 max_instances_by_cell,
-			 speedtree_horizontal_billboards);
+                         _forest_render.GetBaseTrees().size(), 
+                         speedtree_max_num_visible_cells, 
+                         max_instances_by_cell,
+                         speedtree_horizontal_billboards);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1385,7 +1403,7 @@ update_terrain_cells() {
   // A temporary vertex data object for populating terrain.
   PT(GeomVertexData) vertex_data = 
     new GeomVertexData("terrain", _terrain->get_vertex_format(), 
-		       GeomEnums::UH_static);
+                       GeomEnums::UH_static);
   int num_vertices = num_tile_res * num_tile_res;
   vertex_data->set_num_rows(num_vertices);
   size_t num_bytes = vertex_data->get_array(0)->get_data_size_bytes();
@@ -1399,8 +1417,8 @@ update_terrain_cells() {
     //cerr << "populating cell " << cell_xi << " " << cell_yi << "\n";
 
     _terrain->fill_vertices(vertex_data,
-			    cell_xi * cell_size, cell_yi * cell_size,
-			    cell_size, num_tile_res);
+                            cell_xi * cell_size, cell_yi * cell_size,
+                            cell_size, num_tile_res);
 
     const GeomVertexArrayData *array_data = vertex_data->get_array(0);
     CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
@@ -1502,7 +1520,7 @@ draw_callback(CallbackData *data) {
 
     if (!terrain) {
       speedtree_cat.warning()
-	<< "Failed to render terrain\n";
+        << "Failed to render terrain\n";
       write_error(speedtree_cat.warning());
       
       // Clear the terrain so we don't keep spamming error messages.
@@ -1525,11 +1543,16 @@ draw_callback(CallbackData *data) {
     bool leaf_meshes = _forest_render.RenderLeafMeshes(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
     bool leaf_cards = _forest_render.RenderLeafCards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
     bool billboards = _forest_render.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
+
+    // Sometimes billboards comes back false, particularly if wind is
+    // disabled; but the billboards appear to have been rendered
+    // successfully.  Weird.  Just removing this test from the
+    // condition.
     
-    if (!branches || !fronds || !leaf_meshes || !leaf_cards || !billboards) {
+    if (!branches || !fronds || !leaf_meshes || !leaf_cards /* || !billboards */) {
       speedtree_cat.warning()
-	<< "Failed to render forest completely: "
-	<< branches << " " << fronds << " " << leaf_meshes << " " << leaf_cards << " " << billboards << "\n";
+        << "Failed to render forest completely: "
+        << branches << " " << fronds << " " << leaf_meshes << " " << leaf_cards << " " << billboards << "\n";
       write_error(speedtree_cat.warning());
     }
   }
@@ -1624,7 +1647,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     GLenum err = glewInit();
     if (err != GLEW_OK) {
       speedtree_cat.error()
-	<< "GLEW initialization failed: %s\n", glewGetErrorString(err);
+        << "GLEW initialization failed: %s\n", glewGetErrorString(err);
       // Can't proceed without GLEW.
       _is_valid = false;
       return;
@@ -1634,7 +1657,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     // requires it.
     if (!GLEW_VERSION_2_0) {
       speedtree_cat.error()
-	<< "The SpeedTree OpenGL implementation requires OpenGL 2.0 or better to run; this system has version " << glGetString(GL_VERSION) << "\n";
+        << "The SpeedTree OpenGL implementation requires OpenGL 2.0 or better to run; this system has version " << glGetString(GL_VERSION) << "\n";
       _is_valid = false;
       return;
     }
@@ -1659,47 +1682,47 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       const STTree *tree = instance_list->get_tree();
       const STInstances &instances = instance_list->_instances;
       if (instances.empty()) {
-	continue;
+        continue;
       }
       
       int max_instances = 2;
       SpeedTree::CMap<const SpeedTree::CTree*, SpeedTree::st_int32>::const_iterator si;
       si = _population_stats.m_mMaxNumInstancesPerCellPerBase.find(tree->get_tree());
       if (si != _population_stats.m_mMaxNumInstancesPerCellPerBase.end()) {
-	max_instances = max(max_instances, (int)si->second);
+        max_instances = max(max_instances, (int)si->second);
       }
 
       // Get the speedtree-textures-dir to pass for initialization.
       string os_textures_dir;
       if (!speedtree_textures_dir.empty()) {
-	os_textures_dir = speedtree_textures_dir.get_value().to_os_specific();
-	// Ensure the path ends with a terminal slash; SpeedTree requires this.
+        os_textures_dir = speedtree_textures_dir.get_value().to_os_specific();
+        // Ensure the path ends with a terminal slash; SpeedTree requires this.
 #if defined(WIN32) || defined(WIN64)
-	if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '\\') {
-	  os_textures_dir += "\\";
-	}
+        if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '\\') {
+          os_textures_dir += "\\";
+        }
 #else
-	if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '/') {
-	  os_textures_dir += "/";
-	}
+        if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '/') {
+          os_textures_dir += "/";
+        }
 #endif
       }
 
       if (!_forest_render.InitTreeGraphics((SpeedTree::CTreeRender *)tree->get_tree(), 
-					   max_instances, speedtree_horizontal_billboards,
-					   os_textures_dir.c_str())) {
-	if (speedtree_cat.is_debug()) {
-	  speedtree_cat.debug()
-	    << "Failed to init tree graphics for " << *tree << "\n";
-	  write_error(speedtree_cat.debug());
-	}
+                                           max_instances, speedtree_horizontal_billboards,
+                                           os_textures_dir.c_str())) {
+        if (speedtree_cat.is_debug()) {
+          speedtree_cat.debug()
+            << "Failed to init tree graphics for " << *tree << "\n";
+          write_error(speedtree_cat.debug());
+        }
       }
     }
 
     // Init overall graphics
     if (!_forest_render.InitGraphics(false)) {
       speedtree_cat.warning()
-	<< "Failed to init graphics\n";
+        << "Failed to init graphics\n";
       write_error(speedtree_cat.warning());
       _is_valid = false;
       return;
@@ -1713,12 +1736,12 @@ setup_for_render(GraphicsStateGuardian *gsg) {
     if (has_terrain()) {
       // Now initialize the terrain.
       if (!_terrain_render.Init(speedtree_terrain_num_lods, 
-				speedtree_terrain_resolution,
-				speedtree_terrain_cell_size,
-				_terrain->get_st_vertex_format())) {
-	speedtree_cat.warning()
-	  << "Failed to init terrain\n";
-	write_error(speedtree_cat.warning());
+                                speedtree_terrain_resolution,
+                                speedtree_terrain_cell_size,
+                                _terrain->get_st_vertex_format())) {
+        speedtree_cat.warning()
+          << "Failed to init terrain\n";
+        write_error(speedtree_cat.warning());
       }
     }
 
@@ -1757,8 +1780,8 @@ cull_forest() {
       SpeedTree::SForestCullResultsRender &light_cull = _shadow_infos[smi]._light_cull;
 
       _forest_render.ComputeLightView
-	(_forest_render.GetLightDir(), _view.GetFrustumPoints(), smi, 
-	 light_view, 0.0f);
+        (_forest_render.GetLightDir(), _view.GetFrustumPoints(), smi, 
+         light_view, 0.0f);
       
       light_view.SetLodRefPoint(_view.GetCameraPos());
       _forest_render.CullAndComputeLOD(light_view, light_cull, false);
@@ -1949,7 +1972,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     if (!srt_np.is_empty()) {
       SpeedTreeNode *srt_node = DCAST(SpeedTreeNode, srt_np.node());
       if (srt_node->get_num_trees() >= 1) {
-	_tree = (STTree *)srt_node->get_tree(0);
+        _tree = (STTree *)srt_node->get_tree(0);
       }
     }
   }
