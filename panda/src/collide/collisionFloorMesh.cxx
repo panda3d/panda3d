@@ -145,55 +145,56 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   DCAST_INTO_R(ray, entry.get_from(), 0);
   LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
   
-  double fx=from_origin[0];
-  double fy=from_origin[1];
+  double fx = from_origin[0];
+  double fy = from_origin[1];
 
   CollisionFloorMesh::Triangles::const_iterator ti;
-  for (ti=_triangles.begin();ti< _triangles.end();++ti) {
+  for (ti = _triangles.begin(); ti < _triangles.end(); ++ti) {
     TriangleIndices tri = *ti;
     //First do a naive bounding box check on the triangle
-    if(fx<tri.min_x  || fx>=tri.max_x || fy<tri.min_y || fy>=tri.max_y) 
+    if (fx < tri.min_x || fx >= tri.max_x || fy < tri.min_y || fy >= tri.max_y) {
       continue;
+    }
     
     //okay, there's a good chance we'll be colliding
-    LPoint3f p0=_vertices[tri.p1];
-    LPoint3f p1=_vertices[tri.p2];
-    LPoint3f p2=_vertices[tri.p3];
+    LPoint3f p0 = _vertices[tri.p1];
+    LPoint3f p1 = _vertices[tri.p2];
+    LPoint3f p2 = _vertices[tri.p3];
     float p0x = p0[0];
     float p0y = p0[1];
-    float e0x,e0y,e1x,e1y,e2x,e2y;
-    float u,v;
+    float e0x, e0y, e1x, e1y, e2x, e2y;
+    float u, v;
 
     e0x = fx - p0x; e0y = fy - p0y;
     e1x = p1[0] - p0x; e1y = p1[1] - p0y;
     e2x = p2[0] - p0x; e2y = p2[1] - p0y;
-    if (e1x==0) {  
-      if (e2x == 0) continue; 
-      u = e0x/e2x;
-      if (u<0 || u>1) continue;     
+    if (e1x == 0.0) {  
+      if (e2x == 0.0) continue; 
+      u = e0x / e2x;
+      if (u < 0.0 || u > 1.0) continue;     
       if (e1y == 0) continue;
-      v = ( e0y - (e2y*u))/e1y;
-      if (v<0) continue; 
+      v = (e0y - (e2y * u)) / e1y;
+      if (v < 0.0) continue; 
     } else {
-      float d = (e2y * e1x)-(e2x * e1y);
-      if (d==0) continue; 
-      u = ((e0y * e1x) - (e0x * e1y))/d;
-      if (u<0 || u>1) continue;
+      float d = (e2y * e1x) - (e2x * e1y);
+      if (d == 0.0) continue; 
+      u = ((e0y * e1x) - (e0x * e1y)) / d;
+      if (u < 0.0 || u > 1.0) continue;
       v = (e0x - (e2x * u)) / e1x;
-      if (v<0) continue;
-      if (u + v > 1) continue; 
+      if (v < 0.0) continue;
     }
+    if (u + v <= 0.0 || u + v > 1.0) continue; 
     //we collided!!
     float mag = u + v;
     float p0z = p0[2];
    
     float uz = (p2[2] - p0z) *  mag;
     float vz = (p1[2] - p0z) *  mag;
-    float finalz = p0z+vz+(((uz - vz) *u)/(u+v));
+    float finalz = p0z + vz + (((uz - vz) * u) / (u + v));
     PT(CollisionEntry) new_entry = new CollisionEntry(entry);    
     
-    new_entry->set_surface_normal(LPoint3f(0,0,1));
-    new_entry->set_surface_point(LPoint3f(fx,fy,finalz));
+    new_entry->set_surface_normal(LPoint3f(0, 0, 1));
+    new_entry->set_surface_point(LPoint3f(fx, fy, finalz));
     return new_entry;
   }
   return NULL;
@@ -201,9 +202,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::test_intersection_from_ray
+//     Function: CollisionFloorMesh::test_intersection_from_sphere
 //       Access: Public, Virtual
-//  Description: must be a vertical Ray!!!
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
@@ -217,40 +218,41 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   float  fz = float(from_origin[2]);
   float rad = sphere->get_radius();
   CollisionFloorMesh::Triangles::const_iterator ti;
-  for (ti=_triangles.begin();ti< _triangles.end();++ti) {
+  for (ti = _triangles.begin(); ti < _triangles.end(); ++ti) {
     TriangleIndices tri = *ti;
     //First do a naive bounding box check on the triangle
-    if(fx<tri.min_x  || fx>=tri.max_x || fy<tri.min_y || fy>=tri.max_y) 
+    if (fx < tri.min_x || fx >= tri.max_x || fy < tri.min_y || fy >= tri.max_y) {
       continue;
+    }
     
     //okay, there's a good chance we'll be colliding
-    LPoint3f p0=_vertices[tri.p1];
-    LPoint3f p1=_vertices[tri.p2];
-    LPoint3f p2=_vertices[tri.p3];
+    LPoint3f p0 = _vertices[tri.p1];
+    LPoint3f p1 = _vertices[tri.p2];
+    LPoint3f p2 = _vertices[tri.p3];
     float p0x = p0[0];
     float p0y = p0[1];
-    float e0x,e0y,e1x,e1y,e2x,e2y;
-    float u,v;
+    float e0x, e0y, e1x, e1y, e2x, e2y;
+    float u, v;
 
     e0x = fx - p0x; e0y = fy - p0y;
     e1x = p1[0] - p0x; e1y = p1[1] - p0y;
     e2x = p2[0] - p0x; e2y = p2[1] - p0y;
-    if (e1x==0) {  
-      if (e2x == 0) continue; 
-      u = e0x/e2x;
-      if (u<0 || u>1) continue;     
+    if (e1x == 0.0) {  
+      if (e2x == 0.0) continue; 
+      u = e0x / e2x;
+      if (u < 0.0 || u > 1.0) continue;     
       if (e1y == 0) continue;
-      v = ( e0y - (e2y*u))/e1y;
-      if (v<0) continue; 
+      v = (e0y - (e2y * u)) / e1y;
+      if (v < 0.0) continue; 
     } else {
-      float d = (e2y * e1x)-(e2x * e1y);
-      if (d==0) continue; 
-      u = ((e0y * e1x) - (e0x * e1y))/d;
-      if (u<0 || u>1) continue;
+      float d = (e2y * e1x) - (e2x * e1y);
+      if (d == 0.0) continue; 
+      u = ((e0y * e1x) - (e0x * e1y)) / d;
+      if (u < 0.0 || u > 1.0) continue;
       v = (e0x - (e2x * u)) / e1x;
-      if (v<0) continue;
-      if (u + v > 1) continue; 
+      if (v < 0.0) continue;
     }
+    if (u + v <= 0.0 || u + v > 1.0) continue; 
     //we collided!!
     float mag = u + v;
     float p0z = p0[2];
@@ -263,8 +265,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       return NULL;
     PT(CollisionEntry) new_entry = new CollisionEntry(entry);    
     
-    new_entry->set_surface_normal(LPoint3f(0,0,1));
-    new_entry->set_surface_point(LPoint3f(fx,fy,finalz));
+    new_entry->set_surface_normal(LPoint3f(0, 0, 1));
+    new_entry->set_surface_point(LPoint3f(fx, fy, finalz));
     return new_entry;
   }
   return NULL;

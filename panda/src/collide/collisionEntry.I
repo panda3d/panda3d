@@ -131,6 +131,7 @@ get_into_node_path() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_t(float t) {
+  nassertv(!cnan(t));
   _t = t;
 }
 
@@ -193,6 +194,7 @@ get_respect_prev_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_surface_point(const LPoint3f &point) {
+  nassertv(!point.is_nan());
   _surface_point = point;
   _flags |= F_has_surface_point;
 }
@@ -208,6 +210,7 @@ set_surface_point(const LPoint3f &point) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_surface_normal(const LVector3f &normal) {
+  nassertv(!normal.is_nan());
   _surface_normal = normal;
   _flags |= F_has_surface_normal;
 }
@@ -227,6 +230,7 @@ set_surface_normal(const LVector3f &normal) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_interior_point(const LPoint3f &point) {
+  nassertv(!point.is_nan());
   _interior_point = point;
   _flags |= F_has_interior_point;
 }
@@ -281,6 +285,7 @@ has_interior_point() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_contact_pos(const LPoint3f &pos) {
+  nassertv(!pos.is_nan());
   _contact_pos = pos;
   _flags |= F_has_contact_pos;
 }
@@ -296,6 +301,7 @@ set_contact_pos(const LPoint3f &pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_contact_normal(const LVector3f &normal) {
+  nassertv(!normal.is_nan());
   _contact_normal = normal;
   _flags |= F_has_contact_normal;
 }
