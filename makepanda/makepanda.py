@@ -505,6 +505,7 @@ if (COMPILER=="MSVC"):
         LibName("SPEEDTREE", "%sSpeedTreeRenderInterface%s" % (libdir, libsuffix))
         if (SDK["SPEEDTREEAPI"] == "OpenGL"):
             LibName("SPEEDTREE",  "%sglew32.lib" % (libdir))
+            LibName("SPEEDTREE",  "glu32.lib")
         IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
     if (PkgSkip("BULLET")==0):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/LinearMath.lib")
@@ -774,7 +775,8 @@ def CompileCxx(obj,src,opts):
         cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
-        if ("BIGOBJ" in opts): cmd += " /bigobj"
+        if ("BIGOBJ" in opts) or (platform.architecture()[0]=="64bit"):
+            cmd += " /bigobj"
         cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
