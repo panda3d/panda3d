@@ -86,7 +86,7 @@ ShaderInput(InternalName *name, const PTA_float &ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -103,7 +103,7 @@ ShaderInput(InternalName *name, const PTA_double &ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -120,7 +120,7 @@ ShaderInput(InternalName *name, const PTA_LVecBase4f& ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -137,7 +137,7 @@ ShaderInput(InternalName *name, const PTA_LVecBase3f& ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -154,7 +154,7 @@ ShaderInput(InternalName *name, const PTA_LVecBase2f& ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -188,7 +188,7 @@ ShaderInput(InternalName *name, const LVecBase3f& vec, int priority) :
   _stored_ptr(vec),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -205,7 +205,7 @@ ShaderInput(InternalName *name, const LVecBase2f& vec, int priority) :
   _stored_ptr(vec),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -222,7 +222,7 @@ ShaderInput(InternalName *name, const PTA_LMatrix4f& ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -239,7 +239,7 @@ ShaderInput(InternalName *name, const PTA_LMatrix3f& ptr, int priority) :
   _stored_ptr(ptr),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -256,7 +256,7 @@ ShaderInput(InternalName *name, const LMatrix4f& mat, int priority) :
   _stored_ptr(mat),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
@@ -273,7 +273,7 @@ ShaderInput(InternalName *name, const LMatrix3f& mat, int priority) :
   _stored_ptr(mat),
   _stored_texture(NULL),
   _stored_nodepath(NodePath()),
-  _stored_vector(NULL)
+  _stored_vector(LVecBase4f::zero())
 {
 }
 
