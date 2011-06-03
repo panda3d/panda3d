@@ -3921,13 +3921,16 @@ get_shader_input(InternalName *id) const {
 ////////////////////////////////////////////////////////////////////
 const int NodePath::
 get_instance_count() const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), 0);
+
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
+
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     return sa->get_instance_count();
   }
+
   return 0;
 }
 
