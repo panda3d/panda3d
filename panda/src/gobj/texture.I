@@ -28,7 +28,7 @@
 //               original.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(Texture) Texture::
-make_copy() {
+make_copy() const {
   MutexHolder holder(_lock);
   PT(Texture) tex = do_make_copy();
   ++(tex->_properties_modified);

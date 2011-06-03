@@ -202,7 +202,7 @@ protected:
 PUBLISHED:
   virtual ~Texture();
 
-  INLINE PT(Texture) make_copy();
+  INLINE PT(Texture) make_copy() const;
   INLINE void clear();
 
   INLINE void setup_texture(TextureType texture_type,
@@ -542,7 +542,7 @@ protected:
                                       const LoaderOptions &options);
   bool do_rescale_texture();
 
-  virtual PT(Texture) do_make_copy();
+  virtual PT(Texture) do_make_copy() const;
   void do_assign(const Texture &copy);
   virtual void do_clear();
   void do_setup_texture(TextureType texture_type, int x_size, int y_size,

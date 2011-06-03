@@ -4442,7 +4442,7 @@ do_rescale_texture() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(Texture) Texture::
-do_make_copy() {
+do_make_copy() const {
   PT(Texture) tex = new Texture(get_name());
   tex->do_assign(*this);
   return tex;
