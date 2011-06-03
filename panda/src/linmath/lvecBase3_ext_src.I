@@ -110,7 +110,11 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'x' || *it > 'z') {
-      return NULL;
+      PyTypeObject *tp = self->ob_type;
+      PyErr_Format(PyExc_AttributeError,
+                   "'%.100s' object has no attribute '%.200s'",
+                   tp->tp_name, attr_name.c_str());
+      return -1;
     }
   }
 #endif
