@@ -1081,7 +1081,7 @@ def GetLibCache():
             result = handle.read().strip().split("\n")
             for line in result:
                 lib = line.strip().split(" ", 1)[0]
-                if (".so " in lib):
+                if (lib.endswith(".so") or ".so " in lib):
                     lib = lib.split(".so", 1)[0][3:]
                     LD_CACHE.append(lib)
 
