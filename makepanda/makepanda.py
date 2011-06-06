@@ -5349,8 +5349,8 @@ def MakeInstallerLinux():
                 depends += ", nvidia-cg-toolkit"
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
         oscmd("rm -rf targetroot/debian")
-        oscmd("chmod -R 644 targetroot/DEBIAN")
-        oscmd("chmod 755 targetroot/DEBIAN")
+        oscmd("chmod -R 755 targetroot/DEBIAN")
+        oscmd("chmod -R 644 targetroot/control targetroot/md5sums targetroot/conffiles targetroot/symbols")
         if (RUNTIME):
             oscmd("fakeroot dpkg-deb -b targetroot panda3d-runtime_"+DEBVERSION+"_"+ARCH+".deb")
         else:
