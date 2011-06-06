@@ -5163,7 +5163,7 @@ Recommends: panda3d-runtime, python-wxversion, python-profiler (>= PV), python-t
 Provides: panda3d
 Conflicts: panda3d
 Replaces: panda3d
-Maintainer: etc-panda3d@lists.andrew.cmu.edu
+Maintainer: rdb <me@rdb.name>
 Description: The Panda3D free 3D engine SDK
  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
@@ -5181,7 +5181,7 @@ Architecture: ARCH
 Essential: no
 Depends: DEPENDS
 Provides: panda3d-runtime
-Maintainer: etc-panda3d@lists.andrew.cmu.edu
+Maintainer: rdb <me@rdb.name>
 Description: Runtime binary and browser plugin for the Panda3D Game Engine
  This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
 
@@ -5349,7 +5349,8 @@ def MakeInstallerLinux():
                 depends += ", nvidia-cg-toolkit"
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
         oscmd("rm -rf targetroot/debian")
-        oscmd("chmod -R 755 targetroot/DEBIAN")
+        oscmd("chmod -R 644 targetroot/DEBIAN")
+        oscmd("chmod 755 targetroot/DEBIAN")
         if (RUNTIME):
             oscmd("fakeroot dpkg-deb -b targetroot panda3d-runtime_"+DEBVERSION+"_"+ARCH+".deb")
         else:
