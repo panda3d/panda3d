@@ -713,12 +713,23 @@ do_register() {
   nassertv(!is_registered());
   nassertv(_columns_by_name.empty());
 
-  for (int array = 0; array < (int)_arrays.size(); ++array) {
-    CPT(GeomVertexArrayFormat) array_format = _arrays[array];
+  Arrays orig_arrays;
+  orig_arrays.swap(_arrays);
+  Arrays::const_iterator ai;
+  for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
+    CPT(GeomVertexArrayFormat) array_format = (*ai);
     if (!array_format->is_registered()) {
       array_format = GeomVertexArrayFormat::register_format(array_format);
-      _arrays[array] = (GeomVertexArrayFormat *)array_format.p();
     }
+    if (array_format->get_num_columns() == 0) {
+      // Don't keep an empty array.
+      gobj_cat.warning()
+	<< "Dropping empty array from GeomVertexFormat.\n";
+      continue;
+    }
+
+    int array = (int)_arrays.size();
+    _arrays.push_back((GeomVertexArrayFormat *)array_format.p());
 
     // Now add the names to the index.
     int num_columns = array_format->get_num_columns();
@@ -1063,6 +1074,10 @@ register_format(GeomVertexFormat *format) {
     new_format = (*fi);
     if (!new_format->is_registered()) {
       new_format->do_register();
+      if (new_format->get_num_arrays() == 0) {
+	gobj_cat.warning()
+	  << "Empty GeomVertexFormat registered.\n";
+      }
     }
   }
 
