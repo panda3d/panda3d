@@ -27,8 +27,6 @@ TypeHandle BulletDebugNode::_type_handle;
 BulletDebugNode::
 BulletDebugNode(const char *name) : GeomNode(name), _verbose(false) {
 
-  set_overall_hidden(true);
-
   _vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
 
   // Lines
@@ -48,6 +46,18 @@ BulletDebugNode(const char *name) : GeomNode(name), _verbose(false) {
   _geom_triangles->add_primitive(_prim_triangles);
 
   add_geom(_geom_triangles);
+
+  // Draw something in oder to prevent getting optimized away
+  GeomVertexWriter vwriter(_vdata, InternalName::get_vertex());
+  vwriter.add_data3f(0.0, 0.0, 0.0);
+  vwriter.add_data3f(0.0, 0.0, 0.0);
+  vwriter.add_data3f(0.0, 0.0, 0.0);
+  _prim_lines->add_next_vertices(2);
+  _prim_lines->close_primitive();
+  _prim_triangles->add_next_vertices(3);
+  _prim_triangles->close_primitive();
+
+  set_overall_hidden(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,6 +203,8 @@ DBG_FastWireframe
 ////////////////////////////////////////////////////////////////////
 void BulletDebugNode::
 post_step(btDynamicsWorld *world) {
+
+  if (is_overall_hidden()) return;
 
   // Collect debug geometry data
   world->debugDrawWorld();
