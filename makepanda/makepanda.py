@@ -5350,10 +5350,11 @@ def MakeInstallerLinux():
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends).replace("RECOMMENDS", recommends))
         oscmd("rm -rf targetroot/debian")
         oscmd("chmod -R 755 targetroot/DEBIAN")
-        oscmd("cd targetroot/DEBIAN ; chmod 644 control md5sums conffiles symbols")
         if (RUNTIME):
+            oscmd("cd targetroot/DEBIAN ; chmod 644 control md5sums")
             oscmd("fakeroot dpkg-deb -b targetroot panda3d-runtime_"+DEBVERSION+"_"+ARCH+".deb")
         else:
+            oscmd("cd targetroot/DEBIAN ; chmod 644 control md5sums conffiles symbols")
             oscmd("fakeroot dpkg-deb -b targetroot panda3d"+MAJOR_VERSION+"_"+DEBVERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 targetroot")
 
