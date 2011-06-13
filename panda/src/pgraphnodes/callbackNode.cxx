@@ -19,6 +19,7 @@
 #include "cullableObject.h"
 #include "cullHandler.h"
 #include "omniBoundingVolume.h"
+#include "config_pgraph.h"
 
 TypeHandle CallbackNode::_type_handle;
 
@@ -146,6 +147,12 @@ is_renderable() const {
 ////////////////////////////////////////////////////////////////////
 void CallbackNode::
 add_for_draw(CullTraverser *trav, CullTraverserData &data) {
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
+      << "Found " << *this << " in state " << *data._state 
+      << " draw_mask = " << data._draw_mask << "\n";
+  }
+
   // OK, render this node.  Rendering this node means creating a
   // CullableObject for the draw_callback, if any.  We don't need to
   // pass any Geoms, however.
