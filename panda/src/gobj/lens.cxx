@@ -1122,30 +1122,26 @@ make_bounds() const {
   LPoint3f nll, nlr, nul, nur;
   LPoint2f corner;
 
-  corner[0] = -1.0f; corner[1] = 1.0f;
-
   // Upper left.
+  corner.set(-1.0f, 1.0f);
   if (!extrude(corner, nul, ful)) {
     return (BoundingVolume *)NULL;
   }
 
-  corner[0] = 1.0f; corner[1] = 1.0f;
-
   // Upper right.
+  corner.set(1.0f, 1.0f);
   if (!extrude(corner, nur, fur)) {
     return (BoundingVolume *)NULL;
   }
 
-  corner[0] = 1.0f; corner[1] = -1.0f;
-
   // Lower right.
+  corner.set(1.0f, -1.0f);
   if (!extrude(corner, nlr, flr)) {
     return (BoundingVolume *)NULL;
   }
 
-  corner[0] = -1.0f; corner[1] = -1.0f;
-
   // Lower left.
+  corner.set(-1.0f, -1.0f);
   if (!extrude(corner, nll, fll)) {
     return (BoundingVolume *)NULL;
   }
