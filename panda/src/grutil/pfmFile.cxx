@@ -85,6 +85,7 @@ void PfmFile::
 clear() {
   _x_size = 0;
   _y_size = 0;
+  _scale = 1.0;
   _num_channels = 3;
   _table.clear();
 }
@@ -100,6 +101,7 @@ clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
   _x_size = x_size;
   _y_size = y_size;
+  _scale = 1.0;
   _num_channels = _num_channels;
 
   _table.clear();
