@@ -41,6 +41,7 @@
 #include "geomTriangles.h"
 #include "geomVertexReader.h"
 #include "transformTable.h"
+#include "modelNode.h"
 #include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
 #include "characterJoint.h"
@@ -852,6 +853,33 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
     egg_group->add_object_type("backstage");
   }
 
+  if (node->has_tags()) {
+    if (apply_tags(egg_group, node)) {
+      any_applied = true;
+    }
+  }
+
+  if (node->is_of_type(ModelNode::get_class_type())) {
+    ModelNode *model_node = DCAST(ModelNode, node);
+    switch (model_node->get_preserve_transform()) {
+    case ModelNode::PT_none:
+    case ModelNode::PT_drop_node:
+      break;
+
+    case ModelNode::PT_net:
+      egg_group->set_dcs_type(EggGroup::DC_net);
+      break;
+
+    case ModelNode::PT_local:
+      egg_group->set_dcs_type(EggGroup::DC_local);
+      break;
+
+    case ModelNode::PT_no_touch:
+      egg_group->set_dcs_type(EggGroup::DC_no_touch);
+      break;
+    }
+  }
+
   const RenderEffects *effects = node->get_effects();
   const RenderEffect *effect = effects->get_effect(BillboardEffect::get_class_type());
   if (effect != (RenderEffect *)NULL) {
@@ -897,6 +925,61 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
   }
 
   return any_applied;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::apply_tags
+//       Access: Public
+//  Description: Applies string tags to the egg file.  Returns true if
+//               any were applied, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BamToEgg::
+apply_tags(EggGroup *egg_group, PandaNode *node) {
+  ostringstream strm;
+  char delimiter = '\n';
+  string delimiter_str(1, delimiter);
+  node->list_tags(strm, delimiter_str);
+
+  string data = strm.str();
+  if (data.empty()) {
+    return false;
+  }
+
+  bool any_applied = false;
+
+  size_t p = 0;
+  size_t q = data.find(delimiter);
+  while (q != string::npos) {
+    string tag = data.substr(p, q);
+    if (apply_tag(egg_group, node, tag)) {
+      any_applied = true;
+    }
+    p = q + 1;
+    q = data.find(delimiter, p);
+  }
+  
+  string tag = data.substr(p);
+  if (apply_tag(egg_group, node, tag)) {
+    any_applied = true;
+  }
+
+  return any_applied;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::apply_tag
+//       Access: Public
+//  Description: Applies the named string tags to the egg file.
+////////////////////////////////////////////////////////////////////
+bool BamToEgg::
+apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
+  if (!node->has_tag(tag)) {
+    return false;
+  }
+
+  string value = node->get_tag(tag);
+  egg_group->set_tag(tag, value);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
