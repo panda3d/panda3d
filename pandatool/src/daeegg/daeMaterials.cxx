@@ -155,7 +155,15 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
       const FCDEffectParameterInt* uvset = effect_common->GetTexture(bucket, tx)->GetSet();
       if (uvset != NULL) {
         daeegg_cat.debug() << "Texture has uv name '" << FROM_FSTRING(uvset->GetSemantic()) << "'\n";
-        egg_texture->set_uv_name(FROM_FSTRING(uvset->GetSemantic()));
+        string uvset_semantic (FROM_FSTRING(uvset->GetSemantic()));
+
+        // Only set the UV name if this UV set actually exists.
+        for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+          if (_materials[semantic]->_uvsets[i]->_semantic == uvset_semantic) {
+            egg_texture->set_uv_name(uvset_semantic);
+            break;
+          }
+        }
       }
       // Apply sampler stuff
       if (sampler != NULL) {
