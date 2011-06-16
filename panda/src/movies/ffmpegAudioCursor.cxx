@@ -22,6 +22,10 @@ extern "C" {
 
 TypeHandle FfmpegAudioCursor::_type_handle;
 
+#if LIBAVFORMAT_VERSION_MAJOR < 53
+  #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegAudioCursor::Constructor
 //       Access: Protected
@@ -51,8 +55,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
 
   // Find the audio stream
-  for(int i=0; i<_format_ctx->nb_streams; i++) {
-    if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO) {
+  for(int i = 0; i < (int)_format_ctx->nb_streams; i++) {
+    if(_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
       _audio_index = i;
       _audio_ctx = _format_ctx->streams[i]->codec;
       _audio_timebase = av_q2d(_format_ctx->streams[i]->time_base);

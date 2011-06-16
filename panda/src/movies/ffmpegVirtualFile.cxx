@@ -50,9 +50,13 @@ extern "C" {
 static int
 pandavfs_open(URLContext *h, const char *filename, int flags) {
   if (flags != 0) {
-    movies_cat.error() << "ffmpeg is trying to write to the VFS.\n";
-    return -1;
+    if (movies_cat.is_debug()) {
+      movies_cat.debug()
+        << "ffmpeg is trying to write to the VFS.\n";
+    }
+    // We'll allow this, but just fail any actual writes.
   }
+
   filename += 9; // Skip over "pandavfs:"
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *s = vfs->open_read_file(filename, true);
@@ -98,7 +102,8 @@ pandavfs_write(URLContext *h, unsigned char *buf, int size) {
 #else
 pandavfs_write(URLContext *h, const unsigned char *buf, int size) {
 #endif
-  movies_cat.error() << "ffmpeg is trying to write to the VFS.\n";
+  movies_cat.warning()
+    << "ffmpeg is trying to write to the VFS.\n";
   return -1;
 }
 
@@ -177,9 +182,46 @@ register_protocol() {
   protocol.url_close = pandavfs_close;
 #if LIBAVFORMAT_VERSION_INT < 3415296
   ::register_protocol(&protocol);
-#else
+#elif LIBAVFORMAT_VERSION_MAJOR < 53
   av_register_protocol(&protocol);
+#else
+  av_register_protocol2(&protocol, sizeof(protocol));
 #endif
+
+  // Let's also register the logging to Panda's notify callback.
+  av_log_set_callback(&log_callback);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVirtualFile::log_callback
+//       Access: Private, Static
+//  Description: These callbacks are made when ffmpeg wants to write a
+//               log entry; it redirects into Panda's notify.
+////////////////////////////////////////////////////////////////////
+void FfmpegVirtualFile::
+log_callback(void *ptr, int level, const char *fmt, va_list v1) {
+  NotifySeverity severity;
+  if (level <= AV_LOG_PANIC) {
+    severity = NS_fatal;
+  } else if (level <= AV_LOG_ERROR) {
+    severity = NS_error;
+  } else if (level <= AV_LOG_WARNING) {
+    severity = NS_warning;
+  } else if (level <= AV_LOG_INFO) {
+    severity = NS_info;
+  } else if (level <= AV_LOG_VERBOSE) {
+    severity = NS_debug;
+  } else /* level <= AV_LOG_DEBUG */ {
+    severity = NS_spam;
+  }
+
+  if (ffmpeg_cat.is_on(severity)) {
+    static const size_t buffer_size = 4096;
+    static char buffer[buffer_size];
+    vsnprintf(buffer, buffer_size, fmt, v1);
+    ffmpeg_cat.out(severity, true)
+      << buffer;
+  }
 }
 
 #endif // HAVE_FFMPEG

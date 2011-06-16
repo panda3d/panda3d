@@ -28,6 +28,11 @@ extern "C" {
 
 TypeHandle FfmpegVideoCursor::_type_handle;
 
+#if LIBAVFORMAT_VERSION_MAJOR < 53
+  #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+#endif
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::Constructor
 //       Access: Public
@@ -58,8 +63,8 @@ FfmpegVideoCursor(FfmpegVideo *src) :
   }
   
   // Find the video stream
-  for(int i=0; i<_format_ctx->nb_streams; i++) {
-    if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO) {
+  for(int i = 0; i < (int)_format_ctx->nb_streams; i++) {
+    if(_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
       _video_index = i;
       _video_ctx = _format_ctx->streams[i]->codec;
       _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);

@@ -23,6 +23,7 @@ extern "C" {
 
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
+NotifyCategoryDef(ffmpeg, "movies");
 
 ConfigureFn(config_movies) {
   init_libmovies();

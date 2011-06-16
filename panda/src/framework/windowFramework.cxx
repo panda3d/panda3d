@@ -1229,16 +1229,23 @@ load_image_as_model(const Filename &filename) {
 
   // Choose the dimensions of the polygon appropriately.
   float left,right,top,bottom;
+  static const float scale = 10.0;
   if (x_size > y_size) {
-    float scale = 10.0;
     left   = -scale;
     right  =  scale;
     top    =  (scale * y_size) / x_size;
     bottom = -(scale * y_size) / x_size;
-  } else {
-    float scale = 10.0;
+  } else if (y_size != 0) {
     left   = -(scale * x_size) / y_size;
     right  =  (scale * x_size) / y_size;
+    top    =  scale;
+    bottom = -scale;
+  } else {
+    framework_cat.warning()
+      << "Texture size is 0 0: " << *tex << "\n";
+    
+    left   = -scale;
+    right  =  scale;
     top    =  scale;
     bottom = -scale;
   }

@@ -17,15 +17,14 @@
 #ifdef HAVE_FFMPEG
 
 #include "config_movies.h"
+#include <stdarg.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegVirtualFile
 // Description : Enables ffmpeg to access panda's VFS.
 //
-//               This class only has one public method,
-//               register_hooks.  Once the hooks are registered,
-//               ffmpeg will be able to open "URLs" that look
-//               like this:
+//               Once register_protocol() is called, ffmpeg will be
+//               able to open "URLs" that look like this:
 //               
 //               pandavfs:/c/mygame/foo.avi
 //
@@ -33,6 +32,9 @@
 class EXPCL_PANDA_MOVIES FfmpegVirtualFile {
  public:
   static void register_protocol();
+
+ private:
+  static void log_callback(void *ptr, int level, const char *fmt, va_list v1);
 };
 
 #include "ffmpegVirtualFile.I"

@@ -24,6 +24,10 @@
 
 TypeHandle FFMpegTexture::_type_handle;
 
+#if LIBAVFORMAT_VERSION_MAJOR < 53
+  #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::Constructor
 //       Access: Published
@@ -271,9 +275,8 @@ update_frame(int frame) {
             source -= source_row_width;
           }
         }
-        
-        
       }
+      ++_image_modified;
     }
     
     if (page._alpha.is_valid()) {
@@ -301,8 +304,8 @@ update_frame(int frame) {
           dest += dest_row_width;
           source -= source_row_width;
         }
-        
       }
+      ++_image_modified;
     }
   }
 }
@@ -513,12 +516,12 @@ get_frame_data(int frame_number) {
 
     if (frame_number > coming_from) {
       // Ok, we do have to skip a few frames.
-      _codec_context->hurry_up = true;
+      _codec_context->skip_frame = AVDISCARD_BIDIR;
+
       while (frame_number > coming_from) {
         int err = read_video_frame(&packet);
         if (err < 0) {
           return false;
-
         }
 #if LIBAVCODEC_VERSION_INT < 3414272
         avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data, packet.size);
@@ -528,7 +531,7 @@ get_frame_data(int frame_number) {
         av_free_packet(&packet);
         ++coming_from;
       }
-      _codec_context->hurry_up = false;
+      _codec_context->skip_frame = AVDISCARD_DEFAULT;
     }
 
     // Now we're ready to read a frame.
@@ -550,7 +553,7 @@ get_frame_data(int frame_number) {
     
     // Okay, now we're at the nearest keyframe behind our timestamp.
     // Hurry up and move through frames until we find a frame just after it.
-    _codec_context->hurry_up = true;
+    _codec_context->skip_frame = AVDISCARD_BIDIR;
     do {
       int err = read_video_frame(&packet);
       if (err < 0) {
@@ -564,15 +567,15 @@ get_frame_data(int frame_number) {
       }
 
 #if LIBAVCODEC_VERSION_INT < 3414272
-        avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data, packet.size);
+      avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data, packet.size);
 #else
-        avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
+      avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
 #endif
 
       av_free_packet(&packet);
     } while (true);
     
-    _codec_context->hurry_up = false;
+    _codec_context->skip_frame = AVDISCARD_DEFAULT;
     // Now near frame with Packet ready for decode (and free)
   }
   
@@ -584,9 +587,9 @@ get_frame_data(int frame_number) {
   if (packet.stream_index == _stream_number) {
     // Decode video frame
 #if LIBAVCODEC_VERSION_INT < 3414272
-        avcodec_decode_video(_codec_context, _frame, &frame_finished, packet.data, packet.size);
+    avcodec_decode_video(_codec_context, _frame, &frame_finished, packet.data, packet.size);
 #else
-        avcodec_decode_video2(_codec_context, _frame, &frame_finished, &packet);
+    avcodec_decode_video2(_codec_context, _frame, &frame_finished, &packet);
 #endif
 
     // Did we get a video frame?
@@ -603,9 +606,10 @@ get_frame_data(int frame_number) {
       } else {
         dst_format = PIX_FMT_RGB32;
       }
-      struct SwsContext *convert_ctx = sws_getContext(_codec_context->width, _codec_context->height,
-                              _codec_context->pix_fmt, _codec_context->width, _codec_context->height,
-                              dst_format, 2, NULL, NULL, NULL);
+      struct SwsContext *convert_ctx = 
+        sws_getContext(_codec_context->width, _codec_context->height,
+                       _codec_context->pix_fmt, _codec_context->width, _codec_context->height,
+                       dst_format, SWS_FAST_BILINEAR, NULL, NULL, NULL);
       nassertr(convert_ctx != NULL, false);
       sws_scale(convert_ctx, _frame->data, _frame->linesize,
                 0, _codec_context->height, _frame_out->data, _frame_out->linesize);
@@ -663,7 +667,7 @@ read(const Filename &filename) {
   
   _stream_number = -1;
   for(int i = 0; i < _format_context->nb_streams; i++) {
-    if ((*_format_context->streams[i]->codec).codec_type == CODEC_TYPE_VIDEO) {
+    if ((*_format_context->streams[i]->codec).codec_type == AVMEDIA_TYPE_VIDEO) {
       _stream_number = i;
       break;
     }
@@ -671,7 +675,7 @@ read(const Filename &filename) {
 
   if (_stream_number == -1) {
     grutil_cat.error()
-      << "ffmpeg: no stream found with codec of type CODEC_TYPE_VIDEO" << endl;
+      << "ffmpeg: no stream found with codec of type AVMEDIA_TYPE_VIDEO" << endl;
     clear();
     return false;
   }
@@ -796,6 +800,10 @@ clear() {
 int FFMpegTexture::VideoStream::
 read_video_frame(AVPacket *packet) {
   int err = av_read_frame(_format_context, packet);
+  if (grutil_cat.is_spam()) {
+    grutil_cat.spam()
+      << "av_read_frame() = " << err << "\n";
+  }
   if (err < 0) {
     return err;
   }
@@ -805,9 +813,15 @@ read_video_frame(AVPacket *packet) {
     av_free_packet(packet);
 
     err = av_read_frame(_format_context, packet);
+    if (grutil_cat.is_spam()) {
+      grutil_cat.spam()
+        << "av_read_frame() = " << err << "\n";
+    }
     if (err < 0) {
-      grutil_cat.debug()
-        << "Got error " << err << " reading frame.\n";
+      if (grutil_cat.is_debug()) {
+        grutil_cat.debug()
+          << "Got error " << err << " reading frame.\n";
+      }
       return err;
     }
   }
