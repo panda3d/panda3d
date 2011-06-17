@@ -95,14 +95,6 @@ ConfigVariableInt pfm_vis_max_indices
 ////////////////////////////////////////////////////////////////////
 void
 init_libgrutil() {
-  ConfigVariableBool use_movietexture
-    ("use-movietexture", false,
-     PRC_DESC("Panda contains a new animated texture class, MovieTexture. "
-              "Because it is not yet fully tested, the texture loader "
-              "will not use it unless this variable is set.  Eventually, "
-              "this config variable will go away and the new code will "
-              "be enabled all the time."));
-
   static bool initialized = false;
   if (initialized) {
     return;
@@ -125,17 +117,22 @@ init_libgrutil() {
 
 #ifdef HAVE_FFMPEG
   av_register_all();
+  MovieTexture::init_type();
+  MovieTexture::register_with_read_factory();
   FFMpegTexture::init_type();
   FFMpegTexture::register_with_read_factory();
-#endif
 
-#if defined(HAVE_FFMPEG)
+  ConfigVariableBool use_movietexture
+    ("use-movietexture", true,
+     PRC_DESC("Prefer the newer MovieTexture interface over the older "
+              "FFMpegTexture interface when loading movie textures."));
+
   TexturePool *ts = TexturePool::get_global_ptr();
   if (use_movietexture) {
     ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
   } else {
     ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
   }
-#endif
+#endif  // HAVE_FFMPEG
 }
 
