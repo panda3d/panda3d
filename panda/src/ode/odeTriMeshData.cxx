@@ -226,8 +226,8 @@ process_primitive(const GeomPrimitive *primitive,
       out.width(8); out << "" << "primitive " << i << ":" << "\n";
       for (int j = s, m = 0; j < e; j++, m++, _num_vertices++) {
         int vRowIndex = dPrimitive->get_vertex(j);
-        vReader.set_row(vRowIndex);
-        nReader.set_row(vRowIndex);
+        vReader.set_row_unsafe(vRowIndex);
+        nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
         //normal = nReader.get_data3f();
         _faces[_num_faces].Indices[m] = _num_vertices;
@@ -247,8 +247,8 @@ process_primitive(const GeomPrimitive *primitive,
       out.width(8); out << "" << "primitive " << i << ":" << "\n";
       for (int j = s, m = 0; j < e; j++, m++, _num_vertices++) {
         int vRowIndex = dPrimitive->get_vertex(j);
-        vReader.set_row(vRowIndex);
-        nReader.set_row(vRowIndex);
+        vReader.set_row_unsafe(vRowIndex);
+        nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
         //normal = nReader.get_data3f();
 

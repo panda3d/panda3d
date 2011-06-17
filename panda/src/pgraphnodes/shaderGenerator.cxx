@@ -310,18 +310,20 @@ analyze_renderstate(const RenderState *rs) {
     }
     if (tex_gen->has_stage(stage)) {
       switch (tex_gen->get_mode(stage)) {
-        case TexGenAttrib::M_world_position:
-          _need_world_position = true;
-          break;
-        case TexGenAttrib::M_world_normal:
-          _need_world_normal = true;
-          break;
-        case TexGenAttrib::M_eye_position:
-          _need_eye_position = true;
-          break;
-        case TexGenAttrib::M_eye_normal:
-          _need_eye_normal = true;
-          break;
+      case TexGenAttrib::M_world_position:
+	_need_world_position = true;
+	break;
+      case TexGenAttrib::M_world_normal:
+	_need_world_normal = true;
+	break;
+      case TexGenAttrib::M_eye_position:
+	_need_eye_position = true;
+	break;
+      case TexGenAttrib::M_eye_normal:
+	_need_eye_normal = true;
+	break;
+      default:
+	break;
       }
     }
   }
@@ -917,11 +919,19 @@ synthesize_shader(const RenderState *rs) {
     nassertr(tex != NULL, NULL);
     text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(tex->get_texture_type());
     text << "(tex_" << _map_index_height << ", l_texcoord" << _map_index_height << ".";
-    switch(tex->get_texture_type()) {
-      case Texture::TT_cube_map:
-      case Texture::TT_3d_texture: text << "xyz"; break;
-      case Texture::TT_2d_texture: text << "xy";  break;
-      case Texture::TT_1d_texture: text << "x";   break;
+    switch (tex->get_texture_type()) {
+    case Texture::TT_cube_map:
+    case Texture::TT_3d_texture: 
+      text << "xyz";
+      break;
+    case Texture::TT_2d_texture: 
+      text << "xy";  
+      break;
+    case Texture::TT_1d_texture:
+      text << "x";   
+      break;
+    default:
+      break;
     }
     text << ");\n\t float3 parallax_offset = l_eyevec.xyz * (tex" << _map_index_height;
     if (_map_height_in_alpha) {
@@ -952,10 +962,18 @@ synthesize_shader(const RenderState *rs) {
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
       text << "(tex_" << i << ", l_texcoord" << i << ".";
       switch(tex->get_texture_type()) {
-        case Texture::TT_cube_map:
-        case Texture::TT_3d_texture: text << "xyz"; break;
-        case Texture::TT_2d_texture: text << "xy";  break;
-        case Texture::TT_1d_texture: text << "x";   break;
+      case Texture::TT_cube_map:
+      case Texture::TT_3d_texture: 
+	text << "xyz"; 
+	break;
+      case Texture::TT_2d_texture: 
+	text << "xy";
+	break;
+      case Texture::TT_1d_texture: 
+	text << "x";   
+	break;
+      default:
+	break;
       }
       text << ");\n";
     }

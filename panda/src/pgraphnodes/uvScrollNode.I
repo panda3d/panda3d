@@ -21,10 +21,10 @@
 INLINE UvScrollNode::
 UvScrollNode(const string &name, float u_speed, float v_speed, float r_speed) :
   PandaNode(name),
-  _start_time(ClockObject::get_global_clock()->get_frame_time()),
   _u_speed(u_speed),
   _v_speed(v_speed),
-  _r_speed(r_speed)
+  _r_speed(r_speed),
+  _start_time(ClockObject::get_global_clock()->get_frame_time())
 {  
   set_cull_callback();
 }
@@ -37,10 +37,10 @@ UvScrollNode(const string &name, float u_speed, float v_speed, float r_speed) :
 INLINE UvScrollNode::
 UvScrollNode(const string &name) :
   PandaNode(name),
-  _start_time(ClockObject::get_global_clock()->get_frame_time()),
   _u_speed(0),
   _v_speed(0),
-  _r_speed(0)
+  _r_speed(0),
+  _start_time(ClockObject::get_global_clock()->get_frame_time())
 {  
   set_cull_callback();
 }

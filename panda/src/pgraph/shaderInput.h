@@ -83,10 +83,10 @@ private:
   PT(InternalName) _name;
   int _type;
   int _priority;
+  Shader::ShaderPtrData _stored_ptr;
   PT(Texture)           _stored_texture;
   NodePath              _stored_nodepath;
   LVector4f             _stored_vector;
-  Shader::ShaderPtrData _stored_ptr;
 
 public:
   static TypeHandle get_class_type() {

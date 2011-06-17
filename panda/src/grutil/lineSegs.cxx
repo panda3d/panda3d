@@ -128,7 +128,7 @@ Vertexf LineSegs::
 get_vertex(int n) const {
   nassertr(_created_data != (GeomVertexData *)NULL, Vertexf::zero());
   GeomVertexReader vertex(_created_data, InternalName::get_vertex());
-  vertex.set_row(n);
+  vertex.set_row_unsafe(n);
   return vertex.get_data3f();
 }
 
@@ -145,7 +145,7 @@ void LineSegs::
 set_vertex(int n, const Vertexf &vert) {
   nassertv(_created_data != (GeomVertexData *)NULL);
   GeomVertexWriter vertex(_created_data, InternalName::get_vertex());
-  vertex.set_row(n);
+  vertex.set_row_unsafe(n);
   vertex.set_data3f(vert);
 }
 
@@ -158,7 +158,7 @@ Colorf LineSegs::
 get_vertex_color(int n) const {
   nassertr(_created_data != (GeomVertexData *)NULL, Colorf::zero());
   GeomVertexReader color(_created_data, InternalName::get_color());
-  color.set_row(n);
+  color.set_row_unsafe(n);
   return color.get_data4f();
 }
 
@@ -172,7 +172,7 @@ void LineSegs::
 set_vertex_color(int n, const Colorf &c) {
   nassertv(_created_data != (GeomVertexData *)NULL);
   GeomVertexWriter color(_created_data, InternalName::get_color());
-  color.set_row(n);
+  color.set_row_unsafe(n);
   color.set_data4f(c);
 }
 

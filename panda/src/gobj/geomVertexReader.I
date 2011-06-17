@@ -375,6 +375,25 @@ get_column() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::set_row_unsafe
+//       Access: Published
+//  Description: Sets the start row to the indicated value, without
+//               internal checks.  This is the same as set_row(), but
+//               it does not check for the possibility that the array
+//               has been reallocated internally for some reason; use
+//               only when you are confident that the array is
+//               unchanged and you really need every bit of available
+//               performance.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexReader::
+set_row_unsafe(int row) {
+  _start_row = row;
+  if (has_column()) {
+    quick_set_pointer(_start_row);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::set_row
 //       Access: Published
 //  Description: Sets the start row to the indicated value.  The
@@ -387,7 +406,8 @@ INLINE void GeomVertexReader::
 set_row(int row) {
   _start_row = row;
   if (has_column()) {
-    quick_set_pointer(_start_row);
+    bool result = set_pointer(_start_row);
+    nassertv(result);
   }
 }
 
@@ -556,12 +576,13 @@ get_packer() const {
 INLINE bool GeomVertexReader::
 set_pointer(int row) {
   _pointer_begin = _handle->get_read_pointer(_force);
-  if (_pointer_begin == NULL) {
+  if (_pointer_begin == NULL && _handle->get_data_size_bytes() != 0) {
     // Vertex data is not resident.
     set_column(0, NULL);
     return false;
   }
 
+  // Vertex data is resident, or just empty.
   _pointer_end = _pointer_begin + _handle->get_data_size_bytes();
   quick_set_pointer(row);
   return true;
@@ -576,7 +597,7 @@ set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
 quick_set_pointer(int row) {
-  nassertv(has_column() && _pointer_begin != NULL);
+  nassertv(has_column() && (_pointer_begin != NULL || row == 0));
 
 #if defined(_DEBUG)
   // Make sure we still have the same pointer as stored in the array.

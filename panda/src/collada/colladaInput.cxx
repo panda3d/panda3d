@@ -260,7 +260,7 @@ void ColladaInput::
 write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride, unsigned int offset) const {
   nassertv(_column_name != NULL);
   GeomVertexWriter writer (vdata, _column_name);
-  writer.set_row(start_row);
+  writer.set_row_unsafe(start_row);
 
   domList_of_uints &indices = p.getValue();
 

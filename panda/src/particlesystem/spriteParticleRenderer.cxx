@@ -321,7 +321,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
-            texcoord.set_row(vert);
+            texcoord.set_row_unsafe(vert);
             
             if (!got_texcoord) {
                 min_uv = max_uv = texcoord.get_data2f();
@@ -365,7 +365,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
-            vertex.set_row(vert);
+            vertex.set_row_unsafe(vert);
             
             if (!got_vertex) {
               min_xyz = max_xyz = vertex.get_data3f();

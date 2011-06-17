@@ -336,6 +336,25 @@ get_column() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_row_unsafe
+//       Access: Published
+//  Description: Sets the start row to the indicated value, without
+//               internal checks.  This is the same as set_row(), but
+//               it does not check for the possibility that the array
+//               has been reallocated internally for some reason; use
+//               only when you are confident that the array is
+//               unchanged and you really need every bit of available
+//               performance.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_row_unsafe(int row) {
+  _start_row = row;
+  if (has_column()) {
+    quick_set_pointer(_start_row);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::set_row
 //       Access: Published
 //  Description: Sets the start row to the indicated value.  The
@@ -348,7 +367,7 @@ INLINE void GeomVertexWriter::
 set_row(int row) {
   _start_row = row;
   if (has_column()) {
-    quick_set_pointer(_start_row);
+    set_pointer(_start_row);
   }
 }
 

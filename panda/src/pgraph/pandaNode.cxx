@@ -646,7 +646,6 @@ __copy__() const {
   int num_children = children.get_num_children();
 
   for (int i = 0; i < num_children; ++i) {
-    PandaNode *child = children.get_child(i);
     node_dupe->add_child(children.get_child(i), children.get_child_sort(i));
   }
 

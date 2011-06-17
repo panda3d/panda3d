@@ -1245,7 +1245,7 @@ describe_vertex(ostream &out, int row) const {
   out << "Vertex " << row << ":\n";
 
   GeomVertexReader reader(this);
-  reader.set_row(row);
+  reader.set_row_unsafe(row);
   const GeomVertexFormat *format = get_format();
 
   const TransformBlendTable *tb_table = NULL;
@@ -1476,8 +1476,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                   for (int i = 0; i < num_subranges; ++i) {
                     int begin = rows.get_subrange_begin(i);
                     int end = rows.get_subrange_end(i);
-                    data.set_row(begin);
-                    delta.set_row(begin);
+                    data.set_row_unsafe(begin);
+                    delta.set_row_unsafe(begin);
                     for (int j = begin; j < end; ++j) {
                       LPoint4f vertex = data.get_data4f();
                       LPoint3f d = delta.get_data3f();
@@ -1493,8 +1493,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                   for (int i = 0; i < num_subranges; ++i) {
                     int begin = rows.get_subrange_begin(i);
                     int end = rows.get_subrange_end(i);
-                    data.set_row(begin);
-                    delta.set_row(begin);
+                    data.set_row_unsafe(begin);
+                    delta.set_row_unsafe(begin);
                     for (int j = begin; j < end; ++j) {
                       const LPoint4f &vertex = data.get_data4f();
                       LPoint4f d = delta.get_data4f();
@@ -1508,8 +1508,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                 for (int i = 0; i < num_subranges; ++i) {
                   int begin = rows.get_subrange_begin(i);
                   int end = rows.get_subrange_end(i);
-                  data.set_row(begin);
-                  delta.set_row(begin);
+                  data.set_row_unsafe(begin);
+                  delta.set_row_unsafe(begin);
                   for (int j = begin; j < end; ++j) {
                     const LPoint3f &vertex = data.get_data3f();
                     LPoint3f d = delta.get_data3f();
@@ -1591,7 +1591,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           for (int i = 0; i < num_subranges; ++i) {
             int begin = rows.get_subrange_begin(i);
             int end = rows.get_subrange_end(i);
-            data.set_row(begin);
+            data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
               LPoint4f vertex = data.get_data4f();
               int bi = blendt[j];
@@ -1606,7 +1606,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           for (int i = 0; i < num_subranges; ++i) {
             int begin = rows.get_subrange_begin(i);
             int end = rows.get_subrange_end(i);
-            data.set_row(begin);
+            data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
               LPoint3f vertex = data.get_data3f();
               int bi = blendt[j];
@@ -1648,7 +1648,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           for (int i = 0; i < num_subranges; ++i) {
             int begin = rows.get_subrange_begin(i);
             int end = rows.get_subrange_end(i);
-            data.set_row(begin);
+            data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
               LVector3f vertex = data.get_data3f();
               int bi = blendt[j];
@@ -1674,8 +1674,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           for (int i = 0; i < num_subranges; ++i) {
             int begin = rows.get_subrange_begin(i);
             int end = rows.get_subrange_end(i);
-            data.set_row(begin);
-            blendi.set_row(begin);
+            data.set_row_unsafe(begin);
+            blendi.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
               LPoint4f vertex = data.get_data4f();
               int bi = blendi.get_data1i();
@@ -1687,8 +1687,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           for (int i = 0; i < num_subranges; ++i) {
             int begin = rows.get_subrange_begin(i);
             int end = rows.get_subrange_end(i);
-            data.set_row(begin);
-            blendi.set_row(begin);
+            data.set_row_unsafe(begin);
+            blendi.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
               LPoint3f vertex = data.get_data3f();
               int bi = blendi.get_data1i();
@@ -1703,8 +1703,8 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
         for (int i = 0; i < num_subranges; ++i) {
           int begin = rows.get_subrange_begin(i);
           int end = rows.get_subrange_end(i);
-          data.set_row(begin);
-          blendi.set_row(begin);
+          data.set_row_unsafe(begin);
+          blendi.set_row_unsafe(begin);
           for (int j = begin; j < end; ++j) {
             LVector3f vertex = data.get_data3f();
             int bi = blendi.get_data1i();

@@ -1360,6 +1360,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     break;
 
   case ST_none:
+  default:
     active   = CG_PROFILE_UNKNOWN;
     ultimate = CG_PROFILE_UNKNOWN;
   };
@@ -1459,7 +1460,7 @@ cg_compile_shader(const ShaderCaps &caps) {
     }
   }
 
-  if ((_text->_separate && !_text->_geometry.empty()) || (!_text->_separate && _text->_shared.find("gshader") != -1)) {
+  if ((_text->_separate && !_text->_geometry.empty()) || (!_text->_separate && _text->_shared.find("gshader") != string::npos)) {
     _cg_gprogram = cg_compile_entry_point("gshader", caps, ST_geometry);
     if (_cg_gprogram == 0) {
       cg_release_resources();
@@ -1829,9 +1830,9 @@ cg_compile_for(const ShaderCaps &caps,
 ////////////////////////////////////////////////////////////////////
 Shader::
 Shader(CPT(ShaderFile) filename, CPT(ShaderFile) text, const ShaderLanguage &lang) :
-  _filename(filename),
-  _text(text),
   _error_flag(true),
+  _text(text),
+  _filename(filename),
   _parse(0),
   _loaded(false),
   _language(lang)

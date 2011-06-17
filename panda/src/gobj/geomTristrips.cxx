@@ -291,7 +291,7 @@ rotate_impl() const {
       if (begin != 0) {
         // Copy in the unused vertices between tristrips.
         to.set_data1i(last_added);
-        from.set_row(end - 1);
+        from.set_row_unsafe(end - 1);
         to.set_data1i(from.get_data1i());
         begin += 2;
       }
@@ -300,7 +300,7 @@ rotate_impl() const {
       // an odd number of vertices, which is not allowed.
       nassertr((num_vertices & 1) == 0, NULL);
       for (int vi = end - 1; vi >= begin; --vi) {
-        from.set_row(vi);
+        from.set_row_unsafe(vi);
         last_added = from.get_data1i();
         to.set_data1i(last_added);
       }
@@ -368,11 +368,11 @@ requires_unused_vertices() const {
 void GeomTristrips::
 append_unused_vertices(GeomVertexArrayData *vertices, int vertex) {
   GeomVertexReader from(vertices, 0);
-  from.set_row(vertices->get_num_rows() - 1);
+  from.set_row_unsafe(vertices->get_num_rows() - 1);
   int prev = from.get_data1i();
 
   GeomVertexWriter to(vertices, 0);
-  to.set_row(vertices->get_num_rows());
+  to.set_row_unsafe(vertices->get_num_rows());
 
   to.add_data1i(prev);
   to.add_data1i(vertex);

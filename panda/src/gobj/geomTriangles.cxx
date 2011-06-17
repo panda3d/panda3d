@@ -210,10 +210,10 @@ rotate_impl() const {
       // Move the first vertex to the end.
       {
         for (int begin = 0; begin < num_vertices; begin += 3) {
-          from.set_row(begin + 1);
+          from.set_row_unsafe(begin + 1);
           to.set_data1i(from.get_data1i());
           to.set_data1i(from.get_data1i());
-          from.set_row(begin);
+          from.set_row_unsafe(begin);
           to.set_data1i(from.get_data1i());
         }
       }
@@ -223,9 +223,9 @@ rotate_impl() const {
       // Move the last vertex to the front.
       {
         for (int begin = 0; begin < num_vertices; begin += 3) {
-          from.set_row(begin + 2);
+          from.set_row_unsafe(begin + 2);
           to.set_data1i(from.get_data1i());
-          from.set_row(begin);
+          from.set_row_unsafe(begin);
           to.set_data1i(from.get_data1i());
           to.set_data1i(from.get_data1i());
         }

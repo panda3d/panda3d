@@ -677,8 +677,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
       break;
     }
-    tcdata[si]._r1.set_row(_min_vertex);
-    tcdata[si]._r2.set_row(_min_vertex);
+    tcdata[si]._r1.set_row_unsafe(_min_vertex);
+    tcdata[si]._r2.set_row_unsafe(_min_vertex);
     if (!tcdata[si]._r1.has_column()) {
       texgen_func[si] = &texgen_null;
     }
@@ -687,7 +687,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   bool needs_color = false;
   if (_vertex_colors_enabled) {
     rcolor = GeomVertexReader(data_reader, InternalName::get_color(), force);
-    rcolor.set_row(_min_vertex);
+    rcolor.set_row_unsafe(_min_vertex);
     needs_color = rcolor.has_column();
   }
 
@@ -703,12 +703,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   bool needs_normal = false;
   if (_c->lighting_enabled) {
     rnormal = GeomVertexReader(data_reader, InternalName::get_normal(), force);
-    rnormal.set_row(_min_vertex);
+    rnormal.set_row_unsafe(_min_vertex);
     needs_normal = rnormal.has_column();
   }
 
   GeomVertexReader rvertex(data_reader, InternalName::get_vertex(), force); 
-  rvertex.set_row(_min_vertex);
+  rvertex.set_row_unsafe(_min_vertex);
 
   if (!rvertex.has_column()) {
     // Whoops, guess the vertex data isn't resident.

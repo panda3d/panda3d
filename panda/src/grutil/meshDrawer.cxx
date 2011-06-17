@@ -413,8 +413,8 @@ void MeshDrawer::geometry(NodePath draw_node) {
           // process polygon
           for(int idx=s; idx<e; idx++) {
             int vidx = _prim->get_vertex(idx);
-            prim_vertex_reader->set_row(vidx);
-            prim_uv_reader->set_row(vidx);
+            prim_vertex_reader->set_row_unsafe(vidx);
+            prim_uv_reader->set_row_unsafe(vidx);
             vec[indx_over] = _render.get_relative_point(
               current_node_path,prim_vertex_reader->get_data3f());
             uv[indx_over] = prim_uv_reader->get_data2f();

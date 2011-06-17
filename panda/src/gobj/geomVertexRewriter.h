@@ -64,6 +64,7 @@ PUBLISHED:
   INLINE int get_array() const;
   INLINE const GeomVertexColumn *get_column() const;
 
+  INLINE void set_row_unsafe(int row);
   INLINE void set_row(int row);
 
   INLINE int get_start_row() const;

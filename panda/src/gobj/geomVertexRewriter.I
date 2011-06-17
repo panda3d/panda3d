@@ -296,6 +296,26 @@ get_column() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::set_row_unsafe
+//       Access: Published
+//  Description: Sets the start row to the indicated value, without
+//               internal checks.  This is the same as set_row(), but
+//               it does not check for the possibility that the array
+//               has been reallocated internally for some reason; use
+//               only when you are confident that the array is
+//               unchanged and you really need every bit of available
+//               performance.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexRewriter::
+set_row_unsafe(int row) {
+  // It's important to invoke the Writer first, since that might force
+  // a recopy of the array, which might invalidate the pointer already
+  // stored by the Reader if we invoked the Reader first.
+  GeomVertexWriter::set_row_unsafe(row);
+  GeomVertexReader::set_row_unsafe(row);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::set_row
 //       Access: Published
 //  Description: Sets the start, write, and write index to the
@@ -304,9 +324,6 @@ get_column() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexRewriter::
 set_row(int row) {
-  // It's important to invoke the Writer first, since that might force
-  // a recopy of the array, which might invalidate the pointer already
-  // stored by the Reader if we invoked the Reader first.
   GeomVertexWriter::set_row(row);
   GeomVertexReader::set_row(row);
 }

@@ -77,9 +77,9 @@ OccluderNode(const string &name) :
 OccluderNode::
 OccluderNode(const OccluderNode &copy) :
   PandaNode(copy),
-  _vertices(copy._vertices),
   _double_sided(copy._double_sided),
-  _min_coverage(copy._min_coverage)
+  _min_coverage(copy._min_coverage),
+  _vertices(copy._vertices)
 {
 }
 

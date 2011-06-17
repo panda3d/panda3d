@@ -1330,11 +1330,11 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           while (!index.is_at_end()) {
             Vertexf v[3];
             
-            vertex.set_row(index.get_data1i());
+            vertex.set_row_unsafe(index.get_data1i());
             v[0] = vertex.get_data3f();
-            vertex.set_row(index.get_data1i());
+            vertex.set_row_unsafe(index.get_data1i());
             v[1] = vertex.get_data3f();
-            vertex.set_row(index.get_data1i());
+            vertex.set_row_unsafe(index.get_data1i());
             v[2] = vertex.get_data3f();
             
             // Generate a temporary CollisionGeom on the fly for each
@@ -1358,7 +1358,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           }
         } else {
           // Non-indexed case.
-          vertex.set_row(primitive->get_first_vertex());
+          vertex.set_row_unsafe(primitive->get_first_vertex());
           int num_vertices = primitive->get_num_vertices();
           for (int i = 0; i < num_vertices; i += 3) {
             Vertexf v[3];

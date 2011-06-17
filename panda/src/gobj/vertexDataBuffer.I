@@ -73,8 +73,9 @@ INLINE VertexDataBuffer::
 //               is not currently resident, this will implicitly
 //               request it to become resident soon.
 //
-//               If force is true, this method will never return NULL,
-//               but may block until the data is available.
+//               If force is true, this method will never return NULL
+//               (unless the data is actually empty), but may block
+//               until the data is available.
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *VertexDataBuffer::
 get_read_pointer(bool force) const {

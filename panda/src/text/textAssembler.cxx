@@ -2382,7 +2382,7 @@ append_vertex(const GeomVertexData *orig_vdata, int orig_row,
   _vdata->copy_row_from(new_row, orig_vdata, orig_row, Thread::get_current_thread());
 
   GeomVertexRewriter vertex_rewriter(_vdata, InternalName::get_vertex());
-  vertex_rewriter.set_row(new_row);
+  vertex_rewriter.set_row_unsafe(new_row);
   LPoint3f point = vertex_rewriter.get_data3f();
   vertex_rewriter.set_data3f(point * xform);
 

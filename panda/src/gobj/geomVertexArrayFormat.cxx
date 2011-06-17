@@ -526,7 +526,7 @@ write_with_data(ostream &out, int indent_level,
   for (int i = 0; i < num_rows; i++) {
     indent(out, indent_level)
       << "row " << i << ":\n";
-    reader.set_row(i);
+    reader.set_row_unsafe(i);
     Columns::const_iterator ci;
     for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
       const GeomVertexColumn *column = (*ci);

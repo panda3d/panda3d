@@ -50,12 +50,12 @@ ShaderAttrib(const ShaderAttrib &copy) :
   _flags(copy._flags),
   _has_flags(copy._has_flags),
   _instance_count(copy._instance_count),
-  _inputs(copy._inputs),
   _auto_normal_on(copy._auto_normal_on),
   _auto_glow_on(copy._auto_glow_on),
   _auto_gloss_on(copy._auto_gloss_on),
   _auto_ramp_on(copy._auto_ramp_on),
-  _auto_shadow_on(copy._auto_shadow_on)
+  _auto_shadow_on(copy._auto_shadow_on),
+  _inputs(copy._inputs)
 {
 }
 

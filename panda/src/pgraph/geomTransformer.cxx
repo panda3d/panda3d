@@ -256,7 +256,6 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
   }
   
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (st._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[st._vertex_data]._might_have_unused = true;
@@ -325,7 +324,6 @@ set_color(Geom *geom, const Colorf &color) {
   }
   
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (sc._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[sc._vertex_data]._might_have_unused = true;
@@ -391,7 +389,6 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
   }
   
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (sc._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[sc._vertex_data]._might_have_unused = true;
@@ -616,7 +613,6 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   }
 
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (stc._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[stc._vertex_data]._might_have_unused = true;
@@ -753,7 +749,6 @@ set_format(Geom *geom, const GeomVertexFormat *new_format) {
   }
   
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (sf._vertex_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[sf._vertex_data]._might_have_unused = true;
@@ -920,7 +915,6 @@ reverse_normals(Geom *geom) {
   }
 
   geom->set_vertex_data(new_data._vdata);
-  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
   if (orig_data->get_ref_count() > 1) {
     _vdata_assoc[new_data._vdata]._might_have_unused = true;
     _vdata_assoc[orig_data]._might_have_unused = true;
@@ -1463,7 +1457,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
       int num_rows = vdata->get_num_rows();
       int new_index[4];
       
-      index.set_row(vertex_offset);
+      index.set_row_unsafe(vertex_offset);
       for (int ci = 0; ci < num_rows; ++ci) {
         const int *orig_index = index.get_data4i();
         for (int i = 0; i < num_values; i++) {
@@ -1511,7 +1505,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     GeomVertexRewriter index(_new_data, InternalName::get_transform_blend());
     if (index.has_column()) {
       int num_rows = vdata->get_num_rows();
-      index.set_row(vertex_offset);
+      index.set_row_unsafe(vertex_offset);
 
       for (int ci = 0; ci < num_rows; ++ci) {
         int orig_index = index.get_data1i();

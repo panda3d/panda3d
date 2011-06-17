@@ -2199,6 +2199,10 @@ format_compression_mode(CompressionMode cm) {
     return "dxt4";
   case CM_dxt5:
     return "dxt5";
+  case CM_pvr1_2bpp:
+    return "pvr1_2bpp";
+  case CM_pvr1_4bpp:
+    return "pvr1_4bpp";
   }
 
   return "**invalid**";
@@ -2230,6 +2234,10 @@ string_compression_mode(const string &str) {
     return CM_dxt4;
   } else if (cmp_nocase_uh(str, "dxt5") == 0) {
     return CM_dxt5;
+  } else if (cmp_nocase_uh(str, "pvr1_2bpp") == 0) {
+    return CM_pvr1_2bpp;
+  } else if (cmp_nocase_uh(str, "pvr1_4bpp") == 0) {
+    return CM_pvr1_4bpp;
   }
 
   gobj_cat->error()

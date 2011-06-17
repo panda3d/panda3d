@@ -231,7 +231,7 @@ add_vertex(int vertex) {
 
   PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
   GeomVertexWriter index(array_obj, 0);
-  index.set_row(array_obj->get_num_rows());
+  index.set_row_unsafe(array_obj->get_num_rows());
 
   index.add_data1i(vertex);
 
@@ -295,7 +295,7 @@ add_consecutive_vertices(int start, int num_vertices) {
 
   PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
   GeomVertexWriter index(array_obj, 0);
-  index.set_row(array_obj->get_num_rows());
+  index.set_row_unsafe(array_obj->get_num_rows());
 
   for (int v = start; v <= end; ++v) {
     index.add_data1i(v);
@@ -680,7 +680,7 @@ get_primitive_min_vertex(int n) const {
     nassertr(n >= 0 && n < mins->get_num_rows(), -1);
 
     GeomVertexReader index(mins, 0);
-    index.set_row(n);
+    index.set_row_unsafe(n);
     return index.get_data1i();
   } else {
     return get_primitive_start(n);
@@ -700,7 +700,7 @@ get_primitive_max_vertex(int n) const {
     nassertr(n >= 0 && n < maxs->get_num_rows(), -1);
 
     GeomVertexReader index(maxs, 0);
-    index.set_row(n);
+    index.set_row_unsafe(n);
     return index.get_data1i();
   } else {
     return get_primitive_end(n) - 1;
@@ -1491,7 +1491,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     nassertv(cdata->_num_vertices != -1);
     if (got_mat) {
       for (int i = 0; i < cdata->_num_vertices; i++) {
-        reader.set_row(cdata->_first_vertex + i);
+        reader.set_row_unsafe(cdata->_first_vertex + i);
         LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
@@ -1509,7 +1509,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
       }
     } else {
       for (int i = 0; i < cdata->_num_vertices; i++) {
-        reader.set_row(cdata->_first_vertex + i);
+        reader.set_row_unsafe(cdata->_first_vertex + i);
         const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {
@@ -1534,7 +1534,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     if (got_mat) {
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
-        reader.set_row(ii);
+        reader.set_row_unsafe(ii);
         LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
@@ -1553,7 +1553,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     } else {
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
-        reader.set_row(ii);
+        reader.set_row_unsafe(ii);
         const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {
@@ -2035,7 +2035,7 @@ get_vertex(int i) const {
     nassertr(i >= 0 && i < _vertices_reader->get_num_rows(), -1);
 
     GeomVertexReader index(_cdata->_vertices.get_read_pointer(), 0);
-    index.set_row(i);
+    index.set_row_unsafe(i);
     return index.get_data1i();
 
   } else {

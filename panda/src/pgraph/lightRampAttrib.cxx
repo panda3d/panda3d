@@ -200,6 +200,9 @@ void LightRampAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
   switch (_mode) {
+  case LRT_default:
+    out << "default()";
+    break;
   case LRT_identity:
     out << "identity()";
     break;
@@ -208,6 +211,15 @@ output(ostream &out) const {
     break;
   case LRT_double_threshold:
     out << "double_threshold(" << _level[0] << "," << _level[1] << "," << _threshold[0] << "," << _threshold[1] << ")";
+    break;
+  case LRT_hdr0:
+    out << "hdr0()";
+    break;
+  case LRT_hdr1:
+    out << "hdr1()";
+    break;
+  case LRT_hdr2:
+    out << "hdr2()";
     break;
   }
 }

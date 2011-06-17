@@ -238,9 +238,9 @@ remove_tris_related_to_vertex(const int vertexIndex) {
     if (vertexIndex == idx0 || vertexIndex == idx1 || vertexIndex == idx2) {
 
       // Make this triangle degenerated
-      vrewriter.set_row(idx0); v = vrewriter.get_data3f();
-      vrewriter.set_row(idx1); vrewriter.set_data3f(v.get_x(), v.get_y(), v.get_z());
-      vrewriter.set_row(idx2); vrewriter.set_data3f(v.get_x(), v.get_y(), v.get_z());
+      vrewriter.set_row_unsafe(idx0); v = vrewriter.get_data3f();
+      vrewriter.set_row_unsafe(idx1); vrewriter.set_data3f(v.get_x(), v.get_y(), v.get_z());
+      vrewriter.set_row_unsafe(idx2); vrewriter.set_data3f(v.get_x(), v.get_y(), v.get_z());
     }
   }
 }
@@ -288,9 +288,9 @@ update_normals() {
     int idx1 = _prim->get_vertex(s+1);
     int idx2 = _prim->get_vertex(s+2);
 
-    vreader.set_row(idx0); v0 = vreader.get_data3f();
-    vreader.set_row(idx1); v1 = vreader.get_data3f();
-    vreader.set_row(idx2); v2 = vreader.get_data3f();
+    vreader.set_row_unsafe(idx0); v0 = vreader.get_data3f();
+    vreader.set_row_unsafe(idx1); v1 = vreader.get_data3f();
+    vreader.set_row_unsafe(idx2); v2 = vreader.get_data3f();
 
     n = (v1 - v0).cross(v2 - v0);
 

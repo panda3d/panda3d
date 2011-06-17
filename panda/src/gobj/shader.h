@@ -262,20 +262,20 @@ public:
   
   // Container structure for data of parameters ShaderPtrSpec.
   struct ShaderPtrData{
-  public:
-    ShaderPtrType _type;
-    int           _size; //number of elements vec3[4]=12
-    bool          _updated;
-    void*         _ptr; 
-
   private:
     PTA_float         _pta_float;
     PTA_double        _pta_double;
+    PTA_LMatrix4f     _pta_lmat4f;
+    PTA_LMatrix3f     _pta_lmat3f;
     PTA_LVecBase4f    _pta_lvec4f;
     PTA_LVecBase3f    _pta_lvec3f;
     PTA_LVecBase2f    _pta_lvec2f;
-    PTA_LMatrix4f     _pta_lmat4f;
-    PTA_LMatrix3f     _pta_lmat3f;
+
+  public:
+    void*         _ptr; 
+    ShaderPtrType _type;
+    bool          _updated;
+    int           _size; //number of elements vec3[4]=12
 
   public:
     INLINE ShaderPtrData();
@@ -459,7 +459,7 @@ public:
   CPT(ShaderFile) _text;
 
  protected:
-  CPT(ShaderFile)_filename;
+  CPT(ShaderFile) _filename; 
   int            _parse;
   bool           _loaded;
   ShaderLanguage _language;

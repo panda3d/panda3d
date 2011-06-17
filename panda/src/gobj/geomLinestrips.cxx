@@ -182,7 +182,7 @@ rotate_impl() const {
     for (ei = ends.begin(); ei != ends.end(); ++ei) {
       int end = (*ei);
       for (int vi = end - 1; vi >= begin; --vi) {
-        from.set_row(vi);
+        from.set_row_unsafe(vi);
         to.set_data1i(from.get_data1i());
       }
       begin = end;

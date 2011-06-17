@@ -391,7 +391,6 @@ make_resident() {
     size_t new_allocated_size = round_up(_uncompressed_size);
     unsigned char *new_data = alloc_page_data(new_allocated_size);
     unsigned char *end_data = new_data + new_allocated_size;
-    uLongf dest_len = _uncompressed_size;
 
     z_stream z_source;
 #ifdef USE_MEMORY_NOWRAPPERS
