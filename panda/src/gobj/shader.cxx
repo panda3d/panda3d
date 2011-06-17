@@ -1503,7 +1503,6 @@ cg_compile_shader(const ShaderCaps &caps) {
 ////////////////////////////////////////////////////////////////////
 bool Shader::
 cg_analyze_entry_point(CGprogram prog, ShaderType type) {
-  CGparameter parameter;
   bool success = true;
 
   cg_recurse_parameters(cgGetFirstParameter(prog, CG_PROGRAM),type,success);

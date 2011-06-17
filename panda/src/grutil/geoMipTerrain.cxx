@@ -661,8 +661,8 @@ unsigned short GeoMipTerrain::
 get_neighbor_level(unsigned short mx, unsigned short my, short dmx, short dmy) {
   // If we're across the terrain border, check if we want stitching.
   // If not, return the same level as this one - it won't have to make junctions.
-  if (mx + dmx < 0 || mx + dmx >= (_xsize - 1) / _block_size ||
-      my + dmy < 0 || my + dmy >= (_ysize - 1) / _block_size) {
+  if ((int)mx + (int)dmx < 0 || (int)mx + (int)dmx >= ((int)_xsize - 1) / (int)_block_size ||
+      (int)my + (int)dmy < 0 || (int)my + (int)dmy >= ((int)_ysize - 1) / (int)_block_size) {
     return (_stitching) ? _max_level : min(max(_min_level, _levels[mx][my]), _max_level);
   }
   // If we're rendering bruteforce, the level must be the same as this one.

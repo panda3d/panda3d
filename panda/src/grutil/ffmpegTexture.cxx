@@ -666,7 +666,7 @@ read(const Filename &filename) {
   dump_format(_format_context, 0, os_specific.c_str(), false);
   
   _stream_number = -1;
-  for(int i = 0; i < _format_context->nb_streams; i++) {
+  for(size_t i = 0; i < _format_context->nb_streams; i++) {
     if ((*_format_context->streams[i]->codec).codec_type == AVMEDIA_TYPE_VIDEO) {
       _stream_number = i;
       break;
