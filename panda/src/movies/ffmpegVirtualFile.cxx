@@ -201,16 +201,23 @@ register_protocol() {
 void FfmpegVirtualFile::
 log_callback(void *ptr, int level, const char *fmt, va_list v1) {
   NotifySeverity severity;
+#ifdef AV_LOG_PANIC
   if (level <= AV_LOG_PANIC) {
     severity = NS_fatal;
-  } else if (level <= AV_LOG_ERROR) {
+  } else
+#endif
+  if (level <= AV_LOG_ERROR) {
     severity = NS_error;
+#ifdef AV_LOG_WARNING
   } else if (level <= AV_LOG_WARNING) {
     severity = NS_warning;
+#endif
   } else if (level <= AV_LOG_INFO) {
     severity = NS_info;
+#ifdef AV_LOG_VERBOSE
   } else if (level <= AV_LOG_VERBOSE) {
     severity = NS_debug;
+#endif
   } else /* level <= AV_LOG_DEBUG */ {
     severity = NS_spam;
   }
