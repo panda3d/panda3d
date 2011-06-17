@@ -199,7 +199,12 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
-  do_set_pad_size(x_max - x_size, y_max - y_size, 0);
+  _orig_file_x_size = cdata->_video_width;
+  _orig_file_y_size = cdata->_video_height;
+
+  do_set_pad_size(max(_x_size - _orig_file_x_size, 0), 
+                  max(_y_size - _orig_file_y_size, 0),
+                  0);
 }
 
 ////////////////////////////////////////////////////////////////////
