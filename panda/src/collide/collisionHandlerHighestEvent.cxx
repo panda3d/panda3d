@@ -49,7 +49,7 @@ begin_group() {
   }
   _last_colliding.clear();
   if (_closest_collider) {
-    bool inserted = _last_colliding.insert(_closest_collider).second;
+    _last_colliding.insert(_closest_collider);
   }
   _current_colliding.clear();
   _collider_distance = 0;
@@ -86,7 +86,7 @@ add_entry(CollisionEntry *entry) {
 bool CollisionHandlerHighestEvent::
 end_group() {
   if (_closest_collider) {
-    bool inserted = _current_colliding.insert(_closest_collider).second;
+    _current_colliding.insert(_closest_collider);
   }
   return CollisionHandlerEvent::end_group();
 }

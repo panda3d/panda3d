@@ -304,6 +304,18 @@ write(ostream &out, int indent_level) const {
     case A_center:
       out << "A_center\n";
       break;
+
+    case A_boxed_left:
+      out << "A_boxed_left\n";
+      break;
+      
+    case A_boxed_right:
+      out << "A_boxed_right\n";
+      break;
+      
+    case A_boxed_center:
+      out << "A_boxed_center\n";
+      break;
     }
   }
 

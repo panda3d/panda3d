@@ -336,9 +336,12 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
       }
 #else
       // Posix case.
-      new_pos = lseek(_fd, off, SEEK_END);
-      if (new_pos == -1) {
-        return -1;
+      {
+	off_t li = lseek(_fd, off, SEEK_END);
+	if (li == (size_t)-1) {
+	  return -1;
+	}
+	new_pos = (size_t)li;
       }
 #endif  // _WIN32
       break;

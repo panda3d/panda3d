@@ -283,7 +283,7 @@ main_tick() {
           // We have some memory usage on this TypeHandle.  See if we
           // have a collector for it.
           if (!col.is_valid()) {
-            const char *category;
+            const char *category = "";
             switch (mc) {
             case TypeHandle::MC_singleton:
               category = "Heap:Single";

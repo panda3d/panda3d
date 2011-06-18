@@ -302,7 +302,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
   // Create a new Python thread state data structure, so Python can
   // properly lock itself.  
-  PyObject *result;
+  PyObject *result = NULL;
 
   if (this == get_main_thread()) {
     // In the main thread, just call the function.

@@ -84,12 +84,12 @@ INLINE CollisionBox::
 CollisionBox(const CollisionBox &copy) :
   CollisionSolid(copy),
   _center(copy._center),
-  _x( copy._x ),
-  _y( copy._y ),
-  _z( copy._z ),
-  _min( copy._min),
-  _max( copy._max),
-  _radius( copy._radius )
+  _min(copy._min),
+  _max(copy._max),
+  _x(copy._x ),
+  _y(copy._y ),
+  _z(copy._z ),
+  _radius(copy._radius )
 {
   for(int v = 0; v < 8; v++)
     _vertex[v] = copy._vertex[v];
@@ -350,13 +350,13 @@ operator = (const CollisionBox::PointDef &copy) {
   _p = copy._p;
   _v = copy._v;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::get_plane_points
 //       Access: Public
 //  Description: returns the points that form the nth plane
 ////////////////////////////////////////////////////////////////////
-
 INLINE CollisionBox::Points CollisionBox::
-get_plane_points( int n ){
-	return _points[n];
+get_plane_points(int n) {
+  return _points[n];
 }

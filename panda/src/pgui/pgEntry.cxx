@@ -592,15 +592,18 @@ setup(float width, int num_lines) {
 
   switch (text_node->get_align()) {
   case TextNode::A_left:
+  case TextNode::A_boxed_left:
     // The default case.
     break;
 
   case TextNode::A_center:
+  case TextNode::A_boxed_center:
     frame[0] = -width / 2.0;
     frame[1] = width / 2.0;
     break;
 
   case TextNode::A_right:
+  case TextNode::A_boxed_right:
     frame[0] = -width;
     frame[1] = 0.0f;
     break;

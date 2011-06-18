@@ -2044,7 +2044,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
     _read->seek_read(pos, buffer, num_bytes, count, eof);
     while (count != 0) {
       thread_consider_yield();
-      nassertr(count <= max_bytes, false);
+      nassertr(count <= (streamsize)max_bytes, false);
       result.insert(result.end(), buffer, buffer + (size_t)count);
       max_bytes -= (size_t)count;
       pos += count;

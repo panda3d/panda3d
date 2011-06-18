@@ -478,8 +478,6 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   LPoint3f orig_center = get_center();
   LPoint3f to_center = orig_center;
-  bool moved_from_center = false;
-  float t = 1.0f;
   LPoint3f contact_point(from_center);
   float actual_t = 1.0f;
 
@@ -487,12 +485,13 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   float to_radius_2 = to_radius * to_radius;
 
   int ip;
-  float max_dist,dist;
+  float max_dist = 0.0f;
+  float dist = 0.0f; // initial assignment to squelch silly compiler warning
   bool intersect;
   Planef plane;
   LVector3f normal;
 
-  for( ip = 0, intersect=false; ip < 6 && !intersect; ip++ ){
+  for (ip = 0, intersect=false; ip < 6 && !intersect; ip++) {
     plane = local_b.get_plane( ip );
     if (local_b.get_plane_points(ip).size() < 3) {
       continue;

@@ -550,7 +550,7 @@ has_alpha_channel(int num_components) const {
 //     Function: EggTexture::affects_polygon_alpha
 //       Access: Published
 //  Description: Returns true if this texture's environment type or
-//               combine mode allows the texture to have an affect on
+//               combine mode allows the texture to have an effect on
 //               the polygon's alpha values, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool EggTexture::
@@ -564,13 +564,13 @@ affects_polygon_alpha() const {
   case ET_blend:
   case ET_add:
   case ET_blend_color_scale:
-    return false;
   case ET_modulate_glow:
   case ET_modulate_gloss:
   case ET_normal:
   case ET_normal_height:
   case ET_glow:
   case ET_gloss:
+  case ET_height:
     return false;
 
   case ET_selector:

@@ -64,11 +64,11 @@ SubprocessWindowBuffer(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 SubprocessWindowBuffer::
 SubprocessWindowBuffer(const SubprocessWindowBuffer &copy) :
+  _mmap_size(copy._mmap_size),
   _x_size(copy._x_size),
   _y_size(copy._y_size),
   _row_size(copy._row_size),
-  _framebuffer_size(copy._framebuffer_size),
-  _mmap_size(copy._mmap_size)
+  _framebuffer_size(copy._framebuffer_size)
 {
   memcpy(_this_magic, _magic_number, magic_number_length);
   _event_in = 0;

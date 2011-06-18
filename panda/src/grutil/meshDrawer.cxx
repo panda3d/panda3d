@@ -416,7 +416,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
             prim_vertex_reader->set_row_unsafe(vidx);
             prim_uv_reader->set_row_unsafe(vidx);
             vec[indx_over] = _render.get_relative_point(
-              current_node_path,prim_vertex_reader->get_data3f());
+							current_node_path,prim_vertex_reader->get_data3f());
             uv[indx_over] = prim_uv_reader->get_data2f();
             indx_over++;
             if (indx_over > 2) break;
@@ -424,8 +424,8 @@ void MeshDrawer::geometry(NodePath draw_node) {
 
           // draw polygon
           tri(vec[0],color,uv[0],
-            vec[1],color,uv[1],
-            vec[2],color,uv[2]);
+	      vec[1],color,uv[1],
+	      vec[2],color,uv[2]);
         }
         // if we are over budget just quit
         if( _clear_index > _end_clear_index) return;
@@ -447,37 +447,38 @@ void MeshDrawer::geometry(NodePath draw_node) {
 //               parameters.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
-        float thickness, LVector4f color) {
+void MeshDrawer::
+link_segment(LVector3f pos, LVector4f frame,
+	     float thickness, LVector4f color) {
   assert(_render.get_error_type() == NodePath::ET_ok);
   assert(_camera.get_error_type() == NodePath::ET_ok);
-    /*
-     * X
-     * ---X
-     * ===0---X
-     * ===0===0---X
-     * ===0===0===O---X
-     * ===0===0===0===End
-     *
-     * first call marks position X
-     * second call moves position and promises to draw segment
-     * it can't draw it yet because next segment might bend it
-     * third call finally draws segment
-     * and the chain continues till
-     * link_segment_end to flush the linking segments is called.
-     */
+  /*
+   * X
+   * ---X
+   * ===0---X
+   * ===0===0---X
+   * ===0===0===O---X
+   * ===0===0===0===End
+   *
+   * first call marks position X
+   * second call moves position and promises to draw segment
+   * it can't draw it yet because next segment might bend it
+   * third call finally draws segment
+   * and the chain continues till
+   * link_segment_end to flush the linking segments is called.
+   */
 
-    // mark 1st position
-    if(_at_start==0) {
-        _last_pos = pos;
-        _last_thickness = thickness;
-        _last_color = color;
-        _at_start=1;
-        return;
-    }
+  // mark 1st position
+  if(_at_start==0) {
+    _last_pos = pos;
+    _last_thickness = thickness;
+    _last_color = color;
+    _at_start=1;
+    return;
+  }
 
-    LVector3f start = _last_pos;
-    LVector3f stop = pos;
+  LVector3f start = _last_pos;
+  LVector3f stop = pos;
 
   LVector3f cam_start3d = _camera.get_relative_point(_render, start);
   LPoint2f cam_start2d = LVector2f();
@@ -487,9 +488,8 @@ void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
   PT(Camera) camera = DCAST(Camera, _camera.node());
   PT(Lens) lens = camera->get_lens();
 
-  bool start_good = lens->project(cam_start3d, cam_start2d);
-  bool stop_good = lens->project(cam_stop3d, cam_stop2d);
-  //if start_good and stop_good:
+  lens->project(cam_start3d, cam_start2d);
+  lens->project(cam_stop3d, cam_stop2d);
 
   LVector2f dif =  cam_stop2d - cam_start2d;
   float rotation = atan2(dif.get_x(),dif.get_y());
@@ -503,12 +503,12 @@ void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
   // we need to draw it when we know what the next segment looks like
   // because it can bend it a little
   if(_at_start==1) {
-        _last_v1 = now_v1;
-        _last_v2 = now_v2;
-        _last_v3 = now_v3;
-        _last_v4 = now_v4;
-        _at_start = 2;
-        return;
+    _last_v1 = now_v1;
+    _last_v2 = now_v2;
+    _last_v3 = now_v3;
+    _last_v4 = now_v4;
+    _at_start = 2;
+    return;
   }
 
   // draw the last segment a little bent
@@ -524,11 +524,11 @@ void MeshDrawer::link_segment(LVector3f pos, LVector4f frame,
   float vs = frame.get_w();
 
   tri(v1, _last_color, LVector2f(u,v),
-    v2, color, LVector2f(u+us,v),
-    v3, color, LVector2f(u+us,v+vs));
+      v2, color, LVector2f(u+us,v),
+      v3, color, LVector2f(u+us,v+vs));
   tri(v3, color, LVector2f(u+us,v+vs),
-    v4, _last_color, LVector2f(u,v+vs),
-    v1, _last_color, LVector2f(u,v));
+      v4, _last_color, LVector2f(u,v+vs),
+      v1, _last_color, LVector2f(u,v));
 
   // save this segment
   _last_v1 = v2;

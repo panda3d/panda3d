@@ -141,7 +141,7 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
     nassertr(fast != NULL, -1);
 
     // Let's be strict about size mismatches, to prevent user error.
-    if (PySequence_Fast_GET_SIZE(fast) != attr_name.size()) {
+    if (PySequence_Fast_GET_SIZE(fast) != (int)attr_name.size()) {
       PyErr_SetString(PyExc_ValueError, "length mismatch");
       Py_DECREF(fast);
       return -1;
@@ -150,7 +150,7 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
     // Get a pointer to the items, iterate over it and
     // perform our magic assignment.  Fast fast.  Oh yeah.
     PyObject** items = PySequence_Fast_ITEMS(fast);
-    for (int i = 0; i < attr_name.size(); ++i) {
+    for (size_t i = 0; i < attr_name.size(); ++i) {
 
       PyObject* fl = PyNumber_Float(items[i]);
       if (fl == NULL) {

@@ -118,8 +118,6 @@ InterfaceMaker::Object::
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::Object::
 check_protocols() {
-  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-
   int flags = 0;
 
   Functions::const_iterator fi;

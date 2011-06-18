@@ -398,7 +398,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       if (_cpptype != NULL) {
         // Fix nested classes by replacing :: with __
         char* nested_name = strdup(_cpptype->get_local_name(&parser).c_str());
-        for (int i = 0; i < strlen(nested_name); ++i) {
+        for (size_t i = 0; i < strlen(nested_name); ++i) {
           if (nested_name[i] == ':') {
             nested_name[i] = '_';
           }
@@ -681,7 +681,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "size" || fname == "__len__") {
-      if (_parameters.size() == first_param &&
+      if ((int)_parameters.size() == first_param &&
           TypeManager::is_integer(_return_type->get_new_type())) {
         // It receives no parameters, and returns an integer.
         _flags |= F_size;

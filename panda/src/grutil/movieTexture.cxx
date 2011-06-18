@@ -63,11 +63,11 @@ CData() :
   _video_width(1),
   _video_height(1),
   _video_length(1.0),
-  _playing(false),
   _clock(0.0),
-  _play_rate(1.0),
+  _playing(false),
   _loop_count(1),
-  _loops_total(1)
+  _loops_total(1),
+  _play_rate(1.0)
 {
 }
 
@@ -82,11 +82,11 @@ CData(const CData &copy) :
   _video_width(copy._video_width),
   _video_height(copy._video_height),
   _video_length(copy._video_length),
-  _playing(false),
   _clock(0.0),
-  _play_rate(1.0),
+  _playing(false),
   _loop_count(1),
-  _loops_total(1)
+  _loops_total(1),
+  _play_rate(1.0)
 {
 }
 
@@ -189,8 +189,6 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
     if (y_max > x_max) x_max = y_max;
   }
 
-  int x_size = x_max;
-  int y_size = y_max;
   if (Texture::get_textures_power_2() != ATS_none) {
     x_max = up_to_power_2(x_max);
     y_max = up_to_power_2(y_max);

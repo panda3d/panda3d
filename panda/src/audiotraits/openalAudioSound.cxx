@@ -46,38 +46,39 @@ OpenALAudioSound(OpenALAudioManager* manager,
                  int mode) :
   _movie(movie),
   _sd(NULL),
-  _loops_completed(0),
-  _playing_rate(0.0),
   _playing_loops(0),
+  _playing_rate(0.0),
+  _loops_completed(0),
   _source(0),
   _manager(manager),
-  _basename(movie->get_filename().get_basename()),
   _volume(1.0f),
   _balance(0),
-  _loop_count(1),
-  _length(0.0),
-  _start_time(0.0),
   _play_rate(1.0),
+  _positional(positional),
+  _min_dist(3.28f),
+  _max_dist(1000000000.0f),
+  _drop_off_factor(1.0f),
+  _length(0.0),
+  _loop_count(1),
+  _desired_mode(mode),
+  _start_time(0.0),
   _current_time(0.0),
+  _basename(movie->get_filename().get_basename()),
   _active(true),
-  _paused(false),
-  _desired_mode(mode)
+  _paused(false)
 {
-  _location[0] = 0;
-  _location[1] = 0;
-  _location[2] = 0;
-  
-  _velocity[0] = 0;
-  _velocity[1] = 0;
-  _velocity[2] = 0;
-  
-  _min_dist = 3.28f; _max_dist = 1000000000.0f;
-  _drop_off_factor = 1.0f;
-  
-  _positional = positional;
-  
+  _location[0] = 0.0f;
+  _location[1] = 0.0f;
+  _location[2] = 0.0f;
+  _velocity[0] = 0.0f;
+  _velocity[1] = 0.0f;
+  _velocity[2] = 0.0f;
+
   require_sound_data();
-  if (_manager == 0) return;
+  if (_manager == NULL) {
+    return;
+  }
+
   _length = _sd->_length;
   if (positional) {
     if (_sd->_channels != 1) {
@@ -506,7 +507,7 @@ push_fresh_buffers() {
     int rate = cursor->audio_rate();
     
     int fill = 0;
-    for (int i=0; i<_stream_queued.size(); i++) {
+    for (size_t i = 0; i < _stream_queued.size(); i++) {
       fill += _stream_queued[i]._samples;
     }
     

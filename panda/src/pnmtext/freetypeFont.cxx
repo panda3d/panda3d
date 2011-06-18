@@ -62,7 +62,6 @@ FreetypeFont() {
 FreetypeFont::
 FreetypeFont(const FreetypeFont &copy) :
   Namable(copy),
-  _face(copy._face),
   _point_size(copy._point_size),
   _requested_pixels_per_unit(copy._requested_pixels_per_unit),
   _tex_pixels_per_unit(copy._tex_pixels_per_unit),
@@ -71,6 +70,7 @@ FreetypeFont(const FreetypeFont &copy) :
   _native_antialias(copy._native_antialias),
   _line_height(copy._line_height),
   _space_advance(copy._space_advance),
+  _face(copy._face),
   _char_size(copy._char_size),
   _dpi(copy._dpi),
   _pixel_width(copy._pixel_width),

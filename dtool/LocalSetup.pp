@@ -714,7 +714,7 @@ $[cdefine USE_DELETED_CHAIN]
 $[cdefine WANT_NATIVE_NET]
 
 /* Turn off warnings for using scanf and such */
-#if $[or $[eq $[USE_COMPILER],MSVC9], $[USE_COMPILER],MSVC9x64]
+#if $[or $[eq $[USE_COMPILER],MSVC9], $[eq $[USE_COMPILER],MSVC9x64]]
         #print Will ignore CRT_SECURE warnings for MSVC9
         $[cdefine _CRT_SECURE_NO_WARNINGS]
         # pragma warning( disable : 4996 4275 4267 4099 4049 4013 4005 )
