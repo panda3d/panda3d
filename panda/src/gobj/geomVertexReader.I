@@ -607,7 +607,10 @@ quick_set_pointer(int row) {
   _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
 
 #if defined(_DEBUG)
-  nassertv(_pointer_begin == _pointer_end || _pointer < _pointer_end);
+  // We have to allow the pointer to exceed the end by up to one row's
+  // width.  This wouldn't be legal on a plain GeomVertexReader, but
+  // it *is* legal for a GeomVertexRewriter.
+  nassertv(_pointer_begin == _pointer_end || (_pointer - _packer->_column->get_start())  <= _pointer_end);
 #endif
 }
 

@@ -860,7 +860,9 @@ quick_set_pointer(int row) {
   _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
 
 #if defined(_DEBUG)
-  nassertv(_pointer_begin == _pointer_end || _pointer <= _pointer_end);
+  // We have to allow the pointer to exceed the end by up to one row's
+  // width, because the next call might be to add_data_*().
+  nassertv(_pointer_begin == _pointer_end || (_pointer - _packer->_column->get_start())  <= _pointer_end);
 #endif
 }
 
