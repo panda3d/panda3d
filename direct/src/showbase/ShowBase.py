@@ -2106,7 +2106,7 @@ class ShowBase(DirectObject.DirectObject):
 
             # Restore the mouse interface node, and remove the oobe
             # trackball from the data path.
-            self.mouseInterfaceNode.clearButton(KeyboardButton.control())
+            self.mouseInterfaceNode.clearButton(KeyboardButton.shift())
             self.oobeTrackball.detachNode()
 
             bt = self.buttonThrowers[0].node()
