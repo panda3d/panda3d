@@ -29,6 +29,14 @@ ConfigureFn(config_fmodAudio) {
   init_libFmodAudio();
 }
 
+ConfigVariableInt fmod_audio_preload_threshold
+("fmod-audio-preload-threshold", 1048576,
+ PRC_DESC("Files that are smaller "
+          "than this number of bytes will be preloaded and kept "
+          "resident in memory, while files that are this size or larger "
+          "will be streamed from disk.  Set this to -1 to preload "
+          "every file."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libFmodAudio
 //  Description: Initializes the library.  This must be called at

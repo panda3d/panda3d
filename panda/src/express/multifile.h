@@ -26,6 +26,7 @@
 #include "referenceCount.h"
 #include "pvector.h"
 #include "openSSLWrapper.h"
+#include "fileSystemInfo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile

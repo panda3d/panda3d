@@ -142,13 +142,6 @@ FmodAudioManager() {
     if (_system_is_valid) {
       result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
       fmod_audio_errcheck("_system->set3DSettings()", result);
-
-#if (FMOD_VERSION >= 0x00043100) // FMod 4.31.00 changed this API
-      result = _system->setFileSystem(open_callback, close_callback, read_callback, seek_callback, 0, 0, -1);
-#else
-      result = _system->setFileSystem(open_callback, close_callback, read_callback, seek_callback, -1);
-#endif
-      fmod_audio_errcheck("_system->setFileSystem()", result);
     }
   }
 
@@ -832,98 +825,5 @@ get_cache_limit() const {
   //return _cache_limit;
   return 0;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::open_callback
-//       Access: Private, Static
-//  Description: A hook into Panda's virtual file system.
-////////////////////////////////////////////////////////////////////
-FMOD_RESULT F_CALLBACK FmodAudioManager::
-open_callback(const char *name, int, unsigned int *file_size,
-              void **handle, void **user_data) {
-  if (name == (const char *)NULL || name[0] == '\0') {
-    // An invalid attempt to open an unnamed file.
-    return FMOD_ERR_FILE_NOTFOUND;
-  }
-    
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  PT(VirtualFile) file = vfs->get_file(Filename(name));
-  if (file == (VirtualFile *)NULL) {
-    return FMOD_ERR_FILE_NOTFOUND;
-  }
-  istream *str = file->open_read_file(true);
-
-  (*file_size) = file->get_file_size(str);
-  (*handle) = (void *)str;
-  (*user_data) = NULL;
-
-  return FMOD_OK;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::close_callback
-//       Access: Private, Static
-//  Description: A hook into Panda's virtual file system.
-////////////////////////////////////////////////////////////////////
-FMOD_RESULT F_CALLBACK FmodAudioManager::
-close_callback(void *handle, void *user_data) {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  istream *str = (istream *)handle;
-  vfs->close_read_file(str);
-
-  return FMOD_OK;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::read_callback
-//       Access: Private, Static
-//  Description: A hook into Panda's virtual file system.
-////////////////////////////////////////////////////////////////////
-FMOD_RESULT F_CALLBACK FmodAudioManager::
-read_callback(void *handle, void *buffer, unsigned int size_bytes,
-              unsigned int *bytes_read, void *user_data) {
-  istream *str = (istream *)handle;
-  str->read((char *)buffer, size_bytes);
-  (*bytes_read) = str->gcount();
-
-  // We can't yield here, since this callback is made within a
-  // sub-thread--an OS-level sub-thread spawned by FMod, not a Panda
-  // thread.
-  //thread_consider_yield();
-
-  if (str->eof()) {
-    if ((*bytes_read) == 0) {
-      return FMOD_ERR_FILE_EOF;
-    } else {
-      // Report the EOF next time.
-      return FMOD_OK;
-    }
-  } if (str->fail()) {
-    return FMOD_ERR_FILE_BAD;
-  } else {
-    return FMOD_OK;
-  }
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::seek_callback
-//       Access: Private, Static
-//  Description: A hook into Panda's virtual file system.
-////////////////////////////////////////////////////////////////////
-FMOD_RESULT F_CALLBACK FmodAudioManager::
-seek_callback(void *handle, unsigned int pos, void *user_data) {
-  istream *str = (istream *)handle;
-  str->clear();
-  str->seekg(pos);
-
-  if (str->fail() && !str->eof()) {
-    return FMOD_ERR_FILE_COULDNOTSEEK;
-  } else {
-    return FMOD_OK;
-  }
-}
-
 
 #endif //]

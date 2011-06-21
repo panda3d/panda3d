@@ -23,6 +23,7 @@
     encrypt_string.h \
     error_utils.h \
     export_dtool.h \
+    fileSystemInfo.h fileSystemInfo.I \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
@@ -84,6 +85,7 @@
     datagramSink.cxx dcast.cxx \
     encrypt_string.cxx \
     error_utils.cxx \
+    fileSystemInfo.cxx \
     hashGeneratorBase.cxx hashVal.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
@@ -140,6 +142,7 @@
     dcast.T dcast.h \
     encrypt_string.h \
     error_utils.h \
+    fileSystemInfo.h fileSystemInfo.I \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \

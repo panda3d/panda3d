@@ -182,6 +182,23 @@ get_timestamp(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::get_system_info
+//       Access: Public, Virtual
+//  Description: Populates the FileSystemInfo structure with the data
+//               representing where the file actually resides on disk,
+//               if this is knowable.  Returns true if the file might
+//               reside on disk, and the info is populated, or false
+//               if it does not (or it is not known where the file
+//               resides), in which case the info is meaningless.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+get_system_info(const Filename &file, FileSystemInfo &info) {
+  Filename pathname(_physical_filename, file);
+  info = FileSystemInfo(pathname.to_os_specific(), 0, pathname.get_file_size());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::scan_directory
 //       Access: Public, Virtual
 //  Description: Fills the given vector up with the list of filenames

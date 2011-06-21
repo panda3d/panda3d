@@ -46,9 +46,8 @@ ConfigVariableInt miles_audio_expand_mp3_threshold
 
 ConfigVariableInt miles_audio_preload_threshold
 ("miles-audio-preload-threshold", -1,
- PRC_DESC("This is the last Miles fallback size, and should be no smaller "
-          "than both miles-audio-expand-mp3-threshold and "
-          "miles-audio-calc-mp3-threshold.  Files that are smaller "
+ PRC_DESC("This should be no smaller "
+          "than miles-audio-expand-mp3-threshold.  Files that are smaller "
           "than this number of bytes will be preloaded and kept "
           "resident in memory, while files that are this size or larger "
           "will be streamed from disk.  Set this to -1 to preload "

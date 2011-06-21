@@ -161,6 +161,21 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::get_system_info
+//       Access: Published, Virtual
+//  Description: Populates the FileSystemInfo structure with the data
+//               representing where the file actually resides on disk,
+//               if this is knowable.  Returns true if the file might
+//               reside on disk, and the info is populated, or false
+//               if it does not (or it is not known where the file
+//               resides), in which case the info is meaningless.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+get_system_info(FileSystemInfo &info) {
+  return _mount->get_system_info(_local_filename, info);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::read_file
 //       Access: Public, Virtual
 //  Description: Fills up the indicated pvector with the contents of

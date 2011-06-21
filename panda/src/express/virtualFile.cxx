@@ -214,6 +214,21 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::get_system_info
+//       Access: Published, Virtual
+//  Description: Populates the FileSystemInfo structure with the data
+//               representing where the file actually resides on disk,
+//               if this is knowable.  Returns true if the file might
+//               reside on disk, and the info is populated, or false
+//               if it does not (or it is not known where the file
+//               resides), in which case the info is meaningless.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+get_system_info(FileSystemInfo &info) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::close_read_file
 //       Access: Public
 //  Description: Closes a file opened by a previous call to

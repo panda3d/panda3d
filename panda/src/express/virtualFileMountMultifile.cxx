@@ -172,6 +172,38 @@ get_timestamp(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountMultifile::get_system_info
+//       Access: Public, Virtual
+//  Description: Populates the FileSystemInfo structure with the data
+//               representing where the file actually resides on disk,
+//               if this is knowable.  Returns true if the file might
+//               reside on disk, and the info is populated, or false
+//               if it might not (or it is not known where the file
+//               resides), in which case the info is meaningless.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountMultifile::
+get_system_info(const Filename &file, FileSystemInfo &info) {
+  Filename multifile_name = _multifile->get_multifile_name();
+  if (multifile_name.empty()) {
+    return false;
+  }
+  int subfile_index = _multifile->find_subfile(file);
+  if (subfile_index < 0) {
+    return false;
+  }
+  if (_multifile->is_subfile_compressed(subfile_index) ||
+      _multifile->is_subfile_encrypted(subfile_index)) {
+    return false;
+  }
+
+  streampos start = _multifile->get_subfile_internal_start(subfile_index);
+  size_t length = _multifile->get_subfile_internal_length(subfile_index);
+
+  info = FileSystemInfo(multifile_name.to_os_specific(), start, length); 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountMultifile::scan_directory
 //       Access: Public, Virtual
 //  Description: Fills the given vector up with the list of filenames

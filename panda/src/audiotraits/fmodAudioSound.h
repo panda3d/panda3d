@@ -204,10 +204,26 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   // other mismanagement.
   PT(FmodAudioSound) _self_ref;
 
-  friend FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
-                                                   FMOD_CHANNEL_CALLBACKTYPE  type, 
-                                                   void *commanddata1, 
-                                                   void *commanddata2);
+  static FMOD_RESULT F_CALLBACK
+  sound_end_callback(FMOD_CHANNEL *  channel, 
+		     FMOD_CHANNEL_CALLBACKTYPE  type, 
+		     void *commanddata1, 
+		     void *commanddata2);
+
+  static FMOD_RESULT F_CALLBACK 
+  open_callback(const char *name, int unicode, unsigned int *file_size,
+                void **handle, void **user_data);
+
+  static FMOD_RESULT F_CALLBACK 
+  close_callback(void *handle, void *user_data);
+
+  static FMOD_RESULT F_CALLBACK 
+  read_callback(void *handle, void *buffer, unsigned int size_bytes,
+                unsigned int *bytes_read, void *user_data);
+  
+  static FMOD_RESULT F_CALLBACK 
+  seek_callback(void *handle, unsigned int pos, void *user_data);
+  
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!

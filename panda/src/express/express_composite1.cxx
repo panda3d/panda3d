@@ -10,6 +10,7 @@
 #include "dcast.cxx"
 #include "encrypt_string.cxx"
 #include "error_utils.cxx"
+#include "fileSystemInfo.cxx"
 #include "hashGeneratorBase.cxx"
 #include "hashVal.cxx"
 #include "memoryInfo.cxx"

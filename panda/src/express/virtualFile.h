@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "filename.h"
+#include "fileSystemInfo.h"
 #include "pointerTo.h"
 #include "typedReferenceCount.h"
 #include "ordered_vector.h"
@@ -59,6 +60,8 @@ PUBLISHED:
   BLOCKING virtual off_t get_file_size(istream *stream) const;
   BLOCKING virtual off_t get_file_size() const;
   BLOCKING virtual time_t get_timestamp() const;
+
+  virtual bool get_system_info(FileSystemInfo &info);
 
 public:
   INLINE void set_original_filename(const Filename &filename);
