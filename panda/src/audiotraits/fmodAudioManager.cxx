@@ -39,6 +39,7 @@
 TypeHandle FmodAudioManager::_type_handle;
 
 FMOD::System *FmodAudioManager::_system; 
+
 pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 
 bool FmodAudioManager::_system_is_valid = false;
@@ -128,14 +129,22 @@ FmodAudioManager() {
     //Stick Surround Sound 5.1 thing Here.
     if (fmod_use_surround_sound) {
       audio_debug("Setting FMOD to use 5.1 Surround Sound.");
-      result = _system->setSpeakerMode( FMOD_SPEAKERMODE_5POINT1 );
+      result = _system->setSpeakerMode(FMOD_SPEAKERMODE_5POINT1);
       fmod_audio_errcheck("_system->setSpeakerMode()", result);
     }
 
     //Now we Initialize the System.
-	int nchan = fmod_number_of_sound_channels;
-    result = _system->init(nchan, FMOD_INIT_NORMAL, 0);
-    fmod_audio_errcheck("_system->init()", result);
+    int nchan = fmod_number_of_sound_channels;
+    int flags = FMOD_INIT_NORMAL;
+
+    result = _system->init(nchan, flags, 0);
+    if (result == FMOD_ERR_TOOMANYCHANNELS) {
+      fmodAudio_cat.error()
+	<< "Value too large for fmod-number-of-sound-channels: " << nchan
+	<< "\n";
+    } else {
+      fmod_audio_errcheck("_system->init()", result);
+    }
 
     _system_is_valid = (result == FMOD_OK);
 
@@ -165,8 +174,10 @@ FmodAudioManager() {
     _midi_info.dlsname = _dlsname.c_str();
   }
 
-  result = _system->createChannelGroup("UserGroup", &_channelgroup);
-  fmod_audio_errcheck("_system->createChannelGroup()", result);
+  if (_is_valid) {
+    result = _system->createChannelGroup("UserGroup", &_channelgroup);
+    fmod_audio_errcheck("_system->createChannelGroup()", result);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
