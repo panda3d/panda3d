@@ -242,10 +242,13 @@ stop() {
 
   if (_channel != 0) {
     result =_channel->stop();
-    if (result == FMOD_OK) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
+      _channel = 0;
+    } else if (result == FMOD_OK) {
       _self_ref.clear();
+    } else {
+      fmod_audio_errcheck("_channel->stop()", result);
     }
-    fmod_audio_errcheck("_channel->stop()", result);
   }
   _start_time = 0.0;
 }
@@ -368,7 +371,7 @@ get_time() const {
   }
 
   result = _channel->getPosition( &current_time , FMOD_TIMEUNIT_MS );
-  if (result == FMOD_ERR_INVALID_HANDLE) {
+  if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
     return 0.0f;
   }
   fmod_audio_errcheck("_channel->getPosition()", result);
@@ -417,8 +420,7 @@ start_playing() {
   if (_channel != 0) {
     // try backing up current sound.
     result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
-    if (result == FMOD_ERR_INVALID_HANDLE ||
-        result == FMOD_ERR_CHANNEL_STOLEN) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
 
     } else {
@@ -469,7 +471,7 @@ set_volume_on_channel() {
 
   if (_channel != 0) {
     result = _channel->setVolume( _volume );
-    if (result == FMOD_ERR_INVALID_HANDLE) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
       fmod_audio_errcheck("_channel->setVolume()", result);
@@ -538,7 +540,7 @@ set_play_rate_on_channel() {
   
   if (_channel != 0) {
     result = _channel->setFrequency( frequency );
-    if (result == FMOD_ERR_INVALID_HANDLE) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
       fmod_audio_errcheck("_channel->setFrequency()", result);
@@ -616,7 +618,7 @@ set_3d_attributes_on_channel() {
   
   if ((_channel != 0) && (soundMode & FMOD_3D)) {
     result = _channel->set3DAttributes( &_location, &_velocity );
-    if (result == FMOD_ERR_INVALID_HANDLE) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
       fmod_audio_errcheck("_channel->set3DAttributes()", result);
@@ -792,7 +794,7 @@ set_speaker_mix_or_balance_on_channel() {
                                         _mix[AudioManager::SPK_sideright] 
                                         );
     }
-    if (result == FMOD_ERR_INVALID_HANDLE) {
+    if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
       fmod_audio_errcheck("_channel->setSpeakerMix()/setPan()", result);
