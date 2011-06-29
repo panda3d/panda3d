@@ -341,7 +341,7 @@ pandavfs_seek(URLContext *h, int64_t pos, int whence) {
 ////////////////////////////////////////////////////////////////////
 int FfmpegVirtualFile::
 pandavfs_close(URLContext *h) {
-  FfmpegVirtualFile *self = (FfmpegVirtualFile *)(h->priv_data);
+  //FfmpegVirtualFile *self = (FfmpegVirtualFile *)(h->priv_data);
   h->priv_data = 0;
   return 0;
 }
