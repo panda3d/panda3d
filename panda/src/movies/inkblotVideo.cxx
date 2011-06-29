@@ -24,10 +24,9 @@ TypeHandle InkblotVideo::_type_handle;
 ////////////////////////////////////////////////////////////////////
 InkblotVideo::
 InkblotVideo(int x, int y, int fps) :
-  MovieVideo("inkblot"),
   _specified_x(x),
   _specified_y(y),
-  _specified_fps(y)
+  _specified_fps(fps)
 {
 }
 
