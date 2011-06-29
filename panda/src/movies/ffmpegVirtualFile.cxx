@@ -306,7 +306,7 @@ pandavfs_seek(URLContext *h, int64_t pos, int whence) {
 
   switch(whence) {
   case SEEK_SET: 
-    in->seekg(self->_start + pos, ios::beg); 
+    in->seekg(self->_start + (streampos)pos, ios::beg); 
     break;
 
   case SEEK_CUR: 
@@ -316,7 +316,7 @@ pandavfs_seek(URLContext *h, int64_t pos, int whence) {
   case SEEK_END: 
     // For seeks relative to the end, we actually compute the end
     // based on _start + _size, and then use ios::beg.
-    in->seekg(self->_start + (streampos)self->_size + pos, ios::beg); 
+    in->seekg(self->_start + (streampos)self->_size + (streampos)pos, ios::beg); 
     break;
 
   case AVSEEK_SIZE: 
