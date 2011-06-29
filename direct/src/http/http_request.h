@@ -15,7 +15,7 @@ public:
     {
         Global_WebRequests_pendingNotify.erase(this);
     };
-	bool BuildPage(	BufferedWriter_Growable	&_writer, ParsedHttpRequest  &parser)
+    bool BuildPage( BufferedWriter_Growable &_writer, ParsedHttpRequest  &parser)
     {
         Global_WebRequests_pendingNotify.insert((Http_Request *)this);
 
@@ -78,7 +78,7 @@ PUBLISHED:
     {
         const std::string * answer = _parser.GetOption(in);
         if(answer != NULL)
-	   return true;
+       return true;
         return false;
     }
 
@@ -86,7 +86,7 @@ PUBLISHED:
     {
         const std::string * answer = _parser.GetOption(in);
         if(answer != NULL)
-	   return answer->c_str();
+       return answer->c_str();
         return "";
     }
     std::string   GetRequestOptionString()

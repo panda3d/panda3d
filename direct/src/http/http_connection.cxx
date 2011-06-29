@@ -41,7 +41,7 @@ int  HttpConnection::DoReadHeader(char * message, int buffersize,Time_Clock &cur
 
     if(_Timer.Expired(currentTime) == true)
     {
-		return -1;
+        return -1;
     }
 
     return 0;
@@ -59,7 +59,7 @@ int  HttpConnection::DoReadBody(char * message1, int buffersize,Time_Clock &curr
 
     if(_Timer.Expired(currentTime) == true)
     {
-		return -1;
+        return -1;
     }
 
     // ok lets process this thing..
@@ -69,7 +69,7 @@ int  HttpConnection::DoReadBody(char * message1, int buffersize,Time_Clock &curr
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int HttpConnection::ReadIt(char * message, int buffersize,Time_Clock &currentTime)
-{		
+{       
     switch (_state)
     {
     case(READING_HEADER):
@@ -144,17 +144,17 @@ CloseState HttpConnection::ProcessMessage(char * message,Time_Clock &currentTime
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int HttpConnection::CloseStateWriter(Time_Clock &currentTime)
 {
-    int fans = _writer.Flush(*this);	// write error
+    int fans = _writer.Flush(*this);    // write error
     if(fans < 0)
-        return -1;		
+        return -1;      
 
-    if(_writer.AmountBuffered() <= 0)	// all done
-        return -1;		
+    if(_writer.AmountBuffered() <= 0)   // all done
+        return -1;      
 
-    if(_Timer.Expired(currentTime) == true)	// too long
+    if(_Timer.Expired(currentTime) == true) // too long
         return -1;
 
-    return 0;	// keep trying
+    return 0;   // keep trying
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,7 @@
 
   #define INCLUDED_SOURCES \
      config_http.cxx \
-     http_connection.cxx	\
+     http_connection.cxx \
      parsedhttprequest.cxx  \
      http_request.cxx
 

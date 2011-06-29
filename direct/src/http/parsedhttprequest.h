@@ -10,29 +10,29 @@ class ParsedHttpRequest
 {
 protected:
     std::string             _Raw_Text;
-	std::string				_RequestType;
-	std::string				_RequestText;
-	std::string				_Requestoptions;
+    std::string             _RequestType;
+    std::string             _RequestText;
+    std::string             _Requestoptions;
     std::string             _BodyText;
 
 
-	std::map<std::string,std::string>	_parameters;
+    std::map<std::string,std::string>   _parameters;
     std::map<std::string,std::string>   _header_Lines;
 
-	std::string deCanonicalize(std::string &inval);
-	size_t  PullCR(std::string &src, std::string &dst);
+    std::string deCanonicalize(std::string &inval);
+    size_t  PullCR(std::string &src, std::string &dst);
 
 public:
-	void clear(void);
+    void clear(void);
     const std::string   GetRequestOptionString() { return _Requestoptions; };
-	const std::string * GetOption(const std::string & query);
-	bool GetOption(const std::string & query, std::string & out_value);
-	bool ParseThis(char * request);
-	std::string & GetRequestURL(void);
+    const std::string * GetOption(const std::string & query);
+    bool GetOption(const std::string & query, std::string & out_value);
+    bool ParseThis(char * request);
+    std::string & GetRequestURL(void);
     const std::string & GetRawRequest(void) const { return _Raw_Text; };
     const std::string & GetRequestType(void) const { return _RequestType; };
-	bool ProcessOptionString(std::string str);
-	bool ProcessParamSet(std::string &str);
+    bool ProcessOptionString(std::string str);
+    bool ProcessParamSet(std::string &str);
 
 
     void SetBodyText(const std::string &  text)

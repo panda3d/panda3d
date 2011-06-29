@@ -158,7 +158,7 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
 //               list.
 ////////////////////////////////////////////////////////////////////
 P3D_object **P3DConcreteSequence::
-get_object_array() {     	
+get_object_array() {
   if (_elements.empty()) {
     return NULL;
   }

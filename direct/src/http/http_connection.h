@@ -12,11 +12,11 @@
 class HttpConnection : public Socket_TCP 
 {
 protected:
-    Http_BufferedReader			    _Reader;
+    Http_BufferedReader             _Reader;
     BufferedWriter_Growable     _writer;
-    Socket_Address				_MyAddress;
+    Socket_Address              _MyAddress;
 
-    Time_Out					_Timer;
+    Time_Out                    _Timer;
 
     enum    STATE_CONNECTIONS {  
         READING_HEADER =1, 
@@ -40,12 +40,12 @@ protected:
 public:
     virtual ~HttpConnection(void);
     const Socket_Address & GetMyAddress(void);
-    virtual bool BuildPage(	BufferedWriter_Growable	&_writer, ParsedHttpRequest  &parser) = 0;
+    virtual bool BuildPage( BufferedWriter_Growable &_writer, ParsedHttpRequest  &parser) = 0;
     HttpConnection(SOCKET sck,Socket_Address &inaddr) ;
 
     CloseState             ProcessMessage(char * message,Time_Clock &currentTime);
-    int                    DoReadHeader(char * message, int buffersize,Time_Clock &currentTime);	
-    int                    DoReadBody(char * message, int buffersize,Time_Clock &currentTime);	
+    int                    DoReadHeader(char * message, int buffersize,Time_Clock &currentTime);    
+    int                    DoReadBody(char * message, int buffersize,Time_Clock &currentTime);  
     int                    ReadIt(char * message, int buffersize,Time_Clock &currentTime);
     void                   Reset();
 

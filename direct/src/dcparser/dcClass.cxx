@@ -1248,15 +1248,15 @@ write(ostream &out, bool brief, int indent_level) const {
 
       /*
       if (true || (*fi)->has_default_value()) {
-	indent(out, indent_level + 2) << "// = ";
-	DCPacker packer;
-	packer.set_unpack_data((*fi)->get_default_value());
-	packer.begin_unpack(*fi);
-	packer.unpack_and_format(out, false);
-	if (!packer.end_unpack()) {
-	  out << "<error>";
-	}
-	out << "\n";
+        indent(out, indent_level + 2) << "// = ";
+        DCPacker packer;
+        packer.set_unpack_data((*fi)->get_default_value());
+        packer.begin_unpack(*fi);
+        packer.unpack_and_format(out, false);
+        if (!packer.end_unpack()) {
+          out << "<error>";
+        }
+        out << "\n";
       }
       */
     }
