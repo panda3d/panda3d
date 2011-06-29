@@ -144,7 +144,7 @@ do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
     if (grutil_cat.is_debug()) {
       grutil_cat.debug()
         << "Loaded " << stream._filename << ", "
-	<< num_frames << " frames at " << frame_rate << " fps\n";
+        << num_frames << " frames at " << frame_rate << " fps\n";
     }
   }
   

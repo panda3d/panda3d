@@ -275,15 +275,15 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       filename.set_binary();
       PT(VirtualFile) file = vfs->get_file(filename);
       if (file == (VirtualFile *)NULL) {
-	// No such file.
-	gobj_cat.error()
-	  << "Could not find " << filename << "\n";
-	return false;
+        // No such file.
+        gobj_cat.error()
+          << "Could not find " << filename << "\n";
+        return false;
       }
 
       if (gobj_cat.is_debug()) {
-	gobj_cat.debug()
-	  << "Reading texture object " << filename << "\n";
+        gobj_cat.debug()
+          << "Reading texture object " << filename << "\n";
       }
 
       istream *in = file->open_read_file(true);
@@ -291,20 +291,20 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       vfs->close_read_file(in);
 
       if (tex == (Texture *)NULL) {
-	return false;
+        return false;
       }
       tex->set_fullpath(filename);
       tex->clear_alpha_fullpath();
       tex->set_keep_ram_image(false);
-	
+        
     } else {
       // Read it the conventional way.
       tex = make_texture(ext);
       if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
-		     0, 0, false, read_mipmaps, record, options)) {
-	// This texture was not found or could not be read.
-	report_texture_unreadable(filename);
-	return NULL;
+                     0, 0, false, read_mipmaps, record, options)) {
+        // This texture was not found or could not be read.
+        report_texture_unreadable(filename);
+        return NULL;
       }
     }
 

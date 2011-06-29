@@ -311,19 +311,19 @@ analyze_renderstate(const RenderState *rs) {
     if (tex_gen->has_stage(stage)) {
       switch (tex_gen->get_mode(stage)) {
       case TexGenAttrib::M_world_position:
-	_need_world_position = true;
-	break;
+        _need_world_position = true;
+        break;
       case TexGenAttrib::M_world_normal:
-	_need_world_normal = true;
-	break;
+        _need_world_normal = true;
+        break;
       case TexGenAttrib::M_eye_position:
-	_need_eye_position = true;
-	break;
+        _need_eye_position = true;
+        break;
       case TexGenAttrib::M_eye_normal:
-	_need_eye_normal = true;
-	break;
+        _need_eye_normal = true;
+        break;
       default:
-	break;
+        break;
       }
     }
   }
@@ -964,16 +964,16 @@ synthesize_shader(const RenderState *rs) {
       switch(tex->get_texture_type()) {
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture: 
-	text << "xyz"; 
-	break;
+        text << "xyz"; 
+        break;
       case Texture::TT_2d_texture: 
-	text << "xy";
-	break;
+        text << "xy";
+        break;
       case Texture::TT_1d_texture: 
-	text << "x";   
-	break;
+        text << "x";   
+        break;
       default:
-	break;
+        break;
       }
       text << ");\n";
     }

@@ -68,7 +68,7 @@ get_datagram(Datagram &data) {
           net_cat.spam()
             << "DatagramGeneratorNet returning EOF\n";
         }
-	return false;
+        return false;
       }
       poll();
       Thread::force_yield();
@@ -86,7 +86,7 @@ get_datagram(Datagram &data) {
           net_cat.spam()
             << "DatagramGeneratorNet returning EOF\n";
         }
-	return false;
+        return false;
       }
       if (net_cat.is_spam()) {
         net_cat.spam()

@@ -34,7 +34,7 @@ GraphicsWindowProc(){
 ////////////////////////////////////////////////////////////////////
 LONG GraphicsWindowProc::
 wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
-	return 0;
+  return 0;
 }
 
 #endif

@@ -206,9 +206,9 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   static FMOD_RESULT F_CALLBACK
   sound_end_callback(FMOD_CHANNEL *  channel, 
-		     FMOD_CHANNEL_CALLBACKTYPE  type, 
-		     void *commanddata1, 
-		     void *commanddata2);
+                     FMOD_CHANNEL_CALLBACKTYPE  type, 
+                     void *commanddata1, 
+                     void *commanddata2);
 
   static FMOD_RESULT F_CALLBACK 
   open_callback(const char *name, int unicode, unsigned int *file_size,

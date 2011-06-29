@@ -32,9 +32,9 @@ PUBLISHED:
   */
   enum LogLevel
   {
-	LOG_NONE , 		// No log is created
-	LOG_NORMAL ,		// Logs only errors
-	LOG_VERBOSE 		// Logs everything
+    LOG_NONE ,      // No log is created
+    LOG_NORMAL ,        // Logs only errors
+    LOG_VERBOSE         // Logs everything
   };
 
   /**
@@ -42,8 +42,8 @@ PUBLISHED:
   */
   enum PixelFormat
   {
-	PF_BGRA,	// BGRA byte ordering [Blue, Green, Red, Alpha]
-	PF_RGBA		// RGBA byte ordering [Red, Green, Blue, Alpha]
+    PF_BGRA,    // BGRA byte ordering [Blue, Green, Red, Alpha]
+    PF_RGBA     // RGBA byte ordering [Red, Green, Blue, Alpha]
   };
 
   AwWebCore(LogLevel level = LOG_NORMAL, bool enablePlugins = true, PixelFormat pixelFormat = PF_BGRA);

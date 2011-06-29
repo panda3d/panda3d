@@ -29,11 +29,11 @@ TypeHandle WebBrowserTexture::_type_handle;
 WebBrowserTexture::WebBrowserTexture(const WebBrowserTexture &copy):
 Texture(copy)
 {
-	//this kind of assumes that the previous texture
-	//was initialized properly
-	_aw_web_view = copy._aw_web_view;
-	_update_active = copy._update_active;
-	_flip_texture_active = copy._flip_texture_active;
+    //this kind of assumes that the previous texture
+    //was initialized properly
+    _aw_web_view = copy._aw_web_view;
+    _update_active = copy._update_active;
+    _flip_texture_active = copy._flip_texture_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ Texture(name),
 _update_active(true),
 _flip_texture_active(false)
 {
-	set_web_view(aw_web_view);
-	set_minfilter(FT_linear);
-	set_magfilter(FT_linear);
+    set_web_view(aw_web_view);
+    set_minfilter(FT_linear);
+    set_magfilter(FT_linear);
 
 }
 
@@ -61,7 +61,7 @@ _flip_texture_active(false)
 ////////////////////////////////////////////////////////////////////
 WebBrowserTexture::~WebBrowserTexture()
 {
-	//do nothing
+    //do nothing
 }
 
 
@@ -72,7 +72,7 @@ WebBrowserTexture::~WebBrowserTexture()
 //               destructing happens in parent texture class.
 ////////////////////////////////////////////////////////////////////
 bool WebBrowserTexture::get_keep_ram_image() const {
-	return true;
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,8 +82,8 @@ bool WebBrowserTexture::get_keep_ram_image() const {
 //               This is essentially a sub.
 ////////////////////////////////////////////////////////////////////
 void WebBrowserTexture::do_reload_ram_image() {
-	// A MovieTexture should never dump its RAM image.
-	// Therefore, this is not needed.
+    // A MovieTexture should never dump its RAM image.
+    // Therefore, this is not needed.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ void WebBrowserTexture::do_reload_ram_image() {
 //               the cull traverser method to do the texture udpate.
 ////////////////////////////////////////////////////////////////////
 bool WebBrowserTexture::has_cull_callback() const {
-	return true;
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ bool WebBrowserTexture::has_cull_callback() const {
 //               at the next time it is culled and rendered.
 ////////////////////////////////////////////////////////////////////
 void WebBrowserTexture::set_web_view(AwWebView* aw_web_view){
-	_aw_web_view = aw_web_view;
+    _aw_web_view = aw_web_view;
 }
 
 
@@ -121,7 +121,7 @@ void WebBrowserTexture::set_web_view(AwWebView* aw_web_view){
 //  Description: Gets the current internal AwWebView of this texture.
 ////////////////////////////////////////////////////////////////////
 AwWebView* WebBrowserTexture::get_web_view() const{
-	return _aw_web_view;
+    return _aw_web_view;
 }
 
 
@@ -134,7 +134,7 @@ AwWebView* WebBrowserTexture::get_web_view() const{
 //               active.
 ////////////////////////////////////////////////////////////////////
 void WebBrowserTexture::set_update_active(bool active_flag){
-	_update_active = active_flag;
+    _update_active = active_flag;
 }
 
 
@@ -145,7 +145,7 @@ void WebBrowserTexture::set_update_active(bool active_flag){
 //               itself every time it is rendered.
 ////////////////////////////////////////////////////////////////////
 bool WebBrowserTexture::get_update_active() const{
-	return _update_active;
+    return _update_active;
 }
 
 
@@ -163,7 +163,7 @@ bool WebBrowserTexture::get_update_active() const{
 //               coordinates or shaders.
 ////////////////////////////////////////////////////////////////////
 void WebBrowserTexture::set_flip_texture_active(bool active_flag){
-	_flip_texture_active = active_flag;
+    _flip_texture_active = active_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,7 +173,7 @@ void WebBrowserTexture::set_flip_texture_active(bool active_flag){
 //               enabled.
 ////////////////////////////////////////////////////////////////////
 bool WebBrowserTexture::get_flip_texture_active() const {
-	return _flip_texture_active;
+    return _flip_texture_active;
 }
 
 
@@ -186,48 +186,48 @@ bool WebBrowserTexture::get_flip_texture_active() const {
 //               does not call the update method of AwWebCore.
 ////////////////////////////////////////////////////////////////////
 bool WebBrowserTexture::cull_callback(CullTraverser *trav, const CullTraverserData &data) const{
-	//see if we are in a state where udpates can happen. else just return
-	if( !_update_active ) return true;
-	if( _aw_web_view == NULL ) return true;
+    //see if we are in a state where udpates can happen. else just return
+    if( !_update_active ) return true;
+    if( _aw_web_view == NULL ) return true;
 
-	//do we even need to update?
-	if( !_aw_web_view->is_dirty() ) return true;
+    //do we even need to update?
+    if( !_aw_web_view->is_dirty() ) return true;
 
-	//see if we're the same size, if not we need to make sure this texture
-	//matches the webview
-	if( _aw_web_view->get_width() != get_x_size() || _aw_web_view->get_height() != get_y_size() || get_texture_type() != TT_2d_texture){
-		//these casts are so dirty especially when the method itself is
-		//labled as const.  Really Texture::cull_callback should be not const
-		//first clean up
-		((WebBrowserTexture*)this)->clear_ram_mipmap_images();
-		((WebBrowserTexture*)this)->clear_ram_image();
-		//now set up the texture again
-		((WebBrowserTexture*)this)->setup_2d_texture( _aw_web_view->get_width(), _aw_web_view->get_height(), T_unsigned_byte, F_rgba );
-		//should be good to go at this point
-	}
+    //see if we're the same size, if not we need to make sure this texture
+    //matches the webview
+    if( _aw_web_view->get_width() != get_x_size() || _aw_web_view->get_height() != get_y_size() || get_texture_type() != TT_2d_texture){
+        //these casts are so dirty especially when the method itself is
+        //labled as const.  Really Texture::cull_callback should be not const
+        //first clean up
+        ((WebBrowserTexture*)this)->clear_ram_mipmap_images();
+        ((WebBrowserTexture*)this)->clear_ram_image();
+        //now set up the texture again
+        ((WebBrowserTexture*)this)->setup_2d_texture( _aw_web_view->get_width(), _aw_web_view->get_height(), T_unsigned_byte, F_rgba );
+        //should be good to go at this point
+    }
 
-	//get the pointer
-	PTA_uchar ram_image = ((WebBrowserTexture*)this)->modify_ram_image();
-	unsigned char* cp_data = ram_image.p();
-	//render it
-	_aw_web_view->render((void*)cp_data, get_x_size()*4, 4);
+    //get the pointer
+    PTA_uchar ram_image = ((WebBrowserTexture*)this)->modify_ram_image();
+    unsigned char* cp_data = ram_image.p();
+    //render it
+    _aw_web_view->render((void*)cp_data, get_x_size()*4, 4);
 
-	if(_flip_texture_active){
-		//flips the texture around... this is super slow. Really this should
-		//never be enabled.  However beginners might find this useful
-		size_t width = get_x_size();
-		size_t height = get_y_size();
-		for(size_t i=0; i < height/2; i++){
-			for(size_t j=0; j < width; j++){
-				unsigned char tmp[4];
-				size_t a_pos = j+width*i;
-				size_t b_pos = j + width*(height-i-1);
-				memcpy(tmp,&cp_data[4*a_pos], 4); //tmp = a
-				memcpy(&cp_data[4*a_pos], &cp_data[4*b_pos], 4); //a = b
-				memcpy(&cp_data[4*b_pos], tmp, 4); //b = tmp
-			}
-		}
-	}
-	//success
-	return true;
+    if(_flip_texture_active){
+        //flips the texture around... this is super slow. Really this should
+        //never be enabled.  However beginners might find this useful
+        size_t width = get_x_size();
+        size_t height = get_y_size();
+        for(size_t i=0; i < height/2; i++){
+            for(size_t j=0; j < width; j++){
+                unsigned char tmp[4];
+                size_t a_pos = j+width*i;
+                size_t b_pos = j + width*(height-i-1);
+                memcpy(tmp,&cp_data[4*a_pos], 4); //tmp = a
+                memcpy(&cp_data[4*a_pos], &cp_data[4*b_pos], 4); //a = b
+                memcpy(&cp_data[4*b_pos], tmp, 4); //b = tmp
+            }
+        }
+    }
+    //success
+    return true;
 }

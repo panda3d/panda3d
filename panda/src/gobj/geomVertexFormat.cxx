@@ -724,7 +724,7 @@ do_register() {
     if (array_format->get_num_columns() == 0) {
       // Don't keep an empty array.
       gobj_cat.warning()
-	<< "Dropping empty array from GeomVertexFormat.\n";
+        << "Dropping empty array from GeomVertexFormat.\n";
       continue;
     }
 
@@ -1075,8 +1075,8 @@ register_format(GeomVertexFormat *format) {
     if (!new_format->is_registered()) {
       new_format->do_register();
       if (new_format->get_num_arrays() == 0) {
-	gobj_cat.warning()
-	  << "Empty GeomVertexFormat registered.\n";
+        gobj_cat.warning()
+          << "Empty GeomVertexFormat registered.\n";
       }
     }
   }

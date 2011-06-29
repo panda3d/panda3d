@@ -88,9 +88,9 @@ clear() {
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format
     (new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
-			       GeomEnums::NT_float32, GeomEnums::C_point,
-			       InternalName::get_texcoord(), 3, 
-			       GeomEnums::NT_float32, GeomEnums::C_texcoord));
+                               GeomEnums::NT_float32, GeomEnums::C_point,
+                               InternalName::get_texcoord(), 3, 
+                               GeomEnums::NT_float32, GeomEnums::C_texcoord));
   set_vertex_format(format);
 }
 
@@ -187,7 +187,7 @@ setup_terrain(istream &in, const Filename &pathname) {
       float r, g, b;
       in >> r >> g >> b;
       if (!_splat_layers.empty()) {
-	_splat_layers.back()._color.set(r, g, b, 1.0f);
+        _splat_layers.back()._color.set(r, g, b, 1.0f);
       }
 
     } else if (keyword == "ambient" || keyword == "diffuse" || keyword == "specular" || keyword == "emissive") {
@@ -200,7 +200,7 @@ setup_terrain(istream &in, const Filename &pathname) {
 
     } else {
       speedtree_cat.error()
-	<< "Invalid token " << keyword << " in " << pathname << "\n";
+        << "Invalid token " << keyword << " in " << pathname << "\n";
       return false;
     }
 
@@ -319,8 +319,8 @@ get_slope(float x, float y) const {
 ////////////////////////////////////////////////////////////////////
 void STBasicTerrain::
 fill_vertices(GeomVertexData *data,
-	      float start_x, float start_y,
-	      float size_xy, int num_xy) const {
+              float start_x, float start_y,
+              float size_xy, int num_xy) const {
   nassertv(data->get_format() == _vertex_format);
   GeomVertexWriter vertex(data, InternalName::get_vertex());
   GeomVertexWriter texcoord(data, InternalName::get_texcoord());
@@ -435,7 +435,7 @@ compute_slope(float smoothing) {
       slope *= (0.5f / MathNumbers::pi_f);
 
       if (slope > 1.0f) {
-	slope = 1.0f;
+        slope = 1.0f;
       }
       _slope_data._data[i + j * width] = slope;
     }
@@ -454,37 +454,37 @@ compute_slope(float smoothing) {
 
       // compute smoothed normals
       for (int i = 0; i < width; ++i) {
-	int left = (i + width - 1) % width;
-	int right = (i + 1) % width;
+        int left = (i + width - 1) % width;
+        int right = (i + 1) % width;
 
-	for (int j = 0; j < height; ++j) {
-	  int top = (j + height - 1) % height;
-	  int bottom = (j + 1) % height;
+        for (int j = 0; j < height; ++j) {
+          int top = (j + height - 1) % height;
+          int bottom = (j + 1) % height;
 
-	  smoothed[i + j * width] = (_slope_data._data[right + j * width] + 
-				     _slope_data._data[left + j * width] + 
-				     _slope_data._data[i + top * width] + 
-				     _slope_data._data[i + bottom * width] +
-				     _slope_data._data[right + top * width] +
-				     _slope_data._data[right + bottom * width] +
-				     _slope_data._data[left + top * width] +
-				     _slope_data._data[left + bottom * width]);
-	  smoothed[i + j * width] *= 0.125f;
-	}
+          smoothed[i + j * width] = (_slope_data._data[right + j * width] + 
+                                     _slope_data._data[left + j * width] + 
+                                     _slope_data._data[i + top * width] + 
+                                     _slope_data._data[i + bottom * width] +
+                                     _slope_data._data[right + top * width] +
+                                     _slope_data._data[right + bottom * width] +
+                                     _slope_data._data[left + top * width] +
+                                     _slope_data._data[left + bottom * width]);
+          smoothed[i + j * width] *= 0.125f;
+        }
       }
 
       // interpolate or set
       if (si == steps - 1) {
-	// last step, interpolate
-	for (int i = 0; i < width; ++i) {
-	  for (int j = 0; j < height; ++j) {
-	    _slope_data._data[i + j * width] = interpolate(_slope_data._data[i + j * width], smoothed[i + j * width], last_interpolation);
-	  }
-	}
+        // last step, interpolate
+        for (int i = 0; i < width; ++i) {
+          for (int j = 0; j < height; ++j) {
+            _slope_data._data[i + j * width] = interpolate(_slope_data._data[i + j * width], smoothed[i + j * width], last_interpolation);
+          }
+        }
 
       } else {
-	// full smoothing step, copy everything
-	_slope_data = smoothing_data;
+        // full smoothing step, copy everything
+        _slope_data = smoothing_data;
       }
     }
   }

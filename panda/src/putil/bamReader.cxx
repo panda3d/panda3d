@@ -1214,9 +1214,9 @@ p_read_object() {
     {
       SubfileInfo info;
       if (!_source->save_datagram(info)) {
-	bam_cat.error()
-	  << "Failed to read file data.\n";
-	return 0;
+        bam_cat.error()
+          << "Failed to read file data.\n";
+        return 0;
       }
       _file_data_records.push_back(info);
     }

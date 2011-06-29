@@ -416,7 +416,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
             prim_vertex_reader->set_row_unsafe(vidx);
             prim_uv_reader->set_row_unsafe(vidx);
             vec[indx_over] = _render.get_relative_point(
-							current_node_path,prim_vertex_reader->get_data3f());
+                            current_node_path,prim_vertex_reader->get_data3f());
             uv[indx_over] = prim_uv_reader->get_data2f();
             indx_over++;
             if (indx_over > 2) break;
@@ -424,8 +424,8 @@ void MeshDrawer::geometry(NodePath draw_node) {
 
           // draw polygon
           tri(vec[0],color,uv[0],
-	      vec[1],color,uv[1],
-	      vec[2],color,uv[2]);
+          vec[1],color,uv[1],
+          vec[2],color,uv[2]);
         }
         // if we are over budget just quit
         if( _clear_index > _end_clear_index) return;
@@ -449,7 +449,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::
 link_segment(LVector3f pos, LVector4f frame,
-	     float thickness, LVector4f color) {
+         float thickness, LVector4f color) {
   assert(_render.get_error_type() == NodePath::ET_ok);
   assert(_camera.get_error_type() == NodePath::ET_ok);
   /*

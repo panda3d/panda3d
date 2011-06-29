@@ -67,7 +67,7 @@ init_from(FfmpegVideo *source) {
     // Read a subfile.
     if (!_ffvfile.open_subfile(_source->get_subfile_info())) {
       movies_cat.info() 
-	<< "Couldn't open " << _source->get_subfile_info() << "\n";
+        << "Couldn't open " << _source->get_subfile_info() << "\n";
       cleanup();
       return;
     }
@@ -76,7 +76,7 @@ init_from(FfmpegVideo *source) {
     // Read a filename.
     if (!_ffvfile.open_vfs(_filename)) {
       movies_cat.info() 
-	<< "Couldn't open " << _filename << "\n";
+        << "Couldn't open " << _filename << "\n";
       cleanup();
       return;
     }

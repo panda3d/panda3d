@@ -117,18 +117,18 @@ PUBLISHED:
   void add_instances_from(const SpeedTreeNode *other);
   void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
   void add_random_instances(const STTree *tree, int quantity, 
-			    float x_min, float x_max, 
-			    float y_min, float y_max,
-			    float scale_min, float scale_max,
-			    float height_min, float height_max,
-			    float slope_min, float slope_max,
-			    Randomizer &randomizer = Randomizer());
+                            float x_min, float x_max, 
+                            float y_min, float y_max,
+                            float scale_min, float scale_max,
+                            float height_min, float height_max,
+                            float slope_min, float slope_max,
+                            Randomizer &randomizer = Randomizer());
 
   bool add_from_stf(const Filename &stf_filename, 
-		    const LoaderOptions &options = LoaderOptions());
+                    const LoaderOptions &options = LoaderOptions());
   bool add_from_stf(istream &in, const Filename &pathname, 
-		    const LoaderOptions &options = LoaderOptions(),
-		    Loader *loader = NULL);
+                    const LoaderOptions &options = LoaderOptions(),
+                    Loader *loader = NULL);
 
   bool setup_terrain(const Filename &terrain_file);
   void set_terrain(STTerrain *terrain);
@@ -180,7 +180,7 @@ protected:
 private:
   void init_node();
   void r_add_instances(PandaNode *node, const TransformState *transform,
-		       Thread *current_thread);
+                       Thread *current_thread);
 
   void repopulate();
   void update_terrain_cells();
@@ -209,7 +209,7 @@ private:
     static void init_type() {
       CallbackObject::init_type();
       register_type(_type_handle, "SpeedTreeNode::DrawCallback",
-		    CallbackObject::get_class_type());
+                    CallbackObject::get_class_type());
     }
     virtual TypeHandle get_type() const {
       return get_class_type();

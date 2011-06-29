@@ -31,18 +31,18 @@ void AwMouseAndKeyboard::do_transmit_data(DataGraphTraverser *trav, const DataNo
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *button_events;
     DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-	
+    
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);
       string event_name = be._button.get_name();
-	  printf("Button Event! : %s with code %i and index %i ", event_name.c_str(), be._keycode, be._button.get_index());
-	  if(be._type == ButtonEvent::T_down) printf("down");
-	  if(be._type == ButtonEvent::T_repeat) printf("repeat");
-	  if(be._type == ButtonEvent::T_up) printf("up");
-	  if(be._type == ButtonEvent::T_resume_down) printf("T_resume_down");
-	  printf("\n");
-	}
+      printf("Button Event! : %s with code %i and index %i ", event_name.c_str(), be._keycode, be._button.get_index());
+      if(be._type == ButtonEvent::T_down) printf("down");
+      if(be._type == ButtonEvent::T_repeat) printf("repeat");
+      if(be._type == ButtonEvent::T_up) printf("up");
+      if(be._type == ButtonEvent::T_resume_down) printf("T_resume_down");
+      printf("\n");
+    }
   }
 
 }

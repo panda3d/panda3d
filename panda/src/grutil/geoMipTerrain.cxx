@@ -629,9 +629,9 @@ set_heightfield(const Filename &filename, PNMFileType *ftype) {
       // If it's not a valid size, tell PNMImage to resize it.
       if (reqx != (unsigned int)imgheader.get_x_size() || reqy != (unsigned int)imgheader.get_y_size()) {
         grutil_cat.warning()
-	  << "Rescaling heightfield image " << filename
-	  << " from " << imgheader.get_x_size() << "x" << imgheader.get_y_size()
-	  << " to " << reqx << "x" << reqy << " pixels.\n";
+      << "Rescaling heightfield image " << filename
+      << " from " << imgheader.get_x_size() << "x" << imgheader.get_y_size()
+      << " to " << reqx << "x" << reqy << " pixels.\n";
         _heightfield.set_read_size(reqx, reqy);
       }
     }

@@ -2650,7 +2650,7 @@ set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
                           LCAST(float, v3));
 
       if (poly->get_bface_flag()) {
-	pnode->set_double_sided(true);
+        pnode->set_double_sided(true);
       }
     }
   }

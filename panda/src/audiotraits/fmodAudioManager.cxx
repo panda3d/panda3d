@@ -140,8 +140,8 @@ FmodAudioManager() {
     result = _system->init(nchan, flags, 0);
     if (result == FMOD_ERR_TOOMANYCHANNELS) {
       fmodAudio_cat.error()
-	<< "Value too large for fmod-number-of-sound-channels: " << nchan
-	<< "\n";
+        << "Value too large for fmod-number-of-sound-channels: " << nchan
+        << "\n";
     } else {
       fmod_audio_errcheck("_system->init()", result);
     }

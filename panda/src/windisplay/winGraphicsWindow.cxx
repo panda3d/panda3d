@@ -2100,12 +2100,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 #ifdef PANDA_WIN7
   case WM_TOUCH:
-		_numTouches = LOWORD(wparam);
-		if(_numTouches > MAX_TOUCHES)
-			_numTouches = MAX_TOUCHES;
-		GetTouchInputInfo((HTOUCHINPUT)lparam, _numTouches, _touches, sizeof(TOUCHINPUT));
-		CloseTouchInputHandle((HTOUCHINPUT)lparam);
-	break;
+        _numTouches = LOWORD(wparam);
+        if(_numTouches > MAX_TOUCHES)
+            _numTouches = MAX_TOUCHES;
+        GetTouchInputInfo((HTOUCHINPUT)lparam, _numTouches, _touches, sizeof(TOUCHINPUT));
+        CloseTouchInputHandle((HTOUCHINPUT)lparam);
+    break;
 #endif
   }
 

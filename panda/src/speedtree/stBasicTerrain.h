@@ -49,8 +49,8 @@ PUBLISHED:
   virtual float get_slope(float x, float y) const;
 
   virtual void fill_vertices(GeomVertexData *data,
-			     float start_x, float start_y,
-			     float size_xy, int num_xy) const;
+                             float start_x, float start_y,
+                             float size_xy, int num_xy) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -63,7 +63,7 @@ protected:
 
 private:
   static void read_quoted_filename(Filename &result, istream &in, 
-				   const Filename &dirname);
+                                   const Filename &dirname);
 
 protected:
   template<class ValueType>

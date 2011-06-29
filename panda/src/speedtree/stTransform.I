@@ -115,8 +115,8 @@ operator SpeedTree::CInstance () const {
 INLINE STTransform::
 operator CPT(TransformState) () const {
   return TransformState::make_pos_hpr_scale(_pos, 
-					    LVecBase3f(_rotate, 0.0f, 0.0f),
-					    LVecBase3f(_scale, _scale, _scale));
+                                            LVecBase3f(_rotate, 0.0f, 0.0f),
+                                            LVecBase3f(_scale, _scale, _scale));
 }
 
 ////////////////////////////////////////////////////////////////////

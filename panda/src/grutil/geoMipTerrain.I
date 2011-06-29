@@ -343,7 +343,7 @@ set_far(double input_far) {
 //     Function: GeoMipTerrain::get_far
 //       Access: Published
 //  Description: Returns the far LOD distance in the terrain coordinate
-//				 space
+//               space
 ////////////////////////////////////////////////////////////////////
 INLINE double GeoMipTerrain::
 get_far() {
@@ -354,7 +354,7 @@ get_far() {
 //     Function: GeoMipTerrain::get_near
 //       Access: Published
 //  Description: Returns the near LOD distance in the terrain coordinate
-//				 space
+//               space
 ////////////////////////////////////////////////////////////////////
 INLINE double GeoMipTerrain::
 get_near() {

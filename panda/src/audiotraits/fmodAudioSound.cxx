@@ -99,7 +99,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
       if (sound_info.dlsname != NULL) {
-	audio_debug("Using DLS file " << sound_info.dlsname);
+        audio_debug("Using DLS file " << sound_info.dlsname);
       }
     }
     
@@ -115,13 +115,13 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       file->read_file(mem_buffer, true);
       sound_info.length = mem_buffer.size();
       if (mem_buffer.size() != 0) {
-	name_or_data = (const char *)&mem_buffer[0];
+        name_or_data = (const char *)&mem_buffer[0];
       }
       flags |= FMOD_OPENMEMORY;
       if (fmodAudio_cat.is_debug()) {
-	fmodAudio_cat.debug()
-	  << "Reading " << _file_name << " into memory (" << sound_info.length
-	  << " bytes)\n";
+        fmodAudio_cat.debug()
+          << "Reading " << _file_name << " into memory (" << sound_info.length
+          << " bytes)\n";
       }
 
     } else if (file->get_system_info(info)) {
@@ -136,9 +136,9 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       sound_info.length = (unsigned int)info.get_size();
       flags |= FMOD_CREATESTREAM;
       if (fmodAudio_cat.is_debug()) {
-	fmodAudio_cat.debug()
-	  << "Streaming " << _file_name << " from disk (" << name_or_data 
-	  << ", " << sound_info.fileoffset << ", " << sound_info.length << ")\n";
+        fmodAudio_cat.debug()
+          << "Streaming " << _file_name << " from disk (" << name_or_data 
+          << ", " << sound_info.fileoffset << ", " << sound_info.length << ")\n";
       }
 
     } else {
@@ -153,8 +153,8 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       sound_info.userseek = seek_callback;
       flags |= FMOD_CREATESTREAM;
       if (fmodAudio_cat.is_debug()) {
-	fmodAudio_cat.debug()
-	  << "Streaming " << _file_name << " from disk using callbacks\n";
+        fmodAudio_cat.debug()
+          << "Streaming " << _file_name << " from disk using callbacks\n";
       }
 
 #else  // HAVE_THREADS && !SIMPLE_THREADS
@@ -162,7 +162,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       name_or_data = "";
 
       fmodAudio_cat.warning()
-	<< "Cannot stream " << _file_name << "; file is not literally on disk.\n";
+        << "Cannot stream " << _file_name << "; file is not literally on disk.\n";
 #endif
     }
     
@@ -949,9 +949,9 @@ get_finished_event() const {
 ////////////////////////////////////////////////////////////////////
 FMOD_RESULT F_CALLBACK FmodAudioSound::
 sound_end_callback(FMOD_CHANNEL *  channel, 
-		   FMOD_CHANNEL_CALLBACKTYPE  type, 
-		   void *commanddata1, 
-		   void *commanddata2) {
+                   FMOD_CHANNEL_CALLBACKTYPE  type, 
+                   void *commanddata1, 
+                   void *commanddata2) {
   // Fortunately, this callback is made synchronously rather than
   // asynchronously (it is triggered during System::update()), so we
   // don't have to worry about thread-related issues here.

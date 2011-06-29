@@ -37,17 +37,17 @@ ConfigVariableString speedtree_license
 ConfigVariableFilename speedtree_shaders_dir
 ("speedtree-shaders-dir", Filename(Filename::from_os_specific(SPEEDTREE_BIN_DIR), "Shaders"),
  PRC_DESC("Specifies the directory in which to locate SpeedTree's system "
-	  "shaders at runtime.  If this is empty, the default is based on "
-	  "SPEEDTREE_BIN_DIR, as provided at compile time."));
+          "shaders at runtime.  If this is empty, the default is based on "
+          "SPEEDTREE_BIN_DIR, as provided at compile time."));
 #endif  // CPPPARSER
 
 ConfigVariableFilename speedtree_textures_dir
 ("speedtree-textures-dir", "",
  PRC_DESC("Specifies the directory in which to locate textures referenced "
-	  "by SRT files at runtime.  The default is to search in the same "
-	  "directory as the SRT file itself.  Unfortunately, the model-path "
-	  "cannot be searched, because SpeedTree only provides a single "
-	  "directory option."));
+          "by SRT files at runtime.  The default is to search in the same "
+          "directory as the SRT file itself.  Unfortunately, the model-path "
+          "cannot be searched, because SpeedTree only provides a single "
+          "directory option."));
 
 ConfigVariableDouble speedtree_max_anisotropy
 ("speedtree-max-anisotropy", 0.0,
@@ -56,9 +56,9 @@ ConfigVariableDouble speedtree_max_anisotropy
 ConfigVariableBool speedtree_horizontal_billboards
 ("speedtree-horizontal-billboards", true,
  PRC_DESC("Set this true to allow the use of horizontal billboards in "
-	  "SpeedTree, or false to disallow them.  Horizontal billboards "
-	  "may be defined for some trees to provide a billboard LOD "
-	  "when the tree is seen from above."));
+          "SpeedTree, or false to disallow them.  Horizontal billboards "
+          "may be defined for some trees to provide a billboard LOD "
+          "when the tree is seen from above."));
 
 ConfigVariableDouble speedtree_alpha_test_scalar
 ("speedtree-alpha-test-scalar", 0.57,
@@ -67,15 +67,15 @@ ConfigVariableDouble speedtree_alpha_test_scalar
 ConfigVariableBool speedtree_z_pre_pass
 ("speedtree-z-pre-pass", false,
  PRC_DESC("True if the SpeedTree renderer should perform a first pass "
-	  "to fill the depth buffer before going back to draw pixels.  "
-	  "This can result in a cost savings if there is much overdraw and "
-	  "if the pixel shader is particularly expensive, but in most cases "
-	  "it will result in a cost penalty."));
+          "to fill the depth buffer before going back to draw pixels.  "
+          "This can result in a cost savings if there is much overdraw and "
+          "if the pixel shader is particularly expensive, but in most cases "
+          "it will result in a cost penalty."));
 
 ConfigVariableInt speedtree_max_billboard_images_by_base
 ("speedtree-max-billboard-images-by-base", 20,
  PRC_DESC("Specifies the maximum number of billboard images used by any single "
-	  "tree."));
+          "tree."));
 
 ConfigVariableDouble speedtree_visibility
 ("speedtree-visibility", 1000.0,
@@ -96,12 +96,12 @@ ConfigVariableBool speedtree_transmission_lighting
 ConfigVariableBool speedtree_detail_layer
 ("speedtree-detail-layer", false,
  PRC_DESC("True to render the detail texture layer defined on tree and "
-	  "terrain objects, false otherwise."));
+          "terrain objects, false otherwise."));
 
 ConfigVariableBool speedtree_detail_normal_mapping
 ("speedtree-detail-normal-mapping", false,
  PRC_DESC("True to render the detail normal maps defined on tree and "
-	  "terrain objects, false otherwise."));
+          "terrain objects, false otherwise."));
 
 ConfigVariableBool speedtree_ambient_contrast
 ("speedtree-ambient-contrast", false,
@@ -114,7 +114,7 @@ ConfigVariableDouble speedtree_transmission_scalar
 ConfigVariableDouble speedtree_fog_distance
 ("speedtree-fog-distance", "2500 5000",
  PRC_DESC("Specifies the nearest and farthest distance of the fog on trees "
-	  "and terrain."));
+          "and terrain."));
 
 ConfigVariableDouble speedtree_fog_color
 ("speedtree-fog-color", "1.0 1.0 1.0",
@@ -123,7 +123,7 @@ ConfigVariableDouble speedtree_fog_color
 ConfigVariableDouble speedtree_sky_color
 ("speedtree-sky-color", "0.2 0.3 0.5",
  PRC_DESC("Specifies the r g b color of the SpeedTree sky, when the sky "
-	  "is enabled.  Currently unused."));
+          "is enabled.  Currently unused."));
 
 ConfigVariableDouble speedtree_sky_fog
 ("speedtree-sky-fog", "-0.5 1.0",
@@ -132,7 +132,7 @@ ConfigVariableDouble speedtree_sky_fog
 ConfigVariableDouble speedtree_sun_color
 ("speedtree-sun-color", "1.0 1.0 0.85",
  PRC_DESC("Specifies the r g b color of the SpeedTree sun, when the sun "
-	  "is enabled.  Currently unused."));
+          "is enabled.  Currently unused."));
 
 ConfigVariableDouble speedtree_sun_size
 ("speedtree-sun-size", 0.001,
@@ -149,24 +149,24 @@ ConfigVariableDouble speedtree_sun_fog_bloom
 ConfigVariableDouble speedtree_specular_color
 ("speedtree-specular-color", "1 1 1",
  PRC_DESC("Specifies the r g b color of the specular reflections on SpeedTree "
-	  "surfaces."));
+          "surfaces."));
 
 ConfigVariableDouble speedtree_emissive_color
 ("speedtree-emissive-color", "0 0 0",
  PRC_DESC("Specifies the r g b color of the emissive light effect on SpeedTree "
-	  "surfaces."));
+          "surfaces."));
 
 ConfigVariableInt speedtree_shadow_map_resolution
 ("speedtree-shadow-map-resolution", 0, //1024,
  PRC_DESC("Specifies the resolution for rendering shadow maps.  Should "
-	  "be a power of 2.  Specify 0 to disable shadowing in SpeedTree."));
+          "be a power of 2.  Specify 0 to disable shadowing in SpeedTree."));
 
 ConfigVariableDouble speedtree_cascading_shadow_splits
 ("speedtree-cascading-shadow-splits", "200 400 600",
  PRC_DESC("Specifies the shadow split distance, in spatial units, for "
-	  "each shadow map to be rendered.  The number of values also "
-	  "implies the number of shadow maps, to a maximum value compiled "
-	  "within SpeedTree (typically 4)."));
+          "each shadow map to be rendered.  The number of values also "
+          "implies the number of shadow maps, to a maximum value compiled "
+          "within SpeedTree (typically 4)."));
 
 ConfigVariableBool speedtree_smooth_shadows
 ("speedtree-smooth-shadows", false,
@@ -187,66 +187,66 @@ ConfigVariableBool speedtree_frond_rippling
 ConfigVariableInt speedtree_terrain_num_lods
 ("speedtree-terrain-num-lods", 5,
  PRC_DESC("Specifies the number of different LOD stages to use in "
-	  "rendering terrain.  Each stage has 75% few polygons than the "
-	  "stage before.  Increasing this number decreases the total "
-	  "number of polygons onscreen, at the cost of visual quality of "
-	  "distant terrain."));
+          "rendering terrain.  Each stage has 75% few polygons than the "
+          "stage before.  Increasing this number decreases the total "
+          "number of polygons onscreen, at the cost of visual quality of "
+          "distant terrain."));
 
 ConfigVariableInt speedtree_terrain_resolution
 ("speedtree-terrain-resolution", 33,
  PRC_DESC("Specifies the number of vertices per edge of each terrain grid "
-	  "cell at the highest LOD.  This must be a power of two plus 1."));
-	  
+          "cell at the highest LOD.  This must be a power of two plus 1."));
+          
 ConfigVariableInt speedtree_terrain_cell_size
 ("speedtree-terrain-cell-size", 800,
  PRC_DESC("Specifies the size in spatial units of one edge of a terrain "
-	  "grid cell.  This effects culling and resolution, but has nothing "
-	  "to do with the scale of the heightmap or other maps."));
+          "grid cell.  This effects culling and resolution, but has nothing "
+          "to do with the scale of the heightmap or other maps."));
 
 ConfigVariableDouble speedtree_shadow_fade
 ("speedtree-shadow-fade", 0.25,
  PRC_DESC("Specifies the rate at which shadows fade to transparency in the "
-	  "distance."));
+          "distance."));
 
 ConfigVariableBool speedtree_show_overlays
 ("speedtree-show-overlays", false,
  PRC_DESC("True to draw onscreen overlays showing the generated "
-	  "shadow map(s)."));
+          "shadow map(s)."));
 
 ConfigVariableInt speedtree_max_num_visible_cells
 ("speedtree-max-num-visible-cells", 75,
  PRC_DESC("Specifies the maximum number of cells in a single SpeedTree forest "
-	  "frustum.  This is used internally by SpeedTree's billboard system."));
+          "frustum.  This is used internally by SpeedTree's billboard system."));
 
 ConfigVariableDouble speedtree_cull_cell_size
 ("speedtree-cull-cell-size", 1200,
  PRC_DESC("Specifies the size of a single SpeedTree cull cell, in Panda "
-	  "units.  Increasing this number decreases the number of "
-	  "individual calls that must be made to render geometry, "
-	  "while increasing the number of trees that are rendered "
-	  "per call."));
+          "units.  Increasing this number decreases the number of "
+          "individual calls that must be made to render geometry, "
+          "while increasing the number of trees that are rendered "
+          "per call."));
 
 ConfigVariableDouble speedtree_area_scale
 ("speedtree-area-scale", 3280.839895013,
  PRC_DESC("This is the factor by which the \"area\" value in a SpeedTree "
-	  "terrain.txt file is scaled (after taking its square root) "
-	  "when loading a new terrain.  The default is about 3281, which "
-	  "scales from kilometers to feet.  You should set a different "
-	  "scale if you use units other than feet."));
+          "terrain.txt file is scaled (after taking its square root) "
+          "when loading a new terrain.  The default is about 3281, which "
+          "scales from kilometers to feet.  You should set a different "
+          "scale if you use units other than feet."));
 
 ConfigVariableBool speedtree_follow_terrain
 ("speedtree-follow-terrain", true,
  PRC_DESC("Set this true to have trees automatically snap to the terrain "
-	  "height when loaded into a SpeedTree node with a configured "
-	  "terrain.  If this is false, you may still call "
-	  "SpeedTreeNode::snap_to_terrain() afterwards."));
+          "height when loaded into a SpeedTree node with a configured "
+          "terrain.  If this is false, you may still call "
+          "SpeedTreeNode::snap_to_terrain() afterwards."));
 
 ConfigVariableInt speedtree_max_random_try_count
 ("speedtree-max-random-try-count", 1000,
  PRC_DESC("This is a cheesy limit to detect bad parameters passed to "
-	  "SpeedTreeNode::add_random_instances().  If this number of attempts "
-	  "to find a legal place for a tree fail in a row, the parameters "
-	  "are deemed to be in error, and the function fails."));
+          "SpeedTreeNode::add_random_instances().  If this number of attempts "
+          "to find a legal place for a tree fail in a row, the parameters "
+          "are deemed to be in error, and the function fails."));
 
 ConfigVariableBool speedtree_5_2_stf
 ("speedtree-5-2-stf", 
@@ -256,8 +256,8 @@ ConfigVariableBool speedtree_5_2_stf
  false,
 #endif
  PRC_DESC("The format of the STF file changed in SpeedTree version 5.2.  "
-	  "Specify true here to read STF files in the new file format, or "
-	  "false to read STF files in the pre-5.2 file format."));
+          "Specify true here to read STF files in the new file format, or "
+          "false to read STF files in the pre-5.2 file format."));
  
 
 ////////////////////////////////////////////////////////////////////

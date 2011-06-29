@@ -29,9 +29,9 @@
 class EXPCL_PANDA_COLLIDE CollisionBox : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionBox(const LPoint3f &center, 
-					   float x, float y, float z);
-  INLINE CollisionBox(float cx, float cy,	float cz,
-        float x,  float y,	float z);
+                      float x, float y, float z);
+  INLINE CollisionBox(float cx, float cy,   float cz,
+                      float x,  float y,  float z);
   INLINE CollisionBox(const LPoint3f &min, const LPoint3f &max);
 
   virtual LPoint3f get_collision_origin() const;
@@ -44,7 +44,7 @@ public:
   virtual CollisionSolid *make_copy();
 
   virtual PT(CollisionEntry)
-  test_intersection(const CollisionEntry &entry) const;
+    test_intersection(const CollisionEntry &entry) const;
   virtual void xform(const LMatrix4f &mat);
 
   virtual PStatCollector &get_volume_pcollector();
@@ -74,13 +74,13 @@ PUBLISHED:
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
   virtual PT(CollisionEntry)
-  test_intersection_from_sphere(const CollisionEntry &entry) const;
+    test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_ray(const CollisionEntry &entry) const;
+    test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_segment(const CollisionEntry &entry) const;
+    test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_box(const CollisionEntry &entry) const;
+    test_intersection_from_box(const CollisionEntry &entry) const;
   
   virtual void fill_viz_geom();
 

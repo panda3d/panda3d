@@ -6867,7 +6867,7 @@ do_write_datagram_header(BamWriter *manager, Datagram &me, bool &has_rawdata) {
   // disk.
   BamWriter::BamTextureMode file_texture_mode = manager->get_file_texture_mode();
   has_rawdata = (file_texture_mode == BamWriter::BTM_rawdata || 
-		 (_filename.empty() && do_has_bam_rawdata()));
+                 (_filename.empty() && do_has_bam_rawdata()));
   if (has_rawdata && !do_has_bam_rawdata()) {
     do_get_bam_rawdata();
     if (!do_has_bam_rawdata()) {
@@ -7129,8 +7129,8 @@ make_this_from_bam(const FactoryParams &params) {
 
     if (me != (Texture *)NULL) {
       {
-	MutexHolder holder(me->_lock);
-	me->do_fillin_from(dummy);
+        MutexHolder holder(me->_lock);
+        me->do_fillin_from(dummy);
       }
       me->set_name(name);
 

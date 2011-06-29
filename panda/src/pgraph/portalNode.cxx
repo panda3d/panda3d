@@ -268,7 +268,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           CPT(TransformState) temp_frustum_transform = data._node_path.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
           
           portal_cat.spam() << "clipping plane frustum transform " << *temp_frustum_transform << endl;
-          portal_cat.spam() << "frustum before transform " << *temp_bh << endl;	
+          portal_cat.spam() << "frustum before transform " << *temp_bh << endl; 
           // transform to portalNode space
           temp_bh->xform(temp_frustum_transform->get_mat());
 

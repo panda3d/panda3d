@@ -246,8 +246,8 @@ save_datagram(SubfileInfo &info) {
     out.write(buffer, count);
     if (out.fail()) {
       util_cat.error()
-	<< "Couldn't write " << num_bytes << " bytes to " 
-	<< tfile->get_filename() << "\n";
+        << "Couldn't write " << num_bytes << " bytes to " 
+        << tfile->get_filename() << "\n";
       return false;
     }
     num_remaining -= count;

@@ -137,8 +137,8 @@ get_slope(float x, float y) const {
 ////////////////////////////////////////////////////////////////////
 bool STTerrain::
 placement_is_acceptable(float x, float y,
-			float height_min, float height_max, 
-			float slope_min, float slope_max) {
+                        float height_min, float height_max, 
+                        float slope_min, float slope_max) {
   float height = get_height(x, y);
   if (height < height_min || height > height_max) {
     return false;
@@ -171,8 +171,8 @@ placement_is_acceptable(float x, float y,
 ////////////////////////////////////////////////////////////////////
 void STTerrain::
 fill_vertices(GeomVertexData *data,
-	      float start_x, float start_y,
-	      float size_xy, int num_xy) const {
+              float start_x, float start_y,
+              float size_xy, int num_xy) const {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,7 +247,7 @@ set_vertex_format(const GeomVertexFormat *format) {
 ////////////////////////////////////////////////////////////////////
 bool STTerrain::
 convert_vertex_format(STTerrain::VertexAttribs &st_vertex_attribs,
-		      const GeomVertexFormat *format) {
+                      const GeomVertexFormat *format) {
   st_vertex_attribs.clear();
 
   if (format->get_num_arrays() != 1) {
@@ -283,7 +283,7 @@ convert_vertex_format(STTerrain::VertexAttribs &st_vertex_attribs,
 ////////////////////////////////////////////////////////////////////
 bool STTerrain::
 convert_vertex_column(SpeedTree::SVertexAttribDesc &st_attrib,
-		      const GeomVertexColumn *column) {
+                      const GeomVertexColumn *column) {
   switch (column->get_numeric_type()) {
   case GeomEnums::NT_float32:
     st_attrib.m_eDataType = SpeedTree::VERTEX_ATTRIB_TYPE_FLOAT;

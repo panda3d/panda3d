@@ -34,9 +34,9 @@ PUBLISHED:
   * and WebView::injectMouseUp
   */
   enum MouseButton {
-  	LEFT_MOUSE_BTN,
-  	MIDDLE_MOUSE_BTN,
-  	RIGHT_MOUSE_BTN
+    LEFT_MOUSE_BTN,
+    MIDDLE_MOUSE_BTN,
+    RIGHT_MOUSE_BTN
   };
 
   /**

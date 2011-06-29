@@ -66,12 +66,12 @@ PUBLISHED:
   virtual float get_slope(float x, float y) const;
 
   bool placement_is_acceptable(float x, float y,
-			       float height_min, float height_max, 
-			       float slope_min, float slope_max);
+                               float height_min, float height_max, 
+                               float slope_min, float slope_max);
 
   virtual void fill_vertices(GeomVertexData *data,
-			     float start_x, float start_y,
-			     float size_xy, int num_xy) const;
+                             float start_x, float start_y,
+                             float size_xy, int num_xy) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -84,9 +84,9 @@ protected:
 
   typedef pvector<SpeedTree::SVertexAttribDesc> VertexAttribs;
   static bool convert_vertex_format(VertexAttribs &st_vertex_attribs,
-				    const GeomVertexFormat *format);
+                                    const GeomVertexFormat *format);
   static bool convert_vertex_column(SpeedTree::SVertexAttribDesc &st_attrib,
-				    const GeomVertexColumn *column);
+                                    const GeomVertexColumn *column);
 
 protected:
   class SplatLayer {
