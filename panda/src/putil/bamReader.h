@@ -25,11 +25,13 @@
 #include "datagramIterator.h"
 #include "bamReaderParam.h"
 #include "bamEnums.h"
+#include "subfileInfo.h"
 #include "loaderOptions.h"
 #include "factory.h"
 #include "vector_int.h"
 #include "pset.h"
 #include "pmap.h"
+#include "pdeque.h"
 #include "dcast.h"
 #include "pipelineCyclerBase.h"
 #include "referenceCount.h"
@@ -125,10 +127,11 @@ public:
 
 PUBLISHED:
   // The primary interface for a caller.
-  BamReader(DatagramGenerator *source = NULL, const Filename &name = "");
+  BamReader(DatagramGenerator *source = NULL);
   ~BamReader();
 
   void set_source(DatagramGenerator *source);
+  INLINE DatagramGenerator *get_source();
 
   bool init();
 
@@ -163,6 +166,8 @@ public:
   void read_pointers(DatagramIterator &scan, int count);
   void skip_pointer(DatagramIterator &scan);
 
+  void read_file_data(SubfileInfo &info);
+
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler);
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
                   void *extra_data);
@@ -187,7 +192,8 @@ public:
 
   TypeHandle read_handle(DatagramIterator &scan);
 
-  INLINE VirtualFile *get_file();
+  INLINE const FileReference *get_file();
+  INLINE VirtualFile *get_vfile();
   INLINE streampos get_file_pos();
 
 public:
@@ -232,9 +238,6 @@ private:
   // to actual TypeHandles.
   typedef phash_map<int, TypeHandle, int_hash> IndexMap;
   IndexMap _index_map;
-
-  // This is the filename of the BAM, or empty string if not in a file.
-  Filename _filename;
 
   LoaderOptions _loader_options;
 
@@ -306,6 +309,12 @@ private:
   typedef phash_map<int, void *, int_hash> PTAMap;
   PTAMap _pta_map;
   int _pta_id;
+
+  // This is a queue of the currently-pending file data blocks that we
+  // have recently encountered in the stream and still expect a
+  // subsequent object to request.
+  typedef pdeque<SubfileInfo> FileDataRecords;
+  FileDataRecords _file_data_records;
 
   // This is used internally to record all of the new types created
   // on-the-fly to satisfy bam requirements.  We keep track of this

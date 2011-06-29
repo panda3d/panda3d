@@ -1,5 +1,5 @@
-// Filename: ffmpegAudio.h
-// Created by: jyelon (01Aug2007)
+// Filename: temporaryFile.h
+// Created by:  drose (23Jun11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,39 +12,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGAUDIO_H
-#define FFMPEGAUDIO_H
+#ifndef TEMPORARYFILE_H
+#define TEMPORARYFILE_H
 
 #include "pandabase.h"
 
-#ifdef HAVE_FFMPEG
-
-#include "movieAudio.h"
-
-class FfmpegAudioCursor;
+#include "fileReference.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
-// Description : A stream that generates a sequence of audio samples.
+//       Class : TemporaryFile
+// Description : This is a special kind of FileReference class that
+//               automatically deletes the file in question when it is
+//               deleted.  It is not responsible for creating,
+//               opening, or closing the file, however.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
-
+class EXPCL_PANDAEXPRESS TemporaryFile : public FileReference {
 PUBLISHED:
-  FfmpegAudio(const Filename &name);
-  virtual ~FfmpegAudio();
-  virtual PT(MovieAudioCursor) open();
+  INLINE TemporaryFile(const Filename &filename);
+  virtual ~TemporaryFile();
 
- private:
-  friend class FfmpegAudioCursor;
-  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "FfmpegAudio",
-                  MovieAudio::get_class_type());
+    FileReference::init_type();
+    register_type(_type_handle, "TemporaryFile",
+                  FileReference::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -55,7 +49,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegAudio.I"
+#include "temporaryFile.I"
 
-#endif // HAVE_FFMPEG
-#endif // FFMPEG_AUDIO.H
+#endif

@@ -42,12 +42,13 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _buffer(0),
   _buffer_alloc(0)
 {
-  string url = "pandavfs:";
-  url += _filename;
-  if (av_open_input_file(&_format_ctx, url.c_str(), NULL, 0, NULL)!=0) {
+  if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
     return;
   }
+
+  _format_ctx = _ffvfile.get_format_context();
+  nassertv(_format_ctx != NULL);
 
   if (av_find_stream_info(_format_ctx)<0) {
     cleanup();
@@ -130,22 +131,25 @@ cleanup() {
       av_free_packet(_packet);
     }
     delete _packet;
-    _packet = 0;
+    _packet = NULL;
   }
+
   if (_buffer_alloc) {
     delete[] _buffer_alloc;
     _buffer_alloc = 0;
-    _buffer = 0;
+    _buffer = NULL;
   }
+
   if ((_audio_ctx)&&(_audio_ctx->codec)) {
     avcodec_close(_audio_ctx);
   }
-  _audio_ctx = 0;
+  _audio_ctx = NULL;
+
   if (_format_ctx) {
-    av_close_input_file(_format_ctx);
-    _format_ctx = 0;
+    _ffvfile.close();
+    _format_ctx = NULL;
   }
-  _audio_ctx = 0;
+
   _audio_index = -1;
 }
 

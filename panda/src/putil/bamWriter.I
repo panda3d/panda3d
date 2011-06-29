@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_target
+//       Access: Published
+//  Description: Returns the current target of the BamWriter as set by
+//               set_target() or the constructor.
+////////////////////////////////////////////////////////////////////
+INLINE DatagramSink *BamWriter::
+get_target() {
+  return _target;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_filename
 //       Access: Published
 //  Description: If a BAM is a file, then the BamWriter should
@@ -23,7 +34,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &BamWriter::
 get_filename() const {
-  return _filename;
+  if (_target != (DatagramSink *)NULL) {
+    return _target->get_filename();
+  }
+  static const Filename empty_filename;
+  return empty_filename;
 }
 
 ////////////////////////////////////////////////////////////////////

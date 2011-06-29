@@ -19,6 +19,7 @@
 #ifdef HAVE_FFMPEG
 
 #include "videoTexture.h"
+#include "ffmpegVirtualFile.h"
 
 extern "C" {
   #include "libavcodec/avcodec.h"
@@ -55,6 +56,9 @@ protected:
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
 
+  virtual bool do_has_bam_rawdata() const;
+  virtual void do_get_bam_rawdata();
+
 private:    
   class VideoPage;
   class VideoStream;
@@ -70,25 +74,34 @@ private:
     VideoStream();
     VideoStream(const VideoStream &copy);
     ~VideoStream();
+    void operator = (const VideoStream &copy);
 
     bool read(const Filename &filename);
+    bool read(const SubfileInfo &info);
     void clear();
     INLINE bool is_valid() const;
     INLINE bool is_from_file() const;
     bool get_frame_data(int frame);
 
+    void write_datagram_rawdata(BamWriter *manager, Datagram &me);
+    void fillin_rawdata(DatagramIterator &scan, BamReader *manager);
+
   private:
+    bool continue_read();
     int read_video_frame(AVPacket *packet);
 
   public:
     AVCodecContext *_codec_context; 
     AVFormatContext *_format_context; 
+    FfmpegVirtualFile _ffvfile;
     
     int _stream_number;
     AVFrame *_frame;
     AVFrame *_frame_out;
 
     Filename _filename;
+    SubfileInfo _file_info;
+
     int _next_frame_number;
     int _image_size_bytes;
 
@@ -102,6 +115,10 @@ private:
     INLINE VideoPage();
     INLINE VideoPage(const VideoPage &copy);
     INLINE ~VideoPage();
+    INLINE void operator = (const VideoPage &copy);
+
+    void write_datagram_rawdata(BamWriter *manager, Datagram &me);
+    void fillin_rawdata(DatagramIterator &scan, BamReader *manager);
 
     VideoStream _color, _alpha;
   };
@@ -111,6 +128,10 @@ private:
 
 public:
   static void register_with_read_factory();
+
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  virtual void do_write_datagram_rawdata(BamWriter *manager, Datagram &me);
+  virtual void do_fillin_rawdata(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -15,6 +15,21 @@
 #include "config_movies.h"
 #include "dconfig.h"
 
+#include "movieVideo.h"
+#include "movieVideoCursor.h"
+
+#include "movieAudio.h"
+#include "movieAudioCursor.h"
+
+#include "inkblotVideo.h"
+#include "inkblotVideoCursor.h"
+
+#include "ffmpegVideo.h"
+#include "ffmpegVideoCursor.h"
+
+#include "ffmpegAudio.h"
+#include "ffmpegAudioCursor.h"
+
 #ifdef HAVE_FFMPEG
 extern "C" {
   #include "libavcodec/avcodec.h"
@@ -54,13 +69,17 @@ init_libmovies() {
   UserDataAudio::init_type();
   UserDataAudioCursor::init_type();
   MicrophoneAudio::init_type();
+
 #ifdef HAVE_FFMPEG
+  FfmpegVirtualFile::register_protocol();
+
   FfmpegVideo::init_type();
   FfmpegVideoCursor::init_type();
   FfmpegAudio::init_type();
   FfmpegAudioCursor::init_type();
-  av_register_all();
-  FfmpegVirtualFile::register_protocol();
+
+  FfmpegVideo::register_with_read_factory();
+  FfmpegVideoCursor::register_with_read_factory();
 #endif
 }
 

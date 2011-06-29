@@ -1,5 +1,5 @@
-// Filename: ffmpegAudio.h
-// Created by: jyelon (01Aug2007)
+// Filename: fileReference.h
+// Created by:  drose (23Jun11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,39 +12,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGAUDIO_H
-#define FFMPEGAUDIO_H
+#ifndef FILEREFERENCE_H
+#define FILEREFERENCE_H
 
 #include "pandabase.h"
 
-#ifdef HAVE_FFMPEG
-
-#include "movieAudio.h"
-
-class FfmpegAudioCursor;
+#include "typedReferenceCount.h"
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
-// Description : A stream that generates a sequence of audio samples.
+//       Class : FileReference
+// Description : Keeps a reference-counted pointer to a file on disk.
+//               As long as the FileReference is held, someone
+//               presumably has a use for this file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
-
+class EXPCL_PANDAEXPRESS FileReference : public TypedReferenceCount {
 PUBLISHED:
-  FfmpegAudio(const Filename &name);
-  virtual ~FfmpegAudio();
-  virtual PT(MovieAudioCursor) open();
+  INLINE FileReference(const Filename &filename);
+  INLINE const Filename &get_filename() const;
 
- private:
-  friend class FfmpegAudioCursor;
-  
+protected:
+  Filename _filename;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "FfmpegAudio",
-                  MovieAudio::get_class_type());
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "FileReference",
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -55,7 +52,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegAudio.I"
+#include "fileReference.I"
 
-#endif // HAVE_FFMPEG
-#endif // FFMPEG_AUDIO.H
+#endif

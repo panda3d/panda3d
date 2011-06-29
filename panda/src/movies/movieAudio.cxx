@@ -14,6 +14,7 @@
 
 #include "movieAudio.h"
 #include "movieAudioCursor.h"
+#include "ffmpegAudio.h"
 
 TypeHandle MovieAudio::_type_handle;
 

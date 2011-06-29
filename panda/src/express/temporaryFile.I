@@ -1,5 +1,5 @@
-// Filename: ffmpegVirtualFile.I
-// Created by: jyelon (01Aug2007)
+// Filename: temporaryFile.I
+// Created by:  drose (23Jun11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,12 +14,10 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::get_format_context
-//       Access: Public
-//  Description: Returns a pointer to the opened ffmpeg context, or
-//               NULL if the file was not successfully opened.
+//     Function: TemporaryFile::Constructor
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE AVFormatContext *FfmpegVirtualFile::
-get_format_context() const {
-  return _format_context;
+INLINE TemporaryFile::
+TemporaryFile(const Filename &filename) : FileReference(filename) {
 }

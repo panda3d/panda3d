@@ -1,5 +1,5 @@
-// Filename: movieVideo.I
-// Created by: jyelon (02Jul07)
+// Filename: fileReference.I
+// Created by:  drose (23Jun11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,25 +14,20 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::get_filename
+//     Function: FileReference::Constructor
 //       Access: Published
-//  Description: Returns the movie's filename.  A movie is not
-//               guaranteed to have a filename, if not, then this
-//               function returns an empty filename.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename &MovieVideo::
+INLINE FileReference::
+FileReference(const Filename &filename) : _filename(filename) {
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: FileReference::get_filename
+//       Access: Published
+//  Description: Returns the filename of the reference.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &FileReference::
 get_filename() const {
   return _filename;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::get_subfile_info
-//       Access: Published
-//  Description: If the movie is to be loaded from a subfile on disk,
-//               this returns the subfile info.  Check info.is_empty()
-//               to see if this is valid data.
-////////////////////////////////////////////////////////////////////
-INLINE const SubfileInfo &MovieVideo::
-get_subfile_info() const {
-  return _subfile_info;
 }

@@ -19,13 +19,16 @@
 
 #include "datagram.h"
 
+class SubfileInfo;
+class FileReference;
+class Filename;
 class VirtualFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramGenerator
 // Description : This class defines the abstract interace to any
 //               source of datagrams, whether it be from a file or
-//               from the net
+//               from the net.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramGenerator {
 PUBLISHED:
@@ -33,10 +36,13 @@ PUBLISHED:
   virtual ~DatagramGenerator();
 
   virtual bool get_datagram(Datagram &data) = 0;
+  virtual bool save_datagram(SubfileInfo &info);
   virtual bool is_eof() = 0;
   virtual bool is_error() = 0;
 
-  virtual VirtualFile *get_file();
+  virtual const Filename &get_filename();
+  virtual const FileReference *get_file();
+  virtual VirtualFile *get_vfile();
   virtual streampos get_file_pos();
 };
 

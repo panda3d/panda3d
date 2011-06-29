@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramInputFile::
@@ -24,4 +24,27 @@ DatagramInputFile() {
   _read_first_datagram = false;
   _in = (istream *)NULL;
   _owns_in = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::open
+//       Access: Published
+//  Description: Opens the indicated filename for reading.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool DatagramInputFile::
+open(const Filename &filename) {
+  return open(new FileReference(filename));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_stream
+//       Access: Published
+//  Description: Returns the istream represented by the input file.
+////////////////////////////////////////////////////////////////////
+INLINE istream &DatagramInputFile::
+get_stream() {
+  static ifstream null_stream;
+  nassertr(_in != NULL, null_stream);
+  return *_in;
 }

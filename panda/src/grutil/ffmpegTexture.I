@@ -51,7 +51,8 @@ VideoPage() {
 ////////////////////////////////////////////////////////////////////
 INLINE FFMpegTexture::VideoPage::
 VideoPage(const FFMpegTexture::VideoPage &copy) :
-  _color(copy._color)
+  _color(copy._color),
+  _alpha(copy._alpha)
 {
 }
 
@@ -62,4 +63,15 @@ VideoPage(const FFMpegTexture::VideoPage &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE FFMpegTexture::VideoPage::
 ~VideoPage() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoPage::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FFMpegTexture::VideoPage::
+operator = (const FFMpegTexture::VideoPage &copy) {
+  _color = copy._color;
+  _alpha = copy._alpha;
 }

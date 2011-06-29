@@ -1,4 +1,4 @@
-// Filename: fileSystemInfo.cxx
+// Filename: subfileInfo.cxx
 // Created by:  drose (20Jun11)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,15 +12,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "fileSystemInfo.h"
+#include "subfileInfo.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FileSystemInfo::output
+//     Function: SubfileInfo::output
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void FileSystemInfo::
+void SubfileInfo::
 output(ostream &out) const {
-  out << "FileSystemInfo(" << _os_file_name << ", " << _file_start
-      << ", " << _file_size << ")";
+  out << "SubfileInfo(" << get_filename() << ", " << _start << ", " << _size << ")";
 }

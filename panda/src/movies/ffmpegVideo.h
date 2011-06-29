@@ -14,11 +14,17 @@
 
 #ifndef FFMPEGVIDEO_H
 #define FFMPEGVIDEO_H
+
+#include "pandabase.h"
+
 #ifdef HAVE_FFMPEG
 
 #include "movieVideo.h"
 
 class FfmpegVideoCursor;
+class FactoryParams;
+class BamWriter;
+class BamReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegVideo
@@ -26,13 +32,20 @@ class FfmpegVideoCursor;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
 
- PUBLISHED:
+PUBLISHED:
   FfmpegVideo(const Filename &name);
+  FfmpegVideo(const SubfileInfo &info);
+
   virtual ~FfmpegVideo();
   virtual PT(MovieVideoCursor) open();
   
- private:
-  friend class FfmpegVideoCursor;
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {
@@ -50,6 +63,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class FfmpegVideoCursor;
 };
 
 #include "ffmpegVideo.I"

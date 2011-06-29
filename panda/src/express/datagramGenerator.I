@@ -15,11 +15,10 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramGenerator::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Does nothing since this is class is just
 //               the definition of an interface
 ////////////////////////////////////////////////////////////////////
-
-INLINE DatagramGenerator::DatagramGenerator(){
+INLINE DatagramGenerator::
+DatagramGenerator() {
 }
-

@@ -14,11 +14,15 @@
 
 #ifndef FFMPEGVIDEOCURSOR_H
 #define FFMPEGVIDEOCURSOR_H
-#ifdef HAVE_FFMPEG
 
 #include "pandabase.h"
+
+#ifdef HAVE_FFMPEG
+
+#include "movieVideoCursor.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "ffmpegVirtualFile.h"
 
 struct AVFormatContext;
 struct AVCodecContext;
@@ -31,17 +35,19 @@ struct AVFrame;
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
-  friend class FfmpegVideo;
+protected:
+  FfmpegVideoCursor();
+  void init_from(FfmpegVideo *src);
 
- PUBLISHED:
+PUBLISHED:
   FfmpegVideoCursor(FfmpegVideo *src);
   virtual ~FfmpegVideoCursor();
   
- public:
+public:
   virtual void fetch_into_texture(double time, Texture *t, int page);
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
 
- protected:
+protected:
   void fetch_packet(double default_time);
   void fetch_frame();
   void seek(double t);
@@ -54,12 +60,23 @@ class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
   double _packet_time;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
-  int    _video_index;
+  FfmpegVirtualFile _ffvfile;
+  int _video_index;
   double _video_timebase;
   AVFrame *_frame;
   AVFrame *_frame_out;
   int _initial_dts;
   double _min_fseek;
+  
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+  virtual void finalize(BamReader *manager);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {
@@ -77,6 +94,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class FfmpegVideo;
 };
 
 #include "ffmpegVideoCursor.I"

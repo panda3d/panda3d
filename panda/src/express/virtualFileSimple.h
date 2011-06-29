@@ -46,7 +46,7 @@ PUBLISHED:
   virtual off_t get_file_size(istream *stream) const;
   virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;
-  virtual bool get_system_info(FileSystemInfo &info);
+  virtual bool get_system_info(SubfileInfo &info);
 
 public:
   virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;

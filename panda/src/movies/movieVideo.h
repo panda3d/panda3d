@@ -19,7 +19,13 @@
 #include "namable.h"
 #include "pointerTo.h"
 #include "typedWritableReferenceCount.h"
+#include "subfileInfo.h"
+#include "filename.h"
+
 class MovieVideoCursor;
+class FactoryParams;
+class BamWriter;
+class BamReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieVideo
@@ -35,17 +41,26 @@ class MovieVideoCursor;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
 
- PUBLISHED:
+PUBLISHED:
   MovieVideo(const string &name = "Blank Video");
   virtual ~MovieVideo();
   virtual PT(MovieVideoCursor) open();
   static PT(MovieVideo) get(const Filename &name);
+
   INLINE const Filename &get_filename() const;
+  INLINE const SubfileInfo &get_subfile_info() const;
   
- protected:
+protected:
   Filename _filename;
+  SubfileInfo _subfile_info;
+
+public:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
- public:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -59,7 +74,7 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
- private:
+private:
   static TypeHandle _type_handle;
 };
 

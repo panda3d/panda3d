@@ -143,7 +143,7 @@ close_read_file(istream *stream) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMount::get_system_info
 //       Access: Public, Virtual
-//  Description: Populates the FileSystemInfo structure with the data
+//  Description: Populates the SubfileInfo structure with the data
 //               representing where the file actually resides on disk,
 //               if this is knowable.  Returns true if the file might
 //               reside on disk, and the info is populated, or false
@@ -151,7 +151,7 @@ close_read_file(istream *stream) const {
 //               resides), in which case the info is meaningless.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMount::
-get_system_info(const Filename &file, FileSystemInfo &info) {
+get_system_info(const Filename &file, SubfileInfo &info) {
   return false;
 }
 

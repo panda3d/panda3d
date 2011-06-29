@@ -14,12 +14,16 @@
 
 #ifndef FFMPEGAUDIOCURSOR_H
 #define FFMPEGAUDIOCURSOR_H
-#ifdef HAVE_FFMPEG
 
 #include "pandabase.h"
+
+#ifdef HAVE_FFMPEG
+
+#include "movieAudioCursor.h"
 #include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "ffmpegVirtualFile.h"
 
 struct AVFormatContext;
 struct AVCodecContext;
@@ -52,6 +56,7 @@ protected:
   unsigned char *_packet_data;
   AVFormatContext *_format_ctx;
   AVCodecContext  *_audio_ctx;
+  FfmpegVirtualFile _ffvfile;
   int _audio_index;
   double _audio_timebase;
 

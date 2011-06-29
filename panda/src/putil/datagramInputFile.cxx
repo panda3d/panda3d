@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "datagramInputFile.h"
+#include "temporaryFile.h"
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
@@ -24,19 +25,22 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated filename for reading.  Returns
 //               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
-open(Filename filename) {
+open(const FileReference *file) {
   close();
 
+  _file = file;
+  _filename = _file->get_filename();
+
   // DatagramInputFiles are always binary.
-  filename.set_binary();
+  _filename.set_binary();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  _vfile = vfs->get_file(filename);
+  _vfile = vfs->get_file(_filename);
   if (_vfile == (VirtualFile *)NULL) {
     // No such file.
     return false;
@@ -48,7 +52,7 @@ open(Filename filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open
-//       Access: Public
+//       Access: Published
 //  Description: Starts reading from the indicated stream.  Returns
 //               true on success, false on failure.  The
 //               DatagramInputFile does not take ownership of the
@@ -56,18 +60,23 @@ open(Filename filename) {
 //               it when you are done.
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
-open(istream &in) {
+open(istream &in, const Filename &filename) {
   close();
 
   _in = &in;
   _owns_in = false;
+  _filename = filename;
+
+  if (!filename.empty()) {
+    _file = new FileReference(filename);
+  }
 
   return !_in->fail();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::close
-//       Access: Public
+//       Access: Published
 //  Description: Closes the file.  This is also implicitly done when
 //               the DatagramInputFile destructs.
 ////////////////////////////////////////////////////////////////////
@@ -82,13 +91,16 @@ close() {
   _in = (istream *)NULL;
   _owns_in = false;
 
+  _file.clear();
+  _filename = Filename();
+
   _read_first_datagram = false;
   _error = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::read_header
-//       Access: Public
+//       Access: Published
 //  Description: Reads a sequence of bytes from the beginning of the
 //               datagram file.  This may be called any number of
 //               times after the file has been opened and before the
@@ -115,7 +127,7 @@ read_header(string &header, size_t num_bytes) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::get_datagram
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Reads the next datagram from the file.  Returns true
 //               on success, false if there is an error or end of
 //               file.
@@ -127,7 +139,7 @@ get_datagram(Datagram &data) {
 
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
-  PN_uint32 num_bytes = reader.get_uint32();
+  size_t num_bytes = reader.get_uint32();
   if (_in->fail() || _in->eof()) {
     return false;
   }
@@ -176,8 +188,89 @@ get_datagram(Datagram &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::save_datagram
+//       Access: Published, Virtual
+//  Description: Skips over the next datagram without extracting it,
+//               but saves the relevant file information in the
+//               SubfileInfo object so that its data may be read
+//               later.  For non-file-based datagram generators, this
+//               may mean creating a temporary file and copying the
+//               contents of the datagram to disk.
+//
+//               Returns true on success, false on failure or if this
+//               method is unimplemented.
+////////////////////////////////////////////////////////////////////
+bool DatagramInputFile::
+save_datagram(SubfileInfo &info) {
+  nassertr(_in != (istream *)NULL, false);
+  _read_first_datagram = true;
+
+  // First, get the size of the upcoming datagram.
+  StreamReader reader(_in, false);
+  size_t num_bytes = reader.get_uint32();
+  if (_in->fail() || _in->eof()) {
+    return false;
+  }
+
+  // If this stream is file-based, we can just point the SubfileInfo
+  // directly into this file.
+  if (_file != (FileReference *)NULL) {
+    info = SubfileInfo(_file, _in->tellg(), num_bytes);
+    _in->seekg(num_bytes, ios::cur);
+    return true;
+  }
+
+  // Otherwise, we have to dump the data into a temporary file.
+  PT(TemporaryFile) tfile = new TemporaryFile(Filename::temporary("", ""));
+  pofstream out;
+  Filename filename = tfile->get_filename();
+  filename.set_binary();
+  if (!filename.open_write(out)) {
+    util_cat.error()
+      << "Couldn't write to " << tfile->get_filename() << "\n";
+    return false;
+  }
+
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "Copying " << num_bytes << " bytes to " << tfile->get_filename() << "\n";
+  }
+
+  size_t num_remaining = num_bytes;
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  _in->read(buffer, min(buffer_size, num_remaining));
+  size_t count = _in->gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      util_cat.error()
+	<< "Couldn't write " << num_bytes << " bytes to " 
+	<< tfile->get_filename() << "\n";
+      return false;
+    }
+    num_remaining -= count;
+    if (num_remaining == 0) {
+      break;
+    }
+    _in->read(buffer, min(buffer_size, num_remaining));
+    count = _in->gcount();
+  }
+
+  if (num_remaining != 0) {
+    util_cat.error()
+      << "Truncated data stream.\n";
+    return false;
+  }
+
+  info = SubfileInfo(tfile, 0, num_bytes);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::is_eof
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if the file has reached the end-of-file.
 //               This test may only be made after a call to
 //               read_header() or get_datagram() has failed.
@@ -189,7 +282,7 @@ is_eof() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::is_error
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if the file has reached an error
 //               condition.
 ////////////////////////////////////////////////////////////////////
@@ -206,20 +299,44 @@ is_error() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_filename
+//       Access: Published, Virtual
+//  Description: Returns the filename that provides the source for
+//               these datagrams, if any, or empty string if the
+//               datagrams do not originate from a file on disk.
+////////////////////////////////////////////////////////////////////
+const Filename &DatagramInputFile::
+get_filename() {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::get_file
-//       Access: Public, Virtual
+//       Access: Published, Virtual
+//  Description: Returns the FileReference that provides the source for
+//               these datagrams, if any, or NULL if the datagrams do
+//               not originate from a file on disk.
+////////////////////////////////////////////////////////////////////
+const FileReference *DatagramInputFile::
+get_file() {
+  return _file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_vfile
+//       Access: Published, Virtual
 //  Description: Returns the VirtualFile that provides the source for
 //               these datagrams, if any, or NULL if the datagrams do
 //               not originate from a VirtualFile.
 ////////////////////////////////////////////////////////////////////
 VirtualFile *DatagramInputFile::
-get_file() {
+get_vfile() {
   return _vfile;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::get_file_pos
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the current file position within the data
 //               stream, if any, or 0 if the file position is not
 //               meaningful or cannot be determined.

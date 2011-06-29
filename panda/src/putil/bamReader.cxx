@@ -39,8 +39,8 @@ const int BamReader::_cur_minor = _bam_minor_ver;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
-BamReader(DatagramGenerator *source, const Filename &name)
-  : _source(source), _filename(name)
+BamReader(DatagramGenerator *source)
+  : _source(source)
 {
   _needs_init = true;
   _num_extra_objects = 0;
@@ -599,7 +599,7 @@ read_handle(DatagramIterator &scan) {
 
     type = TypeRegistry::ptr()->register_dynamic_type(name);
     bam_cat.warning()
-      << "Bam file '" << _filename << "' contains objects of unknown type: " 
+      << "Bam file '" << get_filename() << "' contains objects of unknown type: " 
       << type << "\n";
     new_type = true;
     _new_types.insert(type);
@@ -653,7 +653,7 @@ read_handle(DatagramIterator &scan) {
 //               complete_pointers() callback function will be called
 //               with an array of actual pointers, one for each time
 //               read_pointer() was called.  It is then the calling
-//               object's responsibilty to store these pointers in the
+//               object's responsibility to store these pointers in the
 //               object properly.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
@@ -716,6 +716,30 @@ read_pointers(DatagramIterator &scan, int count) {
 void BamReader::
 skip_pointer(DatagramIterator &scan) {
   read_object_id(scan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_file_data
+//       Access: Public
+//  Description: Reads a block of auxiliary file data from the Bam
+//               file.  This can be a block of arbitrary size, and it
+//               is assumed it may be quite large.  Rather than
+//               reading the entire block into memory, a file
+//               reference is returned to locate the block on disk.
+//               The data must have been written by a matching call to
+//               write_file_data().
+////////////////////////////////////////////////////////////////////
+void BamReader::
+read_file_data(SubfileInfo &info) {
+  // write_file_data() actually writes the blocks in datagrams prior
+  // to this particular datagram.  Assume we get the calls to
+  // read_file_data() in the same order as the corresponding calls to
+  // write_file_data(), and just pop the first one off the
+  // queue. There's no actual data written to the stream at this
+  // point.
+  nassertv(!_file_data_records.empty());
+  info = _file_data_records.front();
+  _file_data_records.pop_front();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -962,7 +986,9 @@ register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *object
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 finalize_now(TypedWritable *whom) {
-  nassertv(whom != (TypedWritable *)NULL);
+  if (whom == (TypedWritable *)NULL) {
+    return;
+  }
 
   Finalize::iterator fi = _finalize_list.find(whom);
   if (fi != _finalize_list.end()) {
@@ -1136,10 +1162,10 @@ read_pta_id(DatagramIterator &scan) {
 ////////////////////////////////////////////////////////////////////
 int BamReader::
 p_read_object() {
-  Datagram packet;
+  Datagram dg;
 
   // First, read a datagram for the object.
-  if (!get_datagram(packet)) {
+  if (!get_datagram(dg)) {
     // When we run out of datagrams, we're at the end of the file.
     if (bam_cat.is_debug()) {
       bam_cat.debug()
@@ -1149,7 +1175,7 @@ p_read_object() {
   }
 
   // Now extract the object definition from the datagram.
-  DatagramIterator scan(packet);
+  DatagramIterator scan(dg);
 
   // First, read the BamObjectCode.  In bam versions prior to 6.21,
   // there was no BamObjectCode in the stream.
@@ -1178,6 +1204,23 @@ p_read_object() {
     // Now that we've freed all of the object id's indicate, read the
     // next object id in the stream.  It's easiest to do this by
     // calling recursively.
+    return p_read_object();
+
+  case BOC_file_data:
+    // Another special case.  This marks an auxiliary file data record
+    // that we skip over for now, but we note its position within the
+    // stream, so that we can hand it to a future object who may
+    // request it.
+    {
+      SubfileInfo info;
+      if (!_source->save_datagram(info)) {
+	bam_cat.error()
+	  << "Failed to read file data.\n";
+	return 0;
+      }
+      _file_data_records.push_back(info);
+    }
+
     return p_read_object();
   }
 

@@ -19,6 +19,7 @@
 
 #include "datagramSink.h"
 #include "filename.h"
+#include "fileReference.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramOutputFile
@@ -30,22 +31,32 @@ class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
 public:
   INLINE DatagramOutputFile();
 
-  bool open(Filename filename);
-  bool open(ostream &out);
+  bool open(const FileReference *file);
+  INLINE bool open(const Filename &filename);
+  bool open(ostream &out, const Filename &filename = Filename());
+  INLINE ostream &get_stream();
 
   void close();
 
   bool write_header(const string &header);
   virtual bool put_datagram(const Datagram &data);
+  virtual bool copy_datagram(SubfileInfo &result, const Filename &filename);
+  virtual bool copy_datagram(SubfileInfo &result, const SubfileInfo &source);
   virtual bool is_error();
   virtual void flush();
+
+  virtual const Filename &get_filename();
+  virtual const FileReference *get_file();
+  virtual streampos get_file_pos();
 
 private:
   bool _wrote_first_datagram;
   bool _error;
+  CPT(FileReference) _file;
   pofstream _out_file;
   ostream *_out;
   bool _owns_out;
+  Filename _filename;
 };
 
 #include "datagramOutputFile.I"

@@ -46,12 +46,15 @@ PUBLISHED:
   // (which does not).  A BOC_adjunct includes an object definition
   // but does not push the level; it is associated with the current
   // level.  BOC_remove lists object ID's that have been deallocated
-  // on the sender end.
+  // on the sender end.  BOC_file_data may appear at any level and
+  // indicates the following datagram contains auxiliary file data
+  // that may be referenced by a later object.
   enum BamObjectCode {
     BOC_push,
     BOC_pop,
     BOC_adjunct,
     BOC_remove,
+    BOC_file_data,
   };
 
   // This enum is used to control how textures are written to a bam

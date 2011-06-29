@@ -25,7 +25,7 @@
 #include "config_audio.h"
 #include "fmodAudioSound.h"
 #include "string_utils.h"
-#include "fileSystemInfo.h"
+#include "subfileInfo.h"
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -104,9 +104,10 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     }
     
     const char *name_or_data = _file_name.c_str();
+    string os_filename;
     
     pvector<unsigned char> mem_buffer;
-    FileSystemInfo info;
+    SubfileInfo info;
     if (preload) {
       // Pre-read the file right now, and pass it in as a memory
       // buffer.  This avoids threading issues completely, because all
@@ -129,9 +130,10 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       // This is also safe, because FMod uses its own I/O operations
       // that don't involve Panda, so this can safely happen in an
       // FMod thread.
-      name_or_data = info.get_os_file_name().c_str();
-      sound_info.fileoffset = (unsigned int)info.get_file_start();
-      sound_info.length = (unsigned int)info.get_file_size();
+      os_filename = info.get_filename().to_os_specific();
+      name_or_data = os_filename.c_str();
+      sound_info.fileoffset = (unsigned int)info.get_start();
+      sound_info.length = (unsigned int)info.get_size();
       flags |= FMOD_CREATESTREAM;
       if (fmodAudio_cat.is_debug()) {
 	fmodAudio_cat.debug()
@@ -144,7 +146,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
       // Otherwise, if the Panda threading system is compiled in, we
       // can assign callbacks to read the file through the VFS.
       name_or_data = (const char *)file.p();
-      sound_info.length = (unsigned int)info.get_file_size();
+      sound_info.length = (unsigned int)info.get_size();
       sound_info.useropen = open_callback;
       sound_info.userclose = close_callback;
       sound_info.userread = read_callback;

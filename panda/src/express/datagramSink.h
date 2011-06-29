@@ -19,6 +19,10 @@
 
 #include "datagram.h"
 
+class SubfileInfo;
+class FileReference;
+class Filename;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramSink
 // Description : This class defines the abstract interface to sending
@@ -31,8 +35,14 @@ PUBLISHED:
   virtual ~DatagramSink();
 
   virtual bool put_datagram(const Datagram &data) = 0;
+  virtual bool copy_datagram(SubfileInfo &result, const Filename &filename);
+  virtual bool copy_datagram(SubfileInfo &result, const SubfileInfo &source);
   virtual bool is_error() = 0;
   virtual void flush() = 0;
+
+  virtual const Filename &get_filename();
+  virtual const FileReference *get_file();
+  virtual streampos get_file_pos();
 };
 
 #include "datagramSink.I"

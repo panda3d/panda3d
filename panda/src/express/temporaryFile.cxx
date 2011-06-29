@@ -1,5 +1,5 @@
-// Filename: ffmpegVirtualFile.I
-// Created by: jyelon (01Aug2007)
+// Filename: temporaryFile.cxx
+// Created by:  drose (23Jun11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,14 +12,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "temporaryFile.h"
+
+TypeHandle TemporaryFile::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::get_format_context
-//       Access: Public
-//  Description: Returns a pointer to the opened ffmpeg context, or
-//               NULL if the file was not successfully opened.
+//     Function: TemporaryFile::Destructor
+//       Access: Published, Virtual
+//  Description: The destructor is responsible for removing the file
+//               if it exists.
 ////////////////////////////////////////////////////////////////////
-INLINE AVFormatContext *FfmpegVirtualFile::
-get_format_context() const {
-  return _format_context;
+TemporaryFile::
+~TemporaryFile() {
+  _filename.unlink();
 }

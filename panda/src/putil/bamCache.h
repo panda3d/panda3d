@@ -97,15 +97,15 @@ private:
 
   void emergency_read_only();
   
-  static BamCacheIndex *do_read_index(Filename &index_pathname);
-  static bool do_write_index(Filename &index_pathname, const BamCacheIndex *index);
+  static BamCacheIndex *do_read_index(const Filename &index_pathname);
+  static bool do_write_index(const Filename &index_pathname, const BamCacheIndex *index);
 
   PT(BamCacheRecord) find_and_read_record(const Filename &source_pathname,
                                           const Filename &cache_filename);
   PT(BamCacheRecord) read_record(const Filename &source_pathname,
                                  const Filename &cache_filename,
                                  int pass);
-  static PT(BamCacheRecord) do_read_record(Filename &cache_pathname, 
+  static PT(BamCacheRecord) do_read_record(const Filename &cache_pathname, 
                                            bool read_data);
 
   static string hash_filename(const string &filename);

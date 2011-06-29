@@ -32,39 +32,69 @@ TypeHandle FfmpegVideoCursor::_type_handle;
   #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
 #endif
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::Constructor
-//       Access: Public
-//  Description: xxx
+//     Function: FfmpegVideoCursor::Default Constructor
+//       Access: Protected
+//  Description: This constructor is only used when reading from a bam
+//               file.
 ////////////////////////////////////////////////////////////////////
 FfmpegVideoCursor::
-FfmpegVideoCursor(FfmpegVideo *src) :
-  MovieVideoCursor(src),
-  _filename(src->_filename),
-  _format_ctx(0),
+FfmpegVideoCursor() :
+  _packet(NULL),
+  _format_ctx(NULL),
+  _video_ctx(NULL),
   _video_index(-1),
-  _video_ctx(0),
-  _frame(0),
-  _frame_out(0),
-  _packet(0),
+  _frame(NULL),
+  _frame_out(NULL),
   _min_fseek(3.0)
 {
-  string url = "pandavfs:";
-  url += _filename;
-  if (av_open_input_file(&_format_ctx, url.c_str(), NULL, 0, NULL)!=0) {
-    cleanup();
-    return;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::init_from
+//       Access: Protected
+//  Description: Specifies the source of the video cursor.  This is
+//               normally called only by the constructor or when
+//               reading from a bam file.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+init_from(FfmpegVideo *source) {
+  nassertv(source != NULL);
+  _source = source;
+  _filename = _source->get_filename();
+
+  if (!_source->get_subfile_info().is_empty()) {
+    // Read a subfile.
+    if (!_ffvfile.open_subfile(_source->get_subfile_info())) {
+      movies_cat.info() 
+	<< "Couldn't open " << _source->get_subfile_info() << "\n";
+      cleanup();
+      return;
+    }
+
+  } else {
+    // Read a filename.
+    if (!_ffvfile.open_vfs(_filename)) {
+      movies_cat.info() 
+	<< "Couldn't open " << _filename << "\n";
+      cleanup();
+      return;
+    }
   }
-  
-  if (av_find_stream_info(_format_ctx)<0) {
+
+  _format_ctx = _ffvfile.get_format_context();
+  nassertv(_format_ctx != NULL);
+
+  if (av_find_stream_info(_format_ctx) < 0) {
+    movies_cat.info() 
+      << "Couldn't find stream info\n";
     cleanup();
     return;
   }
   
   // Find the video stream
-  for(int i = 0; i < (int)_format_ctx->nb_streams; i++) {
-    if(_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+  for (int i = 0; i < (int)_format_ctx->nb_streams; ++i) {
+    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
       _video_index = i;
       _video_ctx = _format_ctx->streams[i]->codec;
       _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
@@ -72,16 +102,22 @@ FfmpegVideoCursor(FfmpegVideo *src) :
   }
   
   if (_video_ctx == 0) {
+    movies_cat.info() 
+      << "Couldn't find video_ctx\n";
     cleanup();
     return;
   }
 
-  AVCodec *pVideoCodec=avcodec_find_decoder(_video_ctx->codec_id);
-  if(pVideoCodec == 0) {
+  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+  if (pVideoCodec == NULL) {
+    movies_cat.info() 
+      << "Couldn't find codec\n";
     cleanup();
     return;
   }
-  if(avcodec_open(_video_ctx, pVideoCodec)<0) {
+  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
+    movies_cat.info() 
+      << "Couldn't open codec\n";
     cleanup();
     return;
   }
@@ -110,6 +146,24 @@ FfmpegVideoCursor(FfmpegVideo *src) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FfmpegVideoCursor::
+FfmpegVideoCursor(FfmpegVideo *src) :
+  _packet(NULL),
+  _format_ctx(NULL),
+  _video_ctx(NULL),
+  _video_index(-1),
+  _frame(NULL),
+  _frame_out(NULL),
+  _min_fseek(3.0)
+{
+  init_from(src);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::Destructor
 //       Access: Public
 //  Description: xxx
@@ -128,31 +182,34 @@ void FfmpegVideoCursor::
 cleanup() {
   if (_frame) {
     av_free(_frame);
-    _frame = 0;
+    _frame = NULL;
   }
+
   if (_frame_out) {
     _frame_out->data[0] = 0;
     av_free(_frame_out);
-    _frame_out = 0;
+    _frame_out = NULL;
   }
+
   if (_packet) {
     if (_packet->data) {
       av_free_packet(_packet);
     }
     delete _packet;
-    _packet = 0;
+    _packet = NULL;
   }
+
   if ((_video_ctx)&&(_video_ctx->codec)) {
     avcodec_close(_video_ctx);
   }
-  _video_ctx = 0;
-  if (_format_ctx) {
-    av_close_input_file(_format_ctx);
-    _format_ctx = 0;
-  }
-  _video_ctx = 0;
-  _video_index = -1;
+  _video_ctx = NULL;
 
+  if (_format_ctx) {
+    _ffvfile.close();
+    _format_ctx = NULL;
+  }
+
+  _video_index = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +228,7 @@ export_frame(unsigned char *data, bool bgra, int bufx) {
 #ifdef HAVE_SWSCALE
     struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
                                _video_ctx->pix_fmt, _size_x, _size_y,
-                               PIX_FMT_BGRA, 2, NULL, NULL, NULL);
+                               PIX_FMT_BGRA, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     nassertv(convert_ctx != NULL);
     sws_scale(convert_ctx, _frame->data, _frame->linesize,
               0, _size_y, _frame_out->data, _frame_out->linesize);
@@ -186,7 +243,7 @@ export_frame(unsigned char *data, bool bgra, int bufx) {
 #ifdef HAVE_SWSCALE
     struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
                                _video_ctx->pix_fmt, _size_x, _size_y,
-                               PIX_FMT_BGR24, 2, NULL, NULL, NULL);
+                               PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     nassertv(convert_ctx != NULL);
     sws_scale(convert_ctx, _frame->data, _frame->linesize,
               0, _size_y, _frame_out->data, _frame_out->linesize);
@@ -385,5 +442,82 @@ fetch_into_buffer(double time, unsigned char *data, bool bgra) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               FfmpegVideo.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  MovieVideoCursor::write_datagram(manager, dg);
+
+  // No need to write any additional data here--all of it comes
+  // implicitly from the underlying MovieVideo, which we process in
+  // finalize().
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+finalize(BamReader *) {
+  if (_source != (MovieVideo *)NULL) {
+    FfmpegVideo *video;
+    DCAST_INTO_V(video, _source);
+    init_from(video);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type FfmpegVideo is encountered
+//               in the Bam file.  It should create the FfmpegVideo
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *FfmpegVideoCursor::
+make_from_bam(const FactoryParams &params) {
+  FfmpegVideoCursor *video = new FfmpegVideoCursor;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  video->fillin(scan, manager);
+
+  return video;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new FfmpegVideo.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  MovieVideoCursor::fillin(scan, manager);
+  
+  // The MovieVideoCursor gets the underlying MovieVideo pointer.  We
+  // need a finalize callback so we can initialize ourselves once that
+  // has been read completely.
+  manager->register_finalize(this);
+}
 
 #endif // HAVE_FFMPEG

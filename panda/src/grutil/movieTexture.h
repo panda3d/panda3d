@@ -34,7 +34,7 @@
 class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
   MovieTexture(const string &name);
-  MovieTexture(PT(MovieVideo) video);
+  MovieTexture(MovieVideo *video);
 private:
   MovieTexture(const MovieTexture &copy);
 PUBLISHED:
@@ -71,6 +71,8 @@ protected:
 
   virtual void do_reload_ram_image();
   virtual bool get_keep_ram_image() const;
+  virtual bool do_has_bam_rawdata() const;
+  virtual void do_get_bam_rawdata();
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            const LoaderOptions &options,
@@ -82,7 +84,6 @@ protected:
 
   class VideoPage {
   public:
-    VideoPage();
     PT(MovieVideoCursor) _color;
     PT(MovieVideoCursor) _alpha;
   };
@@ -119,6 +120,13 @@ protected:
 
 public:
   static void register_with_read_factory();
+
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual void do_write_datagram_rawdata(BamWriter *manager, Datagram &dg);
+  virtual void do_fillin_rawdata(DatagramIterator &scan, BamReader *manager);
+
+  virtual void finalize(BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

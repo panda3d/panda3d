@@ -299,7 +299,7 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
         return false;
       }
 
-      BamWriter writer(&dout, "bam_stream");
+      BamWriter writer(&dout);
       if (!writer.init()) {
         return false;
       }
@@ -371,7 +371,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
       return false;
     }
 
-    BamReader reader(&din, "bam_stream");
+    BamReader reader(&din);
     if (!reader.init()) {
       return false;
     }

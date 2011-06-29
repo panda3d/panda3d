@@ -21,21 +21,6 @@
 #include "configVariableDouble.h"
 #include "dconfig.h"
 
-#include "movieVideo.h"
-#include "movieVideoCursor.h"
-
-#include "movieAudio.h"
-#include "movieAudioCursor.h"
-
-#include "inkblotVideo.h"
-#include "inkblotVideoCursor.h"
-
-#include "ffmpegVideo.h"
-#include "ffmpegVideoCursor.h"
-
-#include "ffmpegAudio.h"
-#include "ffmpegAudioCursor.h"
-
 ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(ffmpeg, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);

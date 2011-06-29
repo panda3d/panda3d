@@ -19,6 +19,7 @@
 
 #include "datagramGenerator.h"
 #include "filename.h"
+#include "fileReference.h"
 #include "virtualFile.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -28,29 +29,36 @@
 //               of datagrams.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL DatagramInputFile : public DatagramGenerator {
-public:
+PUBLISHED:
   INLINE DatagramInputFile();
 
-  bool open(Filename filename);
-  bool open(istream &in);
+  bool open(const FileReference *file);
+  INLINE bool open(const Filename &filename);
+  bool open(istream &in, const Filename &filename = Filename());
+  INLINE istream &get_stream();
 
   void close();
 
   bool read_header(string &header, size_t num_bytes);
   virtual bool get_datagram(Datagram &data);
+  virtual bool save_datagram(SubfileInfo &info);
   virtual bool is_eof();
   virtual bool is_error();
 
-  virtual VirtualFile *get_file();
+  virtual const Filename &get_filename();
+  virtual const FileReference *get_file();
+  virtual VirtualFile *get_vfile();
   virtual streampos get_file_pos();
 
 private:
   bool _read_first_datagram;
   bool _error;
+  CPT(FileReference) _file;
   PT(VirtualFile) _vfile;
   pifstream _in_file;
   istream *_in;
   bool _owns_in;
+  Filename _filename;
 };
 
 #include "datagramInputFile.I"

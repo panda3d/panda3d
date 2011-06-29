@@ -19,21 +19,24 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::open
 //       Access: Public
-//  Description: Opens the indicated filename for reading.  Returns
+//  Description: Opens the indicated filename for writing.  Returns
 //               true if successful, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DatagramOutputFile::
-open(Filename filename) {
+open(const FileReference *file) {
   close();
 
+  _file = file;
+  _filename = _file->get_filename();
+
   // DatagramOutputFiles are always binary.
-  filename.set_binary();
+  _filename.set_binary();
 
   _out = &_out_file;
   _owns_out = false;
 
 #ifdef HAVE_ZLIB
-  if (filename.get_extension() == "pz") {
+  if (_filename.get_extension() == "pz") {
     // The filename ends in .pz, which means to automatically
     // compress the bam file that we write.
     _out = new OCompressStream(_out, _owns_out);
@@ -41,7 +44,7 @@ open(Filename filename) {
   }
 #endif  // HAVE_ZLIB
 
-  return filename.open_write(_out_file);
+  return _filename.open_write(_out_file);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,11 +57,16 @@ open(Filename filename) {
 //               it when you are done.
 ////////////////////////////////////////////////////////////////////
 bool DatagramOutputFile::
-open(ostream &out) {
+open(ostream &out, const Filename &filename) {
   close();
 
   _out = &out;
   _owns_out = false;
+  _filename = filename;
+
+  if (!filename.empty()) {
+    _file = new FileReference(filename);
+  }
 
   return !_out->fail();
 }
@@ -77,6 +85,9 @@ close() {
   _out_file.close();
   _out = (ostream *)NULL;
   _owns_out = false;
+
+  _file.clear();
+  _filename = Filename();
 
   _wrote_first_datagram = false;
   _error = false;
@@ -124,6 +135,130 @@ put_datagram(const Datagram &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::copy_datagram
+//       Access: Published, Virtual
+//  Description: Copies the file data from the entire indicated
+//               file (via the vfs) as the next datagram.  This is
+//               intended to support potentially very large datagrams.
+//
+//               Returns true on success, false on failure or if this
+//               method is unimplemented.  On true, fills "result"
+//               with the information that references the copied file,
+//               if possible.
+////////////////////////////////////////////////////////////////////
+bool DatagramOutputFile::
+copy_datagram(SubfileInfo &result, const Filename &filename) {
+  nassertr(_out != (ostream *)NULL, false);
+  _wrote_first_datagram = true;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vfile = vfs->get_file(filename);
+  if (vfile == NULL) {
+    return false;
+  }
+  istream *in = vfile->open_read_file(true);
+  if (in == NULL) {
+    return false;
+  }
+
+  off_t size = vfile->get_file_size(in);
+  size_t num_remaining = (size_t)size;
+  nassertr(num_remaining == size, false);
+
+  StreamWriter writer(_out, false);
+  writer.add_uint32(num_remaining);
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+
+  streampos start = _out->tellp();
+  in->read(buffer, min(buffer_size, num_remaining));
+  size_t count = in->gcount();
+  while (count != 0) {
+    _out->write(buffer, count);
+    if (_out->fail()) {
+      vfile->close_read_file(in);
+      return false;
+    }
+    num_remaining -= count;
+    if (num_remaining == 0) {
+      break;
+    }
+    in->read(buffer, min(buffer_size, num_remaining));
+    count = in->gcount();
+  }
+
+  vfile->close_read_file(in);
+
+  if (num_remaining != 0) {
+    util_cat.error()
+      << "Truncated input stream.\n";
+    return false;
+  }
+  
+  result = SubfileInfo(_file, start, size);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::copy_datagram
+//       Access: Published, Virtual
+//  Description: Copies the file data from the range of the indicated
+//               file (outside of the vfs) as the next datagram.  This
+//               is intended to support potentially very large
+//               datagrams.
+//
+//               Returns true on success, false on failure or if this
+//               method is unimplemented.  On true, fills "result"
+//               with the information that references the copied file,
+//               if possible.
+////////////////////////////////////////////////////////////////////
+bool DatagramOutputFile::
+copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
+  nassertr(_out != (ostream *)NULL, false);
+  _wrote_first_datagram = true;
+
+  pifstream in;
+  if (!source.get_filename().open_read(in)) {
+    return false;
+  }
+
+  size_t num_remaining = source.get_size();
+
+  StreamWriter writer(_out, false);
+  writer.add_uint32(num_remaining);
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  streampos start = _out->tellp();
+  in.seekg(source.get_start());
+  in.read(buffer, min(buffer_size, num_remaining));
+  size_t count = in.gcount();
+  while (count != 0) {
+    _out->write(buffer, count);
+    if (_out->fail()) {
+      return false;
+    }
+    num_remaining -= count;
+    if (num_remaining == 0) {
+      break;
+    }
+    in.read(buffer, min(buffer_size, num_remaining));
+    count = in.gcount();
+  }
+
+  if (num_remaining != 0) {
+    util_cat.error()
+      << "Truncated input stream.\n";
+    return false;
+  }
+
+  result = SubfileInfo(_file, start, source.get_size());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::is_error
 //       Access: Public, Virtual
 //  Description: Returns true if the file has reached an error
@@ -152,4 +287,49 @@ flush() {
   if (_out != (ostream *)NULL) {
     _out->flush();
   }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::get_filename
+//       Access: Published, Virtual
+//  Description: Returns the filename that provides the target for
+//               these datagrams, if any, or empty string if the
+//               datagrams do not get written to a file on disk.
+////////////////////////////////////////////////////////////////////
+const Filename &DatagramOutputFile::
+get_filename() {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::get_file
+//       Access: Published, Virtual
+//  Description: Returns the FileReference that provides the target for
+//               these datagrams, if any, or NULL if the datagrams do
+//               not written to a file on disk.
+////////////////////////////////////////////////////////////////////
+const FileReference *DatagramOutputFile::
+get_file() {
+  return _file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::get_file_pos
+//       Access: Published, Virtual
+//  Description: Returns the current file position within the data
+//               stream, if any, or 0 if the file position is not
+//               meaningful or cannot be determined.
+//
+//               For DatagramOutputFiles that return a meaningful file
+//               position, this will be pointing to the first byte
+//               following the datagram returned after a call to
+//               put_datagram().
+////////////////////////////////////////////////////////////////////
+streampos DatagramOutputFile::
+get_file_pos() {
+  if (_out == (ostream *)NULL) {
+    return 0;
+  }
+  return _out->tellp();
 }

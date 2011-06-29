@@ -25,6 +25,8 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountSystem.h"
 #include "virtualFileSimple.h"
+#include "fileReference.h"
+#include "temporaryFile.h"
 #include "pandaSystem.h"
 #include "numeric_types.h"
 #include "namable.h"
@@ -98,6 +100,8 @@ init_libexpress() {
   VirtualFileMountMultifile::init_type();
   VirtualFileMountSystem::init_type();
   VirtualFileSimple::init_type();
+  FileReference::init_type();
+  TemporaryFile::init_type();
 
   init_system_type_handles();
 

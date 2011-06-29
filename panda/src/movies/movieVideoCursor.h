@@ -18,7 +18,11 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
+
 class MovieVideo;
+class FactoryParams;
+class BamWriter;
+class BamReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieVideoCursor
@@ -35,9 +39,10 @@ class MovieVideo;
 //               use separate MovieVideoCursor objects.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
+protected:
+  MovieVideoCursor(MovieVideo *src = NULL);
 
- PUBLISHED:
-  MovieVideoCursor(MovieVideo *src);
+PUBLISHED:
   virtual ~MovieVideoCursor();
   PT(MovieVideo) get_source() const;
   INLINE int size_x() const;
@@ -57,14 +62,14 @@ class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
   virtual void fetch_into_texture_rgb(double time, Texture *t, int page);
   virtual void fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src);
 
- public:
+public:
   virtual void fetch_into_buffer(double time, unsigned char *block, bool bgra);
   
- private:
+private:
   void allocate_conversion_buffer();
   unsigned char *_conversion_buffer;
   
- protected:
+protected:
   PT(MovieVideo) _source;
   int _size_x;
   int _size_y;
@@ -77,6 +82,13 @@ class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
   double _next_start;
   bool _streaming;
   bool _ready;
+
+public:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {

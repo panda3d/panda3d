@@ -25,3 +25,26 @@ DatagramOutputFile() {
   _out = (ostream *)NULL;
   _owns_out = false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::open
+//       Access: Published
+//  Description: Opens the indicated filename for writing.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool DatagramOutputFile::
+open(const Filename &filename) {
+  return open(new FileReference(filename));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::get_stream
+//       Access: Published
+//  Description: Returns the ostream represented by the output file.
+////////////////////////////////////////////////////////////////////
+INLINE ostream &DatagramOutputFile::
+get_stream() {
+  static ofstream null_stream;
+  nassertr(_out != NULL, null_stream);
+  return *_out;
+}

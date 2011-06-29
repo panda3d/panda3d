@@ -14,6 +14,9 @@
 
 #include "movieVideo.h"
 #include "config_movies.h"
+#include "ffmpegVideo.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle MovieVideo::_type_handle;
 
@@ -43,11 +46,12 @@ MovieVideo::
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::open
 //       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
+//  Description: Open this video, returning a MovieVideoCursor of the
+//               appropriate type.  Returns NULL on error.
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideoCursor) MovieVideo::
 open() {
-  return new MovieVideoCursor(this);
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,3 +70,57 @@ get(const Filename &name) {
 #endif
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritableReferenceCount::write_datagram(manager, dg);
+  dg.add_string(_filename);
+  
+  // Now we record the raw movie data directly into the bam stream.
+  // We always do this, regardless of bam-texture-mode; we generally
+  // won't get to this codepath if bam-texture-mode isn't rawdata
+  // anyway.
+
+  SubfileInfo result;
+  if (!_subfile_info.is_empty()) {
+    dg.add_bool(true);
+    manager->write_file_data(result, _subfile_info);
+  } else if (!_filename.empty()) {
+    dg.add_bool(true);
+    manager->write_file_data(result, _filename);
+  } else {
+    dg.add_bool(false);
+  }
+
+  /* Not sure yet if this is a good idea.
+  if (!result.is_empty()) {
+    // If we've just copied the data to a local file, read it from
+    // there in the future.
+    _subfile_info = result;
+  }
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new MovieVideo.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritableReferenceCount::fillin(scan, manager);
+  _filename = scan.get_string();
+
+  bool got_info = scan.get_bool();
+  if (got_info) {
+    manager->read_file_data(_subfile_info);
+  }
+}

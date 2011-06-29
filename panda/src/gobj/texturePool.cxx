@@ -264,12 +264,48 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     // cache; it needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading texture " << filename << "\n";
-    tex = make_texture(filename.get_extension());
-    if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
-                   0, 0, false, read_mipmaps, record, options)) {
-      // This texture was not found or could not be read.
-      report_texture_unreadable(filename);
-      return NULL;
+
+    string ext = downcase(filename.get_extension());
+    if (ext == "txo" || ext == "bam") {
+      // Assume this is a txo file, which might conceivably contain a
+      // movie file or some other subclass of Texture.  In that case,
+      // use make_from_txo() to load it instead of read().
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+      filename.set_binary();
+      PT(VirtualFile) file = vfs->get_file(filename);
+      if (file == (VirtualFile *)NULL) {
+	// No such file.
+	gobj_cat.error()
+	  << "Could not find " << filename << "\n";
+	return false;
+      }
+
+      if (gobj_cat.is_debug()) {
+	gobj_cat.debug()
+	  << "Reading texture object " << filename << "\n";
+      }
+
+      istream *in = file->open_read_file(true);
+      tex = Texture::make_from_txo(*in, filename);
+      vfs->close_read_file(in);
+
+      if (tex == (Texture *)NULL) {
+	return false;
+      }
+      tex->set_fullpath(filename);
+      tex->clear_alpha_fullpath();
+      tex->set_keep_ram_image(false);
+	
+    } else {
+      // Read it the conventional way.
+      tex = make_texture(ext);
+      if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
+		     0, 0, false, read_mipmaps, record, options)) {
+	// This texture was not found or could not be read.
+	report_texture_unreadable(filename);
+	return NULL;
+      }
     }
 
     if (options.get_texture_flags() & LoaderOptions::TF_preload_simple) {
@@ -322,7 +358,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     _textures[filename] = tex;
   }
 
-  if (store_record && tex->has_ram_image()) {
+  if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, tex);
     cache->store(record);
@@ -454,7 +490,7 @@ ns_load_texture(const Filename &orig_filename,
     _textures[filename] = tex;
   }
 
-  if (store_record && tex->has_ram_image()) {
+  if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, tex);
     cache->store(record);
@@ -566,7 +602,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
     _textures[filename] = tex;
   }
 
-  if (store_record && tex->has_ram_image()) {
+  if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, tex);
     cache->store(record);
@@ -672,7 +708,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
     _textures[unique_filename] = tex;
   }
 
-  if (store_record && tex->has_ram_image()) {
+  if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, tex);
     cache->store(record);
@@ -771,7 +807,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     _textures[filename] = tex;
   }
 
-  if (store_record && tex->has_ram_image()) {
+  if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, tex);
     cache->store(record);

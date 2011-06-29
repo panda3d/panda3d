@@ -85,7 +85,7 @@ PUBLISHED:
   static void write(ostream &out);
 
 public:
-  typedef PT(Texture) MakeTextureFunc();
+  typedef Texture::MakeTextureFunc MakeTextureFunc;
   void register_texture_type(MakeTextureFunc *func, const string &extensions);
   void register_filter(TexturePoolFilter *filter);
   

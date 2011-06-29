@@ -63,6 +63,8 @@ struct DDSHeader;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
+  typedef PT(Texture) MakeTextureFunc();
+
   enum TextureType {
     TT_1d_texture,
     TT_2d_texture,
@@ -244,9 +246,10 @@ PUBLISHED:
   INLINE bool write(const Filename &fullpath, int z, int n, 
                     bool write_pages, bool write_mipmaps);
 
-  bool read_txo(istream &in, const string &filename = "stream");
-  bool write_txo(ostream &out, const string &filename = "stream") const;
-  bool read_dds(istream &in, const string &filename = "stream", bool header_only = false);
+  bool read_txo(istream &in, const string &filename = "");
+  static PT(Texture) make_from_txo(istream &in, const string &filename = "");
+  bool write_txo(ostream &out, const string &filename = "") const;
+  bool read_dds(istream &in, const string &filename = "", bool header_only = false);
 
   INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
   INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
@@ -328,6 +331,7 @@ PUBLISHED:
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
+  virtual bool is_cacheable() const;
 
   INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                  QualityLevel quality_level = QL_default,
@@ -589,6 +593,9 @@ protected:
   virtual bool do_can_reload();
   bool do_reload();
 
+  virtual bool do_has_bam_rawdata() const;
+  virtual void do_get_bam_rawdata();
+
   // This nested class declaration is used below.
   class RamImage {
   public:
@@ -790,10 +797,17 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);
 
+  virtual void finalize(BamReader *manager);
+
 protected:
+  void do_write_datagram_header(BamWriter *manager, Datagram &me, bool &has_rawdata);
+  virtual void do_write_datagram_body(BamWriter *manager, Datagram &me);
+  virtual void do_write_datagram_rawdata(BamWriter *manager, Datagram &me);
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  void fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata);
-  void fillin_from(Texture *dummy);
+  virtual TypedWritable *make_this_from_bam(const FactoryParams &params);
+  virtual void do_fillin_body(DatagramIterator &scan, BamReader *manager);
+  virtual void do_fillin_rawdata(DatagramIterator &scan, BamReader *manager);
+  virtual void do_fillin_from(Texture *dummy);
 
 public:
   static TypeHandle get_class_type() {

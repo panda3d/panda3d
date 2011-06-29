@@ -21,6 +21,7 @@
 #include "config_grutil.h"
 #include "bamCacheRecord.h"
 #include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle FFMpegTexture::_type_handle;
 
@@ -96,7 +97,7 @@ do_assign(const FFMpegTexture &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFMPegTexture::modify_page
+//     Function: FFMpegTexture::modify_page
 //       Access: Private
 //  Description: Returns a reference to the zth VideoPage (level) of
 //               the texture.  In the case of a 2-d texture, there is
@@ -142,8 +143,8 @@ do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
     num_frames = (int)((stream._format_context->duration*frame_rate)/AV_TIME_BASE);
     if (grutil_cat.is_debug()) {
       grutil_cat.debug()
-        << "Loaded " << stream._filename << ", " << num_frames << " frames at "
-        << frame_rate << " fps\n";
+        << "Loaded " << stream._filename << ", "
+	<< num_frames << " frames at " << frame_rate << " fps\n";
     }
   }
   
@@ -202,7 +203,7 @@ make_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFMPegTexture::update_frame
+//     Function: FFMpegTexture::update_frame
 //       Access: Protected, Virtual
 //  Description: Called once per frame, as needed, to load the new
 //               image contents.
@@ -419,6 +420,30 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
   return Texture::do_load_one(pnmimage, name, z, n, options);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_has_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: Returns true if there is a rawdata image that we have
+//               available to write to the bam stream.  For a normal
+//               Texture, this is the same thing as
+//               do_has_ram_image(), but a movie texture might define
+//               it differently.
+////////////////////////////////////////////////////////////////////
+bool FFMpegTexture::
+do_has_bam_rawdata() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_get_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: If do_has_bam_rawdata() returned false, this attempts
+//               to reload the rawdata image if possible.
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_get_bam_rawdata() {
+}
+
 
 
 
@@ -429,18 +454,75 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
 ////////////////////////////////////////////////////////////////////
 void FFMpegTexture::
 register_with_read_factory() {
-  // Since Texture is such a funny object that is reloaded from the
-  // TexturePool each time, instead of actually being read fully from
-  // the bam file, and since the VideoTexture and FFMpegTexture
-  // classes don't really add any useful data to the bam record, we
-  // don't need to define make_from_bam(), fillin(), or
-  // write_datagram() in this class--we just inherit the same
-  // functions from Texture.
-
-  // We do, however, have to register this class with the BamReader,
-  // to avoid warnings about creating the wrong kind of object from
-  // the bam file.
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::make_from_bam
+//       Access: Protected, Static
+//  Description: Factory method to generate an FFMpegTexture object
+////////////////////////////////////////////////////////////////////
+TypedWritable *FFMpegTexture::
+make_from_bam(const FactoryParams &params) {
+  PT(FFMpegTexture) dummy = new FFMpegTexture;
+  return dummy->make_this_from_bam(params);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_write_datagram_rawdata
+//       Access: Protected, Virtual
+//  Description: Writes the rawdata part of the texture to the
+//               Datagram.
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
+  me.add_uint32(_x_size);
+  me.add_uint32(_y_size);
+  me.add_uint32(_z_size);
+  me.add_uint8(_component_type);
+  me.add_uint8(_component_width);
+  me.add_uint8(_ram_image_compression);
+
+  me.add_uint16(_pages.size());
+  for (size_t n = 0; n < _pages.size(); ++n) {
+    VideoPage &page = _pages[n];
+    page.write_datagram_rawdata(manager, me);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_fillin_rawdata
+//       Access: Protected, Virtual
+//  Description: Reads in the part of the Texture that was written
+//               with do_write_datagram_rawdata().
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+  _x_size = scan.get_uint32();
+  _y_size = scan.get_uint32();
+  _z_size = scan.get_uint32();
+  _component_type = (ComponentType)scan.get_uint8();
+  _component_width = scan.get_uint8();
+  _ram_image_compression = CM_off;
+  _ram_image_compression = (CompressionMode)scan.get_uint8();
+  
+  int num_pages = scan.get_uint16();
+  _pages.clear();
+  for (int n = 0; n < num_pages; ++n) {
+    _pages.push_back(VideoPage());
+    VideoPage &page = _pages.back();
+    page.fillin_rawdata(scan, manager);
+
+    LoaderOptions options;
+    do_reconsider_video_properties(page._color, _num_components, n, options);
+    if (page._alpha.is_valid()) {
+      do_reconsider_video_properties(page._alpha, _num_components, n, options);
+    }
+  }
+
+  _loaded_from_image = true;
+  do_set_pad_size(0, 0, 0);
+  ++_image_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,21 +556,43 @@ VideoStream(const FFMpegTexture::VideoStream &copy) :
 {
   // Rather than copying the _capture pointer, we must open a new
   // stream that references the same file.
-  if (copy.is_valid()) {
-    if (copy.is_from_file()) {
+  if (copy.is_valid() && copy.is_from_file()) {
+    if (copy._file_info.is_empty()) {
       read(copy._filename);
+    } else {
+      read(copy._file_info);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFMpegTexture::VideoStream::Copy Constructor
+//     Function: FFMpegTexture::VideoStream::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::VideoStream::
 ~VideoStream() {
   clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoStream::
+operator = (const FFMpegTexture::VideoStream &copy) {
+  clear();
+
+  // Rather than copying the _capture pointer, we must open a new
+  // stream that references the same file.
+  if (copy.is_valid() && copy.is_from_file()) {
+    if (copy._file_info.is_empty()) {
+      read(copy._filename);
+    } else {
+      read(copy._file_info);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -546,7 +650,7 @@ get_frame_data(int frame_number) {
 
     double time_stamp = ((double)AV_TIME_BASE * frame_number * vstream->r_frame_rate.den) / vstream->r_frame_rate.num;
     double curr_time_stamp;
-    
+
     // find point in time
     av_seek_frame(_format_context, -1, (long long)time_stamp,
                   AVSEEK_FLAG_BACKWARD);
@@ -638,32 +742,147 @@ get_frame_data(int frame_number) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::VideoStream::read
 //       Access: Public
-//  Description: Sets up the stream to read the indicated file.
-//               Returns true on success, false on failure.
+//  Description: Sets up the stream to read the indicated file from
+//               the VFS.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::VideoStream::
 read(const Filename &filename) {
   // Clear out the last stream
   clear();
   
-  string os_specific = filename.to_os_specific();
   // Open video file
-  int result = av_open_input_file(&_format_context, os_specific.c_str(), NULL, 
-                                  0, NULL);
-  if (result != 0) {
-    grutil_cat.error() << "ffmpeg AVERROR: " << result << endl;
+  if (!_ffvfile.open_vfs(filename)) {
+    grutil_cat.error()
+      << "couldn't open " << filename << "\n";
     // Don't call clear(), because nothing happened yet
     return false;
   }
 
+  _filename = filename;
+  return continue_read();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::read
+//       Access: Public
+//  Description: Sets up the stream to read the indicated file,
+//               avoiding the VFS.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool FFMpegTexture::VideoStream::
+read(const SubfileInfo &info) {
+  // Clear out the last stream
+  clear();
+  
+  // Open video file
+  if (!_ffvfile.open_subfile(info)) {
+    grutil_cat.error()
+      << "couldn't open " << info << "\n";
+    // Don't call clear(), because nothing happened yet
+    return false;
+  }
+
+  _file_info = info;
+  _filename = _file_info.get_filename();
+  return continue_read();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::clear
+//       Access: Public
+//  Description: Stops the video playback and frees the associated
+//               resources.
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoStream::
+clear() {
+  if (_codec_context) {
+    avcodec_close(_codec_context);
+    _codec_context = NULL;
+  }
+
+  if (_frame) {
+    av_free(_frame);
+    _frame = NULL;
+  }
+  if (_frame_out) {
+    av_free(_frame_out);
+    _frame_out = NULL;
+  }
+
+  // We cannot close the format_context, since we didn't open it--the
+  // FfmpegVirtualFile will do that.
+  _format_context = NULL;
+
+  _next_frame_number = 0;
+  _filename = Filename();
+  _file_info = SubfileInfo();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::write_datagram_rawdata
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoStream::
+write_datagram_rawdata(BamWriter *manager, Datagram &me) {
+  SubfileInfo result;
+  if (!_file_info.is_empty()) {
+    me.add_bool(true);
+    manager->write_file_data(result, _file_info);
+  } else if (!_filename.empty()) {
+    me.add_bool(true);
+    manager->write_file_data(result, _filename);
+  } else {
+    me.add_bool(false);
+  }
+
+  /* Not sure yet if this is a good idea.
+  if (!result.is_empty()) {
+    // If we've just copied the data to a local file, read it from
+    // there in the future.
+    _file_info = result;
+  }
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::fillin_rawdata
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoStream::
+fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+  bool got_info = scan.get_bool();
+  if (got_info) {
+    SubfileInfo info;
+    manager->read_file_data(info);
+    read(info);
+  } else {
+    clear();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoStream::continue_read
+//       Access: Private
+//  Description: Once the FfmpegVirtualFile has been opened, continues
+//               to make the appropriate ffmpeg calls to open the
+//               stream.
+////////////////////////////////////////////////////////////////////
+bool FFMpegTexture::VideoStream::
+continue_read() {
+  _format_context = _ffvfile.get_format_context();
+  nassertr(_format_context != NULL, false);
+
   // Retrieve stream information
-  result = av_find_stream_info(_format_context);
+  int result = av_find_stream_info(_format_context);
   if (result < 0) {
     grutil_cat.error() << "ffmpeg AVERROR: " << result << endl;
     clear();
     return false;
   }
-  dump_format(_format_context, 0, os_specific.c_str(), false);
+  dump_format(_format_context, 0, _filename.c_str(), false);
   
   _stream_number = -1;
   for(size_t i = 0; i < _format_context->nb_streams; i++) {
@@ -752,40 +971,10 @@ read(const Filename &filename) {
   // We could put an option here for single channel frames.
   
   _next_frame_number = 0;
-  _filename = filename;
 
   return true;
 }
 
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: FFMpegTexture::VideoStream::clear
-//       Access: Public
-//  Description: Stops the video playback and frees the associated
-//               resources.
-////////////////////////////////////////////////////////////////////
-void FFMpegTexture::VideoStream::
-clear() {
-  if (_codec_context) {
-    avcodec_close(_codec_context);
-    _codec_context = NULL;
-  }
-  if (_format_context) {
-    av_close_input_file(_format_context);
-    _format_context = NULL;
-  }
-  if (_frame) {
-    av_free(_frame);
-    _frame = NULL;
-  }
-  if (_frame_out) {
-    av_free(_frame_out);
-    _frame_out = NULL;
-  }
-
-  _next_frame_number = 0;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::VideoStream::read_video_frame
@@ -828,6 +1017,28 @@ read_video_frame(AVPacket *packet) {
 
   // This is a video packet, return it.
   return err;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoPage::write_datagram_rawdata
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoPage::
+write_datagram_rawdata(BamWriter *manager, Datagram &me) {
+  _color.write_datagram_rawdata(manager, me);
+  _alpha.write_datagram_rawdata(manager, me);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::VideoPage::fillin_rawdata
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::VideoPage::
+fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+  _color.fillin_rawdata(scan, manager);
+  _alpha.fillin_rawdata(scan, manager);
 }
 
 

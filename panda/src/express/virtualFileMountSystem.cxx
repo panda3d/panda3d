@@ -184,7 +184,7 @@ get_timestamp(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::get_system_info
 //       Access: Public, Virtual
-//  Description: Populates the FileSystemInfo structure with the data
+//  Description: Populates the SubfileInfo structure with the data
 //               representing where the file actually resides on disk,
 //               if this is knowable.  Returns true if the file might
 //               reside on disk, and the info is populated, or false
@@ -192,9 +192,9 @@ get_timestamp(const Filename &file) const {
 //               resides), in which case the info is meaningless.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountSystem::
-get_system_info(const Filename &file, FileSystemInfo &info) {
+get_system_info(const Filename &file, SubfileInfo &info) {
   Filename pathname(_physical_filename, file);
-  info = FileSystemInfo(pathname.to_os_specific(), 0, pathname.get_file_size());
+  info = SubfileInfo(pathname, 0, pathname.get_file_size());
   return true;
 }
 

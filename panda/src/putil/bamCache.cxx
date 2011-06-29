@@ -223,16 +223,8 @@ store(BamCacheRecord *record) {
   temp_pathname.set_extension(extension);
   temp_pathname.set_binary();
 
-  pofstream temp_file;
-  if (!temp_pathname.open_write(temp_file)) {
-    util_cat.error()
-      << "Could not open cache file: " << temp_pathname << "\n";
-    emergency_read_only();
-    return false;
-  }
-
   DatagramOutputFile dout;
-  if (!dout.open(temp_file)) {
+  if (!dout.open(temp_pathname)) {
     util_cat.error()
       << "Could not write cache file: " << temp_pathname << "\n";
     temp_pathname.unlink();
@@ -248,7 +240,7 @@ store(BamCacheRecord *record) {
   }
 
   {
-    BamWriter writer(&dout, temp_pathname);
+    BamWriter writer(&dout);
     if (!writer.init()) {
       temp_pathname.unlink();
       return false;
@@ -279,8 +271,8 @@ store(BamCacheRecord *record) {
     // delete any TypedWritables below that haven't been written yet.
   }
 
-  record->_record_size = temp_file.tellp();
-  temp_file.close();
+  record->_record_size = dout.get_file_pos();
+  dout.close();
 
   // Now move the file into place.
   if (!temp_pathname.rename_to(cache_pathname) && temp_pathname.exists()) {
@@ -669,22 +661,13 @@ check_cache_size() {
 //               success, or NULL on failure.
 ////////////////////////////////////////////////////////////////////
 BamCacheIndex *BamCache::
-do_read_index(Filename &index_pathname) {
+do_read_index(const Filename &index_pathname) {
   if (index_pathname.empty()) {
     return NULL;
   }
 
-  index_pathname.set_binary();
-  pifstream index_file;
-  if (!index_pathname.open_read(index_file)) {
-    util_cat.error()
-      << "Could not open index file: " << index_pathname << "\n";
-    return NULL;
-  }
-
   DatagramInputFile din;
-    
-  if (!din.open(index_file)) {
+  if (!din.open(index_pathname)) {
     util_cat.debug()
       << "Could not read index file: " << index_pathname << "\n";
     return NULL;
@@ -703,7 +686,7 @@ do_read_index(Filename &index_pathname) {
     return NULL;
   }
   
-  BamReader reader(&din, index_pathname);
+  BamReader reader(&din);
   if (!reader.init()) {
     return NULL;
   }
@@ -738,18 +721,9 @@ do_read_index(Filename &index_pathname) {
 //  Description: Writes the given index data to the specified filename.
 ////////////////////////////////////////////////////////////////////
 bool BamCache::
-do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
-  index_pathname.set_binary();
-  pofstream index_file;
-  
-  if (!index_pathname.open_write(index_file)) {
-    util_cat.error()
-      << "Could not open index file: " << index_pathname << "\n";
-    return false;
-  }
-  
+do_write_index(const Filename &index_pathname, const BamCacheIndex *index) {
   DatagramOutputFile dout;
-  if (!dout.open(index_file)) {
+  if (!dout.open(index_pathname)) {
     util_cat.error()
       << "Could not write index file: " << index_pathname << "\n";
     index_pathname.unlink();
@@ -764,7 +738,7 @@ do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
   }
 
   {
-    BamWriter writer(&dout, index_pathname);
+    BamWriter writer(&dout);
     if (!writer.init()) {
       index_pathname.unlink();
       return false;
@@ -776,7 +750,6 @@ do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
     }
   }
 
-  index_file.close();
   return true;
 }
 
@@ -866,18 +839,9 @@ read_record(const Filename &source_pathname,
 //  Description: Actually reads a record from the file.
 ////////////////////////////////////////////////////////////////////
 PT(BamCacheRecord) BamCache::
-do_read_record(Filename &cache_pathname, bool read_data) {
-  cache_pathname.set_binary();
-  pifstream cache_file;
-  if (!cache_pathname.open_read(cache_file)) {
-    util_cat.debug()
-      << "Could not open cache file: " << cache_pathname << "\n";
-    return NULL;
-  }
-
+do_read_record(const Filename &cache_pathname, bool read_data) {
   DatagramInputFile din;
-    
-  if (!din.open(cache_file)) {
+  if (!din.open(cache_pathname)) {
     util_cat.debug()
       << "Could not read cache file: " << cache_pathname << "\n";
     return NULL;
@@ -896,7 +860,7 @@ do_read_record(Filename &cache_pathname, bool read_data) {
     return NULL;
   }
   
-  BamReader reader(&din, cache_pathname);
+  BamReader reader(&din);
   if (!reader.init()) {
     return NULL;
   }
@@ -944,10 +908,11 @@ do_read_record(Filename &cache_pathname, bool read_data) {
     }
   }
   
-  // Also get the file size.
-  cache_file.clear();
-  cache_file.seekg(0, ios::end);
-  record->_record_size = cache_file.tellg();
+  // Also get the total file size.
+  istream &in = din.get_stream();
+  in.clear();
+  in.seekg(0, ios::end);
+  record->_record_size = in.tellg();
 
   // And the last access time is now, duh.
   record->_record_access_time = time(NULL);

@@ -680,8 +680,12 @@ get_aux_data(const string &key) const {
 //  Description: Reads the texture from a Panda texture object.  This
 //               defines the complete Texture specification, including
 //               the image data as well as all texture properties.
+//               This only works if the txo file contains a static
+//               Texture image, as opposed to a subclass of Texture
+//               such as a movie texture.
 //
-//               The filename is just for reference.
+//               Pass a real filename if it is available, or empty
+//               string if it is not.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read_txo(istream &in, const string &filename) {
@@ -689,6 +693,79 @@ read_txo(istream &in, const string &filename) {
   ++_properties_modified;
   ++_image_modified;
   return do_read_txo(in, filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_from_txo
+//       Access: Published, Static
+//  Description: Constructs a new Texture object from the txo file.
+//               This is similar to Texture::read_txo(), but it
+//               constructs and returns a new object, which allows it
+//               to return a subclass of Texture (for instance, a
+//               movie texture).
+//
+//               Pass a real filename if it is available, or empty
+//               string if it is not.
+////////////////////////////////////////////////////////////////////
+PT(Texture) Texture::
+make_from_txo(istream &in, const string &filename) {
+  DatagramInputFile din;
+
+  if (!din.open(in, filename)) {
+    gobj_cat.error()
+      << "Could not read texture object: " << filename << "\n";
+    return NULL;
+  }
+
+  string head;
+  if (!din.read_header(head, _bam_header.size())) {
+    gobj_cat.error()
+      << filename << " is not a texture object file.\n";
+    return NULL;
+  }
+
+  if (head != _bam_header) {
+    gobj_cat.error()
+      << filename << " is not a texture object file.\n";
+    return NULL;
+  }
+
+  BamReader reader(&din);
+  if (!reader.init()) {
+    return NULL;
+  }
+
+  TypedWritable *object = reader.read_object();
+
+  if (object != (TypedWritable *)NULL &&
+      object->is_exact_type(BamCacheRecord::get_class_type())) {
+    // Here's a special case: if the first object in the file is a
+    // BamCacheRecord, it's really a cache data file and not a true
+    // txo file; but skip over the cache data record and let the user
+    // treat it like an ordinary txo file.
+    object = reader.read_object();
+  }
+
+  if (object == (TypedWritable *)NULL) {
+    gobj_cat.error()
+      << "Texture object " << filename << " is empty.\n";
+    return NULL;
+
+  } else if (!object->is_of_type(Texture::get_class_type())) {
+    gobj_cat.error()
+      << "Texture object " << filename << " contains a "
+      << object->get_type() << ", not a Texture.\n";
+    return NULL;
+  }
+
+  PT(Texture) other = DCAST(Texture, object);
+  if (!reader.resolve()) {
+    gobj_cat.error()
+      << "Unable to fully resolve texture object file.\n";
+    return NULL;
+  }
+
+  return other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -988,6 +1065,20 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
 bool Texture::
 get_keep_ram_image() const {
   return _keep_ram_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_cacheable
+//       Access: Published, Virtual
+//  Description: Returns true if there is enough information in this
+//               Texture object to write it to the bam cache
+//               successfully, false otherwise.  For most textures,
+//               this is the same as has_ram_image().
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_cacheable() const {
+  MutexHolder holder(_lock);
+  return do_has_bam_rawdata();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3110,59 +3201,8 @@ do_read_txo_file(const Filename &fullpath) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_read_txo(istream &in, const string &filename) {
-  DatagramInputFile din;
-
-  if (!din.open(in)) {
-    gobj_cat.error()
-      << "Could not read texture object: " << filename << "\n";
-    return false;
-  }
-
-  string head;
-  if (!din.read_header(head, _bam_header.size())) {
-    gobj_cat.error()
-      << filename << " is not a texture object file.\n";
-    return false;
-  }
-
-  if (head != _bam_header) {
-    gobj_cat.error()
-      << filename << " is not a texture object file.\n";
-    return false;
-  }
-
-  BamReader reader(&din, filename);
-  if (!reader.init()) {
-    return false;
-  }
-
-  TypedWritable *object = reader.read_object();
-
-  if (object != (TypedWritable *)NULL &&
-      object->is_exact_type(BamCacheRecord::get_class_type())) {
-    // Here's a special case: if the first object in the file is a
-    // BamCacheRecord, it's really a cache data file and not a true
-    // txo file; but skip over the cache data record and let the user
-    // treat it like an ordinary txo file.
-    object = reader.read_object();
-  }
-
-  if (object == (TypedWritable *)NULL) {
-    gobj_cat.error()
-      << "Texture object " << filename << " is empty.\n";
-    return false;
-
-  } else if (!object->is_of_type(Texture::get_class_type())) {
-    gobj_cat.error()
-      << "Texture object " << filename << " contains a "
-      << object->get_type() << ", not a Texture.\n";
-    return false;
-  }
-
-  PT(Texture) other = DCAST(Texture, object);
-  if (!reader.resolve()) {
-    gobj_cat.error()
-      << "Unable to fully resolve texture object file.\n";
+  PT(Texture) other = make_from_txo(in, filename);
+  if (other == (Texture *)NULL) {
     return false;
   }
 
@@ -3506,10 +3546,10 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
 bool Texture::
 do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) const {
   if (is_txo_filename(fullpath)) {
-    if (!do_has_ram_image()) {
-      ((Texture *)this)->do_get_ram_image();
+    if (!do_has_bam_rawdata()) {
+      ((Texture *)this)->do_get_bam_rawdata();
     }
-    nassertr(do_has_ram_image(), false);
+    nassertr(do_has_bam_rawdata(), false);
     return do_write_txo_file(fullpath);
   }
 
@@ -3671,7 +3711,7 @@ bool Texture::
 do_write_txo(ostream &out, const string &filename) const {
   DatagramOutputFile dout;
 
-  if (!dout.open(out)) {
+  if (!dout.open(out, filename)) {
     gobj_cat.error()
       << "Could not write texture object: " << filename << "\n";
     return false;
@@ -3683,7 +3723,7 @@ do_write_txo(ostream &out, const string &filename) const {
     return false;
   }
 
-  BamWriter writer(&dout, filename);
+  BamWriter writer(&dout);
   if (!writer.init()) {
     return false;
   }
@@ -3700,7 +3740,7 @@ do_write_txo(ostream &out, const string &filename) const {
   }
   _lock.acquire();
 
-  if (!do_has_ram_image()) {
+  if (!do_has_bam_rawdata()) {
     gobj_cat.error()
       << get_name() << " does not have ram image\n";
     return false;
@@ -5369,6 +5409,31 @@ do_reload() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_has_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: Returns true if there is a rawdata image that we have
+//               available to write to the bam stream.  For a normal
+//               Texture, this is the same thing as
+//               do_has_ram_image(), but a movie texture might define
+//               it differently.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_has_bam_rawdata() const {
+  return do_has_ram_image();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: If do_has_bam_rawdata() returned false, this attempts
+//               to reload the rawdata image if possible.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_get_bam_rawdata() {
+  do_get_ram_image();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::convert_from_pnmimage
 //       Access: Private, Static
 //  Description: Internal method to convert pixel data from the
@@ -6728,276 +6793,8 @@ register_with_read_factory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::make_from_bam
-//       Access: Protected, Static
-//  Description: Factory method to generate a Texture object
-////////////////////////////////////////////////////////////////////
-TypedWritable *Texture::
-make_from_bam(const FactoryParams &params) {
-  // The process of making a texture is slightly different than making
-  // other TypedWritable objects.  That is because all creation of
-  // Textures should be done through calls to TexturePool, which
-  // ensures that any loads of the same filename refer to the same
-  // memory.
-  DatagramIterator scan;
-  BamReader *manager;
-
-  parse_params(params, scan, manager);
-
-  // Get the filenames and texture type so we can look up the file on
-  // disk first.
-  string name = scan.get_string();
-  Filename filename = scan.get_string();
-  Filename alpha_filename = scan.get_string();
-
-  int primary_file_num_channels = scan.get_uint8();
-  int alpha_file_channel = scan.get_uint8();
-  bool has_rawdata = scan.get_bool();
-  TextureType texture_type = (TextureType)scan.get_uint8();
-
-  Texture *me = NULL;
-  if (has_rawdata) {
-    // If the raw image data is included, then just create a Texture
-    // and don't load from the file.
-    me = new Texture(name);
-    me->_filename = filename;
-    me->_alpha_filename = alpha_filename;
-    me->_primary_file_num_channels = primary_file_num_channels;
-    me->_alpha_file_channel = alpha_file_channel;
-    me->_texture_type = texture_type;
-
-    // Read the texture attributes directly from the bam stream.
-    me->fillin(scan, manager, has_rawdata);
-
-  } else {
-    // Now create a temporary Texture object to read all the
-    // attributes from the bam stream.
-    PT(Texture) dummy = new Texture("");
-    dummy->fillin(scan, manager, has_rawdata);
-
-    if (filename.empty()) {
-      // This texture has no filename; since we don't have an image to
-      // load, we can't actually create the texture.
-      gobj_cat.info()
-        << "Cannot create texture '" << name << "' with no filename.\n";
-
-    } else {
-      // This texture does have a filename, so try to load it from disk.
-      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-      if (!manager->get_filename().empty()) {
-        // If texture filename was given relative to the bam filename,
-        // expand it now.
-        Filename bam_dir = manager->get_filename().get_dirname();
-        vfs->resolve_filename(filename, bam_dir);
-        if (!alpha_filename.empty()) {
-          vfs->resolve_filename(alpha_filename, bam_dir);
-        }
-      }
-
-      LoaderOptions options = manager->get_loader_options();
-      if (dummy->uses_mipmaps()) {
-        options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
-      }
-
-      switch (texture_type) {
-      case TT_1d_texture:
-      case TT_2d_texture:
-        if (alpha_filename.empty()) {
-          me = TexturePool::load_texture(filename, primary_file_num_channels,
-                                         false, options);
-        } else {
-          me = TexturePool::load_texture(filename, alpha_filename,
-                                         primary_file_num_channels,
-                                         alpha_file_channel,
-                                         false, options);
-        }
-        break;
-
-      case TT_3d_texture:
-        me = TexturePool::load_3d_texture(filename, false, options);
-        break;
-
-      case TT_2d_texture_array:
-        me = TexturePool::load_2d_texture_array(filename, false, options);
-        break;
-
-      case TT_cube_map:
-        me = TexturePool::load_cube_map(filename, false, options);
-        break;
-      }
-    }
-
-    if (me != (Texture *)NULL) {
-      me->fillin_from(dummy);
-      me->set_name(name);
-    }
-  }
-
-  return me;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
-void Texture::
-fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
-  // We have already read in the filenames; don't read them again.
-
-  _wrap_u = (WrapMode)scan.get_uint8();
-  _wrap_v = (WrapMode)scan.get_uint8();
-  _wrap_w = (WrapMode)scan.get_uint8();
-  _minfilter = (FilterType)scan.get_uint8();
-  _magfilter = (FilterType)scan.get_uint8();
-  _anisotropic_degree = scan.get_int16();
-  _border_color.read_datagram(scan);
-
-  if (manager->get_file_minor_ver() >= 1) {
-    _compression = (CompressionMode)scan.get_uint8();
-  }
-  if (manager->get_file_minor_ver() >= 16) {
-    _quality_level = (QualityLevel)scan.get_uint8();
-  }
-
-  _format = (Format)scan.get_uint8();
-  _num_components = scan.get_uint8();
-  ++_properties_modified;
-
-  bool has_simple_ram_image = false;
-  if (manager->get_file_minor_ver() >= 18) {
-    _orig_file_x_size = scan.get_uint32();
-    _orig_file_y_size = scan.get_uint32();
-
-    has_simple_ram_image = scan.get_bool();
-  }
-
-  if (has_simple_ram_image) {
-    _simple_x_size = scan.get_uint32();
-    _simple_y_size = scan.get_uint32();
-    _simple_image_date_generated = scan.get_int32();
-
-    size_t u_size = scan.get_uint32();
-    PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-      image[(int)u_idx] = scan.get_uint8();
-    }
-
-    _simple_ram_image._image = image;
-    _simple_ram_image._page_size = u_size;
-    ++_simple_image_modified;
-  }
-
-  if (has_rawdata) {
-    _x_size = scan.get_uint32();
-    _y_size = scan.get_uint32();
-    _z_size = scan.get_uint32();
-    _component_type = (ComponentType)scan.get_uint8();
-    _component_width = scan.get_uint8();
-    _ram_image_compression = CM_off;
-    if (manager->get_file_minor_ver() >= 1) {
-      _ram_image_compression = (CompressionMode)scan.get_uint8();
-    }
-
-    int num_ram_images = 1;
-    if (manager->get_file_minor_ver() >= 3) {
-      num_ram_images = scan.get_uint8();
-    }
-
-    _ram_images.clear();
-    _ram_images.reserve(num_ram_images);
-    for (int n = 0; n < num_ram_images; ++n) {
-      _ram_images.push_back(RamImage());
-      _ram_images[n]._page_size = get_expected_ram_page_size();
-      if (manager->get_file_minor_ver() >= 1) {
-        _ram_images[n]._page_size = scan.get_uint32();
-      }
-
-      size_t u_size = scan.get_uint32();
-
-      // fill the _image buffer with image data
-      PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-      for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-        image[(int)u_idx] = scan.get_uint8();
-      }
-      _ram_images[n]._image = image;
-    }
-    _loaded_from_image = true;
-    do_set_pad_size(0, 0, 0);
-    ++_image_modified;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::fillin_from
-//       Access: Protected
-//  Description: Called in make_from_bam(), this method properly
-//               copies the attributes from the bam stream (as stored
-//               in dummy) into this texture, updating the modified
-//               flags appropriately.
-////////////////////////////////////////////////////////////////////
-void Texture::
-fillin_from(Texture *dummy) {
-  MutexHolder holder(_lock);
-
-  // Use the setters instead of setting these directly, so we can
-  // correctly avoid incrementing _properties_modified if none of
-  // these actually change.  (Otherwise, we'd have to reload the
-  // texture to the GSG every time we loaded a new bam file that
-  // reference the texture, since each bam file reference passes
-  // through this function.)
-
-  do_set_wrap_u(dummy->get_wrap_u());
-  do_set_wrap_v(dummy->get_wrap_v());
-  do_set_wrap_w(dummy->get_wrap_w());
-  do_set_border_color(dummy->get_border_color());
-
-  if (dummy->get_minfilter() != FT_default) {
-    do_set_minfilter(dummy->get_minfilter());
-  }
-  if (dummy->get_magfilter() != FT_default) {
-    do_set_magfilter(dummy->get_magfilter());
-  }
-  if (dummy->get_anisotropic_degree() != 0) {
-    do_set_anisotropic_degree(dummy->get_anisotropic_degree());
-  }
-  if (dummy->get_compression() != CM_default) {
-    do_set_compression(dummy->get_compression());
-  }
-  if (dummy->get_quality_level() != QL_default) {
-    do_set_quality_level(dummy->get_quality_level());
-  }
-
-  Format format = dummy->get_format();
-  int num_components = dummy->get_num_components();
-
-  if (num_components == _num_components) {
-    // Only reset the format if the number of components hasn't
-    // changed, since if the number of components has changed our
-    // texture no longer matches what it was when the bam was
-    // written.
-    do_set_format(format);
-  }
-
-  if (dummy->has_simple_ram_image()) {
-    // Only replace the simple ram image if it was generated more
-    // recently than the one we already have.
-    if (_simple_ram_image._image.empty() ||
-        dummy->_simple_image_date_generated > _simple_image_date_generated) {
-      do_set_simple_ram_image(dummy->get_simple_ram_image(),
-                              dummy->get_simple_x_size(),
-                              dummy->get_simple_y_size());
-      _simple_image_date_generated = dummy->_simple_image_date_generated;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::write_datagram
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
@@ -7005,6 +6802,61 @@ void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
   MutexHolder holder(_lock);
 
+  bool has_rawdata = false;
+  do_write_datagram_header(manager, me, has_rawdata);
+
+  do_write_datagram_body(manager, me);
+
+  // If we are also including the texture's image data, then stuff it
+  // in here.
+  if (has_rawdata) {
+    do_write_datagram_rawdata(manager, me);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void Texture::
+finalize(BamReader *) {
+  // Unref the pointer that we explicitly reffed in make_from_bam().
+  unref();
+
+  // We should never get back to zero after unreffing our own count,
+  // because we expect to have been stored in a pointer somewhere.  If
+  // we do get to zero, it's a memory leak; the way to avoid this is
+  // to call unref_delete() above instead of unref(), but this is
+  // dangerous to do from within a virtual function.
+  nassertv(get_ref_count() != 0);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_write_datagram_header
+//       Access: Protected
+//  Description: Writes the header part of the texture to the
+//               Datagram.  This is the common part that is shared by
+//               all Texture subclasses, and contains the filename and
+//               rawdata flags.  This method is not virtual because
+//               all Texture subclasses must write the same data at
+//               this step.
+//
+//               This part must be read first before calling
+//               do_fillin_body() to determine whether to load the
+//               Texture from the TexturePool or directly from the bam
+//               stream.
+//
+//               After this call, has_rawdata will be filled with
+//               either true or false, according to whether we expect
+//               to write the texture rawdata to the bam stream
+//               following the texture body.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_write_datagram_header(BamWriter *manager, Datagram &me, bool &has_rawdata) {
   // Write out the texture's raw pixel data if (a) the current Bam
   // Texture Mode requires that, or (b) there's no filename, so the
   // file can't be loaded up from disk, but the raw pixel data is
@@ -7014,11 +6866,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // loads the bam file later will have access to the image file on
   // disk.
   BamWriter::BamTextureMode file_texture_mode = manager->get_file_texture_mode();
-  bool has_rawdata =
-    (file_texture_mode == BamWriter::BTM_rawdata || (do_has_ram_image() && _filename.empty()));
-  if (has_rawdata && !do_has_ram_image()) {
-    do_get_ram_image();
-    if (!do_has_ram_image()) {
+  has_rawdata = (file_texture_mode == BamWriter::BTM_rawdata || 
+		 (_filename.empty() && do_has_bam_rawdata()));
+  if (has_rawdata && !do_has_bam_rawdata()) {
+    do_get_bam_rawdata();
+    if (!do_has_bam_rawdata()) {
       // No image data after all.
       has_rawdata = false;
     }
@@ -7073,7 +6925,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
       << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
   }
 
-  if (filename.empty() && do_has_ram_image()) {
+  if (filename.empty() && do_has_bam_rawdata()) {
     // If we don't have a filename, we have to store rawdata anyway.
     has_rawdata = true;
   }
@@ -7085,8 +6937,17 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_uint8(_alpha_file_channel);
   me.add_bool(has_rawdata);
   me.add_uint8(_texture_type);
+}
 
-  // The data beginning at this point is handled by fillin().
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_write_datagram_body
+//       Access: Protected, Virtual
+//  Description: Writes the body part of the texture to the
+//               Datagram.  This is generally all of the texture
+//               parameters except for the header and the rawdata.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_write_datagram_body(BamWriter *manager, Datagram &me) {
   me.add_uint8(_wrap_u);
   me.add_uint8(_wrap_v);
   me.add_uint8(_wrap_w);
@@ -7114,21 +6975,330 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint32(_simple_ram_image._image.size());
     me.append_data(_simple_ram_image._image, _simple_ram_image._image.size());
   }
+}
 
-  // If we are also including the texture's image data, then stuff it
-  // in here.
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_write_datagram_rawdata
+//       Access: Protected, Virtual
+//  Description: Writes the rawdata part of the texture to the
+//               Datagram.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
+  me.add_uint32(_x_size);
+  me.add_uint32(_y_size);
+  me.add_uint32(_z_size);
+  me.add_uint8(_component_type);
+  me.add_uint8(_component_width);
+  me.add_uint8(_ram_image_compression);
+  me.add_uint8(_ram_images.size());
+  for (size_t n = 0; n < _ram_images.size(); ++n) {
+    me.add_uint32(_ram_images[n]._page_size);
+    me.add_uint32(_ram_images[n]._image.size());
+    me.append_data(_ram_images[n]._image, _ram_images[n]._image.size());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_from_bam
+//       Access: Protected, Static
+//  Description: Factory method to generate a Texture object
+////////////////////////////////////////////////////////////////////
+TypedWritable *Texture::
+make_from_bam(const FactoryParams &params) {
+  PT(Texture) dummy = new Texture;
+  return dummy->make_this_from_bam(params);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_this_from_bam
+//       Access: Protected, Virtual
+//  Description: Called by make_from_bam() once the particular
+//               subclass of Texture is known.  This is called on a
+//               newly-constructed Texture object of the appropriate
+//               subclass.  It will return either the same Texture
+//               object (e.g. this), or a different Texture object
+//               loaded via the TexturePool, as appropriate.
+////////////////////////////////////////////////////////////////////
+TypedWritable *Texture::
+make_this_from_bam(const FactoryParams &params) {
+  // The process of making a texture is slightly different than making
+  // other TypedWritable objects.  That is because all creation of
+  // Textures should be done through calls to TexturePool, which
+  // ensures that any loads of the same filename refer to the same
+  // memory.
+
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+
+  // Get the header information--the filenames and texture type--so we
+  // can look up the file on disk first.
+  string name = scan.get_string();
+  Filename filename = scan.get_string();
+  Filename alpha_filename = scan.get_string();
+
+  int primary_file_num_channels = scan.get_uint8();
+  int alpha_file_channel = scan.get_uint8();
+  bool has_rawdata = scan.get_bool();
+  TextureType texture_type = (TextureType)scan.get_uint8();
+
+  Texture *me = NULL;
   if (has_rawdata) {
-    me.add_uint32(_x_size);
-    me.add_uint32(_y_size);
-    me.add_uint32(_z_size);
-    me.add_uint8(_component_type);
-    me.add_uint8(_component_width);
-    me.add_uint8(_ram_image_compression);
-    me.add_uint8(_ram_images.size());
-    for (size_t n = 0; n < _ram_images.size(); ++n) {
-      me.add_uint32(_ram_images[n]._page_size);
-      me.add_uint32(_ram_images[n]._image.size());
-      me.append_data(_ram_images[n]._image, _ram_images[n]._image.size());
+    // If the raw image data is included, then just load the texture
+    // directly from the stream, and return it.  In this case we
+    // return the "this" pointer, since it's a newly-created Texture
+    // object of the appropriate type.
+    me = this;
+    me->set_name(name);
+    me->_filename = filename;
+    me->_alpha_filename = alpha_filename;
+    me->_primary_file_num_channels = primary_file_num_channels;
+    me->_alpha_file_channel = alpha_file_channel;
+    me->_texture_type = texture_type;
+
+    // Read the texture attributes directly from the bam stream.
+    me->do_fillin_body(scan, manager);
+    me->do_fillin_rawdata(scan, manager);
+
+    // To manage the reference count, explicitly ref it now, then
+    // unref it in the finalize callback.
+    me->ref();
+    manager->register_finalize(me);
+
+  } else {
+    // The raw image data isn't included, so we'll be loading the
+    // Texture via the TexturePool.  In this case we use the "this"
+    // pointer as a temporary object to read all of the attributes
+    // from the bam stream.
+    Texture *dummy = this;
+    dummy->do_fillin_body(scan, manager);
+
+    if (filename.empty()) {
+      // This texture has no filename; since we don't have an image to
+      // load, we can't actually create the texture.
+      gobj_cat.info()
+        << "Cannot create texture '" << name << "' with no filename.\n";
+
+    } else {
+      // This texture does have a filename, so try to load it from disk.
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      if (!manager->get_filename().empty()) {
+        // If texture filename was given relative to the bam filename,
+        // expand it now.
+        Filename bam_dir = manager->get_filename().get_dirname();
+        vfs->resolve_filename(filename, bam_dir);
+        if (!alpha_filename.empty()) {
+          vfs->resolve_filename(alpha_filename, bam_dir);
+        }
+      }
+
+      LoaderOptions options = manager->get_loader_options();
+      if (dummy->uses_mipmaps()) {
+        options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
+      }
+
+      switch (texture_type) {
+      case TT_1d_texture:
+      case TT_2d_texture:
+        if (alpha_filename.empty()) {
+          me = TexturePool::load_texture(filename, primary_file_num_channels,
+                                         false, options);
+        } else {
+          me = TexturePool::load_texture(filename, alpha_filename,
+                                         primary_file_num_channels,
+                                         alpha_file_channel,
+                                         false, options);
+        }
+        break;
+
+      case TT_3d_texture:
+        me = TexturePool::load_3d_texture(filename, false, options);
+        break;
+
+      case TT_2d_texture_array:
+        me = TexturePool::load_2d_texture_array(filename, false, options);
+        break;
+
+      case TT_cube_map:
+        me = TexturePool::load_cube_map(filename, false, options);
+        break;
+      }
+    }
+
+    if (me != (Texture *)NULL) {
+      {
+	MutexHolder holder(me->_lock);
+	me->do_fillin_from(dummy);
+      }
+      me->set_name(name);
+
+      // Since in this case me was loaded from the TexturePool,
+      // there's no need to explicitly manage the reference count.
+      // TexturePool will hold it safely.
+    }
+  }
+
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_fillin_body
+//       Access: Protected, Virtual
+//  Description: Reads in the part of the Texture that was written
+//               with do_write_datagram_body().
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_fillin_body(DatagramIterator &scan, BamReader *manager) {
+  _wrap_u = (WrapMode)scan.get_uint8();
+  _wrap_v = (WrapMode)scan.get_uint8();
+  _wrap_w = (WrapMode)scan.get_uint8();
+  _minfilter = (FilterType)scan.get_uint8();
+  _magfilter = (FilterType)scan.get_uint8();
+  _anisotropic_degree = scan.get_int16();
+  _border_color.read_datagram(scan);
+
+  if (manager->get_file_minor_ver() >= 1) {
+    _compression = (CompressionMode)scan.get_uint8();
+  }
+  if (manager->get_file_minor_ver() >= 16) {
+    _quality_level = (QualityLevel)scan.get_uint8();
+  }
+
+  _format = (Format)scan.get_uint8();
+  _num_components = scan.get_uint8();
+  ++_properties_modified;
+
+  bool has_simple_ram_image = false;
+  if (manager->get_file_minor_ver() >= 18) {
+    _orig_file_x_size = scan.get_uint32();
+    _orig_file_y_size = scan.get_uint32();
+
+    has_simple_ram_image = scan.get_bool();
+  }
+
+  if (has_simple_ram_image) {
+    _simple_x_size = scan.get_uint32();
+    _simple_y_size = scan.get_uint32();
+    _simple_image_date_generated = scan.get_int32();
+
+    size_t u_size = scan.get_uint32();
+    PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
+    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
+      image[(int)u_idx] = scan.get_uint8();
+    }
+
+    _simple_ram_image._image = image;
+    _simple_ram_image._page_size = u_size;
+    ++_simple_image_modified;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_fillin_rawdata
+//       Access: Protected, Virtual
+//  Description: Reads in the part of the Texture that was written
+//               with do_write_datagram_rawdata().
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+  _x_size = scan.get_uint32();
+  _y_size = scan.get_uint32();
+  _z_size = scan.get_uint32();
+  _component_type = (ComponentType)scan.get_uint8();
+  _component_width = scan.get_uint8();
+  _ram_image_compression = CM_off;
+  if (manager->get_file_minor_ver() >= 1) {
+    _ram_image_compression = (CompressionMode)scan.get_uint8();
+  }
+  
+  int num_ram_images = 1;
+  if (manager->get_file_minor_ver() >= 3) {
+    num_ram_images = scan.get_uint8();
+  }
+  
+  _ram_images.clear();
+  _ram_images.reserve(num_ram_images);
+  for (int n = 0; n < num_ram_images; ++n) {
+    _ram_images.push_back(RamImage());
+    _ram_images[n]._page_size = get_expected_ram_page_size();
+    if (manager->get_file_minor_ver() >= 1) {
+      _ram_images[n]._page_size = scan.get_uint32();
+    }
+    
+    size_t u_size = scan.get_uint32();
+    
+    // fill the _image buffer with image data
+    PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
+    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
+      image[(int)u_idx] = scan.get_uint8();
+    }
+    _ram_images[n]._image = image;
+  }
+  _loaded_from_image = true;
+  do_set_pad_size(0, 0, 0);
+  ++_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_fillin_from
+//       Access: Protected, Virtual
+//  Description: Called in make_from_bam(), this method properly
+//               copies the attributes from the bam stream (as stored
+//               in dummy) into this texture, updating the modified
+//               flags appropriately.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_fillin_from(Texture *dummy) {
+  // Use the setters instead of setting these directly, so we can
+  // correctly avoid incrementing _properties_modified if none of
+  // these actually change.  (Otherwise, we'd have to reload the
+  // texture to the GSG every time we loaded a new bam file that
+  // reference the texture, since each bam file reference passes
+  // through this function.)
+
+  do_set_wrap_u(dummy->get_wrap_u());
+  do_set_wrap_v(dummy->get_wrap_v());
+  do_set_wrap_w(dummy->get_wrap_w());
+  do_set_border_color(dummy->get_border_color());
+
+  if (dummy->get_minfilter() != FT_default) {
+    do_set_minfilter(dummy->get_minfilter());
+  }
+  if (dummy->get_magfilter() != FT_default) {
+    do_set_magfilter(dummy->get_magfilter());
+  }
+  if (dummy->get_anisotropic_degree() != 0) {
+    do_set_anisotropic_degree(dummy->get_anisotropic_degree());
+  }
+  if (dummy->get_compression() != CM_default) {
+    do_set_compression(dummy->get_compression());
+  }
+  if (dummy->get_quality_level() != QL_default) {
+    do_set_quality_level(dummy->get_quality_level());
+  }
+
+  Format format = dummy->get_format();
+  int num_components = dummy->get_num_components();
+
+  if (num_components == _num_components) {
+    // Only reset the format if the number of components hasn't
+    // changed, since if the number of components has changed our
+    // texture no longer matches what it was when the bam was
+    // written.
+    do_set_format(format);
+  }
+
+  if (dummy->has_simple_ram_image()) {
+    // Only replace the simple ram image if it was generated more
+    // recently than the one we already have.
+    if (_simple_ram_image._image.empty() ||
+        dummy->_simple_image_date_generated > _simple_image_date_generated) {
+      do_set_simple_ram_image(dummy->get_simple_ram_image(),
+                              dummy->get_simple_x_size(),
+                              dummy->get_simple_y_size());
+      _simple_image_date_generated = dummy->_simple_image_date_generated;
     }
   }
 }

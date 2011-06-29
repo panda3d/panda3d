@@ -47,7 +47,7 @@ MovieTexture(const string &name) :
 //  Description: Creates a texture playing the specified movie.
 ////////////////////////////////////////////////////////////////////
 MovieTexture::
-MovieTexture(PT(MovieVideo) video) : 
+MovieTexture(MovieVideo *video) : 
   Texture(video->get_name())
 {
   do_load_one(video->open(), NULL, 0, LoaderOptions());
@@ -135,18 +135,6 @@ make_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::VideoPage::Constructor
-//       Access: Private
-//  Description: Creates a completely blank video page.
-////////////////////////////////////////////////////////////////////
-MovieTexture::VideoPage::
-VideoPage() :
-  _color(0),
-  _alpha(0)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::do_recalculate_image_properties
 //       Access: Protected
 //  Description: Resizes the texture, and adjusts the format,
@@ -161,8 +149,9 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   int y_max = 1;
   bool alpha = false;
   double len = 0.0;
-  
-  for (int i=0; i<_z_size; i++) {
+
+  nassertv(cdata->_pages.size() == (size_t)_z_size);
+  for (int i = 0; i < _z_size; ++i) {
     MovieVideoCursor *t = cdata->_pages[i]._color;
     if (t) {
       if (t->size_x() > x_max) x_max = t->size_x();
@@ -300,27 +289,6 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a Texture object
-////////////////////////////////////////////////////////////////////
-void MovieTexture::
-register_with_read_factory() {
-  // Since Texture is such a funny object that is reloaded from the
-  // TexturePool each time, instead of actually being read fully from
-  // the bam file, and since the VideoTexture and MovieTexture
-  // classes don't really add any useful data to the bam record, we
-  // don't need to define make_from_bam(), fillin(), or
-  // write_datagram() in this class--we just inherit the same
-  // functions from Texture.
-
-  // We do, however, have to register this class with the BamReader,
-  // to avoid warnings about creating the wrong kind of object from
-  // the bam file.
-  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::has_cull_callback
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
@@ -387,19 +355,6 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       }
     }
   }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_keep_ram_image
-//       Access: Published, Virtual
-//  Description: A MovieTexture must always keep its ram image, 
-//               since there is no way to reload it from the 
-//               source MovieVideo.
-////////////////////////////////////////////////////////////////////
-bool MovieTexture::
-get_keep_ram_image() const {
-  // A MovieTexture should never dump its RAM image.
   return true;
 }
 
@@ -474,6 +429,43 @@ void MovieTexture::
 do_reload_ram_image() {
   // A MovieTexture should never dump its RAM image.
   // Therefore, this is not needed.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_keep_ram_image
+//       Access: Published, Virtual
+//  Description: A MovieTexture must always keep its ram image, 
+//               since there is no way to reload it from the 
+//               source MovieVideo.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+get_keep_ram_image() const {
+  // A MovieTexture should never dump its RAM image.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_has_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: Returns true if there is a rawdata image that we have
+//               available to write to the bam stream.  For a normal
+//               Texture, this is the same thing as
+//               do_has_ram_image(), but a movie texture might define
+//               it differently.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+do_has_bam_rawdata() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_get_bam_rawdata
+//       Access: Protected, Virtual
+//  Description: If do_has_bam_rawdata() returned false, this attempts
+//               to reload the rawdata image if possible.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+do_get_bam_rawdata() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -675,6 +667,119 @@ void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
   cdata->_synchronize = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a Texture object
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::make_from_bam
+//       Access: Protected, Static
+//  Description: Factory method to generate a MovieTexture object
+////////////////////////////////////////////////////////////////////
+TypedWritable *MovieTexture::
+make_from_bam(const FactoryParams &params) {
+  PT(MovieTexture) dummy = new MovieTexture("");
+  return dummy->make_this_from_bam(params);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int MovieTexture::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = Texture::complete_pointers(p_list, manager);
+
+  CDWriter cdata(_cycler);
+  size_t num_pages = cdata->_pages.size();
+  for (size_t n = 0; n < num_pages; ++n) {
+    VideoPage &page = cdata->_pages[n];
+    page._color = DCAST(MovieVideoCursor, p_list[pi++]);
+    page._alpha = DCAST(MovieVideoCursor, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_write_datagram_rawdata
+//       Access: Protected, Virtual
+//  Description: Writes the rawdata part of the texture to the
+//               Datagram.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+do_write_datagram_rawdata(BamWriter *manager, Datagram &dg) {
+  CDReader cdata(_cycler);
+
+  dg.add_uint16(cdata->_pages.size());
+  for (size_t n = 0; n < cdata->_pages.size(); ++n) {
+    const VideoPage &page = cdata->_pages[n];
+    manager->write_pointer(dg, page._color);
+    manager->write_pointer(dg, page._alpha);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_fillin_rawdata
+//       Access: Protected, Virtual
+//  Description: Reads in the part of the Texture that was written
+//               with do_write_datagram_rawdata().
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+  CDWriter cdata(_cycler);
+
+  size_t num_pages = scan.get_uint16();
+  _z_size = (int)num_pages;
+
+  cdata->_pages.reserve(num_pages);
+  for (size_t n = 0; n < num_pages; ++n) {
+    cdata->_pages.push_back(VideoPage());
+    manager->read_pointer(scan);  // page._color
+    manager->read_pointer(scan);  // page._alpha
+  }
+
+  // We load one or more MovieVideoCursors during the above loop.  We
+  // need a finalize callback so we can initialize ourselves once
+  // those cursors have been read completely.
+  manager->register_finalize(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::finalize
+//       Access: Public, Virtual
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+finalize(BamReader *manager) {
+  CDWriter cdata(_cycler);
+
+  // Insist that each of our video pages gets finalized before we do.
+  size_t num_pages = cdata->_pages.size();
+  for (size_t n = 0; n < num_pages; ++n) {
+    VideoPage &page = cdata->_pages[n];
+    manager->finalize_now(page._color);
+    manager->finalize_now(page._alpha);
+  }
+
+  do_recalculate_image_properties(cdata, LoaderOptions());
+
+  set_loaded_from_image();
+  set_loop(true);
+  play();
 }
 
 #endif  // HAVE_AUDIO

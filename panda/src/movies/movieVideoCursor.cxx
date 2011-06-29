@@ -16,16 +16,17 @@
 #include "config_movies.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle MovieVideoCursor::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Constructor
-//       Access: Public
-//  Description: This constructor returns a null video stream --- a
-//               stream of plain blue and white frames that last one
-//               second each. To get more interesting video, you need
-//               to construct a subclass of this class.
+//     Function: MovieVideoCursor::Default Constructor
+//       Access: Protected
+//  Description: This is a virtual base class and should not be
+//               created directly.  Instead, create a more specialized
+//               class.
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 MovieVideoCursor(MovieVideo *src) :
@@ -302,3 +303,46 @@ fetch_into_buffer(double time, unsigned char *data, bool bgra) {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void MovieVideoCursor::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritableReferenceCount::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _source);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int MovieVideoCursor::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  _source = DCAST(MovieVideo, p_list[pi++]);
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new MovieVideoCursor.
+////////////////////////////////////////////////////////////////////
+void MovieVideoCursor::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritableReferenceCount::fillin(scan, manager);
+
+  manager->read_pointer(scan);  // _source
+}

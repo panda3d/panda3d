@@ -30,8 +30,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BamWriter::
-BamWriter(DatagramSink *target, const Filename &name) :
-  _filename(name),
+BamWriter(DatagramSink *target) :
   _target(target)
 {
   ++_writing_seq;
@@ -318,6 +317,74 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_file_data
+//       Access: Public
+//  Description: Writes a block of auxiliary file data from the
+//               indicated file (within the vfs).  This can be a block
+//               of arbitrary size, and it is assumed it may be quite
+//               large.  This must be balanced by a matching call to
+//               read_file_data() on restore.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_file_data(SubfileInfo &result, const Filename &filename) {
+  // We write file data by preceding with a singleton datagram that
+  // contains only the BOC_file_data token.
+  Datagram dg;
+  dg.add_uint8(BOC_file_data);
+  if (!_target->put_datagram(dg)) {
+    util_cat.error()
+      << "Unable to write data to output.\n";
+    return;
+  }
+
+  // Then we can write the file data itself, as its own (possibly
+  // quite large) followup datagram.
+  if (!_target->copy_datagram(result, filename)) {
+    util_cat.error()
+      << "Unable to write file data to output.\n";
+    return;
+  }
+
+  // Both of those get written to the bam stream prior to the datagram
+  // that represents this particular object, but they'll get pulled
+  // out in the same order and queued up in the BamReader.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_file_data
+//       Access: Public
+//  Description: Writes a block of auxiliary file data from the
+//               indicated file (outside of the vfs).  This can be a
+//               block of arbitrary size, and it is assumed it may be
+//               quite large.  This must be balanced by a matching
+//               call to read_file_data() on restore.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_file_data(SubfileInfo &result, const SubfileInfo &source) {
+  // We write file data by preceding with a singleton datagram that
+  // contains only the BOC_file_data token.
+  Datagram dg;
+  dg.add_uint8(BOC_file_data);
+  if (!_target->put_datagram(dg)) {
+    util_cat.error()
+      << "Unable to write data to output.\n";
+    return;
+  }
+
+  // Then we can write the file data itself, as its own (possibly
+  // quite large) followup datagram.
+  if (!_target->copy_datagram(result, source)) {
+    util_cat.error()
+      << "Unable to write file data to output.\n";
+    return;
+  }
+
+  // Both of those get written to the bam stream prior to the datagram
+  // that represents this particular object, but they'll get pulled
+  // out in the same order and queued up in the BamReader.
 }
 
 ////////////////////////////////////////////////////////////////////
