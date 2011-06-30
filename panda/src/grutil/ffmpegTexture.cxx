@@ -154,10 +154,7 @@ do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
   int x_size = width;
   int y_size = height;
 
-  if (Texture::get_textures_power_2() != ATS_none) {
-    x_size = up_to_power_2(width);
-    y_size = up_to_power_2(height);
-  }
+  do_adjust_this_size(x_size, y_size, get_name(), true);
 
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
@@ -311,6 +308,24 @@ update_frame(int frame) {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_adjust_this_size
+//       Access: Protected, Virtual
+//  Description: Works like adjust_size, but also considers the
+//               texture class.  Movie textures, for instance, always
+//               pad outwards, never scale down.
+////////////////////////////////////////////////////////////////////
+bool FFMpegTexture::
+do_adjust_this_size(int &x_size, int &y_size, const string &name,
+                    bool for_padding) {
+  if (Texture::get_textures_power_2() != ATS_none) {
+    x_size = up_to_power_2(x_size);
+    y_size = up_to_power_2(y_size);
+  }
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::do_read_one
@@ -476,13 +491,6 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void FFMpegTexture::
 do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
-  me.add_uint32(_x_size);
-  me.add_uint32(_y_size);
-  me.add_uint32(_z_size);
-  me.add_uint8(_component_type);
-  me.add_uint8(_component_width);
-  me.add_uint8(_ram_image_compression);
-
   me.add_uint16(_pages.size());
   for (size_t n = 0; n < _pages.size(); ++n) {
     VideoPage &page = _pages[n];
@@ -498,14 +506,6 @@ do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 void FFMpegTexture::
 do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
-  _x_size = scan.get_uint32();
-  _y_size = scan.get_uint32();
-  _z_size = scan.get_uint32();
-  _component_type = (ComponentType)scan.get_uint8();
-  _component_width = scan.get_uint8();
-  _ram_image_compression = CM_off;
-  _ram_image_compression = (CompressionMode)scan.get_uint8();
-  
   int num_pages = scan.get_uint16();
   _pages.clear();
   for (int n = 0; n < num_pages; ++n) {
@@ -521,7 +521,6 @@ do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
   }
 
   _loaded_from_image = true;
-  do_set_pad_size(0, 0, 0);
   ++_image_modified;
 }
 

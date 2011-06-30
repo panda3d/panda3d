@@ -2635,6 +2635,19 @@ reconsider_dirty() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_adjust_this_size
+//       Access: Protected, Virtual
+//  Description: Works like adjust_size, but also considers the
+//               texture class.  Movie textures, for instance, always
+//               pad outwards, regardless of textures-power-2.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_adjust_this_size(int &x_size, int &y_size, const string &name,
+                    bool for_padding) {
+  return adjust_size(x_size, y_size, name, for_padding);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_read
 //       Access: Protected, Virtual
 //  Description: The internal implementation of the various read()
@@ -3067,7 +3080,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   if (get_textures_power_2() == ATS_pad) {
     int new_x_size = image.get_x_size();
     int new_y_size = image.get_y_size();
-    if (adjust_size(new_x_size, new_y_size, fullpath.get_basename(), true)) {
+    if (do_adjust_this_size(new_x_size, new_y_size, fullpath.get_basename(), true)) {
       pad_x_size = new_x_size - image.get_x_size();
       pad_y_size = new_y_size - image.get_y_size();
       PNMImage new_image(new_x_size, new_y_size, image.get_num_channels(),
@@ -3877,7 +3890,7 @@ do_reload_ram_image(bool allow_compression) {
       // changed, and we want a different-sized texture now.
       int x_size = _orig_file_x_size;
       int y_size = _orig_file_y_size;
-      Texture::adjust_size(x_size, y_size, _filename.get_basename(), true);
+      do_adjust_this_size(x_size, y_size, _filename.get_basename(), true);
       if (x_size != tex->get_x_size() || y_size != tex->get_y_size()) {
         if (gobj_cat.is_debug()) {
           gobj_cat.debug()
@@ -4423,7 +4436,7 @@ do_rescale_texture() {
     return false;
   }
 
-  if (adjust_size(new_x_size, new_y_size, get_name(), false)) {
+  if (do_adjust_this_size(new_x_size, new_y_size, get_name(), false)) {
     // OK, we have to scale the image.
     PNMImage orig_image;
     if (!do_store_one(orig_image, 0, 0)) {
@@ -4454,7 +4467,7 @@ do_rescale_texture() {
   if (get_textures_power_2() == ATS_pad) {
     new_x_size = _x_size;
     new_y_size = _y_size;
-    if (adjust_size(new_x_size, new_y_size, get_name(), true)) {
+    if (do_adjust_this_size(new_x_size, new_y_size, get_name(), true)) {
       pad_x_size = new_x_size - _x_size;
       pad_y_size = new_y_size - _y_size;
 

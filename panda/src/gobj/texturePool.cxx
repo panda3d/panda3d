@@ -1092,7 +1092,7 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
           compressed_cache_record = (tex->get_ram_image_compression() != Texture::CM_off);
           int x_size = tex->get_orig_file_x_size();
           int y_size = tex->get_orig_file_y_size();
-          Texture::adjust_size(x_size, y_size, filename.get_basename(), true);
+          tex->adjust_this_size(x_size, y_size, filename.get_basename(), true);
 
           if (!cache->get_cache_textures() && !compressed_cache_record) {
             // We're not supposed to be caching uncompressed textures.

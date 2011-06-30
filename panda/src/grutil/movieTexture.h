@@ -73,6 +73,10 @@ protected:
   virtual bool get_keep_ram_image() const;
   virtual bool do_has_bam_rawdata() const;
   virtual void do_get_bam_rawdata();
+
+  virtual bool do_adjust_this_size(int &x_size, int &y_size, const string &name, 
+                                   bool for_padding);
+
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            const LoaderOptions &options,

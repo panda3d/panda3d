@@ -2029,6 +2029,20 @@ rescale_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::adjust_this_size
+//       Access: Public
+//  Description: Works like adjust_size, but also considers the
+//               texture class.  Movie textures, for instance, always
+//               pad outwards, regardless of textures-power-2.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+adjust_this_size(int &x_size, int &y_size, const string &name,
+                 bool for_padding) {
+  MutexHolder holder(_lock);
+  return do_adjust_this_size(x_size, y_size, name, for_padding);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_get_ram_image_size
 //       Access: Protected
 //  Description: 

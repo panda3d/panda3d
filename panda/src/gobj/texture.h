@@ -490,6 +490,8 @@ public:
 
   static bool adjust_size(int &x_size, int &y_size, const string &name,
                           bool for_padding);
+  INLINE bool adjust_this_size(int &x_size, int &y_size, const string &name,
+                               bool for_padding);
 
 protected:
   virtual void reconsider_dirty();
@@ -501,6 +503,8 @@ protected:
   // All of these assume the lock is already held; generally, they
   // also avoid adjusting the _properties_modified and _image_modified
   // semaphores.
+  virtual bool do_adjust_this_size(int &x_size, int &y_size, const string &name, 
+                                   bool for_padding);
 
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
                        int primary_file_num_channels, int alpha_file_channel,

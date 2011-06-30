@@ -171,17 +171,8 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   cdata->_video_width  = x_max;
   cdata->_video_height = y_max;
   cdata->_video_length = len;
-  
-  if (_texture_type == TT_cube_map) {
-    // Texture must be square.
-    if (x_max > y_max) y_max = x_max;
-    if (y_max > x_max) x_max = y_max;
-  }
 
-  if (Texture::get_textures_power_2() != ATS_none) {
-    x_max = up_to_power_2(x_max);
-    y_max = up_to_power_2(y_max);
-  }
+  do_adjust_this_size(x_max, y_max, get_name(), true);
   
   do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
                                  T_unsigned_byte, cdata->_pages.size(),
@@ -192,6 +183,29 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   do_set_pad_size(max(_x_size - _orig_file_x_size, 0), 
                   max(_y_size - _orig_file_y_size, 0),
                   0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_adjust_this_size
+//       Access: Protected, Virtual
+//  Description: Works like adjust_size, but also considers the
+//               texture class.  Movie textures, for instance, always
+//               pad outwards, never scale down.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+do_adjust_this_size(int &x_size, int &y_size, const string &name,
+                    bool for_padding) {
+  if (_texture_type == TT_cube_map) {
+    // Texture must be square.
+    x_size = y_size = max(x_size, y_size);
+  }
+
+  if (Texture::get_textures_power_2() != ATS_none) {
+    x_size = up_to_power_2(x_size);
+    y_size = up_to_power_2(y_size);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
