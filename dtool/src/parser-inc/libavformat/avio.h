@@ -3,4 +3,6 @@
 
 #include <stdint.h>
 
+struct AVIOContext;
+
 #endif
