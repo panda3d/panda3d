@@ -94,7 +94,7 @@
 #endif
 #define _WIN32_WINNT 0x0502
 
-#if defined(PHAVE_STDINT_H) && defined(__cplusplus)
+#ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
 #endif
