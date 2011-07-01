@@ -2823,7 +2823,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
       'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
-      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG']
+      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'SWSCALE']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
