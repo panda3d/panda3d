@@ -2090,11 +2090,11 @@ string_format(const string &str) {
     return F_depth_stencil;
   } else if (cmp_nocase(str, "depth_component") == 0) {
     return F_depth_component;
-  } else if (cmp_nocase(str, "depth_component16") == 0) {
+  } else if (cmp_nocase(str, "depth_component16") == 0 || cmp_nocase(str, "d16") == 0) {
     return F_depth_component16;
-  } else if (cmp_nocase(str, "depth_component24") == 0) {
+  } else if (cmp_nocase(str, "depth_component24") == 0 || cmp_nocase(str, "d24") == 0) {
     return F_depth_component24;
-  } else if (cmp_nocase(str, "depth_component32") == 0) {
+  } else if (cmp_nocase(str, "depth_component32") == 0 || cmp_nocase(str, "d32") == 0) {
     return F_depth_component32;
   } else if (cmp_nocase(str, "color_index") == 0) {
     return F_color_index;
@@ -2110,11 +2110,11 @@ string_format(const string &str) {
     return F_rgb;
   } else if (cmp_nocase(str, "rgb5") == 0) {
     return F_rgb5;
-  } else if (cmp_nocase(str, "rgb8") == 0) {
+  } else if (cmp_nocase(str, "rgb8") == 0 || cmp_nocase(str, "r8g8b8") == 0) {
     return F_rgb8;
   } else if (cmp_nocase(str, "rgb12") == 0) {
     return F_rgb12;
-  } else if (cmp_nocase(str, "rgb332") == 0) {
+  } else if (cmp_nocase(str, "rgb332") == 0 || cmp_nocase(str, "r3g3b2") == 0) {
     return F_rgb332;
   } else if (cmp_nocase(str, "rgba") == 0) {
     return F_rgba;
@@ -2124,7 +2124,7 @@ string_format(const string &str) {
     return F_rgba4;
   } else if (cmp_nocase(str, "rgba5") == 0) {
     return F_rgba5;
-  } else if (cmp_nocase(str, "rgba8") == 0) {
+  } else if (cmp_nocase(str, "rgba8") == 0 || cmp_nocase(str, "r8g8b8a8") == 0) {
     return F_rgba8;
   } else if (cmp_nocase(str, "rgba12") == 0) {
     return F_rgba12;
@@ -2134,9 +2134,9 @@ string_format(const string &str) {
     return F_luminance_alpha;
   } else if (cmp_nocase(str, "luminance_alphamask") == 0) {
     return F_luminance_alphamask;
-  } else if (cmp_nocase(str, "rgba16") == 0) {
+  } else if (cmp_nocase(str, "rgba16") == 0 || cmp_nocase(str, "r16g16b16a16") == 0) {
     return F_rgba16;
-  } else if (cmp_nocase(str, "rgba32") == 0) {
+  } else if (cmp_nocase(str, "rgba32") == 0 || cmp_nocase(str, "r32g32b32a32") == 0) {
     return F_rgba32;
   }
 
@@ -2248,15 +2248,18 @@ format_wrap_mode(WrapMode wm) {
 ////////////////////////////////////////////////////////////////////
 Texture::WrapMode Texture::
 string_wrap_mode(const string &string) {
-  if (cmp_nocase_uh(string, "repeat") == 0) {
+  if (cmp_nocase_uh(string, "repeat") == 0 ||
+      cmp_nocase_uh(string, "wrap") == 0) {
     return WM_repeat;
   } else if (cmp_nocase_uh(string, "clamp") == 0) {
     return WM_clamp;
-  } else if (cmp_nocase_uh(string, "mirror") == 0) {
-    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror") == 0 ||
+             cmp_nocase_uh(string, "mirrored_repeat") == 0) {
+    return WM_mirror;
   } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
-    return WM_clamp;
-  } else if (cmp_nocase_uh(string, "border_color") == 0) {
+    return WM_mirror_once;
+  } else if (cmp_nocase_uh(string, "border_color") == 0 ||
+             cmp_nocase_uh(string, "border") == 0) {
     return WM_border_color;
   } else {
     return WM_invalid;
