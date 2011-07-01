@@ -1,4 +1,5 @@
 #include "config_collide.cxx"
+#include "collisionBox.cxx"
 #include "collisionEntry.cxx"
 #include "collisionGeom.cxx"
 #include "collisionHandler.cxx"
@@ -14,5 +15,3 @@
 #include "collisionInvSphere.cxx"
 #include "collisionLevelStateBase.cxx"
 #include "collisionLevelState.cxx"
-#include "collisionLine.cxx"
-

@@ -6,10 +6,11 @@
   #define LOCAL_LIBS \
     tform gobj pgraph putil \
     pstatclient
-    
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
+    collisionBox.I collisionBox.h \
     collisionEntry.I collisionEntry.h \
     collisionGeom.I collisionGeom.h \
     collisionHandler.I collisionHandler.h  \
@@ -36,13 +37,13 @@
     collisionSegment.I collisionSegment.h  \
     collisionSolid.I collisionSolid.h \
     collisionSphere.I collisionSphere.h \
-    collisionBox.I collisionBox.h \
     collisionTraverser.I collisionTraverser.h  \
     collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h \
     config_collide.h
-    
+
  #define INCLUDED_SOURCES \
+    collisionBox.cxx \
     collisionEntry.cxx \
     collisionGeom.cxx \
     collisionHandler.cxx \
@@ -69,13 +70,13 @@
     collisionSegment.cxx  \
     collisionSolid.cxx \
     collisionSphere.cxx  \
-    collisionBox.cxx  \
     collisionTraverser.cxx \
-    collisionTube.cxx  \
+    collisionTube.cxx \
     collisionVisualizer.cxx \
-    config_collide.cxx 
+    config_collide.cxx
 
   #define INSTALL_HEADERS \
+    collisionBox.I collisionBox.h \
     collisionEntry.I collisionEntry.h \
     collisionGeom.I collisionGeom.h \
     collisionHandler.I collisionHandler.h \
@@ -102,7 +103,6 @@
     collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h \
     collisionSphere.I collisionSphere.h \
-    collisionBox.I collisionBox.h \
     collisionTraverser.I collisionTraverser.h \
     collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h \
@@ -123,4 +123,3 @@
     test_collide.cxx
 
 #end test_bin_target
-

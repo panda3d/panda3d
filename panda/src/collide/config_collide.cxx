@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_collide.h"
+#include "collisionBox.h"
 #include "collisionEntry.h"
 #include "collisionHandler.h"
 #include "collisionHandlerEvent.h"
@@ -40,7 +41,6 @@
 #include "collisionSphere.h"
 #include "collisionTraverser.h"
 #include "collisionTube.h"
-#include "collisionBox.h"
 #include "collisionVisualizer.h"
 #include "dconfig.h"
 
@@ -99,7 +99,7 @@ ConfigVariableInt collision_parabola_bounds_sample
  PRC_DESC("This is the number of points along a CollisionParabola to "
           "sample in order to determine an accurate bounding box."));
 
-ConfigVariableInt fluid_cap_amount 
+ConfigVariableInt fluid_cap_amount
 ("fluid-cap-amount", 100,
  PRC_DESC("ensures that fluid pos doesn't check beyond X feet"));
 
@@ -119,6 +119,7 @@ init_libcollide() {
   }
   initialized = true;
 
+  CollisionBox::init_type();
   CollisionEntry::init_type();
   CollisionHandler::init_type();
   CollisionHandlerEvent::init_type();
@@ -145,13 +146,13 @@ init_libcollide() {
   CollisionSphere::init_type();
   CollisionTraverser::init_type();
   CollisionTube::init_type();
-  CollisionBox::init_type();
 
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder::init_type();
   CollisionVisualizer::init_type();
 #endif
 
+  CollisionBox::register_with_read_factory();
   CollisionDSSolid::register_with_read_factory();
   CollisionInvSphere::register_with_read_factory();
   CollisionLine::register_with_read_factory();
@@ -164,5 +165,4 @@ init_libcollide() {
   CollisionSegment::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
   CollisionTube::register_with_read_factory();
-  CollisionBox::register_with_read_factory();
 }

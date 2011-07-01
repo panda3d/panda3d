@@ -1,3 +1,4 @@
+#include "collisionLine.cxx"
 #include "collisionNode.cxx"
 #include "collisionParabola.cxx"
 #include "collisionPlane.cxx"
@@ -11,4 +12,3 @@
 #include "collisionTraverser.cxx"
 #include "collisionTube.cxx"
 #include "collisionVisualizer.cxx"
-#include "collisionBox.cxx"
