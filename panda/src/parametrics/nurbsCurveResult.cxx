@@ -100,7 +100,7 @@ eval_segment_point(int segment, float t, LVecBase3f &point) const {
 void NurbsCurveResult::
 eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const {
   float t2 = t*t;
-  LVecBase4f tvec(t2, t, 1.0f, 0.0f);
+  LVecBase4f tvec(3.0 * t2, 2.0 * t, 1.0f, 0.0f);
 
   tangent.set(tvec.dot(_composed[segment].get_col(0)),
               tvec.dot(_composed[segment].get_col(1)),
