@@ -245,7 +245,9 @@ if (DEBVERSION is None):
 MAJOR_VERSION = VERSION[:3]
 
 if (RUNTIME or RTDIST):
-    PkgDisable("PANDATOOL")
+    # Compiling Maya/Max is pointless in rtdist build
+    for ver in MAYAVERSIONS + MAXVERSIONS:
+        PkgDisable(ver)
 
     if (DISTRIBUTOR.strip() == ""):
         exit("You must provide a valid distributor name when making a runtime or rtdist build!")
