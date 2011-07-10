@@ -73,6 +73,10 @@ PUBLISHED:
   void set_gravity(const LVector3f &gravity);
   LVector3f get_gravity() const;
 
+  // Restrict movement
+  void set_linear_factor(const LVector3f &factor);
+  void set_angular_factor(const LVector3f &factor);
+
 public:
   virtual btCollisionObject *get_object() const;
 

@@ -416,3 +416,25 @@ get_gravity() const {
   return btVector3_to_LVector3f(_body->getGravity());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::set_linear_factor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+set_linear_factor(const LVector3f &factor) {
+
+  _body->setLinearFactor(LVecBase3f_to_btVector3(factor));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::set_angular_factor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+set_angular_factor(const LVector3f &factor) {
+
+  _body->setAngularFactor(LVecBase3f_to_btVector3(factor));
+}
+
