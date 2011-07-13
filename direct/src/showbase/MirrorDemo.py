@@ -67,9 +67,10 @@ def setupMirror(name, width, height):
     # camera to reverse the direction of its face culling.  We also
     # tell it not to draw (that is, to clip) anything behind the
     # mirror plane.
-    camera.setInitialState(RenderState.make(
-        CullFaceAttrib.makeReverse(),
-        ClipPlaneAttrib.make(ClipPlaneAttrib.OAdd, planeNode)))
+    dummy = NodePath('dummy')
+    dummy.setAttrib(CullFaceAttrib.makeReverse())
+    dummy.setClipPlane(planeNP)
+    camera.setInitialState(dummy.getState())
 
     # Create a visible representation of the camera so we can see it.
     #cameraVis = loader.loadModel('camera.egg')
