@@ -255,6 +255,19 @@ post_step(btDynamicsWorld *world) {
   // Clear the collected data again
   _drawer._lines.clear();
   _drawer._triangles.clear();
+
+  // Force recompute of bounds
+  int num_geoms = this->get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    const Geom *geom = this->get_geom(i);
+    geom->mark_bounds_stale();
+  }
+
+  this->mark_bounds_stale();
+
+  // Alternate way, probably a little bit slower
+  //NodePath np = NodePath::any_path(this);
+  //np.force_recompute_bounds();
 }
 
 ////////////////////////////////////////////////////////////////////
