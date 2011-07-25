@@ -1074,16 +1074,23 @@ def CompileLink(dll, obj, opts):
 
 ##########################################################################################
 #
-# CompileEggPZ
+# CompileEgg
 #
 ##########################################################################################
 
-def CompileEggPZ(eggpz, src, opts):
+def CompileEgg(eggfile, src, opts):
+    pz = False
+    if (eggfile.endswith(".pz")):
+        pz = True
+        eggfile = eggfile[:-3]
+
     if (src.endswith(".egg")):
-        CopyFile(eggpz[:-3], src)
+        CopyFile(eggfile, src)
     elif (src.endswith(".flt")):
-        oscmd(GetOutputDir()+"/bin/flt2egg -ps keep -o " + BracketNameWithQuotes(eggpz[:-3]) + " " + BracketNameWithQuotes(src))
-    oscmd(GetOutputDir()+"/bin/pzip " + BracketNameWithQuotes(eggpz[:-3]))
+        oscmd(GetOutputDir()+"/bin/flt2egg -ps keep -o " + BracketNameWithQuotes(eggfile) + " " + BracketNameWithQuotes(src))
+
+    if pz:
+        oscmd(GetOutputDir()+"/bin/pzip " + BracketNameWithQuotes(eggfile))
 
 ##########################################################################################
 #
@@ -1307,7 +1314,10 @@ def CompileAnything(target, inputs, opts, progress = None):
         return CompileBundle(target, inputs, opts)
     elif (origsuffix==".pz"):
         ProgressOutput(progress, "Compressing", target)
-        return CompileEggPZ(target, infile, opts)
+        return CompileEgg(target, infile, opts)
+    elif (origsuffix==".egg"):
+        ProgressOutput(progress, "Converting", target)
+        return CompileEgg(target, infile, opts)
     elif (origsuffix in [".res", ".rsrc"]):
         ProgressOutput(progress, "Building resource object", target)
         return CompileResource(target, infile, opts)
