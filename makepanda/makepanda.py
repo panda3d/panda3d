@@ -1333,7 +1333,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         elif (infile.endswith(".rc") or infile.endswith(".r")):
             ProgressOutput(progress, "Building resource object", target)
             return CompileResource(target, infile, opts)
-    exit("Don't know how to compile: "+target)
+    exit("Don't know how to compile: %s from %s" % (target, inputs))
 
 ##########################################################################################
 #
