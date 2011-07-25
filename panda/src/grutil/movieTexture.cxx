@@ -24,6 +24,7 @@
 #include "config_grutil.h"
 #include "bamCacheRecord.h"
 #include "bamReader.h"
+#include "bamWriter.h"
 #include "math.h"
 #include "audioSound.h"
 
