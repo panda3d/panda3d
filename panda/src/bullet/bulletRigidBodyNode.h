@@ -80,6 +80,8 @@ PUBLISHED:
 public:
   virtual btCollisionObject *get_object() const;
 
+  virtual void output(ostream &out) const;
+
 protected:
   virtual void parents_changed();
   virtual void transform_changed();

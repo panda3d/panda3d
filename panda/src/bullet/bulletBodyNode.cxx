@@ -147,6 +147,22 @@ safe_to_flatten_below() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+output(ostream &out) const {
+
+  PandaNode::output(out);
+
+  out << " (" << get_num_shapes() << " shapes)";
+
+  if (is_static()) out << " static";
+  if (is_kinematic()) out << " kinematic";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::transform_changed
 //       Access: Protected
 //  Description:

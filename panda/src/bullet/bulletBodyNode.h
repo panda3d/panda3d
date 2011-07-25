@@ -110,6 +110,8 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
+  virtual void output(ostream &out) const;
+
 protected:
   INLINE void set_collision_flag(int flag, bool value);
   INLINE bool get_collision_flag(int flag) const;

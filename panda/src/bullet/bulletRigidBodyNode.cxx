@@ -49,6 +49,19 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+output(ostream &out) const {
+
+  BulletBodyNode::output(out);
+
+  out << " mass=" << get_mass();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::get_object
 //       Access: Public
 //  Description:
