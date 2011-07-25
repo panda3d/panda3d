@@ -51,6 +51,28 @@ notifies_collisions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_collision_response
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletBodyNode::
+set_collision_response(bool value) {
+
+  set_collision_flag(btCollisionObject::CF_NO_CONTACT_RESPONSE, !value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::get_collision_response
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool BulletBodyNode::
+get_collision_response() const {
+
+  return !get_collision_flag(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::set_collision_flag
 //       Access: Protected
 //  Description:

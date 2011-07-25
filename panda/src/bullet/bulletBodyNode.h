@@ -61,6 +61,9 @@ PUBLISHED:
   INLINE void notify_collisions(bool value);
   INLINE bool notifies_collisions() const;
 
+  INLINE void set_collision_response(bool value);
+  INLINE bool get_collision_response() const;
+
   bool check_collision_with(PandaNode *node);
 
   bool has_contact_response() const;
