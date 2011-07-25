@@ -36,7 +36,8 @@ class tk(package):
            'tkMessageBox', 'tkSimpleDialog')
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
-           'direct.tkwidgets')
+           'direct.tkwidgets',
+           'Pmw')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
@@ -55,6 +56,7 @@ class pygame(package):
     require('panda3d', 'numpy')
 
     module('pygame', required = True)
+    module('pygame.*')
 
 class twisted(package):
     config(display_name = "Twisted")
