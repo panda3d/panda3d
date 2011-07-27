@@ -1069,7 +1069,9 @@ make_canonical() {
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != NULL) {
-    (*this) = newpath;
+    Filename newpath_fn(newpath);
+    newpath_fn._flags = _flags;
+    (*this) = newpath_fn;
   }
 #endif
 
@@ -1151,6 +1153,7 @@ make_true_case() {
     return true;
   }
 
+  true_case._flags = _flags;
   (*this) = true_case;
   return true;
 
@@ -1935,7 +1938,7 @@ scan_directory() const {
 bool Filename::
 open_read(ifstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::in;
 
@@ -1971,7 +1974,7 @@ open_read(ifstream &stream) const {
 bool Filename::
 open_write(ofstream &stream, bool truncate) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::out;
 
@@ -2022,7 +2025,7 @@ open_write(ofstream &stream, bool truncate) const {
 bool Filename::
 open_append(ofstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::app;
 
@@ -2059,7 +2062,7 @@ open_append(ofstream &stream) const {
 bool Filename::
 open_read_write(fstream &stream, bool truncate) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::out | ios::in;
 
@@ -2107,7 +2110,7 @@ open_read_write(fstream &stream, bool truncate) const {
 bool Filename::
 open_read_append(fstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::app | ios::in;
 
@@ -2145,7 +2148,7 @@ open_read_append(fstream &stream) const {
 bool Filename::
 open_read(pifstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::in;
 
@@ -2183,7 +2186,7 @@ open_read(pifstream &stream) const {
 bool Filename::
 open_write(pofstream &stream, bool truncate) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::out;
 
@@ -2236,7 +2239,7 @@ open_write(pofstream &stream, bool truncate) const {
 bool Filename::
 open_append(pofstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::app;
 
@@ -2275,7 +2278,7 @@ open_append(pofstream &stream) const {
 bool Filename::
 open_read_write(pfstream &stream, bool truncate) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::out | ios::in;
 
@@ -2325,7 +2328,7 @@ open_read_write(pfstream &stream, bool truncate) const {
 bool Filename::
 open_read_append(pfstream &stream) const {
   assert(!get_pattern());
-  assert(is_text() || is_binary());
+  assert(is_binary_or_text());
 
   ios_openmode open_mode = ios::app | ios::in;
 
@@ -2530,7 +2533,9 @@ rename_to(const Filename &other) const {
 //       Access: Published
 //  Description: Copies the file to the indicated new filename, by
 //               reading the contents and writing it to the new file.
-//               Returns true if successful, false on failure.
+//               Returns true if successful, false on failure.  The
+//               copy is always binary, regardless of the filename
+//               settings.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 copy_to(const Filename &other) const {

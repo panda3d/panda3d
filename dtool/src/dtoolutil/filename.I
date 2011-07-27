@@ -382,6 +382,19 @@ is_binary() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_binary_or_text
+//       Access: Published
+//  Description: Returns true either is_binary() or is_text() is true;
+//               that is, that the filename has been specified as
+//               either binary or text.  If this is false, the
+//               filename has not been specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+is_binary_or_text() const {
+  return ((_flags & (F_binary | F_text)) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_text
 //       Access: Published
 //  Description: Returns true if the Filename has been indicated to

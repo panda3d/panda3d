@@ -133,6 +133,7 @@ PUBLISHED:
   INLINE void set_text();
   INLINE bool is_binary() const;
   INLINE bool is_text() const;
+  INLINE bool is_binary_or_text() const;
 
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
