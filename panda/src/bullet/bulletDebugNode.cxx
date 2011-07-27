@@ -16,6 +16,7 @@
 
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
+#include "omniBoundingVolume.h"
 
 TypeHandle BulletDebugNode::_type_handle;
 
@@ -57,6 +58,9 @@ BulletDebugNode(const char *name) : GeomNode(name), _verbose(false) {
   _prim_triangles->add_next_vertices(3);
   _prim_triangles->close_primitive();
 
+  CPT (BoundingVolume) bounds = new OmniBoundingVolume();
+  set_bounds(bounds);
+  set_final(true);
   set_overall_hidden(true);
 }
 
