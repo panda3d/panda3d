@@ -39,6 +39,7 @@
     stTree.cxx
 
   #define INSTALL_HEADERS \
+    config_speedtree.h \
     speedtree_parameters.h \
     speedtree_api.h \
     speedTreeNode.h speedTreeNode.I \
