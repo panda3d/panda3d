@@ -38,6 +38,12 @@ ConfigVariableBool temp_hpr_fix
           "to the other two.  Set this false if you need compatibility with "
           "Panda's old hpr calculations."));
 
+ConfigVariableBool no_singular_invert
+("no-singular-invert", false,
+ PRC_DESC("Set this true to make singular-invert warning messages generate an "
+          "assertion failure instead of just a warning (which can then be "
+          "trapped with assert-abort)."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_liblinmath
 //  Description: Initializes the library.  This must be called at

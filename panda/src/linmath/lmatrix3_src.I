@@ -920,7 +920,7 @@ determinant() const {
 //               place, see invert_in_place.
 //
 //               The return value is true if the matrix was
-//               successfully inverted, false if the was a
+//               successfully inverted, false if there was a
 //               singularity.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
@@ -938,6 +938,7 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
     (*this) = ident_mat();
+    nassertr(!no_singular_invert, false);
     return false;
   }
 
