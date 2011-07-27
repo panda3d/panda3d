@@ -101,6 +101,11 @@ class Packager:
                     if basename.resolveFilename(packager.executablePath):
                         self.filename = basename
 
+            if ext in packager.textExtensions and not self.executable:
+                self.filename.setText()
+            else:
+                self.filename.setBinary()
+
             # Convert the filename to an unambiguous filename for
             # searching.
             self.filename.makeTrueCase()
@@ -1434,6 +1439,14 @@ class Packager:
             # Write the xml file to a temporary file on disk, so we
             # can add it to the multifile.
             filename = Filename.temporary('', 'p3d_', '.xml')
+
+            # This should really be setText() for an xml file, but it
+            # doesn't really matter that much since tinyxml can read
+            # it either way; and if we use setBinary() it will remain
+            # compatible with older versions of the core API that
+            # didn't understand the SF_text flag.
+            filename.setBinary()
+            
             doc.SaveFile(filename.toOsSpecific())
 
             # It's important not to compress this file: the core API
@@ -1940,6 +1953,7 @@ class Packager:
 
             # Then write it out again, without the comments.
             tempFilename = Filename.temporary('', 'p3d_', '.prc')
+            tempFilename.setBinary()  # Binary is more reliable for signing.
             temp = open(tempFilename.toOsSpecific(), 'w')
             for line in textLines:
                 line = line.strip()
@@ -1964,6 +1978,7 @@ class Packager:
                     file.newName = file.newName[:-1] + 'e'
 
                 preFilename = Filename.temporary('', 'p3d_', '.pre')
+                preFilename.setBinary()
                 tempFilename.setText()
                 encryptFile(tempFilename, preFilename, self.packager.prcEncryptionKey)
                 tempFilename.unlink()
@@ -2233,7 +2248,7 @@ class Packager:
         self.modelExtensions = [ 'egg', 'bam' ]
 
         # Text files that are copied (and compressed) to the package
-        # without processing.
+        # with end-of-line conversion.
         self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg', 'sha', 'dc', 'xml' ]
 
         # Binary files that are copied (and compressed) without
@@ -3495,6 +3510,10 @@ class Packager:
                 ext = newFilename.getExtension()
 
             if ext in self.knownExtensions:
+                if ext in self.textExtensions:
+                    filename.setText()
+                else:
+                    filename.setBinary()
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False, unprocessed = unprocessed)
 

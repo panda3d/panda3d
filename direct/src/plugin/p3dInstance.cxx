@@ -2136,6 +2136,9 @@ scan_app_desc_file(TiXmlDocument *doc) {
 void P3DInstance::
 add_packages() {
   assert(!_packages_specified);
+  if (_xpackage == NULL) {
+    return;
+  }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 

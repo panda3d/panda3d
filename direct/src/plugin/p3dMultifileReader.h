@@ -63,6 +63,10 @@ private:
   inline unsigned int read_uint32();
 
   enum SubfileFlags {
+    // If any of these bits are set, we can't read the subfile.
+    SF_ignore         = 0x003f,
+
+    // These bits are also relevant, and specifically so.
     SF_compressed     = 0x0008,
     SF_encrypted      = 0x0010,
     SF_signature      = 0x0020,

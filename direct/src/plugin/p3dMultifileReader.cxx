@@ -332,8 +332,8 @@ read_index() {
       // Otherwise, it's a regular file.
       _last_data_byte = max(_last_data_byte, s.get_last_byte_pos());
 
-      if (flags == 0) {
-        // We can only support subfiles with no particular flags set.
+      if ((flags & SF_ignore) == 0) {
+        // We can only support subfiles with none of SF_ignore set.
         _subfiles.push_back(s);
       }
     }
