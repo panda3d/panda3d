@@ -1,4 +1,4 @@
-#define USE_PACKAGES fftw cg
+#define USE_PACKAGES fftw cg speedtree
 #define OTHER_LIBS \
   egg2pg:c egg:c pandaegg:m \
   pipeline:c recorder:c parametrics:c collide:c chan:c char:c \
@@ -11,6 +11,7 @@
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
   $[if $[HAVE_AUDIO],audio:c] \
   panda:m \
+  $[if $[HAVE_SPEEDTREE],pandaspeedtree] \
   pandabase:c express:c pandaexpress:m \
   interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c \
   dtoolconfig:m dtool:m pystub
