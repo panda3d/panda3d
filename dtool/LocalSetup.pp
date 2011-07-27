@@ -280,6 +280,9 @@ $[cdefine HAVE_OPENAL]
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
 
+/* Define if we are using SpeedTree. */
+$[cdefine HAVE_SPEEDTREE]
+
 /* Define if we want to compile in a default font. */
 $[cdefine COMPILE_IN_DEFAULT_FONT]
 

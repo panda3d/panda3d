@@ -1475,6 +1475,7 @@ DTOOL_CONFIG=[
     ("HAVE_OPENAL",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_SPEEDTREE",                 'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
