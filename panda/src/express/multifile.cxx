@@ -467,6 +467,11 @@ set_scale_factor(size_t scale_factor) {
 //               is replaced without examining its contents (but see
 //               also update_subfile).
 //
+//               Filename::set_binary() or set_text() must have been
+//               called previously to specify the nature of the source
+//               file.  If set_text() was called, the text flag will
+//               be set on the subfile.
+//
 //               Returns the subfile name on success (it might have
 //               been modified slightly), or empty string on failure.
 ////////////////////////////////////////////////////////////////////
@@ -475,15 +480,24 @@ add_subfile(const string &subfile_name, const Filename &filename,
             int compression_level) {
   nassertr(is_write_valid(), string());
 
-  if (!filename.exists()) {
+  Filename fname = filename;
+  if (multifile_always_binary) {
+    fname.set_binary();
+  }
+
+  nassertr(fname.is_binary_or_text(), string());
+
+  if (!fname.exists()) {
     return string();
   }
   string name = standardize_subfile_name(subfile_name);
   if (!name.empty()) {
     Subfile *subfile = new Subfile;
     subfile->_name = name;
-    subfile->_source_filename = filename;
-    subfile->_source_filename.set_binary();
+    subfile->_source_filename = fname;
+    if (fname.is_text()) {
+      subfile->_flags |= SF_text;
+    }
     
     add_new_subfile(subfile, compression_level);
   }
@@ -500,6 +514,7 @@ add_subfile(const string &subfile_name, const Filename &filename,
 //  Description: Adds a file from a stream as a subfile to the Multifile.
 //               The indicated istream will be read and its contents
 //               added to the Multifile at the next call to flush().
+//               The file will be added as a binary subfile.
 //
 //               Note that the istream must remain untouched and
 //               unused by any other code until flush() is called.  At
@@ -538,13 +553,25 @@ add_subfile(const string &subfile_name, istream *subfile_data,
 //               compared byte-for-byte to the disk file, and it is
 //               replaced only if it is different; otherwise, the
 //               multifile is left unchanged.
+//
+//               Filename::set_binary() or set_text() must have been
+//               called previously to specify the nature of the source
+//               file.  If set_text() was called, the text flag will
+//               be set on the subfile.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 update_subfile(const string &subfile_name, const Filename &filename,
                int compression_level) {
   nassertr(is_write_valid(), string());
 
-  if (!filename.exists()) {
+  Filename fname = filename;
+  if (multifile_always_binary) {
+    fname.set_binary();
+  }
+
+  nassertr(fname.is_binary_or_text(), string());
+
+  if (!fname.exists()) {
     return string();
   }
   string name = standardize_subfile_name(subfile_name);
@@ -552,7 +579,7 @@ update_subfile(const string &subfile_name, const Filename &filename,
     int index = find_subfile(name);
     if (index >= 0) {
       // The subfile already exists; compare it to the source file.
-      if (compare_subfile(index, filename)) {
+      if (compare_subfile(index, fname)) {
         // The files are identical; do nothing.
         return name;
       }
@@ -562,8 +589,10 @@ update_subfile(const string &subfile_name, const Filename &filename,
     // source file.  Add the new source file.
     Subfile *subfile = new Subfile;
     subfile->_name = name;
-    subfile->_source_filename = filename;
-    subfile->_source_filename.set_binary();
+    subfile->_source_filename = fname;
+    if (fname.is_text()) {
+      subfile->_flags |= SF_text;
+    }
 
     add_new_subfile(subfile, compression_level);
   }
@@ -1645,6 +1674,23 @@ is_subfile_encrypted(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::is_subfile_text
+//       Access: Published
+//  Description: Returns true if the indicated subfile represents text
+//               data, or false if it represents binary data.  If the
+//               file is text data, it may have been processed by
+//               end-of-line conversion when it was added.  (But the
+//               actual bits in the multifile will represent the
+//               standard Unix end-of-line convention, e.g. \n instead
+//               of \r\n.)
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+is_subfile_text(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+  return (_subfiles[index]->_flags & SF_text) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_index_end
 //       Access: Published
 //  Description: Returns the first byte that is guaranteed to follow
@@ -1776,7 +1822,20 @@ extract_subfile(int index, const Filename &filename) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   
   Filename fname = filename;
-  fname.set_binary();
+  if (multifile_always_binary) {
+    fname.set_binary();
+  }
+
+  nassertr(fname.is_binary_or_text(), false);
+  if (!fname.is_binary_or_text()) {
+    // If we haven't specified binary or text, infer it from the type
+    // of the subfile.
+    if ((_subfiles[index]->_flags & SF_text) != 0) {
+      fname.set_text();
+    } else {
+      fname.set_binary();
+    }
+  }
   fname.make_dir();
   pofstream out;
   if (!fname.open_write(out, true)) {
@@ -1828,6 +1887,13 @@ extract_subfile_to(int index, ostream &out) {
 //               file on disk with the nth subfile.  Returns true if
 //               the files are equivalent, or false if they are
 //               different (or the file is missing).
+//
+//               If Filename::set_binary() or set_text() has already
+//               been called, it specifies the nature of the source
+//               file.  If this is different from the text flag of the
+//               subfile, the comparison will always return false.
+//               If this has not been specified, it will be set from
+//               the text flag of the subfile.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 compare_subfile(int index, const Filename &filename) {
@@ -1840,27 +1906,62 @@ compare_subfile(int index, const Filename &filename) {
     return false;
   }
 
+  Filename fname = filename;
+  if (fname.is_binary()) {
+    // If we've specified a binary file, it had better be a binary
+    // subfile.
+    if ((_subfiles[index]->_flags & SF_text) != 0) {
+      if (express_cat.is_debug()) {
+        express_cat.debug()
+          << "File is not binary: " << filename << "\n";
+      }
+      return false;
+    }
+
+  } else if (fname.is_text()) {
+    // If we've specified a text file, it had better be a text
+    // subfile.
+    if ((_subfiles[index]->_flags & SF_text) == 0) {
+      if (express_cat.is_debug()) {
+        express_cat.debug()
+          << "File is not text: " << filename << "\n";
+      }
+      return false;
+    }
+
+  } else {
+    // If we haven't specified binary or text, infer it from the type
+    // of the subfile.
+    if ((_subfiles[index]->_flags & SF_text) != 0) {
+      fname.set_text();
+    } else {
+      fname.set_binary();
+    }
+  }
+
   istream *in1 = open_read_subfile(index);
   if (in1 == (istream *)NULL) {
     return false;
   }
 
   pifstream in2;
-  Filename bin_filename = Filename::binary_filename(filename);
-  if (!bin_filename.open_read(in2)) {
+
+  if (!fname.open_read(in2)) {
     express_cat.info()
       << "Cannot read " << filename << "\n";
     return false;
   }
 
-  // Check the file size.
-  in2.seekg(0, ios::end);
-  streampos file_size = in2.tellg();
-
-  if (file_size != (streampos)get_subfile_length(index)) {
-    // The files have different sizes.
-    close_read_subfile(in1);
-    return false;
+  if (fname.is_binary()) {
+    // Check the file size.
+    in2.seekg(0, ios::end);
+    streampos file_size = in2.tellg();
+    
+    if (file_size != (streampos)get_subfile_length(index)) {
+      // The files have different sizes.
+      close_read_subfile(in1);
+      return false;
+    }
   }
 
   // Check the file data, byte-for-byte.

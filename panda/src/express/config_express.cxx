@@ -61,6 +61,15 @@ ConfigVariableBool keep_temporary_files
           "default) to delete these.  Mainly useful for debugging "
           "when the process goes wrong."));
 
+ConfigVariableBool multifile_always_binary
+("multifile-always-binary", false,
+ PRC_DESC("This is a temporary transition variable.  Set this true "
+          "to enable the old behavior for multifiles: all subfiles are "
+          "always added to and extracted from the multifile in binary mode.  "
+          "Set it false to enable the new behavior: subfiles may be added "
+          "or extracted in either binary or text mode, according to the "
+          "set_binary() or set_text() flag on the Filename."));
+
 ConfigVariableBool collect_tcp
 ("collect-tcp", false,
  PRC_DESC("Set this true to enable accumulation of several small consecutive "

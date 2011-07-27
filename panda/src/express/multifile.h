@@ -129,6 +129,7 @@ PUBLISHED:
   time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;
   bool is_subfile_encrypted(int index) const;
+  bool is_subfile_text(int index) const;
 
   streampos get_index_end() const;
   streampos get_subfile_internal_start(int index) const;
@@ -161,6 +162,7 @@ private:
     SF_compressed     = 0x0008,
     SF_encrypted      = 0x0010,
     SF_signature      = 0x0020,
+    SF_text           = 0x0040,
   };
 
   class Subfile {

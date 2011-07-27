@@ -50,6 +50,7 @@ extern ConfigVariableInt patchfile_buffer_size;
 extern ConfigVariableInt patchfile_zone_size;
 
 extern ConfigVariableBool keep_temporary_files;
+extern ConfigVariableBool multifile_always_binary;
 
 extern EXPCL_PANDAEXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;

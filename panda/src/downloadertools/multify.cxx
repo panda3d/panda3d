@@ -48,10 +48,14 @@ Filename chdir_to;             // -C
 bool got_chdir_to = false;
 size_t scale_factor = 0;       // -F
 pset<string> dont_compress;    // -Z
+pset<string> text_ext;         // -X
 vector_string sign_params;     // -S
 
 // Default extensions not to compress.  May be overridden with -Z.
 string dont_compress_str = "jpg,png,mp3,ogg";
+
+// Default text extensions.  May be overridden with -X.
+string text_ext_str = "txt";
 
 bool got_record_timestamp_flag = false;
 bool record_timestamp_flag = true;
@@ -210,6 +214,12 @@ help() {
     "      files that are not to be compressed.  The default if this is omitted is\n"
     "      \"" << dont_compress_str << "\".  Specify -Z \"\" (be sure to include the space) to allow\n"
     "      all files to be compressed.\n\n"
+    "  -X <extension_list>\n"
+    "      Specify a comma-separated list of filename extensions that represent\n"
+    "      text files.  These files are opened and read in text mode, and added to\n"
+    "      the multifile with the text flag set.  The default if this is omitted is\n"
+    "      \"" << text_ext_str << "\".  Specify -X \"\" (be sure to include the space) to record\n"
+    "      all files in binary mode.\n\n"
 
     "  -T <flag>\n"
     "      Enable or disable the recording of file timestamps within the multifile.\n"
@@ -271,6 +281,20 @@ is_named(const string &subfile_name, const vector_string &params) {
   return false;
 }
 
+bool
+is_text(const Filename &subfile_name) {
+  // Returns true if this filename should be read as a text file,
+  // false otherwise.
+
+  string ext = subfile_name.get_extension();
+  if (text_ext.find(ext) != text_ext.end()) {
+    // This extension is listed on the -X parameter list; it's a text file.
+    return true;
+  }
+
+  return false;
+}
+
 int
 get_compression_level(const Filename &subfile_name) {
   // Returns the appropriate compression level for the named file.
@@ -317,7 +341,7 @@ do_add_files(Multifile *multifile, const pvector<Filename> &filenames) {
   bool okflag = true;
   pvector<Filename>::const_iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
-    const Filename &subfile_name = (*fi);
+    Filename subfile_name = (*fi);
 
     if (subfile_name.is_directory()) {
       if (!do_add_directory(multifile, subfile_name)) {
@@ -329,6 +353,12 @@ do_add_files(Multifile *multifile, const pvector<Filename> &filenames) {
       okflag = false;
 
     } else {
+      if (is_text(subfile_name)) {
+        subfile_name.set_text();
+      } else {
+        subfile_name.set_binary();
+      }
+
       string new_subfile_name;
       if (update) {
         new_subfile_name = multifile->update_subfile
@@ -623,6 +653,10 @@ list_files(const vector_string &params) {
         if (multifile->is_subfile_encrypted(i)) {
           encrypted_symbol = 'e';
         }
+        char text_symbol = ' ';
+        if (multifile->is_subfile_text(i)) {
+          text_symbol = 't';
+        }
         if (multifile->is_subfile_compressed(i)) {
           size_t orig_length = multifile->get_subfile_length(i);
           size_t internal_length = multifile->get_subfile_internal_length(i);
@@ -631,25 +665,25 @@ list_files(const vector_string &params) {
             ratio = (double)internal_length / (double)orig_length;
           }
           if (ratio > 1.0) {
-            printf("%12d worse %c %s %s\n",
+            printf("%12d worse %c%c %s %s\n",
                    (int)multifile->get_subfile_length(i),
-                   encrypted_symbol, 
+                   encrypted_symbol, text_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
-            printf("%12d  %3.0f%% %c %s %s\n",
+            printf("%12d  %3.0f%% %c%c %s %s\n",
                    (int)multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, 
-                   encrypted_symbol, 
+                   encrypted_symbol, text_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
-          printf("%12d       %c %s %s\n", 
+          printf("%12d       %c%c %s %s\n", 
                  (int)multifile->get_subfile_length(i),
-                 encrypted_symbol, 
+                 encrypted_symbol, text_symbol,
                  format_timestamp(multifile->get_record_timestamp(),
                                   multifile->get_subfile_timestamp(i)),
                  subfile_name.c_str());
@@ -736,7 +770,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxkvz123456789Z:T:S:f:OC:ep:P:F:h";
+  static const char *optflags = "crutxkvz123456789Z:T:X:S:f:OC:ep:P:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -803,6 +837,9 @@ main(int argc, char *argv[]) {
       break;
     case 'Z':
       dont_compress_str = optarg;
+      break;
+    case 'X':
+      text_ext_str = optarg;
       break;
     case 'S':
       sign_params.push_back(optarg);
@@ -889,6 +926,9 @@ main(int argc, char *argv[]) {
 
   // Split out the extensions named by -Z into different words.
   tokenize_extensions(dont_compress_str, dont_compress);
+
+  // Ditto for -X.
+  tokenize_extensions(text_ext_str, text_ext);
 
   // Build a list of remaining parameters.
   vector_string params;
