@@ -169,6 +169,8 @@
 
 // Get the list of bam files in the install directories
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
+
+#define installed_generic_eggs $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.egg,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]
 #define installed_generic_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[filter-out $[language_egg_filters],$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]]
 #if $[LANGUAGES]
   #define installed_language_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[patsubst %_$[DEFAULT_LANGUAGE].egg,%.egg,%,,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]]
@@ -218,7 +220,7 @@ unpack-soft : $[soft_scenes]
 
 #define install_bam_targets \
     $[install_egg_dirs] \
-    $[installed_generic_bams] $[installed_language_bams]
+    $[if $[INSTALL_EGG_FILES],$[installed_generic_eggs],$[installed_generic_bams] $[installed_language_bams]]
 install-bam : $[install_bam_targets]
 
 #define install_other_targets \
@@ -593,6 +595,40 @@ $[TAB]egg2bam $[EGG2BAM_OPTS] -NC -o $[target] $[source]
   #end egg
 #end install_egg
 
+
+// Egg file installation (used only if INSTALL_EGG_FILES is true).
+#forscopes install_egg
+  #foreach egg $[SOURCES]
+    #define basename $[notdir $[egg]]
+    #define source $[pal_egg_dir]/$[basename]
+    #define dest $[install_model_dir]
+
+$[dest]/$[basename] : $[source]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[basename]]
+$[TAB]$[COPY_CMD] $[osfilename $[source] $[osfilename $[dest]/$[basename]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[basename]
+$[TAB]$[COPY_CMD] $[source] $[dest]/$[basename]
+ #endif
+
+  #end egg
+  #foreach egg $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]
+    #define basename $[notdir $[egg]]
+    #define source $[source_prefix]$[basename]
+    #define dest $[install_model_dir]
+
+$[dest]/$[basename] : $[source]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[basename]]
+$[TAB]$[COPY_CMD] $[osfilename $[source] $[osfilename $[dest]/$[basename]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[basename]
+$[TAB]$[COPY_CMD] $[source] $[dest]/$[basename]
+ #endif
+
+  #end egg
+#end install_egg
 
 // Bam file installation.
 #forscopes install_egg
