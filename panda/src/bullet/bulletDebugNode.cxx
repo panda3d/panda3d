@@ -170,6 +170,8 @@ draw_mask_changed() {
     if (_verbose) {
       _drawer.setDebugMode(DebugDraw::DBG_DrawWireframe |
                            DebugDraw::DBG_DrawAabb |
+                           DebugDraw::DBG_DrawText |
+                           DebugDraw::DBG_DrawFeaturesText |
                            DebugDraw::DBG_DrawContactPoints |
                            DebugDraw::DBG_DrawConstraints |
                            DebugDraw::DBG_DrawConstraintLimits);
@@ -182,23 +184,6 @@ draw_mask_changed() {
     }
   } 
 }
-
-/*
-DBG_DrawWireframe
-DBG_DrawAabb
-DBG_DrawText
-DBG_DrawFeaturesText
-DBG_DrawContactPoints
-DBG_DrawConstraints
-DBG_DrawConstraintLimits
-DBG_NoDeactivation
-DBG_NoHelpText
-DBG_EnableSatComparison
-DBG_DisableBulletLCP
-DBG_ProfileTimings
-DBG_EnableCCD
-DBG_FastWireframe
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletDebugNode::post_step
@@ -261,17 +246,8 @@ post_step(btDynamicsWorld *world) {
   _drawer._triangles.clear();
 
   // Force recompute of bounds
-  int num_geoms = this->get_num_geoms();
-  for (int i = 0; i < num_geoms; i++) {
-    const Geom *geom = this->get_geom(i);
-    geom->mark_bounds_stale();
-  }
-
-  this->mark_bounds_stale();
-
-  // Alternate way, probably a little bit slower
-  //NodePath np = NodePath::any_path(this);
-  //np.force_recompute_bounds();
+  NodePath np = NodePath::any_path(this);
+  np.force_recompute_bounds();
 }
 
 ////////////////////////////////////////////////////////////////////

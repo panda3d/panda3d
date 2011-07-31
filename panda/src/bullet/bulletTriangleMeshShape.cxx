@@ -30,6 +30,18 @@ TypeHandle BulletTriangleMeshShape::_type_handle;
 BulletTriangleMeshShape::
 BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, bool bvh) {
 
+  // Assert that mesh is not NULL
+  if (!mesh) {
+    bullet_cat.warning() << "mesh is NULL! creating new mesh." << endl;
+    mesh = new BulletTriangleMesh();
+  }
+
+  // Assert that mesh has at least one triangle
+  if (mesh->get_num_triangles() == 0) {
+    bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
+    mesh->add_triangle(LPoint3f::zero(), LPoint3f::zero(), LPoint3f::zero());
+  }
+
   // Retain a pointer to the mesh, to prevent it from being deleted
   _mesh = mesh;
 
