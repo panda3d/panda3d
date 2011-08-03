@@ -931,6 +931,22 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def getBounds(self, state = 0):
         self.stateNodePath[state].calcTightBounds(self.ll, self.ur)
         # Scale bounds to give a pad around graphics
+        vec_right = Vec3.right()
+        vec_up = Vec3.up()
+        left = (vec_right[0] * self.ll[0]
+              + vec_right[1] * self.ll[1]
+              + vec_right[2] * self.ll[2])
+        right = (vec_right[0] * self.ur[0]
+               + vec_right[1] * self.ur[1]
+               + vec_right[2] * self.ur[2])
+        bottom = (vec_up[0] * self.ll[0]
+                + vec_up[1] * self.ll[1]
+                + vec_up[2] * self.ll[2])
+        top = (vec_up[0] * self.ur[0]
+             + vec_up[1] * self.ur[1]
+             + vec_up[2] * self.ur[2])
+        self.ll = Point3(left, 0.0, bottom)
+        self.ur = Point3(right, 0.0, top)
         self.bounds = [self.ll[0] - self['pad'][0],
                        self.ur[0] + self['pad'][0],
                        self.ll[2] - self['pad'][1],
