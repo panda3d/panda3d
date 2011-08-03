@@ -198,6 +198,11 @@ post_step(btDynamicsWorld *world) {
   // Collect debug geometry data
   world->debugDrawWorld();
 
+  // Get inverse of this node's net transform
+  NodePath np = NodePath::any_path(this);
+  LMatrix4f m = np.get_net_transform()->get_mat();
+  m.invert_in_place();
+
   // Render collected data
   _prim_lines->clear_vertices();
   _prim_triangles->clear_vertices();
@@ -213,31 +218,29 @@ post_step(btDynamicsWorld *world) {
   for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
     Line line = *lit;
 
-    vwriter.add_data3f(line._p0);
+    vwriter.add_data3f(m.xform_point(line._p0));
+    vwriter.add_data3f(m.xform_point(line._p1));
     cwriter.add_data4f(line._color);
-    vwriter.add_data3f(line._p1);
     cwriter.add_data4f(line._color);
 
     _prim_lines->add_vertex(v++);
     _prim_lines->add_vertex(v++);
-
     _prim_lines->close_primitive();
   }
 
   for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
     Triangle tri = *tit;
 
-    vwriter.add_data3f(tri._p0);
+    vwriter.add_data3f(m.xform_point(tri._p0));
+    vwriter.add_data3f(m.xform_point(tri._p1));
+    vwriter.add_data3f(m.xform_point(tri._p2));
     cwriter.add_data4f(tri._color);
-    vwriter.add_data3f(tri._p1);
     cwriter.add_data4f(tri._color);
-    vwriter.add_data3f(tri._p2);
     cwriter.add_data4f(tri._color);
 
     _prim_triangles->add_vertex(v++);
     _prim_triangles->add_vertex(v++);
     _prim_triangles->add_vertex(v++);
-
     _prim_triangles->close_primitive();
   }
 
@@ -246,7 +249,6 @@ post_step(btDynamicsWorld *world) {
   _drawer._triangles.clear();
 
   // Force recompute of bounds
-  NodePath np = NodePath::any_path(this);
   np.force_recompute_bounds();
 }
 

@@ -188,6 +188,9 @@ add_shape(BulletShape *shape, CPT(TransformState) xform) {
 
   nassertv(get_object());
 
+  nassertv(!(shape->ptr()->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE 
+    && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
+
   // Transform
   btTransform trans;
   if (xform) {

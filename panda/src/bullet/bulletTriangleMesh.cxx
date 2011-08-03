@@ -205,16 +205,6 @@ write(ostream &out, int indent_level) const {
 
     indent(out, indent_level + 4) << "num triangles:" << meshPart.m_numTriangles << endl;
     indent(out, indent_level + 4) << "num vertices:" << meshPart.m_numVertices << endl;
-
-    // TODO print imesh info...
-/*
-int  m_numTriangles 
-const unsigned char *  m_triangleIndexBase 
-int  m_triangleIndexStride 
-int  m_numVertices 
-const unsigned char *  m_vertexBase 
-int  m_vertexStride 
-*/
   }
 }
 
