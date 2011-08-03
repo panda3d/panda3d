@@ -22,16 +22,8 @@
 #include "load_dso.h"
 #include "pystub.h"
 #include "pnotify.h"
-
-#include "set"
-
-// If our system getopt() doesn't come with getopt_long_only(), then use
-// the GNU flavor that we've got in tool for this purpose.
-#ifndef HAVE_GETOPT_LONG_ONLY
-#include "gnu_getopt.h"
-#else
-#include <getopt.h>
-#endif
+#include "panda_getopt_long.h"
+#include "pset.h"
 
 Filename output_code_filename;
 string module_name;
@@ -87,7 +79,7 @@ int write_python_table_native(ostream &out) {
 
   int count = 0;
 
-  std::set<std::string > Libraries;
+  pset<std::string > Libraries;
 
 //  out << "extern \"C\" {\n";
 
@@ -114,7 +106,7 @@ int write_python_table_native(ostream &out) {
     }
   }
 
-  std::set<std::string >::iterator ii;
+  pset<std::string >::iterator ii;
   for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
       printf("Referencing Library %s\n",(*ii).c_str());
       out << "extern LibrayDef "<< *ii << "_moddef ;\n";

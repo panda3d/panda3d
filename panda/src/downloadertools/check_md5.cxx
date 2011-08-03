@@ -13,15 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-
 #include "hashVal.h"
 #include "filename.h"
-
-#ifndef HAVE_GETOPT
-#include "gnu_getopt.h"
-#else
-#include <getopt.h>
-#endif
+#include "panda_getopt.h"
 
 bool output_decimal = false;
 bool suppress_filename = false;

@@ -239,10 +239,10 @@ generate_flat_geom(const LVecBase4f &frame) {
     ("PGFrame", format, Geom::UH_static);
   
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
 
   if (has_texture()) {
     // Generate UV's.
@@ -401,14 +401,14 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
-  vertex.add_data3f(right, 0.0f, bottom);
-  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(inner_left, 0.0f, inner_top);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
   color.add_data4f(cbottom);
   color.add_data4f(cbottom);
   color.add_data4f(cbottom);
@@ -422,12 +422,12 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   strip->close_primitive();
   
   // Tristrip 2.
-  vertex.add_data3f(right, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_right, 0.0f, inner_top);
-  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
   color.add_data4f(cright);
   color.add_data4f(cright);
   color.add_data4f(cright);
@@ -658,14 +658,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
-  vertex.add_data3f(right, 0.0f, bottom);
-  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(mid_left, 0.0f, mid_bottom);
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(mid_left, 0.0f, mid_top);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(mid_right, 0.0f, mid_top);
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_bottom));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_top));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
   color.add_data4f(cbottom);
   color.add_data4f(cbottom);
   color.add_data4f(cbottom);
@@ -679,14 +679,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   strip->close_primitive();
   
   // Tristrip 2.
-  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-  vertex.add_data3f(mid_left, 0.0f, mid_bottom);
-  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-  vertex.add_data3f(mid_left, 0.0f, mid_top);
-  vertex.add_data3f(inner_left, 0.0f, inner_top);
-  vertex.add_data3f(mid_right, 0.0f, mid_top);
-  vertex.add_data3f(inner_right, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
   color.add_data4f(ctop);
   color.add_data4f(ctop);
   color.add_data4f(ctop);
@@ -700,14 +700,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   strip->close_primitive();
   
   // Tristrip 3.
-  vertex.add_data3f(right, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(mid_right, 0.0f, mid_bottom);
-  vertex.add_data3f(mid_right, 0.0f, mid_top);
-  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_right, 0.0f, inner_top);
-  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
   color.add_data4f(cright);
   color.add_data4f(cright);
   color.add_data4f(cright);
@@ -847,25 +847,25 @@ generate_texture_border_geom(const LVecBase4f &frame) {
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
   // verts 0,1,2,3
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(left, 0.0f, inner_top);
-  vertex.add_data3f(inner_left, 0.0f, top);
-  vertex.add_data3f(inner_left, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
   // verts 4,5,6,7
-  vertex.add_data3f(inner_right, 0.0f, top);
-  vertex.add_data3f(inner_right, 0.0f, inner_top);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(right, 0.0f, inner_top);
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, inner_top));
   // verts 8,9,10,11
-  vertex.add_data3f(left, 0.0f, inner_bottom);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(inner_left, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_left, 0.0f, bottom);
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, bottom));
   // verts 12,13,14,15
-  vertex.add_data3f(inner_right, 0.0f, inner_bottom);
-  vertex.add_data3f(inner_right, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, inner_bottom);
-  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, bottom));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, inner_bottom));
+  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
 
   if (has_texture()) {
     // Generate UV's.

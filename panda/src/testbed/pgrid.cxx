@@ -18,13 +18,7 @@
 #include "clockObject.h"
 #include "string_utils.h"
 #include "pvector.h"
-
-#ifdef HAVE_GETOPT
-#include <getopt.h>
-#else
-#include "gnu_getopt.h"
-#endif
-
+#include "panda_getopt.h"
 
 #define RANDFRAC (rand()/(float)(RAND_MAX))
 

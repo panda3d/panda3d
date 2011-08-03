@@ -13,11 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #include <getopt.h>
-#endif
+#include "panda_getopt.h"
 #include "multifile.h"
 #include "pointerTo.h"
 #include "filename.h"

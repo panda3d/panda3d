@@ -19,18 +19,9 @@
 #include "load_dso.h"
 #include "filename.h"
 #include "pystub.h"
+#include "panda_getopt.h"
 
 #include <stdlib.h>
-
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
-#endif
-
-
 
 static ostream &
 indent(ostream &out, int indent_level) {

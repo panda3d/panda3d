@@ -22,20 +22,13 @@
 #include "partGroup.h"
 #include "cardMaker.h"
 #include "bamCache.h"
+#include "panda_getopt.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
 // wrong version of libdtool.so/.dll.
 
 #include "checkPandaVersion.h"
-
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
-#endif
 
 PandaFramework framework;
 

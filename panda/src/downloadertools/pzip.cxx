@@ -15,14 +15,7 @@
 #include "filename.h"
 #include "compress_string.h"
 #include "pnotify.h"
-
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
-#endif
+#include "panda_getopt.h"
 
 void
 usage() {

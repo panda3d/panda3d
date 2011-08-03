@@ -25,18 +25,11 @@
 #include "vector_string.h"
 #include "configVariableInt.h"
 #include "configVariableBool.h"
+#include "panda_getopt_long.h"
 
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
-
-// If our system getopt() doesn't come with getopt_long_only(), then use
-// the GNU flavor that we've got in tool for this purpose.
-#ifndef HAVE_GETOPT_LONG_ONLY
-  #include "gnu_getopt.h"
-#else
-  #include <getopt.h>
-#endif
 
 // This manifest is defined if we are running on a system (e.g. most
 // any Unix) that allows us to determine the width of the terminal
@@ -235,10 +228,9 @@ parse_command_line(int argc, char *argv[]) {
   OptionsByName::const_iterator oi;
   int next_index = 256;
 
-  // Let's prefix the option string with "-" to tell GNU getopt that
-  // we want it to tell us the post-option arguments, instead of
-  // trying to meddle with ARGC and ARGV (which we aren't using
-  // directly).
+  // Let's prefix the option string with "-" to tell getopt that we
+  // want it to tell us the post-option arguments, instead of trying
+  // to meddle with ARGC and ARGV (which we aren't using directly).
   short_options = "-";
 
   for (oi = _options_by_name.begin(); oi != _options_by_name.end(); ++oi) {

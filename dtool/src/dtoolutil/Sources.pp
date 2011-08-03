@@ -19,8 +19,9 @@
     pandaFileStream.h pandaFileStream.I \
     pandaFileStreamBuf.h \
     pandaSystem.h pandaVersion.h \
+    panda_getopt.h panda_getopt_long.h panda_getopt_impl.h \
     pfstream.h pfstream.I pfstreamBuf.h \
-    vector_string.h gnu_getopt.c gnu_getopt.h gnu_getopt1.c  \
+    vector_string.h \
     vector_src.h 
 
   #define INCLUDED_SOURCES \
@@ -30,6 +31,7 @@
     dSearchPath.cxx \
     pandaFileStream.cxx pandaFileStreamBuf.cxx \
     pandaSystem.cxx \
+    panda_getopt_impl.cxx \
     pfstreamBuf.cxx pfstream.cxx \
     vector_string.cxx
 
@@ -41,8 +43,9 @@
     pandaFileStream.h pandaFileStream.I \
     pandaFileStreamBuf.h \
     pandaSystem.h pandaVersion.h \
+    panda_getopt.h panda_getopt_long.h panda_getopt_impl.h \
     pfstream.h pfstream.I pfstreamBuf.h \
-    vector_string.h gnu_getopt.h \
+    vector_string.h \
     vector_src.cxx vector_src.h
 #end lib_target
 

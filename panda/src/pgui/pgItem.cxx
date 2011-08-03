@@ -428,14 +428,32 @@ activate_region(const LMatrix4f &transform, int sort,
   LightReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
-  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
-  LPoint3f lr(_frame[1], 0.0f, _frame[2]);
-  LPoint3f ul(_frame[0], 0.0f, _frame[3]);
-  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
-  ll = ll * transform;
-  lr = lr * transform;
-  ul = ul * transform;
-  ur = ur * transform;
+  LPoint3f ll = LPoint3f::rfu(_frame[0], 0.0f, _frame[2]) * transform;
+  LPoint3f lr = LPoint3f::rfu(_frame[1], 0.0f, _frame[2]) * transform;
+  LPoint3f ul = LPoint3f::rfu(_frame[0], 0.0f, _frame[3]) * transform;
+  LPoint3f ur = LPoint3f::rfu(_frame[1], 0.0f, _frame[3]) * transform;
+  LVector3f up = LVector3f::up();
+  int up_axis;
+  if (up[1]) {
+    up_axis = 1;
+  }
+  else if (up[2]) {
+    up_axis = 2;
+  }
+  else {
+    up_axis = 0;
+  }
+  LVector3f right = LVector3f::right();
+  int right_axis;
+  if (right[0]) {
+    right_axis = 0;
+  }
+  else if (right[2]) {
+    right_axis = 2;
+  }
+  else {
+    right_axis = 1;
+  }
 
   LVecBase4f frame;
   if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
@@ -444,10 +462,10 @@ activate_region(const LMatrix4f &transform, int sort,
     
     pvector<LPoint2f> points;
     points.reserve(4);
-    points.push_back(LPoint2f(ll[0], ll[2]));
-    points.push_back(LPoint2f(lr[0], lr[2]));
-    points.push_back(LPoint2f(ur[0], ur[2]));
-    points.push_back(LPoint2f(ul[0], ul[2]));
+    points.push_back(LPoint2f(ll[right_axis], ll[up_axis]));
+    points.push_back(LPoint2f(lr[right_axis], lr[up_axis]));
+    points.push_back(LPoint2f(ur[right_axis], ur[up_axis]));
+    points.push_back(LPoint2f(ul[right_axis], ul[up_axis]));
 
     int num_on_planes = cpa->get_num_on_planes();
     for (int i = 0; i < num_on_planes; ++i) {
@@ -455,8 +473,8 @@ activate_region(const LMatrix4f &transform, int sort,
       Planef plane = DCAST(PlaneNode, plane_path.node())->get_plane();
       plane.xform(plane_path.get_net_transform()->get_mat());
       
-      // We ignore the y coordinate, assuming the frame is still in
-      // the X-Z plane after being transformed.  Not sure if we really
+      // We ignore the forward axis, assuming the frame is still in
+      // the right-up plane after being transformed.  Not sure if we really
       // need to support general 3-D transforms on 2-D objects.
       clip_frame(points, plane);
     }
@@ -479,10 +497,10 @@ activate_region(const LMatrix4f &transform, int sort,
     }
   } else {
     // Since there are no clip planes involved, just set the frame.
-    frame.set(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
-              max(max(ll[0], lr[0]), max(ul[0], ur[0])),
-              min(min(ll[2], lr[2]), min(ul[2], ur[2])),
-              max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+    frame.set(min(min(ll[right_axis], lr[right_axis]), min(ul[right_axis], ur[right_axis])),
+              max(max(ll[right_axis], lr[right_axis]), max(ul[right_axis], ur[right_axis])),
+              min(min(ll[up_axis], lr[up_axis]), min(ul[up_axis], ur[up_axis])),
+              max(max(ll[up_axis], lr[up_axis]), max(ul[up_axis], ur[up_axis])));
   }
 
   if (sa != (ScissorAttrib *)NULL) {

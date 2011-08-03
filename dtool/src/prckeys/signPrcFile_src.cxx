@@ -20,6 +20,7 @@
 
 #include "filename.h"
 #include "executionEnvironment.h"
+#include "panda_getopt.h"
 
 #include <time.h>
 
@@ -28,14 +29,6 @@
 #include "openssl/rand.h"
 #include "openssl/bio.h"
 #include "openssl/evp.h"
-
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
-#endif
 
 string progname = PROGNAME;
 

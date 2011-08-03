@@ -2218,8 +2218,6 @@ TargetAdd('dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
 #
 
 OPTS=['DIR:dtool/src/dtoolutil', 'BUILDING:DTOOL']
-TargetAdd('dtoolutil_gnu_getopt.obj',  opts=OPTS, input='gnu_getopt.c')
-TargetAdd('dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
 TargetAdd('dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
 if (sys.platform == 'darwin'):
   TargetAdd('dtoolutil_filename_assist.obj',   opts=OPTS, input='filename_assist.mm')
@@ -2231,8 +2229,6 @@ if (sys.platform == 'darwin'):
 OPTS=['DIR:dtool/metalibs/dtool', 'BUILDING:DTOOL']
 TargetAdd('dtool_dtool.obj', opts=OPTS, input='dtool.cxx')
 TargetAdd('libp3dtool.dll', input='dtool_dtool.obj')
-TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt.obj')
-TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_composite.obj')
 if (sys.platform == 'darwin'):
   TargetAdd('libp3dtool.dll', input='dtoolutil_filename_assist.obj')

@@ -21,16 +21,8 @@
 #include "cppExpression.h"
 #include "cppType.h"
 #include "cppGlobals.h"
-
+#include "panda_getopt_long.h"
 #include <stdlib.h>
-
-#ifndef HAVE_GETOPT_LONG_ONLY
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
-#endif
 
 CPPParser parser;
 
