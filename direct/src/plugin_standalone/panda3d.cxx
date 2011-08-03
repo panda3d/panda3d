@@ -17,11 +17,9 @@
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
 #include "pandaSystem.h"
-
-// We can include this header file to get the DTOOL_PLATFORM
-// definition, even though we don't link with dtool.
 #include "dtool_platform.h"
 #include "pandaVersion.h"
+#include "panda_getopt.h"
 
 #include <ctype.h>
 #include <sstream>
@@ -30,14 +28,6 @@
 #include <windows.h>
 #else
 #include <signal.h>
-#endif
-
-#ifndef HAVE_GETOPT
-  #include "gnu_getopt.h"
-#else
-  #ifdef PHAVE_GETOPT_H
-    #include <getopt.h>
-  #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +54,7 @@ run_command_line(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
 
-  // We prefix a "+" sign to tell gnu getopt not to parse options
+  // We prefix a "+" sign to tell getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
   const char *optstr = "+mu:M:Sp:nfw:t:s:o:l:iVUPh";

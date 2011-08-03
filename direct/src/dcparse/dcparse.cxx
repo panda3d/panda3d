@@ -18,12 +18,7 @@
 #include "dcTypedef.h"
 #include "memoryUsage.h"
 #include "indent.h"
-
-#ifndef HAVE_GETOPT
-#include "gnu_getopt.h"
-#else
-#include <getopt.h>
-#endif
+#include "panda_getopt.h"
 
 void
 usage() {
