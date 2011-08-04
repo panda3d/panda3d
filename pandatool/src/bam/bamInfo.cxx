@@ -27,10 +27,6 @@
 #include "bamCacheIndex.h"
 #include "pystub.h"
 
-#ifdef HAVE_SPEEDTREE
-#include "config_speedtree.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
 //       Access: Public
@@ -343,10 +339,6 @@ list_hierarchy(PandaNode *node, int indent_level) {
 int main(int argc, char *argv[]) {
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
-
-#ifdef HAVE_SPEEDTREE
-  init_libspeedtree();
-#endif
 
   BamInfo prog;
   prog.parse_command_line(argc, argv);
