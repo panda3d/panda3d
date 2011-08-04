@@ -1108,7 +1108,7 @@ raycast_closest_shape(const PhysxRay &ray,
   }
 
   _ptr->raycastClosestShape(ray._ray, (NxShapesType)shapesType, hit, 
-                            mask.get_mask(), ray._length, hints);
+                            mask.get_mask(), ray._length, hints, groupsPtr);
 
 
   return PhysxRaycastHit(hit);
@@ -1142,7 +1142,7 @@ raycast_all_shapes(const PhysxRay &ray,
   }
 
   _ptr->raycastAllShapes(ray._ray, report, (NxShapesType)shapesType,
-                         mask.get_mask(), ray._length, hints);
+                         mask.get_mask(), ray._length, hints, groupsPtr);
 
   return report;
 }
@@ -1193,7 +1193,7 @@ raycast_closest_bounds(const PhysxRay &ray, PhysxShapesType shapesType, PhysxMas
   }
 
   _ptr->raycastClosestBounds(ray._ray, (NxShapesType)shapesType, hit, 
-                             mask.get_mask(), ray._length, hints);
+                             mask.get_mask(), ray._length, hints, groupsPtr);
 
 
   return PhysxRaycastHit(hit);
@@ -1228,7 +1228,7 @@ raycast_all_bounds(const PhysxRay &ray,
   }
 
   _ptr->raycastAllBounds(ray._ray, report, (NxShapesType)shapesType,
-                         mask.get_mask(), ray._length, hints);
+                         mask.get_mask(), ray._length, hints, groupsPtr);
 
   return report;
 }
