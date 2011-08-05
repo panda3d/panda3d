@@ -383,6 +383,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       edge_dist = dist_to_polygon(p, _points[ip]);
     }
 
+    max_dist = from_radius;
+
     // Now we have edge_dist, which is the distance from the sphere
     // center to the nearest edge of the polygon, within the polygon's
     // plane. edge_dist<0 means the point is within the polygon.
@@ -403,7 +405,6 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     // remain from the plane, based on its distance from the nearest
     // edge.
 
-    max_dist = from_radius;
     if (edge_dist >= 0.0f) {
       float max_dist_2 = max(from_radius_2 - edge_dist * edge_dist, 0.0f);
       max_dist = csqrt(max_dist_2);
