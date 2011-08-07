@@ -41,8 +41,7 @@ BulletCharacterControllerNode(BulletShape *shape, float step_height, const char 
   _ghost->setWorldTransform(trans);
   _ghost->setInterpolationWorldTransform(trans);
   _ghost->setCollisionShape(convex);
-  _ghost->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT
-                          | btCollisionObject::CF_KINEMATIC_OBJECT);
+  _ghost->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
   // Setup up axis
   _up = get_default_up_axis();
