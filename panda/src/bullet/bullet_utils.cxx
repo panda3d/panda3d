@@ -134,6 +134,28 @@ CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LV
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState_to_btTrans
+//  Description: 
+////////////////////////////////////////////////////////////////////
+btTransform TransformState_to_btTrans(CPT(TransformState) ts) {
+
+  ts = ts->set_scale(1.0);
+
+  LMatrix4f m = ts->get_mat();
+
+  LQuaternionf quat;
+  quat.set_from_matrix(m.get_upper_3());
+
+  btQuaternion btq = LQuaternionf_to_btQuat(quat);
+  btVector3 btv = LVecBase3f_to_btVector3(m.get_row3(3));
+
+  btTransform trans;
+  trans.setRotation(btq);
+  trans.setOrigin(btv);
+  return trans;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_default_up_axis
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -160,15 +182,21 @@ BulletUpAxis get_default_up_axis() {
 ////////////////////////////////////////////////////////////////////
 void get_node_transform(btTransform &trans, PandaNode *node) {
 
-  LMatrix4f m;
-
+  // Get TS
+  CPT(TransformState) ts;
   if (node->get_num_parents() == 0) {
-    m = node->get_transform()->get_mat();
+    ts = node->get_transform();
   }
   else {
     NodePath np = NodePath::any_path(node);
-    m = np.get_net_transform()->get_mat();
+    ts = np.get_net_transform();
   }
+
+  // Remove scale from TS, since scale fudges the orientation
+  ts = ts->set_scale(1.0);
+
+  // Convert
+  LMatrix4f m = ts->get_mat();
 
   LQuaternionf quat;
   quat.set_from_matrix(m.get_upper_3());

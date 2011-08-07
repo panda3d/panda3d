@@ -44,6 +44,8 @@ EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
   const btTransform &tf, 
   const LVecBase3f &scale=LVecBase3f(1.0f, 1.0f, 1.0f));
 
+EXPCL_PANDABULLET btTransform TransformState_to_btTrans(CPT(TransformState) ts);
+
 // UpAxis
 BEGIN_PUBLISH
 
