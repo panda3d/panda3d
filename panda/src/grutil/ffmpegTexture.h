@@ -62,6 +62,7 @@ protected:
 
   virtual bool do_has_bam_rawdata() const;
   virtual void do_get_bam_rawdata();
+  virtual bool do_can_reload();
 
 private:    
   class VideoPage;

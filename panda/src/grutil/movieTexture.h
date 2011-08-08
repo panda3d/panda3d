@@ -73,6 +73,7 @@ protected:
   virtual bool get_keep_ram_image() const;
   virtual bool do_has_bam_rawdata() const;
   virtual void do_get_bam_rawdata();
+  virtual bool do_can_reload();
 
   virtual bool do_adjust_this_size(int &x_size, int &y_size, const string &name, 
                                    bool for_padding);

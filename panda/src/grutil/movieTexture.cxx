@@ -499,6 +499,20 @@ do_get_bam_rawdata() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_can_reload
+//       Access: Protected, Virtual
+//  Description: Returns true if we can safely call
+//               do_unlock_and_reload_ram_image() in order to make the
+//               image available, or false if we shouldn't do this
+//               (because we know from a priori knowledge that it
+//               wouldn't work anyway).
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+do_can_reload() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::restart
 //       Access: Published
 //  Description: Start playing the movie from where it was last
