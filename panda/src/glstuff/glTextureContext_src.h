@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
-  INLINE CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex);
+  INLINE CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex, int view);
   ALLOC_DELETED_CHAIN(CLP(TextureContext));
 
   virtual void evict_lru();

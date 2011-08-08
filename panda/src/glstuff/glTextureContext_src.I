@@ -19,8 +19,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(TextureContext)::
-CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex) :
-  TextureContext(pgo, tex)
+CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+  TextureContext(pgo, tex, view)
 {
   _index = 0;
   _already_applied = false;

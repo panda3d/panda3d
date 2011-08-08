@@ -362,7 +362,7 @@ rebuild_bitplanes() {
 //    color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext9,
-            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
 
     if (color_ctx) {
       if (!color_ctx->create_texture(*_dxgsg->_screen)) {
@@ -441,7 +441,7 @@ rebuild_bitplanes() {
     depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext9,
-            depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            depth_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
     if (depth_ctx) {
       if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
         dxgsg9_cat.error()
@@ -516,7 +516,7 @@ rebuild_bitplanes() {
           IDirect3DSurface9 *color_surf = 0;
           IDirect3DCubeTexture9 *color_cube = 0;
 
-          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
           if (color_ctx) {
             if (!color_ctx->create_texture(*_dxgsg->_screen)) {
               dxgsg9_cat.error()
@@ -607,7 +607,7 @@ select_cube_map(int cube_map_index) {
   if (color_tex) {
     color_ctx =
       DCAST(DXTextureContext9,
-            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
     color_cube = color_ctx->_d3d_cube_texture;
     if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
       hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
@@ -651,7 +651,7 @@ select_cube_map(int cube_map_index) {
           IDirect3DSurface9 *color_surf = 0;
           IDirect3DCubeTexture9 *color_cube = 0;
 
-          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
           if (color_ctx) {
             if (tex->get_texture_type() == Texture::TT_cube_map) {
 

@@ -49,7 +49,7 @@ public:
 
 protected:
   void fetch_packet(double default_time);
-  void fetch_frame();
+  bool fetch_frame();
   void seek(double t);
   void fetch_time(double time);
   void export_frame(unsigned char *data, bool bgra, int bufx);

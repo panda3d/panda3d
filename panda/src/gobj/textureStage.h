@@ -130,6 +130,9 @@ PUBLISHED:
   INLINE void set_saved_result(bool saved_result);
   INLINE bool get_saved_result() const;
 
+  INLINE void set_tex_view_offset(int tex_view_offset);
+  INLINE int get_tex_view_offset() const;
+
   INLINE void set_combine_rgb(CombineMode mode, 
                               CombineSource source0, CombineOperand operand0);
   INLINE void set_combine_rgb(CombineMode mode, 
@@ -201,6 +204,7 @@ private:
   int _rgb_scale;
   int _alpha_scale;
   bool _saved_result;
+  int _tex_view_offset;
   bool _involves_color_scale;
   bool _uses_color;
   bool _uses_primary_color;

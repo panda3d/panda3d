@@ -923,6 +923,18 @@ get_current_stereo_channel() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_current_tex_view_offset
+//       Access: Public
+//  Description: Returns the current tex view offset, as set by the
+//               last call to prepare_display_region().  This is read
+//               from the current DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_current_tex_view_offset() const {
+  return _current_tex_view_offset;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_current_lens
 //       Access: Public
 //  Description: Returns the current lens being used to render,

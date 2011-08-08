@@ -168,8 +168,7 @@ public:
 
   virtual void reset();
 
-  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
-                                      Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
@@ -197,7 +196,7 @@ public:
                            bool force);
   virtual void end_draw_primitives();
 
-  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);

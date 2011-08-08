@@ -968,6 +968,13 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     }
   }
 
+  if (egg_tex->get_multiview()) {
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_multiview);
+    if (egg_tex->has_num_views()) {
+      options.set_texture_num_views(egg_tex->get_num_views());
+    }
+  }
+
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:

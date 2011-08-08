@@ -155,8 +155,8 @@ DXGraphicsStateGuardian8::
 //               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *DXGraphicsStateGuardian8::
-prepare_texture(Texture *tex) {
-  DXTextureContext8 *dtc = new DXTextureContext8(_prepared_objects, tex);
+prepare_texture(Texture *tex, int view) {
+  DXTextureContext8 *dtc = new DXTextureContext8(_prepared_objects, tex, view);
 
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg8_cat.error()
@@ -350,7 +350,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 extract_texture_data(Texture *tex) {
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(0, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
@@ -648,10 +648,9 @@ clear(DrawableRegion *clearable) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-prepare_display_region(DisplayRegionPipelineReader *dr,
-                       Lens::StereoChannel stereo_channel) {
+prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
-  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
+  GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, u, w, h;
   dr->get_region_pixels_i(l, u, w, h);
@@ -1501,7 +1500,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   dr->get_region_pixels_i(xo, yo, w, h);
   tex->set_size_padded(w, h);
   
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(0, get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return false;
   }
@@ -2849,7 +2848,7 @@ do_issue_texture() {
 
     // We always reissue every stage in DX, just in case the texcoord
     // index or texgen mode or some other property has changed.
-    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    TextureContext *tc = texture->prepare_now(0, _prepared_objects, this);
     apply_texture(si, tc);
     set_texture_blend_mode(si, stage);
 

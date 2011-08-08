@@ -196,8 +196,8 @@ DXGraphicsStateGuardian9::
 //               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *DXGraphicsStateGuardian9::
-prepare_texture(Texture *tex) {
-  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex);
+prepare_texture(Texture *tex, int view) {
+  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex, view);
 
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg9_cat.error()
@@ -410,11 +410,20 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 extract_texture_data(Texture *tex) {
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
-  DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+  bool success = true;
 
-  return dtc->extract_texture_data(*_screen);
+  int num_views = tex->get_num_views();
+  for (int view = 0; view < num_views; ++view) {
+    TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+    nassertr(tc != (TextureContext *)NULL, false);
+    DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+
+    if (!dtc->extract_texture_data(*_screen)) {
+      success = false;
+    }
+  }
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -929,10 +938,9 @@ clear(DrawableRegion *clearable) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-prepare_display_region(DisplayRegionPipelineReader *dr,
-                       Lens::StereoChannel stereo_channel) {
+prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
-  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
+  GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, u, w, h;
   dr->get_region_pixels_i(l, u, w, h);
@@ -2012,7 +2020,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   // must use a render target type texture for StretchRect
   tex->set_render_to_texture(true);
 
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  int view = dr->get_tex_view_offset();
+  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return false;
   }
@@ -3776,7 +3785,8 @@ update_standard_texture_bindings() {
 
     // We always reissue every stage in DX, just in case the texcoord
     // index or texgen mode or some other property has changed.
-    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
+    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     apply_texture(si, tc);
     set_texture_blend_mode(si, stage);
 
@@ -5732,7 +5742,7 @@ get_supports_cg_profile(const string &name) const {
     dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
     return false;
   }
-  return cgD3D9IsProfileSupported(cgGetProfile(name.c_str()));
+  return cgD3D9IsProfileSupported(cgGetProfile(name.c_str())) != 0;
 #endif  // HAVE_CG
 }
 

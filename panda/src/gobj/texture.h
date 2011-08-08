@@ -210,7 +210,6 @@ PUBLISHED:
   INLINE void setup_texture(TextureType texture_type,
                             int x_size, int y_size, int z_size,
                             ComponentType component_type, Format format);
-
   INLINE void setup_1d_texture();
   INLINE void setup_1d_texture(int x_size,
                                ComponentType component_type, Format format);
@@ -272,6 +271,8 @@ PUBLISHED:
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE int get_z_size() const;
+  INLINE int get_num_views() const;
+  INLINE int get_num_pages() const;
   INLINE int get_num_components() const;
   INLINE int get_component_width() const;
   INLINE TextureType get_texture_type() const;
@@ -311,11 +312,13 @@ PUBLISHED:
   INLINE int get_expected_mipmap_x_size(int n) const;
   INLINE int get_expected_mipmap_y_size(int n) const;
   INLINE int get_expected_mipmap_z_size(int n) const;
+  INLINE int get_expected_mipmap_num_pages(int n) const;
 
   INLINE bool has_ram_image() const;
   INLINE bool has_uncompressed_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
+  INLINE size_t get_ram_view_size() const;
   INLINE size_t get_ram_page_size() const;
   INLINE size_t get_expected_ram_image_size() const;
   INLINE size_t get_expected_ram_page_size() const;
@@ -343,8 +346,10 @@ PUBLISHED:
   int get_num_loadable_ram_mipmap_images() const;
   INLINE bool has_all_ram_mipmap_images() const;
   INLINE size_t get_ram_mipmap_image_size(int n) const;
+  INLINE size_t get_ram_mipmap_view_size(int n) const;
   INLINE size_t get_ram_mipmap_page_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
+  INLINE size_t get_expected_ram_mipmap_view_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
   CPTA_uchar get_ram_mipmap_image(int n);
   void *get_ram_mipmap_pointer(int n);
@@ -413,6 +418,7 @@ PUBLISHED:
   INLINE void set_x_size(int x_size);
   INLINE void set_y_size(int y_size);
   INLINE void set_z_size(int z_size);
+  INLINE void set_num_views(int num_views);
 
   INLINE int get_pad_x_size() const;
   INLINE int get_pad_y_size() const;
@@ -444,7 +450,8 @@ PUBLISHED:
   INLINE bool get_post_load_store_cache() const;
   INLINE void set_post_load_store_cache(bool flag);
 
-  TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+  TextureContext *prepare_now(int view,
+                              PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
 
   static int up_to_power_2(int value);
@@ -544,7 +551,8 @@ protected:
   bool do_uncompress_ram_image();
   bool do_has_all_ram_mipmap_images() const;
 
-  bool do_reconsider_z_size(int z);
+  bool do_reconsider_z_size(int z, const LoaderOptions &options);
+  virtual void do_allocate_pages();
   bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
                                       ComponentType component_type, int z,
                                       const LoaderOptions &options);
@@ -556,6 +564,7 @@ protected:
   void do_setup_texture(TextureType texture_type, int x_size, int y_size,
                         int z_size, ComponentType component_type,
                         Format format);
+  void do_set_num_views(int num_views);
   void do_set_format(Format format);
   void do_set_component_type(ComponentType component_type);
   void do_set_x_size(int x_size);
@@ -582,13 +591,16 @@ protected:
   INLINE bool do_has_ram_mipmap_image(int n) const;
   int do_get_expected_num_mipmap_levels() const;
   INLINE size_t do_get_expected_ram_image_size() const;
+  INLINE size_t do_get_expected_ram_view_size() const;
   INLINE size_t do_get_expected_ram_page_size() const;
   size_t do_get_ram_mipmap_page_size(int n) const;
   INLINE size_t do_get_expected_ram_mipmap_image_size(int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_view_size(int n) const;
   INLINE size_t do_get_expected_ram_mipmap_page_size(int n) const;
   int do_get_expected_mipmap_x_size(int n) const;
   int do_get_expected_mipmap_y_size(int n) const;
   int do_get_expected_mipmap_z_size(int n) const;
+  INLINE int do_get_expected_mipmap_num_pages(int n) const;
   INLINE void do_clear_ram_image();
   void do_clear_simple_ram_image();
   void do_clear_ram_mipmap_images();
@@ -645,7 +657,7 @@ private:
                                         const DDSHeader &header, 
                                         int n, istream &in);
 
-  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+  void clear_prepared(int view, PreparedGraphicsObjects *prepared_objects);
 
   static void consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name);
 
@@ -720,6 +732,7 @@ protected:
   int _x_size;
   int _y_size;
   int _z_size;
+  int _num_views;
   int _num_components;
   int _component_width;
   TextureType _texture_type;
@@ -758,8 +771,9 @@ protected:
   // Each PGO conversely keeps a list (a set) of all the Textures that
   // have been prepared there.  When either destructs, it removes
   // itself from the other's list.
-  typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
-  Contexts _contexts;
+  typedef pmap<int, TextureContext *> Contexts;
+  typedef pmap<PreparedGraphicsObjects *, Contexts> PreparedViews;
+  PreparedViews _prepared_views;
   
   // It is common, when using normal maps, specular maps, gloss maps,
   // and such, to use a file naming convention where the filenames

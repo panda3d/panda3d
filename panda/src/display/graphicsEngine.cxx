@@ -1284,7 +1284,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     new DisplayRegionPipelineReader(dr, current_thread);
 
   win->change_scenes(dr_reader);
-  gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
+  gsg->prepare_display_region(dr_reader);
 
   if (dr_reader->is_any_clear_active()) {
     gsg->clear(dr);
@@ -1848,7 +1848,7 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   {
     DisplayRegionPipelineReader dr_reader(dr, current_thread);
     win->change_scenes(&dr_reader);
-    gsg->prepare_display_region(&dr_reader, dr_reader.get_stereo_channel());
+    gsg->prepare_display_region(&dr_reader);
     if (dr_reader.is_any_clear_active()) {
       gsg->clear(dr_reader.get_object());
     }

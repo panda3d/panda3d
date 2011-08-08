@@ -191,9 +191,28 @@ get_sort() const {
 //               set_stereo_channel().
 ////////////////////////////////////////////////////////////////////
 INLINE Lens::StereoChannel DisplayRegion::
-get_stereo_channel() {
+get_stereo_channel() const {
   CDReader cdata(_cycler);
   return cdata->_stereo_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_tex_view_offset
+//       Access: Public
+//  Description: Returns the current texture view offset for this
+//               DisplayRegion.  This is normally set to zero.  If
+//               nonzero, it is used to select a particular view of
+//               any multiview textures that are rendered within this
+//               DisplayRegion.
+//
+//               For a StereoDisplayRegion, this is normally 0 for the
+//               left eye, and 1 for the right eye, to support stereo
+//               textures.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_tex_view_offset() const {
+  CDReader cdata(_cycler);
+  return cdata->_tex_view_offset;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -736,6 +755,24 @@ get_sort() const {
 INLINE Lens::StereoChannel DisplayRegionPipelineReader::
 get_stereo_channel() {
   return _cdata->_stereo_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_tex_view_offset
+//       Access: Public
+//  Description: Returns the current texture view offset for this
+//               DisplayRegion.  This is normally set to zero.  If
+//               nonzero, it is used to select a particular view of
+//               any multiview textures that are rendered within this
+//               DisplayRegion.
+//
+//               For a StereoDisplayRegion, this is normally 0 for the
+//               left eye, and 1 for the right eye, to support stereo
+//               textures.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_tex_view_offset() {
+  return _cdata->_tex_view_offset;
 }
 
 ////////////////////////////////////////////////////////////////////

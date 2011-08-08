@@ -57,7 +57,8 @@ FFMpegTexture(const FFMpegTexture &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::Destructor
 //       Access: Published, Virtual
-//  Description: I'm betting that texture takes care of the, so we'll just do a clear.
+//  Description: I'm betting that texture takes care of the, so we'll
+//               just do a clear.
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::
 ~FFMpegTexture() {
@@ -93,7 +94,13 @@ do_make_copy() {
 void FFMpegTexture::
 do_assign(const FFMpegTexture &copy) {
   VideoTexture::do_assign(copy);
+
   _pages = copy._pages;
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    VideoPage *page = (*pi);
+    (*pi) = new VideoPage(*page);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,16 +108,16 @@ do_assign(const FFMpegTexture &copy) {
 //       Access: Private
 //  Description: Returns a reference to the zth VideoPage (level) of
 //               the texture.  In the case of a 2-d texture, there is
-//               only one page, level 0; but cube maps and 3-d
-//               textures have more.
+//               only one page, level 0; but cube maps, 3-d
+//               textures, and multiview textures have more.
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::VideoPage &FFMpegTexture::
 modify_page(int z) {
-  nassertr(z < _z_size, _pages[0]);
+  nassertr(z < get_num_pages(), *_pages[0]);
   while (z >= (int)_pages.size()) {
-    _pages.push_back(VideoPage());
+    _pages.push_back(new VideoPage());
   }
-  return _pages[z];
+  return *_pages[z];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,11 +214,15 @@ make_texture() {
 ////////////////////////////////////////////////////////////////////
 void FFMpegTexture::
 update_frame(int frame) {
-  int max_z = min(_z_size, (int)_pages.size());
+  int max_z = min(get_num_pages(), (int)_pages.size());
+  size_t page_size = do_get_expected_ram_page_size();
   for (int z = 0; z < max_z; ++z) {
-    VideoPage &page = _pages.at(z);
+    VideoPage &page = *(_pages.at(z));
     if (page._color.is_valid() || page._alpha.is_valid()) {
       do_modify_ram_image();
+      if (_ram_images[0]._image.size() != do_get_expected_ram_image_size()) {
+        do_make_ram_image();
+      }
     }
     if (page._color.is_valid()) {
       nassertv(_num_components >= 3 && _component_width == 1);
@@ -223,7 +234,8 @@ update_frame(int frame) {
       // that I don't convert, even if the IO formats are the same!)  
       if (page._color.get_frame_data(frame)) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-        unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + page_size * z;
+        nassertv(dest + page_size <= _ram_images[0]._image.p() + _ram_images[0]._image.size());
         int dest_row_width = (_x_size * _num_components * _component_width);
         
         // Simplest case, where we deal with an rgb texture
@@ -285,7 +297,8 @@ update_frame(int frame) {
         
         // Currently, we assume the alpha has been converted to an rgb format
         // There is no reason it can't be a 256 color grayscale though.
-        unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + page_size * z;
+        nassertv(dest + page_size <= _ram_images[0]._image.p() + _ram_images[0]._image.size());
         int dest_row_width = (_x_size * _num_components * _component_width);
         
         int source_row_width= page._alpha._codec_context->width * 3;
@@ -344,7 +357,10 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   }
 
   nassertr(n == 0, false);
-  nassertr(z >= 0 && z < get_z_size(), false);
+  if (!do_reconsider_z_size(z, options)) {
+    return false;
+  }
+  nassertr(z >= 0 && z < _z_size * _num_views, false);
 
   VideoPage &page = modify_page(z);
   if (!page._color.read(fullpath)) {
@@ -407,10 +423,9 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
         page._alpha.clear();
         return false;
       }
-      
     }
-    
   }
+
   set_loaded_from_image();
   clear_current_frame();
   update_frame(0);
@@ -433,6 +448,38 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
   }
 
   return Texture::do_load_one(pnmimage, name, z, n, options);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_allocate_pages
+//       Access: Protected, Virtual
+//  Description: Called internally by do_reconsider_z_size() to
+//               allocate new memory in _ram_images[0] for the new
+//               number of pages.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_allocate_pages() {
+  // We don't actually do anything here; the allocation is made in
+  // do_load_one(), above.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_clear
+//       Access: Protected, Virtual
+//  Description: The protected implementation of clear().  Assumes the
+//               lock is already held.
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_clear() {
+  Texture::do_clear();
+
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    delete (*pi);
+  }
+  _pages.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -493,7 +540,7 @@ void FFMpegTexture::
 do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
   me.add_uint16(_pages.size());
   for (size_t n = 0; n < _pages.size(); ++n) {
-    VideoPage &page = _pages[n];
+    VideoPage &page = (*_pages[n]);
     page.write_datagram_rawdata(manager, me);
   }
 }
@@ -509,8 +556,8 @@ do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
   int num_pages = scan.get_uint16();
   _pages.clear();
   for (int n = 0; n < num_pages; ++n) {
-    _pages.push_back(VideoPage());
-    VideoPage &page = _pages.back();
+    _pages.push_back(new VideoPage());
+    VideoPage &page = *(_pages.back());
     page.fillin_rawdata(scan, manager);
 
     LoaderOptions options;
@@ -1041,5 +1088,5 @@ fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
 }
 
 
-#endif  // HAVE_FFMpeg
+#endif  // HAVE_FFMPEG
 

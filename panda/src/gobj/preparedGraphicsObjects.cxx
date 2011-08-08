@@ -241,7 +241,7 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->_texture->clear_prepared(this);
+  tc->_texture->clear_prepared(tc->get_view(), this);
 
   // We have to set the Texture pointer to NULL at this point, since
   // the Texture itself might destruct at any time after it has been
@@ -284,7 +284,7 @@ release_all_textures() {
        tci != _prepared_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->_texture->clear_prepared(this);
+    tc->_texture->clear_prepared(tc->get_view(), this);
     tc->_texture = (Texture *)NULL;
 
     _released_textures.insert(tc);
@@ -341,14 +341,14 @@ get_num_prepared_textures() const {
 //               TextureContext will be deleted.
 ////////////////////////////////////////////////////////////////////
 TextureContext *PreparedGraphicsObjects::
-prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
+prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new TextureContext.  There might
   // be several GSG's sharing the same set of textures; if so, it
   // doesn't matter which of them creates the context (since they're
   // all shared anyway).
-  TextureContext *tc = gsg->prepare_texture(tex);
+  TextureContext *tc = gsg->prepare_texture(tex, view);
 
   if (tc != (TextureContext *)NULL) {
     bool prepared = _prepared_textures.insert(tc).second;
@@ -1274,9 +1274,11 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = (*qti);
-    TextureContext *tc = tex->prepare_now(this, gsg);
-    if (tc != (TextureContext *)NULL) {
-      gsg->update_texture(tc, true);
+    for (int view = 0; view < tex->get_num_views(); ++view) {
+      TextureContext *tc = tex->prepare_now(view, this, gsg);
+      if (tc != (TextureContext *)NULL) {
+        gsg->update_texture(tc, true);
+      }
     }
   }
 

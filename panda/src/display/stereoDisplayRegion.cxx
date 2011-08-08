@@ -197,6 +197,11 @@ set_sort(int sort) {
 //
 //               SC_mono - the left eye is set to SC_mono and
 //               activated; the right eye is deactivated.
+//
+//               This call also resets tex_view_offset to its default
+//               value, which is 0 for the left eye or 1 for the right
+//               eye of a stereo display region, or 0 for a mono
+//               display region.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
 set_stereo_channel(Lens::StereoChannel stereo_channel) {
@@ -231,6 +236,26 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
     _right_eye->set_active(false);
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StereoDisplayRegion::set_tex_view_offset
+//       Access: Published, Virtual
+//  Description: Sets the current texture view offset for this
+//               DisplayRegion.  This is normally set to zero.  If
+//               nonzero, it is used to select a particular view of
+//               any multiview textures that are rendered within this
+//               DisplayRegion.
+//
+//               When you call this on a StereoDisplayRegion, it
+//               automatically sets the specified value on the left
+//               eye, and the specified value + 1 on the right eye.
+////////////////////////////////////////////////////////////////////
+void StereoDisplayRegion::
+set_tex_view_offset(int tex_view_offset) {
+  DisplayRegion::set_tex_view_offset(tex_view_offset);
+  _left_eye->set_tex_view_offset(tex_view_offset);
+  _right_eye->set_tex_view_offset(tex_view_offset + 1);
 }
 
 ////////////////////////////////////////////////////////////////////

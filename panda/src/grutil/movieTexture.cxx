@@ -151,8 +151,7 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   bool alpha = false;
   double len = 0.0;
 
-  nassertv(cdata->_pages.size() == (size_t)_z_size);
-  for (int i = 0; i < _z_size; ++i) {
+  for (size_t i = 0; i < cdata->_pages.size(); ++i) {
     MovieVideoCursor *t = cdata->_pages[i]._color;
     if (t) {
       if (t->size_x() > x_max) x_max = t->size_x();
@@ -221,9 +220,11 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
-
   nassertr(n == 0, false);
-  nassertr(z >= 0 && z < _z_size, false);
+  if (!do_reconsider_z_size(z, options)) {
+    return false;
+  }
+  nassertr(z >= 0 && z < _z_size * _num_views, false);
   
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
@@ -278,10 +279,9 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 bool MovieTexture::
 do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
             const LoaderOptions &options) {
-  
   {
     CDWriter cdata(_cycler);
-    cdata->_pages.resize(z+1);
+    cdata->_pages.resize(z + 1);
     cdata->_pages[z]._color = color;
     cdata->_pages[z]._alpha = alpha;
     do_recalculate_image_properties(cdata, options);
@@ -301,6 +301,21 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_allocate_pages
+//       Access: Protected, Virtual
+//  Description: Called internally by do_reconsider_z_size() to
+//               allocate new memory in _ram_images[0] for the new
+//               number of pages.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+do_allocate_pages() {
+  // We don't actually do anything here; the allocation is made in
+  // do_load_one(), above.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -737,7 +752,9 @@ void MovieTexture::
 do_write_datagram_rawdata(BamWriter *manager, Datagram &dg) {
   CDReader cdata(_cycler);
 
-  dg.add_uint16(cdata->_pages.size());
+  dg.add_uint16(_z_size);
+  dg.add_uint16(_num_views);
+  nassertv(cdata->_pages.size() == (size_t)(_z_size * _num_views));
   for (size_t n = 0; n < cdata->_pages.size(); ++n) {
     const VideoPage &page = cdata->_pages[n];
     manager->write_pointer(dg, page._color);
@@ -755,9 +772,13 @@ void MovieTexture::
 do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
   CDWriter cdata(_cycler);
 
-  size_t num_pages = scan.get_uint16();
-  _z_size = (int)num_pages;
+  _z_size = scan.get_uint16();
+  _num_views = 1;
+  if (manager->get_file_minor_ver() >= 26) {
+    _num_views = scan.get_uint16();
+  }
 
+  size_t num_pages = (size_t)(_z_size * _num_views);
   cdata->_pages.reserve(num_pages);
   for (size_t n = 0; n < num_pages; ++n) {
     cdata->_pages.push_back(VideoPage());

@@ -72,7 +72,7 @@ public:
     calc_fb_properties(DWORD cformat, DWORD dformat,
                        DWORD multisampletype, DWORD multisamplequality);
 
-  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual TextureContext *prepare_texture(Texture *tex, int view);
   void apply_texture(int i, TextureContext *tc);
   virtual bool update_texture(TextureContext *tc, bool force);
   bool upload_texture(DXTextureContext9 *dtc, bool force);
@@ -100,8 +100,7 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
-                                      Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 

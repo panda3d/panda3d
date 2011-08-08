@@ -269,6 +269,11 @@ set_sort(int sort) {
 //               An ordinary DisplayRegion may be set to SC_mono,
 //               SC_left, or SC_right.  You may set SC_stereo only on
 //               a StereoDisplayRegion.
+//
+//               This call also resets tex_view_offset to its default
+//               value, which is 0 for the left eye or 1 for the right
+//               eye of a stereo display region, or 0 for a mono
+//               display region.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_stereo_channel(Lens::StereoChannel stereo_channel) {
@@ -278,6 +283,29 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
 
   CDWriter cdata(_cycler);
   cdata->_stereo_channel = stereo_channel;
+  cdata->_tex_view_offset = (stereo_channel == Lens::SC_right) ? 1 : 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_tex_view_offset
+//       Access: Published, Virtual
+//  Description: Sets the current texture view offset for this
+//               DisplayRegion.  This is normally set to zero.  If
+//               nonzero, it is used to select a particular view of
+//               any multiview textures that are rendered within this
+//               DisplayRegion.
+//
+//               For a StereoDisplayRegion, this is normally 0 for the
+//               left eye, and 1 for the right eye, to support stereo
+//               textures.  This is set automatically when you call
+//               set_stereo_channel().
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_tex_view_offset(int tex_view_offset) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
+  CDWriter cdata(_cycler);
+  cdata->_tex_view_offset = tex_view_offset;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -770,6 +798,7 @@ CData() :
   _active(true),
   _sort(0),
   _stereo_channel(Lens::SC_mono),
+  _tex_view_offset(0),
   _cube_map_index(-1)
 {
 }
@@ -794,6 +823,7 @@ CData(const DisplayRegion::CData &copy) :
   _active(copy._active),
   _sort(copy._sort),
   _stereo_channel(copy._stereo_channel),
+  _tex_view_offset(copy._tex_view_offset),
   _cube_map_index(copy._cube_map_index)
 {
 }

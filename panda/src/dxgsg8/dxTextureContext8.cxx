@@ -33,8 +33,8 @@ static const DWORD g_LowByteMask = 0x000000FF;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXTextureContext8::
-DXTextureContext8(PreparedGraphicsObjects *pgo, Texture *tex) :
-  TextureContext(pgo, tex) {
+DXTextureContext8(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+  TextureContext(pgo, tex, view) {
 
   if (dxgsg8_cat.is_spam()) {
     dxgsg8_cat.spam()

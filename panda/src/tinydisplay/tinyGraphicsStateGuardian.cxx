@@ -263,10 +263,9 @@ clear(DrawableRegion *clearable) {
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-prepare_display_region(DisplayRegionPipelineReader *dr,
-                       Lens::StereoChannel stereo_channel) {
+prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
-  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
+  GraphicsStateGuardian::prepare_display_region(dr);
 
   int xmin, ymin, xsize, ysize;
   dr->get_region_pixels_i(xmin, ymin, xsize, ysize);
@@ -1361,7 +1360,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  int view = dr->get_tex_view_offset();
+  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
@@ -1610,7 +1610,7 @@ set_state_and_transform(const RenderState *target,
 //               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *TinyGraphicsStateGuardian::
-prepare_texture(Texture *tex) {
+prepare_texture(Texture *tex, int view) {
   switch (tex->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
@@ -1637,7 +1637,7 @@ prepare_texture(Texture *tex) {
   }
   */
 
-  TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
+  TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex, view);
 
   return gtc;
 }
@@ -2209,7 +2209,8 @@ do_issue_texture() {
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
     
-    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
+    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
       // Something wrong with this texture; skip it.
       return;
@@ -2504,7 +2505,7 @@ upload_texture(TinyTextureContext *gtc, bool force) {
     case Texture::F_rgb8:
     case Texture::F_rgb12:
     case Texture::F_rgb332:
-      copy_rgb_image(dest, xsize, ysize, tex, level);
+      copy_rgb_image(dest, xsize, ysize, gtc, level);
       break;
 
     case Texture::F_rgba:
@@ -2515,32 +2516,32 @@ upload_texture(TinyTextureContext *gtc, bool force) {
     case Texture::F_rgba12:
     case Texture::F_rgba16:
     case Texture::F_rgba32:
-      copy_rgba_image(dest, xsize, ysize, tex, level);
+      copy_rgba_image(dest, xsize, ysize, gtc, level);
       break;
 
     case Texture::F_luminance:
-      copy_lum_image(dest, xsize, ysize, tex, level);
+      copy_lum_image(dest, xsize, ysize, gtc, level);
       break;
 
     case Texture::F_red:
-      copy_one_channel_image(dest, xsize, ysize, tex, level, 0);
+      copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
       break;
 
     case Texture::F_green:
-      copy_one_channel_image(dest, xsize, ysize, tex, level, 1);
+      copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
       break;
 
     case Texture::F_blue:
-      copy_one_channel_image(dest, xsize, ysize, tex, level, 2);
+      copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
       break;
 
     case Texture::F_alpha:
-      copy_alpha_image(dest, xsize, ysize, tex, level);
+      copy_alpha_image(dest, xsize, ysize, gtc, level);
       break;
 
     case Texture::F_luminance_alphamask:
     case Texture::F_luminance_alpha:
-      copy_la_image(dest, xsize, ysize, tex, level);
+      copy_la_image(dest, xsize, ysize, gtc, level);
       break;
     }
 
@@ -2727,7 +2728,8 @@ get_tex_shift(int orig_size) {
 //               from the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
+copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
   nassertv(tex->get_expected_mipmap_x_size(level) == xsize &&
            tex->get_expected_mipmap_y_size(level) == ysize);
@@ -2735,6 +2737,8 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int leve
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2764,12 +2768,15 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int leve
 //               from the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
+copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
 
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2800,12 +2807,15 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int le
 //               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level, int channel) {
+copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level, int channel) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
 
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2865,12 +2875,15 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, 
 //               pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_la_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
+copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 2);
 
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2901,12 +2914,15 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level
 //               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
+copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 3);
 
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2937,12 +2953,15 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int leve
 //               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
+copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+  Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 4);
 
   CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
+  size_t view_size = tex->get_ram_mipmap_view_size(level);
+  src += view_size * gtc->get_view();
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();

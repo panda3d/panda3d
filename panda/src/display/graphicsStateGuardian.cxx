@@ -144,6 +144,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _data_reader = (GeomVertexDataPipelineReader *)NULL;
   _current_display_region = (DisplayRegion*)NULL;
   _current_stereo_channel = Lens::SC_mono;
+  _current_tex_view_offset = 0;
   _current_lens = (Lens *)NULL;
   _projection_mat = TransformState::make_identity();
   _projection_mat_inv = TransformState::make_identity();
@@ -1284,22 +1285,17 @@ fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
 //  Description: Makes the specified DisplayRegion current.  All
 //               future drawing and clear operations will be
 //               constrained within the given DisplayRegion.
-//
-//               The stereo_channel parameter further qualifies the
-//               channel that is to be rendered into, in the case of a
-//               stereo display region.  Normally, in the monocular
-//               case, it is Lens::SC_mono.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-prepare_display_region(DisplayRegionPipelineReader *dr,
-                       Lens::StereoChannel stereo_channel) {
+prepare_display_region(DisplayRegionPipelineReader *dr) {
   _current_display_region = dr->get_object();
-  _current_stereo_channel = stereo_channel;
+  _current_stereo_channel = dr->get_stereo_channel();
+  _current_tex_view_offset = dr->get_tex_view_offset();
   _effective_incomplete_render = _incomplete_render && _current_display_region->get_incomplete_render();
 
   _stereo_buffer_mask = ~0;
 
-  switch (stereo_channel) {
+  switch (dr->get_stereo_channel()) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
     if (_current_properties->is_stereo()) {

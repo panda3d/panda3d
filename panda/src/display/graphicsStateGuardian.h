@@ -232,9 +232,7 @@ public:
   const LMatrix4f *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4f &t);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
 
-  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
-                                      Lens::StereoChannel stereo_channel);
-
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
   virtual void clear_state_and_transform();
 
@@ -287,6 +285,7 @@ public:
 
   INLINE const DisplayRegion *get_current_display_region() const;
   INLINE Lens::StereoChannel get_current_stereo_channel() const;
+  INLINE int get_current_tex_view_offset() const;
   INLINE const Lens *get_current_lens() const;
 
   virtual const TransformState *get_cs_transform() const;
@@ -390,6 +389,7 @@ protected:
 
   CPT(DisplayRegion) _current_display_region;
   Lens::StereoChannel _current_stereo_channel;
+  int _current_tex_view_offset;
   CPT(Lens) _current_lens;
   CPT(TransformState) _projection_mat;
   CPT(TransformState) _projection_mat_inv;

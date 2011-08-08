@@ -38,6 +38,7 @@ TextureStage(const string &name) {
   _rgb_scale = 1;
   _alpha_scale = 1;
   _saved_result = false;
+  _tex_view_offset = 0;
   _combine_rgb_mode = CM_undefined;
   _num_combine_rgb_operands = 0;
   _combine_rgb_source0 = CS_undefined;
@@ -75,6 +76,7 @@ operator = (const TextureStage &other) {
   _rgb_scale = other._rgb_scale;
   _alpha_scale = other._alpha_scale;
   _saved_result = other._saved_result;
+  _tex_view_offset = other._tex_view_offset;
 
   _combine_rgb_mode = other._combine_rgb_mode;
   _combine_rgb_source0 = other._combine_rgb_source0;
@@ -148,6 +150,9 @@ compare_to(const TextureStage &other) const {
   }
   if (get_saved_result() != other.get_saved_result()) {
     return get_saved_result() < other.get_saved_result() ? -1 : 1;
+  }
+  if (get_tex_view_offset() != other.get_tex_view_offset()) {
+    return get_tex_view_offset() < other.get_tex_view_offset() ? -1 : 1;
   }
   if (get_mode() != other.get_mode()) {
     return get_mode() < other.get_mode() ? -1 : 1;
@@ -231,7 +236,8 @@ write(ostream &out) const {
       << "  texcoords = " << get_texcoord_name()->get_name()
       << ", mode = " << get_mode() << ", color = " << get_color()
       << ", scale = " << get_rgb_scale() << ", " << get_alpha_scale()
-      << ", saved_result = " << get_saved_result() << "\n";
+      << ", saved_result = " << get_saved_result() 
+      << ", tex_view_offset = " << get_tex_view_offset() << "\n";
 
   if (get_mode() == M_combine) {
     out << "  RGB combine mode =  " << get_combine_rgb_mode() << "\n";
@@ -400,8 +406,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _rgb_scale = scan.get_uint8();
   _alpha_scale = scan.get_uint8();
-  _saved_result = false;
   _saved_result = scan.get_bool();
+  _tex_view_offset = 0;
+  if (manager->get_file_minor_ver() >= 26) {
+    _tex_view_offset = scan.get_int32();
+  }
 
   _combine_rgb_mode = (TextureStage::CombineMode) scan.get_uint8();
   _num_combine_rgb_operands = scan.get_uint8();
@@ -464,6 +473,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint8(_rgb_scale);
     me.add_uint8(_alpha_scale);
     me.add_bool(_saved_result);
+    me.add_int32(_tex_view_offset);
     
     me.add_uint8(_combine_rgb_mode);
     me.add_uint8(_num_combine_rgb_operands);

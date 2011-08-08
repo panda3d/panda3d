@@ -162,7 +162,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
   DisplayRegionPipelineReader dr_reader(_display_region, current_thread);
 
   _buffer->change_scenes(&dr_reader);
-  gsg->prepare_display_region(&dr_reader, dr_reader.get_stereo_channel());
+  gsg->prepare_display_region(&dr_reader);
 
   _scene = new SceneSetup(*scene_setup);
   _scene->set_display_region(_display_region);

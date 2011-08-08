@@ -57,6 +57,8 @@ protected:
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
+  virtual void do_allocate_pages();
+  virtual void do_clear();
 
   virtual bool do_has_bam_rawdata() const;
   virtual void do_get_bam_rawdata();
@@ -125,7 +127,7 @@ private:
     VideoStream _color, _alpha;
   };
 
-  typedef pvector<VideoPage> Pages;
+  typedef pvector<VideoPage *> Pages;
   Pages _pages;
 
 public:

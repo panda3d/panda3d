@@ -23,7 +23,9 @@
 ////////////////////////////////////////////////////////////////////
 LoaderOptions::
 LoaderOptions(int flags) : 
-  _flags(flags), _texture_flags(0)  
+  _flags(flags), 
+  _texture_flags(0),
+  _texture_num_views(0)
 {
   // Shadowing the variables in config_util for static init ordering
   // issues.

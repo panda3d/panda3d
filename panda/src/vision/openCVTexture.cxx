@@ -134,7 +134,7 @@ do_assign(const OpenCVTexture &copy) {
 bool OpenCVTexture::
 from_camera(int camera_index, int z, int alpha_file_channel,
             const LoaderOptions &options) {
-  if (!do_reconsider_z_size(z)) {
+  if (!do_reconsider_z_size(z, options)) {
     return false;
   }
   nassertr(z >= 0 && z < get_z_size(), false);

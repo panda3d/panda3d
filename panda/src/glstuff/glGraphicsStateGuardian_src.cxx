@@ -53,6 +53,7 @@
 #include "depthWriteAttrib.h"
 #include "shadeModelAttrib.h"
 #include "rescaleNormalAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "alphaTestAttrib.h"
 #include "cullFaceAttrib.h"
 #include "fogAttrib.h"
@@ -1913,10 +1914,9 @@ clear(DrawableRegion *clearable) {
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-prepare_display_region(DisplayRegionPipelineReader *dr,
-                       Lens::StereoChannel stereo_channel) {
+prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
-  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
+  GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, b, w, h;
   dr->get_region_pixels(l, b, w, h);
@@ -3289,7 +3289,7 @@ end_draw_primitives() {
 //               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *CLP(GraphicsStateGuardian)::
-prepare_texture(Texture *tex) {
+prepare_texture(Texture *tex, int view) {
   report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't
   // bother to prepare it if we won't.
@@ -3322,7 +3322,7 @@ prepare_texture(Texture *tex) {
   }
 
   report_my_gl_errors();
-  CLP(TextureContext) *gtc = new CLP(TextureContext)(_prepared_objects, tex);
+  CLP(TextureContext) *gtc = new CLP(TextureContext)(_prepared_objects, tex, view);
   report_my_gl_errors();
   GLP(GenTextures)(1, &gtc->_index);
   report_my_gl_errors();
@@ -3423,14 +3423,22 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 extract_texture_data(Texture *tex) {
+  bool success = true;
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
 
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  int num_views = tex->get_num_views();
+  for (int view = 0; view < num_views; ++view) {
+    TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+    nassertr(tc != (TextureContext *)NULL, false);
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  return do_extract_texture_data(gtc);
+    if (!do_extract_texture_data(gtc)) {
+      success = false;
+    }
+  }
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4046,7 +4054,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     }
   }
 
-  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  int view = dr->get_tex_view_offset();
+  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
@@ -7510,8 +7519,9 @@ update_standard_texture_bindings() {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
 #endif // OPENGLES_2
-    
-    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+
+    int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
+    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
       // Something wrong with this texture; skip it.
       break;
@@ -7715,7 +7725,8 @@ update_show_usage_texture_bindings(int show_stage_index) {
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
-    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
+    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
       // Something wrong with this texture; skip it.
       break;
@@ -8783,17 +8794,20 @@ upload_texture_image(CLP(TextureContext) *gtc,
         image_ptr = ptimage;
       }
 
-      size_t image_size = tex->get_ram_mipmap_image_size(n);
+      const unsigned char *orig_image_ptr = image_ptr;
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      image_ptr += view_size * gtc->get_view();
       if (one_page_only) {
-        image_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += image_size * z;
+        view_size = tex->get_ram_mipmap_page_size(n);
+        image_ptr += view_size * z;
       }
+      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
       PTA_uchar bgr_image;
       if (!_supports_bgr && image_compression == Texture::CM_off) {
         // If the GL doesn't claim to support BGR, we may have to reverse
         // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
                                            external_format, tex);
       }
 
@@ -8802,7 +8816,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       int depth = tex->get_expected_mipmap_z_size(n);
 
 #ifdef DO_PSTATS
-      _data_transferred_pcollector.add_level(image_size);
+      _data_transferred_pcollector.add_level(view_size);
 #endif
       switch (texture_target) {
       case GL_TEXTURE_1D:
@@ -8811,7 +8825,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                              external_format, component_type, image_ptr);
         } else {
           _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
-                                     external_format, image_size, image_ptr);
+                                     external_format, view_size, image_ptr);
         }
         break;
 
@@ -8828,7 +8842,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                              external_format, component_type, image_ptr);
           } else {
             _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, image_size, image_ptr);
+                                       external_format, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -8844,7 +8858,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                              external_format, component_type, image_ptr);
           } else {
             _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, image_size, image_ptr);
+                                       external_format, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -8863,7 +8877,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                              external_format, component_type, image_ptr);
         } else {
           _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
-                                     external_format, image_size, image_ptr);
+                                     external_format, view_size, image_ptr);
         }
         break;
       }
@@ -8931,17 +8945,20 @@ upload_texture_image(CLP(TextureContext) *gtc,
         image_ptr = ptimage;
       }
 
-      size_t image_size = tex->get_ram_mipmap_image_size(n);
+      const unsigned char *orig_image_ptr = image_ptr;
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      image_ptr += view_size * gtc->get_view();
       if (one_page_only) {
-        image_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += image_size * z;
+        view_size = tex->get_ram_mipmap_page_size(n);
+        image_ptr += view_size * z;
       }
+      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
       PTA_uchar bgr_image;
       if (!_supports_bgr && image_compression == Texture::CM_off) {
         // If the GL doesn't claim to support BGR, we may have to reverse
         // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
                                            external_format, tex);
       }
 
@@ -8950,7 +8967,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       int depth = tex->get_expected_mipmap_z_size(n);
 
 #ifdef DO_PSTATS
-      _data_transferred_pcollector.add_level(image_size);
+      _data_transferred_pcollector.add_level(view_size);
 #endif
       switch (texture_target) {
 #ifndef OPENGLES  // 1-d textures not supported by OpenGL ES.  Fall through.
@@ -8961,7 +8978,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                           external_format, component_type, image_ptr);
         } else {
           _glCompressedTexImage1D(page_target, n - mipmap_bias, external_format, width,
-                                  0, image_size, image_ptr);
+                                  0, view_size, image_ptr);
         }
         break;
 #endif  // OPENGLES  // OpenGL ES will fall through.
@@ -8981,7 +8998,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           } else {
             _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
                                     height, depth,
-                                    0, image_size, image_ptr);
+                                    0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -8999,7 +9016,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           } else {
             _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
                                     height, depth,
-                                    0, image_size, image_ptr);
+                                    0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -9015,7 +9032,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                           external_format, component_type, image_ptr);
         } else {
           _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format, width, height,
-                                  0, image_size, image_ptr);
+                                  0, view_size, image_ptr);
         }
       }
 

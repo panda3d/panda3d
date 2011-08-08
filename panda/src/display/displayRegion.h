@@ -95,7 +95,9 @@ PUBLISHED:
   INLINE int get_sort() const;
 
   virtual void set_stereo_channel(Lens::StereoChannel stereo_channel);
-  INLINE Lens::StereoChannel get_stereo_channel();
+  INLINE Lens::StereoChannel get_stereo_channel() const;
+  virtual void set_tex_view_offset(int tex_view_offset);
+  INLINE int get_tex_view_offset() const;
 
   virtual void set_incomplete_render(bool incomplete_render);
   INLINE bool get_incomplete_render() const;
@@ -203,6 +205,7 @@ private:
     bool _active;
     int _sort;
     Lens::StereoChannel _stereo_channel;
+    int _tex_view_offset;
     int _cube_map_index;
 
     PT(CallbackObject) _cull_callback;
@@ -297,6 +300,7 @@ public:
   INLINE bool is_active() const;
   INLINE int get_sort() const;
   INLINE Lens::StereoChannel get_stereo_channel();
+  INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_cube_map_index() const;
   INLINE CallbackObject *get_draw_callback() const;

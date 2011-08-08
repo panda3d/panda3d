@@ -290,6 +290,34 @@ get_saved_result() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::set_tex_view_offset
+//       Access: Published
+//  Description: Sets the tex_view_offset value.  This is used only
+//               when a special multiview texture is bound to the
+//               TextureStage, and it selects the particular view of
+//               the texture that is to be used.
+//
+//               This value is added to the similar parameter on
+//               DisplayRegion to derive the final texture view index
+//               that is selected for rendering.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStage::
+set_tex_view_offset(int tex_view_offset) {
+  _tex_view_offset = tex_view_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_tex_view_offset
+//       Access: Published
+//  Description: Returns the current setting of the tex_view_offset.
+//               See set_tex_view_offset().
+////////////////////////////////////////////////////////////////////
+INLINE int TextureStage::
+get_tex_view_offset() const {
+  return _tex_view_offset;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::set_combine_rgb
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that

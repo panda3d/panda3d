@@ -486,7 +486,9 @@ class Loader(DirectObject):
     # texture loading funcs
     def loadTexture(self, texturePath, alphaPath = None,
                     readMipmaps = False, okMissing = False,
-                    minfilter = None, magfilter = None, anisotropicDegree = None):
+                    minfilter = None, magfilter = None,
+                    anisotropicDegree = None, loaderOptions = None,
+                    multiview = None):
         """
         texturePath is a string.
 
@@ -521,13 +523,31 @@ class Loader(DirectObject):
         to apply to the texture when it is loaded.  Like minfilter and
         magfilter, egg-texture-cards may be a more robust way to apply
         this setting.
+
+        If multiview is true, it indicates to load a multiview or
+        stereo texture.  In this case, the filename should contain a
+        hash character ('#') that will be replaced with '0' for the
+        left image and '1' for the right image.  Larger numbers are
+        also allowed if you need more than two views.
         """
+        if loaderOptions == None:
+            loaderOptions = LoaderOptions()
+        else:
+            loaderOptions = LoaderOptions(loaderOptions)
+        if multiview is not None:
+            flags = loaderOptions.getTextureFlags()
+            if multiview:
+                flags |= LoaderOptions.TFMultiview
+            else:
+                flags &= ~LoaderOptions.TFMultiview
+            loaderOptions.setTextureFlags(flags)
+
         if alphaPath is None:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
-            texture = TexturePool.loadTexture(texturePath, 0, readMipmaps)
+            texture = TexturePool.loadTexture(texturePath, 0, readMipmaps, loaderOptions)
         else:
             assert Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath))
-            texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps)
+            texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load texture: %s' % (texturePath)
             raise IOError, message
@@ -542,7 +562,8 @@ class Loader(DirectObject):
         return texture
 
     def load3DTexture(self, texturePattern, readMipmaps = False, okMissing = False,
-                      minfilter = None, magfilter = None, anisotropicDegree = None):
+                      minfilter = None, magfilter = None, anisotropicDegree = None,
+                      loaderOptions = None, multiview = None, numViews = 2):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
@@ -558,9 +579,32 @@ class Loader(DirectObject):
         two sequences of hash characters; the first group is filled in
         with the z-height number, and the second group with the mipmap
         index number.
+
+        If multiview is true, it indicates to load a multiview or
+        stereo texture.  In this case, numViews should also be
+        specified (the default is 2), and the sequence of texture
+        images will be divided into numViews views.  The total
+        z-height will be (numImages / numViews).  For instance, if you
+        read 16 images with numViews = 2, then you have created a
+        stereo multiview image, with z = 8.  In this example, images
+        numbered 0 - 7 will be part of the left eye view, and images
+        numbered 8 - 15 will be part of the right eye view.
         """
         assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
-        texture = TexturePool.load3dTexture(texturePattern, readMipmaps)
+        if loaderOptions == None:
+            loaderOptions = LoaderOptions()
+        else:
+            loaderOptions = LoaderOptions(loaderOptions)
+        if multiview is not None:
+            flags = loaderOptions.getTextureFlags()
+            if multiview:
+                flags |= LoaderOptions.TFMultiview
+            else:
+                flags &= ~LoaderOptions.TFMultiview
+            loaderOptions.setTextureFlags(flags)
+            loaderOptions.setTextureNumViews(numViews)
+
+        texture = TexturePool.load3dTexture(texturePattern, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load 3-D texture: %s' % (texturePattern)
             raise IOError, message
@@ -575,7 +619,8 @@ class Loader(DirectObject):
         return texture
 
     def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False,
-                    minfilter = None, magfilter = None, anisotropicDegree = None):
+                    minfilter = None, magfilter = None, anisotropicDegree = None,
+                    loaderOptions = None, multiview = None):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
@@ -591,9 +636,28 @@ class Loader(DirectObject):
         two sequences of hash characters; the first group is filled in
         with the face index number, and the second group with the
         mipmap index number.
+
+        If multiview is true, it indicates to load a multiview or
+        stereo cube map.  For a stereo cube map, 12 images will be
+        loaded--images numbered 0 - 5 will become the left eye view,
+        and images 6 - 11 will become the right eye view.  In general,
+        the number of images found on disk must be a multiple of six,
+        and each six images will define a new view.
         """
         assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
-        texture = TexturePool.loadCubeMap(texturePattern, readMipmaps)
+        if loaderOptions == None:
+            loaderOptions = LoaderOptions()
+        else:
+            loaderOptions = LoaderOptions(loaderOptions)
+        if multiview is not None:
+            flags = loaderOptions.getTextureFlags()
+            if multiview:
+                flags |= LoaderOptions.TFMultiview
+            else:
+                flags &= ~LoaderOptions.TFMultiview
+            loaderOptions.setTextureFlags(flags)
+
+        texture = TexturePool.loadCubeMap(texturePattern, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load cube map: %s' % (texturePattern)
             raise IOError, message

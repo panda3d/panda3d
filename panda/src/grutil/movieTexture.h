@@ -85,6 +85,7 @@ protected:
                            int z, int n, const LoaderOptions &options);
   bool do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, 
                    int z, const LoaderOptions &options);
+  virtual void do_allocate_pages();
 
   class VideoPage {
   public:

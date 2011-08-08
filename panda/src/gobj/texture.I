@@ -62,7 +62,7 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
               int z_size, Texture::ComponentType component_type,
               Texture::Format format) {
   MutexHolder holder(_lock);
-  do_setup_texture(texture_type, x_size, y_size, z_size,
+  do_setup_texture(texture_type, x_size, y_size, z_size, 
                    component_type, format);
 }
 
@@ -169,7 +169,7 @@ setup_2d_texture_array(int z_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_2d_texture_array(int x_size, int y_size, int z_size,
-                 ComponentType component_type, Format format) {
+                       ComponentType component_type, Format format) {
   setup_texture(TT_2d_texture_array, x_size, y_size, z_size, component_type, format);
 }
 
@@ -198,8 +198,7 @@ setup_cube_map() {
 //               and z_size is always 6.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-setup_cube_map(int size, ComponentType component_type, 
-               Format format) {
+setup_cube_map(int size, ComponentType component_type, Format format) {
   setup_texture(TT_cube_map, size, size, 6, component_type, format);
 }
 
@@ -232,7 +231,9 @@ write(const Filename &fullpath) {
 //               number to write.  3-D textures have one page number
 //               for each level of depth; cube maps have six pages
 //               number 0 through 5.  Other kinds of textures have
-//               only one page, numbered 0.
+//               only one page, numbered 0.  If there are multiple
+//               views, the range of z is increased; the total range
+//               is [0, get_num_pages()).
 //
 //               If write_pages is true, then all pages of the texture
 //               will be written.  In this case z is ignored, and the
@@ -485,6 +486,40 @@ get_y_size() const {
 INLINE int Texture::
 get_z_size() const {
   return _z_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_num_views
+//       Access: Published
+//  Description: Returns the number of "views" in the texture.  A view
+//               is a completely separate image stored within the
+//               Texture object.  Most textures have only one view,
+//               but a stereo texture, for instance, may have two
+//               views, a left and a right image.  Other uses for
+//               multiple views are not yet defined.
+//
+//               If this value is greater than one, the additional
+//               views are accessed as additional pages beyond
+//               get_z_size().
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_num_views() const {
+  return _num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_num_pages
+//       Access: Published
+//  Description: Returns the total number of pages in the texture.  
+//               Each "page" is a 2-d texture image within the larger
+//               image--a face of a cube map, or a level of a 3-d
+//               texture.  Normally, get_num_pages() is the same as
+//               get_z_size().  However, in a multiview texture, this
+//               returns get_z_size() * get_num_views().
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_num_pages() const {
+  return get_z_size() * get_num_views();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1065,6 +1100,21 @@ get_expected_mipmap_z_size(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_expected_mipmap_num_pages
+//       Access: Published
+//  Description: Returns the total number of pages that the nth mipmap
+//               level should have, based on the texture's size.  This
+//               is usually the same as get_expected_mipmap_z_size(),
+//               except for a multiview texture, in which case it is
+//               get_expected_mipmap_z_size() * get_num_views().
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_expected_mipmap_num_pages(int n) const {
+  MutexHolder holder(_lock);
+  return do_get_expected_mipmap_num_pages(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_ram_image
 //       Access: Published
 //  Description: Returns true if the Texture has its image contents
@@ -1130,13 +1180,32 @@ might_have_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_image_size
 //       Access: Published
-//  Description: Returns the number of bytes used by the in-memory
-//               image, or 0 if there is no in-memory image.
+//  Description: Returns the total number of bytes used by the
+//               in-memory image, across all pages and views, or 0 if
+//               there is no in-memory image.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_image_size() const {
   MutexHolder holder(_lock);
   return do_get_ram_image_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_view_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the in-memory
+//               image per view, or 0 if there is no in-memory image.
+//               Since each view is a stack of z_size pages, this is
+//               get_z_size() * get_ram_page_size().
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_ram_view_size() const {
+  MutexHolder holder(_lock);
+  if (_ram_image_compression == CM_off || _ram_images.empty()) {
+    return do_get_expected_ram_view_size();
+  } else {
+    return _z_size * _ram_images[0]._page_size;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1447,6 +1516,29 @@ get_ram_mipmap_image_size(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_mipmap_view_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the in-memory
+//               image per view for mipmap level n, or 0 if there is
+//               no in-memory image for this mipmap level.
+//
+//               A "view" is a collection of z_size pages for each
+//               mipmap level.  Most textures have only one view,
+//               except for multiview or stereo textures.
+//
+//               For a non-compressed texture, this is the same as
+//               get_expected_ram_mipmap_view_size().  For a compressed
+//               texture, this may be a smaller value.  (We do assume
+//               that all pages will be the same size on a compressed
+//               texture).
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_ram_mipmap_view_size(int n) const {
+  MutexHolder holder(_lock);
+  return do_get_ram_mipmap_page_size(n) * do_get_expected_mipmap_z_size(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_mipmap_page_size
 //       Access: Published
 //  Description: Returns the number of bytes used by the in-memory
@@ -1479,12 +1571,27 @@ get_expected_ram_mipmap_image_size(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_expected_ram_mipmap_view_size
+//       Access: Published
+//  Description: Returns the number of bytes that *ought* to be used
+//               by each view of the in-memory image for mipmap level
+//               n, based on the texture parameters.  For a normal,
+//               non-multiview texture, this is the same as
+//               get_expected_ram_mipmap_image_size(n).
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_expected_ram_mipmap_view_size(int n) const {
+  MutexHolder holder(_lock);
+  return do_get_expected_ram_mipmap_view_size(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_expected_ram_mipmap_page_size
 //       Access: Published
 //  Description: Returns the number of bytes that should be used per
 //               each Z page of the 3-d texture, for mipmap level n.
 //               For a 2-d or 1-d texture, this is the same as
-//               get_expected_ram_mipmap_image_size(n).
+//               get_expected_ram_mipmap_view_size(n).
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_expected_ram_mipmap_page_size(int n) const {
@@ -1874,6 +1981,29 @@ set_z_size(int z_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_num_views
+//       Access: Published
+//  Description: Sets the number of "views" within a texture.  A view
+//               is a completely separate image stored within the
+//               Texture object.  Most textures have only one view,
+//               but a stereo texture, for instance, may have two
+//               views, a left and a right image.  Other uses for
+//               multiple views are not yet defined.
+//
+//               If this value is greater than one, the additional
+//               views are accessed as additional pages beyond
+//               get_z_size().
+//
+//               This also implicitly unloads the texture if it has
+//               already been loaded.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_num_views(int num_views) {
+  MutexHolder holder(_lock);
+  do_set_num_views(num_views);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_format
 //       Access: Published
 //  Description: Changes the format value for the texture components.
@@ -2072,6 +2202,16 @@ do_has_ram_mipmap_image(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 do_get_expected_ram_image_size() const {
+  return do_get_expected_ram_view_size() * (size_t)_num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_expected_ram_view_size
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+do_get_expected_ram_view_size() const {
   return do_get_expected_ram_page_size() * (size_t)_z_size;
 }
 
@@ -2092,6 +2232,16 @@ do_get_expected_ram_page_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 do_get_expected_ram_mipmap_image_size(int n) const {
+  return do_get_expected_ram_mipmap_view_size(n) * (size_t)_num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_expected_ram_mipmap_view_size
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+do_get_expected_ram_mipmap_view_size(int n) const {
   return do_get_expected_ram_mipmap_page_size(n) * (size_t)do_get_expected_mipmap_z_size(n);
 }
 
@@ -2103,6 +2253,16 @@ do_get_expected_ram_mipmap_image_size(int n) const {
 INLINE size_t Texture::
 do_get_expected_ram_mipmap_page_size(int n) const {
   return (size_t)(do_get_expected_mipmap_x_size(n) * do_get_expected_mipmap_y_size(n) * _num_components * _component_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_expected_mipmap_num_pages
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+do_get_expected_mipmap_num_pages(int n) const {
+  return do_get_expected_mipmap_z_size(n) * _num_views;
 }
 
 ////////////////////////////////////////////////////////////////////

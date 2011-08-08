@@ -252,9 +252,34 @@ appear before they are referenced.
     present, must be included in the same image with the color
     channel(s).
 
-  <Scalar> read-mipmaps { flag }
+  <Scalar> multiview { flag }
 
-    If this flag is nonzero, then pre-generated mipmap levels will be
+    If this flag is nonzero, the texture is loaded as a multiview
+    texture.  In this case, the filename must contain a hash mark
+    ("#") as in the 3D or CUBE_MAP case, above, and the different
+    images are loaded into the different views of the multiview
+    textures.  If the texture is already a cube map texture, the
+    same hash sequence is used for both purposes: the first six images
+    define the first view, the next six images define the second view,
+    and so on.  If the texture is a 3-D texture, you must also specify
+    num-views, below, to tell the loader how many images are loaded
+    for views, and how many are loaded for levels.
+
+    A multiview texture is most often used to load stereo textures,
+    where a different image is presented to each eye viewing the
+    texture, but other uses are possible, such as for texture
+    animation.
+
+  <Scalar> num-views { count }
+
+    This is used only when loading a 3-D multiview texture.  It
+    specifies how many different views the texture holds; the z height
+    of the texture is then implicitly determined as (number of images)
+    / (number of views).
+
+  <Scalar> read-mipmaps { flag }
+ 
+   If this flag is nonzero, then pre-generated mipmap levels will be
     loaded along with the texture.  In this case, the filename should
     contain a sequence of one or more hash mark ("#") characters,
     which will be filled in with the mipmap level number; the texture

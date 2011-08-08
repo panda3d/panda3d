@@ -35,8 +35,8 @@ static const DWORD g_LowByteMask = 0x000000FF;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXTextureContext9::
-DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
-  TextureContext(pgo, tex) {
+DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+  TextureContext(pgo, tex, view) {
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
@@ -1607,7 +1607,10 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   DWORD height = (DWORD) get_texture()->get_expected_mipmap_y_size(mip_level);
   int component_width = get_texture()->get_component_width();
 
-  pixels += depth_index * get_texture()->get_expected_ram_mipmap_page_size(mip_level);
+  size_t view_size = get_texture()->get_ram_mipmap_view_size(mip_level);
+  pixels += view_size * get_view();
+  size_t page_size = get_texture()->get_expected_ram_mipmap_page_size(mip_level);
+  pixels += page_size * depth_index;
   
   if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
     nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
@@ -1842,7 +1845,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
 
     if (_has_mipmaps) {
       // if we have pre-calculated mipmap levels, use them, otherwise generate on the fly
-      int miplevel_count = _d3d_2d_texture->GetLevelCount(); // what if it's not a 2d texture?
+      int miplevel_count = _d3d_texture->GetLevelCount();
       if (miplevel_count <= tex->get_num_loadable_ram_mipmap_images()) {
         dxgsg9_cat.debug()
           << "Using pre-calculated mipmap levels for texture  " << tex->get_name() << "\n";
@@ -1948,6 +1951,9 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   int component_width = tex->get_component_width();
 
   nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
+
+  size_t view_size = tex->get_ram_mipmap_view_size(0);
+  image_pixels += view_size * get_view();
 
   IDirect3DVolume9 *mip_level_0 = NULL;
   bool using_temp_buffer = false;

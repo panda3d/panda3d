@@ -44,6 +44,7 @@ PUBLISHED:
     TF_preload_simple    = 0x0008,  // Texture will have simple RAM image
     TF_allow_1d          = 0x0010,  // If texture is Nx1, make a 1-d texture
     TF_generate_mipmaps  = 0x0020,  // Consider generating mipmaps
+    TF_multiview         = 0x0040,  // Load a multiview texture in pages
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);
@@ -56,6 +57,8 @@ PUBLISHED:
 
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
+  INLINE void set_texture_num_views(int num_views);
+  INLINE int get_texture_num_views() const;
 
   void output(ostream &out) const;
 
@@ -66,6 +69,7 @@ private:
                           const string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
+  int _texture_num_views;
 };
 
 INLINE ostream &operator << (ostream &out, const LoaderOptions &opts) {

@@ -1155,7 +1155,7 @@ clear(Thread *current_thread) {
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
     DisplayRegionPipelineReader dr_reader(_overlay_display_region, current_thread);
-    _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
+    _gsg->prepare_display_region(&dr_reader);
     _gsg->clear(this);
   }
 }

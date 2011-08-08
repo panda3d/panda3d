@@ -57,6 +57,7 @@ PUBLISHED:
   virtual void set_active(bool active);
   virtual void set_sort(int sort);
   virtual void set_stereo_channel(Lens::StereoChannel stereo_channel);
+  virtual void set_tex_view_offset(int tex_view_offset);
   virtual void set_incomplete_render(bool incomplete_render);
   virtual void set_texture_reload_priority(int texture_reload_priority);
   virtual void set_cull_traverser(CullTraverser *trav);

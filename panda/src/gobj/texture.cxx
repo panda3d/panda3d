@@ -194,6 +194,7 @@ Texture(const string &name) :
   _x_size = 0;
   _y_size = 1;
   _z_size = 1;
+  _num_views = 1;
   // Set it to something else first to
   // avoid the check in do_set_format
   // depending on an uninitialised value
@@ -1401,9 +1402,9 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 bool Texture::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
+  PreparedViews::const_iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
     return true;
   }
   return prepared_objects->is_texture_queued(this);
@@ -1420,11 +1421,22 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 bool Texture::
 was_image_modified(PreparedGraphicsObjects *prepared_objects) const {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    return tc->was_image_modified();
+  PreparedViews::const_iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    const Contexts &contexts = (*pvi).second;
+    for (int view = 0; view < _num_views; ++view) {
+      Contexts::const_iterator ci;
+      ci = contexts.find(view);
+      if (ci == contexts.end()) {
+        return true;
+      }
+      TextureContext *tc = (*ci).second;
+      if (tc->was_image_modified()) {
+        return true;
+      }
+    }
+    return false;
   }
   return true;
 }
@@ -1443,13 +1455,22 @@ was_image_modified(PreparedGraphicsObjects *prepared_objects) const {
 size_t Texture::
 get_data_size_bytes(PreparedGraphicsObjects *prepared_objects) const {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    return tc->get_data_size_bytes();
+  PreparedViews::const_iterator pvi;
+  size_t total_size = 0;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    const Contexts &contexts = (*pvi).second;
+    for (int view = 0; view < _num_views; ++view) {
+      Contexts::const_iterator ci;
+      ci = contexts.find(view);
+      if (ci != contexts.end()) {
+        TextureContext *tc = (*ci).second;
+        total_size += tc->get_data_size_bytes();
+      }
+    }
   }
-  return 0;
+
+  return total_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1461,11 +1482,20 @@ get_data_size_bytes(PreparedGraphicsObjects *prepared_objects) const {
 bool Texture::
 get_active(PreparedGraphicsObjects *prepared_objects) const {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    return tc->get_active();
+  PreparedViews::const_iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    const Contexts &contexts = (*pvi).second;
+    for (int view = 0; view < _num_views; ++view) {
+      Contexts::const_iterator ci;
+      ci = contexts.find(view);
+      if (ci != contexts.end()) {
+        TextureContext *tc = (*ci).second;
+        if (tc->get_active()) {
+          return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -1480,11 +1510,20 @@ get_active(PreparedGraphicsObjects *prepared_objects) const {
 bool Texture::
 get_resident(PreparedGraphicsObjects *prepared_objects) const {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    return tc->get_resident();
+  PreparedViews::const_iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    const Contexts &contexts = (*pvi).second;
+    for (int view = 0; view < _num_views; ++view) {
+      Contexts::const_iterator ci;
+      ci = contexts.find(view);
+      if (ci != contexts.end()) {
+        TextureContext *tc = (*ci).second;
+        if (tc->get_resident()) {
+          return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -1499,16 +1538,19 @@ get_resident(PreparedGraphicsObjects *prepared_objects) const {
 bool Texture::
 release(PreparedGraphicsObjects *prepared_objects) {
   MutexHolder holder(_lock);
-  Contexts::iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    if (tc != (TextureContext *)NULL) {
-      prepared_objects->release_texture(tc);
-    } else {
-      _contexts.erase(ci);
+  PreparedViews::iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    Contexts temp;
+    temp.swap((*pvi).second);
+    Contexts::iterator ci;
+    for (ci = temp.begin(); ci != temp.end(); ++ci) {
+      TextureContext *tc = (*ci).second;
+      if (tc != (TextureContext *)NULL) {
+        prepared_objects->release_texture(tc);
+      }
     }
-    return true;
+    _prepared_views.erase(pvi);
   }
 
   // Maybe it wasn't prepared yet, but it's about to be.
@@ -1525,25 +1567,27 @@ release(PreparedGraphicsObjects *prepared_objects) {
 int Texture::
 release_all() {
   MutexHolder holder(_lock);
-  // We have to traverse a copy of the _contexts list, because the
+  // We have to traverse a copy of the _prepared_views list, because the
   // PreparedGraphicsObjects object will call clear_prepared() in response
   // to each release_texture(), and we don't want to be modifying the
-  // _contexts list while we're traversing it.
-  Contexts temp = _contexts;
-  int num_freed = (int)_contexts.size();
+  // _prepared_views list while we're traversing it.
+  PreparedViews temp;
+  temp.swap(_prepared_views);
+  int num_freed = (int)temp.size();
 
-  Contexts::const_iterator ci;
-  for (ci = temp.begin(); ci != temp.end(); ++ci) {
-    PreparedGraphicsObjects *prepared_objects = (*ci).first;
-    TextureContext *tc = (*ci).second;
-    if (tc != (TextureContext *)NULL) {
-      prepared_objects->release_texture(tc);
+  PreparedViews::iterator pvi;
+  for (pvi = temp.begin(); pvi != temp.end(); ++pvi) {
+    PreparedGraphicsObjects *prepared_objects = (*pvi).first;
+    Contexts temp;
+    temp.swap((*pvi).second);
+    Contexts::iterator ci;
+    for (ci = temp.begin(); ci != temp.end(); ++ci) {
+      TextureContext *tc = (*ci).second;
+      if (tc != (TextureContext *)NULL) {
+        prepared_objects->release_texture(tc);
+      }
     }
   }
-
-  // There might still be some outstanding contexts in the map, if
-  // there were any NULL pointers there.  Eliminate them.
-  _contexts.clear();
 
   return num_freed;
 }
@@ -1586,6 +1630,10 @@ write(ostream &out, int indent_level) const {
   case TT_cube_map:
     out << "cube map, " << _x_size << " x " << _y_size;
     break;
+  }
+
+  if (_num_views > 1) {
+    out << " (x " << _num_views << " views)";
   }
 
   out << " pixels, each " << _num_components;
@@ -1839,17 +1887,24 @@ is_mipmap(FilterType filter_type) {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 TextureContext *Texture::
-prepare_now(PreparedGraphicsObjects *prepared_objects,
+prepare_now(int view,
+            PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
-  Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    return (*ci).second;
+
+  // Don't exceed the actual number of views.
+  view = max(min(view, _num_views - 1), 0);
+
+  // Get the list of PreparedGraphicsObjects for this view.
+  Contexts &contexts = _prepared_views[prepared_objects];
+  Contexts::const_iterator pvi;
+  pvi = contexts.find(view);
+  if (pvi != contexts.end()) {
+    return (*pvi).second;
   }
 
-  TextureContext *tc = prepared_objects->prepare_texture_now(this, gsg);
-  _contexts[prepared_objects] = tc;
+  TextureContext *tc = prepared_objects->prepare_texture_now(this, view, gsg);
+  contexts[view] = tc;
 
   return tc;
 }
@@ -2713,6 +2768,16 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     }
   }
 
+  int num_views = 0;
+  if (options.get_texture_flags() & LoaderOptions::TF_multiview) {
+    // We'll be loading a multiview texture.
+    read_pages = true;
+    if (options.get_texture_num_views() != 0) {
+      num_views = options.get_texture_num_views();
+      do_set_num_views(num_views);
+    }
+  }
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   if (read_pages && read_mipmaps) {
@@ -2753,8 +2818,9 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
         break;
       }
 
-      while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
-             (z_size != 0 && z < z_size)) {
+      int num_pages = z_size * num_views;
+      while ((num_pages == 0 && (vfs->exists(file) || z == 0)) ||
+             (num_pages != 0 && z < num_pages)) {
         if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
                          alpha_file_channel, options, header_only, record)) {
           return false;
@@ -2774,6 +2840,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       }
       ++n;
     }
+    _fullpath = fullpath_pattern;
+    _alpha_fullpath = alpha_fullpath_pattern;
 
   } else if (read_pages) {
     // Read a sequence of cube map or 3-D texture pages.
@@ -2790,8 +2858,10 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     z = 0;
     Filename file = fullpath_pattern.get_filename_index(z);
     Filename alpha_file = alpha_fullpath_pattern.get_filename_index(z);
-    while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
-           (z_size != 0 && z < z_size)) {
+
+    int num_pages = z_size * num_views;
+    while ((num_pages == 0 && (vfs->exists(file) || z == 0)) ||
+           (num_pages != 0 && z < num_pages)) {
       if (!do_read_one(file, alpha_file, z, 0, primary_file_num_channels,
                        alpha_file_channel, options, header_only, record)) {
         return false;
@@ -2801,6 +2871,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       file = fullpath_pattern.get_filename_index(z);
       alpha_file = alpha_fullpath_pattern.get_filename_index(z);
     }
+    _fullpath = fullpath_pattern;
+    _alpha_fullpath = alpha_fullpath_pattern;
 
   } else if (read_mipmaps) {
     // Read a sequence of mipmap levels.
@@ -2835,6 +2907,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       file = fullpath_pattern.get_filename_index(n);
       alpha_file = alpha_fullpath_pattern.get_filename_index(n);
     }
+    _fullpath = fullpath_pattern;
+    _alpha_fullpath = alpha_fullpath_pattern;
 
   } else {
     // Just an ordinary read of one file.
@@ -3114,10 +3188,10 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
     // A special case for mipmap level 0.  When we load mipmap level
     // 0, unless we already have mipmap levels, it determines the
     // image properties like size and number of components.
-    if (!do_reconsider_z_size(z)) {
+    if (!do_reconsider_z_size(z, options)) {
       return false;
     }
-    nassertr(z >= 0 && z < _z_size, false);
+    nassertr(z >= 0 && z < _z_size * _num_views, false);
 
     if (z == 0) {
       ComponentType component_type = T_unsigned_byte;
@@ -3582,9 +3656,9 @@ do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mi
     int num_levels = _ram_images.size();
 
     for (int n = 0; n < num_levels; ++n) {
-      int z_size = do_get_expected_mipmap_z_size(n);
+      int num_pages = do_get_expected_mipmap_num_pages(n);
 
-      for (z = 0; z < z_size; ++z) {
+      for (z = 0; z < num_pages; ++z) {
         Filename n_pattern = Filename::pattern_filename(fullpath_pattern.get_filename_index(z));
 
         if (!n_pattern.has_hash()) {
@@ -3610,7 +3684,8 @@ do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mi
       return false;
     }
 
-    for (z = 0; z < _z_size; ++z) {
+    int num_pages = _z_size * _num_views;
+    for (z = 0; z < num_pages; ++z) {
       if (!do_write_one(fullpath_pattern.get_filename_index(z), z, n)) {
         return false;
       }
@@ -3681,8 +3756,11 @@ do_store_one(PNMImage &pnmimage, int z, int n) const {
   // First, reload the ram image if necessary.
   ((Texture *)this)->do_get_uncompressed_ram_image();
 
-  nassertr(do_has_ram_mipmap_image(n), false);
-  nassertr(z >= 0 && z < do_get_expected_mipmap_z_size(n), false);
+  if (!do_has_ram_mipmap_image(n)) {
+    return false;
+  }
+
+  nassertr(z >= 0 && z < do_get_expected_mipmap_num_pages(n), false);
   nassertr(_ram_image_compression == CM_off, false);
 
   return convert_to_pnmimage(pnmimage,
@@ -3822,6 +3900,7 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     if (tex->_x_size != _x_size ||
         tex->_y_size != _y_size ||
         tex->_z_size != _z_size ||
+        tex->_num_views != _num_views ||
         tex->_num_components != _num_components ||
         tex->_component_width != _component_width ||
         tex->_texture_type != _texture_type ||
@@ -3830,6 +3909,7 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
       _x_size = tex->_x_size;
       _y_size = tex->_y_size;
       _z_size = tex->_z_size;
+      _num_views = tex->_num_views;
 
       _num_components = tex->_num_components;
       _component_width = tex->_component_width;
@@ -4315,35 +4395,72 @@ do_has_all_ram_mipmap_images() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_reconsider_z_size
 //       Access: Protected
-//  Description: Considers whether the z_size should automatically be
-//               adjusted when the user loads a new page.  Returns
-//               true if the z size is valid, false otherwise.
+//  Description: Considers whether the z_size (or num_views) should
+//               automatically be adjusted when the user loads a new
+//               page.  Returns true if the z size is valid, false
+//               otherwise.
 //
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-do_reconsider_z_size(int z) {
-  if (z >= _z_size) {
-    // If we're loading a page past _z_size, treat it as an implicit
-    // request to enlarge _z_size.  However, this is only legal if
-    // this is, in fact, a 3-d texture or a 2d texture array (cube maps
-    // always have z_size 6, and other types have z_size 1).
-    nassertr(_texture_type == Texture::TT_3d_texture ||
-             _texture_type == Texture::TT_2d_texture_array, false);
+do_reconsider_z_size(int z, const LoaderOptions &options) {
+  if (z >= _z_size * _num_views) {
+    bool num_views_specified = true;
+    if (options.get_texture_flags() & LoaderOptions::TF_multiview) {
+      // This flag is false if is a multiview texture with a specified
+      // number of views.  It is true if it is not a multiview
+      // texture, or if it is but the number of views is explicitly
+      // specified.
+      num_views_specified = (options.get_texture_num_views() != 0);
+    }
 
-    _z_size = z + 1;
+    if (num_views_specified &&
+        (_texture_type == Texture::TT_3d_texture ||
+         _texture_type == Texture::TT_2d_texture_array)) {
+      // If we're loading a page past _z_size, treat it as an implicit
+      // request to enlarge _z_size.  However, this is only legal if
+      // this is, in fact, a 3-d texture or a 2d texture array (cube maps
+      // always have z_size 6, and other types have z_size 1).
+      nassertr(_num_views != 0, false);
+      _z_size = (z / _num_views) + 1;
+
+    } else if (_z_size != 0) {
+      // In the case of a 2-d texture or cube map, or a 3-d texture
+      // with an unspecified _num_views, assume we're loading views of
+      // a multiview texture.
+      _num_views = (z / _z_size) + 1;
+
+    } else {
+      // The first image loaded sets an implicit z-size.
+      _z_size = 1;
+    }
+
     // Increase the size of the data buffer to make room for the new
     // texture level.
-    size_t new_size = do_get_expected_ram_image_size();
-    if (!_ram_images.empty() &&
-        !_ram_images[0]._image.empty() &&
-        new_size > _ram_images[0]._image.size()) {
-      _ram_images[0]._image.insert(_ram_images[0]._image.end(), new_size - _ram_images[0]._image.size(), 0);
-      nassertr(_ram_images[0]._image.size() == new_size, false);
-    }
+    do_allocate_pages();
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_allocate_pages
+//       Access: Protected, Virtual
+//  Description: Called internally by do_reconsider_z_size() to
+//               allocate new memory in _ram_images[0] for the new
+//               number of pages.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_allocate_pages() {
+  size_t new_size = do_get_expected_ram_image_size();
+  if (!_ram_images.empty() &&
+      !_ram_images[0]._image.empty() &&
+      new_size > _ram_images[0]._image.size()) {
+    _ram_images[0]._image.insert(_ram_images[0]._image.end(), new_size - _ram_images[0]._image.size(), 0);
+    nassertv(_ram_images[0]._image.size() == new_size);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4434,8 +4551,8 @@ bool Texture::
 do_rescale_texture() {
   int new_x_size = _x_size;
   int new_y_size = _y_size;
-  if (_z_size != 1) {
-    nassert_raise("rescale_texture() doesn't support 3-d textures.");
+  if (_z_size * _num_views != 1) {
+    nassert_raise("rescale_texture() doesn't support 3-d or multiview textures.");
     return false;
   }
 
@@ -4533,6 +4650,7 @@ do_assign(const Texture &copy) {
   _x_size = copy._x_size;
   _y_size = copy._y_size;
   _z_size = copy._z_size;
+  _num_views = copy._num_views;
   _pad_x_size = copy._pad_x_size;
   _pad_y_size = copy._pad_y_size;
   _pad_z_size = copy._pad_z_size;
@@ -4622,6 +4740,7 @@ do_setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
   _x_size = x_size;
   _y_size = y_size;
   _z_size = z_size;
+  _num_views = 1;
   do_set_component_type(component_type);
   do_set_format(format);
 
@@ -4762,6 +4881,22 @@ do_set_z_size(int z_size) {
              (_texture_type == Texture::TT_cube_map && z_size == 6) ||
              (_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     _z_size = z_size;
+    ++_image_modified;
+    do_clear_ram_image();
+    do_set_pad_size(0, 0, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_num_views
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_num_views(int num_views) {
+  nassertv(num_views >= 1);
+  if (_num_views != num_views) {
+    _num_views = num_views;
     ++_image_modified;
     do_clear_ram_image();
     do_set_pad_size(0, 0, 0);
@@ -6205,15 +6340,20 @@ read_dds_level_dxt45(Texture *tex, const DDSHeader &header, int n, istream &in) 
 //               never be called by user code.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-clear_prepared(PreparedGraphicsObjects *prepared_objects) {
-  Contexts::iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    _contexts.erase(ci);
-  } else {
-    // If this assertion fails, clear_prepared() was given a
-    // prepared_objects which the texture didn't know about.
-    nassertv(false);
+clear_prepared(int view, PreparedGraphicsObjects *prepared_objects) {
+  PreparedViews::iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi != _prepared_views.end()) {
+    Contexts &contexts = (*pvi).second;
+    Contexts::iterator ci;
+    ci = contexts.find(view);
+    if (ci != contexts.end()) {
+      contexts.erase(ci);
+    }
+
+    if (contexts.empty()) {
+      _prepared_views.erase(pvi);
+    }
   }
 }
 
@@ -6292,14 +6432,17 @@ filter_2d_mipmap_pages(Texture::RamImage &to, const Texture::RamImage &from,
 
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   to._page_size = (size_t)to_y_size * to_row_size;
-  to._image = PTA_uchar::empty_array(to._page_size * _z_size, get_class_type());
+  to._image = PTA_uchar::empty_array(to._page_size * _z_size * _num_views, get_class_type());
 
   Filter2DComponent *filter_component = (_component_type == T_unsigned_byte ? &filter_2d_unsigned_byte : filter_2d_unsigned_short);
 
-  for (int z = 0; z < _z_size; ++z) {
+  int num_pages = _z_size * _num_views;
+  for (int z = 0; z < num_pages; ++z) {
     // For each level.
     unsigned char *p = to._image.p() + z * to._page_size;
+    nassertv(p <= to._image.p() + to._image.size() + to._page_size);
     const unsigned char *q = from._image.p() + z * from._page_size;
+    nassertv(q <= from._image.p() + from._image.size() + from._page_size);
     if (y_size != 1) {
       int y;
       for (y = 0; y < y_size - 1; y += 2) {
@@ -6383,6 +6526,7 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
   size_t pixel_size = _num_components * _component_width;
   size_t row_size = (size_t)x_size * pixel_size;
   size_t page_size = (size_t)y_size * row_size;
+  size_t view_size = (size_t)z_size * page_size;
 
   int to_x_size = max(x_size >> 1, 1);
   int to_y_size = max(y_size >> 1, 1);
@@ -6390,32 +6534,68 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
 
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   size_t to_page_size = (size_t)to_y_size * to_row_size;
+  size_t to_view_size = (size_t)to_z_size * to_page_size;
   to._page_size = to_page_size;
-  to._image = PTA_uchar::empty_array(to_page_size * to_z_size, get_class_type());
+  to._image = PTA_uchar::empty_array(to_page_size * to_z_size * _num_views, get_class_type());
 
   Filter3DComponent *filter_component = (_component_type == T_unsigned_byte ? &filter_3d_unsigned_byte : filter_3d_unsigned_short);
 
-  unsigned char *p = to._image.p();
-  const unsigned char *q = from._image.p();
-  if (z_size != 1) {
-    int z;
-    for (z = 0; z < z_size - 1; z += 2) {
-      // For each level.
-      nassertv(p == to._image.p() + (z / 2) * to_page_size);
-      nassertv(q == from._image.p() + z * page_size);
-      if (y_size != 1) {
-        int y;
-        for (y = 0; y < y_size - 1; y += 2) {
-          // For each row.
-          nassertv(p == to._image.p() + (z / 2) * to_page_size + (y / 2) * to_row_size);
-          nassertv(q == from._image.p() + z * page_size + y * row_size);
+  for (int view = 0; view < _num_views; ++view) {
+    unsigned char *start_to = to._image.p() + view * to_view_size;
+    const unsigned char *start_from = from._image.p() + view * view_size;
+    nassertv(start_to + to_view_size <= to._image.p() + to._image.size());
+    nassertv(start_from + view_size <= from._image.p() + from._image.size());
+    unsigned char *p = start_to;
+    const unsigned char *q = start_from;
+    if (z_size != 1) {
+      int z;
+      for (z = 0; z < z_size - 1; z += 2) {
+        // For each level.
+        nassertv(p == start_to + (z / 2) * to_page_size);
+        nassertv(q == start_from + z * page_size);
+        if (y_size != 1) {
+          int y;
+          for (y = 0; y < y_size - 1; y += 2) {
+            // For each row.
+            nassertv(p == start_to + (z / 2) * to_page_size + (y / 2) * to_row_size);
+            nassertv(q == start_from + z * page_size + y * row_size);
+            if (x_size != 1) {
+              int x;
+              for (x = 0; x < x_size - 1; x += 2) {
+                // For each pixel.
+                for (int c = 0; c < _num_components; ++c) {
+                  // For each component.
+                  filter_component(p, q, pixel_size, row_size, page_size);
+                }
+                q += pixel_size;
+              }
+              if (x < x_size) {
+                // Skip the last odd pixel.
+                q += pixel_size;
+              }
+            } else {
+              // Just one pixel.
+              for (int c = 0; c < _num_components; ++c) {
+                // For each component.
+                filter_component(p, q, 0, row_size, page_size);
+              }
+            }
+            q += row_size;
+            Thread::consider_yield();
+          }
+          if (y < y_size) {
+            // Skip the last odd row.
+            q += row_size;
+          }
+        } else {
+          // Just one row.
           if (x_size != 1) {
             int x;
             for (x = 0; x < x_size - 1; x += 2) {
               // For each pixel.
               for (int c = 0; c < _num_components; ++c) {
                 // For each component.
-                filter_component(p, q, pixel_size, row_size, page_size);
+                filter_component(p, q, pixel_size, 0, page_size);
               }
               q += pixel_size;
             }
@@ -6427,7 +6607,43 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
             // Just one pixel.
             for (int c = 0; c < _num_components; ++c) {
               // For each component.
-              filter_component(p, q, 0, row_size, page_size);
+              filter_component(p, q, 0, 0, page_size);
+            }
+          }
+        }
+        q += page_size;
+      }
+      if (z < z_size) {
+        // Skip the last odd page.
+        q += page_size;
+      }
+    } else {
+      // Just one page.
+      if (y_size != 1) {
+        int y;
+        for (y = 0; y < y_size - 1; y += 2) {
+          // For each row.
+          nassertv(p == start_to + (y / 2) * to_row_size);
+          nassertv(q == start_from + y * row_size);
+          if (x_size != 1) {
+            int x;
+            for (x = 0; x < x_size - 1; x += 2) {
+              // For each pixel.
+              for (int c = 0; c < _num_components; ++c) {
+                // For each component.
+                filter_component(p, q, pixel_size, row_size, 0);
+              }
+              q += pixel_size;
+            }
+            if (x < x_size) {
+              // Skip the last odd pixel.
+              q += pixel_size;
+            }
+          } else {
+            // Just one pixel.
+            for (int c = 0; c < _num_components; ++c) {
+              // For each component.
+              filter_component(p, q, 0, row_size, 0);
             }
           }
           q += row_size;
@@ -6445,7 +6661,7 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
             // For each pixel.
             for (int c = 0; c < _num_components; ++c) {
               // For each component.
-              filter_component(p, q, pixel_size, 0, page_size);
+              filter_component(p, q, pixel_size, 0, 0);
             }
             q += pixel_size;
           }
@@ -6457,80 +6673,15 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
           // Just one pixel.
           for (int c = 0; c < _num_components; ++c) {
             // For each component.
-            filter_component(p, q, 0, 0, page_size);
+            filter_component(p, q, 0, 0, 0);
           }
-        }
-      }
-      q += page_size;
-    }
-    if (z < z_size) {
-      // Skip the last odd page.
-      q += page_size;
-    }
-  } else {
-    // Just one page.
-    if (y_size != 1) {
-      int y;
-      for (y = 0; y < y_size - 1; y += 2) {
-        // For each row.
-        nassertv(p == to._image.p() + (y / 2) * to_row_size);
-        nassertv(q == from._image.p() + y * row_size);
-        if (x_size != 1) {
-          int x;
-          for (x = 0; x < x_size - 1; x += 2) {
-            // For each pixel.
-            for (int c = 0; c < _num_components; ++c) {
-              // For each component.
-              filter_component(p, q, pixel_size, row_size, 0);
-            }
-            q += pixel_size;
-          }
-          if (x < x_size) {
-            // Skip the last odd pixel.
-            q += pixel_size;
-          }
-        } else {
-          // Just one pixel.
-          for (int c = 0; c < _num_components; ++c) {
-            // For each component.
-            filter_component(p, q, 0, row_size, 0);
-          }
-        }
-        q += row_size;
-        Thread::consider_yield();
-      }
-      if (y < y_size) {
-        // Skip the last odd row.
-        q += row_size;
-      }
-    } else {
-      // Just one row.
-      if (x_size != 1) {
-        int x;
-        for (x = 0; x < x_size - 1; x += 2) {
-          // For each pixel.
-          for (int c = 0; c < _num_components; ++c) {
-            // For each component.
-            filter_component(p, q, pixel_size, 0, 0);
-          }
-          q += pixel_size;
-        }
-        if (x < x_size) {
-          // Skip the last odd pixel.
-          q += pixel_size;
-        }
-      } else {
-        // Just one pixel.
-        for (int c = 0; c < _num_components; ++c) {
-          // For each component.
-          filter_component(p, q, 0, 0, 0);
         }
       }
     }
-  }
 
-  nassertv(p == to._image.p() + to_z_size * to_page_size);
-  nassertv(q == from._image.p() + z_size * page_size);
+    nassertv(p == start_to + to_z_size * to_page_size);
+    nassertv(q == start_from + z_size * page_size);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6641,13 +6792,13 @@ do_squish(Texture::CompressionMode compression, int squish_flags) {
     RamImage compressed_image;
     int x_size = do_get_expected_mipmap_x_size(n);
     int y_size = do_get_expected_mipmap_y_size(n);
-    int z_size = do_get_expected_mipmap_z_size(n);
+    int num_pages = do_get_expected_mipmap_num_pages(n);
     int page_size = squish::GetStorageRequirements(x_size, y_size, squish_flags);
     int cell_size = squish::GetStorageRequirements(4, 4, squish_flags);
 
     compressed_image._page_size = page_size;
-    compressed_image._image = PTA_uchar::empty_array(page_size * z_size);
-    for (int z = 0; z < z_size; ++z) {
+    compressed_image._image = PTA_uchar::empty_array(page_size * num_pages);
+    for (int z = 0; z < num_pages; ++z) {
       unsigned char *dest_page = compressed_image._image.p() + z * page_size;
       unsigned const char *source_page = _ram_images[n]._image.p() + z * _ram_images[n]._page_size;
       unsigned const char *source_page_end = source_page + _ram_images[n]._page_size;
@@ -6732,13 +6883,13 @@ do_unsquish(int squish_flags) {
     RamImage uncompressed_image;
     int x_size = do_get_expected_mipmap_x_size(n);
     int y_size = do_get_expected_mipmap_y_size(n);
-    int z_size = do_get_expected_mipmap_z_size(n);
+    int num_pages = do_get_expected_mipmap_num_pages(n);
     int page_size = squish::GetStorageRequirements(x_size, y_size, squish_flags);
     int cell_size = squish::GetStorageRequirements(4, 4, squish_flags);
 
     uncompressed_image._page_size = do_get_expected_ram_mipmap_page_size(n);
-    uncompressed_image._image = PTA_uchar::empty_array(uncompressed_image._page_size * z_size);
-    for (int z = 0; z < z_size; ++z) {
+    uncompressed_image._image = PTA_uchar::empty_array(uncompressed_image._page_size * num_pages);
+    for (int z = 0; z < num_pages; ++z) {
       unsigned char *dest_page = uncompressed_image._image.p() + z * uncompressed_image._page_size;
       unsigned char *dest_page_end = dest_page + uncompressed_image._page_size;
       unsigned const char *source_page = _ram_images[n]._image.p() + z * page_size;
@@ -7004,6 +7155,7 @@ do_write_datagram_rawdata(BamWriter *manager, Datagram &me) {
   me.add_uint32(_x_size);
   me.add_uint32(_y_size);
   me.add_uint32(_z_size);
+  me.add_uint32(_num_views);
   me.add_uint8(_component_type);
   me.add_uint8(_component_width);
   me.add_uint8(_ram_image_compression);
@@ -7222,6 +7374,10 @@ do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
   _x_size = scan.get_uint32();
   _y_size = scan.get_uint32();
   _z_size = scan.get_uint32();
+  _num_views = 1;
+  if (manager->get_file_minor_ver() >= 26) {
+    _num_views = scan.get_uint32();
+  }
   _component_type = (ComponentType)scan.get_uint8();
   _component_width = scan.get_uint8();
   _ram_image_compression = CM_off;

@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext9 : public TextureContext {
 public:
-  DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex);
+  DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view);
   virtual ~DXTextureContext9();
 
   virtual void evict_lru();

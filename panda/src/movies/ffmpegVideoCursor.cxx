@@ -285,9 +285,10 @@ fetch_packet(double default_time) {
 //       Access: Protected
 //  Description: Fetches a frame from the stream and stores it in
 //               the frame buffer.  Sets last_start and next_start
-//               to indicate the extents of the frame.
+//               to indicate the extents of the frame.  Returns true
+//               if the end of the video is reached.
 ////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
+bool FfmpegVideoCursor::
 fetch_frame() {
   int finished = 0;
   _last_start = _packet_time;
@@ -301,6 +302,8 @@ fetch_frame() {
     fetch_packet(_last_start + 1.0);
   }
   _next_start = _packet_time;
+
+  return (finished != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -354,14 +357,18 @@ fetch_time(double time) {
     // Time is in the past.
     seek(time);
     while (_packet_time <= time) {
-      fetch_frame();
+      if (fetch_frame()) {
+        break;
+      }
     }
   } else if (time < _next_start) {
     // Time is in the present: already have the frame.
   } else if (time < _next_start + _min_fseek) {
     // Time is in the near future.
     while ((_packet_time <= time) && (_packet->data)) {
-      fetch_frame();
+      if (fetch_frame()) {
+        break;
+      }
     }
   } else {
     // Time is in the far future.  Seek forward, then read.
@@ -378,7 +385,9 @@ fetch_time(double time) {
       _min_fseek += (base - _packet_time);
     }
     while (_packet_time <= time) {
-      fetch_frame();
+      if (fetch_frame()) {
+        break;
+      }
     }
   }
 }
@@ -397,7 +406,7 @@ fetch_into_texture(double time, Texture *t, int page) {
   nassertv(t->get_y_size() >= size_y());
   nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
   nassertv(t->get_component_width() == 1);
-  nassertv(page < t->get_z_size());
+  nassertv(page < t->get_num_pages());
   
   PTA_uchar img = t->modify_ram_image();
   

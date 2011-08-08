@@ -19,10 +19,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextureContext::
-TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
+TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   BufferContext(&pgo->_texture_residency),
   AdaptiveLruPage(0),
-  _texture(tex)
+  _texture(tex),
+  _view(view)
 {
 }
 
@@ -35,6 +36,18 @@ TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
 INLINE Texture *TextureContext::
 get_texture() const {
   return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::get_view
+//       Access: Public
+//  Description: Returns the specific view of a multiview texture this
+//               context represents.  In the usual case, with a
+//               non-multiview texture, this will be 0.
+////////////////////////////////////////////////////////////////////
+INLINE int TextureContext::
+get_view() const {
+  return _view;
 }
 
 

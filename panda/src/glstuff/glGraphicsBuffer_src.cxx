@@ -391,7 +391,7 @@ rebuild_bitplanes() {
         //}
 
         Texture *tex = get_texture(i);
-        TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+        TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
         nassertv(tc != (TextureContext *)NULL);
         CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
         glgsg->update_texture(tc, true);
@@ -514,7 +514,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
         tex->set_component_type(Texture::T_unsigned_int_24_8);
         _use_depth_stencil = true;
       }
-      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       glgsg->update_texture(tc, true);
@@ -551,7 +551,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       }
 #endif
 
-      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 #ifndef OPENGLES
@@ -804,7 +804,7 @@ generate_mipmaps() {
     Texture *tex = _tex[slot];
     if ((tex != 0) && (tex->uses_mipmaps())) {
       glgsg->_state_texture = 0;
-      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       glgsg->update_texture(tc, true);

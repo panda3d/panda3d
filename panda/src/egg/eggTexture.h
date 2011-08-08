@@ -269,6 +269,14 @@ PUBLISHED:
   INLINE bool has_alpha_file_channel() const;
   INLINE int get_alpha_file_channel() const;
 
+  INLINE void set_multiview(bool multiview);
+  INLINE bool get_multiview() const;
+
+  INLINE void set_num_views(int num_views);
+  INLINE void clear_num_views();
+  INLINE bool has_num_views() const;
+  INLINE int get_num_views() const;
+
   INLINE void set_read_mipmaps(bool read_mipmaps);
   INLINE bool get_read_mipmaps() const;
 
@@ -310,6 +318,7 @@ private:
     F_has_rgb_scale          = 0x0100,
     F_has_alpha_scale        = 0x0200,
     F_has_border_color       = 0x0400,
+    F_has_num_views          = 0x0800,
   };
 
   TextureType _texture_type;
@@ -320,6 +329,8 @@ private:
   int _anisotropic_degree;
   EnvType _env_type;
   bool _saved_result;
+  bool _multiview;
+  int _num_views;
   TexGen _tex_gen;
   QualityLevel _quality_level;
   string _stage_name;

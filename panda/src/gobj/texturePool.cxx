@@ -92,17 +92,17 @@ get_texture_type(const string &extension) const {
 
   string c = downcase(extension);
   TypeRegistry::const_iterator ti;
-  ti = _type_registry.find(extension);
+  ti = _type_registry.find(c);
   if (ti != _type_registry.end()) {
     return (*ti).second;
   }
 
   // Check the PNM type registry.
   PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
-  PNMFileType *type = pnm_reg->get_type_from_extension(extension);
+  PNMFileType *type = pnm_reg->get_type_from_extension(c);
   if (type != (PNMFileType *)NULL) {
     // This is a known image type; create an ordinary Texture.
-    ((TexturePool *)this)->_type_registry[extension] = Texture::make_texture;
+    ((TexturePool *)this)->_type_registry[c] = Texture::make_texture;
     return Texture::make_texture;
   }
 
@@ -1183,7 +1183,8 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
 void TexturePool::
 report_texture_unreadable(const Filename &filename) const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->exists(filename)) {
+  bool has_hash = (filename.get_fullpath().find('#') != string::npos);
+  if (!has_hash && !vfs->exists(filename)) {
     if (filename.is_local()) {
       // The file doesn't exist, and it wasn't
       // fully-qualified--therefore, it wasn't found along either
@@ -1200,8 +1201,15 @@ report_texture_unreadable(const Filename &filename) const {
 
   } else {
     // The file exists, but it couldn't be read for some reason.
-    gobj_cat.error()
-      << "Texture \"" << filename << "\" exists but cannot be read.\n";
+    if (!has_hash) {
+      gobj_cat.error()
+        << "Texture \"" << filename << "\" exists but cannot be read.\n";
+    } else {
+      // If the filename contains a hash, we'll be noncommittal about
+      // whether it exists or not.
+      gobj_cat.error()
+        << "Texture \"" << filename << "\" cannot be read.\n";
+    }
 
     // Maybe the filename extension is unknown.
     MakeTextureFunc *func = get_texture_type(filename.get_extension());

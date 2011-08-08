@@ -572,6 +572,17 @@ texture_body:
   } else if (cmp_nocase_uh(name, "priority") == 0) {
     texture->set_priority((int)value);
 
+  } else if (cmp_nocase_uh(name, "multiview") == 0) {
+    texture->set_multiview(((int)value) != 0);
+
+  } else if (cmp_nocase_uh(name, "num_views") == 0) {
+    int int_value = (int)value;
+    if (int_value < 1) {
+      eggyyerror("Invalid num-views value " + strval);
+    } else {
+      texture->set_num_views(int_value);
+    }
+
   } else if (cmp_nocase_uh(name, "blendr") == 0) {
     Colorf color = texture->get_color();
     color[0] = value;

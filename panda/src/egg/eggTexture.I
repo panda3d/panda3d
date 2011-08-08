@@ -946,6 +946,85 @@ get_alpha_file_channel() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_multiview
+//       Access: Published
+//  Description: Sets the multiview flag.
+//
+//               If multiview is true, the filename should contain a
+//               hash mark ('#'), which will be filled in with the
+//               view number; and a multiview texture will be defined
+//               with a series of images, one for each view.
+//
+//               A multiview texture is most often used for stereo
+//               textures, but other uses are also possible, such as
+//               for texture animation.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_multiview(bool multiview) {
+  _multiview = multiview;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_multiview
+//       Access: Published
+//  Description: Returns the current setting of the multiview flag.
+//               See set_multiview().
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+get_multiview() const {
+  return _multiview;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_num_views
+//       Access: Published
+//  Description: When loading a 3-D multiview texture, this parameter
+//               is necessary to specify how many views will be
+//               expected.  The z size is determined implicitly from
+//               the number of images loaded.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_num_views(int num_views) {
+  _num_views = num_views;
+  _flags |= F_has_num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_num_views
+//       Access: Published
+//  Description: Removes the specification of the number of views
+//               for a 3-D multiview texture.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_num_views() {
+  _num_views = 0;
+  _flags &= ~F_has_num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_num_views
+//       Access: Published
+//  Description: Returns true if the number of views has been
+//               specified for the 3-D multiview texture, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_num_views() const {
+  return (_flags & F_has_num_views) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_num_views
+//       Access: Published
+//  Description: Returns the specified number of views specified for
+//               the 3-D multiview texture.  See set_num_views().
+////////////////////////////////////////////////////////////////////
+INLINE int EggTexture::
+get_num_views() const {
+  return _num_views;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_read_mipmaps
 //       Access: Published
 //  Description: Sets the read_mipmaps flag.

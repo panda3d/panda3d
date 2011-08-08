@@ -37,10 +37,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public AdaptiveLruPage {
 public:
-  INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
+  INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
 
 PUBLISHED:
   INLINE Texture *get_texture() const;
+  INLINE int get_view() const;
 
   INLINE bool was_modified() const;
   INLINE bool was_properties_modified() const;
@@ -62,6 +63,7 @@ private:
   // both own their TextureContexts!  That would create a circular
   // reference count.
   Texture *_texture;
+  int _view;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
   UpdateSeq _simple_image_modified;

@@ -767,6 +767,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         continue;
       }        
       Texture *tex = 0;
+      int view = gsg->get_current_tex_view_offset();
       InternalName *id = _shader->_tex_spec[i]._name;
       if (id != 0) {
         const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
@@ -782,6 +783,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         }
         TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
         tex = texattrib->get_on_texture(stage);
+        view += stage->get_tex_view_offset();
       }
       if (_shader->_tex_spec[i]._suffix != 0) {
         // The suffix feature is inefficient. It is a temporary hack.
@@ -793,8 +795,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
         continue;
       }
-      TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
-      //      TextureContext *tc = tex->prepare_now(gsg->get_prepared_objects(), gsg);
+      TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
       if (tc == (TextureContext*)NULL) {
         continue;
       }

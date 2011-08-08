@@ -82,7 +82,8 @@ PUBLISHED:
   int get_num_queued_textures() const;
   int get_num_prepared_textures() const;
 
-  TextureContext *prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg);
+  TextureContext *prepare_texture_now(Texture *tex, int view, 
+                                      GraphicsStateGuardianBase *gsg);
 
   void enqueue_geom(Geom *geom);
   bool is_geom_queued(const Geom *geom) const;
