@@ -171,9 +171,9 @@ void BulletBodyNode::
 transform_changed() {
 
   // Apply scale to collision shape
-  CPT(TransformState) xform = this->get_transform();
-  if (xform->has_scale()) {
-    LVecBase3f scale = xform->get_scale();
+  CPT(TransformState) ts = this->get_transform();
+  if (ts->has_scale()) {
+    LVecBase3f scale = ts->get_scale();
     _shape->setLocalScaling(LVecBase3f_to_btVector3(scale));
   }
 }
@@ -184,7 +184,7 @@ transform_changed() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-add_shape(BulletShape *shape, CPT(TransformState) xform) {
+add_shape(BulletShape *shape, CPT(TransformState) ts) {
 
   nassertv(get_object());
 
@@ -192,12 +192,9 @@ add_shape(BulletShape *shape, CPT(TransformState) xform) {
     && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
 
   // Transform
-  btTransform trans;
-  if (xform) {
-    trans = LMatrix4f_to_btTrans(xform->get_mat());
-  }
-  else {
-    trans.setIdentity();
+  btTransform trans = btTransform::getIdentity();
+  if (ts) {
+    trans = LMatrix4f_to_btTrans(ts->get_mat());
   }
 
   // Root shape
@@ -207,7 +204,7 @@ add_shape(BulletShape *shape, CPT(TransformState) xform) {
   if (_shapes.size() == 0) {
     nassertv(previous->getShapeType() == EMPTY_SHAPE_PROXYTYPE);
 
-    if (xform) {
+    if (ts) {
       // One shape, with transform
       next = new btCompoundShape();
       ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
@@ -361,8 +358,8 @@ get_shape_mat(int idx) const {
   if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
     btCompoundShape *compound = (btCompoundShape *)root;
 
-    btTransform xform = compound->getChildTransform(idx);
-    return btTrans_to_LMatrix4f(xform);
+    btTransform trans = compound->getChildTransform(idx);
+    return btTrans_to_LMatrix4f(trans);
 
     // The above code assumes that shape's index in _shapes member
     // is the same as the shapes index within the compound. If it
@@ -372,8 +369,8 @@ get_shape_mat(int idx) const {
     btCollisionShape *shape = get_shape(idx)->ptr();
     for (int i=0; i<compound->getNumChildShapes(); i++) {
       if (compound->getChildShape(i) == shape) {
-         btTransform xform = compound->getChildTransform(idx);
-         return btTrans_to_LMatrix4f(xform);
+         btTransform trans = compound->getChildTransform(idx);
+         return btTrans_to_LMatrix4f(trans);
       }
     }
     */

@@ -33,12 +33,12 @@ class EXPCL_PANDABULLET BulletSliderConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletSliderConstraint(const BulletRigidBodyNode *node_a, 
-                         const TransformState &frame_a,
+                         CPT(TransformState) frame_a,
                          bool useFrame_a);
   BulletSliderConstraint(const BulletRigidBodyNode *node_a,
                          const BulletRigidBodyNode *node_b,
-                         const TransformState &frame_a,
-                         const TransformState &frame_b,
+                         CPT(TransformState) frame_a,
+                         CPT(TransformState) frame_b,
                          bool use_frame_a);
   INLINE ~BulletSliderConstraint();
 

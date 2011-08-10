@@ -26,11 +26,11 @@ TypeHandle BulletSliderConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BulletSliderConstraint::
 BulletSliderConstraint(const BulletRigidBodyNode *node_a, 
-                       const TransformState &frame_a,
+                       CPT(TransformState) frame_a,
                        bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btTransform trans_a = LMatrix4f_to_btTrans(frame_a.get_mat());
+  btTransform trans_a = TransformState_to_btTrans(frame_a);
 
   _constraint = new btSliderConstraint(*ptr_a, trans_a, use_frame_a);
 }
@@ -43,15 +43,15 @@ BulletSliderConstraint(const BulletRigidBodyNode *node_a,
 BulletSliderConstraint::
 BulletSliderConstraint(const BulletRigidBodyNode *node_a,
                        const BulletRigidBodyNode *node_b,
-                       const TransformState &frame_a,
-                       const TransformState &frame_b,
+                       CPT(TransformState) frame_a,
+                       CPT(TransformState) frame_b,
                        bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btTransform trans_a = LMatrix4f_to_btTrans(frame_a.get_mat());
+  btTransform trans_a = TransformState_to_btTrans(frame_a);
 
   btRigidBody *ptr_b = btRigidBody::upcast(node_b->get_object());
-  btTransform trans_b = LMatrix4f_to_btTrans(frame_b.get_mat());
+  btTransform trans_b = TransformState_to_btTrans(frame_b);
 
   _constraint = new btSliderConstraint(*ptr_a, *ptr_b, trans_a, trans_b, use_frame_a);
 }

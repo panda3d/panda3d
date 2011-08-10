@@ -137,7 +137,7 @@ CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LV
 //     Function: TransformState_to_btTrans
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btTransform TransformState_to_btTrans(CPT(TransformState) ts) {
+btTransform TransformState_to_btTrans(CPT(TransformState) &ts) {
 
   ts = ts->set_scale(1.0);
 
@@ -149,10 +149,7 @@ btTransform TransformState_to_btTrans(CPT(TransformState) ts) {
   btQuaternion btq = LQuaternionf_to_btQuat(quat);
   btVector3 btv = LVecBase3f_to_btVector3(m.get_row3(3));
 
-  btTransform trans;
-  trans.setRotation(btq);
-  trans.setOrigin(btv);
-  return trans;
+  return btTransform(btq, btv);
 }
 
 ////////////////////////////////////////////////////////////////////

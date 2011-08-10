@@ -193,7 +193,7 @@ transform_changed() {
 
   if (_disable_transform_changed) return;
 
-  btTransform trans;
+  btTransform trans = btTransform::getIdentity();
   get_node_transform(trans, this);
   trans *= _body->m_initialWorldTransform.inverse();
   _body->transform(trans);
@@ -210,7 +210,7 @@ void BulletSoftBodyNode::
 post_step() {
 
   if (_geom) {
-    btTransform trans;
+    btTransform trans = btTransform::getIdentity();
     get_node_transform(trans, this);
 
     PT(GeomVertexData) vdata = _geom->modify_vertex_data();
@@ -284,12 +284,9 @@ get_closest_node_index(LVecBase3f point, bool local) {
   btScalar max_dist_sqr = 1e30;
   btVector3 point_x = LVecBase3f_to_btVector3(point);
 
-  btTransform trans;
+  btTransform trans = btTransform::getIdentity();
   if (local == true) {
     get_node_transform(trans, this);
-  }
-  else {
-    trans.setIdentity();
   }
 
   btSoftBody::tNodeArray &nodes(_body->m_nodes);

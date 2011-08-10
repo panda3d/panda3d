@@ -216,8 +216,7 @@ pre_step(float dt) {
   // Linear movement
   btVector3 v;
   if (_linear_velocity_is_local) {
-    btTransform xform;
-    xform = _ghost->getWorldTransform();
+    btTransform xform = _ghost->getWorldTransform();
     xform.setOrigin(btVector3(0.0f, 0.0f, 0.0f));
     v = xform(LVecBase3f_to_btVector3(_linear_velocity));
   }
@@ -239,7 +238,7 @@ pre_step(float dt) {
 void BulletCharacterControllerNode::
 post_step() {
 
-  btTransform& trans = _ghost->getWorldTransform();
+  btTransform trans = _ghost->getWorldTransform();
   CPT(TransformState) ts = btTrans_to_TransformState(trans);
 
   _disable_transform_changed = true;

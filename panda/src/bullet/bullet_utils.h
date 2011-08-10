@@ -23,6 +23,7 @@
 #include "lvector3.h"
 #include "lmatrix.h"
 #include "lquaternion.h"
+#include "pointerTo.h"
 #include "pandaNode.h"
 #include "nodePath.h"
 
@@ -44,7 +45,8 @@ EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
   const btTransform &tf, 
   const LVecBase3f &scale=LVecBase3f(1.0f, 1.0f, 1.0f));
 
-EXPCL_PANDABULLET btTransform TransformState_to_btTrans(CPT(TransformState) ts);
+EXPCL_PANDABULLET btTransform TransformState_to_btTrans(
+  CPT(TransformState) &ts);
 
 // UpAxis
 BEGIN_PUBLISH

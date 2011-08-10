@@ -181,7 +181,7 @@ make_geom_from_links(BulletSoftBodyNode *node, const GeomVertexFormat *format) {
 PT(Geom) BulletHelper::
 make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sided, bool use_faces) {
 
-  btTransform trans;
+  btTransform trans = btTransform::getIdentity();
   get_node_transform(trans, node);
 
   btSoftBody *body = (btSoftBody *)node->get_object();

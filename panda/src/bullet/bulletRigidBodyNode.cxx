@@ -224,7 +224,7 @@ transform_changed() {
 
   if (_disable_transform_changed) return;
 
-  btTransform trans;
+  btTransform trans = btTransform::getIdentity();
   get_node_transform(trans, this);
   _body->setWorldTransform(trans);
   _body->setInterpolationWorldTransform(trans);
@@ -284,7 +284,7 @@ set_center_of_mass_pos(const LPoint3f &pos) {
 
   nassertv_always(!pos.is_nan());
 
-  btTransform xform;
+  btTransform xform = btTransform::getIdentity();
   xform.setIdentity();
   xform.setOrigin(LVecBase3f_to_btVector3(pos));
 

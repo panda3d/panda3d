@@ -90,7 +90,7 @@ transform_changed() {
 
   if (_disable_transform_changed) return;
 
-  btTransform trans;
+  btTransform trans = btTransform::getIdentity();
   get_node_transform(trans, this);
   _ghost->setWorldTransform(trans);
   _ghost->setInterpolationWorldTransform(trans);

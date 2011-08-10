@@ -33,11 +33,11 @@ class EXPCL_PANDABULLET BulletConeTwistConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletConeTwistConstraint(const BulletRigidBodyNode *node_a, 
-                            const TransformState &frame_a);
+                            CPT(TransformState) frame_a);
   BulletConeTwistConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
-                            const TransformState &frame_a,
-                            const TransformState &frame_b);
+                            CPT(TransformState) frame_a,
+                            CPT(TransformState) frame_b);
   INLINE ~BulletConeTwistConstraint();
 
   void set_limit(int index, float value);
