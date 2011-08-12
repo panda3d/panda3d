@@ -689,7 +689,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
 //               calculation.  See temp_hpr_fix.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, vector_LVecBase3f &array, bool new_hpr) {
+read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr to
@@ -819,7 +819,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array, bool new_hpr) {
 //               ensure that the array is initially empty.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
+read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array) {
   return read_hprs(di, array, temp_hpr_fix);
 }
 

@@ -15,7 +15,7 @@
 #include "eggJointData.h"
 #include "eggJointNodePointer.h"
 #include "eggMatrixTablePointer.h"
-
+#include "pvector.h"
 #include "dcast.h"
 #include "eggGroup.h"
 #include "eggTable.h"
@@ -199,7 +199,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   // would receive in all frames of all models, were it reparented to
   // the indicated joint.
   vector_float i, j, k, a, b, c, x, y, z;
-  vector_LVecBase3f hprs;
+  pvector<LVecBase3f> hprs;
   int num_rows = 0;
 
   int num_models = get_num_models();

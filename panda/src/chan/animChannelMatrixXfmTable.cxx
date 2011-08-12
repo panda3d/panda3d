@@ -407,7 +407,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
     // Now, write out the joint angles.  For these we need to build up
     // a HPR array.
-    vector_LVecBase3f hprs;
+    pvector<LVecBase3f> hprs;
     int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
@@ -518,7 +518,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     }
 
     // Read in the HPR array and store it back in the joint angles.
-    vector_LVecBase3f hprs;
+    pvector<LVecBase3f> hprs;
     compressor.read_hprs(scan, hprs, new_hpr);
     PTA_float h_table = PTA_float::empty_array(hprs.size(), get_class_type());
     PTA_float p_table = PTA_float::empty_array(hprs.size(), get_class_type());

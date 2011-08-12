@@ -11,6 +11,5 @@
 #include "mathNumbers.cxx"
 #include "vector_Colorf.cxx"
 #include "vector_LPoint2f.cxx"
-#include "vector_LVecBase3f.cxx"
 #include "vector_Normalf.cxx"
 #include "vector_Vertexf.cxx"

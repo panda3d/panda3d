@@ -17,10 +17,11 @@
 
 #include "pandabase.h"
 
+#include "pvector.h"
 #include "pointerToArray.h"
 #include "vector_float.h"
 #include "vector_double.h"
-#include "vector_LVecBase3f.h"
+#include "luse.h"
 
 class Datagram;
 class DatagramIterator;
@@ -62,9 +63,9 @@ public:
 
   bool read_header(DatagramIterator &di, int bam_minor_version);
   bool read_reals(DatagramIterator &di, vector_float &array);
-  bool read_hprs(DatagramIterator &di, vector_LVecBase3f &array,
+  bool read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array,
                  bool new_hpr);
-  bool read_hprs(DatagramIterator &di, vector_LVecBase3f &array);
+  bool read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array);
 
   static void free_storage();
 
