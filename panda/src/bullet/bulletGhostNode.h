@@ -44,16 +44,17 @@ PUBLISHED:
 public:
   virtual btCollisionObject *get_object() const;
 
-  void pre_step();
+  void sync_p2b();
+  void sync_b2p();
 
 protected:
-  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
-  btPairCachingGhostObject *_ghost;
+  CPT(TransformState) _sync;
+  bool _sync_disable;
 
-  bool _sync_transform;
+  btPairCachingGhostObject *_ghost;
 
 ////////////////////////////////////////////////////////////////////
 public:

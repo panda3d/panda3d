@@ -69,15 +69,16 @@ public:
   INLINE btPairCachingGhostObject *get_ghost() const;
   INLINE btKinematicCharacterController *get_character() const;
 
-  void pre_step(float dt);
-  void post_step();
+  void sync_p2b(float dt);
+  void sync_b2p();
 
 protected:
-  //virtual void parents_changed();
-  //virtual void children_changed();
   virtual void transform_changed();
 
 private:
+  CPT(TransformState) _sync;
+  bool _sync_disable;
+
   BulletUpAxis _up;
 
   btKinematicCharacterController *_character;
@@ -88,8 +89,6 @@ private:
   LVector3f _linear_velocity;
   bool _linear_velocity_is_local;
   float _angular_velocity;
-
-  bool _disable_transform_changed;
 
 ////////////////////////////////////////////////////////////////////
 public:

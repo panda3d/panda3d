@@ -21,7 +21,7 @@
 INLINE BulletSoftBodyNode::
 ~BulletSoftBodyNode() {
 
-  delete _body;
+  delete _soft;
 }
 
 ////////////////////////////////////////////////////////////////////

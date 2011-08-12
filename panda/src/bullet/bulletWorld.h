@@ -151,6 +151,9 @@ public:
   INLINE btDispatcher *get_dispatcher() const;
 
 private:
+  void sync_p2b(float dt);
+  void sync_b2p();
+
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;
   typedef PTA(PT(BulletSoftBodyNode)) BulletSoftBodies;
   typedef PTA(PT(BulletGhostNode)) BulletGhosts;
@@ -161,7 +164,8 @@ private:
   static PStatCollector _pstat_physics;
   static PStatCollector _pstat_simulation;
   static PStatCollector _pstat_debug;
-  static PStatCollector _pstat_sb;
+  static PStatCollector _pstat_p2b;
+  static PStatCollector _pstat_b2p;
 
   struct btFilterCallback : public btOverlapFilterCallback {
     virtual bool needBroadphaseCollision(

@@ -35,9 +35,6 @@ BulletBodyNode(const char *name) : PandaNode(name) {
   // Shape
   _shape = new btEmptyShape();
 
-  // Transform changed callback
-  _disable_transform_changed = false;
-
   // Default collide mask
   set_into_collide_mask(CollideMask::all_on());
 }
@@ -163,22 +160,6 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::transform_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletBodyNode::
-transform_changed() {
-
-  // Apply scale to collision shape
-  CPT(TransformState) ts = this->get_transform();
-  if (ts->has_scale()) {
-    LVecBase3f scale = ts->get_scale();
-    _shape->setLocalScaling(LVecBase3f_to_btVector3(scale));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::add_shape
 //       Access: Published
 //  Description:
@@ -194,7 +175,7 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
   // Transform
   btTransform trans = btTransform::getIdentity();
   if (ts) {
-    trans = LMatrix4f_to_btTrans(ts->get_mat());
+    trans = TransformState_to_btTrans(ts);
   }
 
   // Root shape
@@ -447,14 +428,14 @@ set_active(bool active, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_disable_deactivation
+//     Function: BulletBodyNode::set_deactivation_enabled
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_disable_deactivation(bool disable, bool force) {
+set_deactivation_enabled(const bool enabled, const bool force) {
 
-  int state = (disable) ? DISABLE_DEACTIVATION : WANTS_DEACTIVATION;
+  int state = (enabled) ? WANTS_DEACTIVATION : DISABLE_DEACTIVATION;
 
   if (force) {
     get_object()->forceActivationState(state);
@@ -465,14 +446,14 @@ set_disable_deactivation(bool disable, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_disable_deactivation
+//     Function: BulletBodyNode::is_deactivation_enabled
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool BulletBodyNode::
-get_disable_deactivation() const {
+is_deactivation_enabled() const {
 
-  return (get_object()->getActivationState() & DISABLE_DEACTIVATION) != 0;
+  return (get_object()->getActivationState() & DISABLE_DEACTIVATION) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////

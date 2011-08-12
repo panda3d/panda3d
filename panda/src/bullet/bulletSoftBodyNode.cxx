@@ -32,12 +32,16 @@ TypeHandle BulletSoftBodyNode::_type_handle;
 BulletSoftBodyNode::
 BulletSoftBodyNode(btSoftBody *body, const char *name) : BulletBodyNode(name) {
 
-  // Setup body
-  _body = body;
-  _body->setUserPointer(this);
+  // Synchronised transform
+  _sync = TransformState::make_identity();
+  _sync_disable = false;
+
+  // Softbody
+  _soft = body;
+  _soft->setUserPointer(this);
 
   // Shape
-  btCollisionShape *shape_ptr = _body->getCollisionShape();
+  btCollisionShape *shape_ptr = _soft->getCollisionShape();
 
   nassertv(shape_ptr != NULL);
   nassertv(shape_ptr->getShapeType() == SOFTBODY_SHAPE_PROXYTYPE);
@@ -58,7 +62,7 @@ BulletSoftBodyNode(btSoftBody *body, const char *name) : BulletBodyNode(name) {
 btCollisionObject *BulletSoftBodyNode::
 get_object() const {
 
-  return _body;
+  return _soft;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +73,7 @@ get_object() const {
 BulletSoftBodyConfig BulletSoftBodyNode::
 get_cfg() {
 
-  return BulletSoftBodyConfig(_body->m_cfg);
+  return BulletSoftBodyConfig(_soft->m_cfg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +84,7 @@ get_cfg() {
 BulletSoftBodyWorldInfo BulletSoftBodyNode::
 get_world_info() {
 
-  return BulletSoftBodyWorldInfo(*(_body->m_worldInfo));
+  return BulletSoftBodyWorldInfo(*(_soft->m_worldInfo));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +95,7 @@ get_world_info() {
 int BulletSoftBodyNode::
 get_num_materials() const {
 
-  return _body->m_materials.size();
+  return _soft->m_materials.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +108,21 @@ get_material(int idx) const {
 
   nassertr(idx >= 0 && idx < get_num_materials(), BulletSoftBodyMaterial::empty());
 
-  btSoftBody::Material *material = _body->m_materials[idx];
+  btSoftBody::Material *material = _soft->m_materials[idx];
+  return BulletSoftBodyMaterial(*material);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::append_material
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletSoftBodyMaterial BulletSoftBodyNode::
+append_material() {
+
+  btSoftBody::Material *material = _soft->appendMaterial();
+  nassertr(material, BulletSoftBodyMaterial::empty());
+
   return BulletSoftBodyMaterial(*material);
 }
 
@@ -116,7 +134,7 @@ get_material(int idx) const {
 int BulletSoftBodyNode::
 get_num_nodes() const {
 
-  return _body->m_nodes.size();
+  return _soft->m_nodes.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,21 +146,7 @@ BulletSoftBodyNodeElement BulletSoftBodyNode::
 get_node(int idx) const {
 
   nassertr(idx >=0 && idx < get_num_nodes(), BulletSoftBodyNodeElement::empty());
-  return BulletSoftBodyNodeElement(_body->m_nodes[idx]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyNode::append_material
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-BulletSoftBodyMaterial BulletSoftBodyNode::
-append_material() {
-
-  btSoftBody::Material *material = _body->appendMaterial();
-  nassertr(material, BulletSoftBodyMaterial::empty());
-
-  return BulletSoftBodyMaterial(*material);
+  return BulletSoftBodyNodeElement(_soft->m_nodes[idx]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,10 +158,10 @@ void BulletSoftBodyNode::
 generate_bending_constraints(int distance, BulletSoftBodyMaterial *material) {
 
   if (material) {
-    _body->generateBendingConstraints(distance, &(material->get_material()));
+    _soft->generateBendingConstraints(distance, &(material->get_material()));
   }
   else {
-    _body->generateBendingConstraints(distance);
+    _soft->generateBendingConstraints(distance);
   }
 }
 
@@ -169,18 +173,7 @@ generate_bending_constraints(int distance, BulletSoftBodyMaterial *material) {
 void BulletSoftBodyNode::
 randomize_constraints() {
 
-  _body->randomizeConstraints();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyNode::parents_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletSoftBodyNode::
-parents_changed() {
-
-  transform_changed();
+  _soft->randomizeConstraints();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,24 +184,52 @@ parents_changed() {
 void BulletSoftBodyNode::
 transform_changed() {
 
-  if (_disable_transform_changed) return;
+  if (_sync_disable) return;
 
-  btTransform trans = btTransform::getIdentity();
-  get_node_transform(trans, this);
-  trans *= _body->m_initialWorldTransform.inverse();
-  _body->transform(trans);
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  CPT(TransformState) ts = np.get_net_transform();
 
-  BulletBodyNode::transform_changed();
+  LMatrix4f m_sync = _sync->get_mat();
+  LMatrix4f m_ts = ts->get_mat();
+
+  if (!m_sync.almost_equal(m_ts)) {
+    _sync = ts;
+
+    btTransform trans = TransformState_to_btTrans(ts);
+
+    trans *= _soft->m_initialWorldTransform.inverse();
+    _soft->transform(trans);
+
+    if (ts->has_scale()) {
+      LVecBase3f scale = ts->get_scale();
+      for (int i=0; i<get_num_shapes(); i++) {
+        PT(BulletShape) shape = _shapes[i];
+        shape->set_local_scale(scale);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyNode::post_step
+//     Function: BulletSoftBodyNode::sync_p2b
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-post_step() {
+sync_p2b() {
 
+  transform_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::sync_b2p
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSoftBodyNode::
+sync_b2p() {
+
+  // Render softbody
   if (_geom) {
     btTransform trans = btTransform::getIdentity();
     get_node_transform(trans, this);
@@ -221,7 +242,7 @@ post_step() {
     GeomVertexReader flips(vdata, BulletHelper::get_sb_flip());
 
     while (!vertices.is_at_end()) {
-      btSoftBody::Node node = _body->m_nodes[indices.get_data1i()];
+      btSoftBody::Node node = _soft->m_nodes[indices.get_data1i()];
       btVector3 v = trans.invXform(node.m_x);
       btVector3 n = node.m_n;
 
@@ -233,7 +254,7 @@ post_step() {
   }
 
   if (_curve) {
-    btSoftBody::tNodeArray &nodes(_body->m_nodes);
+    btSoftBody::tNodeArray &nodes(_soft->m_nodes);
 
     for (int i=0; i < nodes.size(); i++) {
       btVector3 pos = nodes[i].m_x;
@@ -242,7 +263,7 @@ post_step() {
   }
 
   if (_surface) {
-    btSoftBody::tNodeArray &nodes(_body->m_nodes);
+    btSoftBody::tNodeArray &nodes(_soft->m_nodes);
 
     int num_u = _surface->get_num_u_vertices();
     int num_v = _surface->get_num_v_vertices();
@@ -260,11 +281,18 @@ post_step() {
   // set_bounds does not store the pointer - it makes a copy using
   // volume->make_copy().
   BoundingBox bb = this->get_aabb();
-  CPT(TransformState) xform = TransformState::make_pos(bb.get_approx_center());
+  LVecBase3f pos = bb.get_approx_center();
 
-  _disable_transform_changed = true;
-  this->set_transform(xform);
-  _disable_transform_changed = false;
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  LVecBase3f scale = np.get_net_transform()->get_scale();
+
+  CPT(TransformState) ts = TransformState::make_pos(pos);
+  ts = ts->set_scale(scale);
+
+  _sync = ts;
+  _sync_disable = true;
+  np.set_transform(NodePath(), ts);
+  _sync_disable = false;
 
   Thread *current_thread = Thread::get_current_thread();
   this->r_mark_geom_bounds_stale(current_thread);
@@ -289,7 +317,7 @@ get_closest_node_index(LVecBase3f point, bool local) {
     get_node_transform(trans, this);
   }
 
-  btSoftBody::tNodeArray &nodes(_body->m_nodes);
+  btSoftBody::tNodeArray &nodes(_soft->m_nodes);
   int node_idx = 0;
 
   for (int i=0; i<nodes.size(); ++i) {
@@ -316,6 +344,8 @@ link_geom(Geom *geom) {
 
   nassertv(geom->get_vertex_data()->has_column(InternalName::get_vertex()));
   nassertv(geom->get_vertex_data()->has_column(InternalName::get_normal()));
+
+  sync_p2b();
 
   _geom = geom;
 
@@ -362,7 +392,7 @@ unlink_geom() {
 void BulletSoftBodyNode::
 link_curve(NurbsCurveEvaluator *curve) {
 
-  nassertv(curve->get_num_vertices() == _body->m_nodes.size());
+  nassertv(curve->get_num_vertices() == _soft->m_nodes.size());
 
   _curve = curve;
 }
@@ -386,7 +416,7 @@ unlink_curve() {
 void BulletSoftBodyNode::
 link_surface(NurbsSurfaceEvaluator *surface) {
 
-  nassertv(surface->get_num_u_vertices() * surface->get_num_v_vertices() == _body->m_nodes.size());
+  nassertv(surface->get_num_u_vertices() * surface->get_num_v_vertices() == _soft->m_nodes.size());
 
   _surface = surface;
 }
@@ -413,7 +443,7 @@ get_aabb() const {
   btVector3 pMin;
   btVector3 pMax;
 
-  _body->getAabb(pMin, pMax);
+  _soft->getAabb(pMin, pMax);
 
   return BoundingBox(
     btVector3_to_LPoint3f(pMin),
@@ -429,7 +459,7 @@ get_aabb() const {
 void BulletSoftBodyNode::
 set_volume_mass(float mass) {
 
-  _body->setVolumeMass(mass);
+  _soft->setVolumeMass(mass);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -440,7 +470,7 @@ set_volume_mass(float mass) {
 void BulletSoftBodyNode::
 set_total_mass(float mass, bool fromfaces) {
 
-  _body->setTotalMass(mass, fromfaces);
+  _soft->setTotalMass(mass, fromfaces);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -451,7 +481,7 @@ set_total_mass(float mass, bool fromfaces) {
 void BulletSoftBodyNode::
 set_volume_density(float density) {
 
-  _body->setVolumeDensity(density);
+  _soft->setVolumeDensity(density);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -462,7 +492,7 @@ set_volume_density(float density) {
 void BulletSoftBodyNode::
 set_total_density(float density) {
 
-  _body->setTotalDensity(density);
+  _soft->setTotalDensity(density);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -473,7 +503,7 @@ set_total_density(float density) {
 void BulletSoftBodyNode::
 set_mass(int node, float mass) {
 
-  _body->setMass(node, mass);
+  _soft->setMass(node, mass);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -484,7 +514,7 @@ set_mass(int node, float mass) {
 float BulletSoftBodyNode::
 get_mass(int node) const {
 
-  return _body->getMass(node);
+  return _soft->getMass(node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,7 +525,7 @@ get_mass(int node) const {
 float BulletSoftBodyNode::
 get_total_mass() const {
 
-  return _body->getTotalMass();
+  return _soft->getTotalMass();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -506,7 +536,7 @@ get_total_mass() const {
 float BulletSoftBodyNode::
 get_volume() const {
 
-  return _body->getVolume();
+  return _soft->getVolume();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -518,7 +548,7 @@ void BulletSoftBodyNode::
 add_force(const LVector3f &force) {
 
   nassertv(!force.is_nan());
-  _body->addForce(LVecBase3f_to_btVector3(force));
+  _soft->addForce(LVecBase3f_to_btVector3(force));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -530,7 +560,7 @@ void BulletSoftBodyNode::
 add_force(const LVector3f &force, int node) {
 
   nassertv(!force.is_nan());
-  _body->addForce(LVecBase3f_to_btVector3(force), node);
+  _soft->addForce(LVecBase3f_to_btVector3(force), node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -542,7 +572,7 @@ void BulletSoftBodyNode::
 set_velocity(const LVector3f &velocity) {
 
   nassertv(!velocity.is_nan());
-  _body->setVelocity(LVecBase3f_to_btVector3(velocity));
+  _soft->setVelocity(LVecBase3f_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,7 +584,7 @@ void BulletSoftBodyNode::
 add_velocity(const LVector3f &velocity) {
 
   nassertv(!velocity.is_nan());
-  _body->addVelocity(LVecBase3f_to_btVector3(velocity));
+  _soft->addVelocity(LVecBase3f_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -566,7 +596,7 @@ void BulletSoftBodyNode::
 add_velocity(const LVector3f &velocity, int node) {
 
   nassertv(!velocity.is_nan());
-  _body->addVelocity(LVecBase3f_to_btVector3(velocity), node);
+  _soft->addVelocity(LVecBase3f_to_btVector3(velocity), node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -577,7 +607,7 @@ add_velocity(const LVector3f &velocity, int node) {
 void BulletSoftBodyNode::
 generate_clusters(int k, int maxiterations) {
 
-  _body->generateClusters(k, maxiterations);
+  _soft->generateClusters(k, maxiterations);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -588,7 +618,7 @@ generate_clusters(int k, int maxiterations) {
 void BulletSoftBodyNode::
 release_clusters() {
 
-  _body->releaseClusters();
+  _soft->releaseClusters();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -599,7 +629,7 @@ release_clusters() {
 void BulletSoftBodyNode::
 release_cluster(int index) {
 
-  _body->releaseCluster(index);
+  _soft->releaseCluster(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -610,7 +640,7 @@ release_cluster(int index) {
 int BulletSoftBodyNode::
 get_num_clusters() const {
 
-  return _body->clusterCount();
+  return _soft->clusterCount();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -621,7 +651,7 @@ get_num_clusters() const {
 LVecBase3f BulletSoftBodyNode::
 cluster_com(int cluster) const {
 
-  return btVector3_to_LVecBase3f(_body->clusterCom(cluster));
+  return btVector3_to_LVecBase3f(_soft->clusterCom(cluster));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -632,7 +662,7 @@ cluster_com(int cluster) const {
 void BulletSoftBodyNode::
 set_pose(bool bvolume, bool bframe) {
 
-  _body->setPose(bvolume, bframe);
+  _soft->setPose(bvolume, bframe);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -643,11 +673,13 @@ set_pose(bool bvolume, bool bframe) {
 void BulletSoftBodyNode::
 append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
 
-  nassertv(node < _body->m_nodes.size())
+  nassertv(node < _soft->m_nodes.size())
   nassertv(body);
 
+  body->sync_p2b();
+
   btRigidBody *ptr =(btRigidBody *)body->get_object();
-  _body->appendAnchor(node, ptr, disable);
+  _soft->appendAnchor(node, ptr, disable);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -658,12 +690,14 @@ append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
 void BulletSoftBodyNode::
 append_anchor(int node, BulletRigidBodyNode *body, const LVector3f &pivot, bool disable) {
 
-  nassertv(node < _body->m_nodes.size())
+  nassertv(node < _soft->m_nodes.size())
   nassertv(body);
   nassertv(!pivot.is_nan());
 
+  body->sync_p2b();
+
   btRigidBody *ptr =(btRigidBody *)body->get_object();
-  _body->appendAnchor(node, ptr, LVecBase3f_to_btVector3(pivot), disable);
+  _soft->appendAnchor(node, ptr, LVecBase3f_to_btVector3(pivot), disable);
 }
 
 ////////////////////////////////////////////////////////////////////

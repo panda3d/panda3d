@@ -78,8 +78,12 @@ PUBLISHED:
   void set_deactivation_time(float dt);
   float get_deactivation_time() const;
 
-  void set_disable_deactivation(bool disable, bool force=false);
-  bool get_disable_deactivation() const;
+  void set_deactivation_enabled(const bool enabled, const bool force=false);
+  bool is_deactivation_enabled() const;
+
+  // Debug Visualistion
+  INLINE void set_debug_enabled(const bool enabled);
+  INLINE bool is_debug_enabled() const;
 
   // Friction and Restitution
   INLINE float get_restitution() const;
@@ -120,9 +124,6 @@ protected:
 
   typedef PTA(PT(BulletShape)) BulletShapes;
   BulletShapes _shapes;
-
-  bool _disable_transform_changed;
-  virtual void transform_changed();
 
 private:
   virtual void shape_changed();

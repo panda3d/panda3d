@@ -186,12 +186,12 @@ draw_mask_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::post_step
+//     Function: BulletDebugNode::sync_b2p
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletDebugNode::
-post_step(btDynamicsWorld *world) {
+sync_b2p(btDynamicsWorld *world) {
 
   if (is_overall_hidden()) return;
 
@@ -199,7 +199,7 @@ post_step(btDynamicsWorld *world) {
   world->debugDrawWorld();
 
   // Get inverse of this node's net transform
-  NodePath np = NodePath::any_path(this);
+  NodePath np = NodePath::any_path((PandaNode *)this);
   LMatrix4f m = np.get_net_transform()->get_mat();
   m.invert_in_place();
 
@@ -348,7 +348,6 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, const btVector3 &n2, const btVector3 &color, btScalar alpha) {
 
-  // TODO
   bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << endl;
 }
 
@@ -374,7 +373,6 @@ drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar dista
 void BulletDebugNode::DebugDraw::
 draw3dText(const btVector3 &location, const char *text) {
 
-  // TODO
   bullet_cat.debug() << "draw3dText - not yet implemented!" << endl;
 }
 

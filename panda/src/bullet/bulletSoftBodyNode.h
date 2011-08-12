@@ -188,14 +188,17 @@ PUBLISHED:
 public:
   virtual btCollisionObject *get_object() const;
 
-  void post_step();
+  void sync_p2b();
+  void sync_b2p();
 
 protected:
-  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
-  btSoftBody *_body;
+  btSoftBody *_soft;
+
+  CPT(TransformState) _sync;
+  bool _sync_disable;
 
   PT(Geom) _geom;
   PT(NurbsCurveEvaluator) _curve;

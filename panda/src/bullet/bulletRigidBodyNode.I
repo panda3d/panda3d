@@ -21,8 +21,8 @@
 INLINE BulletRigidBodyNode::
 ~BulletRigidBodyNode() {
 
-  delete _body;
-  delete _motion;
+  delete _rigid->getMotionState();
+  delete _rigid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ INLINE BulletRigidBodyNode::
 INLINE void BulletRigidBodyNode::
 set_linear_damping(float value) {
 
-  _body->setDamping(value, _body->getAngularDamping());
+  _rigid->setDamping(value, _rigid->getAngularDamping());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ set_linear_damping(float value) {
 INLINE void BulletRigidBodyNode::
 set_angular_damping(float value) {
 
-  _body->setDamping(_body->getLinearDamping(), value);
+  _rigid->setDamping(_rigid->getLinearDamping(), value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ set_angular_damping(float value) {
 INLINE float BulletRigidBodyNode::
 get_linear_damping() const {
 
-  return _body->getLinearDamping();
+  return _rigid->getLinearDamping();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,6 +66,6 @@ get_linear_damping() const {
 INLINE float BulletRigidBodyNode::
 get_angular_damping() const {
 
-  return _body->getAngularDamping();
+  return _rigid->getAngularDamping();
 }
 

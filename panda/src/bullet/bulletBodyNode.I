@@ -225,3 +225,29 @@ get_shape(int idx) const {
   return _shapes[idx];
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_debug_enabled
+//       Access: Published
+//  Description: Enables or disables the debug visualisation for
+//               this collision object. By default the debug 
+//               visualisation is enabled.
+////////////////////////////////////////////////////////////////////
+INLINE void BulletBodyNode::
+set_debug_enabled(const bool enabled) {
+
+  set_collision_flag(btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT, !enabled);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::is_debug_enabled
+//       Access: Published
+//  Description: Returns TRUE if the debug visualisation is enabled
+//               for this collision object, and FALSE if the debug
+//               visualisation is disabled.
+////////////////////////////////////////////////////////////////////
+INLINE bool BulletBodyNode::
+is_debug_enabled() const {
+
+  return !get_collision_flag(btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+}
+

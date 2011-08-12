@@ -82,28 +82,19 @@ public:
 
   virtual void output(ostream &out) const;
 
+  void sync_p2b();
+  void sync_b2p();
+
 protected:
-  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
   virtual void shape_changed();
 
-  class MotionState : public btMotionState {
+  CPT(TransformState) _sync;
+  bool _sync_disable;
 
-  public:
-    MotionState(BulletRigidBodyNode *node) : _node(node) {};
-    ~MotionState() {};
-
-    virtual void getWorldTransform(btTransform &trans) const;
-    virtual void setWorldTransform(const btTransform &trans);
-
-  private:
-    BulletRigidBodyNode *_node;
-  };
-
-  btRigidBody *_body;
-  MotionState *_motion;
+  btRigidBody *_rigid;
 
 ////////////////////////////////////////////////////////////////////
 public:

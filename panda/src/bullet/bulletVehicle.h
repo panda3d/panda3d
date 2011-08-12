@@ -91,7 +91,7 @@ PUBLISHED:
 public:
   INLINE btRaycastVehicle *get_vehicle() const;
 
-  void post_step();
+  void sync_b2p();
 
 private:
   btRaycastVehicle *_vehicle;

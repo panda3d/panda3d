@@ -24,17 +24,21 @@ TypeHandle BulletCharacterControllerNode::_type_handle;
 BulletCharacterControllerNode::
 BulletCharacterControllerNode(BulletShape *shape, float step_height, const char *name) : PandaNode(name) {
 
-  // Setup initial transform
+  // Synchronised transform
+  _sync = TransformState::make_identity();
+  _sync_disable = false;
+
+  // Initial transform
   btTransform trans = btTransform::getIdentity();
 
-  // Get convex shape
+  // Get convex shape (for ghost object)
   if (!shape->is_convex()) {
     bullet_cat.error() << "a convex shape is required!" << endl;
   }
 
   btConvexShape *convex = dynamic_cast<btConvexShape *>(shape->ptr());
 
-  // Setup ghost object
+  // Ghost object
   _ghost = new btPairCachingGhostObject();
   _ghost->setUserPointer(this);
 
@@ -43,24 +47,20 @@ BulletCharacterControllerNode(BulletShape *shape, float step_height, const char 
   _ghost->setCollisionShape(convex);
   _ghost->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
-  // Setup up axis
+  // Up axis
   _up = get_default_up_axis();
 
-  // Movement
+  // Initialise movement
   _linear_velocity_is_local = false;
   _linear_velocity.set(0.0f, 0.0f, 0.0f);
   _angular_velocity = 0.0f;
 
-  // Setup character controller
+  // Character controller
   _character = new btKinematicCharacterController(_ghost, convex, step_height, _up);
   _character->setGravity((btScalar)9.81f);
 
   // Retain a pointer to the shape
   _shape = shape;
-
-  // The 'transform changed' hook has to be disabled when updating the node's
-  // transform from inside the post_step method!
-  _disable_transform_changed = false;
 
   // Default collide mask
   set_into_collide_mask(CollideMask::all_on());
@@ -196,14 +196,17 @@ set_angular_velocity(float omega) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::pre_step
+//     Function: BulletCharacterControllerNode::sync_p2b
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-pre_step(float dt) {
+sync_p2b(float dt) {
 
- // Angular rotation
+  // Synchronise global transform
+  transform_changed();
+
+  // Angular rotation
   btScalar angle = dt * deg_2_rad(_angular_velocity);
 
   btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
@@ -225,28 +228,32 @@ pre_step(float dt) {
   }
 
   _character->setVelocityForTimeInterval(v, dt);
-  //_character->setWalkDirection(v * dt);
-
   _angular_velocity = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::post_step
+//     Function: BulletCharacterControllerNode::sync_b2p
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-post_step() {
-
-  btTransform trans = _ghost->getWorldTransform();
-  CPT(TransformState) ts = btTrans_to_TransformState(trans);
-
-  _disable_transform_changed = true;
+sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  np.set_transform(np.get_top(), ts);
+  LVecBase3f scale = np.get_net_transform()->get_scale();
 
-  _disable_transform_changed = false;
+  btTransform trans = _ghost->getWorldTransform();
+  CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
+
+  LMatrix4f m_sync = _sync->get_mat();
+  LMatrix4f m_ts = ts->get_mat();
+
+  if (!m_sync.almost_equal(m_ts)) {
+    _sync = ts;
+    _sync_disable = true;
+    np.set_transform(NodePath(), ts);
+    _sync_disable = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,25 +264,36 @@ post_step() {
 void BulletCharacterControllerNode::
 transform_changed() {
 
-  if (_disable_transform_changed) return;
+  if (_sync_disable) return;
 
-  // Get translation and heading
   NodePath np = NodePath::any_path((PandaNode *)this);
-  CPT(TransformState) ts = np.get_transform(np.get_top());
+  CPT(TransformState) ts = np.get_net_transform();
 
-  LPoint3f pos = ts->get_pos();
-  float heading = ts->get_hpr().get_x();
+  LMatrix4f m_sync = _sync->get_mat();
+  LMatrix4f m_ts = ts->get_mat();
 
-  // Set translation
-  _character->warp(LVecBase3f_to_btVector3(pos));
+  if (!m_sync.almost_equal(m_ts)) {
+    _sync = ts;
 
-  // Set Heading
-  btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
-  btVector3 up = m[_up];
+    // Get translation, heading and scale
+    LPoint3f pos = ts->get_pos();
+    float heading = ts->get_hpr().get_x();
+    LVecBase3f scale = ts->get_scale();
 
-  m = btMatrix3x3(btQuaternion(up, heading));
+    // Set translation
+    _character->warp(LVecBase3f_to_btVector3(pos));
 
-  _ghost->getWorldTransform().setBasis(m);
+    // Set Heading
+    btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
+    btVector3 up = m[_up];
+
+    m = btMatrix3x3(btQuaternion(up, heading));
+
+    _ghost->getWorldTransform().setBasis(m);
+
+    // Set scale
+    _shape->set_local_scale(scale);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,26 +425,4 @@ set_use_ghost_sweep_test(bool value) {
 
   return _character->setUseGhostSweepTest(value);
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::parents_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletCharacterControllerNode::
-parents_changed() {
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::children_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletCharacterControllerNode::
-children_changed() {
-
-}
-*/
 

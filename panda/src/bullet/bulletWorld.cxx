@@ -24,7 +24,8 @@ TypeHandle BulletWorld::_type_handle;
 PStatCollector BulletWorld::_pstat_physics("App:Bullet:DoPhysics");
 PStatCollector BulletWorld::_pstat_simulation("App:Bullet:DoPhysics:Simulation");
 PStatCollector BulletWorld::_pstat_debug("App:Bullet:DoPhysics:Debug");
-PStatCollector BulletWorld::_pstat_sb("App:Bullet:DoPhysics:SoftBodies");
+PStatCollector BulletWorld::_pstat_p2b("App:Bullet:DoPhysics:SyncP2B");
+PStatCollector BulletWorld::_pstat_b2p("App:Bullet:DoPhysics:SyncB2P");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::Constructor
@@ -140,47 +141,84 @@ do_physics(float dt, int substeps, float stepsize) {
 
   _pstat_physics.start();
 
-  // Preprocess characters
-  for (int i=0; i < get_num_characters(); i++) {
-    get_character(i)->pre_step(dt);
-  }
-
-  // Preprocess ghosts (autosync)
-  for (int i=0; i < get_num_ghosts(); i++) {
-    get_ghost(i)->pre_step();
-  }
+  // Synchronize Panda to Bullet
+  _pstat_p2b.start();
+  sync_p2b(dt);
+  _pstat_p2b.stop();
 
   // Simulation
   _pstat_simulation.start();
   _world->stepSimulation(dt, substeps, stepsize);
   _pstat_simulation.stop();
 
-  // Postprocess characters
-  for (int i=0; i < get_num_characters(); i++) {
-    get_character(i)->post_step();
-  }
-
-  // Postprocess vehicles
-  for (int i=0; i < get_num_vehicles(); i++) {
-    get_vehicle(i)->post_step();
-  }
+  // Synchronize Bullet to Panda
+  _pstat_b2p.start();
+  sync_b2p();
+  _info.m_sparsesdf.GarbageCollect(bullet_gc_lifetime);
+  _pstat_b2p.stop();
 
   // Render debug
-  _pstat_debug.start();
   if (_debug) {
-    _debug->post_step(_world);
+    _pstat_debug.start();
+    _debug->sync_b2p(_world);
+    _pstat_debug.stop();
   }
-  _pstat_debug.stop();
-
-  // Render soft bodies
-  _pstat_sb.start();
-  for (int i=0; i < get_num_soft_bodies(); i++) {
-    get_soft_body(i)->post_step();
-  }
-  _info.m_sparsesdf.GarbageCollect(bullet_gc_lifetime);
-  _pstat_sb.stop();
 
   _pstat_physics.stop();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::sync_p2b
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+sync_p2b(float dt) {
+
+  for (int i=0; i < get_num_rigid_bodies(); i++) {
+    get_rigid_body(i)->sync_p2b();
+  }
+
+  for (int i=0; i < get_num_soft_bodies(); i++) {
+    get_soft_body(i)->sync_p2b();
+  }
+
+  for (int i=0; i < get_num_ghosts(); i++) {
+    get_ghost(i)->sync_p2b();
+  }
+
+  for (int i=0; i < get_num_characters(); i++) {
+    get_character(i)->sync_p2b(dt);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::sync_b2p
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+sync_b2p() {
+
+  for (int i=0; i < get_num_vehicles(); i++) {
+    get_vehicle(i)->sync_b2p();
+  }
+
+  for (int i=0; i < get_num_rigid_bodies(); i++) {
+    get_rigid_body(i)->sync_b2p();
+  }
+
+  for (int i=0; i < get_num_soft_bodies(); i++) {
+    get_soft_body(i)->sync_b2p();
+  }
+
+  for (int i=0; i < get_num_ghosts(); i++) {
+    get_ghost(i)->sync_b2p();
+  }
+
+  for (int i=0; i < get_num_characters(); i++) {
+    get_character(i)->sync_b2p();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -325,7 +363,7 @@ attach_ghost(BulletGhostNode *node) {
 
   // TODO group/filter settings...
 /*
-enum   CollisionFilterGroups { 
+enum CollisionFilterGroups { 
   DefaultFilter = 1, 
   StaticFilter = 2, 
   KinematicFilter = 4, 

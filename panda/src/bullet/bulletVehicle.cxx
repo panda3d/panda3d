@@ -218,12 +218,12 @@ get_wheel(int idx) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletVehicle::post_step
+//     Function: BulletVehicle::sync_b2p
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
-post_step() {
+sync_b2p() {
 
   for (int i=0; i < get_num_wheels(); i++) {
     btWheelInfo info = _vehicle->getWheelInfo(i);

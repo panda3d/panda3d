@@ -25,19 +25,20 @@ TypeHandle BulletGhostNode::_type_handle;
 BulletGhostNode::
 BulletGhostNode(const char *name) : BulletBodyNode(name) {
 
-  // Setup initial transform
+  // Synchronised transform
+  _sync = TransformState::make_identity();
+  _sync_disable = false;
+
+  // Initial transform
   btTransform trans = btTransform::getIdentity();
 
-  // Setup ghost object
+  // Ghost object
   _ghost = new btPairCachingGhostObject();
   _ghost->setUserPointer(this);
   _ghost->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
   _ghost->setWorldTransform(trans);
   _ghost->setInterpolationWorldTransform(trans);
   _ghost->setCollisionShape(_shape);
-
-  // Autosync is off by default
-  _sync_transform = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,35 +53,6 @@ get_object() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::parents_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletGhostNode::
-parents_changed() {
-
-  // Enable autosync if one of the parents is suited for this
-  Parents parents = get_parents();
-  for (int i=0; i < parents.get_num_parents(); ++i) {
-    PandaNode *parent = parents.get_parent(i);
-    TypeHandle type = parent->get_type();
-
-    if (BulletRigidBodyNode::get_class_type() == type ||
-        BulletSoftBodyNode::get_class_type() == type ||
-        BulletGhostNode::get_class_type() == type ||
-        BulletCharacterControllerNode::get_class_type() == type) {
-      _sync_transform = true;
-      return;
-    }
-  }
-
-  // None of the parents is suited for autosync
-  _sync_transform = false;
-
-  transform_changed();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BulletGhostNode::transform_changed
 //       Access: Protected
 //  Description:
@@ -88,26 +60,64 @@ parents_changed() {
 void BulletGhostNode::
 transform_changed() {
 
-  if (_disable_transform_changed) return;
+  if (_sync_disable) return;
 
-  btTransform trans = btTransform::getIdentity();
-  get_node_transform(trans, this);
-  _ghost->setWorldTransform(trans);
-  _ghost->setInterpolationWorldTransform(trans);
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  CPT(TransformState) ts = np.get_net_transform();
 
-  BulletBodyNode::transform_changed();
+  LMatrix4f m_sync = _sync->get_mat();
+  LMatrix4f m_ts = ts->get_mat();
+
+  if (!m_sync.almost_equal(m_ts)) {
+    _sync = ts;
+
+    btTransform trans = TransformState_to_btTrans(ts);
+    _ghost->setWorldTransform(trans);
+    _ghost->setInterpolationWorldTransform(trans);
+
+    if (ts->has_scale()) {
+      LVecBase3f scale = ts->get_scale();
+      for (int i=0; i<get_num_shapes(); i++) {
+        PT(BulletShape) shape = _shapes[i];
+        shape->set_local_scale(scale);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::pre_step
+//     Function: BulletGhostNode::sync_p2b
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGhostNode::
-pre_step() {
+sync_p2b() {
 
-  if (_sync_transform) {
-    transform_changed();
+  transform_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGhostNode::sync_b2p
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletGhostNode::
+sync_b2p() {
+
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  LVecBase3f scale = np.get_net_transform()->get_scale();
+
+  btTransform trans = _ghost->getWorldTransform();
+  CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
+
+  LMatrix4f m_sync = _sync->get_mat();
+  LMatrix4f m_ts = ts->get_mat();
+
+  if (!m_sync.almost_equal(m_ts)) {
+    _sync = ts;
+    _sync_disable = true;
+    np.set_transform(NodePath(), ts);
+    _sync_disable = false;
   }
 }
 

@@ -49,7 +49,7 @@ public:
   virtual bool safe_to_flatten_below() const;
 
 private:
-  void post_step(btDynamicsWorld *world);
+  void sync_b2p(btDynamicsWorld *world);
 
   struct Line {
     LVecBase3f _p0;
