@@ -34,7 +34,7 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
   btVector3 inertia(0, 0, 0);
 
   // Motion state and construction info
-  btDefaultMotionState *motion = new btDefaultMotionState();
+  MotionState *motion = new MotionState(_sync);
   btRigidBody::btRigidBodyConstructionInfo ci(mass, motion, _shape, inertia);
 
   // Additional damping
@@ -449,5 +449,26 @@ void BulletRigidBodyNode::
 set_angular_factor(const LVector3f &factor) {
 
   _rigid->setAngularFactor(LVecBase3f_to_btVector3(factor));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::MotionState::getWorldTransform
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::MotionState::
+getWorldTransform(btTransform &trans) const {
+
+  trans = TransformState_to_btTrans(_sync);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::MotionState::setWorldTransform
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::MotionState::
+setWorldTransform(const btTransform &trans) {
+
 }
 

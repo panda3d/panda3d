@@ -91,6 +91,22 @@ protected:
 private:
   virtual void shape_changed();
 
+  // The motion state is required only for kinematic bodies.
+  // For kinematic nodies getWorldTransform is called each frame, and
+  // should return the current world transform of the node.
+  class MotionState : public btMotionState {
+
+  public:
+    MotionState(CPT(TransformState) & sync) : _sync(sync) {};
+    ~MotionState() {};
+
+    virtual void getWorldTransform(btTransform &trans) const;
+    virtual void setWorldTransform(const btTransform &trans);
+
+  private:
+    CPT(TransformState) &_sync;
+  };
+
   CPT(TransformState) _sync;
   bool _sync_disable;
 
