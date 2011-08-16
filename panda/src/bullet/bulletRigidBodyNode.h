@@ -37,9 +37,7 @@ PUBLISHED:
   INLINE ~BulletRigidBodyNode();
 
   // Mass
-  LPoint3f get_center_of_mass_pos() const;
   float get_mass() const;
-  void set_center_of_mass_pos(const LPoint3f &pos);
   void set_mass(float mass);
 
   // Velocity

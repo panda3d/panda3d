@@ -226,8 +226,7 @@ transform_changed() {
     _sync = ts;
 
     btTransform trans = TransformState_to_btTrans(ts);
-    _rigid->setWorldTransform(trans);
-    _rigid->setInterpolationWorldTransform(trans);
+    _rigid->setCenterOfMassTransform(trans);
 
     if (ts->has_scale()) {
       LVecBase3f scale = ts->get_scale();
@@ -273,33 +272,6 @@ sync_b2p() {
     np.set_transform(NodePath(), ts);
     _sync_disable = false;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRigidBodyNode::set_center_of_mass_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletRigidBodyNode::
-set_center_of_mass_pos(const LPoint3f &pos) {
-
-  nassertv_always(!pos.is_nan());
-
-  btTransform trans = btTransform::getIdentity();
-  trans.setOrigin(LVecBase3f_to_btVector3(pos));
-
-  _rigid->setCenterOfMassTransform(trans);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRigidBodyNode::get_center_of_mass_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-LPoint3f BulletRigidBodyNode::
-get_center_of_mass_pos() const {
-
-  return btVector3_to_LPoint3f(_rigid->getCenterOfMassPosition());
 }
 
 ////////////////////////////////////////////////////////////////////
