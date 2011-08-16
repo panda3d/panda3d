@@ -57,7 +57,7 @@ ConfigVariableBool CLP(show_texture_usage)
    PRC_DESC("If you set this true, the screen will flash with textures drawn "
             "in a special mode that shows the mipmap detail level and texture "
             "size for each texture.  Textures will be drawn in blue for "
-            "mipmap level 0, gray for mipmap level 1, and red for all higher "
+            "mipmap level 0, yellow for mipmap level 1, and red for all higher "
             "mipmap levels.  Brighter colors represent larger textures."));
 
 ConfigVariableInt CLP(show_texture_usage_max_size)
