@@ -46,5 +46,6 @@ SelectiveChildNode(const SelectiveChildNode &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void SelectiveChildNode::
 select_child(int n) {
+  nassertv(n >= 0);
   _selected_child = n;
 }

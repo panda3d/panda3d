@@ -54,6 +54,7 @@ SwitchNode(const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE void SwitchNode::
 set_visible_child(int index) {
+  nassertv(index >= 0);
   CDWriter cdata(_cycler);
   cdata->_visible_child = index;
 }
