@@ -2044,6 +2044,7 @@ class Packager:
             # First, we need to verify that it is in fact a
             # universal binary.
             tfile = Filename.temporary('', 'p3d_')
+            tfile.setBinary()
             command = '/usr/bin/lipo -info "%s" >"%s"' % (
                 file.filename.toOsSpecific(),
                 tfile.toOsSpecific())
@@ -2051,6 +2052,7 @@ class Packager:
             if exitStatus != 0:
                 self.notify.warning("Not an executable file: %s" % (file.filename))
                 # Just add it anyway.
+                file.filename.setBinary()
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
                 return True
 
@@ -2067,6 +2069,7 @@ class Packager:
             if arches == [self.arch]:
                 # The file only contains the one architecture that
                 # we want anyway.
+                file.filename.setBinary()
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
                 return True
 
