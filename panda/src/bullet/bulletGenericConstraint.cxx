@@ -66,48 +66,48 @@ ptr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_linear_lower_limit
+//     Function: BulletGenericConstraint::set_lower_linear_limit
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_linear_lower_limit(const LPoint3f &limit) {
+set_lower_linear_limit(const LPoint3f &limit) {
 
   nassertv(!limit.is_nan());
   _constraint->setLinearLowerLimit(LVecBase3f_to_btVector3(limit));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_linear_upper_limit
+//     Function: BulletGenericConstraint::set_upper_linear_limit
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_linear_upper_limit(const LPoint3f &limit) {
+set_upper_linear_limit(const LPoint3f &limit) {
 
   nassertv(!limit.is_nan());
   _constraint->setLinearUpperLimit(LVecBase3f_to_btVector3(limit));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_angular_lower_limit
+//     Function: BulletGenericConstraint::set_lower_angular_limit
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_angular_lower_limit(const LVector3f &limit) {
+set_lower_angular_limit(const LVector3f &limit) {
 
   nassertv(!limit.is_nan());
   _constraint->setAngularLowerLimit(LVecBase3f_to_btVector3(limit));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_angular_upper_limit
+//     Function: BulletGenericConstraint::set_upper_angular_limit
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_angular_upper_limit(const LVector3f &limit) {
+set_upper_angular_limit(const LVector3f &limit) {
 
   nassertv(!limit.is_nan());
   _constraint->setAngularUpperLimit(LVecBase3f_to_btVector3(limit));

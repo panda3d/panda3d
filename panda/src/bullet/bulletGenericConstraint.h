@@ -44,10 +44,10 @@ PUBLISHED:
                           bool use_frame_a);
   INLINE ~BulletGenericConstraint();
 
-  void set_linear_lower_limit(const LPoint3f &limit);
-  void set_linear_upper_limit(const LPoint3f &limit);
-  void set_angular_lower_limit(const LVector3f &limit);
-  void set_angular_upper_limit(const LVector3f &limit);
+  void set_lower_linear_limit(const LPoint3f &limit);
+  void set_upper_linear_limit(const LPoint3f &limit);
+  void set_lower_angular_limit(const LVector3f &limit);
+  void set_upper_angular_limit(const LVector3f &limit);
 
 public:
   virtual btTypedConstraint *ptr() const;
