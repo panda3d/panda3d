@@ -66,50 +66,80 @@ ptr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_lower_linear_limit
+//     Function: BulletGenericConstraint::get_axis
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletGenericConstraint::
-set_lower_linear_limit(const LPoint3f &limit) {
+LVector3f BulletGenericConstraint::
+get_axis(int axis) const {
 
-  nassertv(!limit.is_nan());
-  _constraint->setLinearLowerLimit(LVecBase3f_to_btVector3(limit));
+  nassertr(axis >= 0, LVector3f::zero());
+  nassertr(axis <= 3, LVector3f::zero());
+
+  _constraint->buildJacobian();
+  return btVector3_to_LVector3f(_constraint->getAxis(axis));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_upper_linear_limit
+//     Function: BulletGenericConstraint::get_pivot
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletGenericConstraint::
-set_upper_linear_limit(const LPoint3f &limit) {
+float BulletGenericConstraint::
+get_pivot(int axis) const {
 
-  nassertv(!limit.is_nan());
-  _constraint->setLinearUpperLimit(LVecBase3f_to_btVector3(limit));
+  nassertr(axis >= 0, 0.0f);
+  nassertr(axis <= 3, 0.0f);
+
+  _constraint->buildJacobian();
+  return _constraint->getRelativePivotPosition(axis);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_lower_angular_limit
+//     Function: BulletGenericConstraint::get_angle
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletGenericConstraint::
-set_lower_angular_limit(const LVector3f &limit) {
+float BulletGenericConstraint::
+get_angle(int axis) const {
 
-  nassertv(!limit.is_nan());
-  _constraint->setAngularLowerLimit(LVecBase3f_to_btVector3(limit));
+  nassertr(axis >= 0, 0.0f);
+  nassertr(axis <= 3, 0.0f);
+
+  _constraint->buildJacobian();
+  return _constraint->getAngle(axis);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_upper_angular_limit
+//     Function: BulletGenericConstraint::set_linear_limit
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_upper_angular_limit(const LVector3f &limit) {
+set_linear_limit(int axis, float low, float high) {
 
-  nassertv(!limit.is_nan());
-  _constraint->setAngularUpperLimit(LVecBase3f_to_btVector3(limit));
+  nassertv(axis >= 0);
+  nassertv(axis <= 3);
+
+  _constraint->buildJacobian();
+  _constraint->setLimit(axis, low, high);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::set_angular_limit
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletGenericConstraint::
+set_angular_limit(int axis, float low, float high) {
+
+  nassertv(axis >= 0);
+  nassertv(axis <= 3);
+
+  low  = deg_2_rad(low);
+  high = deg_2_rad(high);
+
+  _constraint->buildJacobian();
+  _constraint->setLimit(axis + 3, low, high);
 }
 
