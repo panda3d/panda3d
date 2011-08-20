@@ -37,8 +37,10 @@ PUBLISHED:
 
   virtual void draw_mask_changed();
 
-  INLINE void set_verbose(bool verbose);
-  INLINE bool get_verbose() const;
+  INLINE void show_wireframe(bool show);
+  INLINE void show_constraints(bool show);
+  INLINE void show_bounding_boxes(bool show);
+  INLINE void show_normals(bool show);
 
 public:
   virtual bool safe_to_flatten() const;
@@ -91,13 +93,15 @@ private:
     pvector<Line> _lines;
     pvector<Triangle> _triangles;
 
-  private:
+    bool _normals;
     int _mode;
   };
 
   DebugDraw _drawer;
 
-  bool _verbose;
+  bool _wireframe;
+  bool _constraints;
+  bool _bounds;
 
   PT(GeomVertexData) _vdata;
   PT(Geom) _geom_lines;

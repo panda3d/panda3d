@@ -26,7 +26,12 @@ TypeHandle BulletDebugNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletDebugNode::
-BulletDebugNode(const char *name) : GeomNode(name), _verbose(false) {
+BulletDebugNode(const char *name) : GeomNode(name) {
+
+  _wireframe = true;
+  _constraints = true;
+  _bounds = false;
+  _drawer._normals = true;
 
   _vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
 
@@ -167,21 +172,24 @@ draw_mask_changed() {
     _drawer.setDebugMode(DebugDraw::DBG_NoDebug);
   }
   else {
-    if (_verbose) {
-      _drawer.setDebugMode(DebugDraw::DBG_DrawWireframe |
-                           DebugDraw::DBG_DrawAabb |
-                           DebugDraw::DBG_DrawText |
-                           DebugDraw::DBG_DrawFeaturesText |
-                           DebugDraw::DBG_DrawContactPoints |
-                           DebugDraw::DBG_DrawConstraints |
-                           DebugDraw::DBG_DrawConstraintLimits);
-    }
-    else {
-      _drawer.setDebugMode(DebugDraw::DBG_DrawWireframe |
-                           DebugDraw::DBG_DrawConstraints |
-                           DebugDraw::DBG_FastWireframe);
+    int mode = DebugDraw::DBG_DrawText |
+               DebugDraw::DBG_DrawFeaturesText |
+               DebugDraw::DBG_DrawContactPoints;
 
+    if (_wireframe) {
+      mode |= DebugDraw::DBG_DrawWireframe;
     }
+
+    if (_constraints) {
+      mode |= DebugDraw::DBG_DrawConstraints;
+      mode |= DebugDraw::DBG_DrawConstraintLimits;
+    }
+
+    if (_bounds) {
+      mode |= DebugDraw::DBG_DrawAabb;
+    }
+
+    _drawer.setDebugMode(mode);
   } 
 }
 
@@ -296,6 +304,10 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
   float r = color.getX();
   float g = color.getY();
   float b = color.getZ();
+
+  // Hack to get rid of triangle normals. The hack is based on the
+  // assumption that only normals are drawn in yellow.
+  if (_normals==false && r==1.0f && g==1.0f && b==0.0f) return;
 
   Line line;
 

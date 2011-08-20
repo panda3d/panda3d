@@ -23,25 +23,49 @@ INLINE BulletDebugNode::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::set_verbose
+//     Function: BulletDebugNode::show_wireframe
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletDebugNode::
-set_verbose(bool verbose) {
+show_wireframe(bool show) {
 
-  _verbose = verbose;
+  _wireframe = show;
   draw_mask_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::get_verbose
+//     Function: BulletDebugNode::show_constraints
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool BulletDebugNode::
-get_verbose() const {
+INLINE void BulletDebugNode::
+show_constraints(bool show) {
 
-  return _verbose;
+  _constraints = show;
+  draw_mask_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletDebugNode::show_bounding_boxes
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void BulletDebugNode::
+show_bounding_boxes(bool show) {
+
+  _bounds = show;
+  draw_mask_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletDebugNode::show_normals
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void BulletDebugNode::
+show_normals(bool show) {
+
+  _drawer._normals = show;
 }
 
