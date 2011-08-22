@@ -1,4 +1,4 @@
-// Filename: bulletDistanceConstraint.cxx
+// Filename: bulletSphericalConstraint.cxx
 // Created by:  enn0x (01Mar10)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,19 +12,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "bulletDistanceConstraint.h"
+#include "bulletSphericalConstraint.h"
 #include "bulletRigidBodyNode.h"
 
-TypeHandle BulletDistanceConstraint::_type_handle;
+TypeHandle BulletSphericalConstraint::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::Constructor
+//     Function: BulletSphericalConstraint::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BulletDistanceConstraint::
-BulletDistanceConstraint(const BulletRigidBodyNode *node_a, 
-                         const LPoint3f &pivot_a) {
+BulletSphericalConstraint::
+BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
+                          const LPoint3f &pivot_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
   btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
@@ -33,15 +33,15 @@ BulletDistanceConstraint(const BulletRigidBodyNode *node_a,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::Constructor
+//     Function: BulletSphericalConstraint::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BulletDistanceConstraint::
-BulletDistanceConstraint(const BulletRigidBodyNode *node_a,
-                         const BulletRigidBodyNode *node_b,
-                         const LPoint3f &pivot_a,
-                         const LPoint3f &pivot_b) {
+BulletSphericalConstraint::
+BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                          const BulletRigidBodyNode *node_b,
+                          const LPoint3f &pivot_a,
+                          const LPoint3f &pivot_b) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
   btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
@@ -53,22 +53,22 @@ BulletDistanceConstraint(const BulletRigidBodyNode *node_a,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::ptr
+//     Function: BulletSphericalConstraint::ptr
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-btTypedConstraint *BulletDistanceConstraint::
+btTypedConstraint *BulletSphericalConstraint::
 ptr() const {
 
   return _constraint;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::set_pivot_a
+//     Function: BulletSphericalConstraint::set_pivot_a
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletDistanceConstraint::
+void BulletSphericalConstraint::
 set_pivot_a(const LPoint3f &pivot_a) {
 
   nassertv(!pivot_a.is_nan());
@@ -76,11 +76,11 @@ set_pivot_a(const LPoint3f &pivot_a) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::set_pivot_b
+//     Function: BulletSphericalConstraint::set_pivot_b
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletDistanceConstraint::
+void BulletSphericalConstraint::
 set_pivot_b(const LPoint3f &pivot_b) {
 
   nassertv(!pivot_b.is_nan());
@@ -88,22 +88,22 @@ set_pivot_b(const LPoint3f &pivot_b) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::set_pivot_in_a
+//     Function: BulletSphericalConstraint::set_pivot_in_a
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletDistanceConstraint::
+LPoint3f BulletSphericalConstraint::
 get_pivot_in_a() const {
 
   return btVector3_to_LPoint3f(_constraint->getPivotInA());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::set_pivot_in_b
+//     Function: BulletSphericalConstraint::set_pivot_in_b
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletDistanceConstraint::
+LPoint3f BulletSphericalConstraint::
 get_pivot_in_b() const {
 
   return btVector3_to_LPoint3f(_constraint->getPivotInB());

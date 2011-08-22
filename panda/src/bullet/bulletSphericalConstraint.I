@@ -1,4 +1,4 @@
-// Filename: bulletDistanceConstraint.I
+// Filename: bulletSphericalConstraint.I
 // Created by:  enn0x (01Mar10)
 //
 ////////////////////////////////////////////////////////////////////
@@ -13,12 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletDistanceConstraint::Destructor
+//     Function: BulletSphericalConstraint::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE BulletDistanceConstraint::
-~BulletDistanceConstraint() {
+INLINE BulletSphericalConstraint::
+~BulletSphericalConstraint() {
 
   delete _constraint;
 }

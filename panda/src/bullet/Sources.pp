@@ -41,8 +41,6 @@
     bulletCylinderShape.h \
     bulletDebugNode.I \
     bulletDebugNode.h \
-    bulletDistanceConstraint.I \
-    bulletDistanceConstraint.h \
     bulletGenericConstraint.I \
     bulletGenericConstraint.h \
     bulletGhostNode.I \
@@ -77,6 +75,8 @@
     bulletSoftBodyWorldInfo.h \
     bulletSphereShape.I \
     bulletSphereShape.h \
+    bulletSphericalConstraint.I \
+    bulletSphericalConstraint.h \
     bulletTriangleMesh.I \
     bulletTriangleMesh.h \
     bulletTriangleMeshShape.I \
@@ -108,7 +108,6 @@
     bulletConvexPointCloudShape.cxx \
     bulletCylinderShape.cxx \
     bulletDebugNode.cxx \
-    bulletDistanceConstraint.cxx \
     bulletGenericConstraint.cxx \
     bulletGhostNode.cxx \
     bulletHeightfieldShape.cxx \
@@ -126,6 +125,7 @@
     bulletSoftBodyShape.cxx \
     bulletSoftBodyWorldInfo.cxx \
     bulletSphereShape.cxx \
+    bulletSphericalConstraint.cxx \
     bulletTriangleMesh.cxx \
     bulletTriangleMeshShape.cxx \
     bulletVehicle.cxx \
@@ -167,8 +167,6 @@
     bulletCylinderShape.h \
     bulletDebugNode.I \
     bulletDebugNode.h \
-    bulletDistanceConstraint.I \
-    bulletDistanceConstraint.h \
     bulletGenericConstraint.I \
     bulletGenericConstraint.h \
     bulletGhostNode.I \
@@ -203,6 +201,8 @@
     bulletSoftBodyWorldInfo.h \
     bulletSphereShape.I \
     bulletSphereShape.h \
+    bulletSphericalConstraint.I \
+    bulletSphericalConstraint.h \
     bulletTriangleMesh.I \
     bulletTriangleMesh.h \
     bulletTriangleMeshShape.I \

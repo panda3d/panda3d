@@ -25,7 +25,6 @@
 #include "bulletConvexPointCloudShape.h"
 #include "bulletCylinderShape.h"
 #include "bulletDebugNode.h"
-#include "bulletDistanceConstraint.h"
 #include "bulletGenericConstraint.h"
 #include "bulletGhostNode.h"
 #include "bulletHeightfieldShape.h"
@@ -35,6 +34,7 @@
 #include "bulletShape.h"
 #include "bulletSliderConstraint.h"
 #include "bulletSphereShape.h"
+#include "bulletSphericalConstraint.h"
 #include "bulletSoftBodyNode.h"
 #include "bulletSoftBodyShape.h"
 #include "bulletTriangleMesh.h"
@@ -149,7 +149,7 @@ init_libbullet() {
   BulletConvexPointCloudShape::init_type();
   BulletCylinderShape::init_type();
   BulletDebugNode::init_type();
-  BulletDistanceConstraint::init_type();
+  BulletSphericalConstraint::init_type();
   BulletGenericConstraint::init_type();
   BulletGhostNode::init_type();
   BulletHeightfieldShape::init_type();

@@ -1,4 +1,4 @@
-// Filename: bulletDistanceConstraint.h
+// Filename: bulletSphericalConstraint.h
 // Created by:  enn0x (01Mar10)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __BULLET_DISTANCE_CONSTRAINT_H__
-#define __BULLET_DISTANCE_CONSTRAINT_H__
+#ifndef __BULLET_SPHERICAL_CONSTRAINT_H__
+#define __BULLET_SPHERICAL_CONSTRAINT_H__
 
 #include "pandabase.h"
 
@@ -26,19 +26,19 @@
 class BulletRigidBodyNode;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BulletDistanceConstraint
+//       Class : BulletSphericalConstraint
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDABULLET BulletDistanceConstraint : public BulletConstraint {
+class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletDistanceConstraint(const BulletRigidBodyNode *node_a, 
-                           const LPoint3f &pivot_a);
-  BulletDistanceConstraint(const BulletRigidBodyNode *node_a,
-                           const BulletRigidBodyNode *node_b,
-                           const LPoint3f &pivot_a,
-                           const LPoint3f &pivot_b);
-  INLINE ~BulletDistanceConstraint();
+  BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
+                            const LPoint3f &pivot_a);
+  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                            const BulletRigidBodyNode *node_b,
+                            const LPoint3f &pivot_a,
+                            const LPoint3f &pivot_b);
+  INLINE ~BulletSphericalConstraint();
 
   void set_pivot_a(const LPoint3f &pivot_a);
   void set_pivot_b(const LPoint3f &pivot_b);
@@ -59,7 +59,7 @@ public:
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletDistanceConstraint", 
+    register_type(_type_handle, "BulletSphericalConstraint", 
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -74,6 +74,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "bulletDistanceConstraint.I"
+#include "bulletSphericalConstraint.I"
 
-#endif // __BULLET_DISTANCE_CONSTRAINT_H__
+#endif // __BULLET_SPHERICAL_CONSTRAINT_H__
