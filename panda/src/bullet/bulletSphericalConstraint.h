@@ -27,7 +27,13 @@ class BulletRigidBodyNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletSphericalConstraint
-// Description : 
+// Description : A constraint between two rigid bodies, each with a
+//               pivot point. The pivot points are described in the
+//               body's local space. The constraint limits movement
+//               of the two rigid bodies in such a way that the 
+//               pivot points match in global space. The spherical
+//               constraint can be seen as a "ball and socket"
+//               joint.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
 

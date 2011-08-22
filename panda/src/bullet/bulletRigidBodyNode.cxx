@@ -104,6 +104,7 @@ set_mass(float mass) {
   }
 
   _rigid->setMassProps(mass, inertia);
+  _rigid->updateInertiaTensor();
 }
 
 ////////////////////////////////////////////////////////////////////
