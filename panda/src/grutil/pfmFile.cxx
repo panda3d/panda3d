@@ -202,10 +202,12 @@ read(istream &in) {
     for (int i = 0; i < size; ++i) {
       LPoint3f point = LPoint3f::zero();
       for (int ci = 0; ci < _num_channels; ++ci) {
-        float data;
+        PN_float32 data;
         in.read((char *)&data, sizeof(data));
         LittleEndian value(&data, sizeof(data));
-        value.store_value(&(point[ci]), sizeof(point[ci]));
+        PN_float32 result;
+        value.store_value(&result, sizeof(result));
+        point[ci] = result;
       }
       _table.push_back(point);
     }
@@ -213,10 +215,12 @@ read(istream &in) {
     for (int i = 0; i < size; ++i) {
       LPoint3f point = LPoint3f::zero();
       for (int ci = 0; ci < _num_channels; ++ci) {
-        float data;
+        PN_float32 data;
         in.read((char *)&data, sizeof(data));
         BigEndian value(&data, sizeof(data));
-        value.store_value(&(point[ci]), sizeof(point[ci]));
+        PN_float32 result;
+        value.store_value(&result, sizeof(result));
+        point[ci] = result;
       }
       _table.push_back(point);
     }
@@ -225,7 +229,8 @@ read(istream &in) {
   if (in.fail() && !in.eof()) {
     return false;
   }
-  
+
+  nassertr(sizeof(PN_float32) == 4, false);
   return true;
 }
 
@@ -285,7 +290,7 @@ write(ostream &out) {
   for (int i = 0; i < size; ++i) {
     const LPoint3f &point = _table[i];
     for (int ci = 0; ci < _num_channels; ++ci) {
-      float data = point[ci];
+      PN_float32 data = point[ci];
       out.write((const char *)&data, sizeof(data));
     }
   }
@@ -293,6 +298,7 @@ write(ostream &out) {
   if (out.fail()) {
     return false;
   }
+  nassertr(sizeof(PN_float32) == 4, false);
   return true;
 }
 
