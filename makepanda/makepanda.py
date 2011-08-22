@@ -2128,6 +2128,7 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/fltprogs')
     CopyAllHeaders('pandatool/src/imagebase')
     CopyAllHeaders('pandatool/src/imageprogs')
+    CopyAllHeaders('pandatool/src/pfmprogs')
     CopyAllHeaders('pandatool/src/lwo')
     CopyAllHeaders('pandatool/src/lwoegg')
     CopyAllHeaders('pandatool/src/lwoprogs')
@@ -4104,7 +4105,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('bam-info.exe', input='libpandatoolbase.lib')
   TargetAdd('bam-info.exe', input='libpandaegg.dll')
   TargetAdd('bam-info.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('bam-info.exe', opts=['ADVAPI',  'FFTW'])
+  TargetAdd('bam-info.exe', opts=['ADVAPI', 'FFTW'])
 
   TargetAdd('bam2egg_bamToEgg.obj', opts=OPTS, input='bamToEgg.cxx')
   TargetAdd('bam2egg.exe', input='bam2egg_bamToEgg.obj')
@@ -4451,6 +4452,19 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-trans.exe', input='libp3pystub.dll')
   TargetAdd('image-trans.exe', opts=['ADVAPI'])
 
+#
+# DIRECTORY: pandatool/src/pfmprogs/
+#
+
+if (PkgSkip("PANDATOOL")==0):
+  OPTS=['DIR:pandatool/src/pfmprogs']
+  TargetAdd('pfm-trans_pfmTrans.obj', opts=OPTS, input='pfmTrans.cxx')
+  TargetAdd('pfm-trans.exe', input='pfm-trans_pfmTrans.obj')
+  TargetAdd('pfm-trans.exe', input='libprogbase.lib')
+  TargetAdd('pfm-trans.exe', input='libpandatoolbase.lib')
+  TargetAdd('pfm-trans.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('pfm-trans.exe', input='libp3pystub.dll')
+  TargetAdd('pfm-trans.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/lwo/
