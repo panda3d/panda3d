@@ -5173,6 +5173,7 @@ Provides: panda3d
 Conflicts: panda3d
 Replaces: panda3d
 Maintainer: rdb <me@rdb.name>
+Installed-Size: INSTSIZE
 Description: The Panda3D free 3D engine SDK
  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
@@ -5191,6 +5192,7 @@ Essential: no
 Depends: DEPENDS
 Provides: panda3d-runtime
 Maintainer: rdb <me@rdb.name>
+Installed-Size: INSTSIZE
 Description: Runtime binary and browser plugin for the Panda3D Game Engine
  This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
 
@@ -5330,6 +5332,7 @@ def MakeInstallerLinux():
         else:
             txt = INSTALLER_DEB_FILE[1:]
         txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
+        txt = txt.replace("INSTSIZE", GetDirectorySize("targetroot") / 1024)
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
