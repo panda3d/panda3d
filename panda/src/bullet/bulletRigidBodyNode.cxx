@@ -236,6 +236,11 @@ transform_changed() {
         shape->set_local_scale(scale);
       }
     }
+
+    // Activate the body if it has been sleeping
+    if (!_rigid->isActive()) {
+      _rigid->activate(true);
+    }
   }
 }
 
