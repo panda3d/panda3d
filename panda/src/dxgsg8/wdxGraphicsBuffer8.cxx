@@ -293,7 +293,7 @@ rebuild_bitplanes() {
     color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext8,
-            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
     if (color_ctx) {
       if (!color_ctx->create_texture(*_dxgsg->_screen)) {
         dxgsg8_cat.error()
@@ -348,7 +348,7 @@ rebuild_bitplanes() {
     depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext8,
-            depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            depth_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
     if (depth_ctx) {
       if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
         dxgsg8_cat.error()
@@ -434,7 +434,7 @@ select_cube_map(int cube_map_index) {
   if (color_tex) {
     color_ctx =
       DCAST(DXTextureContext8,
-            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
     if (!color_ctx->create_texture(*_dxgsg->_screen)) {
       dxgsg8_cat.error()
         << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
