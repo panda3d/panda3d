@@ -15,6 +15,8 @@
 #ifndef GET_TWIRL_DATA_H
 #define GET_TWIRL_DATA_H
 
+#include "stddef.h"
+
 static const int twirl_width = 48;
 static const int twirl_height = 48;
 static const int twirl_num_steps = 12;
