@@ -34,7 +34,8 @@
 
 #ifndef _WIN32
 #include <sys/select.h>
-#endif
+#include <sys/time.h>
+#endif  // _WIN32
 
 PPInstance::FileDatas PPInstance::_file_datas;
 
@@ -101,6 +102,13 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _hwnd = 0;
 #endif // _WIN32
 
+#ifndef _WIN32
+  // Save the startup time to improve precision of gettimeofday().
+  struct timeval tv;
+  gettimeofday(&tv, (struct timezone *)NULL);
+  _init_sec = tv.tv_sec;
+#endif  // !_WIN32
+
 #ifdef __APPLE__
   // Get the run loop in the browser thread.  (CFRunLoopGetMain() is
   // only 10.5 or higher.  Plus, the browser thread is not necessarily
@@ -109,7 +117,20 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   CFRetain(_run_loop_main);
   _request_timer = NULL;
   INIT_LOCK(_timer_lock);
+
+  // Also set up a timer to twirl the icon until the instance loads.
+  _twirl_timer = NULL;
+  CFRunLoopTimerContext timer_context;
+  memset(&timer_context, 0, sizeof(timer_context));
+  timer_context.info = this;
+  _twirl_timer = CFRunLoopTimerCreate
+    (NULL, 0, 0.1, 0, 0, st_twirl_timer_callback, &timer_context);
+  CFRunLoopAddTimer(_run_loop_main, _twirl_timer, kCFRunLoopCommonModes);
 #endif  // __APPLE__
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+  _got_twirl_images = false;
+#endif  // MACOSX_HAS_EVENT_MODELS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,6 +143,11 @@ PPInstance::
   cleanup_window();
 
 #ifdef __APPLE__
+  if (_twirl_timer != NULL) {
+    CFRunLoopTimerInvalidate(_twirl_timer);
+    CFRelease(_twirl_timer);
+    _twirl_timer = NULL;
+  }
   if (_request_timer != NULL) {
     CFRunLoopTimerInvalidate(_request_timer);
     CFRelease(_request_timer);
@@ -131,6 +157,10 @@ PPInstance::
   CFRelease(_run_loop_main);
   DESTROY_LOCK(_timer_lock);
 #endif  // __APPLE__
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+  osx_release_twirl_images();
+#endif  // MACOSX_HAS_EVENT_MODELS
 
   if (_p3d_inst != NULL) {
     P3D_instance_finish_ptr(_p3d_inst);
@@ -251,8 +281,8 @@ set_window(NPWindow *window) {
     assert(_window.window == window->window);
   }
 
-#ifdef _WIN32
   if (!_got_window) {
+#ifdef _WIN32
     _orig_window_proc = NULL;
     if (window->type == NPWindowTypeWindow) {
       // Save the window handle.
@@ -275,8 +305,11 @@ set_window(NPWindow *window) {
       // slips through.
       SetTimer(_hwnd, 1, 100, NULL);
     }
-  }
 #endif  // _WIN32
+#ifdef MACOSX_HAS_EVENT_MODELS
+    osx_get_twirl_images();
+#endif  // MACOSX_HAS_EVENT_MODELS
+  }
 
   _window = *window;
   _got_window = true;
@@ -810,11 +843,6 @@ bool PPInstance::
 handle_event(void *event) {
   bool retval = false;
 
-  if (_p3d_inst == NULL) {
-    // Ignore events that come in before we've launched the instance.
-    return retval;
-  }
-
   P3D_event_data edata;
   memset(&edata, 0, sizeof(edata));
   edata._event_type = _event_type;
@@ -831,12 +859,16 @@ handle_event(void *event) {
     NPCocoaEvent *np_event = (NPCocoaEvent *)event;
     P3DCocoaEvent *p3d_event = &edata._event._osx_cocoa._event;
     copy_cocoa_event(p3d_event, np_event, aux_data);
+    if (_got_window) {
+      handle_cocoa_event(p3d_event);
+    }
 #endif  // MACOSX_HAS_EVENT_MODELS
-
   }
 
-  if (P3D_instance_handle_event_ptr(_p3d_inst, &edata)) {
-    retval = true;
+  if (_p3d_inst != NULL) {
+    if (P3D_instance_handle_event_ptr(_p3d_inst, &edata)) {
+      retval = true;
+    }
   }
 
   return retval;
@@ -1650,6 +1682,15 @@ create_instance() {
     return;
   }
 
+#ifdef __APPLE__
+  // We no longer need to twirl the icon.  Stop the timer.
+  if (_twirl_timer != NULL) {
+    CFRunLoopTimerInvalidate(_twirl_timer);
+    CFRelease(_twirl_timer);
+    _twirl_timer = NULL;
+  }
+#endif  // __APPLE__
+
   P3D_token *tokens = NULL;
   if (!_tokens.empty()) {
     tokens = &_tokens[0];
@@ -2369,6 +2410,197 @@ make_ansi_string(wstring &result, NPNSString *ns_string) {
 }
 #endif  // MACOSX_HAS_EVENT_MODELS
 
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_cocoa_event
+//       Access: Private
+//  Description: Locally processes a Cocoa event for the window before
+//               sending it down to the Core API.  This is used for
+//               drawing a twirling icon in the window while the Core
+//               API is downloading.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_cocoa_event(const P3DCocoaEvent *p3d_event) {
+  switch (p3d_event->type) {
+  case P3DCocoaEventDrawRect:
+    if (!_started) {
+      CGContextRef context = p3d_event->data.draw.context;
+      paint_twirl_osx_cgcontext(context);
+    }
+    break;
+    
+  default:
+    break;
+  }
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::osx_get_twirl_images
+//       Access: Private
+//  Description: Fills _twirl_images with an array of images for
+//               drawing the twirling icon while we're waiting for the
+//               instance to load.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+osx_get_twirl_images() {
+  if (_got_twirl_images) {
+    return;
+  }
+  _got_twirl_images = true;
+
+  static const size_t twirl_size = twirl_width * twirl_height;
+  unsigned char twirl_data[twirl_size];
+
+  for (int step = 0; step < twirl_num_steps; ++step) {
+    get_twirl_data(twirl_data, twirl_size, step);
+
+    unsigned char *new_data = new unsigned char[twirl_size * 4];
+
+    // Replicate out the grayscale channels into RGBA.  Flip
+    // upside-down too.
+    for (int yi = 0; yi < twirl_height; ++yi) {
+      const unsigned char *sp = twirl_data + (twirl_height - 1 - yi) * twirl_width;
+      unsigned char *dp = new_data + yi * twirl_width * 4;
+      for (int xi = 0; xi < twirl_width; ++xi) {
+        dp[0] = sp[0];
+        dp[1] = sp[0];
+        dp[2] = sp[0];
+        dp[3] = (unsigned char)0xff;
+        sp += 1;
+        dp += 4;
+      }
+    }
+
+    OsxImageData &image = _twirl_images[step];
+    image._raw_data = new_data;
+
+    image._data =
+      CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data, 
+                                  twirl_size * 4, kCFAllocatorNull);
+    image._provider = CGDataProviderCreateWithCFData(image._data);
+    image._color_space = CGColorSpaceCreateDeviceRGB();
+    
+    image._image =
+      CGImageCreate(twirl_width, twirl_height, 8, 32, 
+                    twirl_width * 4, image._color_space,
+                    kCGImageAlphaFirst | kCGBitmapByteOrder32Little, 
+                    image._provider, NULL, false, kCGRenderingIntentDefault);
+  }
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::osx_release_twirl_images
+//       Access: Private
+//  Description: Frees the twirl_images array.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+osx_release_twirl_images() {
+  if (!_got_twirl_images) {
+    return;
+  }
+  _got_twirl_images = false;
+
+  for (int step = 0; step < twirl_num_steps; ++step) {
+    OsxImageData &image = _twirl_images[step];
+
+    if (image._image != NULL) {
+      CGImageRelease(image._image);
+      image._image = NULL;
+    }
+    if (image._color_space != NULL) {
+      CGColorSpaceRelease(image._color_space);
+      image._color_space = NULL;
+    }
+    if (image._provider != NULL) {
+      CGDataProviderRelease(image._provider);
+      image._provider = NULL;
+    }
+    if (image._data != NULL) {
+      CFRelease(image._data);
+      image._data = NULL;
+    }
+    if (image._raw_data != NULL) {
+      delete[] image._raw_data;
+      image._raw_data = NULL;
+    }
+  }
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::paint_twirl_osx_cgcontext
+//       Access: Private
+//  Description: Actually paints the twirling icon in the OSX window,
+//               using Core Graphics.  (We don't bother painting it in
+//               the older Cocoa interface.)
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+paint_twirl_osx_cgcontext(CGContextRef context) {
+  // Clear the whole region to white before beginning.
+  CGFloat bg_components[] = { 1, 1, 1, 1 };
+  CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
+  CGColorRef bg = CGColorCreate(rgb_space, bg_components);
+
+  CGRect region = { { 0, 0 }, { _window.width, _window.height } };
+  CGContextBeginPath(context);
+  CGContextSetFillColorWithColor(context, bg);
+  CGContextAddRect(context, region);
+  CGContextFillPath(context);
+
+  CGColorRelease(bg);
+  CGColorSpaceRelease(rgb_space);
+
+  struct timeval tv;
+  gettimeofday(&tv, (struct timezone *)NULL);
+  double now = (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
+  int step = ((int)(now * 10.0)) % twirl_num_steps;
+
+  osx_paint_image(context, _twirl_images[step]);
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::osx_paint_image
+//       Access: Private
+//  Description: Draws the indicated image, centered within the
+//               window.  Returns true on success, false if the image
+//               is not defined.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::
+osx_paint_image(CGContextRef context, const OsxImageData &image) {
+  if (image._image == NULL) {
+    return false;
+  }
+    
+  // Determine the relative size of image and window.
+  int win_cx = _window.width / 2;
+  int win_cy = _window.height / 2;
+
+  CGRect rect = { { 0, 0 }, { 0, 0 } };
+    
+  // The bitmap fits within the window; center it.
+      
+  // This is the top-left corner of the bitmap in window coordinates.
+  int p_x = win_cx - twirl_width / 2;
+  int p_y = win_cy - twirl_height / 2;
+  
+  rect.origin.x += p_x;
+  rect.origin.y += p_y;
+  rect.size.width = twirl_width;
+  rect.size.height = twirl_height;
+
+  CGContextDrawImage(context, rect, image._image);
+  
+  return true;
+}
+#endif  // MACOSX_HAS_EVENT_MODELS
+
 #ifdef __APPLE__
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::timer_callback
@@ -2389,6 +2621,36 @@ timer_callback(CFRunLoopTimerRef timer, void *info) {
   RELEASE_LOCK(self->_timer_lock);
 
   self->handle_request_loop();
+}
+#endif  // __APPLE__
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::st_twirl_timer_callback
+//       Access: Private, Static
+//  Description: OSX only: this callback is used to twirl the icon
+//               before the instance loads.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+st_twirl_timer_callback(CFRunLoopTimerRef timer, void *info) {
+  PPInstance *self = (PPInstance *)info;
+  self->twirl_timer_callback();
+}
+#endif  // __APPLE__
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::twirl_timer_callback
+//       Access: Private
+//  Description: OSX only: this callback is used to twirl the icon
+//               before the instance loads.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+twirl_timer_callback() {
+  if (_got_window) {
+    NPRect rect = { 0, 0, (unsigned short)_window.height, (unsigned short)_window.width };
+    browser->invalidaterect(_npp_instance, &rect);
+  }
 }
 #endif  // __APPLE__
 

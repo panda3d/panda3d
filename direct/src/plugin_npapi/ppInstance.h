@@ -123,10 +123,18 @@ private:
                                NPCocoaEvent *np_event,
                                EventAuxData &aux_data);
   static const wchar_t *make_ansi_string(wstring &result, NPNSString *ns_string);
+  void handle_cocoa_event(const P3DCocoaEvent *p3d_event);
+  void osx_get_twirl_images();
+  void osx_release_twirl_images();
+  void paint_twirl_osx_cgcontext(CGContextRef context);
+  class OsxImageData;
+  bool osx_paint_image(CGContextRef context, const OsxImageData &image);
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef __APPLE__
   static void timer_callback(CFRunLoopTimerRef timer, void *info);
+  static void st_twirl_timer_callback(CFRunLoopTimerRef timer, void *info);
+  void twirl_timer_callback();
 #endif  // __APPLE__
 
 private:
@@ -213,7 +221,25 @@ private:
   CFRunLoopRef _run_loop_main;
   CFRunLoopTimerRef _request_timer;
   LOCK _timer_lock;
+  CFRunLoopTimerRef _twirl_timer;
 #endif  // __APPLE__
+
+#ifdef MACOSX_HAS_EVENT_MODELS
+  class OsxImageData {
+  public:
+    unsigned char *_raw_data;
+    CFDataRef _data;
+    CGDataProviderRef _provider;
+    CGColorSpaceRef _color_space;
+    CGImageRef _image;
+  };
+  OsxImageData _twirl_images[twirl_num_steps];
+  bool _got_twirl_images;
+#endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifndef _WIN32
+  long _init_sec;
+#endif  // _WIN32
 
   bool _python_window_open;
 
