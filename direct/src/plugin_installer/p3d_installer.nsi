@@ -10,6 +10,7 @@
 !define UNINSTALL_CONFIRM "Are you sure you want to completely remove $(^Name) and all of its components?"
 !define UNINSTALL_LINK_NAME "Uninstall"
 !define WEBSITE_LINK_NAME "Website"
+!define PLID "@panda3d.org/Panda3D Runtime,version=0.0"
 
 !insertmacro GetOptions
 
@@ -39,7 +40,7 @@ SetCompressor lzma
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
-!define MUI_FINISHPAGE_NOAUTOCLOSE ;un-comment to put a pause after the file installation screen
+;!define MUI_FINISHPAGE_NOAUTOCLOSE ;un-comment to put a pause after the file installation screen
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_PAGE_FINISH
 
@@ -154,46 +155,13 @@ Function .onInstSuccess
  # Register ActiveX
  ExecWait 'regsvr32 /s "$INSTDIR/${OCX}"'
 
- # Install Mozilla Plugin
-
-StrCpy $1 "0"
-Mozilla-Install-Loop:
-  EnumRegKey $0 HKLM "SOFTWARE\Mozilla" "$1"
-  StrCmp $0 "" Mozilla-Install-End
-  IntOp $1 $1 + 1
-  ReadRegStr $2 HKLM "SOFTWARE\Mozilla\$0\Extensions" "Plugins"
- ${If} $2 != ""
-     CreateDirectory "$2"
-     CopyFiles $INSTDIR\${NPAPI} "$2"
-!ifdef NPAPI_DEP0
-     CopyFiles $INSTDIR\${NPAPI_DEP0} "$2"
-!endif
-!ifdef NPAPI_DEP1
-     CopyFiles $INSTDIR\${NPAPI_DEP1} "$2"
-!endif
-!ifdef NPAPI_DEP2
-     CopyFiles $INSTDIR\${NPAPI_DEP2} "$2"
-!endif
-!ifdef NPAPI_DEP3
-     CopyFiles $INSTDIR\${NPAPI_DEP3} "$2"
-!endif
-!ifdef NPAPI_DEP4
-     CopyFiles $INSTDIR\${NPAPI_DEP4} "$2"
-!endif
-!ifdef NPAPI_DEP5
-     CopyFiles $INSTDIR\${NPAPI_DEP5} "$2"
-!endif
-!ifdef NPAPI_DEP6
-     CopyFiles $INSTDIR\${NPAPI_DEP6} "$2"
-!endif
-!ifdef NPAPI_DEP7
-     CopyFiles $INSTDIR\${NPAPI_DEP7} "$2"
-!endif
- ${EndIf}
-
-  goto Mozilla-Install-Loop
-
-Mozilla-Install-End:
+ # Register Mozilla Plugin
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Description" "Runs 3-D games and interactive applets"
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Path" "$INSTDIR\${NPAPI}"
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "ProductName" "${PRODUCT_NAME_SHORT}"
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Vendor" "${PRODUCT_PUBLISHER}"
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Version" "${PRODUCT_VERSION}"
+ WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}\MimeTypes" "application/x-panda3d" ""
 
 FunctionEnd
 
@@ -231,6 +199,10 @@ Section Uninstall
   Delete "$INSTDIR\${DEP7}"
 !endif
 
+# The following loop uninstalls the plugin where it may have been
+# copied into one of the Mozilla Extensions dirs.  Older versions of
+# the installer would have done this, but now we just update the
+# registry to point to $INSTDIR.
 StrCpy $1 "0"
 Mozilla-Uninstall-Loop:
   EnumRegKey $0 HKLM "SOFTWARE\Mozilla" "$1"
@@ -244,6 +216,8 @@ Mozilla-Uninstall-Loop:
  ${EndIf}
   goto Mozilla-Uninstall-Loop
 Mozilla-Uninstall-End:
+
+  DeleteRegKey HKLM "SOFTWARE\MozillaPlugins\${PLID}"
 
   ${unregisterExtension} ".p3d" "Panda3D applet"
 
