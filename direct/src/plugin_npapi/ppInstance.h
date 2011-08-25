@@ -19,6 +19,7 @@
 #include "fileSpec.h"
 #include "get_tinyxml.h"
 #include "p3d_lock.h"
+#include "get_twirl_data.h"
 
 #include <vector>
 
@@ -105,7 +106,10 @@ private:
 
 #ifdef _WIN32
   static LONG 
-  window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  void win_get_twirl_bitmaps();
+  void win_paint_twirl(HWND hwnd, HDC dc);
 #endif  // _WIN32
 
   class EventAuxData {
@@ -201,6 +205,8 @@ private:
   NPWindow _window;
 #ifdef _WIN32
   LONG_PTR _orig_window_proc;
+  HWND _hwnd;
+  HBITMAP _twirl_bitmaps[twirl_num_steps];
 #endif  // _WIN32
 
 #ifdef __APPLE__

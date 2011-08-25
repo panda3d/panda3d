@@ -181,7 +181,8 @@
     find_root_dir.cxx find_root_dir.h \
     $[if $[IS_OSX],find_root_dir_assist.mm] \
     is_pathsep.h is_pathsep.I \
-    mkdir_complete.cxx mkdir_complete.h
+    mkdir_complete.cxx mkdir_complete.h \
+    get_twirl_data.cxx get_twirl_data.h
 
 #begin static_lib_target
 //

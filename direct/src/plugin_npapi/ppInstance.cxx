@@ -97,6 +97,9 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
 
   _got_window = false;
   _python_window_open = false;
+#ifdef _WIN32
+  _hwnd = 0;
+#endif // _WIN32
 
 #ifdef __APPLE__
   // Get the run loop in the browser thread.  (CFRunLoopGetMain() is
@@ -252,15 +255,25 @@ set_window(NPWindow *window) {
   if (!_got_window) {
     _orig_window_proc = NULL;
     if (window->type == NPWindowTypeWindow) {
-      // Subclass the window to make it call our own window_proc instead
-      // of whatever window_proc it has already.  This is just a dopey
-      // trick to allow us to poll events in the main thread.
-      HWND hwnd = (HWND)window->window;
-      _orig_window_proc = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
+      // Save the window handle.
+      _hwnd = (HWND)window->window;
 
-      // Also set a timer to go off every once in a while, just in
-      // case something slips through.
-      SetTimer(hwnd, 1, 1000, NULL);
+      // Now that we've got a window handle, we can go get the
+      // twirling icon images.
+      win_get_twirl_bitmaps();
+
+      // Subclass the window to make it call our own window_proc
+      // instead of whatever window_proc it has already.  This is
+      // mainly just a dopey trick to allow us to poll events in the
+      // main thread, but we also rely on this to paint the twirling
+      // icon into the browser window.
+      SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+      _orig_window_proc = SetWindowLongPtr(_hwnd, GWL_WNDPROC, (LONG_PTR)st_window_proc);
+
+      // Also set a timer to go off every once in a while, to update
+      // the twirling icon, and also to catch events in case something
+      // slips through.
+      SetTimer(_hwnd, 1, 100, NULL);
     }
   }
 #endif  // _WIN32
@@ -2043,9 +2056,32 @@ browser_sync_callback(void *) {
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::window_proc
+//     Function: PPInstance::st_window_proc
 //       Access: Private, Static
 //  Description: We bind this function to the parent window we were
+//               given in set_window, so we can spin the request_loop
+//               when needed.  This is only in the Windows case; other
+//               platforms rely on explicit windows events.
+////////////////////////////////////////////////////////////////////
+LONG PPInstance::
+st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  LONG_PTR self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+  if (self == NULL) {
+    // We haven't assigned the pointer yet (!?)
+    return DefWindowProc(hwnd, msg, wparam, lparam);
+  }
+
+  return ((PPInstance *)self)->window_proc(hwnd, msg, wparam, lparam);
+}
+#endif  // _WIN32
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::window_proc
+//       Access: Private
+//  Description: The non-static window_proc() function.
+//
+//               We bind this function to the parent window we were
 //               given in set_window, so we can spin the request_loop
 //               when needed.  This is only in the Windows case; other
 //               platforms rely on explicit windows events.
@@ -2064,13 +2100,134 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // Eat the WM_ERASEBKGND message, so the browser's intervening
     // window won't overdraw on top of our own window.
     return true;
+    
+  case WM_PAINT:
+    if (!_started) {
+      // If we haven't yet loaded the instance, we can paint a
+      // twirling icon in the window.
+      PAINTSTRUCT ps;
+      HDC dc = BeginPaint(hwnd, &ps);
+      win_paint_twirl(hwnd, dc);
+      EndPaint(hwnd, &ps);
+    }
+    return true;
 
   case WM_TIMER:
+    if (!_started) {
+      InvalidateRect(_hwnd, NULL, FALSE);
+    }
+    break;
+
   case WM_USER:
     break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+#endif  // _WIN32
+
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::win_get_twirl_bitmaps
+//       Access: Private
+//  Description: Fills _twirl_bitmaps with an array of bitmaps for
+//               drawing the twirling icon while we're waiting for the
+//               instance to load.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+win_get_twirl_bitmaps() {
+  BITMAPINFOHEADER bmih;
+  bmih.biSize = sizeof(bmih);
+  bmih.biWidth = twirl_width;
+  bmih.biHeight = -twirl_height;
+  bmih.biPlanes = 1;
+  bmih.biBitCount = 32;
+  bmih.biCompression = BI_RGB;
+  bmih.biSizeImage = 0;
+  bmih.biXPelsPerMeter = 0;
+  bmih.biYPelsPerMeter = 0;
+  bmih.biClrUsed = 0;
+  bmih.biClrImportant = 0;
+
+  BITMAPINFO bmi;
+  memcpy(&bmi, &bmih, sizeof(bmih));
+
+  HDC dc = GetDC(_hwnd);
+
+  static const size_t twirl_size = twirl_width * twirl_height;
+  unsigned char twirl_data[twirl_size];
+  unsigned char new_data[twirl_size * 4];
+
+  for (int step = 0; step < twirl_num_steps; ++step) {
+    get_twirl_data(twirl_data, twirl_size, step);
+
+    // Replicate out the grayscale channels into RGBA.
+    for (int yi = 0; yi < twirl_height; ++yi) {
+      const unsigned char *sp = twirl_data + yi * twirl_width;
+      unsigned char *dp = new_data + yi * twirl_width * 4;
+      for (int xi = 0; xi < twirl_width; ++xi) {
+        dp[0] = sp[0];
+        dp[1] = sp[0];
+        dp[2] = sp[0];
+        dp[3] = (unsigned char)0xff;
+        sp += 1;
+        dp += 4;
+      }
+    }
+
+    // Now load the image.
+    _twirl_bitmaps[step] = CreateDIBitmap(dc, &bmih, CBM_INIT, (const char *)new_data, &bmi, 0);
+  }
+
+  ReleaseDC(_hwnd, dc);
+}
+#endif  // _WIN32
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::win_paint_twirl
+//       Access: Private
+//  Description: Paints the twirling icon into the browser window
+//               before the instance has started.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+win_paint_twirl(HWND hwnd, HDC dc) {
+  RECT rect;
+  GetClientRect(_hwnd, &rect);
+  int width = rect.right - rect.left;
+  int height = rect.bottom - rect.top;
+
+  // Double-buffer with an offscreen bitmap first.
+  HDC bdc = CreateCompatibleDC(dc);
+  HBITMAP buffer = CreateCompatibleBitmap(dc, width, height);
+  SelectObject(bdc, buffer);
+
+  // Start by painting the background color.
+  FillRect(bdc, &rect, WHITE_BRUSH);
+
+  if (!_started && !_failed) {
+    // Which frame are we drawing?
+    DWORD now = GetTickCount();
+    int step = (now / 100) % twirl_num_steps;
+    
+    HBITMAP twirl = _twirl_bitmaps[step];
+    
+    int left = rect.left + (width - twirl_width) / 2;
+    int top = rect.top + (height - twirl_height) / 2;
+    
+    HDC mem_dc = CreateCompatibleDC(bdc);
+    SelectObject(mem_dc, twirl);
+    
+    BitBlt(bdc, left, top, twirl_width, twirl_height,
+           mem_dc, 0, 0, SRCCOPY);
+    
+    SelectObject(mem_dc, NULL);
+    DeleteDC(mem_dc);
+  }
+
+  // Now blit the buffer to the window.
+  BitBlt(dc, 0, 0, width, height, bdc, 0, 0, SRCCOPY);
 }
 #endif  // _WIN32
 
