@@ -16,6 +16,8 @@
 #include "bulletRigidBodyNode.h"
 #include "bulletGhostNode.h"
 
+#include "geomLines.h"
+#include "geomTriangles.h"
 #include "geomVertexRewriter.h"
 
 PT(InternalName) BulletHelper::_sb_index;
