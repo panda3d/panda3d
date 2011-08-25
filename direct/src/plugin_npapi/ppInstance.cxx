@@ -130,7 +130,8 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _got_window = false;
   _python_window_open = false;
 #ifdef _WIN32
-  _hwnd = 0;
+  _hwnd = NULL;
+  _bg_brush = NULL;
 #endif // _WIN32
 
 #ifndef _WIN32
@@ -328,6 +329,8 @@ set_window(NPWindow *window) {
       // Now that we've got a window handle, we can go get the
       // twirling icon images.
       win_get_twirl_bitmaps();
+
+      _bg_brush = CreateSolidBrush(RGB(_bgcolor_r, _bgcolor_g, _bgcolor_b));
 
       // Subclass the window to make it call our own window_proc
       // instead of whatever window_proc it has already.  This is
@@ -1901,6 +1904,18 @@ cleanup_window() {
     HWND hwnd = (HWND)_window.window;
     SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
     InvalidateRect(hwnd, NULL, true);
+
+    if (_bg_brush != NULL) {
+      DeleteObject(_bg_brush);
+      _bg_brush = NULL;
+    }
+    for (int step = 0; step < twirl_num_steps; ++step) {
+      if (_twirl_bitmaps[step] != NULL) {
+        DeleteObject(_twirl_bitmaps[step]);
+        _twirl_bitmaps[step] = NULL;
+      }
+    }
+
 #endif  // _WIN32
     _got_window = false;
   }
@@ -2266,9 +2281,10 @@ win_get_twirl_bitmaps() {
       const unsigned char *sp = twirl_data + yi * twirl_width * 3;
       unsigned char *dp = new_data + yi * twirl_width * 4;
       for (int xi = 0; xi < twirl_width; ++xi) {
-        dp[0] = sp[0];
+        // RGB <= BGR.
+        dp[0] = sp[2];
         dp[1] = sp[1];
-        dp[2] = sp[2];
+        dp[2] = sp[0];
         dp[3] = (unsigned char)0xff;
         sp += 3;
         dp += 4;
@@ -2303,7 +2319,7 @@ win_paint_twirl(HWND hwnd, HDC dc) {
   SelectObject(bdc, buffer);
 
   // Start by painting the background color.
-  FillRect(bdc, &rect, WHITE_BRUSH);
+  FillRect(bdc, &rect, _bg_brush);
 
   if (!_started && !_failed) {
     // Which frame are we drawing?

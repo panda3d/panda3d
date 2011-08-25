@@ -220,6 +220,7 @@ private:
   LONG_PTR _orig_window_proc;
   HWND _hwnd;
   HBITMAP _twirl_bitmaps[twirl_num_steps];
+  HBRUSH _bg_brush;
 #endif  // _WIN32
 
 #ifdef __APPLE__
