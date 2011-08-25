@@ -210,6 +210,12 @@ begin() {
     set_failed();
     return;
   }
+#else
+  // While Safari 5 on Mac claims to provide this function, it doesn't
+  // appear to work. (!)  So we pretend we never have it on Mac.
+  // Fortunately, this hack does us no harm because the _request_timer
+  // hack works fine on OSX.
+  has_plugin_thread_async_call = false;
 #endif  // __APPLE__
 
   string url = PANDA_PACKAGE_HOST_URL;

@@ -3864,6 +3864,7 @@ add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 send_notify(const string &message) {
+  nout << "send_notify(" << message << ")\n";
   P3D_request *request = new P3D_request;
   request->_instance = NULL;
   request->_request_type = P3D_RT_notify;
