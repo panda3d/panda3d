@@ -5332,7 +5332,7 @@ def MakeInstallerLinux():
         else:
             txt = INSTALLER_DEB_FILE[1:]
         txt = txt.replace("VERSION", DEBVERSION).replace("ARCH", ARCH).replace("PV", PV).replace("MAJOR", MAJOR_VERSION)
-        txt = txt.replace("INSTSIZE", GetDirectorySize("targetroot") / 1024)
+        txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024))
         oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         if (not RUNTIME):
