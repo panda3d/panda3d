@@ -67,7 +67,7 @@ zlib_decompress(istream &source) {
   while (result == Z_BUF_ERROR) {
     dest_len *= 2;
     cerr << "Increasing buffer size to " << dest_len << "\n";
-    dest = PANDA_REALLOC_ARRAY(dest, dest_len);
+    dest = (char *)PANDA_REALLOC_ARRAY(dest, dest_len);
 
     actual_dest_len = dest_len;
     result = uncompress((Bytef *)dest, &actual_dest_len, 

@@ -254,7 +254,7 @@ main() {
 
   // Testing PointerToArray.
 
-  PointerToArray<int> iarray(10);
+  PointerToArray<int> iarray = PointerToArray<int>::empty_array(10);
   memset(iarray, 0, sizeof(int)*10);
 
   for (int i = 0; i < 10; i++) {

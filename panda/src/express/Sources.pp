@@ -220,7 +220,7 @@
 
   #define TARGET make_ca_bundle
   #define LOCAL_LIBS $[LOCAL_LIBS] express
-  #define OTHER_LIBS pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     make_ca_bundle.cxx
@@ -231,7 +231,7 @@
 #begin test_bin_target
   #define TARGET test_types
   #define LOCAL_LIBS $[LOCAL_LIBS] express
-  #define OTHER_LIBS pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m prc:c dtoolconfig:m pystub
 
   #define SOURCES \
     test_types.cxx
@@ -246,7 +246,7 @@
     test_ordered_vector.cxx
 
   #define LOCAL_LIBS $[LOCAL_LIBS] putil
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m prc:c dtoolconfig:m pystub
 
 #end test_bin_target
 
@@ -256,7 +256,7 @@
   #define TARGET test_zstream
   #define USE_PACKAGES zlib
   #define LOCAL_LIBS $[LOCAL_LIBS] express
-  #define OTHER_LIBS dtoolutil:c dtool:m pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m prc:c dtoolconfig:m pystub
 
   #define SOURCES \
     test_zstream.cxx
