@@ -795,8 +795,9 @@ def CompileCxx(obj,src,opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if int(platform.mac_ver()[0][3]) >= 6:
-                cmd += " -arch i386" # 64-bits doesn't work well yet
+            # platform.architecture isn't reliable on OSX.
+            if sys.maxint > 0x100000000L:
+                cmd += " -arch x86_64"
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
@@ -878,10 +879,9 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
         cmd += ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
-    #FIXME: allow 64-bits on OSX
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit") and (sys.platform!="darwin"):
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit" or sys.platform=="darwin"):
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
@@ -1042,7 +1042,7 @@ def CompileLink(dll, obj, opts):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
             if int(platform.mac_ver()[0][3]) >= 6:
-                cmd += " -arch i386" # 64-bits doesn't work well yet
+                cmd += " -arch x86_64"
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
@@ -3808,6 +3808,8 @@ if (RTDIST or RUNTIME):
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
+  TargetAdd('plugin_parse_color.obj', opts=OPTS, input='parse_color.cxx')
+  TargetAdd('plugin_get_twirl_data.obj', opts=OPTS, input='get_twirl_data.cxx')
   TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
   if (sys.platform == "darwin"):
     TargetAdd('plugin_find_root_dir_assist.obj', opts=OPTS, input='find_root_dir_assist.mm')
@@ -3819,6 +3821,7 @@ if (RTDIST or RUNTIME):
     for fname in ["p3d_plugin.dll", "libp3d_plugin_static.ilb"]:
       TargetAdd(fname, input='plugin_plugin.obj')
       TargetAdd(fname, input='plugin_mkdir_complete.obj')
+      TargetAdd(fname, input='plugin_parse_color.obj')
       TargetAdd(fname, input='plugin_find_root_dir.obj')
       if (sys.platform == "darwin"):
         TargetAdd(fname, input='plugin_find_root_dir_assist.obj')
@@ -3830,6 +3833,7 @@ if (RTDIST or RUNTIME):
       if (sys.platform == "darwin"):
         TargetAdd(fname, input='libsubprocbuffer.ilb')
       TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+    TargetAdd("libp3d_plugin_static.lib", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
