@@ -20,6 +20,7 @@
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
+#include "parse_color.h"
 #include "nppanda3d_common.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
@@ -95,6 +96,36 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _p3d_temp_file_current_size = 0;
   _p3d_temp_file_total_size = 0;
   _p3d_instance_id = 0;
+
+  // fgcolor and bgcolor are useful to know here (in case we have to
+  // draw a twirling icon).
+
+  // The default fgcolor is white.
+  _bgcolor_r = _bgcolor_g = _bgcolor_b = 0xff;
+  if (has_token("bgcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, lookup_token("bgcolor"))) {
+      _bgcolor_r = r;
+      _bgcolor_g = g;
+      _bgcolor_b = b;
+    }
+  }
+
+  // The default fgcolor is either black or white, according to the
+  // brightness of the bgcolor.
+  if (_bgcolor_r + _bgcolor_g + _bgcolor_b > 0x80 + 0x80 + 0x80) {
+    _fgcolor_r = _fgcolor_g = _fgcolor_b = 0x00;
+  } else {
+    _fgcolor_r = _fgcolor_g = _fgcolor_b = 0xff;
+  }
+  if (has_token("fgcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, lookup_token("fgcolor"))) {
+      _fgcolor_r = r;
+      _fgcolor_g = g;
+      _fgcolor_b = b;
+    }
+  }
 
   _got_window = false;
   _python_window_open = false;
@@ -1928,6 +1959,25 @@ lookup_token(const string &keyword) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::has_token
+//       Access: Public
+//  Description: Returns true if the named token appears in the list,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::
+has_token(const string &keyword) const {
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    if ((*ti)._keyword == keyword) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::compare_seq
 //       Access: Private, Static
 //  Description: Compares the two dotted-integer sequence values
@@ -2203,22 +2253,24 @@ win_get_twirl_bitmaps() {
   HDC dc = GetDC(_hwnd);
 
   static const size_t twirl_size = twirl_width * twirl_height;
-  unsigned char twirl_data[twirl_size];
+  unsigned char twirl_data[twirl_size * 3];
   unsigned char new_data[twirl_size * 4];
 
   for (int step = 0; step < twirl_num_steps; ++step) {
-    get_twirl_data(twirl_data, twirl_size, step);
+    get_twirl_data(twirl_data, twirl_size, step,
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _bgcolor_r, _bgcolor_g, _bgcolor_b);
 
-    // Replicate out the grayscale channels into RGBA.
+    // Expand out the RGB channels into RGBA.
     for (int yi = 0; yi < twirl_height; ++yi) {
-      const unsigned char *sp = twirl_data + yi * twirl_width;
+      const unsigned char *sp = twirl_data + yi * twirl_width * 3;
       unsigned char *dp = new_data + yi * twirl_width * 4;
       for (int xi = 0; xi < twirl_width; ++xi) {
         dp[0] = sp[0];
-        dp[1] = sp[0];
-        dp[2] = sp[0];
+        dp[1] = sp[1];
+        dp[2] = sp[2];
         dp[3] = (unsigned char)0xff;
-        sp += 1;
+        sp += 3;
         dp += 4;
       }
     }
@@ -2457,24 +2509,26 @@ osx_get_twirl_images() {
   _got_twirl_images = true;
 
   static const size_t twirl_size = twirl_width * twirl_height;
-  unsigned char twirl_data[twirl_size];
+  unsigned char twirl_data[twirl_size * 3];
 
   for (int step = 0; step < twirl_num_steps; ++step) {
-    get_twirl_data(twirl_data, twirl_size, step);
+    get_twirl_data(twirl_data, twirl_size, step,
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _bgcolor_r, _bgcolor_g, _bgcolor_b);
 
     unsigned char *new_data = new unsigned char[twirl_size * 4];
 
-    // Replicate out the grayscale channels into RGBA.  Flip
-    // upside-down too.
+    // Expand the RGB channels into RGBA.  Flip upside-down too.
     for (int yi = 0; yi < twirl_height; ++yi) {
-      const unsigned char *sp = twirl_data + (twirl_height - 1 - yi) * twirl_width;
+      const unsigned char *sp = twirl_data + (twirl_height - 1 - yi) * twirl_width * 3;
       unsigned char *dp = new_data + yi * twirl_width * 4;
       for (int xi = 0; xi < twirl_width; ++xi) {
-        dp[0] = sp[0];
-        dp[1] = sp[0];
+        // RGB <= BGR.
+        dp[0] = sp[2];
+        dp[1] = sp[1];
         dp[2] = sp[0];
         dp[3] = (unsigned char)0xff;
-        sp += 1;
+        sp += 3;
         dp += 4;
       }
     }
@@ -2547,8 +2601,8 @@ osx_release_twirl_images() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 paint_twirl_osx_cgcontext(CGContextRef context) {
-  // Clear the whole region to white before beginning.
-  CGFloat bg_components[] = { 1, 1, 1, 1 };
+  // Clear the whole region to the bgcolor before beginning.
+  CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
   CGColorRef bg = CGColorCreate(rgb_space, bg_components);
 

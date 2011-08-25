@@ -689,19 +689,25 @@ static const unsigned char * const twirl_data[3] = {
 ////////////////////////////////////////////////////////////////////
 //     Function: get_twirl_data
 //  Description: Fills the indicated data array with a string of
-//               twirl_width * twirl_height bytes, representing the
-//               grayscale pixel values of the twirl_width x
+//               twirl_width * twirl_height * 3 bytes, representing
+//               the RGB pixel values of the twirl_width x
 //               twirl_height image at frame number step of
-//               twirl_num_steps frames.  Returns true on success,
-//               false on failure.
+//               twirl_num_steps frames.  The specified fg and bg
+//               colors are applied to the array appropriately.
+//
+//               Returns true on success, false on failure.  On false,
+//               the array is initialized with zero.
 //
 //               You must pass data_length = twirl_width *
-//               twirl_height; this value is passed as a sanity check
-//               on array size.  You should pass step so that 0 <=
-//               step < twirl_num_steps.
+//               twirl_height * 3; this value is passed as a sanity
+//               check on array size.  You should pass step so that 0
+//               <= step < twirl_num_steps.
 ////////////////////////////////////////////////////////////////////
 bool
-get_twirl_data(unsigned char data[], size_t data_length, int step) {
+get_twirl_data(unsigned char data[], size_t data_length, int step,
+               int fg_r, int fg_g, int fg_b,
+               int bg_r, int bg_g, int bg_b) {
+
   if (step < 0 || step >= twirl_num_steps) {
     memset(data, 0, data_length);
     return false;
@@ -715,6 +721,7 @@ get_twirl_data(unsigned char data[], size_t data_length, int step) {
   const unsigned char *in_data = twirl_data[flip._index];
 
   for (int yi = 0; yi < twirl_height; ++yi) {
+    const unsigned char *sp = &in_data[yi * twirl_width];
     for (int xi = 0; xi < twirl_width; ++xi) {
       int xo = xi;
       int yo = yi;
@@ -729,8 +736,15 @@ get_twirl_data(unsigned char data[], size_t data_length, int step) {
         xo = yo;
         yo = t;
       }
+      unsigned char *dp = &data[yo * twirl_width * 3];
+      dp += 3 * xo;
 
-      data[yo * twirl_width + xo] = in_data[yi * twirl_width + xi];
+      double t = (double)(*sp) / 255.0;
+      ++sp;
+
+      dp[0] = (unsigned char)(fg_r + t * (bg_r - fg_r));
+      dp[1] = (unsigned char)(fg_g + t * (bg_g - fg_g));
+      dp[2] = (unsigned char)(fg_b + t * (bg_b - fg_b));
     }
   }
 

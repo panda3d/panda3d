@@ -96,6 +96,7 @@ private:
   bool copy_file(const string &from_filename, const string &to_filename);
 
   string lookup_token(const string &keyword) const;
+  bool has_token(const string &keyword) const;
   static int compare_seq(const string &seq_a, const string &seq_b);
   static int compare_seq_int(const char *&num_a, const char *&num_b);
 
@@ -145,6 +146,10 @@ private:
   typedef vector<P3D_token> Tokens;
   Tokens _tokens;
 
+  // Set from fgcolor & bgcolor.
+  int _fgcolor_r, _fgcolor_b, _fgcolor_g;
+  int _bgcolor_r, _bgcolor_b, _bgcolor_g;
+  
   string _root_dir;
   string _standard_url_prefix;
   string _download_url_prefix;

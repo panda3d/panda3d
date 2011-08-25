@@ -1,5 +1,5 @@
-// Filename: get_twirl_data.h
-// Created by:  drose (24Aug11)
+// Filename: parse_color.h
+// Created by:  drose (25Aug11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,18 +12,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GET_TWIRL_DATA_H
-#define GET_TWIRL_DATA_H
+#ifndef PARSE_COLOR_H
+#define PARSE_COLOR_H
 
-#include <stddef.h>
+#include <string>
+using namespace std;
 
-static const int twirl_width = 48;
-static const int twirl_height = 48;
-static const int twirl_num_steps = 12;
-
-bool get_twirl_data(unsigned char data[], size_t data_length, int step,
-                    int fg_r, int fg_g, int fg_b,
-                    int bg_r, int bg_g, int bg_b);
+bool parse_color(int &r, int &g, int &b, const string &color);
 
 #endif
 

@@ -220,9 +220,6 @@ private:
 
   void send_notify(const string &message);
 
-  static bool parse_color(int &r, int &g, int &b, const string &color);
-  static bool parse_hexdigit(int &result, char digit);
-
 #ifdef __APPLE__
   void alloc_swbuffer();
   void free_swbuffer();
