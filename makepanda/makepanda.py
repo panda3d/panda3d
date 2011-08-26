@@ -1617,6 +1617,7 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
         plugin_config["P3D_COREAPI_VERSION_STR"] = COREAPI_VERSION
+        plugin_config["P3D_PLUGIN_VERSION_STR"] = PLUGIN_VERSION
 
     if (RUNTIME):
         dtool_config["HAVE_P3D_PLUGIN"] = '1'
