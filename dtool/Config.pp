@@ -792,11 +792,13 @@
 #defer HAVE_AWESOMIUM $[libtest $[AWESOMIUM_LPATH],$[AWESOMIUM_LIBS]]
 
 // Mozilla's so-called Gecko SDK, a.k.a. Xulrunner SDK, implements
-// NPAPI, Mozilla's semi-standard API to build a web plugin for
-// Firefox and other Mozilla-based browsers.
+// NPAPI.  So does the OSX WebKit framework.  Either implementation
+// can be used to build a web plugin for Firefox, Safari, Chrome, and
+// other non-Microsoft browsers.
 #define NPAPI_IPATH
 #define NPAPI_LPATH
 #define NPAPI_LIBS
+#define NPAPI_FRAMEWORK
 #define HAVE_NPAPI
 
 #define HAVE_ACTIVEX $[WINDOWS_PLATFORM]

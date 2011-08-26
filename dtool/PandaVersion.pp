@@ -34,15 +34,15 @@
 // PANDA_PACKAGE_VERSION, because it is anticipated that this plugin
 // code, once settled, will need to be updated much less frequently
 // than Panda itself.
-#define P3D_PLUGIN_VERSION 1 0 3
+#define P3D_PLUGIN_VERSION 1 0 4
 
 // Finally, there's a separate version number for the Core API.  At
 // first, we didn't believe we needed a Core API version number, but
 // in this belief we were naive.  This version number is a little less
 // strict in its format requirements than P3D_PLUGIN_VERSION, above,
 // and it doesn't necessarily consist of a specific number of
-// integers, but by convention it will consist of four integers, and
-// with the first three matching the plugin version, and the fourth
-// integer being incremented with each new Core API revision.
-#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 3
+// integers, but by convention it will consist of four integers, with
+// the first three matching the plugin version, and the fourth integer
+// being incremented with each new Core API revision.
+#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 1
 
