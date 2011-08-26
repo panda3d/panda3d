@@ -22,7 +22,10 @@ TypeHandle BulletHingeConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::Constructor
 //       Access: Published
-//  Description:
+//  Description: Creates a hinge constraint in the same way as the
+//               other constructor, but uses the world as second
+//               body so that node_a is fixed to some point in
+//               mid-air for example.
 ////////////////////////////////////////////////////////////////////
 BulletHingeConstraint::
 BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
@@ -40,7 +43,13 @@ BulletHingeConstraint(const BulletRigidBodyNode *node_a,
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::Constructor
 //       Access: Published
-//  Description:
+//  Description: Creates a hinge connecting node_a to node_b. The
+//               pivot point is the point at which the body is fixed
+//               to the constraint. In other words: It specifies
+//               where on each body the rotation axis should be. This
+//               axis is specified using axis_a and axis_b.
+//               Remember, everything is specified in the bodies own
+//               coordinate system!
 ////////////////////////////////////////////////////////////////////
 BulletHingeConstraint::
 BulletHingeConstraint(const BulletRigidBodyNode *node_a,
@@ -98,7 +107,8 @@ get_angular_only() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::set_limit
 //       Access: Published
-//  Description:
+//  Description: Sets the lower and upper rotational limits in
+//               degrees.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
 set_limit(float low, float high, float softness, float bias, float relaxation) {
@@ -112,7 +122,8 @@ set_limit(float low, float high, float softness, float bias, float relaxation) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::set_axis
 //       Access: Published
-//  Description:
+//  Description: Sets the hinge's rotation axis in world
+//               coordinates.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
 set_axis(const LVector3f &axis) {
@@ -126,7 +137,7 @@ set_axis(const LVector3f &axis) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::get_lower_limit
 //       Access: Published
-//  Description:
+//  Description: Returns the lower angular limit in degrees.
 ////////////////////////////////////////////////////////////////////
 float BulletHingeConstraint::
 get_lower_limit() const {
@@ -137,7 +148,7 @@ get_lower_limit() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::get_upper_limit
 //       Access: Published
-//  Description:
+//  Description: Returns the upper angular limit in degrees.
 ////////////////////////////////////////////////////////////////////
 float BulletHingeConstraint::
 get_upper_limit() const {
@@ -148,7 +159,8 @@ get_upper_limit() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::get_hinge_angle
 //       Access: Published
-//  Description:
+//  Description: Returns the angle between node_a and node_b in
+//               degrees.
 ////////////////////////////////////////////////////////////////////
 float BulletHingeConstraint::
 get_hinge_angle() {
@@ -159,7 +171,11 @@ get_hinge_angle() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::enable_angular_motor
 //       Access: Published
-//  Description:
+//  Description: Applies an impulse to the constraint so that the
+//               angle changes at target_velocity (probably
+//               degrees/second) where max_impulse is the maximum
+//               impulse that is used for achieving the specified
+//               velocity.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
 enable_angular_motor(bool enable, float target_velocity, float max_impulse) {
@@ -181,7 +197,8 @@ enable_motor(bool enable) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::set_max_motor_impulse
 //       Access: Published
-//  Description:
+//  Description: Sets the maximum impulse used to achieve the
+//               velocity set in enable_angular_motor.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
 set_max_motor_impulse(float max_impulse) {

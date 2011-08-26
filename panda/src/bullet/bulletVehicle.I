@@ -38,7 +38,10 @@ get_vehicle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_tuning
 //       Access: Published
-//  Description:
+//  Description: Returns a reference to the BulletVehicleTuning
+//               object of this vehicle which offers various
+//               vehicle-global tuning options. Make sure to
+//               configure this before adding wheels!
 ////////////////////////////////////////////////////////////////////
 BulletVehicleTuning &BulletVehicle::
 get_tuning() {
@@ -49,7 +52,7 @@ get_tuning() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_num_wheels
 //       Access: Published
-//  Description:
+//  Description: Returns the number of wheels this vehicle has.
 ////////////////////////////////////////////////////////////////////
 INLINE int BulletVehicle::
 get_num_wheels() const {

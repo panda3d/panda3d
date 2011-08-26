@@ -22,7 +22,8 @@ TypeHandle BulletVehicle::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::Constructor
 //       Access: Published
-//  Description:
+//  Description: Creates a new BulletVehicle instance in the given
+//               world and with a chassis node.
 ////////////////////////////////////////////////////////////////////
 BulletVehicle::
 BulletVehicle(BulletWorld *world, BulletRigidBodyNode *chassis) {
@@ -38,7 +39,8 @@ BulletVehicle(BulletWorld *world, BulletRigidBodyNode *chassis) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::set_coordinate_system
 //       Access: Published
-//  Description:
+//  Description: Specifies which axis is "up". Nessecary for the
+//               vehicle's suspension to work properly!
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
 set_coordinate_system(BulletUpAxis up) {
@@ -62,7 +64,9 @@ set_coordinate_system(BulletUpAxis up) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_forward_vector
 //       Access: Published
-//  Description:
+//  Description: Returns the forward vector representing the car's
+//               actual direction of movement. The forward vetcor
+//               is given in global coordinates.
 ////////////////////////////////////////////////////////////////////
 LVector3f BulletVehicle::
 get_forward_vector() const {
@@ -73,7 +77,8 @@ get_forward_vector() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_chassis
 //       Access: Published
-//  Description:
+//  Description: Returns the chassis of this vehicle. The chassis
+//               is a rigid body node.
 ////////////////////////////////////////////////////////////////////
 BulletRigidBodyNode *BulletVehicle::
 get_chassis() {
@@ -85,7 +90,8 @@ get_chassis() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_current_speed_km_hour
 //       Access: Published
-//  Description:
+//  Description: Returns the current speed in kilometers per hour.
+//               Convert to miles using: km/h * 0.62 = mph
 ////////////////////////////////////////////////////////////////////
 float BulletVehicle::
 get_current_speed_km_hour() const {
@@ -96,7 +102,7 @@ get_current_speed_km_hour() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::reset_suspension
 //       Access: Published
-//  Description:
+//  Description: Resets the vehicle's suspension.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
 reset_suspension() {
@@ -107,7 +113,8 @@ reset_suspension() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_steering_value
 //       Access: Published
-//  Description:
+//  Description: Returns the steering angle of the wheel with index
+//               idx in degrees.
 ////////////////////////////////////////////////////////////////////
 float BulletVehicle::
 get_steering_value(int idx) const {
@@ -119,7 +126,8 @@ get_steering_value(int idx) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::set_steering_value
 //       Access: Published
-//  Description:
+//  Description: Sets the steering value (in degrees) of the wheel
+//               with index idx.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
 set_steering_value(float steering, int idx) {
@@ -131,7 +139,8 @@ set_steering_value(float steering, int idx) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::apply_engine_force
 //       Access: Published
-//  Description:
+//  Description: Applies force at the wheel with index idx for
+//               acceleration.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
 apply_engine_force(float force, int idx) {
@@ -143,7 +152,7 @@ apply_engine_force(float force, int idx) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::set_brake
 //       Access: Published
-//  Description:
+//  Description: Applies braking force to the wheel with index idx.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
 set_brake(float brake, int idx) {
@@ -166,7 +175,8 @@ set_pitch_control(float pitch) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::create_wheel
 //       Access: Published
-//  Description:
+//  Description: Factory method for creating wheels for this
+//               vehicle instance.
 ////////////////////////////////////////////////////////////////////
 BulletWheel BulletVehicle::
 create_wheel() {
@@ -208,7 +218,9 @@ get_axis(int idx) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletVehicle::get_wheel
 //       Access: Published
-//  Description:
+//  Description: Returns the BulletWheel with index idx. Causes an
+//               AssertionError if idx is equal or larger than the
+//               number of wheels.
 ////////////////////////////////////////////////////////////////////
 BulletWheel BulletVehicle::
 get_wheel(int idx) const {

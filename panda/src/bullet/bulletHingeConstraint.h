@@ -29,7 +29,9 @@ class BulletRigidBodyNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletHingeConstraint
-// Description : 
+// Description : The hinge constraint lets two bodies rotate around
+//               a given axis while adhering to specified limits.
+//               It's motor can apply angular force to them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletHingeConstraint : public BulletConstraint {
 
