@@ -111,6 +111,7 @@ protected:
       S_failed,   // something went wrong
     };
     State _state;
+    DWORD _init_time;
     CEvent _init_not_running;  // set when the init thread has finished, or before it has started.
 };
 

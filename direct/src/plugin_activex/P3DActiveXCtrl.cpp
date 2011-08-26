@@ -200,6 +200,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
         // Start the twirl timer going.
         SetTimer(1, 100, timer_callback);
+        _init_time = GetTickCount();
 
         // But do most of the setup in a child thread, so we don't lock
         // up the browser GUI while the instance gets itself downloaded
@@ -246,27 +247,34 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     CBrush brBackGnd(RGB(m_instance._bgcolor_r, m_instance._bgcolor_g, m_instance._bgcolor_b));
     pdc->FillRect(rcBounds, &brBackGnd);
 
-    // Create an in-memory DC compatible with the display DC we're
-    // using to paint
-    CDC dcMemory;
-    dcMemory.CreateCompatibleDC(pdc);
-
-    // Select the bitmap into the in-memory DC
     DWORD now = GetTickCount();
-    int step = (now / 100) % twirl_num_steps;
-    dcMemory.SelectObject(&_twirl_bitmaps[step]);
 
-    // Find a centerpoint for the bitmap in the client area
-    CRect rect;
-    GetClientRect(&rect);
-    int nX = rect.left + (rect.Width() - twirl_width) / 2;
-    int nY = rect.top + (rect.Height() - twirl_height) / 2;
+    // Don't draw the twirling icon until at least half a second has
+    // passed, so we don't distract people by drawing it
+    // unnecessarily.
+    if ((now - _init_time) >= 500) {
+      int step = (now / 100) % twirl_num_steps;
 
-    // Copy the bits from the in-memory DC into the on-screen DC to
-    // actually do the painting. Use the centerpoint we computed for
-    // the target offset.
-    pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory, 
-                0, 0, SRCCOPY);
+      // Create an in-memory DC compatible with the display DC we're
+      // using to paint
+      CDC dcMemory;
+      dcMemory.CreateCompatibleDC(pdc);
+      
+      // Select the bitmap into the in-memory DC
+      dcMemory.SelectObject(&_twirl_bitmaps[step]);
+      
+      // Find a centerpoint for the bitmap in the client area
+      CRect rect;
+      GetClientRect(&rect);
+      int nX = rect.left + (rect.Width() - twirl_width) / 2;
+      int nY = rect.top + (rect.Height() - twirl_height) / 2;
+      
+      // Copy the bits from the in-memory DC into the on-screen DC to
+      // actually do the painting. Use the centerpoint we computed for
+      // the target offset.
+      pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory, 
+                  0, 0, SRCCOPY);
+    }
 }
 
 void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
