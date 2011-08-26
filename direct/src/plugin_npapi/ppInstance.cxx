@@ -343,6 +343,7 @@ set_window(NPWindow *window) {
       // Also set a timer to go off every once in a while, to update
       // the twirling icon, and also to catch events in case something
       // slips through.
+      _init_time = GetTickCount();
       SetTimer(_hwnd, 1, 100, NULL);
     }
 #endif  // _WIN32
@@ -1731,6 +1732,9 @@ create_instance() {
   }
 #endif  // __APPLE__
 
+  // In the Windows case, we let the timer keep running, because it
+  // also checks for wayward messages.
+
   P3D_token *tokens = NULL;
   if (!_tokens.empty()) {
     tokens = &_tokens[0];
@@ -2322,23 +2326,28 @@ win_paint_twirl(HWND hwnd, HDC dc) {
   FillRect(bdc, &rect, _bg_brush);
 
   if (!_started && !_failed) {
-    // Which frame are we drawing?
     DWORD now = GetTickCount();
-    int step = (now / 100) % twirl_num_steps;
-    
-    HBITMAP twirl = _twirl_bitmaps[step];
-    
-    int left = rect.left + (width - twirl_width) / 2;
-    int top = rect.top + (height - twirl_height) / 2;
-    
-    HDC mem_dc = CreateCompatibleDC(bdc);
-    SelectObject(mem_dc, twirl);
-    
-    BitBlt(bdc, left, top, twirl_width, twirl_height,
-           mem_dc, 0, 0, SRCCOPY);
-    
-    SelectObject(mem_dc, NULL);
-    DeleteDC(mem_dc);
+    // Don't draw the twirling icon until at least half a second has
+    // passed, so we don't distract people by drawing it
+    // unnecessarily.
+    if ((now - _init_time) >= 500) {
+      // Which frame are we drawing?
+      int step = (now / 100) % twirl_num_steps;
+      
+      HBITMAP twirl = _twirl_bitmaps[step];
+      
+      int left = rect.left + (width - twirl_width) / 2;
+      int top = rect.top + (height - twirl_height) / 2;
+      
+      HDC mem_dc = CreateCompatibleDC(bdc);
+      SelectObject(mem_dc, twirl);
+      
+      BitBlt(bdc, left, top, twirl_width, twirl_height,
+             mem_dc, 0, 0, SRCCOPY);
+      
+      SelectObject(mem_dc, NULL);
+      DeleteDC(mem_dc);
+    }
   }
 
   // Now blit the buffer to the window.

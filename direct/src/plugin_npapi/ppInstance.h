@@ -221,6 +221,7 @@ private:
   HWND _hwnd;
   HBITMAP _twirl_bitmaps[twirl_num_steps];
   HBRUSH _bg_brush;
+  DWORD _init_time;
 #endif  // _WIN32
 
 #ifdef __APPLE__
