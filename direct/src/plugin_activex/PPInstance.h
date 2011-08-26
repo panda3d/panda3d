@@ -87,7 +87,6 @@ protected:
     CP3DActiveXCtrl& m_parentCtrl;
     PPLogger m_logger;
 
-    bool m_handleRequestOnUIThread;
     bool m_isInit;
     bool m_pluginLoaded;
 
@@ -100,4 +99,11 @@ protected:
     bool _failed;
 
     std::string m_rootDir;
+
+    class ThreadedRequestData {
+    public:
+      PPInstance *_self;
+      P3D_request *_request;
+      std::string _host_url;
+    };
 };

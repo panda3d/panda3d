@@ -74,7 +74,7 @@ void P3D_NotificationSync(P3D_instance *instance)
 }
 
 PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
-    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_handleRequestOnUIThread( true ), m_isInit( false )
+    m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_isInit( false )
 {
   // We need the root dir first.
   m_rootDir = find_root_dir( );
@@ -726,13 +726,18 @@ void PPInstance::HandleRequestLoop() {
 void PPInstance::HandleRequestGetUrl( void* data )
 {
 	HRESULT hr( S_OK );
-    P3D_request *request = static_cast<P3D_request*>( data );
+    ThreadedRequestData *trdata = static_cast<ThreadedRequestData*>( data );
+    PPInstance *self = trdata->_self;
+    P3D_request *request = trdata->_request;
+    std::string host_url = trdata->_host_url;
+    delete trdata;
+
     if ( !request )
     {
         return;
     }
     int unique_id = request->_request._get_url._unique_id;
-    const std::string &url = request->_request._get_url._url;
+    std::string url = request->_request._get_url._url;
     CP3DActiveXCtrl* parent = static_cast<CP3DActiveXCtrl*> ( request->_instance->_user_data );
 
     if ( !parent )
@@ -741,6 +746,31 @@ void PPInstance::HandleRequestGetUrl( void* data )
     }
 
     nout << "Handling P3D_RT_get_url request from " << url << "\n";
+
+    // Convert a relative URL into a full URL.
+    size_t colon = url.find(':');
+    size_t slash = url.find('/');
+    if (colon == std::string::npos || colon > slash) {
+      // Not a full URL, so it's a relative URL.  Prepend the current
+      // URL.
+      if (url.empty() || url[0] == '/') {
+        // It starts with a slash, so go back to the root of this
+        // particular host.
+        colon = host_url.find(':');
+        if (colon != std::string::npos && 
+            colon + 2 < host_url.size() && 
+            host_url[colon + 1] == '/' && host_url[colon + 2] == '/') {
+          slash = host_url.find('/', colon + 3);
+          url = host_url.substr(0, slash) + url;
+        }
+      } else {
+        // It doesn't start with a slash, so it's relative to this
+        // page.
+        url = host_url + url;
+      }
+      nout << "Made fullpath: " << url << "\n";
+    }
+
 	{
 		PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
 		PPDownloadCallback bsc( p3dObjectDownloadRequest );
@@ -782,24 +812,15 @@ HandleRequest( P3D_request *request ) {
     }
   case P3D_RT_get_url:
     {
-      if ( !m_handleRequestOnUIThread ) {
-        _beginthread( HandleRequestGetUrl, 0, request );
-      } else {
-        HandleRequestGetUrl( request );
-      }
+      // We always handle url requests on a thread.
+      ThreadedRequestData *trdata = new ThreadedRequestData;
+      trdata->_self = this;
+      trdata->_request = request;
+      trdata->_host_url = GetHostUrl();
+
+      _beginthread( HandleRequestGetUrl, 0, trdata );
       handled = true;
       return true;
-    }
-  case P3D_RT_notify:
-    {
-      CString notification = request->_request._notify._message;
-      if ( notification == "ondownloadbegin" ) {
-        m_handleRequestOnUIThread = false;
-      } else if ( notification == "ondownloadcomplete" ) {
-        m_handleRequestOnUIThread = true;
-      }
-      handled = true;
-      break;
     }
   case P3D_RT_callback:
     {
