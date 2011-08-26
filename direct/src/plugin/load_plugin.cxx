@@ -388,7 +388,7 @@ init_plugin(const string &contents_filename, const string &host_url,
 //               space and clears all of the pointers.
 ////////////////////////////////////////////////////////////////////
 void
-unload_plugin() {
+unload_plugin(ostream &logfile) {
   if (!plugin_loaded) {
     return;
   }

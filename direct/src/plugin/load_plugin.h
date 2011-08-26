@@ -75,7 +75,7 @@ init_plugin(const string &contents_filename, const string &host_url,
             bool trusted_environment, bool console_environment,
             const string &root_dir, const string &host_dir, ostream &logfile);
 
-void unload_plugin();
+void unload_plugin(ostream &logfile);
 bool is_plugin_loaded();
 
 #endif

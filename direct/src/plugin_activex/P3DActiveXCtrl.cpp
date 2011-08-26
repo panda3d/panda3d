@@ -163,7 +163,10 @@ CP3DActiveXCtrl::CP3DActiveXCtrl() : m_instance( *this ), m_pPandaObject( NULL )
 {
     InitializeIIDs(&IID_DP3DActiveX, &IID_DP3DActiveXEvents);
     // TODO: Initialize your control's instance data here.
+    _state = S_init;
 
+    // The init thread is initially not running.
+    _init_not_running.SetEvent();
 }
 
 // CP3DActiveXCtrl::~CP3DActiveXCtrl - Destructor
@@ -186,20 +189,97 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     if (!pdc)
         return;
 
-    if ( !m_instance.IsInit( ) )
-    {
-        Init( );
+    switch (_state) {
+    case S_init:
+      {
+        _state = S_loading;
+        // The first time we get the Draw message, we know we're
+        // sufficiently set up to start downloading the instance.  
+        m_instance.read_tokens();
+        get_twirl_bitmaps();
+
+        // Start the twirl timer going.
+        SetTimer(1, 100, timer_callback);
+
+        // But do most of the setup in a child thread, so we don't lock
+        // up the browser GUI while the instance gets itself downloaded
+        // and such.
+        _init_not_running.ResetEvent();  // Now the init thread is running.
+        if (_beginthread(st_init, 0, this) == -1L) {
+          nout << "Couldn't start thread.\n";
+          _init_not_running.SetEvent();
+          _state = S_failed;
+        }
+      }
+      break;
+
+    case S_loading:
+      // Waiting for the init thread to finish.
+      break;
+
+    case S_ready:
+      // Now the instance has downloaded, so set it going.
+      {
+        _state = S_started;
+        KillTimer(1);
+        m_instance.Start( m_instance.GetP3DFilename( ) );
+      }
+      break;
+
+    case S_started:
+      // The instance is running, no need to draw anything.
+      KillTimer(1);
+      DoSuperclassPaint(pdc, rcBounds);
+      return;
+
+    case S_failed:
+      // Something went wrong.
+      KillTimer(1);
+      DoSuperclassPaint(pdc, rcBounds);
+      return;
     }
 
-    CBrush brBackGnd(TranslateColor(AmbientBackColor()));
+    // The instance is setting itself up.  In the meantime, draw the
+    // background and the twirling icon.
+
+    // Paint the background.
+    CBrush brBackGnd(RGB(m_instance._bgcolor_r, m_instance._bgcolor_g, m_instance._bgcolor_b));
     pdc->FillRect(rcBounds, &brBackGnd);
 
-    DoSuperclassPaint(pdc, rcBounds);
+    // Create an in-memory DC compatible with the display DC we're
+    // using to paint
+    CDC dcMemory;
+    dcMemory.CreateCompatibleDC(pdc);
+
+    // Select the bitmap into the in-memory DC
+    DWORD now = GetTickCount();
+    int step = (now / 100) % twirl_num_steps;
+    dcMemory.SelectObject(&_twirl_bitmaps[step]);
+
+    // Find a centerpoint for the bitmap in the client area
+    CRect rect;
+    GetClientRect(&rect);
+    int nX = rect.left + (rect.Width() - twirl_width) / 2;
+    int nY = rect.top + (rect.Height() - twirl_height) / 2;
+
+    // Copy the bits from the in-memory DC into the on-screen DC to
+    // actually do the painting. Use the centerpoint we computed for
+    // the target offset.
+    pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory, 
+                0, 0, SRCCOPY);
 }
 
 void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
 {
 	m_instance.Stop();
+
+    // Make sure the init thread has finished.
+    if (_state == S_loading) {
+      nout << "Waiting for thread stop\n" << flush;
+      ::WaitForSingleObject( _init_not_running.m_hObject, INFINITE ); 
+      nout << "Done waiting for thread stop\n" << flush;
+    }
+    
 	COleControl::OnClose( dwSaveOption );
 }
 
@@ -367,7 +447,17 @@ LRESULT CP3DActiveXCtrl::OnPandaNotification(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int CP3DActiveXCtrl::Init( )
+// The static init method.
+void CP3DActiveXCtrl::
+st_init(void *data) {
+  CP3DActiveXCtrl *self = (CP3DActiveXCtrl *)data;
+  self->init();
+  self->_init_not_running.SetEvent();
+}
+
+// The init method.  This is called once at startup, in a child
+// thread.
+int CP3DActiveXCtrl::init( )
 {
     int error( 0 );
     std::string p3dDllFilename;
@@ -379,8 +469,17 @@ int CP3DActiveXCtrl::Init( )
         if ( !error )
         {
             m_pPandaObject = new PPandaObject( this, NULL );
-            m_instance.Start( m_instance.GetP3DFilename( ) );
+            if (_state == S_loading) {
+              // Ready to start.
+              _state = S_ready;
+              return error;
+            }
         }
+    }
+
+    if (_state == S_loading) {
+      // Something went wrong.
+      _state = S_failed;
     }
     return error;
 }
@@ -457,7 +556,10 @@ HRESULT CP3DActiveXCtrl::ExchangeProperties( CPropExchange*  pPX )
 
 P3D_object* CP3DActiveXCtrl::GetP3DObject( )
 {
+  if (_state == S_started) {
     return m_instance.m_p3dObject;
+  }
+  return NULL;
 }
 
 IOleClientSite* CP3DActiveXCtrl::GetClientSte( )
@@ -473,3 +575,41 @@ void CP3DActiveXCtrl::OnmainChanged(void)
 
     SetModifiedFlag();
 }
+
+void CP3DActiveXCtrl::
+get_twirl_bitmaps() {
+  static const size_t twirl_size = twirl_width * twirl_height;
+  unsigned char twirl_data[twirl_size * 3];
+  unsigned char new_data[twirl_size * 4];
+
+  for (int step = 0; step < twirl_num_steps; ++step) {
+    get_twirl_data(twirl_data, twirl_size, step,
+                   m_instance._fgcolor_r, m_instance._fgcolor_g, m_instance._fgcolor_b, 
+                   m_instance._bgcolor_r, m_instance._bgcolor_g, m_instance._bgcolor_b);
+
+    // Expand out the RGB channels into RGBA.
+    for (int yi = 0; yi < twirl_height; ++yi) {
+      const unsigned char *sp = twirl_data + yi * twirl_width * 3;
+      unsigned char *dp = new_data + yi * twirl_width * 4;
+      for (int xi = 0; xi < twirl_width; ++xi) {
+        // RGB <= BGR.
+        dp[0] = sp[2];
+        dp[1] = sp[1];
+        dp[2] = sp[0];
+        dp[3] = (unsigned char)0xff;
+        sp += 3;
+        dp += 4;
+      }
+    }
+
+    // Now load the image.
+    _twirl_bitmaps[step].CreateBitmap(twirl_width, twirl_height, 1, 32, new_data);
+  }
+}
+
+void CP3DActiveXCtrl::
+timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD time) {
+  // Just invalidate the region and make it draw again.
+  ::InvalidateRect(hwnd, NULL, FALSE);
+}
+

@@ -241,6 +241,6 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   run_main_loop();
 
 
-  unload_plugin();
+  unload_plugin(cerr);
   return 0;
 }

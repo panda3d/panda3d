@@ -269,7 +269,7 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 NPError OSCALL
 NP_Shutdown(void) {
   nout << "shutdown\n";
-  unload_plugin();
+  unload_plugin(nout);
   PPBrowserObject::clear_class_definition();
 
   // Not clear whether there's a return value or not.  Some versions

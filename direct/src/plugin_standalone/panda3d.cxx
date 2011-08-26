@@ -285,7 +285,7 @@ run_command_line(int argc, char *argv[]) {
   run_main_loop();
 
   // All instances have finished; we can exit.
-  unload_plugin();
+  unload_plugin(cerr);
   return 0;
 }
 

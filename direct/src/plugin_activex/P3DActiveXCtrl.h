@@ -18,6 +18,7 @@
 #include "PPInstance.h"
 #include "PPPandaObject.h"
 #include "PPInterface.h"
+#include "get_twirl_data.h"
 #include "Mshtml.h"
 
 #include <vector>
@@ -28,7 +29,7 @@ class CP3DActiveXCtrl : public COleControl,
                         public PPInterface
 {
     DECLARE_DYNCREATE(CP3DActiveXCtrl)
-
+    
 // Constructor
 public:
     CP3DActiveXCtrl();
@@ -75,7 +76,8 @@ public:
     };
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 
-    int Init( );
+    static void st_init(void *data);
+    int init();
     virtual P3D_object* GetP3DObject( );
     virtual IOleClientSite* GetClientSte();
 
@@ -88,11 +90,27 @@ protected:
     HRESULT ExchangeProperties( CPropExchange* pPropBag );
 
     LRESULT OnPandaNotification(WPARAM wParam, LPARAM lParam);
+    void OnmainChanged(void);
+
+    void get_twirl_bitmaps();
+    static void CALLBACK timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 
     PPandaObject* m_pPandaObject;
 
     CComPtr<IOleClientSite> m_spClientSite;
 
-    void OnmainChanged(void);
+    CBitmap _twirl_bitmaps[twirl_num_steps];
+
+    enum State {
+      S_init,     // before starting the download
+      S_loading,  // the instance is downloading
+      // From S_loading, only the "init" thread may change the state.
+
+      S_ready,    // the instance is ready to run
+      S_started,  // the instance has successfully started
+      S_failed,   // something went wrong
+    };
+    State _state;
+    CEvent _init_not_running;  // set when the init thread has finished, or before it has started.
 };
 

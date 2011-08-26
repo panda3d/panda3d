@@ -100,7 +100,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   // fgcolor and bgcolor are useful to know here (in case we have to
   // draw a twirling icon).
 
-  // The default fgcolor is white.
+  // The default bgcolor is white.
   _bgcolor_r = _bgcolor_g = _bgcolor_b = 0xff;
   if (has_token("bgcolor")) {
     int r, g, b;
@@ -1975,7 +1975,7 @@ lookup_token(const string &keyword) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::has_token
-//       Access: Public
+//       Access: Private
 //  Description: Returns true if the named token appears in the list,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
