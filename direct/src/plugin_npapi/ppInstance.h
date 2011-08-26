@@ -246,6 +246,7 @@ private:
 
 #ifndef _WIN32
   long _init_sec;
+  long _init_usec;
 #endif  // _WIN32
 
   bool _python_window_open;

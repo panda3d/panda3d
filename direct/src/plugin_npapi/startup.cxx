@@ -163,7 +163,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   // open_logfile() also assigns global_root_dir.
   open_logfile();
-  nout << "initializing\n";
+  nout << "Initializing Panda3D plugin version " << P3D_PLUGIN_VERSION_STR << "\n";
 
   nout << "browserFuncs = " << browserFuncs << "\n";
 
@@ -177,12 +177,12 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   int browser_major = (browser->version >> 8) && 0xff;
   int browser_minor = browser->version & 0xff;
-  nout << "Browser version " << browser_major << "." << browser_minor << "\n";
+  nout << "Browser NPAPI version " << browser_major << "." << browser_minor << "\n";
 
   int expected_major = NP_VERSION_MAJOR;
   int expected_minor = NP_VERSION_MINOR;
 
-  nout << "Plugin compiled with version "
+  nout << "Plugin compiled with NPAPI version "
        << expected_major << "." << expected_minor << "\n";
 
   has_plugin_thread_async_call = false;

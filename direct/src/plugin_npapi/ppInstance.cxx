@@ -135,10 +135,13 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
 #endif // _WIN32
 
 #ifndef _WIN32
-  // Save the startup time to improve precision of gettimeofday().
+  // Save the startup time to improve precision of gettimeofday().  We
+  // also use this to measure elapsed time from the window parameters
+  // having been received.
   struct timeval tv;
   gettimeofday(&tv, (struct timezone *)NULL);
   _init_sec = tv.tv_sec;
+  _init_usec = tv.tv_usec;
 #endif  // !_WIN32
 
 #ifdef __APPLE__
@@ -2642,10 +2645,15 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
 
   struct timeval tv;
   gettimeofday(&tv, (struct timezone *)NULL);
-  double now = (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
-  int step = ((int)(now * 10.0)) % twirl_num_steps;
+  double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
 
-  osx_paint_image(context, _twirl_images[step]);
+  // Don't draw the twirling icon until at least half a second has
+  // passed, so we don't distract people by drawing it
+  // unnecessarily.
+  if (now >= 0.5) {
+    int step = ((int)(now * 10.0)) % twirl_num_steps;
+    osx_paint_image(context, _twirl_images[step]);
+  }
 }
 #endif  // MACOSX_HAS_EVENT_MODELS
 
