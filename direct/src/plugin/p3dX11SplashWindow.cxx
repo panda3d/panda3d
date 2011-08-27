@@ -666,11 +666,11 @@ subprocess_run() {
       FD_ZERO(&fds);
       FD_SET(read_fd, &fds);
       
+      // Sleep a bit to yield the timeslice if there's nothing new.
       struct timeval tv;
       tv.tv_sec = 0;
-      tv.tv_usec = 1;  // Sleep a bit to yield the timeslice if there's
-      // nothing new.
-      
+      tv.tv_usec = 1000;   // 1 usec is not enough.
+
       int result = select(read_fd + 1, &fds, NULL, NULL, &tv);
       if (result > 0) {
         // There is some noise on the pipe, so read it.
