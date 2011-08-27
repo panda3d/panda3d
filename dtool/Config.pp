@@ -969,14 +969,10 @@
 #endif
 #defer HAVE_SPEEDTREE $[isdir $[SPEEDTREE_SDK_DIR]]
 
-// Info for http://www.sourceforge.net/projects/chromium
-#define CHROMIUM_IPATH /usr/include/chromium/include
-#define CHROMIUM_LPATH /usr/lib/chromium/bin/WINT_NT
-#define CHROMIUM_LIBS spuload
-#defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
-
-// Is gtk+-2 installed?  This is only needed to build the pstats
-// program on Unix (or non-Windows) platforms.
+// Is gtk+-2 installed?  This is needed to build the pstats program on
+// Unix (or non-Windows) platforms.  It is also used to provide
+// support for XEmbed for the web plugin system, which is necessary to
+// support Chromium on Linux.
 #define PKG_CONFIG pkg-config
 #define HAVE_GTK
 
