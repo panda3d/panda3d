@@ -50,6 +50,7 @@ RPMRELEASE="1"
 P3DSUFFIX=""
 MAJOR_VERSION=None
 COREAPI_VERSION=None
+PLUGIN_VERSION=None
 OSXTARGET=None
 HOST_URL="https://runtime.panda3d.org/"
 
@@ -233,8 +234,10 @@ if (VERSION is None):
     if (RUNTIME):
         VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
         COREAPI_VERSION = VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
+        PLUGIN_VERSION = VERSION
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
+        PLUGIN_VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
 
 if (COREAPI_VERSION is None):
     COREAPI_VERSION = VERSION
