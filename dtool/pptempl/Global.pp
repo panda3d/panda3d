@@ -185,13 +185,6 @@
   #define mesa_libs $[MESA_LIBS]
 #endif
 
-#if $[HAVE_CHROMIUM]
-  #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
-  #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]
-  #define chromium_cflags $[CHROMIUM_CFLAGS]
-  #define chromium_libs $[CHROMIUM_LIBS]
-#endif
-
 #if $[HAVE_GLX]
   #define glx_ipath $[wildcard $[GLX_IPATH]]
   #define glx_lpath $[wildcard $[GLX_LPATH]]
@@ -465,12 +458,6 @@
   #define speedtree_ipath $[wildcard $[SPEEDTREE_IPATH]]
   #define speedtree_lpath $[wildcard $[SPEEDTREE_LPATH]]
   #define speedtree_libs $[SPEEDTREE_LIBS]
-#endif
-
-#if $[HAVE_CHROMIUM]
-  #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
-  #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]
-  #define chromium_libs $[CHROMIUM_LIBS]
 #endif
 
 #if $[HAVE_FCOLLADA]
