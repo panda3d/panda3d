@@ -267,10 +267,16 @@ elif (DISTRIBUTOR == ""):
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg not in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+        if pkg in ["GTK2"]:
+            # Optional package(s) for runtime.
+            pass
+        elif pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+            # Required packages for runtime.
+            if (PkgSkip(pkg)==1):
+                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
+        else:
+            # Unused packages for runtime.
             PkgDisable(pkg)
-        elif (PkgSkip(pkg)==1):
-            exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
 
 if (sys.platform.startswith("win")):
     os.environ["BISON_SIMPLE"] = GetThirdpartyBase()+"/win-util/bison.simple"
@@ -562,7 +568,6 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
         SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
-        SmartPkgEnable("GTK2",      "gtk+-2.0")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
@@ -571,6 +576,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
+    SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h")
