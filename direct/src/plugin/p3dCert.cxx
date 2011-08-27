@@ -22,6 +22,8 @@
 #include <cassert>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <limits.h>
 
 #define BUTTON_WIDTH 120
 #define BUTTON_SPACE 10
