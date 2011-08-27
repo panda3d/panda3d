@@ -818,7 +818,7 @@
 // supports kernel threads running on different CPU's), but it will
 // slightly slow down Panda for the single CPU case, so this is not
 // enabled by default.
-#define HAVE_THREADS
+#define HAVE_THREADS 1
 #define THREADS_LIBS $[if $[not $[WINDOWS_PLATFORM]],pthread]
 
 // If you have enabled threading support with HAVE_THREADS, the
@@ -833,7 +833,7 @@
 // This will compile in a homespun cooperative threading
 // implementation that runs strictly on one CPU, adding very little
 // overhead over plain single-threaded code.
-#define SIMPLE_THREADS
+#define SIMPLE_THREADS 1
 
 // If this is defined true, then OS threading constructs will be used
 // (if available) to perform context switches in the SIMPLE_THREADS
