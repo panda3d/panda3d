@@ -1618,6 +1618,8 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
         plugin_config["P3D_COREAPI_VERSION_STR"] = COREAPI_VERSION
         plugin_config["P3D_PLUGIN_VERSION_STR"] = PLUGIN_VERSION
+        if PkgSkip("GTK2") == 0:
+            plugin_config["HAVE_GTK"] = '1'
 
     if (RUNTIME):
         dtool_config["HAVE_P3D_PLUGIN"] = '1'
@@ -3896,7 +3898,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   elif (sys.platform=="darwin"):
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
 
-  OPTS += ['NPAPI']
+  OPTS += ['NPAPI', 'GTK2']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
 
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
