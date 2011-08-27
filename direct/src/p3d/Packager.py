@@ -1073,6 +1073,7 @@ class Packager:
                 # have changed since last time we ran.
                 assert file.filename.exists(), "File doesn't exist: %s" % file.filename
                 tmpfile = Filename.temporary('', "p3d_" + file.filename.getBasename())
+                tmpfile.setBinary()
                 file.filename.copyTo(tmpfile)
                 file.filename = tmpfile
                 file.deleteTemp = True
@@ -1288,6 +1289,7 @@ class Packager:
                 # chance that we break it).
 
                 tmpfile = Filename.temporary('', "p3d_" + file.filename.getBasename())
+                tmpfile.setBinary()
                 file.filename.copyTo(tmpfile)
                 file.filename = tmpfile
                 file.deleteTemp = True
@@ -1353,6 +1355,7 @@ class Packager:
 
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
+                    filename.setBinary()
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
