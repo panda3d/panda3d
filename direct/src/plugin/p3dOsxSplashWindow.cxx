@@ -677,7 +677,9 @@ paint_progress_bar(CGContextRef context) {
   if (!_install_label.empty()) {
     // Now draw the install_label right above it.
 
-    CGContextSetTextMatrix(context, CGContextGetCTM(context));
+    // Need to invert the text so it won't be upside-down.
+    CGAffineTransform text_xform = CGAffineTransformMakeScale(1, -1);
+    CGContextSetTextMatrix(context, text_xform);
 
     // Choose a suitable font.
     float text_height = 15.0;
