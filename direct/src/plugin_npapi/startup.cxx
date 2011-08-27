@@ -562,19 +562,34 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
       *(NPObject **)value = obj;
       return NPERR_NO_ERROR;
     }
+
   } else if (variable == NPPVpluginNeedsXEmbed) {
-    // We'll say yes if the browser supports it.
-    // This is necessary to support Chromium.
-    //NPBool supports_xembed = false;
-    //NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
-    //if (err != NPERR_NO_ERROR) {
-    //  supports_xembed = false;
-    //}
-    // At the moment, setting it to true doesn't work
-    // at all on Linux.  We'll have to fix that before
-    // we support Chromium, I suppose.
-    *((NPBool *)value) = false;
+    // If we have Gtk2 available, we can use it to support the XEmbed
+    // protocol, which Chromium (at least) requires.
+
+    // In this case, we'll say we can do it, if the browser supports
+    // it.  (Though probably the browser wouldn't be asking if it
+    // couldn't.)
+
+    NPBool supports_xembed = false;
+    NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
+    if (err != NPERR_NO_ERROR) {
+      supports_xembed = false;
+    }
+    nout << "browser supports_xembed: " << (bool)supports_xembed << "\n";
+#ifdef HAVE_GTK
+    bool plugin_supports = true;
+#else
+    bool plugin_supports = false;
+    supports_xembed = false;
+#endif  // HAVE_GTK
+    nout << "plugin supports_xembed: " << plugin_supports << "\n";
+
+    inst->set_xembed(supports_xembed);
+    *(NPBool *)value = supports_xembed;
+
     return NPERR_NO_ERROR;
+
   } else {
     return NP_GetValue(NULL, variable, value);
   }

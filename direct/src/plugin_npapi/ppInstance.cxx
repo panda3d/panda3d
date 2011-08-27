@@ -38,6 +38,12 @@
 #include <sys/time.h>
 #endif  // _WIN32
 
+#if defined(HAVE_GTK) && defined(HAVE_X11)
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#endif  // HAVE_GTK
+
+
 PPInstance::FileDatas PPInstance::_file_datas;
 
 ////////////////////////////////////////////////////////////////////
@@ -127,6 +133,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
     }
   }
 
+  _use_xembed = false;
   _got_window = false;
   _python_window_open = false;
 #ifdef _WIN32
@@ -944,6 +951,20 @@ get_panda_script_object() {
 
   browser->retainobject(_script_object);
   return _script_object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::set_xembed
+//       Access: Public
+//  Description: Sets the use_xembed flag, telling the instance what
+//               kind of window object to expect from NPAPI.  If this
+//               is true, the window object is an XID following the
+//               XEmbed specification; if false, it is a normal window
+//               handle.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+set_xembed(bool use_xembed) {
+  _use_xembed = use_xembed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1811,12 +1832,14 @@ send_window() {
     // (0, 0), since the window we were given is already placed in the
     // right spot.
 #ifdef _WIN32
+    assert(!_use_xembed);
     parent_window._window_handle_type = P3D_WHT_win_hwnd;
     parent_window._handle._win_hwnd._hwnd = (HWND)(_window.window);
     x = 0;
     y = 0;
 
 #elif defined(__APPLE__)
+    assert(!_use_xembed);
     parent_window._window_handle_type = _window_handle_type;
     if (_window_handle_type == P3D_WHT_osx_port) {
       NP_Port *port = (NP_Port *)_window.window;
@@ -1830,10 +1853,30 @@ send_window() {
     }
 
 #elif defined(HAVE_X11)
-    // We make it an 'unsigned long' instead of 'Window'
-    // to avoid nppanda3d.so getting a dependency on X11.
-    parent_window._window_handle_type = P3D_WHT_x11_window;
-    parent_window._handle._x11_window._xwindow = (unsigned long)(_window.window);
+    if (_use_xembed) {
+      // If we're using the XEmbed model, we've actually received an
+      // XID for a GtkSocket.
+#ifdef HAVE_GTK
+      // Create the appropriate GtkPlug.
+      GtkWidget *plug = gtk_plug_new((GdkNativeWindow)_window.window);
+      gtk_widget_show(plug);
+
+      // Now just get the X11 Window pointer to pass down to Panda,
+      // since that's what it will be expecting.  (Hmm, it would be
+      // nice to pass the XID object and use this system in general
+      // within Panda, but that's for the future, I think.)
+      nout << "original XID is " << _window.window << ", created X11 window " 
+           << GDK_DRAWABLE_XID(plug->window) << "\n";
+      parent_window._window_handle_type = P3D_WHT_x11_window;
+      parent_window._handle._x11_window._xwindow = (unsigned long)GDK_DRAWABLE_XID(plug->window);
+#endif  // HAVE_GTK
+    } else {
+      // If we're not using XEmbed, this is just a standard X11 Window
+      // pointer.  We make it an 'unsigned long' instead of 'Window'
+      // to avoid nppanda3d.so getting a dependency on X11.
+      parent_window._window_handle_type = P3D_WHT_x11_window;
+      parent_window._handle._x11_window._xwindow = (unsigned long)(_window.window);
+    }
     x = 0;
     y = 0;
 #endif

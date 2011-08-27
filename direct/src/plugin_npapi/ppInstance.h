@@ -63,6 +63,7 @@ public:
   bool handle_event(void *event);
 
   NPObject *get_panda_script_object();
+  void set_xembed(bool use_xembed);
 
   void p3dobj_to_variant(NPVariant *result, P3D_object *object);
   P3D_object *variant_to_p3dobj(const NPVariant *variant);
@@ -214,6 +215,7 @@ private:
   typedef vector<StreamingFileData *> FileDatas;
   static FileDatas _file_datas;
   
+  bool _use_xembed;
   bool _got_window;
   NPWindow _window;
 #ifdef _WIN32

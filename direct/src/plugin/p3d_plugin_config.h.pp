@@ -32,4 +32,7 @@
    be found.  Empty string for the default. */
 #$[]define P3D_PLUGIN_P3D_PLUGIN "$[subst \,\\,$[osfilename $[P3D_PLUGIN_P3D_PLUGIN]]]"
 
+/* We need to know whether GTK is enabled for XEmbed. */
+$[cdefine HAVE_GTK]
+
 #end p3d_plugin_config.h

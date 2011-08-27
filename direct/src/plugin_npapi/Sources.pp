@@ -7,7 +7,7 @@
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_NPAPI]]
 
 #define _MT $[if $[P3D_PLUGIN_MT],_mt]
-#define USE_PACKAGES npapi
+#define USE_PACKAGES npapi gtk
 
 #begin lib_target
   // By Mozilla convention, on Windows at least, the generated DLL
