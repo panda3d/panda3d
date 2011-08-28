@@ -21,9 +21,7 @@
 
 #include "p3dSplashWindow.h"
 #include "handleStream.h"
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "plugin_get_x11.h"
 
 #include <vector>
 
@@ -128,7 +126,7 @@ private:
   
   string _label_text;
 
-  Display *_display;
+  X11_Display *_display;
   int _screen;
   GC _graphics_context;
   GC _bar_context;
@@ -136,7 +134,7 @@ private:
   unsigned long _bg_pixel;
   unsigned long _bar_pixel;
   
-  Window _window;
+  X11_Window _window;
 };
 
 #include "p3dX11SplashWindow.I"

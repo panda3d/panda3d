@@ -20,6 +20,7 @@
 #include "graphicsPipe.h"
 #include "lightMutex.h"
 #include "lightReMutex.h"
+#include "get_x11.h"
 
 #ifdef OPENGLES_2
   #include "gles2gsg.h"
@@ -33,21 +34,6 @@
 #endif
 
 class FrameBufferProperties;
-
-#ifdef CPPPARSER
-// A simple hack so interrogate can parse this file.
-typedef int Display;
-typedef int Window;
-typedef int XErrorEvent;
-typedef int XVisualInfo;
-typedef int Atom;
-typedef int Cursor;
-typedef int XIM;
-typedef int XIC;
-#else
-#include <X11/Xlib.h>
-
-#endif  // CPPPARSER
 
 class eglGraphicsBuffer;
 class eglGraphicsPixmap;
@@ -67,12 +53,12 @@ public:
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
-  INLINE Display *get_display() const;
+  INLINE X11_Display *get_display() const;
   INLINE int get_screen() const;
-  INLINE Window get_root() const;
+  INLINE X11_Window get_root() const;
   INLINE XIM get_im() const;
 
-  INLINE Cursor get_hidden_cursor();
+  INLINE X11_Cursor get_hidden_cursor();
 
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
@@ -106,19 +92,19 @@ private:
   void release_hidden_cursor();
 
   static void install_error_handlers();
-  static int error_handler(Display *display, XErrorEvent *error);
-  static int io_error_handler(Display *display);
+  static int error_handler(X11_Display *display, XErrorEvent *error);
+  static int io_error_handler(X11_Display *display);
 
-  Display *_display;
+  X11_Display *_display;
   int _screen;
-  Window _root;
+  X11_Window _root;
   XIM _im;
   EGLDisplay _egl_display;
 
-  Cursor _hidden_cursor;
+  X11_Cursor _hidden_cursor;
 
-  typedef int ErrorHandlerFunc(Display *, XErrorEvent *);
-  typedef int IOErrorHandlerFunc(Display *);
+  typedef int ErrorHandlerFunc(X11_Display *, XErrorEvent *);
+  typedef int IOErrorHandlerFunc(X11_Display *);
   static bool _error_handlers_installed;
   static ErrorHandlerFunc *_prev_error_handler;
   static IOErrorHandlerFunc *_prev_io_error_handler;

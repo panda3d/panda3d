@@ -19,7 +19,7 @@
 //  Description: Returns a pointer to the X display associated with
 //               the pipe: the display on which to create the windows.
 ////////////////////////////////////////////////////////////////////
-INLINE Display *x11GraphicsPipe::
+INLINE X11_Display *x11GraphicsPipe::
 get_display() const {
   return _display;
 }
@@ -40,7 +40,7 @@ get_screen() const {
 //  Description: Returns the handle to the root window on the pipe's
 //               display.
 ////////////////////////////////////////////////////////////////////
-INLINE Window x11GraphicsPipe::
+INLINE X11_Window x11GraphicsPipe::
 get_root() const {
   return _root;
 }
@@ -63,7 +63,7 @@ get_im() const {
 //  Description: Returns an invisible Cursor suitable for assigning to
 //               windows that have the cursor_hidden property set.
 ////////////////////////////////////////////////////////////////////
-INLINE Cursor x11GraphicsPipe::
+INLINE X11_Cursor x11GraphicsPipe::
 get_hidden_cursor() {
   if (_hidden_cursor == None) {
     make_hidden_cursor();

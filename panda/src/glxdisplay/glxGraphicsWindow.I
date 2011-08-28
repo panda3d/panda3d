@@ -18,7 +18,7 @@
 //       Access: Public
 //  Description: Returns the X11 Window handle.
 ////////////////////////////////////////////////////////////////////
-INLINE Window glxGraphicsWindow::
+INLINE X11_Window glxGraphicsWindow::
 get_xwindow() const {
   return _xwindow;
 }

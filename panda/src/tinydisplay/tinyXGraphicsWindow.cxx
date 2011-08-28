@@ -86,7 +86,7 @@ bool TinyXGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
-  if (_xwindow == (Window)NULL) {
+  if (_xwindow == (X11_Window)NULL) {
     return false;
   }
 
@@ -158,7 +158,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 begin_flip() {
-  if (_xwindow == (Window)NULL) {
+  if (_xwindow == (X11_Window)NULL) {
     return;
   }
 
@@ -217,7 +217,7 @@ process_events() {
 
   GraphicsWindow::process_events();
 
-  if (_xwindow == (Window)0) {
+  if (_xwindow == (X11_Window)0) {
     return;
   }
   

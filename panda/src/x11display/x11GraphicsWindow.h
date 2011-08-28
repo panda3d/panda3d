@@ -48,7 +48,7 @@ public:
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
 
-  INLINE Window get_xwindow() const;
+  INLINE X11_Window get_xwindow() const;
 
 protected:
   virtual void close_window();
@@ -69,21 +69,21 @@ protected:
   ButtonHandle map_button(KeySym key);
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
-  static Bool check_event(Display *display, XEvent *event, char *arg);
+  static Bool check_event(X11_Display *display, XEvent *event, char *arg);
 
   void open_raw_mice();
   void poll_raw_mice();
 
 private:
-  Cursor get_cursor(const Filename &filename);
+  X11_Cursor get_cursor(const Filename &filename);
 #ifdef HAVE_XCURSOR
-  Cursor read_ico(istream &ico);
+  X11_Cursor read_ico(istream &ico);
 #endif
   
 protected:
-  Display *_display;
+  X11_Display *_display;
   int _screen;
-  Window _xwindow;
+  X11_Window _xwindow;
   Colormap _colormap;
   XIC _ic;
   XVisualInfo *_visual_info;
@@ -134,7 +134,7 @@ private:
   // Since the Panda API requests icons and cursors by filename, we
   // need a table mapping filenames to handles, so we can avoid
   // re-reading the file each time we change icons.
-  pmap<Filename, Cursor> _cursor_filenames;
+  pmap<Filename, X11_Cursor> _cursor_filenames;
 };
 
 #include "x11GraphicsWindow.I"

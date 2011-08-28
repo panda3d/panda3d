@@ -65,7 +65,7 @@ make_subprocess(const Filename &filename) {
 //               X11 window.
 ////////////////////////////////////////////////////////////////////
 PT(WindowHandle) NativeWindowHandle::
-make_x11(Window window) {
+make_x11(X11_Window window) {
   return new WindowHandle(new X11Handle(window));
 }
 #endif  // HAVE_X11

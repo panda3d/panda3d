@@ -244,7 +244,7 @@ setup_colormap(GLXFBConfig fbconfig) {
 
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
-  Window root_window = glx_pipe->get_root();
+  X11_Window root_window = glx_pipe->get_root();
 
   int rc, is_rgb;
 
@@ -291,7 +291,7 @@ void glxGraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
-  Window root_window = glx_pipe->get_root();
+  X11_Window root_window = glx_pipe->get_root();
 
   int visual_class = visual->c_class;
   int rc, is_rgb;

@@ -834,14 +834,14 @@ make_window() {
     _win_height = _wparams.get_win_height();
   }
 
-  Window parent = 0;
+  X11_Window parent = 0;
   
   // Hum, if we use the display provided by the browser,
   // it causes a crash in some browsers when you make an Xlib
   // call with the plugin window minimized.
   // So I kept XOpenDisplay until we have a better workaround.
   
-  //_display = (Display*) _wparams.get_parent_window()._xdisplay;
+  //_display = (X11_Display*) _wparams.get_parent_window()._xdisplay;
   //_own_display = false;
   //if (_display == 0) {
     _display = XOpenDisplay(NULL);

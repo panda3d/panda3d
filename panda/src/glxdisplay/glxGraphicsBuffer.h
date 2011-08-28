@@ -44,7 +44,7 @@ protected:
   virtual bool open_buffer();
 
 private:
-  Display *_display;
+  X11_Display *_display;
   GLXPbuffer _pbuffer;
 
 public:

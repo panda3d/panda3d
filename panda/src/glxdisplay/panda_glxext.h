@@ -324,7 +324,7 @@ typedef struct {
     int type;
     unsigned long serial;         /* # of last request processed by server */
     Bool send_event;              /* true if this came for SendEvent request */
-    Display *display;             /* display the event was read from */
+    X11_Display *display;             /* display the event was read from */
     GLXDrawable drawable;         /* i.d. of Drawable */
     int event_type;               /* GLX_DAMAGED_SGIX or GLX_SAVED_SGIX */
     int draw_type;                /* GLX_WINDOW_SGIX or GLX_PBUFFER_SGIX */
@@ -345,45 +345,45 @@ typedef XID GLXPbuffer;
 typedef XID GLXWindow;
 
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern GLXFBConfig * glXGetFBConfigs (Display *, int, int *);
-extern GLXFBConfig * glXChooseFBConfig (Display *, int, const int *, int *);
-extern int glXGetFBConfigAttrib (Display *, GLXFBConfig, int, int *);
-extern XVisualInfo * glXGetVisualFromFBConfig (Display *, GLXFBConfig);
-extern GLXWindow glXCreateWindow (Display *, GLXFBConfig, Window, const int *);
-extern void glXDestroyWindow (Display *, GLXWindow);
-extern GLXPixmap glXCreatePixmap (Display *, GLXFBConfig, Pixmap, const int *);
-extern void glXDestroyPixmap (Display *, GLXPixmap);
-extern GLXPbuffer glXCreatePbuffer (Display *, GLXFBConfig, const int *);
-extern void glXDestroyPbuffer (Display *, GLXPbuffer);
-extern void glXQueryDrawable (Display *, GLXDrawable, int, unsigned int *);
-extern GLXContext glXCreateNewContext (Display *, GLXFBConfig, int, GLXContext, Bool);
-extern Bool glXMakeContextCurrent (Display *, GLXDrawable, GLXDrawable, GLXContext);
+extern GLXFBConfig * glXGetFBConfigs (X11_Display *, int, int *);
+extern GLXFBConfig * glXChooseFBConfig (X11_Display *, int, const int *, int *);
+extern int glXGetFBConfigAttrib (X11_Display *, GLXFBConfig, int, int *);
+extern XVisualInfo * glXGetVisualFromFBConfig (X11_Display *, GLXFBConfig);
+extern GLXWindow glXCreateWindow (X11_Display *, GLXFBConfig, X11_Window, const int *);
+extern void glXDestroyWindow (X11_Display *, GLXWindow);
+extern GLXPixmap glXCreatePixmap (X11_Display *, GLXFBConfig, Pixmap, const int *);
+extern void glXDestroyPixmap (X11_Display *, GLXPixmap);
+extern GLXPbuffer glXCreatePbuffer (X11_Display *, GLXFBConfig, const int *);
+extern void glXDestroyPbuffer (X11_Display *, GLXPbuffer);
+extern void glXQueryDrawable (X11_Display *, GLXDrawable, int, unsigned int *);
+extern GLXContext glXCreateNewContext (X11_Display *, GLXFBConfig, int, GLXContext, Bool);
+extern Bool glXMakeContextCurrent (X11_Display *, GLXDrawable, GLXDrawable, GLXContext);
 extern GLXDrawable glXGetCurrentReadDrawable ();
-extern Display * glXGetCurrentDisplay ();
-extern int glXQueryContext (Display *, GLXContext, int, int *);
-extern void glXSelectEvent (Display *, GLXDrawable, unsigned long);
-extern void glXGetSelectedEvent (Display *, GLXDrawable, unsigned long *);
+extern X11_Display * glXGetCurrentDisplay ();
+extern int glXQueryContext (X11_Display *, GLXContext, int, int *);
+extern void glXSelectEvent (X11_Display *, GLXDrawable, unsigned long);
+extern void glXGetSelectedEvent (X11_Display *, GLXDrawable, unsigned long *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
   /* drose: all of the following PFN... typedefs seemed to be
      incorrect.  I put a * just inside the leading parenthesis. */
-typedef GLXFBConfig * (* PFNGLXGETFBCONFIGSPROC) (Display *dpy, int screen, int *nelements);
-typedef GLXFBConfig * (* PFNGLXCHOOSEFBCONFIGPROC) (Display *dpy, int screen, const int *attrib_list, int *nelements);
-typedef int (* PFNGLXGETFBCONFIGATTRIBPROC) (Display *dpy, GLXFBConfig config, int attribute, int *value);
-typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGPROC) (Display *dpy, GLXFBConfig config);
-typedef GLXWindow (* PFNGLXCREATEWINDOWPROC) (Display *dpy, GLXFBConfig config, Window win, const int *attrib_list);
-typedef void (* PFNGLXDESTROYWINDOWPROC) (Display *dpy, GLXWindow win);
-typedef GLXPixmap (* PFNGLXCREATEPIXMAPPROC) (Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attrib_list);
-typedef void (* PFNGLXDESTROYPIXMAPPROC) (Display *dpy, GLXPixmap pixmap);
-typedef GLXPbuffer (* PFNGLXCREATEPBUFFERPROC) (Display *dpy, GLXFBConfig config, const int *attrib_list);
-typedef void (* PFNGLXDESTROYPBUFFERPROC) (Display *dpy, GLXPbuffer pbuf);
-typedef void (* PFNGLXQUERYDRAWABLEPROC) (Display *dpy, GLXDrawable draw, int attribute, unsigned int *value);
-typedef GLXContext (* PFNGLXCREATENEWCONTEXTPROC) (Display *dpy, GLXFBConfig config, int render_type, GLXContext share_list, Bool direct);
-typedef Bool (* PFNGLXMAKECONTEXTCURRENTPROC) (Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
+typedef GLXFBConfig * (* PFNGLXGETFBCONFIGSPROC) (X11_Display *dpy, int screen, int *nelements);
+typedef GLXFBConfig * (* PFNGLXCHOOSEFBCONFIGPROC) (X11_Display *dpy, int screen, const int *attrib_list, int *nelements);
+typedef int (* PFNGLXGETFBCONFIGATTRIBPROC) (X11_Display *dpy, GLXFBConfig config, int attribute, int *value);
+typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGPROC) (X11_Display *dpy, GLXFBConfig config);
+typedef GLXWindow (* PFNGLXCREATEWINDOWPROC) (X11_Display *dpy, GLXFBConfig config, X11_Window win, const int *attrib_list);
+typedef void (* PFNGLXDESTROYWINDOWPROC) (X11_Display *dpy, GLXWindow win);
+typedef GLXPixmap (* PFNGLXCREATEPIXMAPPROC) (X11_Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attrib_list);
+typedef void (* PFNGLXDESTROYPIXMAPPROC) (X11_Display *dpy, GLXPixmap pixmap);
+typedef GLXPbuffer (* PFNGLXCREATEPBUFFERPROC) (X11_Display *dpy, GLXFBConfig config, const int *attrib_list);
+typedef void (* PFNGLXDESTROYPBUFFERPROC) (X11_Display *dpy, GLXPbuffer pbuf);
+typedef void (* PFNGLXQUERYDRAWABLEPROC) (X11_Display *dpy, GLXDrawable draw, int attribute, unsigned int *value);
+typedef GLXContext (* PFNGLXCREATENEWCONTEXTPROC) (X11_Display *dpy, GLXFBConfig config, int render_type, GLXContext share_list, Bool direct);
+typedef Bool (* PFNGLXMAKECONTEXTCURRENTPROC) (X11_Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
 typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLEPROC) ();
-typedef Display * (* PFNGLXGETCURRENTDISPLAYPROC) ();
-typedef int (* PFNGLXQUERYCONTEXTPROC) (Display *dpy, GLXContext ctx, int attribute, int *value);
-typedef void (* PFNGLXSELECTEVENTPROC) (Display *dpy, GLXDrawable draw, unsigned long event_mask);
-typedef void (* PFNGLXGETSELECTEDEVENTPROC) (Display *dpy, GLXDrawable draw, unsigned long *event_mask);
+typedef X11_Display * (* PFNGLXGETCURRENTDISPLAYPROC) ();
+typedef int (* PFNGLXQUERYCONTEXTPROC) (X11_Display *dpy, GLXContext ctx, int attribute, int *value);
+typedef void (* PFNGLXSELECTEVENTPROC) (X11_Display *dpy, GLXDrawable draw, unsigned long event_mask);
+typedef void (* PFNGLXGETSELECTEDEVENTPROC) (X11_Display *dpy, GLXDrawable draw, unsigned long *event_mask);
 #endif
 
 #ifndef GLX_VERSION_1_4
@@ -435,10 +435,10 @@ typedef int (* PFNGLXWAITVIDEOSYNCSGIPROC) (int divisor, int remainder, unsigned
 #ifndef GLX_SGI_make_current_read
 #define GLX_SGI_make_current_read 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Bool glXMakeCurrentReadSGI (Display *, GLXDrawable, GLXDrawable, GLXContext);
+extern Bool glXMakeCurrentReadSGI (X11_Display *, GLXDrawable, GLXDrawable, GLXContext);
 extern GLXDrawable glXGetCurrentReadDrawableSGI ();
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Bool (* PFNGLXMAKECURRENTREADSGIPROC) (Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
+typedef Bool (* PFNGLXMAKECURRENTREADSGIPROC) (X11_Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
 typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLESGIPROC) ();
 #endif
 
@@ -446,11 +446,11 @@ typedef GLXDrawable (* PFNGLXGETCURRENTREADDRAWABLESGIPROC) ();
 #define GLX_SGIX_video_source 1
 #ifdef _VL_H
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern GLXVideoSourceSGIX glXCreateGLXVideoSourceSGIX (Display *, int, VLServer, VLPath, int, VLNode);
-extern void glXDestroyGLXVideoSourceSGIX (Display *, GLXVideoSourceSGIX);
+extern GLXVideoSourceSGIX glXCreateGLXVideoSourceSGIX (X11_Display *, int, VLServer, VLPath, int, VLNode);
+extern void glXDestroyGLXVideoSourceSGIX (X11_Display *, GLXVideoSourceSGIX);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef GLXVideoSourceSGIX (* PFNGLXCREATEGLXVIDEOSOURCESGIXPROC) (Display *display, int screen, VLServer server, VLPath path, int nodeClass, VLNode drainNode);
-typedef void (* PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (Display *dpy, GLXVideoSourceSGIX glxvideosource);
+typedef GLXVideoSourceSGIX (* PFNGLXCREATEGLXVIDEOSOURCESGIXPROC) (X11_Display *display, int screen, VLServer server, VLPath path, int nodeClass, VLNode drainNode);
+typedef void (* PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (X11_Display *dpy, GLXVideoSourceSGIX glxvideosource);
 #endif
 
 #endif /* _VL_H */
@@ -461,135 +461,135 @@ typedef void (* PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (Display *dpy, GLXVideoSour
 #ifndef GLX_EXT_import_context
 #define GLX_EXT_import_context 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Display * glXGetCurrentDisplayEXT ();
-extern int glXQueryContextInfoEXT (Display *, GLXContext, int, int *);
+extern X11_Display * glXGetCurrentDisplayEXT ();
+extern int glXQueryContextInfoEXT (X11_Display *, GLXContext, int, int *);
 extern GLXContextID glXGetContextIDEXT (const GLXContext);
-extern GLXContext glXImportContextEXT (Display *, GLXContextID);
-extern void glXFreeContextEXT (Display *, GLXContext);
+extern GLXContext glXImportContextEXT (X11_Display *, GLXContextID);
+extern void glXFreeContextEXT (X11_Display *, GLXContext);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Display * (* PFNGLXGETCURRENTDISPLAYEXTPROC) ();
-typedef int (* PFNGLXQUERYCONTEXTINFOEXTPROC) (Display *dpy, GLXContext context, int attribute, int *value);
+typedef X11_Display * (* PFNGLXGETCURRENTDISPLAYEXTPROC) ();
+typedef int (* PFNGLXQUERYCONTEXTINFOEXTPROC) (X11_Display *dpy, GLXContext context, int attribute, int *value);
 typedef GLXContextID (* PFNGLXGETCONTEXTIDEXTPROC) (const GLXContext context);
-typedef GLXContext (* PFNGLXIMPORTCONTEXTEXTPROC) (Display *dpy, GLXContextID contextID);
-typedef void (* PFNGLXFREECONTEXTEXTPROC) (Display *dpy, GLXContext context);
+typedef GLXContext (* PFNGLXIMPORTCONTEXTEXTPROC) (X11_Display *dpy, GLXContextID contextID);
+typedef void (* PFNGLXFREECONTEXTEXTPROC) (X11_Display *dpy, GLXContext context);
 #endif
 
 #ifndef GLX_SGIX_fbconfig
 #define GLX_SGIX_fbconfig 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern int glXGetFBConfigAttribSGIX (Display *, GLXFBConfigSGIX, int, int *);
-extern GLXFBConfigSGIX * glXChooseFBConfigSGIX (Display *, int, int *, int *);
-extern GLXPixmap glXCreateGLXPixmapWithConfigSGIX (Display *, GLXFBConfigSGIX, Pixmap);
-extern GLXContext glXCreateContextWithConfigSGIX (Display *, GLXFBConfigSGIX, int, GLXContext, Bool);
-extern XVisualInfo * glXGetVisualFromFBConfigSGIX (Display *, GLXFBConfigSGIX);
-extern GLXFBConfigSGIX glXGetFBConfigFromVisualSGIX (Display *, XVisualInfo *);
+extern int glXGetFBConfigAttribSGIX (X11_Display *, GLXFBConfigSGIX, int, int *);
+extern GLXFBConfigSGIX * glXChooseFBConfigSGIX (X11_Display *, int, int *, int *);
+extern GLXPixmap glXCreateGLXPixmapWithConfigSGIX (X11_Display *, GLXFBConfigSGIX, Pixmap);
+extern GLXContext glXCreateContextWithConfigSGIX (X11_Display *, GLXFBConfigSGIX, int, GLXContext, Bool);
+extern XVisualInfo * glXGetVisualFromFBConfigSGIX (X11_Display *, GLXFBConfigSGIX);
+extern GLXFBConfigSGIX glXGetFBConfigFromVisualSGIX (X11_Display *, XVisualInfo *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef int (* PFNGLXGETFBCONFIGATTRIBSGIXPROC) (Display *dpy, GLXFBConfigSGIX config, int attribute, int *value);
-typedef GLXFBConfigSGIX * (* PFNGLXCHOOSEFBCONFIGSGIXPROC) (Display *dpy, int screen, int *attrib_list, int *nelements);
-typedef GLXPixmap (* PFNGLXCREATEGLXPIXMAPWITHCONFIGSGIXPROC) (Display *dpy, GLXFBConfigSGIX config, Pixmap pixmap);
-typedef GLXContext (* PFNGLXCREATECONTEXTWITHCONFIGSGIXPROC) (Display *dpy, GLXFBConfigSGIX config, int render_type, GLXContext share_list, Bool direct);
-typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGSGIXPROC) (Display *dpy, GLXFBConfigSGIX config);
-typedef GLXFBConfigSGIX (* PFNGLXGETFBCONFIGFROMVISUALSGIXPROC) (Display *dpy, XVisualInfo *vis);
+typedef int (* PFNGLXGETFBCONFIGATTRIBSGIXPROC) (X11_Display *dpy, GLXFBConfigSGIX config, int attribute, int *value);
+typedef GLXFBConfigSGIX * (* PFNGLXCHOOSEFBCONFIGSGIXPROC) (X11_Display *dpy, int screen, int *attrib_list, int *nelements);
+typedef GLXPixmap (* PFNGLXCREATEGLXPIXMAPWITHCONFIGSGIXPROC) (X11_Display *dpy, GLXFBConfigSGIX config, Pixmap pixmap);
+typedef GLXContext (* PFNGLXCREATECONTEXTWITHCONFIGSGIXPROC) (X11_Display *dpy, GLXFBConfigSGIX config, int render_type, GLXContext share_list, Bool direct);
+typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGSGIXPROC) (X11_Display *dpy, GLXFBConfigSGIX config);
+typedef GLXFBConfigSGIX (* PFNGLXGETFBCONFIGFROMVISUALSGIXPROC) (X11_Display *dpy, XVisualInfo *vis);
 #endif
 
 #ifndef GLX_SGIX_pbuffer
 #define GLX_SGIX_pbuffer 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern GLXPbufferSGIX glXCreateGLXPbufferSGIX (Display *, GLXFBConfigSGIX, unsigned int, unsigned int, int *);
-extern void glXDestroyGLXPbufferSGIX (Display *, GLXPbufferSGIX);
-extern int glXQueryGLXPbufferSGIX (Display *, GLXPbufferSGIX, int, unsigned int *);
-extern void glXSelectEventSGIX (Display *, GLXDrawable, unsigned long);
-extern void glXGetSelectedEventSGIX (Display *, GLXDrawable, unsigned long *);
+extern GLXPbufferSGIX glXCreateGLXPbufferSGIX (X11_Display *, GLXFBConfigSGIX, unsigned int, unsigned int, int *);
+extern void glXDestroyGLXPbufferSGIX (X11_Display *, GLXPbufferSGIX);
+extern int glXQueryGLXPbufferSGIX (X11_Display *, GLXPbufferSGIX, int, unsigned int *);
+extern void glXSelectEventSGIX (X11_Display *, GLXDrawable, unsigned long);
+extern void glXGetSelectedEventSGIX (X11_Display *, GLXDrawable, unsigned long *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef GLXPbufferSGIX (* PFNGLXCREATEGLXPBUFFERSGIXPROC) (Display *dpy, GLXFBConfigSGIX config, unsigned int width, unsigned int height, int *attrib_list);
-typedef void (* PFNGLXDESTROYGLXPBUFFERSGIXPROC) (Display *dpy, GLXPbufferSGIX pbuf);
-typedef int (* PFNGLXQUERYGLXPBUFFERSGIXPROC) (Display *dpy, GLXPbufferSGIX pbuf, int attribute, unsigned int *value);
-typedef void (* PFNGLXSELECTEVENTSGIXPROC) (Display *dpy, GLXDrawable drawable, unsigned long mask);
-typedef void (* PFNGLXGETSELECTEDEVENTSGIXPROC) (Display *dpy, GLXDrawable drawable, unsigned long *mask);
+typedef GLXPbufferSGIX (* PFNGLXCREATEGLXPBUFFERSGIXPROC) (X11_Display *dpy, GLXFBConfigSGIX config, unsigned int width, unsigned int height, int *attrib_list);
+typedef void (* PFNGLXDESTROYGLXPBUFFERSGIXPROC) (X11_Display *dpy, GLXPbufferSGIX pbuf);
+typedef int (* PFNGLXQUERYGLXPBUFFERSGIXPROC) (X11_Display *dpy, GLXPbufferSGIX pbuf, int attribute, unsigned int *value);
+typedef void (* PFNGLXSELECTEVENTSGIXPROC) (X11_Display *dpy, GLXDrawable drawable, unsigned long mask);
+typedef void (* PFNGLXGETSELECTEDEVENTSGIXPROC) (X11_Display *dpy, GLXDrawable drawable, unsigned long *mask);
 #endif
 
 #ifndef GLX_SGI_cushion
 #define GLX_SGI_cushion 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern void glXCushionSGI (Display *, Window, float);
+extern void glXCushionSGI (X11_Display *, X11_Window, float);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef void (* PFNGLXCUSHIONSGIPROC) (Display *dpy, Window window, float cushion);
+typedef void (* PFNGLXCUSHIONSGIPROC) (X11_Display *dpy, X11_Window window, float cushion);
 #endif
 
 #ifndef GLX_SGIX_video_resize
 #define GLX_SGIX_video_resize 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern int glXBindChannelToWindowSGIX (Display *, int, int, Window);
-extern int glXChannelRectSGIX (Display *, int, int, int, int, int, int);
-extern int glXQueryChannelRectSGIX (Display *, int, int, int *, int *, int *, int *);
-extern int glXQueryChannelDeltasSGIX (Display *, int, int, int *, int *, int *, int *);
-extern int glXChannelRectSyncSGIX (Display *, int, int, GLenum);
+extern int glXBindChannelToWindowSGIX (X11_Display *, int, int, X11_Window);
+extern int glXChannelRectSGIX (X11_Display *, int, int, int, int, int, int);
+extern int glXQueryChannelRectSGIX (X11_Display *, int, int, int *, int *, int *, int *);
+extern int glXQueryChannelDeltasSGIX (X11_Display *, int, int, int *, int *, int *, int *);
+extern int glXChannelRectSyncSGIX (X11_Display *, int, int, GLenum);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef int (* PFNGLXBINDCHANNELTOWINDOWSGIXPROC) (Display *display, int screen, int channel, Window window);
-typedef int (* PFNGLXCHANNELRECTSGIXPROC) (Display *display, int screen, int channel, int x, int y, int w, int h);
-typedef int (* PFNGLXQUERYCHANNELRECTSGIXPROC) (Display *display, int screen, int channel, int *dx, int *dy, int *dw, int *dh);
-typedef int (* PFNGLXQUERYCHANNELDELTASSGIXPROC) (Display *display, int screen, int channel, int *x, int *y, int *w, int *h);
-typedef int (* PFNGLXCHANNELRECTSYNCSGIXPROC) (Display *display, int screen, int channel, GLenum synctype);
+typedef int (* PFNGLXBINDCHANNELTOWINDOWSGIXPROC) (X11_Display *display, int screen, int channel, X11_Window window);
+typedef int (* PFNGLXCHANNELRECTSGIXPROC) (X11_Display *display, int screen, int channel, int x, int y, int w, int h);
+typedef int (* PFNGLXQUERYCHANNELRECTSGIXPROC) (X11_Display *display, int screen, int channel, int *dx, int *dy, int *dw, int *dh);
+typedef int (* PFNGLXQUERYCHANNELDELTASSGIXPROC) (X11_Display *display, int screen, int channel, int *x, int *y, int *w, int *h);
+typedef int (* PFNGLXCHANNELRECTSYNCSGIXPROC) (X11_Display *display, int screen, int channel, GLenum synctype);
 #endif
 
 #ifndef GLX_SGIX_dmbuffer
 #define GLX_SGIX_dmbuffer 1
 #ifdef _DM_BUFFER_H_
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Bool glXAssociateDMPbufferSGIX (Display *, GLXPbufferSGIX, DMparams *, DMbuffer);
+extern Bool glXAssociateDMPbufferSGIX (X11_Display *, GLXPbufferSGIX, DMparams *, DMbuffer);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Bool (* PFNGLXASSOCIATEDMPBUFFERSGIXPROC) (Display *dpy, GLXPbufferSGIX pbuffer, DMparams *params, DMbuffer dmbuffer);
+typedef Bool (* PFNGLXASSOCIATEDMPBUFFERSGIXPROC) (X11_Display *dpy, GLXPbufferSGIX pbuffer, DMparams *params, DMbuffer dmbuffer);
 #endif
 
 #endif /* _DM_BUFFER_H_ */
 #ifndef GLX_SGIX_swap_group
 #define GLX_SGIX_swap_group 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern void glXJoinSwapGroupSGIX (Display *, GLXDrawable, GLXDrawable);
+extern void glXJoinSwapGroupSGIX (X11_Display *, GLXDrawable, GLXDrawable);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef void (* PFNGLXJOINSWAPGROUPSGIXPROC) (Display *dpy, GLXDrawable drawable, GLXDrawable member);
+typedef void (* PFNGLXJOINSWAPGROUPSGIXPROC) (X11_Display *dpy, GLXDrawable drawable, GLXDrawable member);
 #endif
 
 #ifndef GLX_SGIX_swap_barrier
 #define GLX_SGIX_swap_barrier 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern void glXBindSwapBarrierSGIX (Display *, GLXDrawable, int);
-extern Bool glXQueryMaxSwapBarriersSGIX (Display *, int, int *);
+extern void glXBindSwapBarrierSGIX (X11_Display *, GLXDrawable, int);
+extern Bool glXQueryMaxSwapBarriersSGIX (X11_Display *, int, int *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef void (* PFNGLXBINDSWAPBARRIERSGIXPROC) (Display *dpy, GLXDrawable drawable, int barrier);
-typedef Bool (* PFNGLXQUERYMAXSWAPBARRIERSSGIXPROC) (Display *dpy, int screen, int *max);
+typedef void (* PFNGLXBINDSWAPBARRIERSGIXPROC) (X11_Display *dpy, GLXDrawable drawable, int barrier);
+typedef Bool (* PFNGLXQUERYMAXSWAPBARRIERSSGIXPROC) (X11_Display *dpy, int screen, int *max);
 #endif
 
 #ifndef GLX_SUN_get_transparent_index
 #define GLX_SUN_get_transparent_index 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Status glXGetTransparentIndexSUN (Display *, Window, Window, long *);
+extern Status glXGetTransparentIndexSUN (X11_Display *, X11_Window, X11_Window, long *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Status (* PFNGLXGETTRANSPARENTINDEXSUNPROC) (Display *dpy, Window overlay, Window underlay, long *pTransparentIndex);
+typedef Status (* PFNGLXGETTRANSPARENTINDEXSUNPROC) (X11_Display *dpy, X11_Window overlay, X11_Window underlay, long *pTransparentIndex);
 #endif
 
 #ifndef GLX_MESA_copy_sub_buffer
 #define GLX_MESA_copy_sub_buffer 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern void glXCopySubBufferMESA (Display *, GLXDrawable, int, int, int, int);
+extern void glXCopySubBufferMESA (X11_Display *, GLXDrawable, int, int, int, int);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef void (* PFNGLXCOPYSUBBUFFERMESAPROC) (Display *dpy, GLXDrawable drawable, int x, int y, int width, int height);
+typedef void (* PFNGLXCOPYSUBBUFFERMESAPROC) (X11_Display *dpy, GLXDrawable drawable, int x, int y, int width, int height);
 #endif
 
 #ifndef GLX_MESA_pixmap_colormap
 #define GLX_MESA_pixmap_colormap 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern GLXPixmap glXCreateGLXPixmapMESA (Display *, XVisualInfo *, Pixmap, Colormap);
+extern GLXPixmap glXCreateGLXPixmapMESA (X11_Display *, XVisualInfo *, Pixmap, Colormap);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef GLXPixmap (* PFNGLXCREATEGLXPIXMAPMESAPROC) (Display *dpy, XVisualInfo *visual, Pixmap pixmap, Colormap cmap);
+typedef GLXPixmap (* PFNGLXCREATEGLXPIXMAPMESAPROC) (X11_Display *dpy, XVisualInfo *visual, Pixmap pixmap, Colormap cmap);
 #endif
 
 #ifndef GLX_MESA_release_buffers
 #define GLX_MESA_release_buffers 1
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Bool glXReleaseBuffersMESA (Display *, GLXDrawable);
+extern Bool glXReleaseBuffersMESA (X11_Display *, GLXDrawable);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Bool (* PFNGLXRELEASEBUFFERSMESAPROC) (Display *dpy, GLXDrawable drawable);
+typedef Bool (* PFNGLXRELEASEBUFFERSMESAPROC) (X11_Display *dpy, GLXDrawable drawable);
 #endif
 
 #ifndef GLX_MESA_set_3dfx_mode
@@ -616,17 +616,17 @@ typedef Bool (* PFNGLXSET3DFXMODEMESAPROC) (int mode);
 #include <inttypes.h>
 
 #ifdef GLX_GLXEXT_PROTOTYPES
-extern Bool glXGetSyncValuesOML (Display *, GLXDrawable, int64_t *, int64_t *, int64_t *);
-extern Bool glXGetMscRateOML (Display *, GLXDrawable, int32_t *, int32_t *);
-extern int64_t glXSwapBuffersMscOML (Display *, GLXDrawable, int64_t, int64_t, int64_t);
-extern Bool glXWaitForMscOML (Display *, GLXDrawable, int64_t, int64_t, int64_t, int64_t *, int64_t *, int64_t *);
-extern Bool glXWaitForSbcOML (Display *, GLXDrawable, int64_t, int64_t *, int64_t *, int64_t *);
+extern Bool glXGetSyncValuesOML (X11_Display *, GLXDrawable, int64_t *, int64_t *, int64_t *);
+extern Bool glXGetMscRateOML (X11_Display *, GLXDrawable, int32_t *, int32_t *);
+extern int64_t glXSwapBuffersMscOML (X11_Display *, GLXDrawable, int64_t, int64_t, int64_t);
+extern Bool glXWaitForMscOML (X11_Display *, GLXDrawable, int64_t, int64_t, int64_t, int64_t *, int64_t *, int64_t *);
+extern Bool glXWaitForSbcOML (X11_Display *, GLXDrawable, int64_t, int64_t *, int64_t *, int64_t *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
-typedef Bool (* PFNGLXGETSYNCVALUESOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t *ust, int64_t *msc, int64_t *sbc);
-typedef Bool (* PFNGLXGETMSCRATEOMLPROC) (Display *dpy, GLXDrawable drawable, int32_t *numerator, int32_t *denominator);
-typedef int64_t (* PFNGLXSWAPBUFFERSMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder);
-typedef Bool (* PFNGLXWAITFORMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder, int64_t *ust, int64_t *msc, int64_t *sbc);
-typedef Bool (* PFNGLXWAITFORSBCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_sbc, int64_t *ust, int64_t *msc, int64_t *sbc);
+typedef Bool (* PFNGLXGETSYNCVALUESOMLPROC) (X11_Display *dpy, GLXDrawable drawable, int64_t *ust, int64_t *msc, int64_t *sbc);
+typedef Bool (* PFNGLXGETMSCRATEOMLPROC) (X11_Display *dpy, GLXDrawable drawable, int32_t *numerator, int32_t *denominator);
+typedef int64_t (* PFNGLXSWAPBUFFERSMSCOMLPROC) (X11_Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder);
+typedef Bool (* PFNGLXWAITFORMSCOMLPROC) (X11_Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder, int64_t *ust, int64_t *msc, int64_t *sbc);
+typedef Bool (* PFNGLXWAITFORSBCOMLPROC) (X11_Display *dpy, GLXDrawable drawable, int64_t target_sbc, int64_t *ust, int64_t *msc, int64_t *sbc);
 #endif
 
 #endif /* C99 version test */

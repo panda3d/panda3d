@@ -143,7 +143,7 @@ get_properties(FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 void eglGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
-        Display *display,
+        X11_Display *display,
         int screen, bool need_pbuffer, bool need_pixmap) {
 
   _display = display;

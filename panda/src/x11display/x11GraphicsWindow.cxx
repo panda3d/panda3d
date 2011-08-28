@@ -26,29 +26,11 @@
 #include "lightReMutexHolder.h"
 #include "nativeWindowHandle.h"
 #include "virtualFileSystem.h"
+#include "get_x11.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/time.h>
-#include <X11/keysym.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
-#ifdef HAVE_XCURSOR
-#include <X11/Xcursor/Xcursor.h>
-#endif
-
-#ifdef HAVE_XF86DGA
-#include <X11/extensions/xf86dga.h>
-#endif
-
-#ifdef HAVE_XRANDR
-// Ugly workaround around the conflicting definition
-// of Connection that randr.h provides.
-#define Connection XConnection
-#include <X11/extensions/Xrandr.h>
-#undef Connection
-#endif
 
 #ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
@@ -106,7 +88,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();
   _screen = x11_pipe->get_screen();
-  _xwindow = (Window)NULL;
+  _xwindow = (X11_Window)NULL;
   _ic = (XIC)NULL;
   _visual_info = NULL;
 #ifdef HAVE_XRANDR
@@ -137,7 +119,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
-  pmap<Filename, Cursor>::iterator it;
+  pmap<Filename, X11_Cursor>::iterator it;
 
   for (it = _cursor_filenames.begin(); it != _cursor_filenames.end(); it++) {
     XFreeCursor(_display, it->second);
@@ -267,7 +249,7 @@ process_events() {
 
   GraphicsWindow::process_events();
 
-  if (_xwindow == (Window)0) {
+  if (_xwindow == (X11_Window)0) {
     return;
   }
   
@@ -685,7 +667,7 @@ set_properties_now(WindowProperties &properties) {
 
     } else if (!cursor_filename.empty()) {
       // Note that if the cursor fails to load, cursor will be None
-      Cursor cursor = get_cursor(cursor_filename);
+      X11_Cursor cursor = get_cursor(cursor_filename);
       XDefineCursor(_display, _xwindow, cursor);
 
     } else {
@@ -735,7 +717,7 @@ mouse_mode_relative() {
   int major_ver, minor_ver;
   if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
 
-    Cursor cursor = None;
+    X11_Cursor cursor = None;
     if (_properties.get_cursor_hidden()) {
       x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
@@ -785,9 +767,9 @@ close_window() {
     _ic = (XIC)NULL;
   }
 
-  if (_xwindow != (Window)NULL) {
+  if (_xwindow != (X11_Window)NULL) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (Window)NULL;
+    _xwindow = (X11_Window)NULL;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -798,7 +780,7 @@ close_window() {
   // Change the resolution back to what it was.
   // Don't remove the SizeID typecast!
   if (_orig_size_id != (SizeID) -1) {
-    Window root;
+    X11_Window root;
     if (_pipe != NULL) {
       x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
@@ -874,7 +856,7 @@ open_window() {
   }
 #endif
   
-  Window parent_window = x11_pipe->get_root();
+  X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != NULL) {
     x11display_cat.info()
@@ -889,7 +871,7 @@ open_window() {
         parent_window = x11_handle->get_handle();
       } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
         NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
-        parent_window = (Window)int_handle->get_handle();
+        parent_window = (X11_Window)int_handle->get_handle();
       }
     }
   }
@@ -919,7 +901,7 @@ open_window() {
      0, _visual_info->depth, InputOutput,
      _visual_info->visual, attrib_mask, &wa);
 
-  if (_xwindow == (Window)0) {
+  if (_xwindow == (X11_Window)0) {
     x11display_cat.error()
       << "failed to create X window.\n";
     return false;
@@ -948,7 +930,7 @@ open_window() {
 
   } else if (_properties.has_cursor_filename() && !_properties.get_cursor_filename().empty()) {
     // Note that if the cursor fails to load, cursor will be None
-    Cursor cursor = get_cursor(_properties.get_cursor_filename());
+    X11_Cursor cursor = get_cursor(_properties.get_cursor_filename());
     XDefineCursor(_display, _xwindow, cursor);
   }
   
@@ -1194,7 +1176,7 @@ void x11GraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
-  Window root_window = x11_pipe->get_root();
+  X11_Window root_window = x11_pipe->get_root();
 
   _colormap = XCreateColormap(_display, root_window,
                               visual->visual, AllocNone);
@@ -1876,7 +1858,7 @@ get_mouse_button(XButtonEvent &button_event) {
 //               window.
 ////////////////////////////////////////////////////////////////////
 Bool x11GraphicsWindow::
-check_event(Display *display, XEvent *event, char *arg) {
+check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
 
   // We accept any event that is sent to our window.
@@ -1886,18 +1868,18 @@ check_event(Display *display, XEvent *event, char *arg) {
 ////////////////////////////////////////////////////////////////////
 //     Function: x11GraphicsWindow::get_cursor
 //       Access: Private
-//  Description: Loads and returns an Cursor corresponding to the
+//  Description: Loads and returns a Cursor corresponding to the
 //               indicated filename.  If the file cannot be loaded,
 //               returns None.
 ////////////////////////////////////////////////////////////////////
-Cursor x11GraphicsWindow::
+X11_Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
 #ifndef HAVE_XCURSOR
   return None;
 }
 #else
   // First, look for the unresolved filename in our index.
-  pmap<Filename, Cursor>::iterator fi = _cursor_filenames.find(filename);
+  pmap<Filename, X11_Cursor>::iterator fi = _cursor_filenames.find(filename);
   if (fi != _cursor_filenames.end()) {
     return fi->second;
   }
@@ -1935,7 +1917,7 @@ get_cursor(const Filename &filename) {
   }
   str->seekg(0, istream::beg);
 
-  Cursor h = None;
+  X11_Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {
     // X11 cursor.
     x11display_cat.debug()
@@ -1979,7 +1961,7 @@ get_cursor(const Filename &filename) {
 //               indicated stream and returns it as an X11 Cursor.
 //               If the file cannot be loaded, returns None.
 ////////////////////////////////////////////////////////////////////
-Cursor x11GraphicsWindow::
+X11_Cursor x11GraphicsWindow::
 read_ico(istream &ico) {
  // Local structs, this is just POD, make input easier
  typedef struct {
@@ -2014,7 +1996,7 @@ read_ico(istream &ico) {
   char *curXor, *curAnd;
   char *xorBmp = NULL, *andBmp = NULL;
   XcursorImage *image = NULL;
-  Cursor ret = None;
+  X11_Cursor ret = None;
 
   int def_size = XcursorGetDefaultSize(_display);
 

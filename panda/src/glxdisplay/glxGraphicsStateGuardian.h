@@ -20,11 +20,6 @@
 #include "glgsg.h"
 #include "glxGraphicsPipe.h"
 
-// Don't pick up the system glxext.h; use our own, which is better.
-#define __glxext_h_
-
-#include <GL/glx.h>
-
 #if defined(GLX_VERSION_1_4)
 // If the system header files give us version 1.4, we can assume it's
 // safe to compile in a reference to glxGetProcAddress().
@@ -64,13 +59,13 @@ extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 typedef __GLXextFuncPtr (* PFNGLXGETPROCADDRESSPROC) (const GLubyte *procName);
 typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
 
-typedef GLXFBConfig * (* PFNGLXCHOOSEFBCONFIGPROC) (Display *dpy, int screen, const int *attrib_list, int *nelements);
-typedef GLXContext (* PFNGLXCREATENEWCONTEXTPROC) (Display *dpy, GLXFBConfig config, int render_type, GLXContext share_list, Bool direct);
-typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGPROC) (Display *dpy, GLXFBConfig config);
-typedef int (* PFNGLXGETFBCONFIGATTRIBPROC) (Display *dpy, GLXFBConfig config, int attribute, int *value);
-typedef GLXPixmap (* PFNGLXCREATEPIXMAPPROC) (Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attrib_list);
-typedef GLXPbuffer (* PFNGLXCREATEPBUFFERPROC) (Display *dpy, GLXFBConfig config, const int *attrib_list);
-typedef void (* PFNGLXDESTROYPBUFFERPROC) (Display *dpy, GLXPbuffer pbuf);
+typedef GLXFBConfig * (* PFNGLXCHOOSEFBCONFIGPROC) (X11_Display *dpy, int screen, const int *attrib_list, int *nelements);
+typedef GLXContext (* PFNGLXCREATENEWCONTEXTPROC) (X11_Display *dpy, GLXFBConfig config, int render_type, GLXContext share_list, Bool direct);
+typedef XVisualInfo * (* PFNGLXGETVISUALFROMFBCONFIGPROC) (X11_Display *dpy, GLXFBConfig config);
+typedef int (* PFNGLXGETFBCONFIGATTRIBPROC) (X11_Display *dpy, GLXFBConfig config, int attribute, int *value);
+typedef GLXPixmap (* PFNGLXCREATEPIXMAPPROC) (X11_Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attrib_list);
+typedef GLXPbuffer (* PFNGLXCREATEPBUFFERPROC) (X11_Display *dpy, GLXFBConfig config, const int *attrib_list);
+typedef void (* PFNGLXDESTROYPBUFFERPROC) (X11_Display *dpy, GLXPbuffer pbuf);
 
 #endif  // __EDG__
 
@@ -87,7 +82,7 @@ public:
                                bool &context_has_pbuffer, bool &pixmap_supported,
                                bool &slow, GLXFBConfig config);
   void choose_pixel_format(const FrameBufferProperties &properties, 
-                           Display *_display,
+                           X11_Display *_display,
                            int _screen,
                            bool need_pbuffer, bool need_pixmap);
   
@@ -102,7 +97,7 @@ public:
 
   GLXContext _share_context;
   GLXContext _context;
-  Display *_display;
+  X11_Display *_display;
   int _screen;
   XVisualInfo *_visual;
   XVisualInfo *_visuals;
@@ -153,7 +148,7 @@ private:
   PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
 
   GLXContext _temp_context;
-  Window _temp_xwindow;
+  X11_Window _temp_xwindow;
   Colormap _temp_colormap;
 
 public:

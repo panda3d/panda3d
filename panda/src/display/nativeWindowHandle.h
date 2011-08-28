@@ -18,10 +18,7 @@
 #include "pandabase.h"
 
 #include "windowHandle.h"
-
-#ifdef HAVE_X11
-#include <X11/Xlib.h>
-#endif
+#include "get_x11.h"
 
 #ifdef WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -51,7 +48,7 @@ PUBLISHED:
 
 public:
 #if defined(HAVE_X11) && !defined(CPPPARSER)
-  static PT(WindowHandle) make_x11(Window window);
+  static PT(WindowHandle) make_x11(X11_Window window);
 #endif  // HAVE_X11
 
 #if defined(WIN32) && !defined(CPPPARSER)
@@ -119,14 +116,14 @@ public:
 #if defined(HAVE_X11) && !defined(CPPPARSER)
   class EXPCL_PANDA_DISPLAY X11Handle : public OSHandle {
   public:
-    INLINE X11Handle(Window handle);
+    INLINE X11Handle(X11_Window handle);
     virtual size_t get_int_handle() const;
     virtual void output(ostream &out) const;
     
-    INLINE Window get_handle() const;
+    INLINE X11_Window get_handle() const;
     
   private:
-    Window _handle;
+    X11_Window _handle;
     
   public:
     static TypeHandle get_class_type() {

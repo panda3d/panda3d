@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 #include "eglGraphicsPipe.h"
-
-#include <X11/Xutil.h>
+#include "get_x11.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : eglGraphicsStateGuardian
@@ -36,7 +35,7 @@ public:
              bool &pbuffer_supported, bool &pixmap_supported,
                                bool &slow, EGLConfig config);
   void choose_pixel_format(const FrameBufferProperties &properties,
-         Display *_display,
+         X11_Display *_display,
          int _screen,
          bool need_pbuffer, bool need_pixmap);
 
@@ -52,7 +51,7 @@ public:
   EGLContext _share_context;
   EGLContext _context;
   EGLDisplay _egl_display;
-  Display *_display;
+  X11_Display *_display;
   int _screen;
   XVisualInfo *_visual;
   XVisualInfo *_visuals;

@@ -18,7 +18,7 @@
 //       Access: Public
 //  Description: Returns the X11 Window handle.
 ////////////////////////////////////////////////////////////////////
-INLINE Window eglGraphicsWindow::
+INLINE X11_Window eglGraphicsWindow::
 get_xwindow() const {
   return _xwindow;
 }

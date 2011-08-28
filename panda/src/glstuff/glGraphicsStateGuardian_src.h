@@ -56,7 +56,8 @@ typedef void (APIENTRYP PFNGLGETQUERYIVPROC) (GLenum target, GLenum pname, GLint
 typedef void (APIENTRYP PFNGLGETQUERYOBJECTUIVPROC) (GLuint id, GLenum pname, GLuint *params);
 typedef void (APIENTRYP PFNGLPOINTPARAMETERFVPROC) (GLenum pname, const GLfloat *params);
 typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
-typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+// There is some trivial disagreement between different gl.h headers about this one, so we use our own typename.
+typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC_P) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
 typedef void (APIENTRYP PFNGLMULTITEXCOORD1FPROC) (GLenum target, const GLfloat s);
@@ -518,7 +519,7 @@ public:
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
 
-  PFNGLTEXIMAGE3DPROC _glTexImage3D;
+  PFNGLTEXIMAGE3DPROC_P _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;

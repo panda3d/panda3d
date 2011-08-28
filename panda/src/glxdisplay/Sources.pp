@@ -15,7 +15,7 @@
   #define SOURCES \
     config_glxdisplay.cxx config_glxdisplay.h \
     glxGraphicsBuffer.h glxGraphicsBuffer.I glxGraphicsBuffer.cxx \
-    glxGraphicsPipe.cxx glxGraphicsPipe.h \
+    glxGraphicsPipe.cxx glxGraphicsPipe.h glxGraphicsPipe.I \
     glxGraphicsPixmap.h glxGraphicsPixmap.I glxGraphicsPixmap.cxx \
     glxGraphicsWindow.h glxGraphicsWindow.cxx \
     glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I \
@@ -24,7 +24,8 @@
 
   #define INSTALL_HEADERS \
     glxGraphicsBuffer.I glxGraphicsBuffer.h \
-    glxGraphicsPipe.h glxGraphicsWindow.h
+    glxGraphicsPipe.h glxGraphicsPipe.I \
+    glxGraphicsWindow.h
 
 #end lib_target
 

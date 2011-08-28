@@ -26,12 +26,10 @@
 #include "throw_event.h"
 #include "lightReMutexHolder.h"
 #include "nativeWindowHandle.h"
+#include "get_x11.h"
 
 #include <errno.h>
 #include <sys/time.h>
-#include <X11/keysym.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 
 #ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
@@ -60,7 +58,7 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   DCAST_INTO_V(egl_pipe, _pipe);
   _display = egl_pipe->get_display();
   _screen = egl_pipe->get_screen();
-  _xwindow = (Window)NULL;
+  _xwindow = (X11_Window)NULL;
   _ic = (XIC)NULL;
   _egl_display = egl_pipe->_egl_display;
   _egl_surface = 0;
@@ -261,7 +259,7 @@ process_events() {
 
   GraphicsWindow::process_events();
 
-  if (_xwindow == (Window)0) {
+  if (_xwindow == (X11_Window)0) {
     return;
   }
 
@@ -608,9 +606,9 @@ close_window() {
     }
   }
 
-  if (_xwindow != (Window)NULL) {
+  if (_xwindow != (X11_Window)NULL) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (Window)NULL;
+    _xwindow = (X11_Window)NULL;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -666,7 +664,7 @@ open_window() {
     _properties.set_size(100, 100);
   }
   
-  Window parent_window = egl_pipe->get_root();
+  X11_Window parent_window = egl_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != NULL) {
     egldisplay_cat.info()
@@ -681,7 +679,7 @@ open_window() {
         parent_window = x11_handle->get_handle();
       } else if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
         NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
-        parent_window = (Window)int_handle->get_handle();
+        parent_window = (X11_Window)int_handle->get_handle();
       }
     }
   }
@@ -713,7 +711,7 @@ open_window() {
      _properties.get_x_size(), _properties.get_y_size(),
      0, depth, InputOutput, visual, attrib_mask, &wa);
 
-  if (_xwindow == (Window)0) {
+  if (_xwindow == (X11_Window)0) {
     egldisplay_cat.error()
       << "failed to create X window.\n";
     return false;
@@ -1000,7 +998,7 @@ void eglGraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_V(egl_pipe, _pipe);
-  Window root_window = egl_pipe->get_root();
+  X11_Window root_window = egl_pipe->get_root();
 
   int visual_class = visual->c_class;
   int rc, is_rgb;
@@ -1699,7 +1697,7 @@ get_mouse_button(XButtonEvent &button_event) {
 //               window.
 ////////////////////////////////////////////////////////////////////
 Bool eglGraphicsWindow::
-check_event(Display *display, XEvent *event, char *arg) {
+check_event(X11_Display *display, XEvent *event, char *arg) {
   const eglGraphicsWindow *self = (eglGraphicsWindow *)arg;
 
   // We accept any event that is sent to our window.

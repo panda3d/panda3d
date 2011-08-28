@@ -47,8 +47,8 @@ protected:
   virtual bool open_buffer();
 
 private:
-  Display *_display;
-  Window _drawable;
+  X11_Display *_display;
+  X11_Window _drawable;
   Pixmap _x_pixmap;
   GLXPixmap _glx_pixmap;
 

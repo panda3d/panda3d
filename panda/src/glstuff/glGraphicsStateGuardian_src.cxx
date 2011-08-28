@@ -559,7 +559,7 @@ reset() {
   if (is_at_least_gl_version(1, 2)) {
     _supports_3d_texture = true;
 
-    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC_P)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
@@ -567,14 +567,14 @@ reset() {
   } else if (has_extension("GL_EXT_texture3D")) {
     _supports_3d_texture = true;
 
-    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC_P)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3DEXT");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DEXT");
   } else if (has_extension("GL_OES_texture3D") || has_extension("GL_OES_texture_3D")) {
     _supports_3d_texture = true;
 
-    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC_P)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3DOES");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DOES");

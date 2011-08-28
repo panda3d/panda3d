@@ -17,14 +17,6 @@
 #include "config_x11display.h"
 #include "frameBufferProperties.h"
 
-#ifdef HAVE_XRANDR
-// Ugly workaround around the conflicting definition
-// of Connection that randr.h provides.
-#define Connection XConnection
-#include <X11/extensions/Xrandr.h>
-#undef Connection
-#endif
-
 TypeHandle x11GraphicsPipe::_type_handle;
 
 bool x11GraphicsPipe::_error_handlers_installed = false;
@@ -66,7 +58,7 @@ x11GraphicsPipe(const string &display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _display = NULL;
   _screen = 0;
-  _root = (Window)NULL;
+  _root = (X11_Window)NULL;
   _im = (XIM)NULL;
   _hidden_cursor = None;
 
@@ -258,7 +250,7 @@ install_error_handlers() {
 //               non-fatal Xlib error.
 ////////////////////////////////////////////////////////////////////
 int x11GraphicsPipe::
-error_handler(Display *display, XErrorEvent *error) {
+error_handler(X11_Display *display, XErrorEvent *error) {
   ++_x_error_count;
 
   static const int msg_len = 80;
@@ -292,7 +284,7 @@ error_handler(Display *display, XErrorEvent *error) {
 //               fatal Xlib error.
 ////////////////////////////////////////////////////////////////////
 int x11GraphicsPipe::
-io_error_handler(Display *display) {
+io_error_handler(X11_Display *display) {
   x11display_cat.fatal()
     << "X fatal error on display " << (void *)display << "\n";
 

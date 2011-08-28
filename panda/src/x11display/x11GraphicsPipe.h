@@ -21,11 +21,9 @@
 #include "lightMutex.h"
 #include "lightReMutex.h"
 #include "windowHandle.h"
+#include "get_x11.h"
 
 class FrameBufferProperties;
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : x11GraphicsPipe
@@ -37,12 +35,12 @@ public:
   x11GraphicsPipe(const string &display = string());
   virtual ~x11GraphicsPipe();
 
-  INLINE Display *get_display() const;
+  INLINE X11_Display *get_display() const;
   INLINE int get_screen() const;
-  INLINE Window get_root() const;
+  INLINE X11_Window get_root() const;
   INLINE XIM get_im() const;
 
-  INLINE Cursor get_hidden_cursor();
+  INLINE X11_Cursor get_hidden_cursor();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
@@ -65,23 +63,23 @@ public:
   Atom _net_wm_state_remove;
 
 protected:
-  Display *_display;
+  X11_Display *_display;
   int _screen;
-  Window _root;
+  X11_Window _root;
   XIM _im;
 
-  Cursor _hidden_cursor;
+  X11_Cursor _hidden_cursor;
 
 private:
   void make_hidden_cursor();
   void release_hidden_cursor();
 
   static void install_error_handlers();
-  static int error_handler(Display *display, XErrorEvent *error);
-  static int io_error_handler(Display *display);
+  static int error_handler(X11_Display *display, XErrorEvent *error);
+  static int io_error_handler(X11_Display *display);
 
-  typedef int ErrorHandlerFunc(Display *, XErrorEvent *);
-  typedef int IOErrorHandlerFunc(Display *);
+  typedef int ErrorHandlerFunc(X11_Display *, XErrorEvent *);
+  typedef int IOErrorHandlerFunc(X11_Display *);
   static bool _error_handlers_installed;
   static ErrorHandlerFunc *_prev_error_handler;
   static IOErrorHandlerFunc *_prev_io_error_handler;

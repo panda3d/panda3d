@@ -20,8 +20,7 @@
 #include "eglGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
-
-#include <X11/Xutil.h>
+#include "get_x11.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : eglGraphicsWindow
@@ -47,7 +46,7 @@ public:
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
 
-  INLINE Window get_xwindow() const;
+  INLINE X11_Window get_xwindow() const;
 
 protected:
   virtual void close_window();
@@ -66,15 +65,15 @@ private:
   ButtonHandle map_button(KeySym key);
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
-  static Bool check_event(Display *display, XEvent *event, char *arg);
+  static Bool check_event(X11_Display *display, XEvent *event, char *arg);
 
   void open_raw_mice();
   void poll_raw_mice();
 
 private:
-  Display *_display;
+  X11_Display *_display;
   int _screen;
-  Window _xwindow;
+  X11_Window _xwindow;
   Colormap _colormap;
   XIC _ic;
   EGLDisplay _egl_display;

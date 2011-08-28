@@ -58,7 +58,7 @@ get_filename() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE NativeWindowHandle::X11Handle::
-X11Handle(Window handle) : _handle(handle) {
+X11Handle(X11_Window handle) : _handle(handle) {
 }
 #endif  // HAVE_X11
 
@@ -68,7 +68,7 @@ X11Handle(Window handle) : _handle(handle) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Window NativeWindowHandle::X11Handle::
+INLINE X11_Window NativeWindowHandle::X11Handle::
 get_handle() const {
   return _handle;
 }

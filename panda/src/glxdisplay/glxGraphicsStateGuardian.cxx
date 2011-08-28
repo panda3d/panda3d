@@ -57,7 +57,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
   _temp_context = (GLXContext)NULL;
-  _temp_xwindow = (Window)NULL;
+  _temp_xwindow = (X11_Window)NULL;
   _temp_colormap = (Colormap)NULL;
 }
 
@@ -231,7 +231,7 @@ get_properties_advanced(FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
-                    Display *display,
+                    X11_Display *display,
                     int screen, bool need_pbuffer, bool need_pixmap) {
 
   _display = display;
@@ -825,7 +825,7 @@ void glxGraphicsStateGuardian::
 init_temp_context() {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, get_pipe());
-  Window root_window = x11_pipe->get_root();
+  X11_Window root_window = x11_pipe->get_root();
 
   // Assume everyone uses TrueColor or DirectColor these days.
   Visual *visual = _visual->visual;
@@ -840,7 +840,7 @@ init_temp_context() {
     (_display, root_window, 0, 0, 100, 100,
      0, _visual->depth, InputOutput,
      visual, attrib_mask, &wa);
-  if (_temp_xwindow == (Window)NULL) {
+  if (_temp_xwindow == (X11_Window)NULL) {
     glxdisplay_cat.error()
       << "Could not create temporary window for context\n";
     return;
@@ -864,9 +864,9 @@ destroy_temp_xwindow() {
     XFreeColormap(_display, _temp_colormap);
     _temp_colormap = (Colormap)NULL;
   }
-  if (_temp_xwindow != (Window)NULL) {
+  if (_temp_xwindow != (X11_Window)NULL) {
     XDestroyWindow(_display, _temp_xwindow);
-    _temp_xwindow = (Window)NULL;
+    _temp_xwindow = (X11_Window)NULL;
   }
 
   if (_temp_context != (GLXContext)NULL){ 

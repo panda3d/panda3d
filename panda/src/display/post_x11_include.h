@@ -1,5 +1,5 @@
-// Filename: x11GraphicsWindow.I
-// Created by:  mike (07Mar99)
+// Filename: post_x11_include.h
+// Created by:  drose (28Aug11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,13 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+// To be included after including X11/*.h.
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_xwindow
-//       Access: Public
-//  Description: Returns the X11 Window handle.
-////////////////////////////////////////////////////////////////////
-INLINE X11_Window x11GraphicsWindow::
-get_xwindow() const {
-  return _xwindow;
-}
+#undef Display
+#undef Window
+#undef Cursor
+#undef Connection
+

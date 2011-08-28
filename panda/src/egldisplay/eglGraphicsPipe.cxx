@@ -59,7 +59,7 @@ eglGraphicsPipe(const string &display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _display = NULL;
   _screen = 0;
-  _root = (Window)NULL;
+  _root = (X11_Window)NULL;
   _im = (XIM)NULL;
   _hidden_cursor = None;
   _egl_display = NULL;
@@ -400,7 +400,7 @@ install_error_handlers() {
 //               non-fatal Xlib error.
 ////////////////////////////////////////////////////////////////////
 int eglGraphicsPipe::
-error_handler(Display *display, XErrorEvent *error) {
+error_handler(X11_Display *display, XErrorEvent *error) {
   static const int msg_len = 80;
   char msg[msg_len];
   XGetErrorText(display, error->error_code, msg, msg_len);
@@ -423,7 +423,7 @@ error_handler(Display *display, XErrorEvent *error) {
 //               fatal Xlib error.
 ////////////////////////////////////////////////////////////////////
 int eglGraphicsPipe::
-io_error_handler(Display *display) {
+io_error_handler(X11_Display *display) {
   egldisplay_cat.fatal()
     << "X fatal error on display " << (void *)display << "\n";
 

@@ -19,6 +19,7 @@
     displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
     displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h \
     frameBufferProperties.I frameBufferProperties.h \
+    get_x11.h pre_x11_include.h post_x11_include.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \
@@ -91,6 +92,7 @@
     displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h \
     displaySearchParameters.h \
     frameBufferProperties.I frameBufferProperties.h \
+    get_x11.h pre_x11_include.h post_x11_include.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \
