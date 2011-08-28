@@ -3911,6 +3911,8 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
 
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
+  TargetAdd('nppanda3d.plugin', input='plugin_parse_color.obj')
+  TargetAdd('nppanda3d.plugin', input='plugin_get_twirl_data.obj')
   TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
   if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.res')
@@ -3938,6 +3940,8 @@ if (RUNTIME and sys.platform.startswith("win")):
   TargetAdd('plugin_activex_p3dactivex_composite1.obj', opts=OPTS, input='p3dactivex_composite1.cxx')
 
   TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
+  TargetAdd('p3dactivex.ocx', input='plugin_parse_color.obj')
+  TargetAdd('p3dactivex.ocx', input='plugin_get_twirl_data.obj')
   TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
