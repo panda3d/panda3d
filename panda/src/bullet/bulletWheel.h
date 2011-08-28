@@ -27,7 +27,9 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletWheel
-// Description : 
+// Description : One wheel of a BulletVehicle. Instances should not
+//               be created directly but using the factory method
+//               BulletVehicle::create_wheel().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletWheel {
 

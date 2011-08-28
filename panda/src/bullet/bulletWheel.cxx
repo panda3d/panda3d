@@ -27,7 +27,8 @@ BulletWheel(btWheelInfo &info) : _info(info) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_suspension_rest_length
 //       Access: Published
-//  Description:
+//  Description: Returns the length of the suspension when the
+//               vehicle is standing still.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_suspension_rest_length() const {
@@ -38,7 +39,7 @@ get_suspension_rest_length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_suspension_stiffness
 //       Access: Published
-//  Description:
+//  Description: Sets how stiff the suspension shall be.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_suspension_stiffness(float value) {
@@ -49,7 +50,7 @@ set_suspension_stiffness(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_suspension_stiffness
 //       Access: Published
-//  Description:
+//  Description: Returns the stiffness of the suspension.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_suspension_stiffness() const {
@@ -60,7 +61,8 @@ get_suspension_stiffness() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_max_suspension_travel_cm
 //       Access: Published
-//  Description:
+//  Description: Sets the maximum distance the suspension can travel
+//               out of the resting position in centimeters.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_max_suspension_travel_cm(float value) {
@@ -82,7 +84,7 @@ get_max_suspension_travel_cm() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_friction_slip
 //       Access: Published
-//  Description:
+//  Description: Sets the slipperyness of the tyre.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_friction_slip(float value) {
@@ -93,7 +95,7 @@ set_friction_slip(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_friction_slip
 //       Access: Published
-//  Description:
+//  Description: Returns how slippery the tyres are.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_friction_slip() const {
@@ -104,7 +106,8 @@ get_friction_slip() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_max_suspension_force
 //       Access: Published
-//  Description:
+//  Description: Sets the maximum suspension force the wheel can
+//               handle.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_max_suspension_force(float value) {
@@ -115,7 +118,8 @@ set_max_suspension_force(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_max_suspension_force
 //       Access: Published
-//  Description:
+//  Description: Returns the maximum force (weight) the suspension
+//               can handle.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_max_suspension_force() const {
@@ -126,7 +130,8 @@ get_max_suspension_force() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_wheels_damping_compression
 //       Access: Published
-//  Description:
+//  Description: Sets the damping forces applied when the suspension
+//               gets compressed.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_wheels_damping_compression(float value) {
@@ -137,7 +142,8 @@ set_wheels_damping_compression(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_wheels_damping_compression
 //       Access: Published
-//  Description:
+//  Description: Returns the  damping applied to the compressing
+//               suspension.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_wheels_damping_compression() const {
@@ -148,7 +154,8 @@ get_wheels_damping_compression() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_wheels_damping_relaxation
 //       Access: Published
-//  Description:
+//  Description: Sets the damping forces applied when the suspension
+//               relaxes.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_wheels_damping_relaxation(float value) {
@@ -159,7 +166,8 @@ set_wheels_damping_relaxation(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_wheels_damping_relaxation
 //       Access: Published
-//  Description:
+//  Description: Returns the damping applied to the relaxing
+//               suspension.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_wheels_damping_relaxation() const {
@@ -170,7 +178,11 @@ get_wheels_damping_relaxation() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_roll_influence
 //       Access: Published
-//  Description:
+//  Description: Defines a scaling factor for roll forces that affect
+//               the chassis. 0.0 means no roll - the chassis won't
+//               ever flip over - while 1.0 means original physical
+//               behaviour. Basically, this allows moving the center
+//               of mass up and down.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_roll_influence(float value) {
@@ -181,7 +193,8 @@ set_roll_influence(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_roll_influence
 //       Access: Published
-//  Description:
+//  Description: Returns the factor by which roll forces are scaled.
+//               See set_roll_influence.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_roll_influence() const {
@@ -192,7 +205,7 @@ get_roll_influence() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_wheel_radius
 //       Access: Published
-//  Description:
+//  Description: Sets the wheel radius.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_wheel_radius(float value) {
@@ -203,7 +216,7 @@ set_wheel_radius(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_wheel_radius
 //       Access: Published
-//  Description:
+//  Description: Returns the wheel radius.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_wheel_radius() const {
@@ -214,7 +227,7 @@ get_wheel_radius() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_steering
 //       Access: Published
-//  Description:
+//  Description: Sets the steering angle.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_steering(float value) {
@@ -225,7 +238,7 @@ set_steering(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_steering
 //       Access: Published
-//  Description:
+//  Description: Returns the steering angle in degrees.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_steering() const {
@@ -280,7 +293,8 @@ get_delta_rotation() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_engine_force
 //       Access: Published
-//  Description:
+//  Description: Defines how much force should be used to rotate the
+//               wheel.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_engine_force(float value) {
@@ -291,7 +305,8 @@ set_engine_force(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_engine_force
 //       Access: Published
-//  Description:
+//  Description: Returns the amount of accelleration force currently
+//               applied.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_engine_force() const {
@@ -313,7 +328,8 @@ set_brake(float value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_brake
 //       Access: Published
-//  Description:
+//  Description: Returns the amount of braking force currently
+//               applied.
 ////////////////////////////////////////////////////////////////////
 float BulletWheel::
 get_brake() const {
@@ -390,7 +406,7 @@ get_suspension_relative_velocity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_clipped_inv_connection_point_cs
 //       Access: Published
-//  Description:
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_clipped_inv_connection_point_cs(float value) {
@@ -412,7 +428,8 @@ get_clipped_inv_connection_point_cs() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_chassis_connection_point_cs
 //       Access: Published
-//  Description:
+//  Description: Sets the point where the wheel is connected to the
+//               chassis.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_chassis_connection_point_cs(const LPoint3f &pos) {
@@ -424,7 +441,8 @@ set_chassis_connection_point_cs(const LPoint3f &pos) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_chassis_connection_point_cs
 //       Access: Published
-//  Description:
+//  Description: Returns the point where the wheel is connected to
+//               the chassis.
 ////////////////////////////////////////////////////////////////////
 LPoint3f BulletWheel::
 get_chassis_connection_point_cs() const {
@@ -435,7 +453,8 @@ get_chassis_connection_point_cs() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_wheel_direction_cs
 //       Access: Published
-//  Description:
+//  Description: Sets the wheel's forward vector. (Most likely
+//               orthogonal to the axle vector.)
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_wheel_direction_cs(const LVector3f &dir) {
@@ -447,7 +466,8 @@ set_wheel_direction_cs(const LVector3f &dir) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_wheel_direction_cs
 //       Access: Published
-//  Description:
+//  Description: Returns the wheel's forward vector relative to the
+//               chassis.
 ////////////////////////////////////////////////////////////////////
 LVector3f BulletWheel::
 get_wheel_direction_cs() const {
@@ -458,7 +478,7 @@ get_wheel_direction_cs() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_wheel_axle_cs
 //       Access: Published
-//  Description:
+//  Description: Determines the wheel axle normal vector.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_wheel_axle_cs(const LVector3f &axle) {
@@ -470,7 +490,7 @@ set_wheel_axle_cs(const LVector3f &axle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_wheel_axle_cs
 //       Access: Published
-//  Description:
+//  Description: Returns the normal vector of the wheel axle.
 ////////////////////////////////////////////////////////////////////
 LVector3f BulletWheel::
 get_wheel_axle_cs() const {
@@ -504,7 +524,7 @@ get_world_transform() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_front_wheel
 //       Access: Published
-//  Description:
+//  Description: Sets if the wheel is steerable.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_front_wheel(bool value) {
@@ -515,7 +535,7 @@ set_front_wheel(bool value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::is_front_wheel
 //       Access: Published
-//  Description:
+//  Description: Determines if a wheel is steerable.
 ////////////////////////////////////////////////////////////////////
 bool BulletWheel::
 is_front_wheel() const {
@@ -526,7 +546,8 @@ is_front_wheel() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::set_node
 //       Access: Published
-//  Description:
+//  Description: Sets the PandaNode which representates the visual
+//               appearance of this wheel.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
 set_node(PandaNode *node) {
@@ -537,7 +558,9 @@ set_node(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_node
 //       Access: Published
-//  Description:
+//  Description: Returns the PandaNode which representates the
+//               visual appearance of this wheel, if such a
+//               representation has been set previously.
 ////////////////////////////////////////////////////////////////////
 PandaNode *BulletWheel::
 get_node() const {
