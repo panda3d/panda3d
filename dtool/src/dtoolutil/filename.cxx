@@ -2760,7 +2760,7 @@ make_dir() const {
   int result = _wmkdir(os_specific.c_str());
 #else
   string os_specific = component.to_os_specific();
-  int resutl = ::mkdir(os_specific.c_str(), 0777);
+  int result = ::mkdir(os_specific.c_str(), 0777);
 #endif  // WIN32_VC
 
   return (result == 0);
