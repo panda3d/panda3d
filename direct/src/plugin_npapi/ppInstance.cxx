@@ -1956,7 +1956,7 @@ cleanup_window() {
       DeleteObject(_bg_brush);
       _bg_brush = NULL;
     }
-    for (int step = 0; step < twirl_num_steps; ++step) {
+    for (int step = 0; step < twirl_num_steps + 1; ++step) {
       if (_twirl_bitmaps[step] != NULL) {
         DeleteObject(_twirl_bitmaps[step]);
         _twirl_bitmaps[step] = NULL;
@@ -2318,7 +2318,7 @@ win_get_twirl_bitmaps() {
   unsigned char twirl_data[twirl_size * 3];
   unsigned char new_data[twirl_size * 4];
 
-  for (int step = 0; step < twirl_num_steps; ++step) {
+  for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
                    _fgcolor_r, _fgcolor_g, _fgcolor_b, 
                    _bgcolor_r, _bgcolor_g, _bgcolor_b);
@@ -2368,14 +2368,17 @@ win_paint_twirl(HWND hwnd, HDC dc) {
   // Start by painting the background color.
   FillRect(bdc, &rect, _bg_brush);
 
-  if (!_started && !_failed) {
+  if (!_started) {
     DWORD now = GetTickCount();
     // Don't draw the twirling icon until at least half a second has
     // passed, so we don't distract people by drawing it
     // unnecessarily.
-    if ((now - _init_time) >= 500) {
+    if (_failed || (now - _init_time) >= 500) {
       // Which frame are we drawing?
       int step = (now / 100) % twirl_num_steps;
+      if (_failed) {
+        step = twirl_num_steps;
+      }
       
       HBITMAP twirl = _twirl_bitmaps[step];
       

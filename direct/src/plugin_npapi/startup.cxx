@@ -576,7 +576,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
     if (err != NPERR_NO_ERROR) {
       supports_xembed = false;
     }
-    nout << "browser supports_xembed: " << (bool)supports_xembed << "\n";
+    nout << "browser supports_xembed: " << (supports_xembed != 0) << "\n";
 #ifdef HAVE_GTK
     bool plugin_supports = true;
 #else
@@ -585,7 +585,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 #endif  // HAVE_GTK
     nout << "plugin supports_xembed: " << plugin_supports << "\n";
 
-    inst->set_xembed(supports_xembed);
+    inst->set_xembed(supports_xembed != 0);
     *(NPBool *)value = supports_xembed;
 
     return NPERR_NO_ERROR;

@@ -234,10 +234,9 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
       return;
 
     case S_failed:
-      // Something went wrong.
+      // Something went wrong.  Go ahead and draw the failed icon.
       KillTimer(1);
-      DoSuperclassPaint(pdc, rcBounds);
-      return;
+      break;
     }
 
     // The instance is setting itself up.  In the meantime, draw the
@@ -252,8 +251,11 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     // Don't draw the twirling icon until at least half a second has
     // passed, so we don't distract people by drawing it
     // unnecessarily.
-    if ((now - _init_time) >= 500) {
+    if (_state == S_failed || (now - _init_time) >= 500) {
       int step = (now / 100) % twirl_num_steps;
+      if (_state == S_failed) {
+        step = twirl_num_steps;
+      }
 
       // Create an in-memory DC compatible with the display DC we're
       // using to paint
@@ -590,7 +592,7 @@ get_twirl_bitmaps() {
   unsigned char twirl_data[twirl_size * 3];
   unsigned char new_data[twirl_size * 4];
 
-  for (int step = 0; step < twirl_num_steps; ++step) {
+  for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
                    m_instance._fgcolor_r, m_instance._fgcolor_g, m_instance._fgcolor_b, 
                    m_instance._bgcolor_r, m_instance._bgcolor_g, m_instance._bgcolor_b);

@@ -221,7 +221,7 @@ private:
 #ifdef _WIN32
   LONG_PTR _orig_window_proc;
   HWND _hwnd;
-  HBITMAP _twirl_bitmaps[twirl_num_steps];
+  HBITMAP _twirl_bitmaps[twirl_num_steps + 1];
   HBRUSH _bg_brush;
   DWORD _init_time;
 #endif  // _WIN32

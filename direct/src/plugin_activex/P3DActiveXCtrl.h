@@ -99,7 +99,7 @@ protected:
 
     CComPtr<IOleClientSite> m_spClientSite;
 
-    CBitmap _twirl_bitmaps[twirl_num_steps];
+    CBitmap _twirl_bitmaps[twirl_num_steps + 1];
 
     enum State {
       S_init,     // before starting the download
