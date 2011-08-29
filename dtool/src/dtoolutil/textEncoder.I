@@ -231,8 +231,10 @@ get_num_chars() const {
 INLINE int TextEncoder::
 get_unicode_char(int index) const {
   get_wtext();
-  nassertr(index >= 0 && index < (int)_wtext.length(), 0);
-  return _wtext[index];
+  if (index >= 0 && index < (int)_wtext.length()) {
+    return _wtext[index];
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,9 +248,10 @@ get_unicode_char(int index) const {
 INLINE void TextEncoder::
 set_unicode_char(int index, int character) {
   get_wtext();
-  nassertv(index >= 0 && index < (int)_wtext.length());
-  _wtext[index] = character;
-  _flags &= ~F_got_text;
+  if (index >= 0 && index < (int)_wtext.length()) {
+    _wtext[index] = character;
+    _flags &= ~F_got_text;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -100,7 +100,6 @@ init_libexpress() {
   Namable::init_type();
   NodeReferenceCount::init_type();
   ReferenceCount::init_type();
-  TextEncoder::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
   VirtualFile::init_type();

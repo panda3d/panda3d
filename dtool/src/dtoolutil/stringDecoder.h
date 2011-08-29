@@ -15,8 +15,7 @@
 #ifndef STRINGDECODER_H
 #define STRINGDECODER_H
 
-#include "pandabase.h"
-
+#include "dtoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StringDecoder
@@ -34,12 +33,16 @@ public:
   virtual int get_next_character();
   INLINE bool is_eof();
 
+  static void set_notify_ptr(ostream *ptr);
+  static ostream *get_notify_ptr();
+
 protected:
   INLINE bool test_eof();
 
   string _input;
   size_t _p;
   bool _eof;
+  static ostream *_notify_ptr;
 };
 
 ////////////////////////////////////////////////////////////////////

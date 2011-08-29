@@ -15,7 +15,7 @@
 #ifndef UNICODELATINMAP_H
 #define UNICODELATINMAP_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@
 //               case from upper to lower while retaining the Unicode
 //               accent marks.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS UnicodeLatinMap {
+class EXPCL_DTOOL UnicodeLatinMap {
 public:
   enum AccentType {
     AT_none,

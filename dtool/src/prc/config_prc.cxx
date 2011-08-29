@@ -14,6 +14,7 @@
 
 #include "config_prc.h"
 #include "configVariableBool.h"
+#include "configVariableEnum.h"
 #include "pandaFileStreamBuf.h"
 
 NotifyCategoryDef(prc, "");

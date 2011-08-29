@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stringDecoder.h"
-#include "config_express.h"
+#include "config_dtoolutil.h"
+
+ostream *StringDecoder::_notify_ptr = &cerr;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StringDecoder::Destructor
@@ -36,6 +38,32 @@ get_next_character() {
   }
   return (unsigned char)_input[_p++];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringDecoder::set_notify_ptr
+//       Access: Public, Static
+//  Description: Sets the ostream that is used to write error messages
+//               to.  This is necessary because of the low-level
+//               placement of this class, before the definition of the
+//               NotifyCategory class, so it cannot specify its own
+//               notify.
+////////////////////////////////////////////////////////////////////
+void StringDecoder::
+set_notify_ptr(ostream *notify_ptr) {
+  _notify_ptr = notify_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringDecoder::get_notify_ptr
+//       Access: Public, Static
+//  Description: Returns the ostream that is used to write error messages
+//               to.  See set_notify_ptr().
+////////////////////////////////////////////////////////////////////
+ostream *StringDecoder::
+get_notify_ptr() {
+  return _notify_ptr;
+}
+
 
 /*
 In UTF-8, each 16-bit Unicode character is encoded as a sequence of
@@ -79,8 +107,10 @@ get_next_character() {
       // First byte of two.
       unsigned int two = 0;
       if (test_eof()) {
-        express_cat.warning()
-          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        if (_notify_ptr != NULL) {
+          (*_notify_ptr)
+            << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        }
         return -1;
       }
       two = (unsigned char)_input[_p++];
@@ -90,14 +120,18 @@ get_next_character() {
     } else if ((result & 0xf0) == 0xe0) {
       // First byte of three.
       if (test_eof()) {
-        express_cat.warning()
-          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        if (_notify_ptr != NULL) {
+          (*_notify_ptr)
+            << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        }
         return -1;
       }
       unsigned int two = (unsigned char)_input[_p++];
       if (test_eof()) {
-        express_cat.warning()
-          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        if (_notify_ptr != NULL) {
+          (*_notify_ptr)
+            << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
+        }
         return -1;
       }
       unsigned int three = (unsigned char)_input[_p++];
@@ -107,10 +141,12 @@ get_next_character() {
 
     // Otherwise--the high bit is set but it is not one of the
     // introductory utf-8 bytes--we have an error.
-    express_cat.warning()
-      << "Non utf-8 byte in string: 0x" << hex << result << dec
-      << ", string is '" << _input << "'\n";
-    nassertr(false, -1);
+    if (_notify_ptr != NULL) {
+      (*_notify_ptr)
+        << "Non utf-8 byte in string: 0x" << hex << result << dec
+        << ", string is '" << _input << "'\n";
+    }
+    return -1;
   }
 
   // End of string reached.
@@ -130,8 +166,10 @@ get_next_character() {
 
   unsigned int high = (unsigned char)_input[_p++];
   if (test_eof()) {
-    express_cat.warning()
-      << "Unicode-encoded string has odd number of bytes.\n";
+    if (_notify_ptr != NULL) {
+      (*_notify_ptr)
+        << "Unicode-encoded string has odd number of bytes.\n";
+    }
     return -1;
   }
   unsigned int low = (unsigned char)_input[_p++];

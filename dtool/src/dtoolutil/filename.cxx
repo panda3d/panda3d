@@ -49,6 +49,8 @@
 #include <unistd.h>
 #endif
 
+TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
+
 Filename *Filename::_home_directory;
 Filename *Filename::_temp_directory;
 Filename *Filename::_user_appdata_directory;
@@ -406,6 +408,21 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   filename.set_type(type);
   return filename;
 #endif  // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::from_os_specific_w
+//       Access: Published, Static
+//  Description: The wide-string variant of from_os_specific().
+//               Returns a new Filename, converted from an os-specific
+//               wide-character string.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+from_os_specific_w(const wstring &os_specific, Filename::Type type) {
+  TextEncoder encoder;
+  encoder.set_encoding(get_filesystem_encoding());
+  encoder.set_wtext(os_specific);
+  return from_os_specific(encoder.get_text(), type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1211,6 +1228,19 @@ to_os_specific() const {
 #else // WIN32
   return standard.c_str();
 #endif // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::to_os_specific_w
+//       Access: Published
+//  Description: The wide-string variant on to_os_specific().
+////////////////////////////////////////////////////////////////////
+wstring Filename::
+to_os_specific_w() const {
+  TextEncoder encoder;
+  encoder.set_encoding(get_filesystem_encoding());
+  encoder.set_text(to_os_specific());
+  return encoder.get_wtext();
 }
 
 ////////////////////////////////////////////////////////////////////

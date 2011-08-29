@@ -15,13 +15,9 @@
 #include "textEncoder.h"
 #include "stringDecoder.h"
 #include "unicodeLatinMap.h"
-#include "config_express.h"
+#include "config_dtoolutil.h"
 
-TypeHandle TextEncoder::_type_handle;
-ConfigVariableEnum<TextEncoder::Encoding> TextEncoder::_default_encoding
-("text-encoding", TextEncoder::E_iso8859,
- PRC_DESC("Specifies how international characters are represented in strings "
-          "of 8-byte characters presented to Panda.  See TextEncoder::set_encoding()."));
+TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_iso8859;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::make_upper
@@ -379,10 +375,26 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
   } else if (word == "unicode") {
     encoding = TextEncoder::E_unicode;
   } else {
-    express_cat.error()
-      << "Invalid TextEncoder::Encoding: " << word << "\n";
+    ostream *notify_ptr = StringDecoder::get_notify_ptr();
+    if (notify_ptr != (ostream *)NULL) {
+      (*notify_ptr)
+        << "Invalid TextEncoder::Encoding: " << word << "\n";
+    }
     encoding = TextEncoder::E_iso8859;
   }
 
   return in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wstring ostream operator
+//  Description: Uses the current default encoding to output the
+//               wstring.
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, const wstring &str) {
+  TextEncoder encoder;
+  encoder.set_wtext(str);
+  out << encoder.get_text();
+  return out;
 }

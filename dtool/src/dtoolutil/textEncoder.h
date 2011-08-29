@@ -15,10 +15,8 @@
 #ifndef TEXTENCODER_H
 #define TEXTENCODER_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "unicodeLatinMap.h"
-#include "configVariableEnum.h"
-#include "typedObject.h"
 
 class StringDecoder;
 
@@ -34,7 +32,7 @@ class StringDecoder;
 //               This class is also a base class of TextNode, which
 //               inherits this functionality.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS TextEncoder {
+class EXPCL_DTOOL TextEncoder {
 PUBLISHED:
   enum Encoding {
     E_iso8859,
@@ -112,24 +110,18 @@ private:
   string _text;
   wstring _wtext;
 
-  static ConfigVariableEnum<Encoding> _default_encoding;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    register_type(_type_handle, "TextEncoder");
-  }
-
-private:
-  static TypeHandle _type_handle;
+  static Encoding _default_encoding;
 };
 
-EXPCL_PANDAEXPRESS ostream &
+EXPCL_DTOOL ostream &
 operator << (ostream &out, TextEncoder::Encoding encoding);
-EXPCL_PANDAEXPRESS istream &
+EXPCL_DTOOL istream &
 operator >> (istream &in, TextEncoder::Encoding &encoding);
+
+// We'll define the output operator for wstring here, too.  Presumably
+// this will not be automatically defined by any system libraries.
+EXPCL_DTOOL ostream &
+operator << (ostream &out, const wstring &str);
 
 #include "textEncoder.I"
 

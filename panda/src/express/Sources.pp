@@ -52,16 +52,13 @@
     pta_uchar.h pta_float.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     subfileInfo.h subfileInfo.I \
     temporaryFile.h temporaryFile.I \
-    textEncoder.h textEncoder.I \
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
-    unicodeLatinMap.h \
     vector_uchar.h vector_float.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
@@ -109,16 +106,13 @@
     pta_uchar.cxx pta_float.cxx \
     ramfile.cxx \
     referenceCount.cxx \
-    stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
     subfileInfo.cxx \
     temporaryFile.cxx \
-    textEncoder.cxx \
     threadSafePointerTo.cxx \
     threadSafePointerToBase.cxx \
     trueClock.cxx \
     typedReferenceCount.cxx \
-    unicodeLatinMap.cxx \
     vector_uchar.cxx vector_float.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
     virtualFileMount.cxx \
@@ -175,16 +169,13 @@
     pta_uchar.h pta_float.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     subfileInfo.h subfileInfo.I \
     temporaryFile.h temporaryFile.I \
-    textEncoder.h textEncoder.I \
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
-    unicodeLatinMap.h \
     vector_uchar.h vector_float.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \

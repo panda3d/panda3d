@@ -21,6 +21,9 @@
     pandaSystem.h pandaVersion.h \
     panda_getopt.h panda_getopt_long.h panda_getopt_impl.h \
     pfstream.h pfstream.I pfstreamBuf.h \
+    stringDecoder.h stringDecoder.I \
+    textEncoder.h textEncoder.I \
+    unicodeLatinMap.h \
     vector_string.h \
     vector_src.h 
 
@@ -33,6 +36,9 @@
     pandaSystem.cxx \
     panda_getopt_impl.cxx \
     pfstreamBuf.cxx pfstream.cxx \
+    stringDecoder.cxx \
+    textEncoder.cxx \
+    unicodeLatinMap.cxx \
     vector_string.cxx
 
   #define INSTALL_HEADERS \
@@ -45,6 +51,9 @@
     pandaSystem.h pandaVersion.h \
     panda_getopt.h panda_getopt_long.h panda_getopt_impl.h \
     pfstream.h pfstream.I pfstreamBuf.h \
+    stringDecoder.h stringDecoder.I \
+    textEncoder.h textEncoder.I \
+    unicodeLatinMap.h \
     vector_string.h \
     vector_src.cxx vector_src.h
 #end lib_target

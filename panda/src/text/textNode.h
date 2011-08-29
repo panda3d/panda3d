@@ -327,11 +327,9 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
-    TextEncoder::init_type();
     TextProperties::init_type();
     register_type(_type_handle, "TextNode",
                   PandaNode::get_class_type(),
-                  TextEncoder::get_class_type(),
                   TextProperties::get_class_type());
   }
   virtual TypeHandle get_type() const {
