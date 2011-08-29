@@ -250,7 +250,6 @@ begin() {
   if (!has_plugin_thread_async_call) {
     nout << "Browser version insufficient: we require at least NPAPI version 0.19.\n";
     set_failed();
-    return;
   }
 #else
   // While Safari 5 on Mac claims to provide this function, it doesn't
@@ -310,10 +309,6 @@ begin() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 set_window(NPWindow *window) {
-  if (_failed) {
-    return;
-  }
-
   if (_got_window && 
       window->x == _window.x &&
       window->y == _window.y &&
@@ -364,11 +359,13 @@ set_window(NPWindow *window) {
 
   _window = *window;
   _got_window = true;
-  
-  if (_p3d_inst == NULL) {
-    create_instance();
-  } else {
-    send_window();
+
+  if (!_failed) {
+    if (_p3d_inst == NULL) {
+      create_instance();
+    } else {
+      send_window();
+    }
   }
 }
 
@@ -2582,7 +2579,7 @@ osx_get_twirl_images() {
   static const size_t twirl_size = twirl_width * twirl_height;
   unsigned char twirl_data[twirl_size * 3];
 
-  for (int step = 0; step < twirl_num_steps; ++step) {
+  for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
                    _fgcolor_r, _fgcolor_g, _fgcolor_b, 
                    _bgcolor_r, _bgcolor_g, _bgcolor_b);
@@ -2635,7 +2632,7 @@ osx_release_twirl_images() {
   }
   _got_twirl_images = false;
 
-  for (int step = 0; step < twirl_num_steps; ++step) {
+  for (int step = 0; step < twirl_num_steps + 1; ++step) {
     OsxImageData &image = _twirl_images[step];
 
     if (image._image != NULL) {
@@ -2686,16 +2683,22 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
   CGColorRelease(bg);
   CGColorSpaceRelease(rgb_space);
 
-  struct timeval tv;
-  gettimeofday(&tv, (struct timezone *)NULL);
-  double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
+  if (_failed) {
+    // Draw the failed icon if something went wrong.
+    osx_paint_image(context, _twirl_images[twirl_num_steps]);
 
-  // Don't draw the twirling icon until at least half a second has
-  // passed, so we don't distract people by drawing it
-  // unnecessarily.
-  if (now >= 0.5) {
-    int step = ((int)(now * 10.0)) % twirl_num_steps;
-    osx_paint_image(context, _twirl_images[step]);
+  } else {
+    struct timeval tv;
+    gettimeofday(&tv, (struct timezone *)NULL);
+    double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
+    
+    // Don't draw the twirling icon until at least half a second has
+    // passed, so we don't distract people by drawing it
+    // unnecessarily.
+    if (now >= 0.5) {
+      int step = ((int)(now * 10.0)) % twirl_num_steps;
+      osx_paint_image(context, _twirl_images[step]);
+    }
   }
 }
 #endif  // MACOSX_HAS_EVENT_MODELS

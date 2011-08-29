@@ -242,7 +242,7 @@ private:
     CGColorSpaceRef _color_space;
     CGImageRef _image;
   };
-  OsxImageData _twirl_images[twirl_num_steps];
+  OsxImageData _twirl_images[twirl_num_steps + 1];
   bool _got_twirl_images;
 #endif  // MACOSX_HAS_EVENT_MODELS
 
