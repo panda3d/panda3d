@@ -1427,7 +1427,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
     long window;
     istringstream strm(parent_cstr);
     strm >> window;
-    parent_window_handle = NativeWindowHandle::make_x11((Window)window);
+    parent_window_handle = NativeWindowHandle::make_x11((X11_Window)window);
   }
 #endif
 
