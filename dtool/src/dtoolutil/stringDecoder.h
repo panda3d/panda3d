@@ -25,7 +25,7 @@
 //               a time.  This also serves as the plain old
 //               byte-at-a-time decoder.
 ////////////////////////////////////////////////////////////////////
-class StringDecoder {
+class EXPCL_DTOOL StringDecoder {
 public:
   INLINE StringDecoder(const string &input);
   virtual ~StringDecoder();
