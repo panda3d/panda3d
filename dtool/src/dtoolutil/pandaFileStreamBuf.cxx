@@ -14,6 +14,8 @@
 
 #include "pandaFileStreamBuf.h"
 #include "memoryHook.h"
+#include "filename.h"
+#include "textEncoder.h"
 
 #ifdef USE_PANDAFILESTREAM
 
@@ -133,8 +135,12 @@ open(const char *filename, ios::openmode mode) {
   flags |= FILE_FLAG_OVERLAPPED;
 #endif
 
-  _handle = CreateFile(_filename.c_str(), access, share_mode,
-                       NULL, creation_disposition, flags, NULL);
+  TextEncoder encoder;
+  encoder.set_encoding(Filename::get_filesystem_encoding());
+  encoder.set_text(_filename);
+  wstring wfilename = encoder.get_wtext();
+  _handle = CreateFileW(wfilename.c_str(), access, share_mode,
+                        NULL, creation_disposition, flags, NULL);
   if (_handle != INVALID_HANDLE_VALUE) {
     // The file was successfully opened and locked.
     _is_open = true;
