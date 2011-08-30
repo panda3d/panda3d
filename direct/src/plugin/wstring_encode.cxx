@@ -71,6 +71,7 @@ string_to_wstring(wstring &result, const string &source) {
 }
 #endif  // _WIN32
 
+#ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
 //     Function: wstring ostream operator
 //  Description: Converts the wstring to utf-8 for output.
@@ -83,3 +84,4 @@ operator << (ostream &out, const wstring &str) {
   }
   return out;
 }
+#endif  // _WIN32
