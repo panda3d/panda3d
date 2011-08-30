@@ -283,7 +283,9 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_title()) {
     string title = properties.get_title();
     _properties.set_title(title);
-    SetWindowText(_hWnd, title.c_str());
+    TextEncoder encoder;
+    wstring title_w = encoder.decode_text(title);
+    SetWindowTextW(_hWnd, title_w.c_str());
     properties.clear_title();
   }
 
@@ -953,9 +955,10 @@ bool WinGraphicsWindow::
 open_graphic_window(bool fullscreen) {
   DWORD window_style = make_style(fullscreen);
   
-  string title;
+  wstring title;
   if (_properties.has_title()) {
-    title = _properties.get_title();
+    TextEncoder encoder;
+    title = encoder.decode_text(_properties.get_title());
   }
 
   if (!_properties.has_size()) {
@@ -999,11 +1002,12 @@ open_graphic_window(bool fullscreen) {
   }
 
   if (!_hparent) { // This can be a regular window or a fullscreen window
-    _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
-                         metrics.x, metrics.y,
-                         metrics.width,
-                         metrics.height,
-                         NULL, NULL, hinstance, 0);
+    cerr << "wclass is " << wclass._name << ", title is + " << title << "\n";
+    _hWnd = CreateWindowW(wclass._name.c_str(), title.c_str(), window_style, 
+                          metrics.x, metrics.y,
+                          metrics.width,
+                          metrics.height,
+                          NULL, NULL, hinstance, 0);
   } else { // This is a regular window with a parent
     int x_origin = 0;
     int y_origin = 0;
@@ -1013,11 +1017,11 @@ open_graphic_window(bool fullscreen) {
       y_origin = _properties.get_y_origin();
     }
 
-    _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
-                         WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
-                         x_origin, y_origin,
-                         _properties.get_x_size(), _properties.get_y_size(),
-                         _hparent, NULL, hinstance, 0);
+    _hWnd = CreateWindowW(wclass._name.c_str(), title.c_str(), 
+                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
+                          x_origin, y_origin,
+                          _properties.get_x_size(), _properties.get_y_size(),
+                          _hparent, NULL, hinstance, 0);
     
     if (_hWnd) {
       // join our keyboard state with the parents
@@ -1723,6 +1727,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // supposed to come in through WM_CHAR, too, but there seems to
     // be a bug in Win2000 in that it only sends question mark
     // characters through here.)
+
+    // Actually, probably that "bug" was due to the fact that we were
+    // previously using the ANSI versions of RegisterClass etc., in
+    // which case the actual value passed to WM_CHAR seems to be
+    // poorly defined.  Now we are using RegisterClassW etc., which
+    // means WM_CHAR is absolutely supposed to be utf-16.
     if (!_ime_open) {
       _input_devices[0].keystroke(wparam);
     }
@@ -2114,7 +2124,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       (*it)->wnd_proc(this, hwnd, msg, wparam, lparam);
   }
 
-  return DefWindowProc(hwnd, msg, wparam, lparam);
+  return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
 
@@ -2142,7 +2152,7 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   // Oops, we weren't creating a window!  Don't know how to handle the
   // message, so just pass it on to Windows to deal with it.
-  return DefWindowProc(hwnd, msg, wparam, lparam);
+  return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2690,8 +2700,8 @@ static HCURSOR get_cursor(const Filename &filename);
 const WinGraphicsWindow::WindowClass &WinGraphicsWindow::
 register_window_class(const WindowProperties &props) {
   WindowClass wcreg(props);
-  ostringstream wclass_name;
-  wclass_name << "WinGraphicsWindow" << _window_class_index;
+  wostringstream wclass_name;
+  wclass_name << L"WinGraphicsWindow" << _window_class_index;
   wcreg._name = wclass_name.str();
 
   pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
@@ -2705,12 +2715,12 @@ register_window_class(const WindowProperties &props) {
   // We have not yet created this window class.
   _window_class_index++;
 
-  WNDCLASS wc;
+  WNDCLASSW wc;
 
   HINSTANCE instance = GetModuleHandle(NULL);
 
   // Clear before filling in window structure!
-  ZeroMemory(&wc, sizeof(WNDCLASS));
+  ZeroMemory(&wc, sizeof(wc));
   wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = instance;
@@ -2721,7 +2731,7 @@ register_window_class(const WindowProperties &props) {
   wc.lpszMenuName = NULL;
   wc.lpszClassName = wclass._name.c_str();
   
-  if (!RegisterClass(&wc)) {
+  if (!RegisterClassW(&wc)) {
     windisplay_cat.error()
       << "could not register window class " << wclass._name << "!" << endl;
     return wclass;

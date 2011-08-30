@@ -242,7 +242,7 @@ private:
     INLINE WindowClass(const WindowProperties &props);
     INLINE bool operator < (const WindowClass &other) const;
 
-    string _name;
+    wstring _name;
     HICON _icon;
   };
 
