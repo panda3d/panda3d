@@ -28,6 +28,9 @@ distribution.
 #include <sstream>
 #include <iostream>
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#endif  // _WIN32
 
 #include "tinyxml.h"
 
@@ -40,7 +43,26 @@ FILE* TiXmlFOpen( const char* filename, const char* mode )
 {
 	#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
 		FILE* fp = 0;
-		errno_t err = fopen_s( &fp, filename, mode );
+
+        /* Addition by drwr for Windows wide-character support */
+		//errno_t err = fopen_s( &fp, filename, mode );
+        errno_t err = 1;
+        {
+          int size = MultiByteToWideChar(CP_UTF8, 0, filename, -1,
+                                         NULL, 0);
+          if (size > 0) {
+            wchar_t *buffer = new wchar_t[size];
+            int rc = MultiByteToWideChar(CP_UTF8, 0, filename, -1,
+                                         buffer, size);
+            if (rc != 0) {
+              buffer[size - 1] = 0;
+              err = _wfopen_s( &fp, buffer, mode[0] == 'w' ? L"w" : L"rb" );
+            }
+            delete[] buffer;
+          }
+        }
+        /* End wide-character addition */
+
 		if ( !err && fp )
 			return fp;
 		return 0;
