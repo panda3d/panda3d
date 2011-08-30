@@ -34,12 +34,11 @@ wstring_to_string(string &result, const wstring &source) {
   int size = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.length(),
                                  NULL, 0, NULL, NULL);
   if (size > 0) {
-    char *buffer = new char[size + 1];
+    char *buffer = new char[size];
     int rc = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.length(),
                                  buffer, size, NULL, NULL);
     if (rc != 0) {
-      buffer[size] = 0;
-      result = buffer;
+      result.assign(buffer, size);
       success = true;
     }
     delete[] buffer;
@@ -60,12 +59,11 @@ string_to_wstring(wstring &result, const string &source) {
   int size = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.length(),
                                  NULL, 0);
   if (size > 0) {
-    wchar_t *buffer = new wchar_t[size + 1];
+    wchar_t *buffer = new wchar_t[size];
     int rc = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.length(),
                                  buffer, size);
     if (rc != 0) {
-      buffer[size] = 0;
-      result = buffer;
+      result.assign(buffer, size);
       success = true;
     }
     delete[] buffer;
@@ -104,9 +102,17 @@ url_quote(string &result, const string &source) {
   strm << hex << setfill('0');
   for (size_t p = 0; p < source.length(); ++p) {
     if (source[p] < 0x20 || source[p] >= 0x7f) {
-      strm << "%" << setw(2) << (unsigned int)source[p];
+      strm << "%" << setw(2) << (unsigned int)(unsigned char)source[p];
     } else {
       switch (source[p]) {
+        // We could quote all of these punctuation marks too, the same
+        // way actual URL quoting does.  Maybe we will one day in the
+        // future, though I don't think it matters much; mainly we're
+        // relying on quoting to protect the high-bit characters.  For
+        // now, then, we leave these unquoted, for compatibility with
+        // the p3dpython from Panda3D 1.7, which didn't expect any
+        // quoting at all.
+        /*
       case ' ':
       case '<':
       case '>':
@@ -128,8 +134,9 @@ url_quote(string &result, const string &source) {
       case '=':
       case '&':
       case '$':
-        strm << "%" << setw(2) << (unsigned int)source[p];
+        strm << "%" << setw(2) << (unsigned int)(unsigned char)source[p];
         break;
+        */
 
       default:
         strm << (char)source[p];
@@ -166,9 +173,9 @@ url_unquote(string &result, const string &source) {
         }
         ++p;
       }
-      result += (char)ch;
+      result.push_back((char)ch);
     } else {
-      result += source[p];
+      result.push_back(source[p]);
       ++p;
     }
   }
