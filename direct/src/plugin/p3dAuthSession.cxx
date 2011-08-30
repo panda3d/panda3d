@@ -18,6 +18,7 @@
 #include "p3dMultifileReader.h"
 #include "p3d_plugin_config.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 
 #include <ctype.h>
 
@@ -331,15 +332,18 @@ win_create_process() {
   // Make sure we see an error dialog if there is a missing DLL.
   SetErrorMode(0);
 
-  STARTUPINFO startup_info;
-  ZeroMemory(&startup_info, sizeof(STARTUPINFO));
+  STARTUPINFOW startup_info;
+  ZeroMemory(&startup_info, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info); 
 
   // Make sure the initial window is *shown* for this graphical app.
   startup_info.wShowWindow = SW_SHOW;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
-  const char *start_dir_cstr = _start_dir.c_str();
+  const wchar_t *start_dir_cstr;
+  wstring start_dir_w;
+  string_to_wstring(start_dir_w, _start_dir);
+  start_dir_cstr = start_dir_w.c_str();
 
   // Construct the command-line string, containing the quoted
   // command-line arguments.
@@ -351,14 +355,17 @@ win_create_process() {
   // I'm not sure why CreateProcess wants a non-const char pointer for
   // its command-line string, but I'm not taking chances.  It gets a
   // non-const char array that it can modify.
-  string command_line_str = stream.str();
-  nout << "command is: " << command_line_str << "\n";
-  char *command_line = new char[command_line_str.size() + 1];
-  strcpy(command_line, command_line_str.c_str());
+  wstring command_line_str;
+  string_to_wstring(command_line_str, stream.str());
+  wchar_t *command_line = new wchar_t[command_line_str.size() + 1];
+  memcpy(command_line, command_line_str.c_str(), sizeof(wchar_t) * command_line_str.size() + 1);
+
+  wstring p3dcert_exe_w;
+  string_to_wstring(p3dcert_exe_w, _p3dcert_exe);
 
   PROCESS_INFORMATION process_info; 
-  BOOL result = CreateProcess
-    (_p3dcert_exe.c_str(), command_line, NULL, NULL, TRUE, 0,
+  BOOL result = CreateProcessW
+    (p3dcert_exe_w.c_str(), command_line, NULL, NULL, TRUE, 0,
      (void *)_env.c_str(), start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);

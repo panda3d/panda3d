@@ -28,6 +28,7 @@
 #include "get_tinyxml.h"
 #include "binaryXml.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -1034,9 +1035,12 @@ scan_directory(const string &dirname, vector<string> &contents) {
   size_t orig_size = contents.size();
 
   string match = dirname + "\\*.*";
-  WIN32_FIND_DATA find_data;
+  WIN32_FIND_DATAW find_data;
 
-  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
+  wstring match_w;
+  string_to_wstring(match_w, match);
+
+  HANDLE handle = FindFirstFileW(match_w.c_str(), &find_data);
   if (handle == INVALID_HANDLE_VALUE) {
     if (GetLastError() == ERROR_NO_MORE_FILES) {
       // No matching files is not an error.
@@ -1046,11 +1050,12 @@ scan_directory(const string &dirname, vector<string> &contents) {
   }
 
   do {
-    string filename = find_data.cFileName;
+    string filename;
+    wstring_to_string(filename, find_data.cFileName);
     if (filename != "." && filename != "..") {
       contents.push_back(filename);
     }
-  } while (FindNextFile(handle, &find_data));
+  } while (FindNextFileW(handle, &find_data));
 
   bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
   FindClose(handle);
@@ -1146,14 +1151,23 @@ delete_directory_recursively(const string &root_dir) {
   if (!scan_directory_recursively(root_dir, contents, dirname_contents)) {
     // Maybe it's just a single file, not a directory.  Delete it.
 #ifdef _WIN32
+    wstring root_dir_w;
+    string_to_wstring(root_dir_w, root_dir);
     // Windows can't delete a file if it's read-only.
-    chmod(root_dir.c_str(), 0644);
-#endif
+    _wchmod(root_dir_w.c_str(), 0644);
+    int result = _wunlink(root_dir_w.c_str());
+#else  // _WIN32
     int result = unlink(root_dir.c_str());
+#endif  // _WIN32
     if (result == 0) {
       nout << "Deleted " << root_dir << "\n";
     } else {
-      if (access(root_dir.c_str(), 0) == 0) {
+#ifdef _WIN32
+      result = _waccess(root_dir_w.c_str(), 0);
+#else  // _WIN32
+      result = access(root_dir.c_str(), 0);
+#endif  // _WIN32
+      if (result == 0) {
         nout << "Could not delete " << root_dir << "\n";
       }
     }
@@ -1166,10 +1180,14 @@ delete_directory_recursively(const string &root_dir) {
     string pathname = root_dir + "/" + filename;
 
 #ifdef _WIN32
+    wstring pathname_w;
+    string_to_wstring(pathname_w, pathname);
     // Windows can't delete a file if it's read-only.
-    chmod(pathname.c_str(), 0644);
-#endif
+    _wchmod(pathname_w.c_str(), 0644);
+    int result = _wunlink(pathname_w.c_str());
+#else  // _WIN32
     int result = unlink(pathname.c_str());
+#endif  // _WIN32
     if (result == 0) {
       nout << "  Deleted " << filename << "\n";
     } else {
@@ -1184,9 +1202,13 @@ delete_directory_recursively(const string &root_dir) {
     string pathname = root_dir + "/" + filename;
 
 #ifdef _WIN32
-    chmod(pathname.c_str(), 0755);
-#endif
+    wstring pathname_w;
+    string_to_wstring(pathname_w, pathname);
+    _wchmod(pathname_w.c_str(), 0755);
+    int result = _wrmdir(pathname_w.c_str());
+#else  // _WIN32
     int result = rmdir(pathname.c_str());
+#endif  // _WIN32
     if (result == 0) {
       nout << "  Removed directory " << filename << "\n";
     } else {
@@ -1197,13 +1219,22 @@ delete_directory_recursively(const string &root_dir) {
   // Finally, delete the root directory itself.
   string pathname = root_dir;
 #ifdef _WIN32
-  chmod(pathname.c_str(), 0755);
-#endif
+  wstring pathname_w;
+  string_to_wstring(pathname_w, pathname);
+  _wchmod(pathname_w.c_str(), 0755);
+  int result = _wrmdir(pathname_w.c_str());
+#else  // _WIN32
   int result = rmdir(pathname.c_str());
+#endif  // _WIN32
   if (result == 0) {
     nout << "Removed directory " << root_dir << "\n";
   } else {
-    if (access(pathname.c_str(), 0) == 0) {
+#ifdef _WIN32
+    result = _waccess(pathname_w.c_str(), 0);
+#else  // _WIN32
+    result = access(pathname.c_str(), 0);
+#endif  // _WIN32
+    if (result == 0) {
       nout << "Could not remove directory " << root_dir << "\n";
     }
   }
@@ -1295,7 +1326,13 @@ create_runtime_environment() {
 
   logfile.close();
   logfile.clear();
+#ifdef _WIN32
+  wstring log_pathname_w;
+  string_to_wstring(log_pathname_w, _log_pathname);
+  logfile.open(log_pathname_w.c_str(), ios::out | ios::trunc);
+#else
   logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+#endif  // _WIN32
   if (logfile) {
     logfile.setf(ios::unitbuf);
     nout_stream = &logfile;
@@ -1303,7 +1340,8 @@ create_runtime_environment() {
 
   // Determine the temporary directory.
 #ifdef _WIN32
-  char buffer_1[MAX_PATH];
+  wchar_t buffer_1[MAX_PATH];
+  wstring temp_directory_w;
 
   // Figuring out the correct path for temporary files is a real mess
   // on Windows.  We should be able to use GetTempPath(), but that
@@ -1328,23 +1366,23 @@ create_runtime_environment() {
   // SHGetSpecialFolderPath().
 
   if (getenv("TEMP") != NULL || getenv("TMP") != NULL) {
-    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
-      _temp_directory = buffer_1;
+    if (GetTempPathW(MAX_PATH, buffer_1) != 0) {
+      temp_directory_w = buffer_1;
     }
   }
-  if (_temp_directory.empty()) {
-    if (SHGetSpecialFolderPath(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
-      _temp_directory = buffer_1;
+  if (temp_directory_w.empty()) {
+    if (SHGetSpecialFolderPathW(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
+      temp_directory_w = buffer_1;
 
       // That just *might* return a non-writable folder, if we're in
       // Protected Mode.  We'll test this with GetTempFileName().
-      char temp_buffer[MAX_PATH];
-      if (!GetTempFileName(_temp_directory.c_str(), "p3d", 0, temp_buffer)) {
-        nout << "GetTempFileName failed on " << _temp_directory
+      wchar_t temp_buffer[MAX_PATH];
+      if (!GetTempFileNameW(temp_directory_w.c_str(), L"p3d", 0, temp_buffer)) {
+        nout << "GetTempFileName failed on " << temp_directory_w
              << ", switching to GetTempPath\n";
-        _temp_directory.clear();
+        temp_directory_w.clear();
       } else {
-        DeleteFile(temp_buffer);
+        DeleteFileW(temp_buffer);
       }
     }
   }
@@ -1352,22 +1390,23 @@ create_runtime_environment() {
   // If both of the above failed, we'll fall back to GetTempPath()
   // once again as a last resort, which is supposed to return
   // *something* that works, even if $TEMP and $TMP are undefined.
-  if (_temp_directory.empty()) {
-    if (GetTempPath(MAX_PATH, buffer_1) != 0) {
-      _temp_directory = buffer_1;
+  if (temp_directory_w.empty()) {
+    if (GetTempPathW(MAX_PATH, buffer_1) != 0) {
+      temp_directory_w = buffer_1;
     }
   }
 
   // Also insist that the temp directory is fully specified.
-  size_t needs_size_2 = GetFullPathName(_temp_directory.c_str(), 0, NULL, NULL);
-  char *buffer_2 = new char[needs_size_2];
-  if (GetFullPathName(_temp_directory.c_str(), needs_size_2, buffer_2, NULL) != 0) {
-    _temp_directory = buffer_2;
+  size_t needs_size_2 = GetFullPathNameW(temp_directory_w.c_str(), 0, NULL, NULL);
+  wchar_t *buffer_2 = new wchar_t[needs_size_2];
+  if (GetFullPathNameW(temp_directory_w.c_str(), needs_size_2, buffer_2, NULL) != 0) {
+    temp_directory_w = buffer_2;
   }
   delete[] buffer_2;
 
   // And make sure the directory actually exists.
-  mkdir_complete(_temp_directory, nout);
+  mkdir_complete_w(temp_directory_w, nout);
+  wstring_to_string(_temp_directory, temp_directory_w);
 
 #else
   _temp_directory = "/tmp/";

@@ -16,7 +16,7 @@
 #define IS_PATHSEP_H
 
 inline bool
-is_pathsep(char ch);
+is_pathsep(int ch);
 
 #include "is_pathsep.I"
 

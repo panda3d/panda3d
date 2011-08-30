@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fileSpec.h"
+#include "wstring_encode.h"
 #include "openssl/md5.h"
 
 #include <fstream>
@@ -26,8 +27,6 @@
 #ifdef _WIN32
 #include <sys/utime.h>
 #include <direct.h>
-#define stat _stat
-#define utime _utime
 #define utimbuf _utimbuf
 
 #else
@@ -137,7 +136,7 @@ store_xml(TiXmlElement *xelement) {
     xelement->SetAttribute("size", _size);
   }
   if (_timestamp != 0) {
-    xelement->SetAttribute("timestamp", _timestamp);
+    xelement->SetAttribute("timestamp", (int)_timestamp);
   }
   if (_got_hash) {
     char hash[hash_size * 2 + 1];
@@ -177,8 +176,19 @@ quick_verify_pathname(const string &pathname) {
     _actual_file = NULL;
   }
 
+  int result = 1;
+#ifdef _WIN32
+  struct _stat st;
+  wstring pathname_w;
+  if (string_to_wstring(pathname_w, pathname)) {
+    result = _wstat(pathname_w.c_str(), &st);
+  }
+#else // _WIN32
   struct stat st;
-  if (stat(pathname.c_str(), &st) != 0) {
+  result = stat(pathname.c_str(), &st);
+#endif  // _WIN32
+
+  if (result != 0) {
     //cerr << "file not found: " << _filename << "\n";
     return false;
   }
@@ -213,7 +223,12 @@ quick_verify_pathname(const string &pathname) {
   utimbuf utb;
   utb.actime = st.st_atime;
   utb.modtime = _timestamp;
+
+#ifdef _WIN32
+  _wutime(pathname_w.c_str(), &utb);
+#else // _WIN32
   utime(pathname.c_str(), &utb);
+#endif  // _WIN32
 
   return true;
 }
@@ -237,8 +252,19 @@ full_verify(const string &package_dir) {
   }
 
   string pathname = get_pathname(package_dir);
+  int result = 1;
+#ifdef _WIN32
+  struct _stat st;
+  wstring pathname_w;
+  if (string_to_wstring(pathname_w, pathname)) {
+    result = _wstat(pathname_w.c_str(), &st);
+  }
+#else // _WIN32
   struct stat st;
-  if (stat(pathname.c_str(), &st) != 0) {
+  result = stat(pathname.c_str(), &st);
+#endif  // _WIN32
+
+  if (result != 0) {
     //cerr << "file not found: " << _filename << "\n";
     return false;
   }
@@ -265,7 +291,11 @@ full_verify(const string &package_dir) {
     utimbuf utb;
     utb.actime = st.st_atime;
     utb.modtime = _timestamp;
+#ifdef _WIN32
+    _wutime(pathname_w.c_str(), &utb);
+#else // _WIN32
     utime(pathname.c_str(), &utb);
+#endif  // _WIN32
   }
     
   return true;
@@ -298,7 +328,16 @@ read_hash(const string &pathname) {
   memset(_hash, 0, hash_size);
   _got_hash = false;
 
-  ifstream stream(pathname.c_str(), ios::in | ios::binary);
+  ifstream stream;
+#ifdef _WIN32
+  wstring pathname_w;
+  if (string_to_wstring(pathname_w, pathname)) {
+    stream.open(pathname_w.c_str(), ios::in | ios::binary);
+  }
+#else // _WIN32
+  stream.open(pathname.c_str(), ios::in | ios::binary);
+#endif  // _WIN32
+  
   if (!stream) {
     //cerr << "unable to read " << pathname << "\n";
     return false;

@@ -15,6 +15,7 @@
 #include "p3dMultifileReader.h"
 #include "p3dPackage.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 
 #include <time.h>
 
@@ -108,7 +109,15 @@ extract_all(const string &to_dir, P3DPackage *package,
       return false;
     }
 
-    ofstream out(output_pathname.c_str(), ios::out | ios::binary);
+    ofstream out;
+#ifdef _WIN32
+    wstring output_pathname_w;
+    if (string_to_wstring(output_pathname_w, output_pathname)) {
+      out.open(output_pathname_w.c_str(), ios::out | ios::binary);
+    }
+#else // _WIN32
+    out.open(output_pathname.c_str(), ios::out | ios::binary);
+#endif  // _WIN32
     if (!out) {
       nout << "Unable to write to " << output_pathname << "\n";
       return false;
@@ -217,7 +226,14 @@ read_header(const string &pathname) {
   _cert_special.clear();
   _signatures.clear();
 
+#ifdef _WIN32
+  wstring pathname_w;
+  if (string_to_wstring(pathname_w, pathname)) {
+    _in.open(pathname_w.c_str(), ios::in | ios::binary);
+  }
+#else // _WIN32
   _in.open(pathname.c_str(), ios::in | ios::binary);
+#endif  // _WIN32
   if (!_in) {
     nout << "Couldn't open " << pathname << "\n";
     return false;

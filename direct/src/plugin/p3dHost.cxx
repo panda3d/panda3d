@@ -16,6 +16,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dPackage.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 #include "openssl/md5.h"
 
 #include <algorithm>
@@ -772,7 +773,12 @@ standardize_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
 copy_file(const string &from_filename, const string &to_filename) {
-  ifstream in(from_filename.c_str(), ios::in | ios::binary);
+#ifdef _WIN32
+  ifstream in;
+  wstring from_filename_w;
+  if (string_to_wstring(from_filename_w, from_filename)) {
+    in.open(from_filename_w.c_str(), ios::in | ios::binary);
+  }
 
   // Copy to a temporary file first, in case (a) the filenames
   // actually refer to the same file, or (b) in case we have different
@@ -780,13 +786,66 @@ copy_file(const string &from_filename, const string &to_filename) {
   // partially overwriting the file should something go wrong.
   ostringstream strm;
   strm << to_filename << ".t";
-#ifdef _WIN32
   strm << GetCurrentProcessId() << "_" << GetCurrentThreadId();
-#else
-  strm << getpid();
-#endif
   string temp_filename = strm.str();
-  ofstream out(temp_filename.c_str(), ios::out | ios::binary);
+  ofstream out;
+  wstring temp_filename_w;
+  if (string_to_wstring(temp_filename_w, temp_filename)) {
+    out.open(temp_filename_w.c_str(), ios::out | ios::binary);
+  }
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      unlink(temp_filename.c_str());
+      return false;
+    }
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+  out.close();
+
+  wstring to_filename_w;
+  string_to_wstring(to_filename_w, to_filename);
+
+  if (!in.eof()) {
+    _wunlink(temp_filename_w.c_str());
+    return false;
+  }
+
+  if (_wrename(temp_filename_w.c_str(), to_filename_w.c_str()) == 0) {
+    return true;
+  }
+
+  _wunlink(to_filename_w.c_str());
+  if (_wrename(temp_filename_w.c_str(), to_filename_w.c_str()) == 0) {
+    return true;
+  }
+
+  _wunlink(temp_filename_w.c_str());
+  return false;
+
+#else  // _WIN32
+
+  ifstream in;
+  in.open(from_filename.c_str(), ios::in | ios::binary);
+
+  // Copy to a temporary file first, in case (a) the filenames
+  // actually refer to the same file, or (b) in case we have different
+  // processes writing to the same file, and (c) to prevent
+  // partially overwriting the file should something go wrong.
+  ostringstream strm;
+  strm << to_filename << ".t";
+  strm << getpid();
+
+  string temp_filename = strm.str();
+  ofstream out;
+  out.open(temp_filename.c_str(), ios::out | ios::binary);
         
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -820,6 +879,7 @@ copy_file(const string &from_filename, const string &to_filename) {
 
   unlink(temp_filename.c_str());
   return false;
+#endif  // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -833,13 +893,39 @@ save_xml_file(TiXmlDocument *doc, const string &to_filename) {
   // Save to a temporary file first, in case (a) we have different
   // processes writing to the same file, and (b) to prevent partially
   // overwriting the file should something go wrong.
+
+#ifdef _WIN32
   ostringstream strm;
   strm << to_filename << ".t";
-#ifdef _WIN32
   strm << GetCurrentProcessId() << "_" << GetCurrentThreadId();
-#else
+  string temp_filename = strm.str();
+
+  wstring temp_filename_w;
+  string_to_wstring(temp_filename_w, temp_filename);
+  wstring to_filename_w;
+  string_to_wstring(to_filename_w, to_filename);
+
+  if (!doc->SaveFile(temp_filename.c_str())) {
+    _wunlink(temp_filename_w.c_str());
+    return false;
+  }
+
+  if (_wrename(temp_filename_w.c_str(), to_filename_w.c_str()) == 0) {
+    return true;
+  }
+
+  _wunlink(to_filename_w.c_str());
+  if (_wrename(temp_filename_w.c_str(), to_filename_w.c_str()) == 0) {
+    return true;
+  }
+
+  _wunlink(temp_filename_w.c_str());
+  return false;
+
+#else  // _WIN32
+  ostringstream strm;
+  strm << to_filename << ".t";
   strm << getpid();
-#endif
   string temp_filename = strm.str();
 
   if (!doc->SaveFile(temp_filename.c_str())) {
@@ -858,6 +944,7 @@ save_xml_file(TiXmlDocument *doc, const string &to_filename) {
 
   unlink(temp_filename.c_str());
   return false;
+#endif  // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////

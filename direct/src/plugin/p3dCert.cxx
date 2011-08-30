@@ -13,6 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dCert.h"
+#include "wstring_encode.h"
+#include "mkdir_complete.h"
 
 #include <Fl/Fl_Box.H>
 #include <Fl/Fl_Button.H>
@@ -198,21 +200,26 @@ approve_cert() {
   assert(_cert != NULL);
 
   // Make sure the directory exists.
-#ifdef _WIN32
-  mkdir(_cert_dir.c_str());
-#else
-  mkdir(_cert_dir.c_str(), 0755);
-#endif
+  mkdir_complete(_cert_dir, cerr);
 
   // Look for an unused filename.
   int i = 1;
-  char buf [PATH_MAX];
+  size_t buf_length = _cert_dir.length() + 100;
+  char *buf = new char[buf_length];
+#ifdef _WIN32
+  wstring buf_w;
+#endif // _WIN32
+
   while (true) {
     sprintf(buf, "%s/p%d.crt", _cert_dir.c_str(), i);
+    assert(strlen(buf) < buf_length);
 
     // Check if it already exists.  If not, take it.
 #ifdef _WIN32
-    DWORD results = GetFileAttributes(buf);
+    DWORD results = 0;
+    if (string_to_wstring(buf_w, buf)) {
+      results = GetFileAttributesW(buf_w.c_str());
+    }
     if (results == -1) {
       break;
     }
@@ -227,11 +234,17 @@ approve_cert() {
 
   // Sure, there's a slight race condition right now: another process
   // might attempt to create the same filename.  So what.
-  FILE *fp = fopen(buf, "w");
+  FILE *fp = NULL;
+#ifdef _WIN32
+  fp = _wfopen(buf_w.c_str(), L"w");
+#else // _WIN32
+  fp = fopen(buf, "w");
+#endif  // _WIN32
   if (fp != NULL) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
   }
+
   hide();
 }
 
@@ -243,7 +256,16 @@ approve_cert() {
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
 read_cert_file(const string &cert_filename) {
-  FILE *fp = fopen(cert_filename.c_str(), "r");
+  FILE *fp = NULL;
+#ifdef _WIN32
+  wstring cert_filename_w;
+  if (string_to_wstring(cert_filename_w, cert_filename)) {
+    fp = _wfopen(cert_filename_w.c_str(), L"r");
+  }
+#else // _WIN32
+  fp = fopen(cert_filename.c_str(), "r");
+#endif  // _WIN32
+
   if (fp == NULL) {
     cerr << "Couldn't read " << cert_filename.c_str() << "\n";
     return;

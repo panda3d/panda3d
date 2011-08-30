@@ -15,6 +15,7 @@
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
 #include "is_pathsep.h"
+#include "wstring_encode.h"
 
 #include "assert.h"
 
@@ -168,7 +169,10 @@ load_plugin(const string &p3d_plugin_filename,
     }
     
     SetErrorMode(0);
-    module = LoadLibrary(filename.c_str());
+    wstring filename_w;
+    if (string_to_wstring(filename_w, filename)) {
+      module = LoadLibraryW(filename_w.c_str());
+    }
     dso_needs_unload = true;
   }
 

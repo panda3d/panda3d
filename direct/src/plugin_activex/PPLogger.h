@@ -30,9 +30,6 @@ public:
     static std::ofstream& Log( ) { return m_logfile; }
 
 protected:
-  int CreateNewFile(const std::string& dirname, const std::string& filename );
-  int CreateNewFolder( const std::string& dirname );
-
   static bool m_isOpen;
   static std::ofstream m_logfile;
 };

@@ -22,6 +22,11 @@ using namespace std;
 bool mkdir_complete(const string &dirname, ostream &logfile);
 bool mkfile_complete(const string &dirname, ostream &logfile);
 
+#ifdef _WIN32
+bool mkdir_complete_w(const wstring &dirname, ostream &logfile);
+bool mkfile_complete_w(const wstring &dirname, ostream &logfile);
+#endif  // _WIN32
+
 #endif
 
 

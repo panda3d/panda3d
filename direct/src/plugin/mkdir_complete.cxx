@@ -14,6 +14,7 @@
 
 #include "mkdir_complete.h"
 #include "is_pathsep.h"
+#include "wstring_encode.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -46,6 +47,26 @@ get_dirname(const string &filename) {
   return string();
 }
 
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: get_dirname_w
+//  Description: The wide-character implementation of get_dirname().
+//               Only implemented (and needed) on Windows.
+////////////////////////////////////////////////////////////////////
+static wstring
+get_dirname_w(const wstring &filename) {
+  size_t p = filename.length();
+  while (p > 0) {
+    --p;
+    if (is_pathsep(filename[p])) {
+      return filename.substr(0, p);
+    }
+  }
+
+  return wstring();
+}
+#endif  // _WIN32
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -58,32 +79,11 @@ get_dirname(const string &filename) {
 bool
 mkdir_complete(const string &dirname, ostream &logfile) {
 #ifdef _WIN32
-  if (CreateDirectory(dirname.c_str(), NULL) != 0) {
-    // Success!
-    return true;
+  wstring dirname_w;
+  if (!string_to_wstring(dirname_w, dirname)) {
+    return false;
   }
-
-  // Failed.
-  DWORD last_error = GetLastError();
-  if (last_error == ERROR_ALREADY_EXISTS) {
-    // Not really an error: the directory is already there.
-    return true;
-  }
-
-  if (last_error == ERROR_PATH_NOT_FOUND) {
-    // We need to make the parent directory first.
-    string parent = get_dirname(dirname);
-    if (!parent.empty() && mkdir_complete(parent, logfile)) {
-      // Parent successfully created.  Try again to make the child.
-      if (CreateDirectory(dirname.c_str(), NULL) != 0) {
-        // Got it!
-        return true;
-      }
-      logfile 
-        << "Couldn't create " << dirname << "\n";
-    }
-  }
-  return false;
+  return mkdir_complete_w(dirname_w, logfile);
 
 #else  //_WIN32
   if (mkdir(dirname.c_str(), 0755) == 0) {
@@ -125,36 +125,16 @@ mkdir_complete(const string &dirname, ostream &logfile) {
 ////////////////////////////////////////////////////////////////////
 bool
 mkfile_complete(const string &filename, ostream &logfile) {
-  // Make sure we delete any previously-existing file first.
 #ifdef _WIN32
-  // Windows can't delete a file if it's read-only.  Weird.
-  chmod(filename.c_str(), 0644);
-#endif
+  wstring filename_w;
+  if (!string_to_wstring(filename_w, filename)) {
+    return false;
+  }
+  return mkfile_complete_w(filename_w, logfile);
+#else  // _WIN32
+  // Make sure we delete any previously-existing file first.
   unlink(filename.c_str());
 
-#ifdef _WIN32
-  HANDLE file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
-                           FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                           NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (file == INVALID_HANDLE_VALUE) {
-    // Try to make the parent directory first.
-    string parent = get_dirname(filename);
-    if (!parent.empty() && mkdir_complete(parent, logfile)) {
-      // Parent successfully created.  Try again to make the file.
-      file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
-                        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    }
-    if (file == INVALID_HANDLE_VALUE) {
-      logfile
-        << "Couldn't create " << filename << "\n";
-      return false;
-    }
-  }
-  CloseHandle(file);
-  return true;
-
-#else  // _WIN32
   int fd = creat(filename.c_str(), 0755);
   if (fd == -1) {
     // Try to make the parent directory first.
@@ -174,3 +154,80 @@ mkfile_complete(const string &filename, ostream &logfile) {
 
 #endif  // _WIN32
 }
+
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: mkdir_complete_w
+//  Description: The wide-character implementation of
+//               mkdir_complete().  Only implemented (and needed) on
+//               Windows.
+////////////////////////////////////////////////////////////////////
+bool
+mkdir_complete_w(const wstring &dirname, ostream &logfile) {
+  if (CreateDirectoryW(dirname.c_str(), NULL) != 0) {
+    // Success!
+    return true;
+  }
+
+  // Failed.
+  DWORD last_error = GetLastError();
+  if (last_error == ERROR_ALREADY_EXISTS) {
+    // Not really an error: the directory is already there.
+    return true;
+  }
+
+  if (last_error == ERROR_PATH_NOT_FOUND) {
+    // We need to make the parent directory first.
+    wstring parent = get_dirname_w(dirname);
+    if (!parent.empty() && mkdir_complete_w(parent, logfile)) {
+      // Parent successfully created.  Try again to make the child.
+      if (CreateDirectoryW(dirname.c_str(), NULL) != 0) {
+        // Got it!
+        return true;
+      }
+      logfile 
+        << "Couldn't create " << dirname << "\n";
+    }
+  }
+  return false;
+}
+#endif  // _WIN32
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: mkfile_complete_w
+//  Description: The wide-character implementation of
+//               mkfile_complete().  Only implemented (and needed) on
+//               Windows.
+////////////////////////////////////////////////////////////////////
+bool
+mkfile_complete_w(const wstring &filename, ostream &logfile) {
+  // Make sure we delete any previously-existing file first.
+
+  // Windows can't delete a file if it's read-only.  Weird.
+  _wchmod(filename.c_str(), 0644);
+  _wunlink(filename.c_str());
+
+  HANDLE file = CreateFileW(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (file == INVALID_HANDLE_VALUE) {
+    // Try to make the parent directory first.
+    wstring parent = get_dirname_w(filename);
+    if (!parent.empty() && mkdir_complete_w(parent, logfile)) {
+      // Parent successfully created.  Try again to make the file.
+      file = CreateFileW(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+                         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                         NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    }
+    if (file == INVALID_HANDLE_VALUE) {
+      logfile
+        << "Couldn't create " << filename << "\n";
+      return false;
+    }
+  }
+  CloseHandle(file);
+  return true;
+}
+#endif  // _WIN32

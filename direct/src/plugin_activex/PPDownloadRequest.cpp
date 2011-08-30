@@ -16,6 +16,7 @@
 
 #include "PPDownloadRequest.h"
 #include "PPInstance.h"
+#include "wstring_encode.h"
 
 bool PPDownloadRequest::Begin( ) 
 {
@@ -54,7 +55,9 @@ bool PPDownloadRequest::DataNotify( size_t expectedDataSize, const void* data, s
         {
             if ( m_hFile == INVALID_HANDLE_VALUE )
             {
-                m_hFile = ::CreateFile( m_fileName.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+                wstring filename_w;
+                string_to_wstring(filename_w, m_fileName);
+                m_hFile = ::CreateFileW( filename_w.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
                 if ( m_hFile == INVALID_HANDLE_VALUE )
                 {
                     return ret;

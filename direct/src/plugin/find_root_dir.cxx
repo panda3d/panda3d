@@ -15,6 +15,7 @@
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
 #include "get_tinyxml.h"
+#include "wstring_encode.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -39,68 +40,41 @@ DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: get_csidl_dir
+//     Function: get_csidl_dir_w
 //  Description: A wrapper around SHGetSpecialFolderPath(), to return
 //               the Panda3D directory under the indicated CSIDL
 //               folder.
 ////////////////////////////////////////////////////////////////////
-static string
-get_csidl_dir(int csidl) {
+static wstring
+get_csidl_dir_w(int csidl) {
   static const int buffer_size = MAX_PATH;
-  char buffer[buffer_size];
-  if (SHGetSpecialFolderPath(NULL, buffer, csidl, true)) {
-    string root = buffer;
-    root += string("/Panda3D");
+  wchar_t buffer[buffer_size];
+  if (SHGetSpecialFolderPathW(NULL, buffer, csidl, true)) {
+    wstring root = buffer;
+    root += wstring(L"/Panda3D");
     
-    if (mkdir_complete(root, cerr)) {
+    if (mkdir_complete_w(root, cerr)) {
       return root;
     }
   }
 
   // Something went wrong.
-  return string();
+  return wstring();
 }
 #endif  // _WIN32
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: wstr_to_string
-//  Description: Converts Windows' LPWSTR to a std::string.
+//     Function: find_root_dir_default_w
+//  Description: Wide-character implementation of
+//               find_root_dir_default(), only needed for Windows.
 ////////////////////////////////////////////////////////////////////
-static bool
-wstr_to_string(string &result, const LPWSTR wstr) {
-  bool success = false;
-  int size = WideCharToMultiByte(CP_UTF8, 0, wstr, -1,
-                                 NULL, 0, NULL, NULL);
-  if (size > 0) {
-    char *buffer = new char[size];
-    int rc = WideCharToMultiByte(CP_UTF8, 0, wstr, -1,
-                                 buffer, size, NULL, NULL);
-    if (rc != 0) {
-      buffer[size - 1] = 0;
-      result = buffer;
-      success = true;
-    }
-    delete[] buffer;
-  }
-
-  return success;
-}
-#endif  // _WIN32
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir_default
-//  Description: Returns the path to the system-default for the root
-//               directory.  This is where we look first.
-////////////////////////////////////////////////////////////////////
-static string
-find_root_dir_default() {
-#ifdef _WIN32
+static wstring
+find_root_dir_default_w() {
   // First, use IEIsProtectedModeProcess() to determine if we are
   // running in IE's "protected mode" under Vista.
 
-  string root;
+  wstring root;
   bool is_protected = false;
   HMODULE ieframe = LoadLibrary("ieframe.dll");
   if (ieframe != NULL) {
@@ -139,18 +113,14 @@ find_root_dir_default() {
           HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, 0, NULL, &cache_path);
           
           if (SUCCEEDED(hr)) {
-            if (!wstr_to_string(root, cache_path)) {
-              // Couldn't decode the LPWSTR.
-              CoTaskMemFree(cache_path);
-            } else {
-              CoTaskMemFree(cache_path);
+            root = cache_path;
+            CoTaskMemFree(cache_path);
               
-              root += string("/Panda3D");
-              if (mkdir_complete(root, cerr)) {
-                FreeLibrary(shell32);
-                FreeLibrary(ieframe);
-                return root;
-              }
+            root += wstring(L"/Panda3D");
+            if (mkdir_complete_w(root, cerr)) {
+              FreeLibrary(shell32);
+              FreeLibrary(ieframe);
+              return root;
             }
           }
         }
@@ -174,16 +144,12 @@ find_root_dir_default() {
         }
 
         if (SUCCEEDED(hr)) {
-          if (!wstr_to_string(root, cache_path)) {
-            // Couldn't decode the LPWSTR.
-            CoTaskMemFree(cache_path);
-          } else {
-            CoTaskMemFree(cache_path);
-            root += string("/Panda3D");
-            if (mkdir_complete(root, cerr)) {
-              FreeLibrary(ieframe);
-              return root;
-            }
+          root = cache_path;
+          CoTaskMemFree(cache_path);
+          root += wstring(L"/Panda3D");
+          if (mkdir_complete_w(root, cerr)) {
+            FreeLibrary(ieframe);
+            return root;
           }            
         }
       }
@@ -196,7 +162,7 @@ find_root_dir_default() {
   // also the normal XP codepath.
 
   // e.g., c:/Documents and Settings/<username>/Local Settings/Application Data/Panda3D
-  root = get_csidl_dir(CSIDL_LOCAL_APPDATA);
+  root = get_csidl_dir_w(CSIDL_LOCAL_APPDATA);
   if (!root.empty()) {
     return root;
   }
@@ -205,7 +171,7 @@ find_root_dir_default() {
   // back to the cache folder.
 
   // e.g. c:/Documents and Settings/<username>/Local Settings/Temporary Internet Files/Panda3D
-  root = get_csidl_dir(CSIDL_INTERNET_CACHE);
+  root = get_csidl_dir_w(CSIDL_INTERNET_CACHE);
   if (!root.empty()) {
     return root;
   }
@@ -213,11 +179,32 @@ find_root_dir_default() {
   // If we couldn't get any of those folders, huh.  Punt and try for
   // the old standby GetTempPath, for lack of anything better.
   static const int buffer_size = MAX_PATH;
-  char buffer[buffer_size];
-  if (GetTempPath(buffer_size, buffer) != 0) {
+  wchar_t buffer[buffer_size];
+  if (GetTempPathW(buffer_size, buffer) != 0) {
     root = buffer;
-    root += string("Panda3D");
-    if (mkdir_complete(root, cerr)) {
+    root += wstring(L"Panda3D");
+    if (mkdir_complete_w(root, cerr)) {
+      return root;
+    }
+  }
+
+  return wstring();
+}
+#endif  // _WIN32
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_root_dir_default
+//  Description: Returns the path to the system-default for the root
+//               directory.  This is where we look first.
+////////////////////////////////////////////////////////////////////
+static string
+find_root_dir_default() {
+#ifdef _WIN32
+  wstring root_w = find_root_dir_default_w();
+  if (!root_w.empty()) {
+    string root;
+    if (wstring_to_string(root, root_w)) {
       return root;
     }
   }

@@ -110,6 +110,7 @@ protected:
     int _num_tokens;
 
     std::string m_rootDir;
+    std::wstring m_rootDir_w;
 
     class ThreadedRequestData {
     public:

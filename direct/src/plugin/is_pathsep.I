@@ -20,7 +20,7 @@
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 inline bool
-is_pathsep(char ch) {
+is_pathsep(int ch) {
   if (ch == '/') {
     return true;
   }

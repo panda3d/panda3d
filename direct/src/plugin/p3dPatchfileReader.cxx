@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dPatchfileReader.h"
+#include "wstring_encode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPatchfileReader::Constructor
@@ -62,15 +63,36 @@ open_read() {
 
   string patch_pathname = _patchfile.get_pathname(_package_dir);
   _patch_in.clear();
+#ifdef _WIN32
+  wstring patch_pathname_w;
+  if (string_to_wstring(patch_pathname_w, patch_pathname)) {
+    _patch_in.open(patch_pathname_w.c_str(), ios::in | ios::binary);
+  }
+#else // _WIN32
   _patch_in.open(patch_pathname.c_str(), ios::in | ios::binary);
+#endif  // _WIN32
 
   string source_pathname = _source.get_pathname(_package_dir);
   _source_in.clear();
+#ifdef _WIN32
+  wstring source_pathname_w;
+  if (string_to_wstring(source_pathname_w, source_pathname)) {
+    _source_in.open(source_pathname_w.c_str(), ios::in | ios::binary);
+  }
+#else // _WIN32
   _source_in.open(source_pathname.c_str(), ios::in | ios::binary);
+#endif  // _WIN32
 
   mkfile_complete(_output_pathname, nout);
   _target_out.clear();
-  _target_out.open(_output_pathname.c_str(), ios::out | ios::binary);
+#ifdef _WIN32
+  wstring output_pathname_w;
+  if (string_to_wstring(output_pathname_w, _output_pathname)) {
+    _target_out.open(output_pathname_w.c_str(), ios::in | ios::binary);
+  }
+#else // _WIN32
+  _target_out.open(_output_pathname.c_str(), ios::in | ios::binary);
+#endif  // _WIN32
 
   _is_open = true;
 

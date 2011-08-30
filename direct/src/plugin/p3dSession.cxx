@@ -26,6 +26,7 @@
 #include "p3dConcreteStruct.h"
 #include "binaryXml.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 #include "run_p3dpython.h"
 
 #include <ctype.h>
@@ -1481,8 +1482,10 @@ win_create_process() {
   HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
   bool got_error_handle = false;
   if (!_log_pathname.empty()) {
-    HANDLE handle = CreateFile
-      (_log_pathname.c_str(), GENERIC_WRITE, 
+    wstring log_pathname_w;
+    string_to_wstring(log_pathname_w, _log_pathname);
+    HANDLE handle = CreateFileW
+      (log_pathname_w.c_str(), GENERIC_WRITE, 
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
@@ -1494,8 +1497,8 @@ win_create_process() {
     }
   }
 
-  STARTUPINFO startup_info;
-  ZeroMemory(&startup_info, sizeof(STARTUPINFO));
+  STARTUPINFOW startup_info;
+  ZeroMemory(&startup_info, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info); 
 
   // Set up the I/O handles.  We send stderr and stdout to our
@@ -1512,13 +1515,15 @@ win_create_process() {
   // If _keep_user_env is true, meaning not to change the current
   // directory, then pass NULL in to CreateProcess().  Otherwise pass
   // in _start_dir.
-  const char *start_dir_cstr;
+  const wchar_t *start_dir_cstr;
+  wstring start_dir_w;
   if (_keep_user_env) {
     start_dir_cstr = NULL;
     nout << "Not changing working directory.\n";
   } else {
-    start_dir_cstr = _start_dir.c_str();
-    nout << "Setting working directory: " << start_dir_cstr << "\n";
+    string_to_wstring(start_dir_w, _start_dir);
+    start_dir_cstr = start_dir_w.c_str();
+    nout << "Setting working directory: " << _start_dir << "\n";
   }
 
   // Construct the command-line string, containing the quoted
@@ -1531,13 +1536,17 @@ win_create_process() {
   // I'm not sure why CreateProcess wants a non-const char pointer for
   // its command-line string, but I'm not taking chances.  It gets a
   // non-const char array that it can modify.
-  string command_line_str = stream.str();
-  char *command_line = new char[command_line_str.size() + 1];
-  strcpy(command_line, command_line_str.c_str());
+  wstring command_line_str;
+  string_to_wstring(command_line_str, stream.str());
+  wchar_t *command_line = new wchar_t[command_line_str.size() + 1];
+  memcpy(command_line, command_line_str.c_str(), sizeof(wchar_t) * command_line_str.size() + 1);
+
+  wstring p3dpython_exe_w;
+  string_to_wstring(p3dpython_exe_w, _p3dpython_exe);
 
   PROCESS_INFORMATION process_info; 
-  BOOL result = CreateProcess
-    (_p3dpython_exe.c_str(), command_line, NULL, NULL, TRUE, 0,
+  BOOL result = CreateProcessW
+    (p3dpython_exe_w.c_str(), command_line, NULL, NULL, TRUE, 0,
      (void *)_env.c_str(), start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);

@@ -34,6 +34,7 @@
     handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
     mkdir_complete.cxx mkdir_complete.h \
     parse_color.cxx parse_color.h \
+    wstring_encode.cxx wstring_encode.h \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
@@ -172,6 +173,11 @@
 #endif
   #define TARGET p3dcert
 
+  #define SOURCES $[SOURCES] \
+    is_pathsep.h is_pathsep.I \
+    wstring_encode.cxx wstring_encode.h \
+    mkdir_complete.cxx mkdir_complete.h
+
   #define OSX_SYS_FRAMEWORKS Carbon
 
 #end bin_target
@@ -185,7 +191,9 @@
     is_pathsep.h is_pathsep.I \
     mkdir_complete.cxx mkdir_complete.h \
     get_twirl_data.cxx get_twirl_data.h \
-    parse_color.cxx parse_color.h
+    parse_color.cxx parse_color.h \
+    wstring_encode.cxx wstring_encode.h
+
 
 #begin static_lib_target
 //

@@ -40,6 +40,7 @@
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
 #include "parse_color.h"
+#include "wstring_encode.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -79,6 +80,7 @@ PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
 {
   // We need the root dir first.
   m_rootDir = find_root_dir( );
+  string_to_wstring(m_rootDir_w, m_rootDir);
 
   // Then open the logfile.
   m_logger.Open( m_rootDir );
@@ -452,13 +454,14 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
     if (!already_got) {
       // OK, we need to download a new contents.xml file.  Start off
       // by downloading it into a local temporary file.
-      TCHAR tempFileName[ MAX_PATH ];
-      if (!::GetTempFileName( m_rootDir.c_str(), "p3d", 0, tempFileName )) {
+      WCHAR local_filename_w[ MAX_PATH ];
+      if (!::GetTempFileNameW( m_rootDir_w.c_str(), L"p3d", 0, local_filename_w )) {
         nout << "GetTempFileName failed (folder is " << m_rootDir << ")\n";
         return 1;
       }
       
-      std::string localContentsFileName( tempFileName );
+      std::string local_filename;
+      wstring_to_string(local_filename, local_filename_w);
 
       std::string hostUrl( PANDA_PACKAGE_HOST_URL );
       if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
@@ -471,9 +474,9 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
       strm << hostUrl << P3D_CONTENTS_FILENAME << "?" << time(NULL);
       std::string remoteContentsUrl( strm.str() );
       
-      error = DownloadFile( remoteContentsUrl, localContentsFileName );
+      error = DownloadFile( remoteContentsUrl, local_filename );
       if ( !error ) {
-        if ( !read_contents_file( localContentsFileName, true ) )
+        if ( !read_contents_file( local_filename, true ) )
           error = 1;
       }
 
@@ -485,7 +488,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
       }
 
       // We don't need the temporary file any more.
-      ::DeleteFile( localContentsFileName.c_str() );
+      ::DeleteFileW( local_filename_w );
     }
       
     if (!error) {

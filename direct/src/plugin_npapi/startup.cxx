@@ -16,6 +16,7 @@
 #include "p3d_plugin_config.h"
 #include "p3d_lock.h"
 #include "ppBrowserObject.h"
+#include "wstring_encode.h"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -90,7 +91,13 @@ open_logfile() {
 
       logfile.close();
       logfile.clear();
+#ifdef _WIN32
+      wstring log_pathname_w;
+      string_to_wstring(log_pathname_w, log_pathname);
+      logfile.open(log_pathname_w.c_str(), ios::out | ios::trunc);
+#else
       logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
+#endif  // _WIN32
       logfile.setf(ios::unitbuf);
     }
 

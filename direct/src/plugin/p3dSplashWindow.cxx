@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dSplashWindow.h"
+#include "wstring_encode.h"
 
 // Stuff to use libpng.
 #include <png.h>
@@ -259,7 +260,16 @@ read_image_data(ImageData &image, string &data,
   }
 
   // We only support JPEG or PNG images.
-  FILE *fp = fopen(image_filename.c_str(), "rb");
+  FILE *fp = NULL;
+#ifdef _WIN32
+  wstring image_filename_w;
+  if (string_to_wstring(image_filename_w, image_filename)) {
+    fp = _wfopen(image_filename_w.c_str(), L"rb");
+  }
+#else // _WIN32
+  fp = fopen(image_filename.c_str(), "rb");
+#endif  // _WIN32
+
   if (fp == NULL) {
     nout << "Couldn't open splash file image: " << image_filename << "\n";
     return false;

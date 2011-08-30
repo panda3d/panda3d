@@ -15,6 +15,7 @@
 #include "p3dFileDownload.h"
 #include "p3dInstanceManager.h"
 #include "mkdir_complete.h"
+#include "wstring_encode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileDownload::Constructor
@@ -64,7 +65,14 @@ open_file() {
   }
 
   _file.clear();
+#ifdef _WIN32
+  wstring filename_w;
+  if (string_to_wstring(filename_w, _filename)) {
+    _file.open(filename_w.c_str(), ios::out | ios::trunc | ios::binary);
+  }
+#else // _WIN32
   _file.open(_filename.c_str(), ios::out | ios::trunc | ios::binary);
+#endif  // _WIN32
   if (!_file) {
     nout << "Failed to open " << _filename << " in write mode\n";
     return false;
