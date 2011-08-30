@@ -687,7 +687,7 @@ config_initialized() {
 
   // Also set up some other low-level things.
   ConfigVariableEnum<TextEncoder::Encoding> text_encoding
-    ("text-encoding", TextEncoder::E_iso8859,
+    ("text-encoding", TextEncoder::E_utf8,
      PRC_DESC("Specifies how international characters are represented in strings "
               "of 8-byte characters presented to Panda.  See TextEncoder::set_encoding()."));
   TextEncoder::set_default_encoding(text_encoding);
