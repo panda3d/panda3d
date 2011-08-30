@@ -37,6 +37,12 @@ inline ostream &operator << (ostream &out, const wstring &str) {
 
 #endif // _WIN32
 
+// Some handy functions for applying and removing URL escape codes,
+// which are used to pass parameters safely to p3dCert on the command
+// line.
+void url_quote(string &result, const string &source);
+void url_unquote(string &result, const string &source);
+
 #endif
 
 
