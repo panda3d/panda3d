@@ -90,6 +90,7 @@ private:
   THREAD_CALLBACK_DECLARATION(P3DSession, p3dpython_thread_run);
   void p3dpython_thread_run();
 
+  static bool get_env(string &value, const string &varname);
   void write_env() const;
 
 private:

@@ -156,16 +156,16 @@ run_python() {
 
 #ifdef _WIN32
   // Of course it's already resident, so use that version.
-  string basename = Filename::dso_filename("libpandaexpress.so").to_os_specific();
-  HMODULE h = GetModuleHandle(basename.c_str());
+  wstring basename = Filename::dso_filename("libpandaexpress.so").to_os_specific_w();
+  HMODULE h = GetModuleHandleW(basename.c_str());
 
   if (h == NULL) {
     nout << "Can't find libpandaexpress in memory.\n";
   } else {
     static const int buffer_size = 4096;
-    char buffer[buffer_size];
-    GetModuleFileName(h, buffer, buffer_size);
-    libpandaexpress = Filename::from_os_specific(buffer);
+    wchar_t buffer[buffer_size];
+    GetModuleFileNameW(h, buffer, buffer_size);
+    libpandaexpress = Filename::from_os_specific_w(buffer);
   }
 #endif  // _WIN32
 
@@ -179,7 +179,7 @@ run_python() {
     libpandaexpress.set_type(Filename::T_general);
 #endif
   }
-  
+
   if (!libpandaexpress.exists()) {
     nout << "Can't find " << libpandaexpress << "\n";
     return false;
@@ -188,15 +188,22 @@ run_python() {
   // We need the "imp" built-in module for that.
   PyObject *imp_module = PyImport_ImportModule("imp");
   if (imp_module == NULL) {
+    nout << "Failed to import module imp\n";
     PyErr_Print();
     return false;
   }
 
+  // And here's where we run into a brick wall attempting to make the
+  // whole plugin system Unicode-safe for Windows.  It turns out that
+  // this Python call, imp.load_dynamic(), will not accept a Unicode
+  // pathname.  So if the DLL in question is in a location that
+  // contains non-ASCII characters, it can't be loaded.
   string os_specific = libpandaexpress.to_os_specific();
   PyObject *result = PyObject_CallMethod
     (imp_module, (char *)"load_dynamic", (char *)"ss", 
      "libpandaexpress", os_specific.c_str());
   if (result == NULL) {
+    nout << "Failed to import libpandaexpress as a module\n";
     PyErr_Print();
     return false;
   }
@@ -208,6 +215,7 @@ run_python() {
   // available to import as well.
   PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
   if (vfsimporter == NULL) {
+    nout << "Failed to import _vfsimporter\n";
     PyErr_Print();
     return false;
   }
@@ -216,6 +224,7 @@ run_python() {
   // And now we can import the VFSImporter module that was so defined.
   PyObject *vfsimporter_module = PyImport_ImportModule("VFSImporter");
   if (vfsimporter_module == NULL) {
+    nout << "Failed to import VFSImporter\n";
     PyErr_Print();
     return false;
   }
@@ -223,6 +232,7 @@ run_python() {
   // And register the VFSImporter.
   result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
   if (result == NULL) {
+    nout << "Failed to call VFSImporter.register()\n";
     PyErr_Print();
     return false;
   }
@@ -248,6 +258,7 @@ run_python() {
   // And finally, we can import the startup module.
   PyObject *app_runner_module = PyImport_ImportModule("direct.p3d.AppRunner");
   if (app_runner_module == NULL) {
+    nout << "Failed to import direct.p3d.AppRunner\n";
     PyErr_Print();
     return false;
   }
@@ -255,6 +266,7 @@ run_python() {
   // Get the pointers to the objects needed within the module.
   PyObject *app_runner_class = PyObject_GetAttrString(app_runner_module, "AppRunner");
   if (app_runner_class == NULL) {
+    nout << "Failed to get AppRunner class\n";
     PyErr_Print();
     return false;
   }
@@ -262,6 +274,7 @@ run_python() {
   // Construct an instance of AppRunner.
   _runner = PyObject_CallFunction(app_runner_class, (char *)"");
   if (_runner == NULL) {
+    nout << "Failed to construct AppRunner instance\n";
     PyErr_Print();
     return false;
   }

@@ -246,12 +246,12 @@ find_root_dir_default() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir
+//     Function: find_root_dir_actual
 //  Description: Returns the path to the installable Panda3D directory
 //               on the user's machine.
 ////////////////////////////////////////////////////////////////////
-string
-find_root_dir() {
+static string
+find_root_dir_actual() {
   string root = find_root_dir_default();
 
   // Now look for a config.xml file in that directory, which might
@@ -282,4 +282,31 @@ find_root_dir() {
 
   // We've been redirected to another location.  Respect that.
   return new_root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_root_dir
+//  Description: This is the public interface to the above functions.
+////////////////////////////////////////////////////////////////////
+string
+find_root_dir() {
+  string root = find_root_dir_actual();
+
+#ifdef _WIN32
+  // Now map that (possibly utf-8) filename into its 8.3 equivalent,
+  // so we can safely pass it around to Python and other tools that
+  // might not understand Unicode filenames.  Silly Windows, creating
+  // an entirely new and incompatible kind of filename.
+  wstring root_w;
+  string_to_wstring(root_w, root);
+  
+  DWORD length = GetShortPathNameW(root_w.c_str(), NULL, 0);
+  wchar_t *short_name = new wchar_t[length];
+  GetShortPathNameW(root_w.c_str(), short_name, length);
+
+  wstring_to_string(root, short_name);
+  delete[] short_name;
+#endif  // _WIN32
+
+  return root;
 }

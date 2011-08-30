@@ -124,8 +124,9 @@ OnInitCmdLine(wxCmdLineParser &parser) {
 ////////////////////////////////////////////////////////////////////
 bool P3DCertApp::
 OnCmdLineParsed(wxCmdLineParser &parser) {
-  _cert_filename = parser.GetParam(0);
-  _cert_dir = parser.GetParam(1);
+  _cert_filename = (const char *)parser.GetParam(0).mb_str();
+  _cert_dir = (const char *)parser.GetParam(1).mb_str();
+
   return true;
 }
 
@@ -144,7 +145,7 @@ END_EVENT_TABLE()
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AuthDialog::
-AuthDialog(const wxString &cert_filename, const wxString &cert_dir) :
+AuthDialog(const string &cert_filename, const string &cert_dir) :
   // I hate stay-on-top dialogs, but if we don't set this flag, it
   // doesn't come to the foreground on OSX, and might be lost behind
   // the browser window.
@@ -232,8 +233,7 @@ approve_cert() {
   assert(_cert != NULL);
 
   // Make sure the directory exists.
-  string cert_dir_str = (const char *)_cert_dir.mb_str();
-  mkdir_complete(cert_dir_str, cerr);
+  mkdir_complete(_cert_dir, cerr);
 
   // Look for an unused filename.
   int i = 1;
@@ -288,24 +288,24 @@ approve_cert() {
 //               passed on the command line into _cert and _stack.
 ////////////////////////////////////////////////////////////////////
 void AuthDialog::
-read_cert_file(const wxString &cert_filename) {
+read_cert_file(const string &cert_filename) {
   FILE *fp = NULL;
 #ifdef _WIN32
   wstring cert_filename_w;
-  if (string_to_wstring(cert_filename_w, (const char *)cert_filename.mb_str())) {
+  if (string_to_wstring(cert_filename_w, cert_filename)) {
     fp = _wfopen(cert_filename_w.c_str(), L"r");
   }
 #else // _WIN32
-  fp = fopen(cert_filename.mb_str(), "r");
+  fp = fopen(cert_filename.c_str(), "r");
 #endif  // _WIN32
 
   if (fp == NULL) {
-    cerr << "Couldn't read " << cert_filename.mb_str() << "\n";
+    cerr << "Couldn't read " << cert_filename << "\n";
     return;
   }
   _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
   if (_cert == NULL) {
-    cerr << "Could not read certificate in " << cert_filename.mb_str() << ".\n";
+    cerr << "Could not read certificate in " << cert_filename << ".\n";
     fclose(fp);
     return;
   }

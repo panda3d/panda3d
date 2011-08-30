@@ -839,7 +839,15 @@ find_cert(X509 *cert) {
   for (si = contents.begin(); si != contents.end(); ++si) {
     string filename = this_cert_dir + "/" + (*si);
     X509 *x509 = NULL;
-    FILE *fp = fopen(filename.c_str(), "r");
+    FILE *fp = NULL;
+#ifdef _WIN32
+    wstring filename_w;
+    if (string_to_wstring(filename_w, filename)) {
+      fp = _wfopen(filename_w.c_str(), L"r");
+    }
+#else // _WIN32
+    fp = fopen(filename.c_str(), "r");
+#endif  // _WIN32
     if (fp != NULL) {
       x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
       fclose(fp);
@@ -882,7 +890,15 @@ read_certlist(P3DPackage *package) {
       if (suffix == ".pem" || suffix == ".crt") {
         string filename = package->get_package_dir() + "/" + basename;
         X509 *x509 = NULL;
-        FILE *fp = fopen(filename.c_str(), "r");
+        FILE *fp = NULL;
+#ifdef _WIN32
+        wstring filename_w;
+        if (string_to_wstring(filename_w, filename)) {
+          fp = _wfopen(filename_w.c_str(), L"r");
+        }
+#else // _WIN32
+        fp = fopen(filename.c_str(), "r");
+#endif  // _WIN32
         if (fp != NULL) {
           x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
           fclose(fp);

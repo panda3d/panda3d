@@ -44,6 +44,8 @@ private:
   void spawn_wait_thread();
   void join_wait_thread();
 
+  void write_env() const;
+
 private:
   // These methods run only within the read thread.
   THREAD_CALLBACK_DECLARATION(P3DAuthSession, wt_thread_run);
