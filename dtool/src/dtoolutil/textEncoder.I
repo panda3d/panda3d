@@ -568,3 +568,16 @@ INLINE wstring TextEncoder::
 decode_text(const string &text) const {
   return decode_text(text, _encoding);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: wstring ostream operator
+//  Description: Uses the current default encoding to output the
+//               wstring.
+////////////////////////////////////////////////////////////////////
+INLINE ostream &
+operator << (ostream &out, const wstring &str) {
+  TextEncoder encoder;
+  encoder.set_wtext(str);
+  out << encoder.get_text();
+  return out;
+}

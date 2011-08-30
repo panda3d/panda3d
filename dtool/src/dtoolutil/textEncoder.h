@@ -120,7 +120,11 @@ operator >> (istream &in, TextEncoder::Encoding &encoding);
 
 // We'll define the output operator for wstring here, too.  Presumably
 // this will not be automatically defined by any system libraries.
-EXPCL_DTOOL ostream &
+
+// This function is declared inline to minimize the risk of link
+// conflicts should another third-party module also define the same
+// output operator.
+INLINE EXPCL_DTOOL ostream &
 operator << (ostream &out, const wstring &str);
 
 #include "textEncoder.I"

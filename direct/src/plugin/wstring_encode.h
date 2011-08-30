@@ -25,7 +25,16 @@ using namespace std;
 bool wstring_to_string(string &result, const wstring &source);
 bool string_to_wstring(wstring &result, const string &source);
 
-ostream &operator << (ostream &out, const wstring &str);
+// We declare this inline so it won't conflict with the similar
+// function defined in Panda's textEncoder.h.
+inline ostream &operator << (ostream &out, const wstring &str) {
+  string result;
+  if (wstring_to_string(result, str)) {
+    out << result;
+  }
+  return out;
+}
+
 #endif // _WIN32
 
 #endif

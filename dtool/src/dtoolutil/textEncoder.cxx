@@ -385,16 +385,3 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
 
   return in;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: wstring ostream operator
-//  Description: Uses the current default encoding to output the
-//               wstring.
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, const wstring &str) {
-  TextEncoder encoder;
-  encoder.set_wtext(str);
-  out << encoder.get_text();
-  return out;
-}

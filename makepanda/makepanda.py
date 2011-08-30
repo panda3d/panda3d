@@ -3820,6 +3820,7 @@ if (RTDIST or RUNTIME):
   OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
+  TargetAdd('plugin_wstring_encode.obj', opts=OPTS, input='wstring_encode.cxx')
   TargetAdd('plugin_parse_color.obj', opts=OPTS, input='parse_color.cxx')
   TargetAdd('plugin_get_twirl_data.obj', opts=OPTS, input='get_twirl_data.cxx')
   TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
@@ -3833,6 +3834,7 @@ if (RTDIST or RUNTIME):
     for fname in ["p3d_plugin.dll", "libp3d_plugin_static.ilb"]:
       TargetAdd(fname, input='plugin_plugin.obj')
       TargetAdd(fname, input='plugin_mkdir_complete.obj')
+      TargetAdd(fname, input='plugin_wstring_encode.obj')
       TargetAdd(fname, input='plugin_parse_color.obj')
       TargetAdd(fname, input='plugin_find_root_dir.obj')
       if (sys.platform == "darwin"):
@@ -3913,6 +3915,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
   TargetAdd('nppanda3d.plugin', input='plugin_parse_color.obj')
   TargetAdd('nppanda3d.plugin', input='plugin_get_twirl_data.obj')
+  TargetAdd('nppanda3d.plugin', input='plugin_wstring_encode.obj')
   TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
   if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.res')
@@ -3942,6 +3945,7 @@ if (RUNTIME and sys.platform.startswith("win")):
   TargetAdd('p3dactivex.ocx', input='plugin_common.obj')
   TargetAdd('p3dactivex.ocx', input='plugin_parse_color.obj')
   TargetAdd('p3dactivex.ocx', input='plugin_get_twirl_data.obj')
+  TargetAdd('p3dactivex.ocx', input='plugin_wstring_encode.obj')
   TargetAdd('p3dactivex.ocx', input='plugin_activex_p3dactivex_composite1.obj')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
@@ -3973,6 +3977,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dMain.obj')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3dBase.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
+  TargetAdd('panda3d.exe', input='plugin_wstring_encode.obj')
   if (sys.platform == "darwin"):
     TargetAdd('panda3d.exe', input='plugin_find_root_dir_assist.obj')
   elif (sys.platform.startswith("win")):
@@ -4004,6 +4009,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dWinMain.obj')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3dBase.obj')
+    TargetAdd('panda3dw.exe', input='plugin_wstring_encode.obj')
     TargetAdd('panda3dw.exe', input='plugin_common.obj')
     TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
