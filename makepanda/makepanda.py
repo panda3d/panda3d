@@ -1050,7 +1050,8 @@ def CompileLink(dll, obj, opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if int(platform.mac_ver()[0][3]) >= 6:
+            # platform.architecture isn't reliable on OSX.
+            if sys.maxint > 0x100000000L:
                 cmd += " -arch x86_64"
             else:
                 cmd += " -arch i386"
