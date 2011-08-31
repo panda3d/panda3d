@@ -82,6 +82,7 @@ private:
 
   char _header[32];
   char _text[512];
+  char _text_clean[1024];
 
   string _friendly_name;
   int _verify_result;
