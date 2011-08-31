@@ -20,6 +20,15 @@
 #include "get_tinyxml.h"
 #include "p3d_lock.h"
 #include "get_twirl_data.h"
+#include "p3d_plugin_config.h"
+#include "plugin_get_x11.h"
+
+#if defined(HAVE_X11) && defined(HAVE_GTK)
+#include "pre_x11_include.h"
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include "post_x11_include.h"
+#endif // HAVE_X11 && HAVE_GTK
 
 #include <vector>
 
@@ -140,6 +149,12 @@ private:
   void twirl_timer_callback();
 #endif  // __APPLE__
 
+#ifdef HAVE_X11
+  void x11_start_twirl_subprocess();
+  void x11_stop_twirl_subprocess();
+  void x11_twirl_subprocess_run();
+#endif // HAVE_X11
+
 private:
   NPP _npp_instance;
   unsigned int _npp_mode;
@@ -238,6 +253,10 @@ private:
   bool _use_xembed;
   bool _got_window;
   NPWindow _window;
+#if defined(HAVE_X11) && defined(HAVE_GTK)
+  GtkWidget *_plug;
+#endif  // HAVE_X11 && HAVE_GTK
+
 #ifdef _WIN32
   LONG_PTR _orig_window_proc;
   HWND _hwnd;
@@ -265,6 +284,10 @@ private:
   OsxImageData _twirl_images[twirl_num_steps + 1];
   bool _got_twirl_images;
 #endif  // MACOSX_HAS_EVENT_MODELS
+
+#ifdef HAVE_X11
+  pid_t _twirl_subprocess_pid;
+#endif  // HAVE_X11
 
 #ifndef _WIN32
   long _init_sec;

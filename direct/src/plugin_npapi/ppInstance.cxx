@@ -37,10 +37,10 @@
 #include <sys/time.h>
 #endif  // _WIN32
 
-#if defined(HAVE_GTK) && defined(HAVE_X11)
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#endif  // HAVE_GTK
+#ifdef HAVE_X11
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif  // HAVE_X11
 
 
 PPInstance::FileDatas PPInstance::_file_datas;
@@ -131,6 +131,13 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _use_xembed = false;
   _got_window = false;
   _python_window_open = false;
+#ifdef HAVE_X11
+  _twirl_subprocess_pid = -1;
+#ifdef HAVE_GTK
+  _plug = NULL;
+#endif  // HAVE_GTK
+#endif  // HAVE_X11
+
 #ifdef _WIN32
   _hwnd = NULL;
   _bg_brush = NULL;
@@ -348,6 +355,23 @@ set_window(NPWindow *window) {
 
   _window = *window;
   _got_window = true;
+
+#ifdef HAVE_X11
+#ifdef HAVE_GTK
+  if (_use_xembed) {
+    // Create a GtkPlug to bind to the XEmbed socket.
+    _plug = gtk_plug_new((GdkNativeWindow)_window.window);
+    gtk_widget_show(_plug);
+    
+    nout << "original XID is " << _window.window << ", created X11 window "
+         << GDK_DRAWABLE_XID(_plug->window) << "\n";
+  }
+#endif  // HAVE_GTK
+
+  if (!_failed && _p3d_inst == NULL) {
+    x11_start_twirl_subprocess();
+  }
+#endif  // HAVE_X11
 
   if (!_failed) {
     if (_p3d_inst == NULL) {
@@ -1752,6 +1776,10 @@ create_instance() {
   }
 #endif  // __APPLE__
 
+#ifdef HAVE_X11
+  x11_stop_twirl_subprocess();
+#endif  // HAVE_X11
+
   // In the Windows case, we let the timer keep running, because it
   // also checks for wayward messages.
 
@@ -1853,25 +1881,19 @@ send_window() {
       // If we're using the XEmbed model, we've actually received an
       // XID for a GtkSocket.
 #ifdef HAVE_GTK
-      // Create the appropriate GtkPlug.
-      GtkWidget *plug = gtk_plug_new((GdkNativeWindow)_window.window);
-      gtk_widget_show(plug);
-
-      // Now just get the X11 Window pointer to pass down to Panda,
-      // since that's what it will be expecting.  (Hmm, it would be
-      // nice to pass the XID object and use this system in general
-      // within Panda, but that's for the future, I think.)
-      nout << "original XID is " << _window.window << ", created X11 window " 
-           << GDK_DRAWABLE_XID(plug->window) << "\n";
+      // If we're using XEmbed, pass the X11 Window pointer of our
+      // plug down to Panda.  (Hmm, it would be nice to pass the XID
+      // object and use this system in general within Panda, but
+      // that's for the future, I think.)
+      assert(_plug != NULL);
       parent_window._window_handle_type = P3D_WHT_x11_window;
-      parent_window._handle._x11_window._xwindow = (unsigned long)GDK_DRAWABLE_XID(plug->window);
+      parent_window._handle._x11_window._xwindow = GDK_DRAWABLE_XID(_plug->window);
 #endif  // HAVE_GTK
     } else {
       // If we're not using XEmbed, this is just a standard X11 Window
-      // pointer.  We make it an 'unsigned long' instead of 'Window'
-      // to avoid nppanda3d.so getting a dependency on X11.
+      // pointer.
       parent_window._window_handle_type = P3D_WHT_x11_window;
-      parent_window._handle._x11_window._xwindow = (unsigned long)(_window.window);
+      parent_window._handle._x11_window._xwindow = (X11_Window)(_window.window);
     }
     x = 0;
     y = 0;
@@ -1961,8 +1983,19 @@ cleanup_window() {
         _twirl_bitmaps[step] = NULL;
       }
     }
-
 #endif  // _WIN32
+
+#ifdef HAVE_X11
+    x11_stop_twirl_subprocess();
+
+#ifdef HAVE_GTK
+    if (_plug != NULL) {
+      gtk_widget_destroy(_plug);
+      _plug = NULL;
+    }
+#endif  // HAVE_GTK
+#endif  // HAVE_X11
+
     _got_window = false;
   }
 }
@@ -2794,6 +2827,235 @@ twirl_timer_callback() {
   }
 }
 #endif  // __APPLE__
+
+#ifdef HAVE_X11
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::x11_start_twirl_subprocess
+//       Access: Public
+//  Description: Spawns a separate process to twirl the loading icon
+//               in the X11 browser window.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+x11_start_twirl_subprocess() {
+  assert(_twirl_subprocess_pid == -1);
+
+  // Fork and exec.
+  pid_t child = fork();
+  if (child < 0) {
+    perror("fork");
+    return;
+  }
+
+  if (child == 0) {
+    // Here we are in the child process.
+    x11_twirl_subprocess_run();
+    _exit(0);
+  }
+
+  // In the parent process.
+  _twirl_subprocess_pid = child;
+}
+#endif  // HAVE_X11
+
+#ifdef HAVE_X11
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::x11_stop_twirl_subprocess
+//       Access: Public
+//  Description: Kills the twirl process that was started earlier.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+x11_stop_twirl_subprocess() {
+  if (_twirl_subprocess_pid == -1) {
+    // Already stopped.
+    return;
+  }
+
+  kill(_twirl_subprocess_pid, SIGKILL);
+
+  int status;
+  pid_t result = waitpid(_twirl_subprocess_pid, &status, 0);
+
+  nout << "Twirl window process has successfully stopped.\n";
+  if (WIFEXITED(status)) {
+    nout << "  exited normally, status = "
+         << WEXITSTATUS(status) << "\n";
+  } else if (WIFSIGNALED(status)) {
+    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+         << WCOREDUMP(status) << "\n";
+  } else if (WIFSTOPPED(status)) {
+    nout << "  stopped by " << WSTOPSIG(status) << "\n";
+  }
+}
+#endif  // HAVE_X11
+
+#ifdef HAVE_X11
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::x11_twirl_subprocess_run
+//       Access: Public
+//  Description: The code that is run within a subprocess.  This code
+//               is responsible for twirling the loading icon
+//               endlessly.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+x11_twirl_subprocess_run() {
+  // Since everything within this function happens within a subprocess
+  // that will just exit, we can be a little sloppy with our resource
+  // allocation.  It is all done directly within this function, and we
+  // don't need to worry about freeing stuff.
+
+  // First, sleep for 0.5 seconds, so we don't start twirling right
+  // away (to avoid distracting the user unnecessarily).
+
+  struct timespec req;
+  req.tv_sec = 0;
+  req.tv_nsec = 500000000;  // 500 ms
+  nanosleep(&req, NULL);
+
+  // We haven't been killed yet, so the plugin is still loading.
+  // Start twirling.
+
+  // First, embed a window.
+  X11_Display *display = XOpenDisplay(NULL);
+  assert(display != NULL);
+  int screen = DefaultScreen(display);
+
+  int depth = DefaultDepth(display, screen);
+  Visual *dvisual = DefaultVisual(display, screen);
+
+  long event_mask = ExposureMask;
+
+  // Allocate the foreground and background colors.
+  Colormap colormap = DefaultColormap(display, screen);
+
+  XColor fg;
+  fg.red = _fgcolor_r * 0x101;
+  fg.green = _fgcolor_g * 0x101;
+  fg.blue = _fgcolor_b * 0x101;
+  fg.flags = DoRed | DoGreen | DoBlue;
+  unsigned long fg_pixel = -1;
+  if (XAllocColor(display, colormap, &fg)) {
+    fg_pixel = fg.pixel;
+  }
+
+  XColor bg;
+  bg.red = _bgcolor_r * 0x101;
+  bg.green = _bgcolor_g * 0x101;
+  bg.blue = _bgcolor_b * 0x101;
+  bg.flags = DoRed | DoGreen | DoBlue;
+  unsigned long bg_pixel = -1;
+  if (XAllocColor(display, colormap, &bg)) {
+    bg_pixel = bg.pixel;
+  }
+
+  // Initialize window attributes
+  XSetWindowAttributes wa;
+  wa.background_pixel = XWhitePixel(display, screen);
+  if (bg_pixel != -1) {
+    wa.background_pixel = bg_pixel;
+  }
+  wa.border_pixel = 0;
+  wa.event_mask = event_mask;
+
+  unsigned long attrib_mask = CWBackPixel | CWBorderPixel | CWEventMask;
+
+  X11_Window parent = GDK_DRAWABLE_XID(_plug->window);
+  X11_Window window = XCreateWindow
+    (display, parent, 0, 0, _window.width, _window.height,
+     0, depth, InputOutput, dvisual, attrib_mask, &wa);
+  XMapWindow(display, window);
+
+  // Create a graphics context.
+  XGCValues gcval;
+  gcval.function = GXcopy;
+  gcval.plane_mask = AllPlanes;
+  gcval.foreground = BlackPixel(display, screen);
+  if (fg_pixel != -1) {
+    gcval.foreground = fg_pixel;
+  }
+  gcval.background = WhitePixel(display, screen);
+  if (bg_pixel != -1) {
+    gcval.background = bg_pixel;
+  }
+  GC graphics_context = XCreateGC(display, window, 
+    GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval); 
+
+  // Load up the twirling images.
+  XImage *images[twirl_num_steps];
+  double r_ratio = dvisual->red_mask / 255.0;
+  double g_ratio = dvisual->green_mask / 255.0;
+  double b_ratio = dvisual->blue_mask / 255.0;
+
+  static const size_t twirl_size = twirl_width * twirl_height;
+  unsigned char twirl_data[twirl_size * 3];
+
+  for (int step = 0; step < twirl_num_steps; ++step) {
+    get_twirl_data(twirl_data, twirl_size, step,
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _bgcolor_r, _bgcolor_g, _bgcolor_b);
+    uint32_t *new_data = new uint32_t[twirl_size];
+    int j = 0;
+    for (int i = 0; i < twirl_size * 3; i += 3) {
+      unsigned int r, g, b;
+      r = (unsigned int)(twirl_data[i+0] * r_ratio);
+      g = (unsigned int)(twirl_data[i+1] * g_ratio);
+      b = (unsigned int)(twirl_data[i+2] * b_ratio);
+      new_data[j++] = ((r & dvisual->red_mask) |
+                       (g & dvisual->green_mask) |
+                       (b & dvisual->blue_mask));
+    }
+
+    // Now load the image.
+    images[step] = XCreateImage(display, CopyFromParent, DefaultDepth(display, screen), 
+                                ZPixmap, 0, (char *)new_data, twirl_width, twirl_height, 32, 0);
+  }
+
+  // Now twirl indefinitely, until our parent process kills us.
+  bool needs_redraw = true;
+  int last_step = -1;
+  while (true) {
+    // First, scan for X events.
+    XEvent event;
+    while (XCheckWindowEvent(display, window, ~0, &event)) {
+      switch (event.type) {
+      case Expose:
+      case GraphicsExpose:
+        needs_redraw = true;
+        break;
+      }
+
+      // We should probably track the resize event, but this window
+      // will be short-lived (and probably won't have an opportunity
+      // to resize anyway) so we don't bother.
+    }
+
+    // What step are we on now?
+    struct timeval tv;
+    gettimeofday(&tv, (struct timezone *)NULL);
+    double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
+    int step = ((int)(now * 10.0)) % twirl_num_steps;
+    if (step != last_step) {
+      needs_redraw = true;
+    }
+
+    if (needs_redraw) {
+      XClearWindow(display, window);
+      int xo = (_window.width - twirl_width) / 2;
+      int yo = (_window.height - twirl_height) / 2;
+      XPutImage(display, window, graphics_context, images[step], 0, 0, 
+                xo, yo, twirl_width, twirl_height);
+
+      XFlush(display);
+      needs_redraw = false;
+      last_step = step;
+    }
+
+    struct timespec req;
+    req.tv_sec = 0;
+    req.tv_nsec = 100000000;  // 100 ms
+    nanosleep(&req, NULL);
+  }
+}
+#endif  // HAVE_X11
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::StreamingFileData::Constructor

@@ -16,6 +16,7 @@
 #define PLUGIN_GET_X11_H
 
 #include "pandabase.h"
+#include "p3d_plugin_config.h"
 
 #ifdef HAVE_X11 
 // This header file is designed to help work around some of the
@@ -27,18 +28,12 @@
 // should include this file instead of including the X11 headers
 // directly.
 
-#define Display X11_Display
-#define Window X11_Window
-#define Cursor X11_Cursor
-#define Connection X11_Connection
+#include "pre_x11_include.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#undef Display
-#undef Window
-#undef Cursor
-#undef Connection
+#include "post_x11_include.h"
 
 #endif  // HAVE_X11
 
