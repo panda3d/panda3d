@@ -17,6 +17,7 @@
 #include "p3d_lock.h"
 #include "ppBrowserObject.h"
 #include "wstring_encode.h"
+#include "find_root_dir.h"
 
 #ifdef _WIN32
 #include <shlobj.h>

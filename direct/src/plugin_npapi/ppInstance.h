@@ -86,6 +86,7 @@ private:
   void open_p3d_temp_file();
   void send_p3d_temp_file_data();
 
+  void downloaded_contents_file(const string &filename);
   bool read_contents_file(const string &contents_filename, bool fresh_download);
   void get_core_api();
   void downloaded_plugin(const string &filename);
@@ -168,15 +169,34 @@ private:
   bool _failed;
   bool _started;
 
+  // This class is used to stream data from some URL into a temporary
+  // local file.
+  class StreamTempFile {
+  public:
+    StreamTempFile();
+    ~StreamTempFile();
+    
+    void open();
+    bool feed(size_t total_expected_data, const void *this_data, 
+              size_t this_data_size);
+    void finish();
+    void close();
+    void cleanup();
+
+    bool _opened;
+    bool _finished;
+    size_t _current_size;
+    size_t _total_size;
+    ofstream _stream;
+    string _filename;
+  };
+
   bool _got_instance_url;
   string _instance_url;
-  bool _opened_p3d_temp_file;
-  bool _finished_p3d_temp_file;
-  size_t _p3d_temp_file_current_size;
-  size_t _p3d_temp_file_total_size;
-  ofstream _p3d_temp_file;
-  string _p3d_temp_filename;
   int _p3d_instance_id;
+  StreamTempFile _p3d_temp_file;
+  StreamTempFile _contents_temp_file;
+  StreamTempFile _core_dll_temp_file;
  
   // We need to keep a list of the NPStream objects that the instance
   // owns, because Safari (at least) won't automatically delete all of

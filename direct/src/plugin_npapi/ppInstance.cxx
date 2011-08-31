@@ -18,7 +18,6 @@
 #include "ppBrowserObject.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
-#include "find_root_dir.h"
 #include "mkdir_complete.h"
 #include "parse_color.h"
 #include "nppanda3d_common.h"
@@ -97,10 +96,6 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   _root_dir = global_root_dir;
 
   _got_instance_url = false;
-  _opened_p3d_temp_file = false;
-  _finished_p3d_temp_file = false;
-  _p3d_temp_file_current_size = 0;
-  _p3d_temp_file_total_size = 0;
   _p3d_instance_id = 0;
 
   // fgcolor and bgcolor are useful to know here (in case we have to
@@ -214,12 +209,6 @@ PPInstance::
 
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
-  }
-
-  if (!_p3d_temp_filename.empty()) {
-    _p3d_temp_file.close();
-    unlink(_p3d_temp_filename.c_str());
-    _p3d_temp_filename.clear();
   }
 
   // Free the tokens we allocated.
@@ -412,16 +401,17 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   switch (req->_rtype) {
   case PPDownloadRequest::RT_contents_file:
-    // This is the initial contents.xml file.  We'll just download
-    // this directly to a file, since it is small and this is easy.
-    *stype = NP_ASFILEONLY;
+    // This is the initial contents.xml file.  We used to download
+    // this via NP_ASFILEONLY, but that option doesn't work on Windows
+    // within a Unicode user directory.  So we use NP_NORMAL instead.
+    *stype = NP_NORMAL;
     _streams.push_back(stream);
     return NPERR_NO_ERROR;
 
   case PPDownloadRequest::RT_core_dll:
-    // This is the core API DLL (or dylib or whatever).  We want to
-    // download this to file for convenience.
-    *stype = NP_ASFILEONLY;
+    // This is the core API DLL (or dylib or whatever).  Again, we
+    // have to use NP_NORMAL.
+    *stype = NP_NORMAL;
     _streams.push_back(stream);
     return NPERR_NO_ERROR;
 
@@ -510,8 +500,8 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
   switch (req->_rtype) {
   case PPDownloadRequest::RT_user:
     P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                 P3D_RC_in_progress, 0,
-                                 stream->end, buffer, len);
+                                     P3D_RC_in_progress, 0,
+                                     stream->end, buffer, len);
     return len;
 
   case PPDownloadRequest::RT_instance_data:
@@ -533,26 +523,35 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
     // temporary file until the instance is ready for it.
     if (_p3d_inst == NULL) {
       // The instance isn't ready, so stuff it in a temporary file.
-      if (!_opened_p3d_temp_file) {
-        open_p3d_temp_file();
+      if (!_p3d_temp_file.feed(stream->end, buffer, len)) {
+        set_failed();
       }
-      _p3d_temp_file.write((const char *)buffer, len);
-      _p3d_temp_file_current_size += len;
-      _p3d_temp_file_total_size = stream->end;
       return len;
 
     } else {
       // The instance has been created.  Redirect the stream into the
       // instance.
-      assert(!_opened_p3d_temp_file);
+      assert(!_p3d_temp_file._opened);
       req->_rtype = PPDownloadRequest::RT_user;
       req->_user_id = _p3d_instance_id;
       P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                   P3D_RC_in_progress, 0,
-                                   stream->end, buffer, len);
+                                       P3D_RC_in_progress, 0,
+                                       stream->end, buffer, len);
       return len;
     }
     break;
+
+  case PPDownloadRequest::RT_contents_file:
+    if (!_contents_temp_file.feed(stream->end, buffer, len)) {
+      set_failed();
+    }
+    return len;
+
+  case PPDownloadRequest::RT_core_dll:
+    if (!_core_dll_temp_file.feed(stream->end, buffer, len)) {
+      set_failed();
+    }
+    return len;
     
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";
@@ -595,38 +594,51 @@ destroy_stream(NPStream *stream, NPReason reason) {
 
   switch (req->_rtype) {
   case PPDownloadRequest::RT_user:
-    {
-      assert(!req->_notified_done);
+    if (!req->_notified_done) {
       P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                   result_code, 0, stream->end, NULL, 0);
+                                       result_code, 0, stream->end, NULL, 0);
       req->_notified_done = true;
     }
     break;
 
   case PPDownloadRequest::RT_instance_data:
-    if (_p3d_inst == NULL) {
-      // The instance still isn't ready; just mark the data done.
-      // We'll send the entire file to the instance when it is ready.
-      _finished_p3d_temp_file = true;
-      _p3d_temp_file_total_size = _p3d_temp_file_current_size;
+    if (!req->_notified_done) {
+      if (_p3d_inst == NULL) {
+        // The instance still isn't ready; just mark the data done.
+        // We'll send the entire file to the instance when it is ready.
+        _p3d_temp_file.finish();
+        if (result_code != P3D_RC_done) {
+          set_failed();
+        }
+        
+      } else {
+        // The instance has (only just) been created.  Tell it we've
+        // sent it all the data it will get.
+        P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
+                                         result_code, 0, stream->end, NULL, 0);
+      }
+      req->_notified_done = true;
+    }
+    break;
+
+  case PPDownloadRequest::RT_contents_file:
+    if (!req->_notified_done) {
+      _contents_temp_file.finish();
       if (result_code != P3D_RC_done) {
         set_failed();
       }
-
-    } else {
-      // The instance has (only just) been created.  Tell it we've
-      // sent it all the data it will get.
-      P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
-                                   result_code, 0, stream->end, NULL, 0);
+      req->_notified_done = true;
     }
-    assert(!req->_notified_done);
-    req->_notified_done = true;
     break;
 
   case PPDownloadRequest::RT_core_dll:
-  case PPDownloadRequest::RT_contents_file:
-    // These are received as a full-file only, so we don't care about
-    // the destroy_stream notification.
+    if (!req->_notified_done) {
+      _core_dll_temp_file.finish();
+      if (result_code != P3D_RC_done) {
+        set_failed();
+      }
+      req->_notified_done = true;
+    }
     break;
 
   default:
@@ -668,13 +680,15 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       assert(reason != NPRES_DONE);
 
       P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                   P3D_RC_generic_error, 0, 0, NULL, 0);
+                                       P3D_RC_generic_error, 0, 0, NULL, 0);
       req->_notified_done = true;
     }
     break;
 
   case PPDownloadRequest::RT_contents_file:
-    if (reason != NPRES_DONE) {
+    if (reason == NPRES_DONE) {
+      downloaded_contents_file(_contents_temp_file._filename);
+    } else {
       nout << "Failure downloading " << url << "\n";
 
       if (reason == NPRES_USER_BREAK) {
@@ -695,7 +709,10 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     break;
     
   case PPDownloadRequest::RT_core_dll:
-    if (reason != NPRES_DONE) {
+    if (reason == NPRES_DONE) {
+      downloaded_plugin(_core_dll_temp_file._filename);
+
+    } else {
       nout << "Failure downloading " << url << "\n";
 
       if (reason == NPRES_USER_BREAK) {
@@ -1270,6 +1287,38 @@ start_download(const string &url, PPDownloadRequest *req) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::downloaded_contents_file
+//       Access: Private
+//  Description: The contents.xml file has been successfully downloaded;
+//               copy it into place.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+downloaded_contents_file(const string &filename) {
+  // Now we have the contents.xml file.  Read this to get the
+  // filename and md5 hash of our core API DLL.
+  if (read_contents_file(filename, true)) {
+    // Successfully downloaded and read, and it has been written
+    // into its normal place.
+    get_core_api();
+    
+  } else {
+    // Error reading the contents.xml file, or in loading the core
+    // API that it references.
+    nout << "Unable to read contents file " << filename << "\n";
+    
+    // If there's an outstanding contents.xml file on disk, try to
+    // load that one as a fallback.
+    string contents_filename = _root_dir + "/contents.xml";
+    if (read_contents_file(contents_filename, false)) {
+      get_core_api();
+    } else {
+      nout << "Unable to read contents file " << contents_filename << "\n";
+      set_failed();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::read_contents_file
 //       Access: Private
 //  Description: Attempts to open and read the contents.xml file on
@@ -1428,32 +1477,14 @@ get_filename_from_url(const string &url) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 downloaded_file(PPDownloadRequest *req, const string &filename) {
+  // Since we're no longer using NP_ASFILEONLY, none of these URL
+  // requests will normally come through this codepath (they'll go
+  // through url_notify() above, instead), unless we short-circuited
+  // the browser by "downloading" a file:// url.
   switch (req->_rtype) {
   case PPDownloadRequest::RT_contents_file:
-    {
-      // Now we have the contents.xml file.  Read this to get the
-      // filename and md5 hash of our core API DLL.
-      if (read_contents_file(filename, true)) {
-        // Successfully downloaded and read, and it has been written
-        // into its normal place.
-        get_core_api();
-        
-      } else {
-        // Error reading the contents.xml file, or in loading the core
-        // API that it references.
-        nout << "Unable to read contents file " << filename << "\n";
-        
-        // If there's an outstanding contents.xml file on disk, try to
-        // load that one as a fallback.
-        string contents_filename = _root_dir + "/contents.xml";
-        if (read_contents_file(contents_filename, false)) {
-          get_core_api();
-        } else {
-          nout << "Unable to read contents file " << contents_filename << "\n";
-          set_failed();
-        }
-      }
-    }
+    // The contents.xml file that gets things going.
+    downloaded_contents_file(filename);
     break;
 
   case PPDownloadRequest::RT_core_dll:
@@ -1463,9 +1494,8 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
     break;
 
   case PPDownloadRequest::RT_user:
-    // Normally, RT_user requests won't come here, unless we
-    // short-circuited the browser by "downloading" a file:// url.  In
-    // any case, we'll now open the file and feed it to the user.
+    // Here's the user-requested file.  It needs to be streamed to the
+    // user, so we'll open the file and feed it to the user.
     feed_file(req, filename);
     break;
 
@@ -1488,35 +1518,6 @@ feed_file(PPDownloadRequest *req, const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::open_p3d_temp_file
-//       Access: Private
-//  Description: Creates a temporary file into which the p3d file data
-//               is stored before the instance has been created.
-////////////////////////////////////////////////////////////////////
-void PPInstance::
-open_p3d_temp_file() {
-  assert(!_opened_p3d_temp_file);
-  _opened_p3d_temp_file = true;
-  _finished_p3d_temp_file = false;
-  _p3d_temp_file_current_size = 0;
-  _p3d_temp_file_total_size = 0;
-
-  char *name = tempnam(NULL, "p3d_");
-  _p3d_temp_filename = name;
-  free(name);
-
-  _p3d_temp_file.clear();
-  _p3d_temp_file.open(_p3d_temp_filename.c_str(), ios::binary);
-  if (!_p3d_temp_file) {
-    nout << "Unable to open temp file " << _p3d_temp_filename << "\n";
-    set_failed();
-  } else {
-    nout << "Opening " << _p3d_temp_filename
-         << " for storing preliminary p3d data\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::send_p3d_temp_file_data
 //       Access: Private
 //  Description: Once the instance has been created, sends it all of
@@ -1525,10 +1526,10 @@ open_p3d_temp_file() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 send_p3d_temp_file_data() {
-  assert(_opened_p3d_temp_file);
+  assert(_p3d_temp_file._opened);
 
-  nout << "Sending " << _p3d_temp_file_current_size
-       << " preliminary bytes of " << _p3d_temp_file_total_size
+  nout << "Sending " << _p3d_temp_file._current_size
+       << " preliminary bytes of " << _p3d_temp_file._total_size
        << " total p3d data\n";
         
   static const size_t buffer_size = 4096;
@@ -1536,14 +1537,14 @@ send_p3d_temp_file_data() {
 
   _p3d_temp_file.close();
 
-  ifstream in(_p3d_temp_filename.c_str(), ios::binary);
+  ifstream in(_p3d_temp_file._filename.c_str(), ios::binary);
   in.read(buffer, buffer_size);
   size_t total = 0;
   size_t count = in.gcount();
   while (count != 0) {
     P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
-                                 P3D_RC_in_progress, 0,
-                                 _p3d_temp_file_total_size, buffer, count);
+                                     P3D_RC_in_progress, 0,
+                                     _p3d_temp_file._total_size, buffer, count);
     total += count;
 
     in.read(buffer, buffer_size);
@@ -1552,16 +1553,14 @@ send_p3d_temp_file_data() {
   nout << "sent " << count << " bytes.\n";
 
   in.close();
-  _opened_p3d_temp_file = false;
-  unlink(_p3d_temp_filename.c_str());
-  _p3d_temp_filename.clear();
 
-  if (_finished_p3d_temp_file) {
+  if (_p3d_temp_file._finished) {
     // If we'd already finished the stream earlier, tell the plugin.
     P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
-                                 P3D_RC_done, 0, _p3d_temp_file_total_size,
-                                 NULL, 0);
+                                     P3D_RC_done, 0, _p3d_temp_file._total_size,
+                                     NULL, 0);
   }
+  _p3d_temp_file.cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1795,7 +1794,7 @@ create_instance() {
 
     // If we have already started to receive any instance data, send it
     // to the plugin now.
-    if (_opened_p3d_temp_file) {
+    if (_p3d_temp_file._opened) {
       send_p3d_temp_file_data();
     }
   }
@@ -2911,4 +2910,131 @@ thread_run() {
 
   // All done.
   _thread_done = true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPInstance::StreamTempFile::
+StreamTempFile() {
+  _opened = false;
+  _finished = false;
+  _current_size = 0;
+  _total_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPInstance::StreamTempFile::
+~StreamTempFile() {
+  cleanup();
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::open
+//       Access: Public
+//  Description: Creates the temp file and prepares to write to it.
+//               It is not normally necessary to call this explicitly;
+//               it will be called automatically on the first call to
+//               feed().
+////////////////////////////////////////////////////////////////////
+void PPInstance::StreamTempFile::
+open() {
+  assert(!_opened);
+  _opened = true;
+  _finished = false;
+  _current_size = 0;
+  _total_size = 0;
+
+  char *name = tempnam(NULL, "p3d_");
+  _filename = name;
+  free(name);
+
+  _stream.clear();
+  _stream.open(_filename.c_str(), ios::binary);
+  if (!_stream) {
+    nout << "Unable to open temp file " << _filename << "\n";
+  } else {
+    nout << "Opening " << _filename << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::feed
+//       Access: Public
+//  Description: Receives new data from the URL and writes it to the
+//               temp file.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::StreamTempFile::
+feed(size_t total_expected_data, const void *this_data,
+     size_t this_data_size) {
+  assert(!_finished);
+  if (!_opened) {
+    open();
+  }
+
+  _stream.write((const char *)this_data, this_data_size);
+  _current_size += this_data_size;
+  _total_size = total_expected_data;
+
+  if (!_stream) {
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::finish
+//       Access: Public
+//  Description: Marks the end of the data received from the URL.  The
+//               file is closed but not yet deleted; it remains on
+//               disk and may be read at leisure.
+////////////////////////////////////////////////////////////////////
+void PPInstance::StreamTempFile::
+finish() {
+  if (!_finished) {
+    _finished = true;
+    _total_size = _current_size;
+  }
+
+  _stream.close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::close
+//       Access: Public
+//  Description: Closes the stream for more data.  The file is not yet
+//               deleted; it remains on disk and may be read at
+//               leisure.
+////////////////////////////////////////////////////////////////////
+void PPInstance::StreamTempFile::
+close() {
+  _stream.close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamTempFile::cleanup
+//       Access: Public
+//  Description: Closes all open processes and removes the temp file
+//               from disk.
+////////////////////////////////////////////////////////////////////
+void PPInstance::StreamTempFile::
+cleanup() {
+  finish();
+
+  if (!_filename.empty()) {
+    nout << "Deleting " << _filename << "\n";
+    unlink(_filename.c_str());
+    _filename.clear();
+  }
+
+  _opened = false;
+  _finished = false;
 }
