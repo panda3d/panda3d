@@ -2958,7 +2958,16 @@ x11_twirl_subprocess_run() {
 
   unsigned long attrib_mask = CWBackPixel | CWBorderPixel | CWEventMask;
 
-  X11_Window parent = GDK_DRAWABLE_XID(_plug->window);
+  X11_Window parent = 0;
+  if (_use_xembed) {
+#ifdef HAVE_GTK
+    assert(_plug != NULL);
+    parent = GDK_DRAWABLE_XID(_plug->window);
+#endif  // HAVE_GTK
+  } else {
+    parent = (X11_Window)(_window.window);
+  }
+
   X11_Window window = XCreateWindow
     (display, parent, 0, 0, _window.width, _window.height,
      0, depth, InputOutput, dvisual, attrib_mask, &wa);
