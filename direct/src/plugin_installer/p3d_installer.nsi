@@ -1,6 +1,5 @@
 !include "MUI.nsh"
 !include LogicLib.nsh
-!include FileFunc.nsh
 !include FileAssociation.nsh
 
 ; Several variables are assumed to be pre-defined by the caller.  See
@@ -11,8 +10,6 @@
 !define UNINSTALL_LINK_NAME "Uninstall"
 !define WEBSITE_LINK_NAME "Website"
 !define PLID "@panda3d.org/Panda3D Runtime,version=0.0"
-
-!insertmacro GetOptions
 
 ; HM NIS Edit Wizard helper defines
 !define APP_INTERNAL_NAME "Panda3D"
@@ -209,11 +206,11 @@ Mozilla-Uninstall-Loop:
   StrCmp $0 "" Mozilla-Uninstall-End
   IntOp $1 $1 + 1
   ReadRegStr $2 HKLM "SOFTWARE\Mozilla\$0\Extensions" "Plugins"
- ${If} $2 != ""
+  ${If} $2 != ""
      Delete "$2\${NPAPI}"
      # We can't delete the dependency files, because who knows--maybe
      # some other plugins are also using the same files.
- ${EndIf}
+  ${EndIf}
   goto Mozilla-Uninstall-Loop
 Mozilla-Uninstall-End:
 
