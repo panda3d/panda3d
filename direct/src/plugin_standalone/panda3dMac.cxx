@@ -58,10 +58,7 @@ open_p3d_file(FSRef *ref) {
   }
 
   // Create an instance.
-  P3D_instance *inst = create_instance
-    ((char *)filename, true,
-     _win_x, _win_y, _win_width, _win_height,
-     NULL, 0);
+  create_instance((char *)filename, true, NULL, 0);
 }
 
 static pascal OSErr

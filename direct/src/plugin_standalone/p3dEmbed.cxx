@@ -112,8 +112,10 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
         // Read out the tokens that may interest us
         if (keyword == "width") {
           _win_width = atoi(value.c_str());
+          _got_win_size = true;
         } else if (keyword == "height") {
           _win_height = atoi(value.c_str());
+          _got_win_size = true;
         } else if (keyword == "log_basename") {
           _log_basename = value;
         } else if (keyword == "root_dir") {
@@ -233,9 +235,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   }
   
   // Create a plugin instance and run the program
-  P3D_instance *inst = create_instance
-    (f, true, _win_x, _win_y, _win_width, _win_height,
-     argv, argc, read_offset);
+  P3D_instance *inst = create_instance(f, true, argv, argc, read_offset);
   _instances.insert(inst);
   
   run_main_loop();

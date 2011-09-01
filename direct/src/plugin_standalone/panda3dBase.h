@@ -49,10 +49,10 @@ protected:
 
   P3D_instance *
   create_instance(const string &p3d, bool start_instance,
-                  int win_x, int win_y, int win_width, int win_height,
                   char **args, int num_args, const int &p3d_offset = 0);
   void delete_instance(P3D_instance *instance);
 
+  bool read_p3d_info(const Filename &p3d_filename);
   bool parse_token(const char *arg);
   bool parse_int_pair(const char *arg, int &x, int &y);
   string lookup_token(const string &keyword) const;
@@ -84,6 +84,7 @@ protected:
   P3D_window_handle _parent_window;
   int _win_x, _win_y;
   int _win_width, _win_height;
+  bool _got_win_size;
   bool _exit_with_last_instance;
 
   bool _reporting_download;

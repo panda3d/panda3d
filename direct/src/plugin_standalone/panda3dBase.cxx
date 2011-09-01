@@ -24,6 +24,8 @@
 #include "find_root_dir.h"
 #include "load_plugin.h"
 #include "executionEnvironment.h"
+#include "multifile.h"
+#include "tinyxml.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -62,6 +64,7 @@ Panda3DBase(bool console_environment) {
   _win_y = -1;
   _win_width = 640;
   _win_height = 480;
+  _got_win_size = false;
 
   _exit_with_last_instance = true;
   _host_url = PANDA_PACKAGE_HOST_URL;
@@ -330,7 +333,6 @@ make_parent_window() {
 ////////////////////////////////////////////////////////////////////
 P3D_instance *Panda3DBase::
 create_instance(const string &p3d, bool start_instance,
-                int win_x, int win_y, int win_width, int win_height,
                 char **args, int num_args, const int &p3d_offset) {
   // Check to see if the p3d filename we were given is a URL, or a
   // local file.
@@ -346,6 +348,9 @@ create_instance(const string &p3d, bool start_instance,
     p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
   } 
+  if (is_local) {
+    read_p3d_info(p3d_filename);
+  }
 
   // Build up the token list.
   Tokens tokens = _tokens;
@@ -373,7 +378,7 @@ create_instance(const string &p3d, bool start_instance,
   token._value = "1";
   tokens.push_back(token);
 
-  P3D_token *tokens_p;
+  P3D_token *tokens_p = NULL;
   size_t num_tokens = tokens.size();
   if (!tokens.empty()) {
     tokens_p = &tokens[0];
@@ -400,7 +405,7 @@ create_instance(const string &p3d, bool start_instance,
     }
 
     P3D_instance_setup_window_ptr
-      (inst, _window_type, win_x, win_y, win_width, win_height, &_parent_window);
+      (inst, _window_type, _win_x, _win_y, _win_width, _win_height, &_parent_window);
   }
 
   return inst;
@@ -430,6 +435,56 @@ delete_instance(P3D_instance *inst) {
       delete getter;
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3DBase::read_p3d_info
+//       Access: Protected
+//  Description: Opens the p3d file to read the p3d_info.xml file
+//               within it, looking for any locally-relevant
+//               parameters (like win-size).
+////////////////////////////////////////////////////////////////////
+bool Panda3DBase::
+read_p3d_info(const Filename &p3d_filename) {
+  PT(Multifile) mf = new Multifile;
+  if (!mf->open_read(p3d_filename)) {
+    return false;
+  }
+  int si = mf->find_subfile("p3d_info.xml");
+  if (si == -1) {
+    return false;
+  }
+
+  string p3d_info;
+  mf->read_subfile(si, p3d_info);
+  istringstream strm(p3d_info);
+  TiXmlDocument doc;
+  strm >> doc;
+  if (strm.fail() && !strm.eof()) {
+    return false;
+  }
+  TiXmlElement *xpackage = doc.FirstChildElement("package");
+  if (xpackage == NULL) {
+    return false;
+  }
+  TiXmlElement *xconfig = xpackage->FirstChildElement("config");
+  if (xconfig == NULL) {
+    return false;
+  }
+
+  // Successfully read the p3d_info.xml file.
+  if (!_got_win_size) {
+    // If the user didn't override the size on the command line, allow
+    // the p3d file to request a preferred size.
+    if (xconfig->Attribute("width", &_win_width)) {
+      _got_win_size = true;
+    }
+    if (xconfig->Attribute("height", &_win_height)) {
+      _got_win_size = true;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

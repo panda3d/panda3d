@@ -120,6 +120,7 @@ run_command_line(int argc, char *argv[]) {
         cerr << "Invalid value for -s: " << optarg << "\n";
         return 1;
       }
+      _got_win_size = true;
       break;
 
     case 'o':
@@ -248,8 +249,11 @@ run_command_line(int argc, char *argv[]) {
       int num_y_spans = int(sqrt((double)num_instance_filenames));
       int num_x_spans = (num_instance_filenames + num_y_spans - 1) / num_y_spans;
       
-      int inst_width = _win_width / num_x_spans;
-      int inst_height = _win_height / num_y_spans;
+      int origin_x = _win_x;
+      int origin_y = _win_y;
+      _win_width = _win_width / num_x_spans;
+      _win_height = _win_height / num_y_spans;
+      _got_win_size = true;
       
       for (int yi = 0; yi < num_y_spans; ++yi) {
         for (int xi = 0; xi < num_x_spans; ++xi) {
@@ -259,12 +263,11 @@ run_command_line(int argc, char *argv[]) {
           }
           
           // Create instance i at window slot (xi, yi).
-          int inst_x = _win_x + xi * inst_width;
-          int inst_y = _win_y + yi * inst_height;
+          _win_x = origin_x + xi * _win_width;
+          _win_y = origin_y + yi * _win_height;
           
           P3D_instance *inst = create_instance
             (instance_filenames[i], true,
-             inst_x, inst_y, inst_width, inst_height,
              instance_args, num_instance_args);
           _instances.insert(inst);
         }
@@ -275,7 +278,6 @@ run_command_line(int argc, char *argv[]) {
       for (int i = 0; i < num_instance_filenames; ++i) {
         P3D_instance *inst = create_instance
           (instance_filenames[i], true, 
-           _win_x, _win_y, _win_width, _win_height,
            instance_args, num_instance_args);
         _instances.insert(inst);
       }
