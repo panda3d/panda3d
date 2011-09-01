@@ -181,8 +181,7 @@ static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
   return TRUE;
 }       
 
-int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BOOL suppressPrompts) 
-{
+int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BOOL suppressPrompts) {
   // Prompt the user with our dialogbox.
   if (!DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_IMPORT_DLG),
                       i->GetMAXHWnd(), ImportDlgProc, (LPARAM)this)) {
@@ -193,8 +192,9 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
   Notify::ptr()->set_ostream_ptr(&log, false);
   bool ok = MaxLoadEggFile(name, _merge ? true:false, _importmodel ? true:false, _importanim ? true:false);
   string txt = log.str();
-  if (txt != "") MessageBox(NULL, txt.c_str(), "Panda3D Importer", MB_OK);
-  else {
+  if (txt != "") {
+    MessageBox(NULL, txt.c_str(), "Panda3D Importer", MB_OK);
+  } else {
     if (!ok) MessageBox(NULL, "Import Failed, unknown reason\n", "Panda3D Importer", MB_OK);
   }
   Notify::ptr()->set_ostream_ptr(NULL, false);
@@ -213,14 +213,18 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
 
 HINSTANCE hInstance;
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved) 
-{
+BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)  {
   static int controlsInit = FALSE;
   hInstance = hinstDLL;
   
   if (!controlsInit) {
     controlsInit = TRUE;
+    // It appears that InitCustomControls is deprecated in 2012.
+    // I'm not sure if we can just remove it like this, but
+    // I've heard that it seems to work, so let's do it like this.
+#if MAX_VERSION_MAJOR < 14
     InitCustomControls(hInstance);
+#endif
     InitCommonControls();
   }
   
@@ -230,8 +234,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 #define PANDAEGGIMP_CLASS_ID1      0x377193ab
 #define PANDAEGGIMP_CLASS_ID2      0x897afe12
 
-class MaxEggImporterClassDesc: public ClassDesc
-{
+class MaxEggImporterClassDesc: public ClassDesc {
 public:
   int            IsPublic() {return 1;}
   void          *Create(BOOL loading = FALSE) {return new MaxEggImporter;} 
