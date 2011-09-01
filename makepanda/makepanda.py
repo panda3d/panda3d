@@ -498,7 +498,7 @@ if (COMPILER=="MSVC"):
         # We need to be able to find NxCharacter.dll when importing code library libpandaphysx
         AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
     if (PkgSkip("SPEEDTREE")==0):
-        win64 = (sys.platform.startswith("win") and platform.architecture()[0] == "64bit")
+        win64 = (sys.platform.startswith("win") and is_64)
         if win64:
             libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC9.x64/"
             p64ext = '64'
@@ -758,7 +758,7 @@ def CompileCxx(obj,src,opts):
     ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
         cmd = "cl "
-        if (platform.architecture()[0]=="64bit"):
+        if (is_64):
             cmd += "/favor:blend "
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
 
@@ -785,7 +785,7 @@ def CompileCxx(obj,src,opts):
         cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
-        if ("BIGOBJ" in opts) or (platform.architecture()[0]=="64bit"):
+        if ("BIGOBJ" in opts) or (is_64):
             cmd += " /bigobj"
         cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
@@ -804,8 +804,7 @@ def CompileCxx(obj,src,opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            # platform.architecture isn't reliable on OSX.
-            if sys.maxint > 0x100000000L:
+            if is_64:
                 cmd += " -arch x86_64"
             else:
                 cmd += " -arch i386"
@@ -888,9 +887,9 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
         cmd += ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
+    if (COMPILER=="LINUX") and (is_64):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
-    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
+    if (COMPILER=="LINUX") and (not is_64):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
@@ -950,7 +949,7 @@ def CompileImod(wobj, wsrc, opts):
 def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = 'link /lib /nologo '
-        if (platform.architecture()[0] == "64bit"):
+        if (is_64):
             cmd += "/MACHINE:X64 "
         cmd += '/OUT:' + BracketNameWithQuotes(lib)
         for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
@@ -974,7 +973,7 @@ def CompileLib(lib, obj, opts):
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = "link /nologo"
-        if (platform.architecture()[0] == "64bit"):
+        if (is_64):
             cmd += " /MACHINE:X64"
         if ("MFC" not in opts):
             cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
@@ -1050,8 +1049,7 @@ def CompileLink(dll, obj, opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            # platform.architecture isn't reliable on OSX.
-            if sys.maxint > 0x100000000L:
+            if is_64:
                 cmd += " -arch x86_64"
             else:
                 cmd += " -arch i386"
@@ -1614,7 +1612,7 @@ def WriteConfigSettings():
     # Now that we have OS_SIMPLE_THREADS, we can support
     # SIMPLE_THREADS on exotic architectures like win64, so we no
     # longer need to disable it for this platform.
-##     if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
+##     if (sys.platform.startswith("win") and is_64):
 ##         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (RTDIST or RUNTIME):
@@ -5704,7 +5702,7 @@ if (INSTALLER != 0):
     if (sys.platform.startswith("win")):
         dbg = ""
         if (GetOptimize() <= 2): dbg = "-dbg"
-        if (platform.architecture()[0] == "64bit"):
+        if (is_64):
             if (RUNTIME):
                 MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
             else:

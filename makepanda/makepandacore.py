@@ -25,6 +25,9 @@ OPTIMIZE="3"
 VERBOSE=False
 LINK_ALL_STATIC=False
 
+# platform.architecture isn't reliable on OSX.
+is_64 = (sys.maxint > 0x100000000L)
+
 ########################################################################
 ##
 ## Maya and Max Version List (with registry keys)
@@ -603,7 +606,7 @@ def ListRegistryValues(path):
     return result
 
 def GetRegistryKey(path, subkey, override64=True):
-    if (platform.architecture()[0]=="64bit" and override64==True):
+    if (is_64 and override64==True):
         path = path.replace("SOFTWARE\\", "SOFTWARE\\Wow6432Node\\")
     k1=0
     key = TryRegistryKey(path)
@@ -786,7 +789,7 @@ def GetThirdpartyDir():
     if (THIRDPARTYDIR != None):
         return THIRDPARTYDIR
     if (sys.platform.startswith("win")):
-        if (platform.architecture()[0] == "64bit"):
+        if (is_64):
             THIRDPARTYDIR=GetThirdpartyBase()+"/win-libs-vc9-x64/"
         else:
             THIRDPARTYDIR=GetThirdpartyBase()+"/win-libs-vc9/"
@@ -797,14 +800,14 @@ def GetThirdpartyDir():
     elif (sys.platform.startswith("linux")):
         if (platform.machine().startswith("arm")):
             THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-arm/"
-        elif (platform.architecture()[0] == "64bit"):
+        elif (is_64):
             THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-x64/"
         else:
             THIRDPARTYDIR=GetThirdpartyBase()+"/linux-libs-a/"
     elif (sys.platform.startswith("freebsd")):
         if (platform.machine().startswith("arm")):
             THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-arm/"
-        elif (platform.architecture()[0] == "64bit"):
+        elif (is_64):
             THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-x64/"
         else:
             THIRDPARTYDIR=GetThirdpartyBase()+"/freebsd-libs-a/"
@@ -1087,7 +1090,7 @@ def GetLibCache():
                     LD_CACHE.append(lib)
 
         libdirs = ["/lib", "/usr/lib", "/usr/local/lib", "/usr/PCBSD/local/lib", "/usr/X11/lib", "/usr/X11R6/lib"]
-        if platform.architecture()[0] == "64bit":
+        if is_64:
             libdirs += ["/lib64", "/usr/lib64"]
         if "LD_LIBRARY_PATH" in os.environ:
             libdirs += os.environ["LD_LIBRARY_PATH"].split(":")
@@ -1326,7 +1329,7 @@ def SdkLocateDirectX():
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     archStr = "x86"
-    if (platform.architecture()[0] == "64bit"): archStr = "x64"
+    if (is_64): archStr = "x64"
     if ("DX9" not in SDK) or ("DX8" not in SDK):
         uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
         for subdir in ListRegistryKeys(uninstaller):
@@ -1365,7 +1368,7 @@ def SdkLocateMaya():
                     ddir = "/Applications/Autodesk/maya"+key
                     if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
-                    if (platform.architecture()[0] == "64bit"):
+                    if (is_64):
                         ddir1 = "/usr/autodesk/maya"+key+"-x64"
                         ddir2 = "/usr/aw/maya"+key+"-x64"
                     else:
@@ -1395,7 +1398,7 @@ def SdkLocatePython(force_use_sys_executable = False):
             SDK["PYTHON"] = GetThirdpartyBase()+"/win-python"
             if (GetOptimize() <= 2):
                 SDK["PYTHON"] += "-dbg"
-            if (platform.architecture()[0] == "64bit" and os.path.isdir(SDK["PYTHON"] + "-x64")):
+            if (is_64 and os.path.isdir(SDK["PYTHON"] + "-x64")):
                 SDK["PYTHON"] += "-x64"
 
             SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
@@ -1462,7 +1465,7 @@ def SdkLocateMSPlatform():
         if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
 
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
-        if (platform.architecture()[0]!="64bit" or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
+        if (not is_64 or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
             platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
             if (not os.path.isdir(platsdk)): platsdk = 0
 
@@ -1628,7 +1631,7 @@ def SetupVisualStudioEnviron():
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
     suffix=""
-    if (platform.architecture()[0]=="64bit"): suffix = "\\amd64"
+    if (is_64): suffix = "\\amd64"
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin"+suffix)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
@@ -1639,7 +1642,7 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
-    if (platform.architecture()[0]=="32bit"):
+    if (not is_64):
         AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC90.CRT")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC90.MFC")
