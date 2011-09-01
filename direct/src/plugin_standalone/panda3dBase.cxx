@@ -442,7 +442,7 @@ delete_instance(P3D_instance *inst) {
 //       Access: Protected
 //  Description: Opens the p3d file to read the p3d_info.xml file
 //               within it, looking for any locally-relevant
-//               parameters (like win-size).
+//               parameters (like width and height).
 ////////////////////////////////////////////////////////////////////
 bool Panda3DBase::
 read_p3d_info(const Filename &p3d_filename) {
