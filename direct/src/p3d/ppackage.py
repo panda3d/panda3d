@@ -12,6 +12,9 @@ file, for execution by the Panda3D plugin or runtime.  (But also see
 packp3d, which is designed to be a simpler interface for building
 applications.)
 
+This command will build p3d files that reference Panda3D %(version)s,
+from host %(host)s .
+
 This script is actually a wrapper around Panda's Packager.py, which
 can be invoked directly by Python code that requires a programmatic
 interface to building packages.
@@ -110,7 +113,7 @@ Options:
   -H
      Treats a packager.setHost() call in the pdef file as if it were
      merely a call to packager.addHost().  This allows producing a
-     package for an alternate host than itsP3DSUFFIX normally configured host,
+     package for an alternate host than its normally configured host,
      which is sometimes useful in development.
 
   -a suffix
@@ -132,7 +135,11 @@ from direct.p3d import Packager
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
+    print >> sys.stderr, usageText % {
+        'version' : PandaSystem.getPackageVersionString(),
+        'host' : PandaSystem.getPackageHostUrl(),
+        'prog' : os.path.split(sys.argv[0])[1]
+        }
     print >> sys.stderr, msg
     sys.exit(code)
 

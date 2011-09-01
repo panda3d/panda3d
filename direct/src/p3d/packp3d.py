@@ -7,6 +7,9 @@ tree of .py files and models, into a p3d file for convenient
 distribution.  The resulting p3d file can be run by the Panda3D
 runtime executable, or by the Panda3D web browser plugin.
 
+This command will build p3d files that reference Panda3D %s,
+from host %s .
+
 Also see ppackage, a more powerful (but more complex) tool that can
 also be used to build p3d applications, using a pdef description file.
 
@@ -143,8 +146,11 @@ def makePackedApp(args):
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
-            print usageText % (os.path.split(sys.argv[0])[1],
-                               '%s.%s' % (sys.version_info[0], sys.version_info[1]))
+            print usageText % (
+                PandaSystem.getPackageVersionString(),
+                PandaSystem.getPackageHostUrl(),
+                os.path.split(sys.argv[0])[1],
+                '%s.%s' % (sys.version_info[0], sys.version_info[1]))
             sys.exit(1)
 
     if not appFilename:
