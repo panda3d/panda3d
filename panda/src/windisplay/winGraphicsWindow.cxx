@@ -1002,7 +1002,6 @@ open_graphic_window(bool fullscreen) {
   }
 
   if (!_hparent) { // This can be a regular window or a fullscreen window
-    cerr << "wclass is " << wclass._name << ", title is + " << title << "\n";
     _hWnd = CreateWindowW(wclass._name.c_str(), title.c_str(), window_style, 
                           metrics.x, metrics.y,
                           metrics.width,
