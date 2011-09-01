@@ -66,6 +66,9 @@ PUBLISHED:
 
   static ConfigPageManager *get_global_ptr();
 
+public:
+  INLINE void mark_unsorted();
+
 private:
   INLINE void check_sort_pages() const;
   void sort_pages();

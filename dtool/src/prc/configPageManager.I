@@ -188,6 +188,20 @@ get_explicit_page(int n) const {
   return _explicit_pages[n];
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPageManager::mark_unsorted()
+//       Access: Public
+//  Description: This method is meant to be used internally to this
+//               module; there is no need to call it directly.  It
+//               indicates that the sort values of some pages may have
+//               changed and pages need to be re-sorted.
+////////////////////////////////////////////////////////////////////
+INLINE void ConfigPageManager::
+mark_unsorted() {
+  _pages_sorted = false;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigPageManager::check_sort_pages()
 //       Access: Private

@@ -22,11 +22,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigPage::
 operator < (const ConfigPage &other) const {
-  if (is_implicit() != other.is_implicit()) {
-    // Explicitly-loaded pages are more important than
-    // implicitly-loaded pages, so put the implicit pages at the end
-    // of the list.
-    return (int)is_implicit() < (int)other.is_implicit();
+  // The explicit sort value is the most important setting.  It's
+  // usually zero unless explicitly changed.
+  if (get_sort() != other.get_sort()) {
+    return get_sort() < other.get_sort();
   }
 
   // Within the implicit/explicit categorization, sort by the page
@@ -71,6 +70,17 @@ is_special() const {
 INLINE bool ConfigPage::
 is_implicit() const {
   return _implicit_load;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPage::get_sort
+//       Access: Published
+//  Description: Returns the explicit sort order of this particular
+//               ConfigPage.  See set_sort().
+////////////////////////////////////////////////////////////////////
+INLINE int ConfigPage::
+get_sort() const {
+  return _sort;
 }
 
 ////////////////////////////////////////////////////////////////////

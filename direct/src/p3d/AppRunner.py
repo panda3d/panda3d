@@ -33,7 +33,7 @@ else:
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, initAppForGui
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, ConfigPageManager, initAppForGui
 from pandac import PandaModules
 from direct.stdpy import file, glob
 from direct.task.TaskManagerGlobal import taskMgr
@@ -1011,12 +1011,24 @@ class AppRunner(DirectObject):
         # the Multifile interface to find the prc files, rather than
         # vfs.scanDirectory(), so we only pick up the files in this
         # particular multifile.
+        cpMgr = ConfigPageManager.getGlobalPtr()
         for f in mf.getSubfileNames():
             fn = Filename(f)
             if fn.getDirname() == '' and fn.getExtension() == 'prc':
                 pathname = '%s/%s' % (root, f)
-                data = file.open(Filename(pathname), 'r').read()
-                loadPrcFileData(pathname, data)
+
+                alreadyLoaded = False
+                for cpi in range(cpMgr.getNumImplicitPages()):
+                    if cpMgr.getImplicitPage(cpi).getName() == pathname:
+                        # No need to load this file twice.
+                        alreadyLoaded = True
+                        break
+
+                if not alreadyLoaded:
+                    data = file.open(Filename(pathname), 'r').read()
+                    cp = loadPrcFileData(pathname, data)
+                    # Set it to sort value 20, behind the implicit pages.
+                    cp.setSort(20)
         
     
     def __clearWindowProperties(self):
