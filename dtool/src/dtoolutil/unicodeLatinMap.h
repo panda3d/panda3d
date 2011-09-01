@@ -134,7 +134,7 @@ private:
   static bool _initialized;
 
   typedef phash_map<wchar_t, const Entry *, integer_hash<wchar_t> > ByCharacter;
-  static ByCharacter _by_character;
+  static ByCharacter *_by_character;
   enum { max_direct_chars = 256 };
   static const Entry *_direct_chars[max_direct_chars];
 };

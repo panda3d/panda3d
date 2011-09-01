@@ -15,7 +15,7 @@
 #include "unicodeLatinMap.h"
 
 bool UnicodeLatinMap::_initialized = false;
-UnicodeLatinMap::ByCharacter UnicodeLatinMap::_by_character;
+UnicodeLatinMap::ByCharacter *UnicodeLatinMap::_by_character;
 const UnicodeLatinMap::Entry *UnicodeLatinMap::_direct_chars[UnicodeLatinMap::max_direct_chars];
 
 static const UnicodeLatinMap::Entry latin_map[] = {
@@ -1320,8 +1320,8 @@ look_up(wchar_t character) {
 
   } else {
     ByCharacter::const_iterator ci;
-    ci = _by_character.find(character);
-    if (ci != _by_character.end()) {
+    ci = _by_character->find(character);
+    if (ci != _by_character->end()) {
       return (*ci).second;
     }
     return NULL;
@@ -1337,6 +1337,7 @@ look_up(wchar_t character) {
 void UnicodeLatinMap::
 init() {
   if (!_initialized) {
+    _by_character = new ByCharacter;
     for (int i = 0; i < latin_map_length; i++) {
       const UnicodeLatinMap::Entry *entry = &latin_map[i];
 
@@ -1346,7 +1347,7 @@ init() {
       if (entry->_character < max_direct_chars) {
         _direct_chars[entry->_character] = entry;
       } else {
-        _by_character[entry->_character] = entry;
+        (*_by_character)[entry->_character] = entry;
       }
     }
     _initialized = true;
