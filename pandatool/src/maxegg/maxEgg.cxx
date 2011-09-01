@@ -806,7 +806,13 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 
         if (!controlsInit) {
                 controlsInit = TRUE;
+
+#ifdef MAX_VERSION_MAJOR < 14
+                // It appears that InitCustomControls is deprecated in 2012.
+                // I'm not sure if we can just remove it like this, but
+                // I've heard that it seems to work, so let's do it like this.
                 InitCustomControls(hInstance);  // Initialize MAX's custom controls
+#endif
                 InitCommonControls();                   // Initialize Win95 controls
         }
 
