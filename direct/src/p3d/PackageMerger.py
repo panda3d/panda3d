@@ -136,9 +136,9 @@ class PackageMerger:
         self.contentsSeq = SeqValue()
 
         # We allow the first one to fail quietly.
-        self.__readContentsFile(self.installDir)
+        self.__readContentsFile(self.installDir, None)
 
-    def __readContentsFile(self, sourceDir):
+    def __readContentsFile(self, sourceDir, packageNames):
         """ Reads the contents.xml file from the indicated sourceDir,
         and updates the internal set of packages appropriately. """
 
@@ -170,10 +170,15 @@ class PackageMerger:
             xpackage = xcontents.FirstChildElement('package')
             while xpackage:
                 pe = self.PackageEntry(xpackage, sourceDir)
-                other = self.contents.get(pe.getKey(), None)
-                if not other or pe.isNewer(other):
-                    # Store this package in the resulting output.
-                    self.contents[pe.getKey()] = pe
+
+                # Filter out any packages not listed in
+                # packageNames (unless packageNames is None,
+                # in which case don't filter anything).
+                if packageNames is None or pe.packageName in packageNames:
+                    other = self.contents.get(pe.getKey(), None)
+                    if not other or pe.isNewer(other):
+                        # Store this package in the resulting output.
+                        self.contents[pe.getKey()] = pe
                     
                 xpackage = xpackage.NextSiblingElement('package')
 
@@ -268,10 +273,13 @@ class PackageMerger:
             except OSError:
                 pass
 
-    def merge(self, sourceDir):
+    def merge(self, sourceDir, packageNames = None):
         """ Adds the contents of the indicated source directory into
-        the current pool. """
-        if not self.__readContentsFile(sourceDir):
+        the current pool.  If packageNames is not None, it is a list
+        of package names that we wish to include from the source;
+        packages not named in this list will be unchanged. """
+        
+        if not self.__readContentsFile(sourceDir, packageNames):
             message = "Couldn't read %s" % (sourceDir)
             raise PackageMergerError, message            
 

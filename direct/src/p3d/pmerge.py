@@ -30,6 +30,14 @@ Options:
      are checked for self-consistency with regards to hashes and
      timestamps.
 
+  -p packageName[,packageName...]
+     Specifies one or more particular packages by name that are to be
+     included from the input directories.  Any packages not in this
+     list are left unchanged in the install directory, even if there
+     is a newer version in one of the input directories.  If no
+     packages are named, all packages are involved.  This option may
+     be repeated.
+
   -h
      Display this help
 """
@@ -47,20 +55,27 @@ def usage(code, msg = ''):
     sys.exit(code)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:p:h')
 except getopt.error, msg:
     usage(1, msg)
 
 installDir = None
+packageNames = []
 for opt, arg in opts:
     if opt == '-i':
         installDir = Filename.fromOsSpecific(arg)
+    elif opt == '-p':
+        packageNames += arg.split(',')
         
     elif opt == '-h':
         usage(0)
     else:
         print 'illegal option: ' + arg
         sys.exit(1)
+
+if not packageNames:
+    # No package names means allow all packages.
+    packageNames = None
 
 inputDirs = []
 for arg in args:
@@ -75,7 +90,7 @@ for arg in args:
 try:
     pm = PackageMerger.PackageMerger(installDir)
     for dir in inputDirs:
-        pm.merge(dir)
+        pm.merge(dir, packageNames = packageNames)
     pm.close()
         
 except PackageMerger.PackageMergerError:
