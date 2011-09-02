@@ -1826,7 +1826,6 @@ extract_subfile(int index, const Filename &filename) {
     fname.set_binary();
   }
 
-  nassertr(fname.is_binary_or_text(), false);
   if (!fname.is_binary_or_text()) {
     // If we haven't specified binary or text, infer it from the type
     // of the subfile.
