@@ -235,10 +235,8 @@ class audio(package):
     # platform, assuming a non-commercial application.
     require('panda3d')
 
-    if platform.startswith('osx'):
-        require('fmod')
-    else:
-        require('openal')
+    # OpenAL seems to work pretty well universally now.
+    require('openal')
 
 class egg(package):
     # This package contains the code for reading and operating on egg
