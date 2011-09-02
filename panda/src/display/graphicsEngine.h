@@ -323,6 +323,8 @@ private:
   bool _singular_warning_last_frame;
   bool _singular_warning_this_frame;
 
+  Mutex _lock;
+
   class LoadedTexture {
   public:
     PT(Texture) _tex;
@@ -330,8 +332,7 @@ private:
   };
   typedef pvector<LoadedTexture> LoadedTextures;
   LoadedTextures _loaded_textures;
-
-  LightReMutex _lock;
+  Mutex _loaded_textures_lock;
 
   static PT(GraphicsEngine) _global_ptr;
 

@@ -126,7 +126,8 @@ GraphicsEngine::
 GraphicsEngine(Pipeline *pipeline) :
   _pipeline(pipeline),
   _app("app"),
-  _lock("GraphicsEngine::_lock")
+  _lock("GraphicsEngine::_lock"),
+  _loaded_textures_lock("GraphicsEngine::_loaded_textures_lock")
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -198,7 +199,7 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
       << "Danger!  Creating requested render threads anyway!\n";
   }
 #endif  // THREADED_PIPELINE
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   _threading_model = threading_model;
 }
 
@@ -212,7 +213,7 @@ GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
   GraphicsThreadingModel result;
   {
-    LightReMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
     result = _threading_model;
   }
   return result;
@@ -468,7 +469,7 @@ remove_window(GraphicsOutput *window) {
   PT(GraphicsOutput) ptwin = window;
   size_t count;
   {
-    LightReMutexHolder holder(_lock, current_thread);
+    MutexHolder holder(_lock, current_thread);
     if (!_windows_sorted) {
       do_resort_windows();
     }
@@ -489,7 +490,7 @@ remove_window(GraphicsOutput *window) {
       // context.
       bool any_common = false;
       {
-        LightReMutexHolder holder(_lock, current_thread);
+        MutexHolder holder(_lock, current_thread);
         Windows::iterator wi;
         for (wi = _windows.begin(); wi != _windows.end() && !any_common; ++wi) {
           GraphicsStateGuardian *gsg2 = (*wi)->get_gsg();
@@ -667,7 +668,7 @@ render_frame() {
   }
 
   {
-    LightReMutexHolder holder(_lock, current_thread);
+    MutexHolder holder(_lock, current_thread);
 
     if (!_windows_sorted) {
       do_resort_windows();
@@ -719,14 +720,17 @@ render_frame() {
 
     // Go ahead and release any textures' ram images for textures that
     // were drawn in the previous frame.
-    LoadedTextures::iterator lti;
-    for (lti = _loaded_textures.begin(); lti != _loaded_textures.end(); ++lti) {
-      LoadedTexture &lt = (*lti);
-      if (lt._tex->get_image_modified() == lt._image_modified) {
-        lt._tex->texture_uploaded();
+    {
+      MutexHolder holder2(_loaded_textures_lock);
+      LoadedTextures::iterator lti;
+      for (lti = _loaded_textures.begin(); lti != _loaded_textures.end(); ++lti) {
+        LoadedTexture &lt = (*lti);
+        if (lt._tex->get_image_modified() == lt._image_modified) {
+          lt._tex->texture_uploaded();
+        }
       }
+      _loaded_textures.clear();
     }
-    _loaded_textures.clear();
     
     // Now it's time to do any drawing from the main frame--after all of
     // the App code has executed, but before we begin the next frame.
@@ -899,7 +903,7 @@ void GraphicsEngine::
 open_windows() {
   Thread *current_thread = Thread::get_current_thread();
 
-  LightReMutexHolder holder(_lock, current_thread);
+  MutexHolder holder(_lock, current_thread);
 
   if (!_windows_sorted) {
     do_resort_windows();
@@ -942,7 +946,7 @@ open_windows() {
 void GraphicsEngine::
 sync_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  LightReMutexHolder holder(_lock, current_thread);
+  MutexHolder holder(_lock, current_thread);
 
   if (_flip_state == FS_draw) {
     do_sync_frame(current_thread);
@@ -967,7 +971,7 @@ sync_frame() {
 void GraphicsEngine::
 ready_flip() {
   Thread *current_thread = Thread::get_current_thread();
-  LightReMutexHolder holder(_lock, current_thread);
+  MutexHolder holder(_lock, current_thread);
 
   if (_flip_state == FS_draw) {
     do_ready_flip(current_thread);
@@ -986,7 +990,7 @@ ready_flip() {
 void GraphicsEngine::
 flip_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  LightReMutexHolder holder(_lock, current_thread);
+  MutexHolder holder(_lock, current_thread);
 
   if (_flip_state != FS_flip) {
     do_flip_frame(current_thread);
@@ -1024,7 +1028,7 @@ flip_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
@@ -1079,7 +1083,7 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 texture_uploaded(Texture *tex) {
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_loaded_textures_lock);
   // We defer this until the end of the frame; multiple GSG's might be
   // rendering the texture within the same frame, and we don't want to
   // dump the texture image until they've all had a chance at it.
@@ -1205,7 +1209,7 @@ is_scene_root(const PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_window_sort(GraphicsOutput *window, int sort) {
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   window->_sort = sort;
   _windows_sorted = false;
 }
@@ -1910,7 +1914,7 @@ void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
   nassertv(window != NULL);
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   nassertv(window->get_engine() == this);
 
   // We have a special counter that is unique per window that allows
@@ -1976,7 +1980,7 @@ do_add_window(GraphicsOutput *window,
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
-  LightReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;
@@ -2207,7 +2211,7 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 terminate_threads(Thread *current_thread) {
-  LightReMutexHolder holder(_lock, current_thread);
+  MutexHolder holder(_lock, current_thread);
 
   // We spend almost our entire time in this method just waiting for
   // threads.  Time it appropriately.
