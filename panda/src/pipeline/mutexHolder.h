@@ -29,6 +29,7 @@
 class EXPCL_PANDA_PIPELINE MutexHolder {
 public:
   INLINE MutexHolder(const Mutex &mutex);
+  INLINE MutexHolder(const Mutex &mutex, Thread *current_thread);
   INLINE MutexHolder(Mutex *&mutex);
   INLINE ~MutexHolder();
 private:
