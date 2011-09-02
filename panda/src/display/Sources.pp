@@ -69,7 +69,7 @@
     graphicsThreadingModel.cxx \
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsWindowProc.cxx \
-    graphicsWindowProcCalbackData.cxx \
+    graphicsWindowProcCallbackData.cxx \
     graphicsDevice.cxx \
     lru.cxx \
     nativeWindowHandle.cxx \
