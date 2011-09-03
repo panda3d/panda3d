@@ -137,7 +137,7 @@ CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LV
 //     Function: TransformState_to_btTrans
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btTransform TransformState_to_btTrans(CPT(TransformState) &ts) {
+btTransform TransformState_to_btTrans(CPT(TransformState) ts) {
 
   ts = ts->set_scale(1.0);
 
