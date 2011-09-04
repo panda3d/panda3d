@@ -720,6 +720,38 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t ClipPlaneAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+
+  Planes::const_iterator li;
+  for (li = _on_planes.begin(); li != _on_planes.end(); ++li) {
+    NodePath plane = (*li);
+    hash = int_hash::add_hash(hash, plane.get_key());
+  }
+
+  // This bool value goes here, between the two lists, to
+  // differentiate between the two.
+  hash = int_hash::add_hash(hash, (int)_off_all_planes);
+
+  for (li = _off_planes.begin(); li != _off_planes.end(); ++li) {
+    NodePath plane = (*li);
+    hash = int_hash::add_hash(hash, plane.get_key());
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::compose_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib

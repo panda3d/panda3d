@@ -43,6 +43,7 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual size_t get_hash_impl() const;
 
 private:
   string _bin_name;

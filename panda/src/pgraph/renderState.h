@@ -65,9 +65,9 @@ public:
   typedef RenderAttribRegistry::SlotMask SlotMask;
 
 PUBLISHED:
-  bool operator < (const RenderState &other) const;
+  int compare_to(const RenderState &other) const;
   int compare_sort(const RenderState &other) const;
-  size_t get_hash() const;
+  INLINE size_t get_hash() const;
 
   INLINE bool is_empty() const;
 
@@ -140,6 +140,7 @@ PUBLISHED:
   static int get_num_unused_states();
   static int clear_cache();
   static void clear_munger_cache();
+  static int garbage_collect();
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
@@ -160,9 +161,12 @@ public:
   INLINE static void flush_level();
 
 private:
+  INLINE void check_hash() const;
   bool validate_filled_slots() const;
   INLINE bool do_cache_unref() const;
   INLINE bool do_node_unref() const;
+  INLINE void calc_hash();
+  void do_calc_hash();
 
   class CompositionCycleDescEntry {
   public:
@@ -180,6 +184,7 @@ private:
   static CPT(RenderState) return_unique(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
+  void detect_and_break_cycles();
   static bool r_detect_cycles(const RenderState *start_state,
                               const RenderState *current_state,
                               int length, UpdateSeq this_seq,
@@ -216,15 +221,17 @@ private:
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef phash_set<const RenderState *, indirect_less_hash<const RenderState *> > States;
+  class Empty {
+  };
+  typedef SimpleHashMap<const RenderState *, Empty, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;
   static CPT(RenderState) _full_default_state;
 
-  // This iterator records the entry corresponding to this RenderState
-  // object in the above global set.  We keep the iterator around so
-  // we can remove it when the RenderState destructs.
-  States::iterator _saved_entry;
+  // This iterator records the entry corresponding to this
+  // RenderState object in the above global set.  We keep the index
+  // around so we can remove it when the RenderState destructs.
+  int _saved_entry;
 
   // This data structure manages the job of caching the composition of
   // two RenderStates.  It's complicated because we have to be sure to
@@ -263,9 +270,16 @@ private:
   UpdateSeq _cycle_detect;
   static UpdateSeq _last_cycle_detect;
 
+  // This keeps track of our current position through the garbage
+  // collection cycle.
+  static int _garbage_index;
+
   static PStatCollector _cache_update_pcollector;
+  static PStatCollector _garbage_collect_pcollector;
   static PStatCollector _state_compose_pcollector;
   static PStatCollector _state_invert_pcollector;
+  static PStatCollector _state_break_cycles_pcollector;
+  static PStatCollector _state_validate_pcollector;
 
   static PStatCollector _node_counter;
   static PStatCollector _cache_counter;
@@ -295,12 +309,14 @@ private:
   // be a CullBinAttrib in the state.
   int _bin_index;
   int _draw_order;
+  size_t _hash;
 
   enum Flags {
     F_checked_bin_index     = 0x000001,
     F_checked_cull_callback = 0x000002,
     F_has_cull_callback     = 0x000004,
     F_is_destructing        = 0x000008,
+    F_hash_known            = 0x000010,
   };
   unsigned int _flags;
 

@@ -150,24 +150,33 @@ compare_to_impl(const RenderAttrib *other) const {
   const AudioVolumeAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
 
-  if (is_off() != ta->is_off()) {
-    if (pgraph_cat.is_spam()) {
-      pgraph_cat.spam()
-        << "Comparing " << (int)is_off() << " to " << (int)ta->is_off() << " result = "
-        << (int)is_off() - (int)ta->is_off() << "\n";
-    }
-    
-    return (int)is_off() - (int)ta->is_off();
+  if (_off != ta->_off) {
+    return (int)_off - (int)ta->_off;
   }
 
-  int result = int(_volume * 1000.0f) - int(ta->_volume * 1000.0f);
-  if (pgraph_cat.is_spam()) {
-    pgraph_cat.spam()
-      << "Comparing " << _volume << " to " << ta->_volume << " result = "
-      << result << "\n";
+  if (_volume != ta->_volume) {
+    return _volume < ta->_volume ? -1 : 1;
   }
 
-  return result;
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioVolumeAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t AudioVolumeAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  hash = int_hash::add_hash(hash, (int)_off);
+  hash = float_hash().add_hash(hash, _volume);
+  return hash;
 }
 
 ////////////////////////////////////////////////////////////////////

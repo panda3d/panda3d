@@ -20,8 +20,9 @@
 #include "typedWritableReferenceCount.h"
 #include "renderAttribRegistry.h"
 #include "pointerTo.h"
-#include "pset.h"
+#include "simpleHashMap.h"
 #include "lightReMutex.h"
+#include "pStatCollector.h"
 
 class AttribSlots;
 class GraphicsStateGuardianBase;
@@ -78,6 +79,7 @@ public:
 
 PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;
+  INLINE size_t get_hash() const;
   INLINE CPT(RenderAttrib) get_unique() const;
 
   virtual bool unref() const;
@@ -87,6 +89,7 @@ PUBLISHED:
 
   static int get_num_attribs();
   static void list_attribs(ostream &out);
+  static int garbage_collect();
   static bool validate_attribs();
 
   virtual int get_slot() const=0;
@@ -179,6 +182,7 @@ protected:
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
   static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
@@ -199,10 +203,18 @@ public:
 private:
   // This mutex protects _attribs.
   static LightReMutex *_attribs_lock;
-  typedef pset<const RenderAttrib *, indirect_compare_to<const RenderAttrib *> > Attribs;
+  class Empty {
+  };
+  typedef SimpleHashMap<const RenderAttrib *, Empty, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 
-  Attribs::iterator _saved_entry;
+  int _saved_entry;
+
+  // This keeps track of our current position through the garbage
+  // collection cycle.
+  static int _garbage_index;
+
+  static PStatCollector _garbage_collect_pcollector;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

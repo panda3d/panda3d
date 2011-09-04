@@ -90,6 +90,20 @@ compare_to(const RenderAttrib &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::get_hash
+//       Access: Published
+//  Description: Returns a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE size_t RenderAttrib::
+get_hash() const {
+  size_t hash = get_hash_impl();
+
+  // The type is also added to the hash.
+  hash = int_hash::add_hash(hash, get_type().get_index());
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::get_unique
 //       Access: Published
 //  Description: Returns the pointer to the unique RenderAttrib in

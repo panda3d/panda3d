@@ -29,6 +29,8 @@
 #include "throw_event.h"
 #include "executionEnvironment.h"
 #include "sceneGraphAnalyzer.h"
+#include "transformState.h"
+#include "renderState.h"
 
 LoaderOptions PandaFramework::_loader_options;
 
@@ -136,6 +138,7 @@ open_framework(int &argc, char **&argv) {
 
   if (garbage_collect_states) {
     PT(GenericAsyncTask) task = new GenericAsyncTask("garbage_collect", task_garbage_collect, this);
+    task->set_sort(46);
     _task_mgr.add(task);
   }
 
@@ -1630,9 +1633,11 @@ task_clear_text(GenericAsyncTask *task, void *data) {
 //       Access: Public, Static
 //  Description: This task is created automatically if
 //               garbage_collect_states is true.  It calls the needed
-//               TransformState::garbage_collect() method each frame.
+//               TransformState::garbage_collect() and
+//               RenderState::garbage_collect() methods each frame.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus PandaFramework::
 task_garbage_collect(GenericAsyncTask *task, void *data) {
   TransformState::garbage_collect();
+  RenderState::garbage_collect();
 }

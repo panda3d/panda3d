@@ -159,6 +159,7 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual size_t get_hash_impl() const;
 
 private:
   unsigned int _stencil_render_states [SRS_total];

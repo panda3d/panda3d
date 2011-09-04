@@ -132,6 +132,27 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t ColorBlendAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  hash = int_hash::add_hash(hash, (int)_mode);
+  hash = int_hash::add_hash(hash, (int)_a);
+  hash = int_hash::add_hash(hash, (int)_b);
+  hash = _color.add_hash(hash);
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorBlendAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

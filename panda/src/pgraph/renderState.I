@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_hash
+//       Access: Published
+//  Description: Returns a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE size_t RenderState::
+get_hash() const {
+  check_hash();
+  return _hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::is_empty
 //       Access: Published
 //  Description: Returns true if the state is empty, false otherwise.
@@ -568,15 +579,17 @@ flush_level() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::do_node_unref
+//     Function: RenderState::check_hash
 //       Access: Private
-//  Description: Reimplements NodeReferenceCount::node_unref().  We do
-//               this because we have a non-virtual unref() method.
+//  Description: Ensures that we know the hash value.
 ////////////////////////////////////////////////////////////////////
-INLINE bool RenderState::
-do_node_unref() const {
-  node_unref_only();
-  return unref();
+INLINE void RenderState::
+check_hash() const {
+  // This pretends to be a const function, even though it's not,
+  // because it only updates a transparent cache value.
+  if ((_flags & F_hash_known) == 0) {
+    ((RenderState *)this)->calc_hash();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -590,6 +603,29 @@ INLINE bool RenderState::
 do_cache_unref() const {
   cache_unref_only();
   return unref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::do_node_unref
+//       Access: Private
+//  Description: Reimplements NodeReferenceCount::node_unref().  We do
+//               this because we have a non-virtual unref() method.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+do_node_unref() const {
+  node_unref_only();
+  return unref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::calc_hash
+//       Access: Private
+//  Description: Computes the hash value.
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+calc_hash() {
+  LightMutexHolder holder(_lock);
+  do_calc_hash();
 }
 
 ////////////////////////////////////////////////////////////////////

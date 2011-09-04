@@ -188,13 +188,15 @@ ConfigVariableBool auto_break_cycles
  PRC_DESC("Set this true to automatically detect and break reference-count "
           "cycles in the TransformState and RenderState caches.  When this "
           "is false, you must explicitly call TransformState.clear_cache() "
-          "from time to time to prevent gradual memory bloat.  This has "
-          "no meaning when garbage-collect-states is true."));
+          "from time to time to prevent gradual memory bloat."));
 
 ConfigVariableBool garbage_collect_states
 ("garbage-collect-states", false,
- PRC_DESC("This temporary config variable is used for development only.  "
-          "Do not set!"));
+ PRC_DESC("Set this true to defer destruction of TransformState and "
+          "RenderState objects until the end of the frame (or whenever "
+          "TransformState::garbage_collect() and RenderState::garbage_collect() "
+          "are called).  This is a particularly useful thing to do when "
+          "using multiple threads, because it improves parallelization."));
 
 ConfigVariableDouble garbage_collect_states_rate
 ("garbage-collect-states-rate", 0.25,

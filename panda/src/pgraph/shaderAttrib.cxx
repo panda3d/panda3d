@@ -800,6 +800,40 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t ShaderAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  hash = pointer_hash::add_hash(hash, _shader);
+  hash = int_hash::add_hash(hash, _shader_priority);
+  hash = int_hash::add_hash(hash, (int)_auto_shader);
+  hash = int_hash::add_hash(hash, (int)_has_shader);
+  hash = int_hash::add_hash(hash, _flags);
+  hash = int_hash::add_hash(hash, _has_flags);
+  hash = int_hash::add_hash(hash, _instance_count);
+  hash = int_hash::add_hash(hash, (int)_auto_normal_on);
+  hash = int_hash::add_hash(hash, (int)_auto_glow_on);
+  hash = int_hash::add_hash(hash, (int)_auto_gloss_on);
+  hash = int_hash::add_hash(hash, (int)_auto_shadow_on);
+
+  Inputs::const_iterator ii;
+  for (ii = _inputs.begin(); ii != _inputs.end(); ++ii) {
+    hash = pointer_hash::add_hash(hash, (*ii).first);
+    hash = pointer_hash::add_hash(hash, (*ii).second);
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::compose_impl
 //       Access: Public, Virtual
 //  Description:

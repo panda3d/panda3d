@@ -412,6 +412,34 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t TexGenAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  Stages::const_iterator ri;
+  for (ri = _stages.begin(); ri != _stages.end(); ++ri) {
+    const TextureStage *stage = (*ri).first;
+    const ModeDef &mode_def = (*ri).second;
+
+    hash = pointer_hash::add_hash(hash, stage);
+    hash = int_hash::add_hash(hash, (int)mode_def._mode);
+    hash = string_hash::add_hash(hash, mode_def._source_name);
+    hash = int_hash::add_hash(hash, mode_def._light.get_key());
+    hash = mode_def._constant_value.add_hash(hash);
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::compose_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib

@@ -1267,7 +1267,8 @@ garbage_collect() {
         delete state;
       }
     }      
-    ++si;
+    
+    si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
 
@@ -1579,7 +1580,7 @@ return_unique(TransformState *state) {
 
   if (state->_saved_entry != -1) {
     // This state is already in the cache.
-    nassertr(_states->find(state) == state->_saved_entry, state);
+    //nassertr(_states->find(state) == state->_saved_entry, state);
     return state;
   }
 

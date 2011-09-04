@@ -20,7 +20,6 @@
 #include "nodeCachedReferenceCount.h"
 #include "pointerTo.h"
 #include "luse.h"
-#include "pset.h"
 #include "event.h"
 #include "updateSeq.h"
 #include "pStatCollector.h"

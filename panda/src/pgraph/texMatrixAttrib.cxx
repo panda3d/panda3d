@@ -283,6 +283,31 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t TexMatrixAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  Stages::const_iterator si;
+  for (si = _stages.begin(); si != _stages.end(); ++si) {
+    const StageNode &sn = (*si);
+
+    hash = pointer_hash::add_hash(hash, sn._stage);
+    hash = pointer_hash::add_hash(hash, sn._transform);
+    hash = int_hash::add_hash(hash, sn._override);
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexMatrixAttrib::compose_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib

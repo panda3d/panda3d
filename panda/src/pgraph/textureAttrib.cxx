@@ -561,6 +561,44 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t TextureAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  Stages::const_iterator si;
+  for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
+    const StageNode &sn = (*si);
+
+    hash = pointer_hash::add_hash(hash, sn._stage);
+    hash = pointer_hash::add_hash(hash, sn._texture);
+    hash = int_hash::add_hash(hash, sn._ff_tc_index);
+    hash = int_hash::add_hash(hash, (int)sn._implicit_sort);
+    hash = int_hash::add_hash(hash, sn._override);
+  }
+
+  // This bool value goes here, between the two lists, to
+  // differentiate between the two.
+  hash = int_hash::add_hash(hash, (int)_off_all_stages);
+
+  for (si = _off_stages.begin(); si != _off_stages.end(); ++si) {
+    const StageNode &sn = (*si);
+
+    hash = pointer_hash::add_hash(hash, sn._stage);
+    hash = int_hash::add_hash(hash, sn._override);
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::compose_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib

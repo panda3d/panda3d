@@ -752,6 +752,38 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t LightAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+
+  Lights::const_iterator li;
+  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+    NodePath light = (*li);
+    hash = int_hash::add_hash(hash, light.get_key());
+  }
+
+  // This bool value goes here, between the two lists, to
+  // differentiate between the two.
+  hash = int_hash::add_hash(hash, (int)_off_all_lights);
+
+  for (li = _off_lights.begin(); li != _off_lights.end(); ++li) {
+    NodePath light = (*li);
+    hash = int_hash::add_hash(hash, light.get_key());
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::compose_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib

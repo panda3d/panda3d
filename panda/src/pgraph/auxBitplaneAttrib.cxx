@@ -91,10 +91,27 @@ compare_to_impl(const RenderAttrib *other) const {
   const AuxBitplaneAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
   int compare_result = _outputs - ta->_outputs;
-  if (compare_result!=0) {
+  if (compare_result != 0) {
     return compare_result;
   }
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AuxBitplaneAttrib::get_hash_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to return a unique hash for these particular
+//               properties.  RenderAttribs that compare the same with
+//               compare_to_impl(), above, should return the same
+//               hash; RenderAttribs that compare differently should
+//               return a different hash.
+////////////////////////////////////////////////////////////////////
+size_t AuxBitplaneAttrib::
+get_hash_impl() const {
+  size_t hash = 0;
+  hash = int_hash::add_hash(hash, _outputs);
+  return hash;
 }
 
 ////////////////////////////////////////////////////////////////////
