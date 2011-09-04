@@ -144,6 +144,11 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 ////////////////////////////////////////////////////////////////////
 bool RenderAttrib::
 unref() const {
+  // This is flawed, but this is development only.
+  if (garbage_collect_states) {
+    return ReferenceCount::unref();
+  }
+
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
   LightReMutexHolder holder(*_attribs_lock);

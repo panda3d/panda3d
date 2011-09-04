@@ -44,6 +44,7 @@ extern ConfigVariableBool compose_componentwise;
 extern ConfigVariableBool uniquify_matrix;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
+extern ConfigVariableBool garbage_collect_states;
 extern ConfigVariableBool transform_cache;
 extern ConfigVariableBool state_cache;
 extern ConfigVariableBool uniquify_transforms;

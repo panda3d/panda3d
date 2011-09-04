@@ -419,11 +419,9 @@ compose(const RenderState *other) const {
     return this;
   }
 
-#ifndef NDEBUG
   if (!state_cache) {
     return do_compose(other);
   }
-#endif  // NDEBUG
 
   LightReMutexHolder holder(*_states_lock);
 
@@ -516,11 +514,9 @@ invert_compose(const RenderState *other) const {
     return make_empty();
   }
 
-#ifndef NDEBUG
   if (!state_cache) {
     return do_invert_compose(other);
   }
-#endif  // NDEBUG
 
   LightReMutexHolder holder(*_states_lock);
 
@@ -706,6 +702,11 @@ adjust_all_priorities(int adjustment) const {
 ////////////////////////////////////////////////////////////////////
 bool RenderState::
 unref() const {
+  // This is flawed, but this is development only.
+  if (garbage_collect_states) {
+    return ReferenceCount::unref();
+  }
+
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
   LightReMutexHolder holder(*_states_lock);
@@ -1460,11 +1461,9 @@ CPT(RenderState) RenderState::
 return_unique(RenderState *state) {
   nassertr(state != (RenderState *)NULL, state);
 
-#ifndef NDEBUG
   if (!state_cache) {
     return state;
   }
-#endif
 
 #ifndef NDEBUG
   if (paranoid_const) {

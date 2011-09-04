@@ -213,16 +213,20 @@ load_gridded_models(WindowFramework *window,
   // Load up all the files indicated in the list of gridded filenames
   // and store them in the given vector.
 
+  Loader loader;
+  LoaderOptions options;
+  options.set_flags(options.get_flags() | LoaderOptions::LF_no_ram_cache);
+
   // First, load up each model from disk once, and store them all
   // separate from the scene graph.  Also count up the total number of
   // models we'll be putting in the grid.
   int grid_count = 0;
-  NodePath models("models");
   GriddedFilenames::iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     GriddedFilename &gf = (*fi);
-    gf._model = window->load_model(models, gf._filename);
-    if (!gf._model.is_empty()) {
+    PT(PandaNode) node = loader.load_sync(gf._filename, options);
+    if (node != (PandaNode *)NULL) {
+      gf._model = NodePath(node);
       grid_count += gf._count;
     }
   }
@@ -254,7 +258,7 @@ load_gridded_models(WindowFramework *window,
   int passnum = 0;
   bool loaded_any;
 
-  NodePath render = window->get_render();
+  NodePath root = window->get_panda_framework()->get_models();
   do {
     loaded_any = false;
 
@@ -265,9 +269,15 @@ load_gridded_models(WindowFramework *window,
         // Copy this model into the scene graph, and assign it a
         // position on the grid.
 
-        string model_name = format_string(++model_count);
-        NodePath model = render.attach_new_node(model_name);
-        gf._model.copy_to(model);
+        ++model_count;
+        PT(PandaNode) node = loader.load_sync(gf._filename, options);
+        NodePath model;
+        if (node == (PandaNode *)NULL) {
+          model = gf._model.copy_to(NodePath());
+        } else {
+          model = NodePath(node);
+        }
+        model.reparent_to(root);
 
         gridded_file_info info;
         info.node = model.node();
@@ -369,14 +379,6 @@ load_gridded_models(WindowFramework *window,
 
     passnum++;
   } while (loaded_any);
-
-  // Finally, remove the source models we loaded up.  Not a real big deal.
-  for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
-    GriddedFilename &gf = (*fi);
-    if (!gf._model.is_empty()) {
-      gf._model.remove_node();
-    }
-  }
 }
 
 int
@@ -402,13 +404,15 @@ main(int argc, char *argv[]) {
 
     window->enable_keyboard();
     window->setup_trackball();
-    window->load_models(window->get_render(), static_filenames);
+    window->load_models(framework.get_models(), static_filenames);
+    framework.get_models().instance_to(window->get_render());
 
     GriddedInfoArray info_arr;
     load_gridded_models(window, gridded_filenames, info_arr);
 
     window->loop_animations();
     window->stagger_animations();
+    window->center_trackball(framework.get_models());
 
     framework.enable_default_keys();
 

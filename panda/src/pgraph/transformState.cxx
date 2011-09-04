@@ -579,10 +579,6 @@ set_shear2d(float shear) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 compose(const TransformState *other) const {
-  // This method isn't strictly const, because it updates the cache,
-  // but we pretend that it is because it's only a cache which is
-  // transparent to the rest of the interface.
-
   // We handle identity as a trivial special case.
   if (is_identity()) {
     return other;
@@ -599,72 +595,37 @@ compose(const TransformState *other) const {
     return other;
   }
 
-#ifndef NDEBUG
   if (!transform_cache) {
     return do_compose(other);
   }
-#endif  // NDEBUG
-
-  LightReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
-  int index = _composition_cache.find(other);
-  if (index != -1) {
-    Composition &comp = ((TransformState *)this)->_composition_cache.modify_data(index);
-    if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry
-      // (probably created for the reverse direction), so use the same
-      // entry to store the new result.
-      CPT(TransformState) result = do_compose(other);
-      comp._result = result;
-
-      if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference
-        // count only when the result is not the same as this.
-        result->cache_ref();
-      }
+  CPT(TransformState) result;
+  {
+    LightReMutexHolder holder(*_states_lock);
+    int index = _composition_cache.find(other);
+    if (index != -1) {
+      const Composition &comp = _composition_cache.get_data(index);
+      result = comp._result;
     }
-    // Here's the cache!
-    _cache_stats.inc_hits();
-    return comp._result;
-  }
-  _cache_stats.inc_misses();
-
-  // We need to make a new cache entry, both in this object and in the
-  // other object.  We make both records so the other TransformState
-  // object will know to delete the entry from this object when it
-  // destructs, and vice-versa.
-
-  // The cache entry in this object is the only one that indicates the
-  // result; the other will be NULL for now.
-  CPT(TransformState) result = do_compose(other);
-
-  _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
-
-  ((TransformState *)this)->_composition_cache[other]._result = result;
-
-  if (other != this) {
-    _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
-    ((TransformState *)other)->_composition_cache[this]._result = NULL;
+    if (result != (TransformState *)NULL) {
+      _cache_stats.inc_hits();
+    }
   }
 
-  if (result != (const TransformState *)this) {
-    // If the result of compose() is something other than this,
-    // explicitly increment the reference count.  We have to be sure
-    // to decrement it again later, when the composition entry is
-    // removed from the cache.
-    result->cache_ref();
-    
-    // (If the result was just this again, we still store the
-    // result, but we don't increment the reference count, since
-    // that would be a self-referential leak.)
+  if (result != (TransformState *)NULL) {
+    // Success!
+    return result;
   }
 
-  _cache_stats.maybe_report("TransformState");
+  // Not in the cache.  Compute a new result.  It's important that we
+  // don't hold the lock while we do this, or we lose the benefit of
+  // parallelization.
+  result = do_compose(other);
 
-  return result;
+  // It's OK to cast away the constness of this pointer, because the
+  // cache is a transparent property of the class.
+  return ((TransformState *)this)->store_compose(other, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -704,69 +665,38 @@ invert_compose(const TransformState *other) const {
     return make_identity();
   }
 
-#ifndef NDEBUG
   if (!transform_cache) {
     return do_invert_compose(other);
   }
-#endif  // NDEBUG
 
   LightReMutexHolder holder(*_states_lock);
 
-  // Is this composition already cached?
-  int index = _invert_composition_cache.find(other);
-  if (index != -1) {
-    Composition &comp = ((TransformState *)this)->_invert_composition_cache.modify_data(index);
-    if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry
-      // (probably created for the reverse direction), so use the same
-      // entry to store the new result.
-      CPT(TransformState) result = do_invert_compose(other);
-      comp._result = result;
-
-      if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference
-        // count only when the result is not the same as this.
-        result->cache_ref();
-      }
+  CPT(TransformState) result;
+  {
+    LightReMutexHolder holder(*_states_lock);
+    int index = _invert_composition_cache.find(other);
+    if (index != -1) {
+      const Composition &comp = _invert_composition_cache.get_data(index);
+      result = comp._result;
     }
-    // Here's the cache!
-    _cache_stats.inc_hits();
-    return comp._result;
-  }
-  _cache_stats.inc_misses();
-
-  // We need to make a new cache entry, both in this object and in the
-  // other object.  We make both records so the other TransformState
-  // object will know to delete the entry from this object when it
-  // destructs, and vice-versa.
-
-  // The cache entry in this object is the only one that indicates the
-  // result; the other will be NULL for now.
-  CPT(TransformState) result = do_invert_compose(other);
-
-  _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
-  ((TransformState *)this)->_invert_composition_cache[other]._result = result;
-
-  if (other != this) {
-    _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
-    ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
+    if (result != (TransformState *)NULL) {
+      _cache_stats.inc_hits();
+    }
   }
 
-  if (result != (const TransformState *)this) {
-    // If the result of compose() is something other than this,
-    // explicitly increment the reference count.  We have to be sure
-    // to decrement it again later, when the composition entry is
-    // removed from the cache.
-    result->cache_ref();
-    
-    // (If the result was just this again, we still store the
-    // result, but we don't increment the reference count, since
-    // that would be a self-referential leak.)
+  if (result != (TransformState *)NULL) {
+    // Success!
+    return result;
   }
 
-  return result;
+  // Not in the cache.  Compute a new result.  It's important that we
+  // don't hold the lock while we do this, or we lose the benefit of
+  // parallelization.
+  result = do_invert_compose(other);
+
+  // It's OK to cast away the constness of this pointer, because the
+  // cache is a transparent property of the class.
+  return ((TransformState *)this)->store_invert_compose(other, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -781,6 +711,11 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 unref() const {
+  // This is flawed, but this is development only.
+  if (garbage_collect_states) {
+    return ReferenceCount::unref();
+  }
+
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
   LightReMutexHolder holder(*_states_lock);
@@ -1526,11 +1461,9 @@ CPT(TransformState) TransformState::
 return_unique(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
 
-#ifndef NDEBUG
   if (!transform_cache) {
     return state;
   }
-#endif
 
 #ifndef NDEBUG
   if (paranoid_const) {
@@ -1645,6 +1578,158 @@ do_compose(const TransformState *other) const {
     new_mat.multiply(other->get_mat(), get_mat());
     return make_mat(new_mat);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::store_compose
+//       Access: Private
+//  Description: Stores the result of a composition in the cache.
+//               Returns the stored result (it may be a different
+//               object than the one passed in, due to another thread
+//               having computed the composition first).
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+store_compose(const TransformState *other, const TransformState *result) {
+  // Identity should have already been screened.
+  nassertr(!is_identity(), other);
+  nassertr(!other->is_identity(), this);
+
+  // So should have validity.
+  nassertr(!is_invalid(), this);
+  nassertr(!other->is_invalid(), other);
+
+  LightReMutexHolder holder(*_states_lock);
+
+  // Is this composition already cached?
+  int index = _composition_cache.find(other);
+  if (index != -1) {
+    Composition &comp = _composition_cache.modify_data(index);
+    if (comp._result == (const TransformState *)NULL) {
+      // Well, it wasn't cached already, but we already had an entry
+      // (probably created for the reverse direction), so use the same
+      // entry to store the new result.
+      comp._result = result;
+
+      if (result != (const TransformState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->cache_ref();
+      }
+    }
+    // Here's the cache!
+    _cache_stats.inc_hits();
+    return comp._result;
+  }
+  _cache_stats.inc_misses();
+
+  // We need to make a new cache entry, both in this object and in the
+  // other object.  We make both records so the other TransformState
+  // object will know to delete the entry from this object when it
+  // destructs, and vice-versa.
+
+  // The cache entry in this object is the only one that indicates the
+  // result; the other will be NULL for now.
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
+
+  _composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
+    ((TransformState *)other)->_composition_cache[this]._result = NULL;
+  }
+
+  if (result != (TransformState *)this) {
+    // If the result of do_compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->cache_ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
+
+  _cache_stats.maybe_report("TransformState");
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::store_invert_compose
+//       Access: Private
+//  Description: Stores the result of a composition in the cache.
+//               Returns the stored result (it may be a different
+//               object than the one passed in, due to another thread
+//               having computed the composition first).
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+store_invert_compose(const TransformState *other, const TransformState *result) {
+  // Identity should have already been screened.
+  nassertr(!is_identity(), other);
+
+  // So should have validity.
+  nassertr(!is_invalid(), this);
+  nassertr(!other->is_invalid(), other);
+
+  nassertr(other != this, make_identity());
+
+  LightReMutexHolder holder(*_states_lock);
+
+  // Is this composition already cached?
+  int index = _invert_composition_cache.find(other);
+  if (index != -1) {
+    Composition &comp = ((TransformState *)this)->_invert_composition_cache.modify_data(index);
+    if (comp._result == (const TransformState *)NULL) {
+      // Well, it wasn't cached already, but we already had an entry
+      // (probably created for the reverse direction), so use the same
+      // entry to store the new result.
+      comp._result = result;
+
+      if (result != (const TransformState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->cache_ref();
+      }
+    }
+    // Here's the cache!
+    _cache_stats.inc_hits();
+    return comp._result;
+  }
+  _cache_stats.inc_misses();
+
+  // We need to make a new cache entry, both in this object and in the
+  // other object.  We make both records so the other TransformState
+  // object will know to delete the entry from this object when it
+  // destructs, and vice-versa.
+
+  // The cache entry in this object is the only one that indicates the
+  // result; the other will be NULL for now.
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
+  _invert_composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
+    ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
+  }
+
+  if (result != (TransformState *)this) {
+    // If the result of compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->cache_ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

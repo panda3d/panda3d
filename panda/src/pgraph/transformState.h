@@ -234,7 +234,9 @@ private:
   static CPT(TransformState) return_unique(TransformState *state);
 
   CPT(TransformState) do_compose(const TransformState *other) const;
+  CPT(TransformState) store_compose(const TransformState *other, const TransformState *result);
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
+  CPT(TransformState) store_invert_compose(const TransformState *other, const TransformState *result);
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
                               int length, UpdateSeq this_seq,

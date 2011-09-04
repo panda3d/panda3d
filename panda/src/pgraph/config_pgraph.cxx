@@ -188,7 +188,13 @@ ConfigVariableBool auto_break_cycles
  PRC_DESC("Set this true to automatically detect and break reference-count "
           "cycles in the TransformState and RenderState caches.  When this "
           "is false, you must explicitly call TransformState.clear_cache() "
-          "from time to time to prevent gradual memory bloat."));
+          "from time to time to prevent gradual memory bloat.  This has "
+          "no meaning when garbage-collect-states is true."));
+
+ConfigVariableBool garbage_collect_states
+("garbage-collect-states", false,
+ PRC_DESC("This temporary config variable is used for development only.  "
+          "Do not set!"));
 
 ConfigVariableBool transform_cache
 ("transform-cache", true,
