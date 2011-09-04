@@ -134,6 +134,11 @@ open_framework(int &argc, char **&argv) {
     _task_mgr.add(task);
   }
 
+  if (garbage_collect_states) {
+    PT(GenericAsyncTask) task = new GenericAsyncTask("garbage_collect", task_garbage_collect, this);
+    _task_mgr.add(task);
+  }
+
   _highlight_wireframe = NodePath("wireframe");
   _highlight_wireframe.set_render_mode_wireframe(1);
   _highlight_wireframe.set_texture_off(1);
@@ -1618,4 +1623,16 @@ task_clear_text(GenericAsyncTask *task, void *data) {
 
   self->clear_text();
   return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_garbage_collect
+//       Access: Public, Static
+//  Description: This task is created automatically if
+//               garbage_collect_states is true.  It calls the needed
+//               TransformState::garbage_collect() method each frame.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_garbage_collect(GenericAsyncTask *task, void *data) {
+  TransformState::garbage_collect();
 }

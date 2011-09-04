@@ -196,6 +196,15 @@ ConfigVariableBool garbage_collect_states
  PRC_DESC("This temporary config variable is used for development only.  "
           "Do not set!"));
 
+ConfigVariableDouble garbage_collect_states_rate
+("garbage-collect-states-rate", 0.25,
+ PRC_DESC("The fraction of the total number of TransformStates "
+          "(or RenderStates, or whatever) that are processed with "
+          "each garbage collection step.  Setting this larger (up to "
+          "1.0) will ensure that more states are collected each frame, "
+          "limiting the wasted size of the cache, but will require more "
+          "processing time each frame."));
+
 ConfigVariableBool transform_cache
 ("transform-cache", true,
  PRC_DESC("Set this true to enable the cache of TransformState objects.  "

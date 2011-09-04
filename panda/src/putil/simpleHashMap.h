@@ -39,7 +39,7 @@ public:
   INLINE void swap(SimpleHashMap &other);
 
   int find(const Key &key) const;
-  Value &store(const Key &key, const Value &data);
+  int store(const Key &key, const Value &data);
   INLINE bool remove(const Key &key);
   void clear();
 

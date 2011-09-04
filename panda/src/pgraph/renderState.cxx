@@ -702,8 +702,7 @@ adjust_all_priorities(int adjustment) const {
 ////////////////////////////////////////////////////////////////////
 bool RenderState::
 unref() const {
-  // This is flawed, but this is development only.
-  if (garbage_collect_states) {
+  if (!state_cache) {
     return ReferenceCount::unref();
   }
 

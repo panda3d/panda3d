@@ -31,7 +31,10 @@ TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
+int TransformState::_garbage_index = 0;
+
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
+PStatCollector TransformState::_garbage_collect_pcollector("*:State Cache:Garbage Collect");
 PStatCollector TransformState::_transform_compose_pcollector("*:State Cache:Compose Transform");
 PStatCollector TransformState::_transform_invert_pcollector("*:State Cache:Invert Transform");
 PStatCollector TransformState::_transform_calc_pcollector("*:State Cache:Calc Components");
@@ -58,7 +61,7 @@ TransformState() : _lock("TransformState") {
   if (_states == (States *)NULL) {
     init_states();
   }
-  _saved_entry = _states->end();
+  _saved_entry = -1;
   _flags = F_is_identity | F_singular_known | F_is_2d;
   _inv_mat = (LMatrix4f *)NULL;
   _cache_stats.add_num_states(1);
@@ -105,7 +108,7 @@ TransformState::
   LightReMutexHolder holder(*_states_lock);
 
   // unref() should have cleared these.
-  nassertv(_saved_entry == _states->end());
+  nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
 
   // If this was true at the beginning of the destructor, but is no
@@ -115,7 +118,7 @@ TransformState::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::sorts_less
+//     Function: TransformState::compare_to
 //       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
@@ -127,15 +130,15 @@ TransformState::
 //               TransformStates are uniquified, which is less
 //               expensive.
 ////////////////////////////////////////////////////////////////////
-bool TransformState::
-sorts_less(const TransformState &other, bool uniquify_matrix) const {
+int TransformState::
+compare_to(const TransformState &other, bool uniquify_matrix) const {
   static const int significant_flags = 
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
   int other_flags = (other._flags & significant_flags);
   if (flags != other_flags) {
-    return flags < other_flags;
+    return flags < other_flags ? -1 : 1;
   }
 
   if ((_flags & (F_is_invalid | F_is_identity)) != 0) {
@@ -149,39 +152,42 @@ sorts_less(const TransformState &other, bool uniquify_matrix) const {
     // componentwise.
     int c = _pos.compare_to(other._pos);
     if (c != 0) {
-      return c < 0;
+      return c;
     }
 
     if ((_flags & F_hpr_given) != 0) {
       c = _hpr.compare_to(other._hpr);
       if (c != 0) {
-        return c < 0;
+        return c;
       }
     } else if ((_flags & F_quat_given) != 0) {
       c = _quat.compare_to(other._quat);
       if (c != 0) {
-        return c < 0;
+        return c;
       }
     }
 
     c = _scale.compare_to(other._scale);
     if (c != 0) {
-      return c < 0;
+      return c;
     }
 
     c = _shear.compare_to(other._shear);
-    return c < 0;
+    return c;
   }
 
   // Otherwise, compare the matrices . . .
   if (uniquify_matrix) {
     // . . . but only if the user thinks that's a worthwhile
     // comparison.
-    return get_mat() < other.get_mat();
+    return get_mat().compare_to(other.get_mat());
 
   } else {
     // If not, we just compare the pointers.
-    return (this < &other);
+    if (this != &other) {
+      return (this < &other) ? -1 : 1;
+    }
+    return 0;
   }
 }
 
@@ -711,13 +717,30 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 unref() const {
-  // This is flawed, but this is development only.
-  if (garbage_collect_states) {
+  if (!transform_cache) {
+    // If we're not using the cache anyway, just allow the pointer to
+    // unref normally.
     return ReferenceCount::unref();
   }
 
+  if (garbage_collect_states) {
+    // In the garbage collector case, we don't delete TransformStates
+    // immediately; instead, we allow them to remain in the cache with
+    // a ref count of 0, and we delete them later in
+    // garbage_collect().
+
+    ReferenceCount::unref();
+    // Return true so that it is never deleted here.
+    return true;
+  }
+
+  // Here is the normal refcounting case, with a normal cache, and
+  // without garbage collection in effect.
+
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
+  // Having to grab the lock at every call to unref() is a big
+  // limiting factor on parallelization.
   LightReMutexHolder holder(*_states_lock);
 
   if (auto_break_cycles && uniquify_transforms) {
@@ -727,30 +750,7 @@ unref() const {
       // cache, leaving only references in the cache, then we need to
       // check for a cycle involving this TransformState and break it if
       // it exists.
-      
-      PStatTimer timer(_transform_break_cycles_pcollector);
-        
-      ++_last_cycle_detect;
-      if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
-        // Ok, we have a cycle.  This will be a leak unless we break the
-        // cycle by freeing the cache on this object.
-        if (pgraph_cat.is_debug()) {
-          pgraph_cat.debug()
-            << "Breaking cycle involving " << (*this) << "\n";
-        }
-        
-        ((TransformState *)this)->remove_cache_pointers();
-      } else {
-        ++_last_cycle_detect;
-        if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
-          if (pgraph_cat.is_debug()) {
-            pgraph_cat.debug()
-              << "Breaking cycle involving " << (*this) << "\n";
-          }
-          
-          ((TransformState *)this)->remove_cache_pointers();
-        }
-      }
+      ((TransformState *)this)->detect_and_break_cycles();
     }
   }
 
@@ -1017,7 +1017,7 @@ get_num_states() {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
-  return _states->size();
+  return _states->get_num_entries();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1051,9 +1051,12 @@ get_num_unused_states() {
   typedef pmap<const TransformState *, int> StateCount;
   StateCount state_count;
 
-  States::iterator si;
-  for (si = _states->begin(); si != _states->end(); ++si) {
-    const TransformState *state = (*si);
+  int size = _states->get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_states->has_element(si)) {
+      continue;
+    }
+    const TransformState *state = _states->get_key(si);
 
     int i;
     int cache_size = state->_composition_cache.get_size();
@@ -1142,7 +1145,7 @@ clear_cache() {
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
-  int orig_size = _states->size();
+  int orig_size = _states->get_num_entries();
 
   // First, we need to copy the entire set of states to a temporary
   // vector, reference-counting each object.  That way we can walk
@@ -1153,8 +1156,14 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    copy(_states->begin(), _states->end(),
-         back_inserter(temp_states));
+    int size = _states->get_size();
+    for (int si = 0; si < size; ++si) {
+      if (!_states->has_element(si)) {
+        continue;
+      }
+      const TransformState *state = _states->get_key(si);
+      temp_states.push_back(state);
+    }
 
     // Now it's safe to walk through the list, destroying the cache
     // within each object as we go.  Nothing will be destructed till
@@ -1196,7 +1205,73 @@ clear_cache() {
     // held only within the various objects' caches will go away.
   }
 
-  int new_size = _states->size();
+  int new_size = _states->get_num_entries();
+  return orig_size - new_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::garbage_collect
+//       Access: Published, Static
+//  Description: Performs a garbage-collection cycle.  This must be
+//               called periodically if garbage-collect-states is true
+//               to ensure that TransformStates get cleaned up
+//               appropriately.  It does no harm to call it even if
+//               this variable is not true, but there is probably no
+//               advantage in that case.
+////////////////////////////////////////////////////////////////////
+int TransformState::
+garbage_collect() {
+  if (_states == (States *)NULL) {
+    return 0;
+  }
+  LightReMutexHolder holder(*_states_lock);
+
+  PStatTimer timer(_garbage_collect_pcollector);
+  int orig_size = _states->get_num_entries();
+
+  // How many elements to process this pass?
+  int size = _states->get_size();
+  int num_this_pass = int(size * garbage_collect_states_rate);
+  if (num_this_pass <= 0) {
+    return 0;
+  }
+  num_this_pass = min(num_this_pass, size);
+  int stop_at_element = (_garbage_index + num_this_pass) % size;
+  
+  int num_elements = 0;
+  int si = _garbage_index;
+  do {
+    if (_states->has_element(si)) {
+      ++num_elements;
+      TransformState *state = (TransformState *)_states->get_key(si);
+      if (auto_break_cycles && uniquify_transforms) {
+        if (state->get_cache_ref_count() > 0 &&
+            state->get_ref_count() == state->get_cache_ref_count()) {
+          // If we have removed all the references to this state not in
+          // the cache, leaving only references in the cache, then we
+          // need to check for a cycle involving this TransformState and
+          // break it if it exists.
+          state->detect_and_break_cycles();
+        }
+      }
+
+      if (state->get_ref_count() == 0) {
+        // This state has recently been unreffed to 0, but it hasn't
+        // been deleted yet (because we have overloaded unref(),
+        // above, to always return true).  Now it's time to delete it.
+        // This is safe, because we're holding the _states_lock, so
+        // it's not possible for some other thread to find the state
+        // in the cache and ref it while we're doing this.
+        state->release_new();
+        state->remove_cache_pointers();
+        delete state;
+      }
+    }      
+    ++si;
+  } while (si != stop_at_element);
+  _garbage_index = si;
+
+  int new_size = _states->get_num_entries();
   return orig_size - new_size;
 }
 
@@ -1229,9 +1304,12 @@ list_cycles(ostream &out) {
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  States::iterator si;
-  for (si = _states->begin(); si != _states->end(); ++si) {
-    const TransformState *state = (*si);
+  int size = _states->get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_states->has_element(si)) {
+      continue;
+    }
+    const TransformState *state = _states->get_key(si);
 
     bool inserted = visited.insert(state).second;
     if (inserted) {
@@ -1305,10 +1383,14 @@ list_states(ostream &out) {
   }
   LightReMutexHolder holder(*_states_lock);
 
-  out << _states->size() << " states:\n";
-  States::const_iterator si;
-  for (si = _states->begin(); si != _states->end(); ++si) {
-    const TransformState *state = (*si);
+  out << _states->get_num_entries() << " states:\n";
+
+  int size = _states->get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_states->has_element(si)) {
+      continue;
+    }
+    const TransformState *state = _states->get_key(si);
     state->write(out, 2);
   }
 }
@@ -1332,36 +1414,51 @@ validate_states() {
   PStatTimer timer(_transform_validate_pcollector);
 
   LightReMutexHolder holder(*_states_lock);
-  if (_states->empty()) {
+  if (_states->is_empty()) {
     return true;
   }
 
-  States::const_iterator si = _states->begin();
-  States::const_iterator snext = si;
-  ++snext;
-  nassertr((*si)->get_ref_count() > 0, false);
-  while (snext != _states->end()) {
-    if (!(*(*si) < *(*snext))) {
+  int size = _states->get_size();
+  int si = 0;
+  while (si < size && !_states->has_element(si)) {
+    ++si;
+  }
+  nassertr(si < size, false);
+  nassertr(_states->get_key(si)->get_ref_count() > 0, false);
+  int snext = si;
+  while (snext < size && !_states->has_element(snext)) {
+    ++snext;
+  }
+  while (snext < size) {
+    const TransformState *ssi = _states->get_key(si);
+    const TransformState *ssnext = _states->get_key(snext);
+    int c = ssi->compare_to(*ssnext);
+    if (c >= 0) {
       pgraph_cat.error()
         << "TransformStates out of order!\n";
-      (*si)->write(pgraph_cat.error(false), 2);
-      (*snext)->write(pgraph_cat.error(false), 2);
+      ssi->write(pgraph_cat.error(false), 2);
+      ssnext->write(pgraph_cat.error(false), 2);
       return false;
     }
-    if ((*(*snext) < *(*si))) {
+    int ci = ssnext->compare_to(*ssi);
+    if ((ci < 0) != (c > 0) ||
+        (ci > 0) != (c < 0) ||
+        (ci == 0) != (c == 0)) {
       pgraph_cat.error()
-        << "TransformState::operator < not defined properly!\n";
+        << "TransformState::compare_to() not defined properly!\n";
       pgraph_cat.error(false)
-        << "a < b: " << (*(*si) < *(*snext)) << "\n";
+        << "(a, b): " << c << "\n";
       pgraph_cat.error(false)
-        << "b < a: " << (*(*snext) < *(*si)) << "\n";
-      (*si)->write(pgraph_cat.error(false), 2);
-      (*snext)->write(pgraph_cat.error(false), 2);
+        << "(b, a): " << ci << "\n";
+      ssi->write(pgraph_cat.error(false), 2);
+      ssnext->write(pgraph_cat.error(false), 2);
       return false;
     }
     si = snext;
-    ++snext;
-    nassertr((*si)->get_ref_count() > 0, false);
+    while (snext < size && !_states->has_element(snext)) {
+      ++snext;
+    }
+    nassertr(_states->get_key(si)->get_ref_count() > 0, false);
   }
 
   return true;
@@ -1383,18 +1480,23 @@ get_states() {
   }
   LightReMutexHolder holder(*_states_lock);
 
-  size_t num_states = _states->size();
+  size_t num_states = _states->get_num_entries();
   PyObject *list = PyList_New(num_states);
-  States::const_iterator si;
-  size_t i;
-  for (si = _states->begin(), i = 0; si != _states->end(); ++si, ++i) {
-    nassertr(i < num_states, list);
-    const TransformState *state = (*si);
+  size_t i = 0;
+
+  int size = _states->get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_states->has_element(si)) {
+      continue;
+    }
+    const TransformState *state = _states->get_key(si);
     state->ref();
     PyObject *a = 
       DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState, 
                                   true, true, state->get_type_index());
+    nassertr(i < num_states, list);
     PyList_SET_ITEM(list, i, a);
+    ++i;
   }
   nassertr(i == num_states, list);
   return list;
@@ -1475,7 +1577,7 @@ return_unique(TransformState *state) {
 
   LightReMutexHolder holder(*_states_lock);
 
-  if (state->_saved_entry != _states->end()) {
+  if (state->_saved_entry != -1) {
     // This state is already in the cache.
     nassertr(_states->find(state) == state->_saved_entry, state);
     return state;
@@ -1485,17 +1587,18 @@ return_unique(TransformState *state) {
   // the end of this function if no one else uses it.
   CPT(TransformState) pt_state = state;
 
-  pair<States::iterator, bool> result = _states->insert(state);
-  if (result.second) {
-    // The state was inserted; save the iterator and return the
-    // input state.
-    state->_saved_entry = result.first;
-    return pt_state;
+  int si = _states->find(state);
+  if (si != -1) {
+    // There's an equivalent state already in the set.  Return it.
+    return _states->get_key(si);
   }
 
-  // The state was not inserted; there must be an equivalent one
-  // already in the set.  Return that one.
-  return *(result.first);
+  // Not already in the set; add it.
+  si = _states->store(state, Empty());
+
+  // Save the index and return the input state.
+  state->_saved_entry = si;
+  return pt_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1863,6 +1966,40 @@ do_invert_compose(const TransformState *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::detect_and_break_cycles
+//       Access: Private
+//  Description: Detects whether there is a cycle in the cache that
+//               begins with this state.  If any are detected, breaks
+//               them by removing this state from the cache.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+detect_and_break_cycles() {
+  PStatTimer timer(_transform_break_cycles_pcollector);
+  
+  ++_last_cycle_detect;
+  if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+    // Ok, we have a cycle.  This will be a leak unless we break the
+    // cycle by freeing the cache on this object.
+    if (pgraph_cat.is_debug()) {
+      pgraph_cat.debug()
+        << "Breaking cycle involving " << (*this) << "\n";
+    }
+    
+    remove_cache_pointers();
+  } else {
+    ++_last_cycle_detect;
+    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << "Breaking cycle involving " << (*this) << "\n";
+      }
+      
+      remove_cache_pointers();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::r_detect_cycles
 //       Access: Private, Static
 //  Description: Detects whether there is a cycle in the cache that
@@ -2025,10 +2162,11 @@ void TransformState::
 release_new() {
   nassertv(_states_lock->debug_is_locked());
    
-  if (_saved_entry != _states->end()) {
-    nassertv(_states->find(this) == _saved_entry);
-    _states->erase(_saved_entry);
-    _saved_entry = _states->end();
+  if (_saved_entry != -1) {
+    //nassertv(_states->find(this) == _saved_entry);
+    _saved_entry = _states->find(this);
+    _states->remove_element(_saved_entry);
+    _saved_entry = -1;
   }
 }
 
@@ -2197,11 +2335,18 @@ do_calc_hash() {
       _hash = _shear.add_hash(_hash);
 
     } else {
-      // Otherwise, hash the pointer only--any two different
-      // matrix-based TransformStates are considered to be different,
-      // even if their matrices have the same values.
+      // Otherwise, hash the matrix . . .
+      if (uniquify_matrix) {
+        // . . . but only if the user thinks that's worthwhile.
+        _hash = get_mat().add_hash(_hash);
 
-      _hash = pointer_hash::add_hash(_hash, this);
+      } else {
+        // Otherwise, hash the pointer only--any two different
+        // matrix-based TransformStates are considered to be different,
+        // even if their matrices have the same values.
+
+        _hash = pointer_hash::add_hash(_hash, this);
+      }
     }
   }
 

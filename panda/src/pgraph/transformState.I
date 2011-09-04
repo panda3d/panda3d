@@ -19,14 +19,22 @@
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
-//
-//               This is the same as sorts_less(), except the
-//               uniquify_matrix value is implicit from the Config.prc
-//               file.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TransformState::
 operator < (const TransformState &other) const {
-  return sorts_less(other, uniquify_matrix);
+  return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::compare_to
+//       Access: Published
+//  Description: Provides an arbitrary ordering among all unique
+//               TransformStates, so we can store the essentially
+//               different ones in a big set and throw away the rest.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+compare_to(const TransformState &other) const {
+  return compare_to(other, uniquify_matrix);
 }
 
 ////////////////////////////////////////////////////////////////////

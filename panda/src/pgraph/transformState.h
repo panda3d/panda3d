@@ -73,7 +73,8 @@ public:
 
 PUBLISHED:
   INLINE bool operator < (const TransformState &other) const;
-  bool sorts_less(const TransformState &other, bool uniquify_matrix) const;
+  INLINE int compare_to(const TransformState &other) const;
+  int compare_to(const TransformState &other, bool uniquify_matrix) const;
   INLINE size_t get_hash() const;
 
   static CPT(TransformState) make_identity();
@@ -201,6 +202,7 @@ PUBLISHED:
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
+  static int garbage_collect();
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
@@ -237,6 +239,7 @@ private:
   CPT(TransformState) store_compose(const TransformState *other, const TransformState *result);
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
   CPT(TransformState) store_invert_compose(const TransformState *other, const TransformState *result);
+  void detect_and_break_cycles();
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
                               int length, UpdateSeq this_seq,
@@ -254,15 +257,17 @@ private:
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
+  class Empty {
+  };
+  typedef SimpleHashMap<const TransformState *, Empty, indirect_compare_to_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
 
-  // This iterator records the entry corresponding to this TransformState
-  // object in the above global set.  We keep the iterator around so
-  // we can remove it when the TransformState destructs.
-  States::iterator _saved_entry;
+  // This iterator records the entry corresponding to this
+  // TransformState object in the above global set.  We keep the index
+  // around so we can remove it when the TransformState destructs.
+  int _saved_entry;
 
   // This data structure manages the job of caching the composition of
   // two TransformStates.  It's complicated because we have to be sure to
@@ -292,7 +297,12 @@ private:
   UpdateSeq _cycle_detect;
   static UpdateSeq _last_cycle_detect;
 
+  // This keeps track of our current position through the garbage
+  // collection cycle.
+  static int _garbage_index;
+
   static PStatCollector _cache_update_pcollector;
+  static PStatCollector _garbage_collect_pcollector;
   static PStatCollector _transform_compose_pcollector;
   static PStatCollector _transform_invert_pcollector;
   static PStatCollector _transform_calc_pcollector;

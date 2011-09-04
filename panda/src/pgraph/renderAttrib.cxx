@@ -144,8 +144,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 ////////////////////////////////////////////////////////////////////
 bool RenderAttrib::
 unref() const {
-  // This is flawed, but this is development only.
-  if (garbage_collect_states) {
+  if (!state_cache) {
     return ReferenceCount::unref();
   }
 
@@ -295,11 +294,9 @@ CPT(RenderAttrib) RenderAttrib::
 return_unique(RenderAttrib *attrib) {
   nassertr(attrib != (RenderAttrib *)NULL, attrib);
 
-#ifndef NDEBUG
   if (!state_cache) {
     return attrib;
   }
-#endif
 
 #ifndef NDEBUG
   if (paranoid_const) {

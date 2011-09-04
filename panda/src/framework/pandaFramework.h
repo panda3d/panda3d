@@ -159,6 +159,7 @@ public:
   static AsyncTask::DoneStatus task_play_frame(GenericAsyncTask *task, void *data);
 
   static AsyncTask::DoneStatus task_clear_text(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_garbage_collect(GenericAsyncTask *task, void *data);
 
 private:
   bool _is_open;

@@ -111,19 +111,19 @@ find(const Key &key) const {
 //       Access: Public
 //  Description: Records the indicated key/data pair in the map.  If
 //               the key was already present, silently replaces it.
-//               Returns a reference to the value in the map.
+//               Returns the index at which it was stored.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
-Value &SimpleHashMap<Key, Value, Compare>::
+int SimpleHashMap<Key, Value, Compare>::
 store(const Key &key, const Value &data) {
   if (_table_size == 0) {
     // Special case: the first key in an empty table.
-    nassertr(_num_entries == 0, _table[0]._data);
+    nassertr(_num_entries == 0, -1);
     new_table();
     size_t index = get_hash(key);
     store_new_element(index, key, data);
     ++_num_entries;
-    return _table[index]._data;
+    return index;
   }
 
   size_t index = get_hash(key);
@@ -133,11 +133,11 @@ store(const Key &key, const Value &data) {
     }
     store_new_element(index, key, data);
     ++_num_entries;
-    return _table[index]._data;
+    return index;
   }
   if (is_element(index, key)) {
     _table[index]._data = data;
-    return _table[index]._data;
+    return index;
   }
 
   // There was some other key at the hashed slot.  That's a hash
@@ -151,19 +151,19 @@ store(const Key &key, const Value &data) {
       }
       store_new_element(i, key, data);
       ++_num_entries;
-      return _table[i]._data;
+      return i;
     }
     if (is_element(i, key)) {
       _table[i]._data = data;
-      return _table[i]._data;
+      return i;
     }
     i = (i + 1) & (_table_size - 1);
   }
 
   // Shouldn't get here unless _num_entries == _table_size, which
   // shouldn't be possible due to consider_expand_table().
-  nassertr(false, _table[0]._data);
-  return _table[0]._data;  // To satisfy compiler
+  nassertr(false, -1);
+  return -1;  // To satisfy compiler
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,10 +218,10 @@ template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 operator [] (const Key &key) {
   int index = find(key);
-  if (index != -1) {
-    return modify_data(index);
+  if (index == -1) {
+    index = store(key, Value());
   }
-  return store(key, Value());
+  return modify_data(index);
 }
 
 ////////////////////////////////////////////////////////////////////
