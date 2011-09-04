@@ -27,6 +27,16 @@ DatagramOutputFile() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DatagramOutputFile::
+~DatagramOutputFile() {
+  close();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::open
 //       Access: Published
 //  Description: Opens the indicated filename for writing.  Returns

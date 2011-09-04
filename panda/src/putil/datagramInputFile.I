@@ -27,6 +27,16 @@ DatagramInputFile() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DatagramInputFile::
+~DatagramInputFile() {
+  close();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open
 //       Access: Published
 //  Description: Opens the indicated filename for reading.  Returns

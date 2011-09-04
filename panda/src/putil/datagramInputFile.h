@@ -31,6 +31,7 @@
 class EXPCL_PANDA_PUTIL DatagramInputFile : public DatagramGenerator {
 PUBLISHED:
   INLINE DatagramInputFile();
+  INLINE ~DatagramInputFile();
 
   bool open(const FileReference *file);
   INLINE bool open(const Filename &filename);

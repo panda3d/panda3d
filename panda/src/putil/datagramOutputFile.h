@@ -30,6 +30,7 @@
 class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
 public:
   INLINE DatagramOutputFile();
+  INLINE ~DatagramOutputFile();
 
   bool open(const FileReference *file);
   INLINE bool open(const Filename &filename);
