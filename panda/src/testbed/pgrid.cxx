@@ -215,7 +215,7 @@ load_gridded_models(WindowFramework *window,
 
   Loader loader;
   LoaderOptions options;
-  options.set_flags(options.get_flags() | LoaderOptions::LF_no_ram_cache);
+  //  options.set_flags(options.get_flags() | LoaderOptions::LF_no_ram_cache);
 
   // First, load up each model from disk once, and store them all
   // separate from the scene graph.  Also count up the total number of

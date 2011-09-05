@@ -173,7 +173,7 @@ private:
   PT(GeomVertexData) _vertex_data;
   int _array;
   PT(GeomVertexArrayData) _array_data;
-
+    
   Thread *_current_thread;
   GeomVertexColumn::Packer *_packer;
   int _stride;

@@ -113,8 +113,19 @@ private:
 private:
   Pipeline *_pipeline;
 
-  // An array of NPT(CycleData) objects.
-  NPT(CycleData) *_data;
+  // An array of PT(CycleData) objects representing the different
+  // copies of the cycled data, one for each stage.
+  class CycleDataNode : public MemoryBase {
+  public:
+    INLINE CycleDataNode();
+    INLINE CycleDataNode(const CycleDataNode &copy);
+    INLINE ~CycleDataNode();
+    INLINE void operator = (const CycleDataNode &copy);
+
+    NPT(CycleData) _cdata;
+    int _writes_outstanding;
+  };
+  CycleDataNode *_data;
   int _num_stages;
   bool _dirty;
 

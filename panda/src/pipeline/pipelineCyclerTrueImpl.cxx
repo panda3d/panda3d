@@ -35,9 +35,9 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   }
 
   _num_stages = _pipeline->get_num_stages();
-  _data = new NPT(CycleData)[_num_stages];
+  _data = new CycleDataNode[_num_stages];
   for (int i = 0; i < _num_stages; ++i) {
-    _data[i] = initial_data;
+    _data[i]._cdata = initial_data;
   }
 
   _pipeline->add_cycler(this);
@@ -59,7 +59,7 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
-  _data = new NPT(CycleData)[_num_stages];
+  _data = new CycleDataNode[_num_stages];
   
   // It's no longer critically important that we preserve pointerwise
   // equivalence between different stages in the copy, but it doesn't
@@ -69,11 +69,11 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   Pointers pointers;
   
   for (int i = 0; i < _num_stages; ++i) {
-    PT(CycleData) &new_pt = pointers[copy._data[i]];
+    PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
     if (new_pt == NULL) {
-      new_pt = copy._data[i]->make_copy();
+      new_pt = copy._data[i]._cdata->make_copy();
     }
-    _data[i] = new_pt.p();
+    _data[i]._cdata = new_pt.p();
   }
 
   _pipeline->add_cycler(this);
@@ -97,11 +97,11 @@ operator = (const PipelineCyclerTrueImpl &copy) {
   Pointers pointers;
 
   for (int i = 0; i < _num_stages; ++i) {
-    PT(CycleData) &new_pt = pointers[copy._data[i]];
+    PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
     if (new_pt == NULL) {
-      new_pt = copy._data[i]->make_copy();
+      new_pt = copy._data[i]._cdata->make_copy();
     }
-    _data[i] = new_pt.p();
+    _data[i]._cdata = new_pt.p();
   }
 
   if (copy._dirty && !_dirty) {
@@ -146,24 +146,37 @@ write_stage(int pipeline_stage, Thread *current_thread) {
   }
 #endif  // NDEBUG
 
-  CycleData *old_data = _data[pipeline_stage];
+  CycleData *old_data = _data[pipeline_stage]._cdata;
 
-  // Only the node reference count is considered an important count
-  // for copy-on-write purposes.  A standard reference of other than 1
-  // just means that some code (other that the PipelineCycler) has a
-  // pointer, which is safe to modify.
-  if (old_data->get_node_ref_count() != 1) {
-    // Copy-on-write.
-    _data[pipeline_stage] = old_data->make_copy();
-
-    // Now we have differences between some of the data pointers, so
-    // we're "dirty".  Mark it so.
-    if (!_dirty && _num_stages != 1) {
-      _pipeline->add_dirty_cycler(this);
+  // We only perform copy-on-write if this is the first CycleData
+  // requested for write mode from this thread.  (We will never have
+  // outstanding writes for multiple threads, because we hold the
+  // CyclerMutex during the entire lifetime of write() .. release()).
+  if (_data[pipeline_stage]._writes_outstanding == 0) {
+    // Only the node reference count is considered an important count
+    // for copy-on-write purposes.  A standard reference of other than 1
+    // just means that some code (other that the PipelineCycler) has a
+    // pointer, which is safe to modify.
+    if (old_data->get_node_ref_count() != 1) {
+      // Copy-on-write.
+      _data[pipeline_stage]._cdata = old_data->make_copy();
+      if (pipeline_cat.is_debug()) {
+        pipeline_cat.debug()
+          << "Copy-on-write a: " << old_data << " becomes " 
+          << _data[pipeline_stage]._cdata << "\n";
+        //nassertr(false, NULL);
+      }
+      
+      // Now we have differences between some of the data pointers, so
+      // we're "dirty".  Mark it so.
+      if (!_dirty && _num_stages != 1) {
+        _pipeline->add_dirty_cycler(this);
+      }
     }
   }
 
-  return _data[pipeline_stage];
+  ++(_data[pipeline_stage]._writes_outstanding);
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,30 +197,42 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
   }
 #endif  // NDEBUG
 
-  CycleData *old_data = _data[pipeline_stage];
+  CycleData *old_data = _data[pipeline_stage]._cdata;
 
   if (old_data->get_ref_count() != 1 || force_to_0) {
     // Count the number of references before the current stage, and
     // the number of references remaining other than those.
     int external_count = old_data->get_ref_count() - 1;
     int k = pipeline_stage - 1;
-    while (k >= 0 && _data[k] == old_data) {
+    while (k >= 0 && _data[k]._cdata == old_data) {
       --k;
       --external_count;
     }
     
-    if (external_count > 0) {
+    // We only perform copy-on-write if this is the first CycleData
+    // requested for write mode from this thread.  (We will never have
+    // outstanding writes for multiple threads, because we hold the
+    // CyclerMutex during the entire lifetime of write()
+    // .. release()).
+    if (external_count > 0 && _data[pipeline_stage]._writes_outstanding == 0) {
       // There are references other than the ones before this stage in
       // the pipeline; perform a copy-on-write.
       PT(CycleData) new_data = old_data->make_copy();
+      if (pipeline_cat.is_debug()) {
+        pipeline_cat.debug()
+          << "Copy-on-write b: " << old_data << " becomes " 
+          << new_data << "\n";
+        //nassertr(false, NULL);
+      }
       
       k = pipeline_stage - 1;
-      while (k >= 0 && (_data[k] == old_data || force_to_0)) {
-        _data[k] = new_data.p();
+      while (k >= 0 && (_data[k]._cdata == old_data || force_to_0)) {
+        nassertr(_data[k]._writes_outstanding == 0, NULL);
+        _data[k]._cdata = new_data.p();
         --k;
       }
       
-      _data[pipeline_stage] = new_data;
+      _data[pipeline_stage]._cdata = new_data;
       
       if (k >= 0 || pipeline_stage + 1 < _num_stages) {
         // Now we have differences between some of the data pointers,
@@ -216,21 +241,23 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
           _pipeline->add_dirty_cycler(this);
         }
       }
-
+      
     } else if (k >= 0 && force_to_0) {
       // There are no external pointers, so no need to copy-on-write,
       // but the current pointer doesn't go all the way back.  Make it
       // do so.
       while (k >= 0) {
-        _data[k] = old_data;
+        nassertr(_data[k]._writes_outstanding == 0, NULL);
+        _data[k]._cdata = old_data;
         --k;
       }
     }
   }
-
-  return _data[pipeline_stage];
+    
+  ++(_data[pipeline_stage]._writes_outstanding);
+  return _data[pipeline_stage]._cdata;
 }
-
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::cycle
 //       Access: Private
@@ -251,17 +278,18 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
 ////////////////////////////////////////////////////////////////////
 PT(CycleData) PipelineCyclerTrueImpl::
 cycle() {
-  PT(CycleData) last_val = _data[_num_stages - 1].p();
+  PT(CycleData) last_val = _data[_num_stages - 1]._cdata.p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
 
   int i;
   for (i = _num_stages - 1; i > 0; --i) {
-    _data[i] = _data[i - 1];
+    nassertr(_data[i]._writes_outstanding == 0, last_val);
+    _data[i]._cdata = _data[i - 1]._cdata;
   }
 
   for (i = 1; i < _num_stages; ++i) {
-    if (_data[i] != _data[i - 1]) {
+    if (_data[i]._cdata != _data[i - 1]._cdata) {
       // Still dirty.
       return last_val;
     }
@@ -286,7 +314,8 @@ set_num_stages(int num_stages) {
     // Don't bother to reallocate the array smaller; we just won't use
     // the rest of the array.
     for (int i = _num_stages; i < num_stages; ++i) {
-      _data[i].clear();
+      nassertv(_data[i]._writes_outstanding == 0);
+      _data[i]._cdata.clear();
     }
 
     _num_stages = num_stages;
@@ -294,13 +323,14 @@ set_num_stages(int num_stages) {
 
   } else {
     // To increase the array, we must reallocate it larger.
-    NPT(CycleData) *new_data = new NPT(CycleData)[num_stages];
+    CycleDataNode *new_data = new CycleDataNode[num_stages];
     int i;
     for (i = 0; i < _num_stages; ++i) {
-      new_data[i] = _data[i];
+      nassertv(_data[i]._writes_outstanding == 0);
+      new_data[i]._cdata = _data[i]._cdata;
     }
     for (i = _num_stages; i < num_stages; ++i) {
-      new_data[i] = _data[_num_stages - 1];
+      new_data[i]._cdata = _data[_num_stages - 1]._cdata;
     }
     delete[] _data;
 

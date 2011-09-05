@@ -1724,8 +1724,15 @@ check_usage_hint() const {
     // already have modified the pointer on the object since we
     // queried it.
     {
+#ifdef DO_PIPELINING
+      unref_delete((CycleData *)_cdata);
+#endif
       Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler, 
                                  false, _current_thread);
+      ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
+#ifdef DO_PIPELINING
+      _cdata->ref();
+#endif
       if (!fresh_cdata->_got_usage_hint) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
@@ -1733,14 +1740,9 @@ check_usage_hint() const {
         nassertv(fresh_cdata->_got_usage_hint);
       }
 
-      // Save the new pointer, and then let the lock release itself.
-#ifdef DO_PIPELINING
-      unref_delete((CycleData *)_cdata);
-#endif
-      ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
-#ifdef DO_PIPELINING
-      _cdata->ref();
-#endif
+      // When fresh_cdata goes out of scope, its write lock is
+      // released, and _cdata reverts to our usual convention of an
+      // unlocked copy of the data.
     }
   }
 

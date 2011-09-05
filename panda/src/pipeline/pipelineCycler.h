@@ -40,11 +40,9 @@
 //               CycleDataWriter classes transparently handle this.
 //
 //               If pipelining support is not enabled at compile time
-//               (that is, SUPPORT_PIPELINING is not defined), this
-//               object compiles to a minimum object that presents the
-//               same interface but with minimal runtime overhead.
-//               (Actually, this isn't true yet, but it will be one
-//               day.)
+//               (that is, DO_PIPELINING is not defined), this object
+//               compiles to a minimum object that presents the same
+//               interface but with minimal runtime overhead.
 //
 //               We define this as a struct instead of a class to
 //               guarantee byte placement within the object, so that

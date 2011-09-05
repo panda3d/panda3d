@@ -72,7 +72,7 @@ read_unlocked(Thread *current_thread) const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
-  return _data[pipeline_stage];
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ read(Thread *current_thread) const {
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
   _lock.acquire(current_thread);
-  return _data[pipeline_stage];
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ increment_read(const CycleData *pointer) const {
 #ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage] == pointer);
+  nassertv(_data[pipeline_stage]._cdata == pointer);
 #endif
   _lock.elevate_lock();
 }
@@ -127,7 +127,7 @@ release_read(const CycleData *pointer) const {
 #ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage] == pointer);
+  nassertv(_data[pipeline_stage]._cdata == pointer);
 #endif
   _lock.release();
 }
@@ -205,7 +205,7 @@ elevate_read(const CycleData *pointer, Thread *current_thread) {
 #ifdef _DEBUG
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  nassertr(_data[pipeline_stage] == pointer, NULL);
+  nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
 #endif
   CycleData *new_pointer = write(current_thread);
   _lock.release();
@@ -226,7 +226,7 @@ elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *current
 #ifdef _DEBUG
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  nassertr(_data[pipeline_stage] == pointer, NULL);
+  nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
 #endif
   CycleData *new_pointer = write_upstream(force_to_0, current_thread);
   _lock.release();
@@ -246,8 +246,9 @@ increment_write(CycleData *pointer) const {
 #ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage] == pointer);
+  nassertv(_data[pipeline_stage]._cdata == pointer);
 #endif
+  ++(_data[pipeline_stage]._writes_outstanding);
   _lock.elevate_lock();
 }
 
@@ -260,12 +261,8 @@ increment_write(CycleData *pointer) const {
 INLINE void PipelineCyclerTrueImpl::
 release_write(CycleData *pointer) {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_write(CycleData *)", " ", TAU_USER);
-#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   return release_write_stage(pipeline_stage, pointer);
-#else
-  _lock.release();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,7 +289,7 @@ read_stage_unlocked(int pipeline_stage) const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
-  return _data[pipeline_stage];
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,7 +310,7 @@ read_stage(int pipeline_stage, Thread *current_thread) const {
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
   _lock.acquire(current_thread);
-  return _data[pipeline_stage];
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -327,7 +324,7 @@ release_read_stage(int pipeline_stage, const CycleData *pointer) const {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage] == pointer);
+  nassertv(_data[pipeline_stage]._cdata == pointer);
 #endif
   _lock.release();
 }
@@ -347,7 +344,7 @@ elevate_read_stage(int pipeline_stage, const CycleData *pointer,
   TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::elevate_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  nassertr(_data[pipeline_stage] == pointer, NULL);
+  nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
 #endif
   CycleData *new_pointer = write_stage(pipeline_stage, current_thread);
   _lock.release();
@@ -369,7 +366,7 @@ elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer,
   TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::elevate_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  nassertr(_data[pipeline_stage] == pointer, NULL);
+  nassertr(_data[pipeline_stage]._cdata == pointer, NULL);
 #endif
   CycleData *new_pointer = 
     write_stage_upstream(pipeline_stage, force_to_0, current_thread);
@@ -388,8 +385,10 @@ release_write_stage(int pipeline_stage, CycleData *pointer) {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_write_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage] == pointer);
+  nassertv(_data[pipeline_stage]._cdata == pointer);
+  nassertv(_data[pipeline_stage]._writes_outstanding > 0);
 #endif
+  --(_data[pipeline_stage]._writes_outstanding);
   _lock.release();
 }
 
@@ -401,7 +400,7 @@ release_write_stage(int pipeline_stage, CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE TypeHandle PipelineCyclerTrueImpl::
 get_parent_type() const {
-  return _data[0]->get_parent_type();
+  return _data[0]._cdata->get_parent_type();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -419,7 +418,7 @@ cheat() const {
   TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::cheat()", " ", TAU_USER);
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  return _data[pipeline_stage];
+  return _data[pipeline_stage]._cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -458,12 +457,13 @@ get_write_count() const {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_2() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[1].p();
+  PT(CycleData) last_val = _data[1]._cdata.p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 2, last_val);
 
-  _data[1] = _data[0];
+  nassertr(_data[1]._writes_outstanding == 0, last_val);
+  _data[1]._cdata = _data[0]._cdata;
 
   // No longer dirty.
   _dirty = false;
@@ -482,15 +482,17 @@ cycle_2() {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_3() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[2].p();
+  PT(CycleData) last_val = _data[2]._cdata.p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 3, last_val);
 
-  _data[2] = _data[1];
-  _data[1] = _data[0];
+  nassertr(_data[2]._writes_outstanding == 0, last_val);
+  nassertr(_data[1]._writes_outstanding == 0, last_val);
+  _data[2]._cdata = _data[1]._cdata;
+  _data[1]._cdata = _data[0]._cdata;
 
-  if (_data[2] == _data[1]) {
+  if (_data[2]._cdata == _data[1]._cdata) {
     // No longer dirty.
     _dirty = false;
   }
@@ -508,4 +510,47 @@ CyclerMutex(PipelineCyclerTrueImpl *cycler) {
 #ifdef DEBUG_THREADS
   _cycler = cycler;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerTrueImpl::CycleDataNode::
+CycleDataNode() :
+  _writes_outstanding(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerTrueImpl::CycleDataNode::
+CycleDataNode(const PipelineCyclerTrueImpl::CycleDataNode &copy) :
+  _cdata(copy._cdata),
+  _writes_outstanding(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerTrueImpl::CycleDataNode::
+~CycleDataNode() {
+  nassertv(_writes_outstanding == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::Copy Assignment
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrueImpl::CycleDataNode::
+operator = (const PipelineCyclerTrueImpl::CycleDataNode &copy) {
+  _cdata = copy._cdata;
 }

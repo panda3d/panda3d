@@ -1012,8 +1012,22 @@ reverse_normals() const {
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 animate_vertices(bool force, Thread *current_thread) const {
-  CDLockedReader cdata(_cycler, current_thread);
+#ifdef DO_PIPELINING
+  {
+    // In the pipelining case, we take a simple short-route
+    // optimization: if the vdata isn't animated, we don't need to
+    // grab any mutex first.
+    CDReader cdata(_cycler, current_thread);
+    if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
+      return this;
+    }
+  }
+#endif  // DO_PIPELINING
 
+  // Now that we've short-circuited the short route, we reasonably
+  // believe the vdata is animated.  Grab the mutex and make sure it's
+  // still animated after we've acquired it.
+  CDLockedReader cdata(_cycler, current_thread);
   if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
     return this;
   }

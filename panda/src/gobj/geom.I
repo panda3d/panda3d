@@ -96,8 +96,7 @@ get_vertex_data(Thread *current_thread) const {
 INLINE bool Geom::
 is_empty() const {
   CDReader cdata(_cycler);
-  return (cdata->_data.get_read_pointer()->get_num_rows() == 0 ||
-          cdata->_primitives.empty());
+  return cdata->_primitives.empty();
 }
 
 ////////////////////////////////////////////////////////////////////

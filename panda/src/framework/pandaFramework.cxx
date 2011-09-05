@@ -1640,4 +1640,5 @@ AsyncTask::DoneStatus PandaFramework::
 task_garbage_collect(GenericAsyncTask *task, void *data) {
   TransformState::garbage_collect();
   RenderState::garbage_collect();
+  return AsyncTask::DS_cont;
 }

@@ -572,6 +572,8 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 size_t TextureAttrib::
 get_hash_impl() const {
+  check_sorted();
+
   size_t hash = 0;
   Stages::const_iterator si;
   for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {

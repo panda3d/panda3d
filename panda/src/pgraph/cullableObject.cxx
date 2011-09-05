@@ -68,7 +68,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     {
       GeomPipelineReader geom_reader(_geom, current_thread);
       _munged_data = geom_reader.get_vertex_data();
-      
+
 #ifdef _DEBUG
       {
         GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);

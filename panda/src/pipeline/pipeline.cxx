@@ -70,6 +70,11 @@ Pipeline::
 void Pipeline::
 cycle() {
 #ifdef THREADED_PIPELINE
+  if (pipeline_cat.is_debug()) {
+    pipeline_cat.debug()
+      << "Beginning the pipeline cycle\n";
+  }
+
   pvector< PT(CycleData) > saved_cdatas;
   saved_cdatas.reserve(_dirty_cyclers.size());
   {
@@ -152,8 +157,14 @@ cycle() {
 
   // And now it's safe to let the CycleData pointers in saved_cdatas
   // destruct, which may cause cascading deletes, and which will in
-  // turn case PipelineCyclers to remove themselves from (or add
+  // turn cause PipelineCyclers to remove themselves from (or add
   // themselves to) the _dirty_cyclers list.
+  saved_cdatas.clear();
+
+  if (pipeline_cat.is_debug()) {
+    pipeline_cat.debug()
+      << "Finished the pipeline cycle\n";
+  }
 
 #endif  // THREADED_PIPELINE
 }

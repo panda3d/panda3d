@@ -1193,6 +1193,7 @@ garbage_collect() {
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
+  nassertr(_states->validate(), 0);
 
   int new_size = _states->get_num_entries();
   return orig_size - new_size + num_attribs;
@@ -1363,28 +1364,29 @@ validate_states() {
     return true;
   }
 
+  if (!_states->validate()) {
+    pgraph_cat.error()
+      << "RenderState::_states cache is invalid!\n";
+    return false;
+  }    
+
   int size = _states->get_size();
   int si = 0;
   while (si < size && !_states->has_element(si)) {
     ++si;
   }
   nassertr(si < size, false);
-  nassertr(_states->get_key(si)->get_ref_count() > 0, false);
+  nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
   int snext = si;
+  ++snext;
   while (snext < size && !_states->has_element(snext)) {
     ++snext;
   }
   while (snext < size) {
+    nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
     const RenderState *ssi = _states->get_key(si);
     const RenderState *ssnext = _states->get_key(snext);
     int c = ssi->compare_to(*ssnext);
-    if (c >= 0) {
-      pgraph_cat.error()
-        << "RenderStates out of order!\n";
-      ssi->write(pgraph_cat.error(false), 2);
-      ssnext->write(pgraph_cat.error(false), 2);
-      return false;
-    }
     int ci = ssnext->compare_to(*ssi);
     if ((ci < 0) != (c > 0) ||
         (ci > 0) != (c < 0) ||
@@ -1400,10 +1402,10 @@ validate_states() {
       return false;
     }
     si = snext;
+    ++snext;
     while (snext < size && !_states->has_element(snext)) {
       ++snext;
     }
-    nassertr(_states->get_key(si)->get_ref_count() > 0, false);
   }
 
   return true;

@@ -123,20 +123,32 @@ store(const Key &key, const Value &data) {
     size_t index = get_hash(key);
     store_new_element(index, key, data);
     ++_num_entries;
+#ifdef _DEBUG
+    nassertr(validate(), index);
+#endif
     return index;
   }
 
   size_t index = get_hash(key);
   if (!has_element(index)) {
+    // This element is not already in the map; add it.
     if (consider_expand_table()) {
       return store(key, data);
     }
     store_new_element(index, key, data);
     ++_num_entries;
+#ifdef _DEBUG
+    nassertr(validate(), index);
+#endif
     return index;
   }
   if (is_element(index, key)) {
+    // This element is already in the map; replace the data at that
+    // key.
     _table[index]._data = data;
+#ifdef _DEBUG
+    nassertr(validate(), index);
+#endif
     return index;
   }
 
@@ -151,10 +163,16 @@ store(const Key &key, const Value &data) {
       }
       store_new_element(i, key, data);
       ++_num_entries;
+#ifdef _DEBUG
+      nassertr(validate(), i);
+#endif
       return i;
     }
     if (is_element(i, key)) {
       _table[i]._data = data;
+#ifdef _DEBUG
+      nassertr(validate(), i);
+#endif
       return i;
     }
     i = (i + 1) & (_table_size - 1);
@@ -363,6 +381,10 @@ remove_element(int n) {
     // conflicts.
     i = (i + 1) & (_table_size - 1);
   }
+
+#ifdef _DEBUG
+  nassertv(validate());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -605,13 +627,19 @@ expand_table() {
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
   memset(get_exists_array(), 0, _table_size);
+  nassertv(_num_entries == 0);
 
   // Now copy the entries from the old table into the new table.
+  int num_added = 0;
   for (size_t i = 0; i < old_map._table_size; ++i) {
     if (old_map.has_element(i)) {
       store(old_map._table[i]._key, old_map._table[i]._data);
+      ++num_added;
     }
   }
 
-  nassertv(old_map._num_entries == _num_entries);
+  nassertv(validate());
+  nassertv(old_map.validate());
+
+  nassertv(_num_entries == old_map._num_entries);
 }

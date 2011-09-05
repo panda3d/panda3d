@@ -903,6 +903,7 @@ inc_add_pointer() {
     if (_vertex_data != (GeomVertexData *)NULL) {
       // If we have a whole GeomVertexData, we must set the length of
       // all its arrays at once.
+      _handle = NULL;
       GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
       writer.check_array_writers();
       writer.set_num_rows(max(write_row + 1, writer.get_num_rows()));

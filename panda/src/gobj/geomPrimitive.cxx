@@ -1983,8 +1983,16 @@ check_minmax() const {
     // already have modified the pointer on the object since we
     // queried it.
     {
+#ifdef DO_PIPELINING
+      unref_delete((CycleData *)_cdata);
+#endif
       GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object.p())->_cycler, 
                                           false, _current_thread);
+      ((GeomPrimitivePipelineReader *)this)->_cdata = fresh_cdata;
+#ifdef DO_PIPELINING
+      _cdata->ref();
+#endif
+
       if (!fresh_cdata->_got_minmax) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
@@ -1992,14 +2000,9 @@ check_minmax() const {
         nassertv(fresh_cdata->_got_minmax);
       }
 
-      // Save the new pointer, and then let the lock release itself.
-#ifdef DO_PIPELINING
-      unref_delete((CycleData *)_cdata);
-#endif
-      ((GeomPrimitivePipelineReader *)this)->_cdata = fresh_cdata;
-#ifdef DO_PIPELINING
-      _cdata->ref();
-#endif
+      // When fresh_cdata goes out of scope, its write lock is
+      // released, and _cdata reverts to our usual convention of an
+      // unlocked copy of the data.
     }
   }
 

@@ -264,6 +264,8 @@ garbage_collect() {
   PStatTimer timer(_garbage_collect_pcollector);
   int orig_size = _attribs->get_num_entries();
 
+  nassertr(_attribs->validate(), 0);
+
   // How many elements to process this pass?
   int size = _attribs->get_size();
   int num_this_pass = int(size * garbage_collect_states_rate);
@@ -294,6 +296,7 @@ garbage_collect() {
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
+  nassertr(_attribs->validate(), 0);
 
   int new_size = _attribs->get_num_entries();
   return orig_size - new_size;
@@ -314,28 +317,41 @@ validate_attribs() {
     return true;
   }
 
+  if (!_attribs->validate()) {
+    pgraph_cat.error()
+      << "RenderAttrib::_attribs cache is invalid!\n";
+
+    int size = _attribs->get_size();
+    for (int si = 0; si < size; ++si) {
+      if (!_attribs->has_element(si)) {
+        continue;
+      }
+      const RenderAttrib *attrib = _attribs->get_key(si);
+      cerr << si << ": " << attrib << "\n";
+      attrib->get_hash();
+      attrib->write(cerr, 2);
+    }
+
+    return false;
+  }    
+
   int size = _attribs->get_size();
   int si = 0;
   while (si < size && !_attribs->has_element(si)) {
     ++si;
   }
   nassertr(si < size, false);
-  nassertr(_attribs->get_key(si)->get_ref_count() > 0, false);
+  nassertr(_attribs->get_key(si)->get_ref_count() >= 0, false);
   int snext = si;
+  ++snext;
   while (snext < size && !_attribs->has_element(snext)) {
     ++snext;
   }
   while (snext < size) {
+    nassertr(_attribs->get_key(snext)->get_ref_count() >= 0, false);
     const RenderAttrib *ssi = _attribs->get_key(si);
     const RenderAttrib *ssnext = _attribs->get_key(snext);
     int c = ssi->compare_to(*ssnext);
-    if (c >= 0) {
-      pgraph_cat.error()
-        << "RenderAttribs out of order!\n";
-      ssi->write(pgraph_cat.error(false), 2);
-      ssnext->write(pgraph_cat.error(false), 2);
-      return false;
-    }
     int ci = ssnext->compare_to(*ssi);
     if ((ci < 0) != (c > 0) ||
         (ci > 0) != (c < 0) ||
@@ -351,10 +367,10 @@ validate_attribs() {
       return false;
     }
     si = snext;
+    ++snext;
     while (snext < size && !_attribs->has_element(snext)) {
       ++snext;
     }
-    nassertr(_attribs->get_key(si)->get_ref_count() > 0, false);
   }
 
   return true;
