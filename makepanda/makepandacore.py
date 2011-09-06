@@ -25,8 +25,18 @@ OPTIMIZE="3"
 VERBOSE=False
 LINK_ALL_STATIC=False
 
-# platform.architecture isn't reliable on OSX.
-is_64 = (sys.maxint > 0x100000000L)
+# Is the current Python a 32-bit or 64-bit build?  There doesn't
+# appear to be a universal test for this.
+if sys.platform == 'darwin':
+    # On OSX, platform.architecture reports '64bit' even if it is
+    # currently running in 32-bit mode.  But sys.maxint is a reliable
+    # indicator.
+    is_64 = (sys.maxint > 0x100000000L)
+else:
+    # On Windows (and Linux?) sys.maxint reports 0x7fffffff even on a
+    # 64-bit build.  So we stick with platform.architecture in that
+    # case.
+    is_64 = (platform.architecture()[0] == '64bit')
 
 ########################################################################
 ##
