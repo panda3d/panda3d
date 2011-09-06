@@ -36,9 +36,11 @@ PUBLISHED:
   BulletRigidBodyNode(const char *name="rigid");
   INLINE ~BulletRigidBodyNode();
 
-  // Mass
-  float get_mass() const;
+  // Mass & inertia
   void set_mass(float mass);
+  float get_mass() const;
+  void set_inertia(const LVecBase3f &inertia);
+  LVector3f get_inertia() const;
 
   // Velocity
   LVector3f get_linear_velocity() const;

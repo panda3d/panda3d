@@ -97,13 +97,14 @@ shape_changed() {
 void BulletRigidBodyNode::
 set_mass(float mass) {
 
-  btVector3 inertia(0.0f, 0.0f, 0.0f);
+  btScalar bt_mass = mass;
+  btVector3 bt_inertia(0.0, 0.0, 0.0);
 
-  if (mass > 0.0f) {
-    _rigid->getCollisionShape()->calculateLocalInertia(mass, inertia);
+  if (bt_mass > 0.0) {
+    _rigid->getCollisionShape()->calculateLocalInertia(bt_mass, bt_inertia);
   }
 
-  _rigid->setMassProps(mass, inertia);
+  _rigid->setMassProps(bt_mass, bt_inertia);
   _rigid->updateInertiaTensor();
 }
 
@@ -115,14 +116,46 @@ set_mass(float mass) {
 float BulletRigidBodyNode::
 get_mass() const {
 
-  btScalar invMass = _rigid->getInvMass();
+  btScalar inv_mass = _rigid->getInvMass();
+  btScalar mass = inv_mass == btScalar(0.0) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
 
-  if (invMass == 0.0f) {
-    return 0.0f;
-  }
-  else {
-    return 1.0f / invMass;
-  }
+  return mass;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::set_inertia
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+set_inertia(const LVecBase3f &inertia) {
+
+  btVector3 inv_inertia(
+    inertia.get_x() == 0.0 ? btScalar(0.0) : btScalar(1.0 / inertia.get_x()),
+    inertia.get_y() == 0.0 ? btScalar(0.0) : btScalar(1.0 / inertia.get_y()),
+    inertia.get_z() == 0.0 ? btScalar(0.0) : btScalar(1.0 / inertia.get_z())
+    );
+
+  _rigid->setInvInertiaDiagLocal(inv_inertia);
+  _rigid->updateInertiaTensor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inertia
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3f BulletRigidBodyNode::
+get_inertia() const {
+
+  btVector3 inv_inertia = _rigid->getInvInertiaDiagLocal();
+  LVector3f inertia(
+    inv_inertia.x() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.x(),
+    inv_inertia.y() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.y(),
+    inv_inertia.z() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.z()
+    );
+
+  return inertia;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +170,7 @@ apply_force(const LVector3f &force, const LPoint3f &pos) {
   nassertv_always(!pos.is_nan());
 
   _rigid->applyForce(LVecBase3f_to_btVector3(force),
-                    LVecBase3f_to_btVector3(pos));
+                     LVecBase3f_to_btVector3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,7 +224,7 @@ apply_impulse(const LVector3f &impulse, const LPoint3f &pos) {
   nassertv_always(!pos.is_nan());
 
   _rigid->applyImpulse(LVecBase3f_to_btVector3(impulse),
-                      LVecBase3f_to_btVector3(pos));
+                       LVecBase3f_to_btVector3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,9 +264,13 @@ transform_changed() {
 
     if (ts->has_scale()) {
       LVecBase3f scale = ts->get_scale();
-      for (int i=0; i<get_num_shapes(); i++) {
-        PT(BulletShape) shape = _shapes[i];
-        shape->set_local_scale(scale);
+      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+        for (int i=0; i<get_num_shapes(); i++) {
+          PT(BulletShape) shape = _shapes[i];
+          shape->set_local_scale(scale);
+        }
+
+        shape_changed();
       }
     }
 

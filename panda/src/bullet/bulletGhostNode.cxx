@@ -77,9 +77,11 @@ transform_changed() {
 
     if (ts->has_scale()) {
       LVecBase3f scale = ts->get_scale();
-      for (int i=0; i<get_num_shapes(); i++) {
-        PT(BulletShape) shape = _shapes[i];
-        shape->set_local_scale(scale);
+      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+        for (int i=0; i<get_num_shapes(); i++) {
+          PT(BulletShape) shape = _shapes[i];
+          shape->set_local_scale(scale);
+        }
       }
     }
   }

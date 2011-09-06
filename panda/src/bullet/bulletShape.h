@@ -20,7 +20,6 @@
 #include "bullet_includes.h"
 
 #include "typedReferenceCount.h"
-//#include "lvector3.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletShape
@@ -40,14 +39,15 @@ PUBLISHED:
   INLINE bool is_soft_body() const;
 
   void set_margin(float margin);
-  void set_local_scale(const LVecBase3f &scaling);
-
   const char *get_name() const;
+
   float get_margin() const;
-  LVecBase3f get_local_scale() const;
 
 public:
   virtual btCollisionShape *ptr() const = 0;
+
+  LVecBase3f get_local_scale() const;
+  void set_local_scale(const LVecBase3f &scale);
 
 ////////////////////////////////////////////////////////////////////
 public:
