@@ -4394,6 +4394,7 @@ CData(const PandaNode::CData &copy) :
 
   _effects(copy._effects),
   _tag_data(copy._tag_data),
+  // _python_tag_data appears below.
   _draw_control_mask(copy._draw_control_mask),
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
@@ -4422,7 +4423,7 @@ CData(const PandaNode::CData &copy) :
 #ifdef HAVE_PYTHON
   // Copy and increment all of the Python objects held by the other
   // node.
-  _python_tag_data = _python_tag_data;
+  _python_tag_data = copy._python_tag_data;
   inc_py_refs();
 #endif  // HAVE_PYTHON
 }
