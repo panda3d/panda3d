@@ -20,6 +20,11 @@
 
 #ifdef __cplusplus
 
+#ifdef USE_TAU
+// Tau provides this destructive version of stdbool.h that we must mask.
+#define __PDT_STDBOOL_H_
+#endif
+
 #ifdef CPPPARSER
 #include <iostream>
 #include <string>

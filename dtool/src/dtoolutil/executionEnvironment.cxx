@@ -18,6 +18,10 @@
 #include <errno.h>
 #include <stdio.h>  // for perror
 
+#ifdef __APPLE__
+#include <sys/param.h>  // for realpath
+#endif  // __APPLE__
+
 #ifdef WIN32_VC
 // Windows requires this for getcwd().
 #include <direct.h>

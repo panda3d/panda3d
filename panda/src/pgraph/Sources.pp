@@ -120,6 +120,7 @@
     antialiasAttrib.cxx \
     attribNodeRegistry.cxx \
     audioVolumeAttrib.cxx \
+    auxBitplaneAttrib.cxx \
     auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \

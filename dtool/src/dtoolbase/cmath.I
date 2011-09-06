@@ -12,15 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef __APPLE__
-#ifndef isnan
-#define isnan(x) \
-  ((sizeof(x) == sizeof(double)) ? \
-    __isnand(x) : \
-   (sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
-#endif
-#endif
-
 #ifdef __INTEL_COMPILER
 // see float.h
 #define FPU_CONTROLWORD_WRITEMASK    0xFFFFF        // if you look at defn of _CW_DEFAULT, all settings fall within 0xFFFFF

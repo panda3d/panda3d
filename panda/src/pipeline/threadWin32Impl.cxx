@@ -156,7 +156,7 @@ DWORD ThreadWin32Impl::
 root_func(LPVOID data) {
   TAU_REGISTER_THREAD();
   {
-    TAU_PROFILE("void ThreadWin32Impl::root_func()", " ", TAU_USER);
+    //TAU_PROFILE("void ThreadWin32Impl::root_func()", " ", TAU_USER);
 
     ThreadWin32Impl *self = (ThreadWin32Impl *)data;
     BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);

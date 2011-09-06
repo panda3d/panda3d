@@ -127,19 +127,15 @@ test_performance() {
 
   MemoryUsage::freeze();
   MapType *m = new MapType;
-  if (MemoryUsage::has_cpp_size()) {
-    cerr << "Empty map uses " << MemoryUsage::get_current_cpp_size()
-         << " bytes.\n";
-  }
+  cerr << "Empty map uses " << MemoryUsage::get_current_cpp_size()
+       << " bytes.\n";
 
   for (int p = 0; p < initial_population; p++) {
     m->insert(MapType::value_type(samples[rand() & sample_mask], 0));
   }
-  if (MemoryUsage::has_cpp_size()) {
-    cerr << "map with " << m->size() 
-         << " elements uses " << MemoryUsage::get_current_cpp_size()
-         << " bytes.\n";
-  }
+  cerr << "map with " << m->size() 
+       << " elements uses " << MemoryUsage::get_current_cpp_size()
+       << " bytes.\n";
 
   for (int r = 0; r < num_reps; r++) {
     double now = clock->get_real_time();

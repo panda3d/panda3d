@@ -83,6 +83,10 @@
   #define python_framework $[PYTHON_FRAMEWORK]
 #endif
 
+#if $[USE_TAU]
+  #define tau_ipath $[wildcard $[TAU_IPATH]]
+#endif
+
 #if $[HAVE_THREADS]
   #define threads_ipath $[wildcard $[THREADS_IPATH]]
   #define threads_lpath $[wildcard $[THREADS_LPATH]]
@@ -697,7 +701,7 @@
 // names only; the -I switch is not included here.
 #defun get_ipath
   // hack to add stl,python.  should be removed
-  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[python_ipath]]
+  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[python_ipath] $[tau_ipath]]
 
   #foreach package $[use_packages]
     #set alt_ipath $[alt_ipath] $[$[package]_ipath]

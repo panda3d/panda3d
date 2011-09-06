@@ -184,7 +184,11 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     // Add only the one that we're impacting with:
     add_entry(highest);
   } else {
-    _current_colliding.insert(valid_entries.begin(), valid_entries.end());
+    // Add all of them.
+    pvector<PT(CollisionEntry)>::iterator vi;
+    for (vi = valid_entries.begin(); vi != valid_entries.end(); ++vi) {
+      add_entry(*vi);
+    }
   }
 
   

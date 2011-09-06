@@ -15,6 +15,7 @@
 #include "collisionBox.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
+#include "collisionSphere.h"
 #include "collisionSegment.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"

@@ -34,7 +34,7 @@
     config_framework.cxx config_framework.h \
     pandaFramework.cxx pandaFramework.I pandaFramework.h \
     windowFramework.cxx windowFramework.I windowFramework.h \
-    shuttle_controls.bam.c
+    rock_floor.rgb_src.c shuttle_controls.bam_src.c
 
   #define INSTALL_HEADERS \
     pandaFramework.I pandaFramework.h \

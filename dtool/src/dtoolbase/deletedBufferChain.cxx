@@ -47,7 +47,7 @@ DeletedBufferChain(size_t buffer_size) {
 void *DeletedBufferChain::
 allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
-  TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", " ", TAU_USER);
+  //TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", " ", TAU_USER);
   assert(size <= _buffer_size);
 
   ObjectNode *obj;
@@ -105,7 +105,7 @@ allocate(size_t size, TypeHandle type_handle) {
 void DeletedBufferChain::
 deallocate(void *ptr, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
-  TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", " ", TAU_USER);
+  //TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", " ", TAU_USER);
   assert(ptr != (void *)NULL);
 
 #ifdef DO_MEMORY_USAGE

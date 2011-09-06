@@ -39,7 +39,7 @@
 
 // If we have FreeType available, include the ttf font; it's superior
 // because it's dynamic.  See above.
-#include "persans.ttf.c"
+#include "persans.ttf_src.c"
 
 #elif defined(HAVE_ZLIB)
 
@@ -50,9 +50,9 @@
 
 // egg2bam -rawtex -o cmss12.bam cmss12.egg
 // pzip cmss12.bam
-// bin2c -n default_font_data -o cmss12.bam.pz.c cmss12.bam.pz
+// bin2c -n default_font_data -o cmss12.bam.pz_src.c cmss12.bam.pz
 
-#include "cmss12.bam.pz.c"
+#include "cmss12.bam.pz_src.c"
 
 #else
 
@@ -62,9 +62,9 @@
 // Regenerate this file with (cmss12.egg can be loaded from the models tree):
 
 // egg2bam -rawtex -o cmss12.bam cmss12.egg
-// bin2c -n default_font_data -o cmss12.bam.c cmss12.bam
+// bin2c -n default_font_data -o cmss12.bam_src.c cmss12.bam
 
-#include "cmss12.bam.c"
+#include "cmss12.bam_src.c"
 
 #endif
 

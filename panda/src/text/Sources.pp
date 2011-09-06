@@ -44,7 +44,7 @@
     textNode.cxx \
     textProperties.cxx \
     textPropertiesManager.cxx \
-    cmss12.bam.c cmss12.bam.pz.c persans.ttf.c
+    cmss12.bam_src.c cmss12.bam.pz_src.c persans.ttf_src.c
 
   #define INSTALL_HEADERS \
     config_text.h \

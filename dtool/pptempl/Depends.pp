@@ -84,8 +84,9 @@
     #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I %.T %_src.cxx,$[get_sources]] $[included_sources]
 
     // Now compute the source files.
-    #define c_sources $[filter %.c,$[get_sources]]
-    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx %.mm %.cpp,$[get_sources]]]
+    #define c_sources $[filter-out %_src.c,$[filter %.c,$[get_sources]]]
+    #define mm_sources $[filter %.mm,$[get_sources]]
+    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx %.cpp,$[get_sources]]]
     #define cxx_interrogate_sources
     #if $[PYTHON_MODULE_ONLY]
       #set cxx_interrogate_sources $[cxx_sources]
@@ -96,7 +97,7 @@
     #define lxx_sources $[filter %.lxx,$[get_sources]]
 
     // Define what the object files are.
-    #foreach file $[c_sources] $[cxx_sources] $[cxx_interrogate_sources] $[yxx_sources] $[lxx_sources]
+    #foreach file $[c_sources] $[mm_sources] $[cxx_sources] $[cxx_interrogate_sources] $[yxx_sources] $[lxx_sources]
       #define $[file]_obj $[patsubst %.c %.cxx %.mm %.cpp %.yxx %.lxx,$[ODIR]/$[obj_prefix]%$[OBJ],$[notdir $[file]]]
       #push 1 $[file]_obj
     #end file
@@ -160,7 +161,7 @@
       #set cxx_interrogate_sources $[cxx_interrogate_sources] $[generated_file]
     #endif
 
-    #define compile_sources $[c_sources] $[cxx_sources] $[cxx_interrogate_sources]
+    #define compile_sources $[c_sources] $[mm_sources] $[cxx_sources] $[cxx_interrogate_sources]
 
   #end metalib_target lib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 

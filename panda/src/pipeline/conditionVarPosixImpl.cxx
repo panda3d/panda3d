@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 void ConditionVarPosixImpl::
 wait(double timeout) {
-  TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
+  //TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
 
   struct timeval now;
   gettimeofday(&now, NULL);

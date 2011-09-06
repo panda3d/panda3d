@@ -907,7 +907,7 @@
 #define TAU_MAKEFILE
 #define TAU_ROOT
 #define PDT_ROOT
-#define TAU_OPTS -optKeepFiles
+#define TAU_OPTS -optKeepFiles -optRevert
 #define TAU_CFLAGS -D_GNU_SOURCE
 #define USE_TAU
 

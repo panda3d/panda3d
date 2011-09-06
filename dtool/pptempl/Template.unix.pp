@@ -341,7 +341,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   // various .obj files.
 
   #define sources \
-   $[patsubst %,$[%_obj],$[c_sources] $[cxx_sources]]
+   $[patsubst %,$[%_obj],$[c_sources] $[mm_sources] $[cxx_sources]]
   #define interrogate_sources \
    $[patsubst %,$[%_obj],$[cxx_interrogate_sources]]
   #define cc_ld $[or $[get_ld],$[CC]]
@@ -656,7 +656,7 @@ $[TAB] $[compile_c]
 
 // Rules to compile C++ files (static objects).
 
-#foreach file $[sort $[cxx_sources] $[cxx_interrogate_sources]]
+#foreach file $[sort $[mm_sources] $[cxx_sources] $[cxx_interrogate_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
@@ -697,7 +697,7 @@ $[TAB] $[compile_c]
 
 // Rules to compile C++ files (shared objects).
 
-#foreach file $[sort $[cxx_sources] $[cxx_interrogate_sources]]
+#foreach file $[sort $[mm_sources] $[cxx_sources] $[cxx_interrogate_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]

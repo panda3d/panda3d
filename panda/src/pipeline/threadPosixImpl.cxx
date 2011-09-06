@@ -201,7 +201,7 @@ void *ThreadPosixImpl::
 root_func(void *data) {
   TAU_REGISTER_THREAD();
   {
-    TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
+    //TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
 
     ThreadPosixImpl *self = (ThreadPosixImpl *)data;
     int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
