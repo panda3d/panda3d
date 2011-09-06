@@ -78,8 +78,8 @@ get_object() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::shape_changed
 //       Access: Published
-//  Description: Hook which will be called whenever the total shape
-//               of a body changed. Used for example to update
+//  Description: Hook which should be called whenever the total
+//               shape of a body changed. Used for example to update
 //               the mass properties (inertia) of a rigid body.
 //               The default implementation does nothing.
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,11 @@ shape_changed() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::set_mass
 //       Access: Published
-//  Description:
+//  Description: Sets the mass of a rigid body. This also modifies
+//               the inertia, which is automatically computed from
+//               the shape of the body. Setting a value of zero
+//               for mass will make the body static. A value of
+//               zero can be considered an infinite mass.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
 set_mass(float mass) {
@@ -111,7 +115,9 @@ set_mass(float mass) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::get_mass
 //       Access: Published
-//  Description:
+//  Description: Returns the total mass of a rigid body.
+//               A value of zero means that the body is staic, i.e.
+//               has an infinite mass.
 ////////////////////////////////////////////////////////////////////
 float BulletRigidBodyNode::
 get_mass() const {
@@ -125,7 +131,18 @@ get_mass() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::set_inertia
 //       Access: Published
-//  Description:
+//  Description: Sets the inertia of a rigid body. Inertia is given
+//               as a three-component vector. A component value of
+//               zero means infinite inertia along this direction.
+//               Setting the intertia will override the value which
+//               is automatically calculated from the rigid bodies
+//               shape. However, it is possible that automatic
+//               calculation of intertia is trigger after calling
+//               this method, and thus overwriting the explicitly
+//               set value again. This happens when:
+//               (a) the mass is set after the inertia.
+//               (b) a shape is added or removed from the body.
+//               (c) the scale of the body changed.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
 set_inertia(const LVecBase3f &inertia) {
@@ -143,7 +160,10 @@ set_inertia(const LVecBase3f &inertia) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::get_inertia
 //       Access: Published
-//  Description:
+//  Description: Returns the inertia of the rigid body. Inertia is
+//               given as a three component vector. A component
+//               value of zero means infinite inertia along this
+//               direction.
 ////////////////////////////////////////////////////////////////////
 LVector3f BulletRigidBodyNode::
 get_inertia() const {
