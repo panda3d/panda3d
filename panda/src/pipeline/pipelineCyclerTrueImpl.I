@@ -243,8 +243,8 @@ elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *current
 INLINE void PipelineCyclerTrueImpl::
 increment_write(CycleData *pointer) const {
   TAU_PROFILE("void PipelineCyclerTrueImpl::increment_write(CycleData *)", " ", TAU_USER);
-#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
+#ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
   nassertv(_data[pipeline_stage]._cdata == pointer);
 #endif
