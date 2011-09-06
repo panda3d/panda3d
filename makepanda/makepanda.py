@@ -523,7 +523,6 @@ if (COMPILER=="MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletCollision.lib")
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletDynamics.lib")
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody.lib")
-        LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletMultiThreaded.lib")
 
 if (COMPILER=="LINUX"):
     PkgDisable("AWESOMIUM")
