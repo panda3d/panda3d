@@ -137,7 +137,7 @@ open_framework(int &argc, char **&argv) {
   }
 
   if (garbage_collect_states) {
-    PT(GenericAsyncTask) task = new GenericAsyncTask("garbage_collect", task_garbage_collect, this);
+    PT(GenericAsyncTask) task = new GenericAsyncTask("garbageCollectStates", task_garbage_collect, this);
     task->set_sort(46);
     _task_mgr.add(task);
   }

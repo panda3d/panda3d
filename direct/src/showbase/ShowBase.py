@@ -862,7 +862,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             # Spawn it after igloop (at the end of each frame)
             self.taskMgr.remove('clientSleep')
-            self.taskMgr.add(self.sleepCycleTask, 'clientSleep', priority = 55)
+            self.taskMgr.add(self.sleepCycleTask, 'clientSleep', sort = 55)
 
     def sleepCycleTask(self, task):
         Thread.sleep(self.clientSleep)
@@ -1696,6 +1696,17 @@ class ShowBase(DirectObject.DirectObject):
             x.update()
         return Task.cont
 
+    def __garbageCollectStates(self, state):
+        """ This task is started only when we have
+        garbage-collect-states set in the Config.prc file, in which
+        case we're responsible for taking out Panda's garbage from
+        time to time.  This is not to be confused with Python's
+        garbage collection.  """
+        
+        TransformState.garbageCollect()
+        RenderState.garbageCollect()
+        return Task.cont
+        
     def __igLoop(self, state):
         # We render the watch variables for the onScreenDebug as soon
         # as we reasonably can before the renderFrame().
@@ -1784,29 +1795,31 @@ class ShowBase(DirectObject.DirectObject):
         self.shutdown()
         # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
-            self.__resetPrevTransform, 'resetPrevTransform', priority = -51)
-        # give the dataLoop task a reasonably "early" priority,
+            self.__resetPrevTransform, 'resetPrevTransform', sort = -51)
+        # give the dataLoop task a reasonably "early" sort,
         # so that it will get run before most tasks
-        self.taskMgr.add(self.__dataLoop, 'dataLoop', priority = -50)
+        self.taskMgr.add(self.__dataLoop, 'dataLoop', sort = -50)
         self.__deadInputs = 0
-        # spawn the ivalLoop with a later priority, so that it will
+        # spawn the ivalLoop with a later sort, so that it will
         # run after most tasks, but before igLoop.
-        self.taskMgr.add(self.__ivalLoop, 'ivalLoop', priority = 20)
+        self.taskMgr.add(self.__ivalLoop, 'ivalLoop', sort = 20)
         # make the collisionLoop task run before igLoop,
         # but leave enough room for the app to insert tasks
         # between collisionLoop and igLoop
-        self.taskMgr.add(self.__collisionLoop, 'collisionLoop', priority = 30)
-        
-        # give the igLoop task a reasonably "late" priority,
+        self.taskMgr.add(self.__collisionLoop, 'collisionLoop', sort = 30)
+
+        if ConfigVariableBool('garbage-collect-states').getValue():
+            self.taskMgr.add(self.__garbageCollectStates, 'garbageCollectStates', sort = 46)
+        # give the igLoop task a reasonably "late" sort,
         # so that it will get run after most tasks
         self.cluster = cluster
         if (not clusterSync or (cluster == None)):
-            self.taskMgr.add(self.__igLoop, 'igLoop', priority = 50)
+            self.taskMgr.add(self.__igLoop, 'igLoop', sort = 50)
         else:
-            self.taskMgr.add(self.__igLoopSync, 'igLoop', priority = 50)
+            self.taskMgr.add(self.__igLoopSync, 'igLoop', sort = 50)
         # the audioLoop updates the positions of 3D sounds.
         # as such, it needs to run after the cull traversal in the igLoop.
-        self.taskMgr.add(self.__audioLoop, 'audioLoop', priority = 60)
+        self.taskMgr.add(self.__audioLoop, 'audioLoop', sort = 60)
         self.eventMgr.restart()
 
     def shutdown(self):
@@ -1817,6 +1830,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.remove('dataLoop')
         self.taskMgr.remove('resetPrevTransform')
         self.taskMgr.remove('ivalLoop')
+        self.taskMgr.remove('garbage_collect')
         self.eventMgr.shutdown()
 
     def getBackgroundColor(self, win = None):
@@ -1939,7 +1953,7 @@ class ShowBase(DirectObject.DirectObject):
             self.eventMgr.doEvents()
             self.dgTrav.traverse(base.dataRootNode)
             self.eventMgr.eventQueue.clear()
-            self.taskMgr.add(self.__dataLoop, 'dataLoop', priority = -50)
+            self.taskMgr.add(self.__dataLoop, 'dataLoop', sort = -50)
             self.__deadInputs = 0
 
     def setMouseOnNode(self, newNode):
