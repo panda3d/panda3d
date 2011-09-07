@@ -38,7 +38,7 @@ struct PipelineCyclerTrueImpl;
 //               pipeline.  Other specialty pipelines may be created
 //               as needed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PIPELINE Pipeline : public PipelineCyclerLinks, public Namable {
+class EXPCL_PANDA_PIPELINE Pipeline : public Namable {
 public:
   Pipeline(const string &name, int num_stages);
   ~Pipeline();
@@ -74,9 +74,11 @@ private:
   static Pipeline *_render_pipeline;
 
 #ifdef THREADED_PIPELINE
+  PipelineCyclerLinks _clean;
+  PipelineCyclerLinks _dirty;
+
   int _num_cyclers;
-  typedef pset<PipelineCyclerTrueImpl *> Cyclers;
-  Cyclers _dirty_cyclers;
+  int _num_dirty_cyclers;
 
 #ifdef DEBUG_THREADS
   typedef pmap<TypeHandle, int> TypeCount;

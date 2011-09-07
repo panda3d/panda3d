@@ -42,6 +42,38 @@ INLINE PipelineCyclerLinks::
 
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerLinks::make_head
+//       Access: Protected
+//  Description: When called on an empty object, sets it up to be the
+//               head of a linked list.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerLinks::
+make_head() {
+  nassertv(_next == NULL && _prev == NULL);
+  _next = this;
+  _prev = this;
+}
+#endif  // THREADED_PIPELINE
+
+#ifdef THREADED_PIPELINE
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerLinks::clear_head
+//       Access: Protected
+//  Description: When called on the head of an empty linked list,
+//               resets it to an empty object, for safe destruction.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerLinks::
+clear_head() {
+  nassertv(_next == this && _prev == this);
+#ifndef NDEBUG
+  _next = NULL;
+  _prev = NULL;
+#endif
+}
+#endif  // THREADED_PIPELINE
+
+#ifdef THREADED_PIPELINE
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerLinks::remove_from_list
 //       Access: Protected
 //  Description: Removes a PipelineCyclerLinks record from the
@@ -75,5 +107,31 @@ insert_before(PipelineCyclerLinks *node) {
   _next = node;
   _prev->_next = this;
   node->_prev = this;
+}
+#endif  // THREADED_PIPELINE
+
+#ifdef THREADED_PIPELINE
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerLinks::take_list
+//       Access: Protected
+//  Description: When called on the head of an empty list, takes all
+//               of the leemnts from the indicated list and moves them
+//               to this list.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerLinks::
+take_list(PipelineCyclerLinks &other) {
+  nassertv(_next == this && _prev == this);
+  if (other._next == &other && other._prev == &other) {
+    // The other list is empty; this is a no-op.
+    return;
+  }
+
+  other._next->_prev = this;
+  other._prev->_next = this;
+  _next = other._next;
+  _prev = other._prev;
+
+  other._next = &other;
+  other._prev = &other;
 }
 #endif  // THREADED_PIPELINE

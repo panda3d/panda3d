@@ -74,7 +74,7 @@ get_num_cyclers() const {
 INLINE int Pipeline::
 get_num_dirty_cyclers() const {
   ReMutexHolder holder(_lock);
-  return _dirty_cyclers.size();
+  return _num_dirty_cyclers;
 }
 #endif  // THREADED_PIPELINE
 

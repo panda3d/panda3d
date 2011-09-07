@@ -33,12 +33,27 @@ Pipeline(const string &name, int num_stages) :
 #endif
 {
 #ifdef THREADED_PIPELINE
-  // Set up the linked list of cyclers to be a circular list that
-  // begins with this object.
-  _prev = this;
-  _next = this;
 
+  // We maintain all of the cyclers in the world on one of two linked
+  // lists.  Cyclers that are "clean", which is to say, they have the
+  // same value across all pipeline stages, are stored on the _clean
+  // list.  Cyclers that are "dirty", which have different values
+  // across some pipeline stages, are stored instead on the _dirty
+  // list.  Cyclers can move themselves from clean to dirty by calling
+  // add_dirty_cycler(), and cyclers get moved from dirty to clean
+  // during cycle().
+
+  // To visit each cycler once requires traversing both lists.
+  _clean.make_head();
+  _dirty.make_head();
+
+  // We also store the total count of all cyclers, clean and dirty, in
+  // _num_cyclers; and the count of only dirty cyclers in
+  // _num_dirty_cyclers.
   _num_cyclers = 0;
+  _num_dirty_cyclers = 0;
+
+  // This flag is true only during the call to cycle().
   _cycling = false;
 
 #endif  // THREADED_PIPELINE
@@ -55,9 +70,9 @@ Pipeline::
 ~Pipeline() {
 #ifdef THREADED_PIPELINE
   nassertv(_num_cyclers == 0);
-  nassertv(_prev == this && _next == this);
-  _prev = NULL;
-  _next = NULL;
+  nassertv(_num_dirty_cyclers == 0);
+  _clean.clear_head();
+  _dirty.clear_head();
   nassertv(!_cycling);
 #endif  // THREADED_PIPELINE
 }
@@ -76,25 +91,29 @@ cycle() {
   }
 
   pvector< PT(CycleData) > saved_cdatas;
-  saved_cdatas.reserve(_dirty_cyclers.size());
+  saved_cdatas.reserve(_num_dirty_cyclers);
   {
     ReMutexHolder holder(_lock);
     if (_num_stages == 1) {
       // No need to cycle if there's only one stage.
-      nassertv(_dirty_cyclers.empty());
+      nassertv(_dirty._next == &_dirty);
       return;
     }
     
     nassertv(!_cycling);
     _cycling = true;
     
-    Cyclers next_dirty_cyclers;
+    // Move the dirty list to prev_dirty, for processing.
+    PipelineCyclerLinks prev_dirty;
+    prev_dirty.make_head();
+    prev_dirty.take_list(_dirty);
+    _num_dirty_cyclers = 0;
 
-    Cyclers::iterator ci;
     switch (_num_stages) {
     case 2:
-      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
-        PipelineCyclerTrueImpl *cycler = (*ci);
+      while (prev_dirty._next != &prev_dirty) {
+        PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
+        cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
         
         // We save the result of cycle(), so that we can defer the
@@ -103,11 +122,13 @@ cycle() {
         saved_cdatas.push_back(cycler->cycle_2());
         
         if (cycler->_dirty) {
-          // The cycler is still dirty after cycling.  Preserve it in the
-          // set for next time.
-          bool inserted = next_dirty_cyclers.insert(cycler).second;
-          nassertv(inserted);
+          // The cycler is still dirty after cycling.  Keep it on the
+          // dirty list for next time.
+          cycler->insert_before(&_dirty);
+          ++_num_dirty_cyclers;
         } else {
+          // The cycler is now clean.  Add it back to the clean list.
+          cycler->insert_before(&_clean);
 #ifdef DEBUG_THREADS
           inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
@@ -116,15 +137,18 @@ cycle() {
       break;
 
     case 3:
-      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
-        PipelineCyclerTrueImpl *cycler = (*ci);
+      while (prev_dirty._next != &prev_dirty) {
+        PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
+        cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
         
         saved_cdatas.push_back(cycler->cycle_3());
+        
         if (cycler->_dirty) {
-          bool inserted = next_dirty_cyclers.insert(cycler).second;
-          nassertv(inserted);
+          cycler->insert_before(&_dirty);
+          ++_num_dirty_cyclers;
         } else {
+          cycler->insert_before(&_clean);
 #ifdef DEBUG_THREADS
           inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
@@ -133,15 +157,18 @@ cycle() {
       break;
 
     default:
-      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
-        PipelineCyclerTrueImpl *cycler = (*ci);
+      while (prev_dirty._next != &prev_dirty) {
+        PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
+        cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
         
         saved_cdatas.push_back(cycler->cycle());
+        
         if (cycler->_dirty) {
-          bool inserted = next_dirty_cyclers.insert(cycler).second;
-          nassertv(inserted);
+          cycler->insert_before(&_dirty);
+          ++_num_dirty_cyclers;
         } else {
+          cycler->insert_before(&_clean);
 #ifdef DEBUG_THREADS
           inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
@@ -150,15 +177,15 @@ cycle() {
       break;
     }
       
-    // Finally, we're ready for the next frame.
-    _dirty_cyclers.swap(next_dirty_cyclers);
+    // Now we're ready for the next frame.
+    prev_dirty.clear_head();
     _cycling = false;
   }
 
   // And now it's safe to let the CycleData pointers in saved_cdatas
   // destruct, which may cause cascading deletes, and which will in
   // turn cause PipelineCyclers to remove themselves from (or add
-  // themselves to) the _dirty_cyclers list.
+  // themselves to) the _dirty list.
   saved_cdatas.clear();
 
   if (pipeline_cat.is_debug()) {
@@ -185,21 +212,34 @@ set_num_stages(int num_stages) {
     // We need to lock every PipelineCycler object attached to this
     // pipeline before we can adjust the number of stages.
     PipelineCyclerLinks *links;
-    for (links = this->_next; links != this; links = links->_next) {
+    for (links = _clean._next; links != &_clean; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->_lock.acquire();
+    }
+    for (links = _dirty._next; links != &_dirty; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
       cycler->_lock.acquire();
     }
 
     _num_stages = num_stages;
 
-    for (links = this->_next; links != this; links = links->_next) {
+    for (links = _clean._next; links != &_clean; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->set_num_stages(num_stages);
+    }
+    for (links = _dirty._next; links != &_dirty; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
       cycler->set_num_stages(num_stages);
     }
 
     // Now release them all.
     int count = 0;
-    for (links = this->_next; links != this; links = links->_next) {
+    for (links = _clean._next; links != &_clean; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->_lock.release();
+      ++count;
+    }
+    for (links = _dirty._next; links != &_dirty; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
       cycler->_lock.release();
       ++count;
@@ -230,8 +270,9 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
   ReMutexHolder holder(_lock);
   nassertv(!cycler->_dirty);
   nassertv(!_cycling);
+
+  cycler->insert_before(&_clean);
   ++_num_cyclers;
-  cycler->insert_before(this);
   
 #ifdef DEBUG_THREADS
   inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
@@ -257,10 +298,12 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(_num_stages != 1);
   nassertv(!_cycling);
   nassertv(!cycler->_dirty);
-  cycler->_dirty = true;
 
-  bool inserted = _dirty_cyclers.insert(cycler).second;
-  nassertv(inserted);
+  // Remove it from the "clean" list and add it to the "dirty" list.
+  cycler->remove_from_list();
+  cycler->insert_before(&_dirty);
+  cycler->_dirty = true;
+  ++_num_dirty_cyclers;
 
 #ifdef DEBUG_THREADS
   inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), 1);
@@ -292,9 +335,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
 
   if (cycler->_dirty) {
     cycler->_dirty = false;
-    Cyclers::iterator ci = _dirty_cyclers.find(cycler);
-    nassertv(ci != _dirty_cyclers.end());
-    _dirty_cyclers.erase(ci);
+    --_num_dirty_cyclers;
 #ifdef DEBUG_THREADS
     inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif

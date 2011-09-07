@@ -38,8 +38,13 @@ protected:
   INLINE PipelineCyclerLinks();
   INLINE ~PipelineCyclerLinks();
 
+  INLINE void make_head();
+  INLINE void clear_head();
+
   INLINE void remove_from_list();
   INLINE void insert_before(PipelineCyclerLinks *node);
+
+  INLINE void take_list(PipelineCyclerLinks &other);
 
   PipelineCyclerLinks *_prev, *_next;
 #endif
