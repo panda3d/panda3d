@@ -189,6 +189,7 @@ PUBLISHED:
   INLINE int get_invert_composition_cache_size() const;
   INLINE const TransformState *get_invert_composition_cache_source(int n) const;
   INLINE const TransformState *get_invert_composition_cache_result(int n) const;
+  bool validate_composition_cache() const;
 #ifdef HAVE_PYTHON
   PyObject *get_composition_cache() const;
   PyObject *get_invert_composition_cache() const;
@@ -207,6 +208,7 @@ PUBLISHED:
   static bool validate_states();
 #ifdef HAVE_PYTHON
   static PyObject *get_states();
+  static PyObject *get_unused_states();
 #endif  // HAVE_PYTHON
 
 

@@ -768,6 +768,66 @@ unref() const {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::validate_composition_cache
+//       Access: Published
+//  Description: Returns true if the composition cache and invert
+//               composition cache for this particular TransformState
+//               are self-consistent and valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TransformState::
+validate_composition_cache() const {
+  LightReMutexHolder holder(*_states_lock);
+
+  int size = _composition_cache.get_size();
+  for (int i = 0; i < size; ++i) {
+    if (!_composition_cache.has_element(i)) {
+      continue;
+    }
+    const TransformState *source = _composition_cache.get_key(i);
+    if (source != (TransformState *)NULL) {
+      // Check that the source also has a pointer back to this one.  We
+      // always add entries to the composition cache in pairs.
+      int ri = source->_composition_cache.find(this);
+      if (ri == -1) {
+        // Failure!  There is no back-pointer.
+        pgraph_cat.error()
+          << "TransformState::composition cache is inconsistent!\n";
+        pgraph_cat.error(false)
+          << *this << " compose " << *source << "\n";
+        pgraph_cat.error(false)
+          << "but no reverse\n";
+        return false;
+      }
+    }
+  }
+
+  size = _invert_composition_cache.get_size();
+  for (int i = 0; i < size; ++i) {
+    if (!_invert_composition_cache.has_element(i)) {
+      continue;
+    }
+    const TransformState *source = _invert_composition_cache.get_key(i);
+    if (source != (TransformState *)NULL) {
+      // Check that the source also has a pointer back to this one.  We
+      // always add entries to the composition cache in pairs.
+      int ri = source->_invert_composition_cache.find(this);
+      if (ri == -1) {
+        // Failure!  There is no back-pointer.
+        pgraph_cat.error()
+          << "TransformState::invert composition cache is inconsistent!\n";
+        pgraph_cat.error(false)
+          << *this << " invert compose " << *source << "\n";
+        pgraph_cat.error(false)
+          << "but no reverse\n";
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_composition_cache
@@ -787,43 +847,47 @@ PyObject *TransformState::
 get_composition_cache() const {
   IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
   LightReMutexHolder holder(*_states_lock);
-  size_t cache_size = _composition_cache.get_size();
-  PyObject *list = PyList_New(cache_size);
 
-  for (size_t i = 0; i < cache_size; ++i) {
+  size_t num_states = _composition_cache.get_num_entries();
+  PyObject *list = PyList_New(num_states);
+  size_t i = 0;
+
+  int size = _composition_cache.get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_composition_cache.has_element(si)) {
+      continue;
+    }
+
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
-    if (!_composition_cache.has_element(i)) {
+
+    const TransformState *source = _composition_cache.get_key(si);
+    if (source == (TransformState *)NULL) {
       a = Py_None;
       Py_INCREF(a);
+    } else {
+      source->ref();
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+                                      true, true, source->get_type_index());
+    }
+    const TransformState *result = _composition_cache.get_data(si)._result;
+    if (result == (TransformState *)NULL) {
       b = Py_None;
       Py_INCREF(b);
     } else {
-      const TransformState *source = _composition_cache.get_key(i);
-      if (source == (TransformState *)NULL) {
-        a = Py_None;
-        Py_INCREF(a);
-      } else {
-        source->ref();
-        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
-                                        true, true, source->get_type_index());
-      }
-      const TransformState *result = _composition_cache.get_data(i)._result;
-      if (result == (TransformState *)NULL) {
-        b = Py_None;
-        Py_INCREF(b);
-      } else {
-        result->ref();
-        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
-                                        true, true, result->get_type_index());
-      }
+      result->ref();
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+                                      true, true, result->get_type_index());
     }
+
     PyTuple_SET_ITEM(tuple, 0, a);
     PyTuple_SET_ITEM(tuple, 1, b);
 
+    nassertr(i < num_states, list);
     PyList_SET_ITEM(list, i, tuple);
+    ++i;
   }
-
+  nassertr(i == num_states, list);
   return list;
 }
 #endif  // HAVE_PYTHON
@@ -847,43 +911,47 @@ PyObject *TransformState::
 get_invert_composition_cache() const {
   IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
   LightReMutexHolder holder(*_states_lock);
-  size_t cache_size = _invert_composition_cache.get_size();
-  PyObject *list = PyList_New(cache_size);
 
-  for (size_t i = 0; i < cache_size; ++i) {
+  size_t num_states = _invert_composition_cache.get_num_entries();
+  PyObject *list = PyList_New(num_states);
+  size_t i = 0;
+
+  int size = _invert_composition_cache.get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_invert_composition_cache.has_element(si)) {
+      continue;
+    }
+
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
-    if (!_invert_composition_cache.has_element(i)) {
+
+    const TransformState *source = _invert_composition_cache.get_key(si);
+    if (source == (TransformState *)NULL) {
       a = Py_None;
       Py_INCREF(a);
+    } else {
+      source->ref();
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+                                      true, true, source->get_type_index());
+    }
+    const TransformState *result = _invert_composition_cache.get_data(si)._result;
+    if (result == (TransformState *)NULL) {
       b = Py_None;
       Py_INCREF(b);
     } else {
-      const TransformState *source = _invert_composition_cache.get_key(i);
-      if (source == (TransformState *)NULL) {
-        a = Py_None;
-        Py_INCREF(a);
-      } else {
-        source->ref();
-        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
-                                        true, true, source->get_type_index());
-      }
-      const TransformState *result = _invert_composition_cache.get_data(i)._result;
-      if (result == (TransformState *)NULL) {
-        b = Py_None;
-        Py_INCREF(b);
-      } else {
-        result->ref();
-        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
-                                        true, true, result->get_type_index());
-      }
+      result->ref();
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+                                      true, true, result->get_type_index());
     }
+
     PyTuple_SET_ITEM(tuple, 0, a);
     PyTuple_SET_ITEM(tuple, 1, b);
 
+    nassertr(i < num_states, list);
     PyList_SET_ITEM(list, i, tuple);
+    ++i;
   }
-
+  nassertr(i == num_states, list);
   return list;
 }
 #endif  // HAVE_PYTHON
@@ -1441,6 +1509,9 @@ validate_states() {
   while (snext < size) {
     nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
     const TransformState *ssi = _states->get_key(si);
+    if (!ssi->validate_composition_cache()) {
+      return false;
+    }
     const TransformState *ssnext = _states->get_key(snext);
     int c = ssi->compare_to(*ssnext);
     int ci = ssnext->compare_to(*ssi);
@@ -1502,6 +1573,42 @@ get_states() {
     ++i;
   }
   nassertr(i == num_states, list);
+  return list;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_unused_states
+//       Access: Published, Static
+//  Description: Returns a list of all of the "unused" TransformState
+//               objects in the state cache.  See
+//               get_num_unused_states().
+////////////////////////////////////////////////////////////////////
+PyObject *TransformState::
+get_unused_states() {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  if (_states == (States *)NULL) {
+    return PyList_New(0);
+  }
+  LightReMutexHolder holder(*_states_lock);
+
+  PyObject *list = PyList_New(0);
+  int size = _states->get_size();
+  for (int si = 0; si < size; ++si) {
+    if (!_states->has_element(si)) {
+      continue;
+    }
+    const TransformState *state = _states->get_key(si);
+    if (state->get_cache_ref_count() == state->get_ref_count()) {
+      state->ref();
+      PyObject *a = 
+        DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState, 
+                                    true, true, state->get_type_index());
+      PyList_Append(list, a);
+      Py_DECREF(a);
+    }
+  }
   return list;
 }
 #endif  // HAVE_PYTHON
@@ -2322,8 +2429,7 @@ do_calc_hash() {
     // Only bother to put the rest of the stuff in the hash if the
     // transform is not invalid or empty.
     
-    if ((_flags & (F_components_given | F_hpr_given | F_quat_given)) == 
-        (F_components_given | F_hpr_given | F_quat_given)) {
+    if ((_flags & F_components_given) != 0) {
       // If the transform was specified componentwise, hash it
       // componentwise.
       _hash = _pos.add_hash(_hash);
