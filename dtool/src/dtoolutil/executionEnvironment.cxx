@@ -261,17 +261,24 @@ ns_get_environment_variable(const string &var) const {
 #ifdef HAVE_PYTHON
     // If we're running from Python code, read out sys.argv.
     if (!ns_has_environment_variable("PANDA_INCOMPATIBLE_PYTHON") && Py_IsInitialized()) {
-      PyObject* obj = PySys_GetObject((char*) "argv");
-      if (obj) {
+      Filename main_dir;
+      PyObject *obj = PySys_GetObject((char*) "argv");  // borrowed reference
+      if (obj != NULL && PyList_Check(obj)) {
+        PyObject *item = PyList_GetItem(obj, 0);  // borrowed reference
         // Hmm, could this ever be a Unicode object?
-        Filename main_dir = Filename::from_os_specific(PyString_AsString(PyList_GetItem(obj, 0)));
-        if (main_dir.empty()) {
-          // We must be running in the Python interpreter directly, so return the CWD.
-          return get_cwd().to_os_specific();
+        if (item != NULL && PyString_Check(item)) {
+          char *str = PyString_AsString(item);
+          if (str != (char *)NULL) {
+            main_dir = Filename::from_os_specific(str);
+          }
         }
-        main_dir.make_absolute();
-        return Filename(main_dir.get_dirname()).to_os_specific();
       }
+      if (main_dir.empty()) {
+        // We must be running in the Python interpreter directly, so return the CWD.
+        return get_cwd().to_os_specific();
+      }
+      main_dir.make_absolute();
+      return Filename(main_dir.get_dirname()).to_os_specific();
     }
 #endif
 
