@@ -48,11 +48,13 @@ public:
   void sync_b2p();
 
 protected:
+  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
   CPT(TransformState) _sync;
   bool _sync_disable;
+  bool _sync_local;
 
   btPairCachingGhostObject *_ghost;
 

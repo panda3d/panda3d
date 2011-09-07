@@ -227,7 +227,8 @@ sync_p2b(float dt) {
     v = LVecBase3f_to_btVector3(_linear_velocity);
   }
 
-  _character->setVelocityForTimeInterval(v, dt);
+  //_character->setVelocityForTimeInterval(v, dt);
+  _character->setWalkDirection(v * dt);
   _angular_velocity = 0.0f;
 }
 

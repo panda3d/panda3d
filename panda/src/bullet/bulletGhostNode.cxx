@@ -28,6 +28,7 @@ BulletGhostNode(const char *name) : BulletBodyNode(name) {
   // Synchronised transform
   _sync = TransformState::make_identity();
   _sync_disable = false;
+  _sync_local = false;
 
   // Initial transform
   btTransform trans = btTransform::getIdentity();
@@ -50,6 +51,32 @@ btCollisionObject *BulletGhostNode::
 get_object() const {
 
   return _ghost;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGhostNode::parents_changed
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletGhostNode::
+parents_changed() {
+
+  Parents parents = get_parents();
+  for (int i=0; i < parents.get_num_parents(); ++i) {
+    PandaNode *parent = parents.get_parent(i);
+    TypeHandle type = parent->get_type();
+
+    if (BulletRigidBodyNode::get_class_type() == type ||
+        BulletSoftBodyNode::get_class_type() == type ||
+        BulletGhostNode::get_class_type() == type ||
+        BulletCharacterControllerNode::get_class_type() == type) {
+
+      _sync_local = true;
+      return;
+    }
+  }
+
+  _sync_local = false;
 }
 
 ////////////////////////////////////////////////////////////////////
