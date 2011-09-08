@@ -48,8 +48,8 @@ public:
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
 
 protected:
-  void fetch_packet(double default_time);
-  bool fetch_frame();
+  bool fetch_packet(double default_time);
+  bool fetch_frame(double time);
   void seek(double t);
   void fetch_time(double time);
   void export_frame(unsigned char *data, bool bgra, int bufx);

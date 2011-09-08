@@ -262,9 +262,11 @@ export_frame(unsigned char *data, bool bgra, int bufx) {
 //               packet buffer.  Sets packet_time to the packet's
 //               timestamp.  If a packet could not be read, the
 //               packet is cleared and the packet_time is set to
-//               the specified default value.
+//               the specified default value.  Returns true on
+//               failure (such as the end of the video), or false on
+//               success.
 ////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
+bool FfmpegVideoCursor::
 fetch_packet(double default_time) {
   if (_packet->data) {
     av_free_packet(_packet);
@@ -272,26 +274,50 @@ fetch_packet(double default_time) {
   while (av_read_frame(_format_ctx, _packet) >= 0) {
     if (_packet->stream_index == _video_index) {
       _packet_time = _packet->dts * _video_timebase;
-      return;
+      return false;
     }
     av_free_packet(_packet);
   }
   _packet->data = 0;
   _packet_time = default_time;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fetch_frame
 //       Access: Protected
-//  Description: Fetches a frame from the stream and stores it in
-//               the frame buffer.  Sets last_start and next_start
-//               to indicate the extents of the frame.  Returns true
-//               if the end of the video is reached.
+//  Description: Slides forward until the indicated time, then fetches
+//               a frame from the stream and stores it in the frame
+//               buffer.  Sets last_start and next_start to indicate
+//               the extents of the frame.  Returns true if the end of
+//               the video is reached.
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
-fetch_frame() {
+fetch_frame(double time) {
   int finished = 0;
   _last_start = _packet_time;
+
+  if (_packet_time <= time) {
+    static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
+    PStatTimer timer(seek_pcollector);
+    _video_ctx->skip_frame = AVDISCARD_BIDIR;
+    while (_packet_time <= time) {
+#if LIBAVCODEC_VERSION_INT < 3414272
+      avcodec_decode_video(_video_ctx, _frame,
+                           &finished, _packet->data, _packet->size);
+#else
+      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
+#endif
+      if (fetch_packet(time)) {
+        ffmpeg_cat.debug()
+          << "end of video\n";
+        return true;
+      }
+    }
+    _video_ctx->skip_frame = AVDISCARD_DEFAULT;
+  }
+    
+  finished = 0;
   while (!finished && _packet->data) {
 #if LIBAVCODEC_VERSION_INT < 3414272
     avcodec_decode_video(_video_ctx, _frame,
@@ -355,21 +381,37 @@ void FfmpegVideoCursor::
 fetch_time(double time) {
   if (time < _last_start) {
     // Time is in the past.
-    seek(time);
-    while (_packet_time <= time) {
-      if (fetch_frame()) {
-        break;
-      }
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Seeking backward to " << time << " from " << _last_start << "\n";
     }
+    seek(time);
+    if (_packet_time > time) {
+      ffmpeg_cat.debug()
+        << "Not far enough back!\n";
+      seek(0);
+    }
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Correcting, sliding forward to " << time << " from " << _packet_time << "\n";
+    }
+    fetch_frame(time);
+
   } else if (time < _next_start) {
     // Time is in the present: already have the frame.
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Currently have " << time << "\n";
+    }
+
   } else if (time < _next_start + _min_fseek) {
     // Time is in the near future.
-    while ((_packet_time <= time) && (_packet->data)) {
-      if (fetch_frame()) {
-        break;
-      }
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Sliding forward to " << time << " from " << _packet_time << "\n";
     }
+    fetch_frame(time);
+
   } else {
     // Time is in the far future.  Seek forward, then read.
     // There's a danger here: because keyframes are spaced
@@ -379,16 +421,29 @@ fetch_time(double time) {
     // us backward, we increase the minimum threshold distance
     // for forward-seeking in the future.
     
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Jumping forward to " << time << " from " << _last_start << "\n";
+    }
     double base = _packet_time;
     seek(time);
     if (_packet_time < base) {
       _min_fseek += (base - _packet_time);
-    }
-    while (_packet_time <= time) {
-      if (fetch_frame()) {
-        break;
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "Wrong way!  Increasing _min_fseek to " << _min_fseek << "\n";
       }
     }
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Correcting, sliding forward to " << time << " from " << _packet_time << "\n";
+    }
+    fetch_frame(time);
+  }
+
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "Wanted " << time << ", got " << _packet_time << "\n";
   }
 }
 
@@ -397,9 +452,9 @@ fetch_time(double time) {
 //       Access: Public, Virtual
 //  Description: See MovieVideoCursor::fetch_into_texture.
 ////////////////////////////////////////////////////////////////////
-static PStatCollector fetch_into_texture_pcollector("*:FFMPEG Video Decoding");
 void FfmpegVideoCursor::
 fetch_into_texture(double time, Texture *t, int page) {
+  static PStatCollector fetch_into_texture_pcollector("*:FFMPEG Video Decoding:Fetch");
   PStatTimer timer(fetch_into_texture_pcollector);
   
   nassertv(t->get_x_size() >= size_x());
@@ -431,9 +486,9 @@ fetch_into_texture(double time, Texture *t, int page) {
 //       Access: Public, Virtual
 //  Description: See MovieVideoCursor::fetch_into_buffer.
 ////////////////////////////////////////////////////////////////////
-static PStatCollector fetch_into_buffer_pcollector("*:FFMPEG Video Decoding");
 void FfmpegVideoCursor::
 fetch_into_buffer(double time, unsigned char *data, bool bgra) {
+  static PStatCollector fetch_into_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
   PStatTimer timer(fetch_into_buffer_pcollector);
   
   // If there was an error at any point, synthesize black.
