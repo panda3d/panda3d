@@ -717,25 +717,15 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 unref() const {
-  if (!transform_cache) {
-    // If we're not using the cache anyway, just allow the pointer to
-    // unref normally.
+  if (!transform_cache || garbage_collect_states) {
+    // If we're not using the cache at all, or if we're relying on
+    // garbage collection, just allow the pointer to unref normally.
     return ReferenceCount::unref();
   }
 
-  if (garbage_collect_states) {
-    // In the garbage collector case, we don't delete TransformStates
-    // immediately; instead, we allow them to remain in the cache with
-    // a ref count of 0, and we delete them later in
-    // garbage_collect().
-
-    ReferenceCount::unref();
-    // Return true so that it is never deleted here.
-    return true;
-  }
-
   // Here is the normal refcounting case, with a normal cache, and
-  // without garbage collection in effect.
+  // without garbage collection in effect.  In this case we will pull
+  // the object out of the cache when its reference count goes to 0.
 
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
@@ -1289,7 +1279,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 int TransformState::
 garbage_collect() {
-  if (_states == (States *)NULL) {
+  if (_states == (States *)NULL || !garbage_collect_states) {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -1323,15 +1313,16 @@ garbage_collect() {
         }
       }
 
-      if (state->get_ref_count() == 0) {
-        // This state has recently been unreffed to 0, but it hasn't
-        // been deleted yet (because we have overloaded unref(),
-        // above, to always return true).  Now it's time to delete it.
-        // This is safe, because we're holding the _states_lock, so
-        // it's not possible for some other thread to find the state
-        // in the cache and ref it while we're doing this.
+      if (state->get_ref_count() == 1) {
+        // This state has recently been unreffed to 1 (the one we
+        // added when we stored it in the cache).  Now it's time to
+        // delete it.  This is safe, because we're holding the
+        // _states_lock, so it's not possible for some other thread to
+        // find the state in the cache and ref it while we're doing
+        // this.
         state->release_new();
         state->remove_cache_pointers();
+        state->cache_unref();
         delete state;
       }
     }      
@@ -1704,6 +1695,12 @@ return_unique(TransformState *state) {
   }
 
   // Not already in the set; add it.
+  if (garbage_collect_states) {
+    // If we'll be garbage collecting states explicitly, we'll
+    // increment the reference count when we store it in the cache, so
+    // that it won't be deleted while it's in it.
+    state->cache_ref();
+  }
   si = _states->store(state, Empty());
 
   // Save the index and return the input state.
