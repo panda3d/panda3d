@@ -50,6 +50,11 @@ public:
 public:
   virtual void *heap_alloc_single(size_t size);
   virtual void heap_free_single(void *ptr);
+
+  virtual void *heap_alloc_array(size_t size);
+  virtual void *heap_realloc_array(void *ptr, size_t size);
+  virtual void heap_free_array(void *ptr);
+
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)

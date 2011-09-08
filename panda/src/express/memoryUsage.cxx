@@ -255,6 +255,116 @@ heap_free_single(void *ptr) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::heap_alloc_array
+//       Access: Public, Virtual
+//  Description: Allocates a block of memory from the heap, similar to
+//               malloc().  This will never return NULL; it will abort
+//               instead if memory is not available.
+////////////////////////////////////////////////////////////////////
+void *MemoryUsage::
+heap_alloc_array(size_t size) {
+  void *ptr;
+
+  if (_recursion_protect) {
+    ptr = MemoryHook::heap_alloc_array(size);
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Allocating array pointer " << (void *)ptr
+        << " during recursion protect.\n";
+    }
+
+  } else {
+    if (_track_memory_usage) {
+      ptr = MemoryHook::heap_alloc_array(size);
+      /*
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "Allocating array pointer " << (void *)ptr
+          << " of size " << size << ".\n";
+      }
+      */
+
+      get_global_ptr()->ns_record_void_pointer(ptr, size);
+
+    } else {
+      ptr = MemoryHook::heap_alloc_array(size);
+    }
+  }
+
+  return ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::heap_realloc_array
+//       Access: Public, Virtual
+//  Description: Resizes a block of memory previously returned from
+//               heap_alloc_array.
+////////////////////////////////////////////////////////////////////
+void *MemoryUsage::
+heap_realloc_array(void *ptr, size_t size) {
+  if (_recursion_protect) {
+    ptr = MemoryHook::heap_realloc_array(ptr, size);
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Reallocating array pointer " << (void *)ptr
+        << " during recursion protect.\n";
+    }
+
+  } else {
+    if (_track_memory_usage) {
+      get_global_ptr()->ns_remove_void_pointer(ptr);
+      ptr = MemoryHook::heap_realloc_array(ptr, size);
+      /*
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "Reallocating array pointer " << (void *)ptr
+          << " to size " << size << ".\n";
+      }
+      */
+
+      get_global_ptr()->ns_record_void_pointer(ptr, size);
+
+    } else {
+      ptr = MemoryHook::heap_realloc_array(ptr, size);
+    }
+  }
+
+  return ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::heap_free_array
+//       Access: Public, Virtual
+//  Description: Releases a block of memory previously allocated via
+//               heap_alloc_array.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+heap_free_array(void *ptr) {
+  if (_recursion_protect) {
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Deleting pointer " << (void *)ptr
+        << " during recursion protect.\n";
+    }
+    MemoryHook::heap_free_array(ptr);
+
+  } else {
+    if (_track_memory_usage) {
+      /*
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "Removing pointer " << (void *)ptr << "\n";
+      }
+      */
+      ns_remove_void_pointer(ptr);
+      MemoryHook::heap_free_array(ptr);
+    } else {
+      MemoryHook::heap_free_array(ptr);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::mark_pointer
 //       Access: Public, Virtual
 //  Description: This special method exists only to provide a callback
