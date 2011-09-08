@@ -114,7 +114,9 @@ determine_dynamic_type() {
         _dynamic_type = _static_type;
         _flags &= ~F_reconsider_dynamic_type;
 
-        //nassert_raise("Unregistered type");
+        if (ConfigVariableBool("raise-unregistered-type", false).get_value()) {
+          nassert_raise("Unregistered type");
+        }
         return;
       }
 

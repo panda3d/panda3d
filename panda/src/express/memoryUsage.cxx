@@ -96,7 +96,7 @@ show() const {
   for (vi = count_sorter.begin(); vi != count_sorter.end(); ++vi) {
     TypeHandle type = (*vi)._type;
     if (type == TypeHandle::none()) {
-      nout << "unknown";
+      nout << "undefined type (TypeHandle::none())";
     } else {
       nout << type;
     }
@@ -850,8 +850,12 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
     if (info->_freeze_index == _freeze_index &&
         info->_ref_ptr != (ReferenceCount *)NULL) {
       TypeHandle info_type = info->get_type();
-      if (info_type != TypeHandle::none() &&
-          info_type.is_derived_from(type)) {
+      if (type == TypeHandle::none() &&
+          info_type == TypeHandle::none()) {
+        result.add_entry(info->_ref_ptr, info->_typed_ptr, info_type,
+                         now - info->_time);
+      } else if (info_type != TypeHandle::none() &&
+                 info_type.is_derived_from(type)) {
         result.add_entry(info->_ref_ptr, info->_typed_ptr, info_type,
                          now - info->_time);
       }

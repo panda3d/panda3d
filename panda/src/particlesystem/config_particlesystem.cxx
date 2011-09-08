@@ -15,6 +15,7 @@
 #include "config_particlesystem.h"
 #include "particleSystem.h"
 #include "geomParticleRenderer.h"
+#include "geomNode.h"
 
 ConfigureDef(config_particlesystem);
 NotifyCategoryDef(particlesystem, "");
@@ -26,6 +27,7 @@ ConfigureFn(config_particlesystem) {
   ColorInterpolationFunctionStepwave::init_type();
   ColorInterpolationFunctionSinusoid::init_type();
   ParticleSystem::init_type();
+  GeomNode::GeomList::init_type();  // repeated here to ensure instantiated templates get initialized too.
   init_libparticlesystem();
 }
 

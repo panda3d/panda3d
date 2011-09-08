@@ -14,3 +14,4 @@
 
 #include "sceneSetup.h"
 
+TypeHandle SceneSetup::_type_handle;

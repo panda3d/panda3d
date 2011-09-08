@@ -6,6 +6,7 @@
 #include "renderState.cxx"
 #include "rescaleNormalAttrib.cxx"
 #include "sceneGraphReducer.cxx"
+#include "sceneSetup.cxx"
 #include "scissorAttrib.cxx"
 #include "scissorEffect.cxx"
 #include "shadeModelAttrib.cxx"

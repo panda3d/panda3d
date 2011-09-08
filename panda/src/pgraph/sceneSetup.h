@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#include "referenceCount.h"
+#include "typedReferenceCount.h"
 #include "nodePath.h"
 #include "camera.h"
 #include "transformState.h"
@@ -32,7 +32,7 @@ class DisplayRegion;
 //               other general setup information for rendering a
 //               particular scene.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH SceneSetup : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH SceneSetup : public TypedReferenceCount {
 public:
   INLINE SceneSetup();
 
@@ -82,6 +82,23 @@ private:
   CPT(RenderState) _initial_state;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _world_transform;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "SceneSetup",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "sceneSetup.I"

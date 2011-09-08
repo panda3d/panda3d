@@ -117,10 +117,11 @@ public:
     CPT(RenderState) _state;
   };
 
+  typedef CopyOnWriteObj< pvector<GeomEntry> > GeomList;
+
 private:
 
   bool _preserved;
-  typedef CopyOnWriteObj< pvector<GeomEntry> > GeomList;
   typedef pmap<const InternalName *, int> NameCount;
 
   INLINE void count_name(NameCount &name_count, const InternalName *name);

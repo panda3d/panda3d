@@ -72,6 +72,7 @@
 #include "renderModeAttrib.h"
 #include "renderState.h"
 #include "rescaleNormalAttrib.h"
+#include "sceneSetup.h"
 #include "scissorAttrib.h"
 #include "scissorEffect.h"
 #include "shadeModelAttrib.h"
@@ -490,6 +491,7 @@ init_libpgraph() {
   RenderModeAttrib::init_type();
   RenderState::init_type();
   RescaleNormalAttrib::init_type();
+  SceneSetup::init_type();
   ScissorAttrib::init_type();
   ScissorEffect::init_type();
   ShadeModelAttrib::init_type();
