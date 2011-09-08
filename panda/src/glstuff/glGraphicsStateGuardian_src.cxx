@@ -746,8 +746,8 @@ reset() {
   _supports_multisample =
     has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
 
-#ifndef OPENGLES_2
-  _supports_generate_mipmap = false;
+#ifdef OPENGLES_2
+  _supports_generate_mipmap = true;
 #else
   _supports_generate_mipmap =
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_gl_version(1, 4) || is_at_least_gles_version(1, 1);
