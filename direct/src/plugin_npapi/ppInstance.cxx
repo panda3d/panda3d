@@ -360,7 +360,7 @@ set_window(NPWindow *window) {
 #ifdef HAVE_GTK
   if (_use_xembed) {
     // Create a GtkPlug to bind to the XEmbed socket.
-    _plug = gtk_plug_new((GdkNativeWindow)_window.window);
+    _plug = gtk_plug_new((GdkNativeWindow) reinterpret_cast<XID>(_window.window));
     gtk_widget_show(_plug);
     
     nout << "original XID is " << _window.window << ", created X11 window "
