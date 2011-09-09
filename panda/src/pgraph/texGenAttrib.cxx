@@ -432,7 +432,7 @@ get_hash_impl() const {
     hash = pointer_hash::add_hash(hash, stage);
     hash = int_hash::add_hash(hash, (int)mode_def._mode);
     hash = string_hash::add_hash(hash, mode_def._source_name);
-    hash = int_hash::add_hash(hash, mode_def._light.get_key());
+    hash = mode_def._light.add_hash(hash);
     hash = mode_def._constant_value.add_hash(hash);
   }
 

@@ -256,7 +256,9 @@ public:
       return _type_handle;
     }
     static void init_type() {
-      register_type(_type_handle, "GeomVertexData::CacheEntry");
+      GeomCacheEntry::init_type();
+      register_type(_type_handle, "GeomVertexData::CacheEntry",
+                    GeomCacheEntry::get_class_type());
     }
     
   private:

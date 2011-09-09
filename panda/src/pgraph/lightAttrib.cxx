@@ -768,7 +768,7 @@ get_hash_impl() const {
   Lights::const_iterator li;
   for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
     NodePath light = (*li);
-    hash = int_hash::add_hash(hash, light.get_key());
+    hash = light.add_hash(hash);
   }
 
   // This bool value goes here, between the two lists, to
@@ -777,7 +777,7 @@ get_hash_impl() const {
 
   for (li = _off_lights.begin(); li != _off_lights.end(); ++li) {
     NodePath light = (*li);
-    hash = int_hash::add_hash(hash, light.get_key());
+    hash = light.add_hash(hash);
   }
 
   return hash;

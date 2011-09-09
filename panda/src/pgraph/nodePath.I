@@ -272,6 +272,26 @@ get_key() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::add_hash
+//       Access: Published
+//  Description: Adds the NodePath into the running hash.  This is
+//               intended to be used by lower-level code that computes
+//               a hash for each NodePath.  It modifies the hash value
+//               passed in by a unique adjustment for each NodePath,
+//               and returns the modified hash.
+//
+//               This is similar to the unique integer returned by
+//               get_key(), but it is not guaranteed to remain unique
+//               beyond the lifetime of this particular NodePath.
+//               Once this NodePath destructs, a different NodePath
+//               may be created which shares the same hash value.
+////////////////////////////////////////////////////////////////////
+INLINE size_t NodePath::
+add_hash(size_t hash) const {
+  return pointer_hash::add_hash(hash, _head);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_same_graph
 //       Access: Published
 //  Description: Returns true if the node represented by this NodePath

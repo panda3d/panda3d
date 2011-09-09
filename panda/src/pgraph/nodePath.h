@@ -37,6 +37,7 @@
 #include "pta_LVecBase4f.h"
 #include "pta_LVecBase3f.h"
 #include "pta_LVecBase2f.h"
+#include "stl_compares.h"
 
 class NodePathCollection;
 class FindApproxPath;
@@ -211,6 +212,7 @@ PUBLISHED:
   INLINE PandaNode *node() const;
 
   INLINE int get_key() const;
+  INLINE size_t add_hash(size_t hash) const;
 
   INLINE bool is_same_graph(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE bool is_ancestor_of(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
