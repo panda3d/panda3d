@@ -908,7 +908,7 @@
 #define TAU_ROOT
 #define PDT_ROOT
 #define TAU_OPTS -optKeepFiles -optRevert
-#define TAU_CFLAGS -D_GNU_SOURCE
+#define TAU_CFLAGS
 #define USE_TAU
 
 // Info for the RAD game tools, Miles Sound System
