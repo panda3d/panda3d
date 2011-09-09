@@ -2705,9 +2705,8 @@ osx_release_twirl_images() {
 void PPInstance::
 paint_twirl_osx_cgcontext(CGContextRef context) {
   // Clear the whole region to the bgcolor before beginning.
-  CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
-  CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
-  CGColorRef bg = CGColorCreate(rgb_space, bg_components);
+  CGColorRef bg = CGColorCreateGenericRGB(
+    _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1);
 
   CGRect region = { { 0, 0 }, { _window.width, _window.height } };
   CGContextBeginPath(context);
@@ -2716,7 +2715,6 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
   CGContextFillPath(context);
 
   CGColorRelease(bg);
-  CGColorSpaceRelease(rgb_space);
 
   if (_failed) {
     // Draw the failed icon if something went wrong.
