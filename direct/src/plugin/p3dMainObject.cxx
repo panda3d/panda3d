@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dMainObject.h"
+#include "p3dPythonObject.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
 #include "p3dStringObject.h"
