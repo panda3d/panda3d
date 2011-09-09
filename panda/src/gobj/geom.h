@@ -269,7 +269,9 @@ public:
       return _type_handle;
     }
     static void init_type() {
-      register_type(_type_handle, "Geom::CacheEntry");
+      GeomCacheEntry::init_type();
+      register_type(_type_handle, "Geom::CacheEntry",
+                    GeomCacheEntry::get_class_type());
     }
     
   private:

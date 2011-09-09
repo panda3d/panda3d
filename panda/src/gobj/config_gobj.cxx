@@ -17,6 +17,7 @@
 #include "config_util.h"
 #include "config_gobj.h"
 #include "geom.h"
+#include "geomCacheEntry.h"
 #include "geomMunger.h"
 #include "geomPrimitive.h"
 #include "geomTriangles.h"
@@ -465,6 +466,7 @@ ConfigureFn(config_gobj) {
   AnimateVerticesRequest::init_type();
   BufferContext::init_type();
   Geom::init_type();
+  GeomCacheEntry::init_type();
   GeomPipelineReader::init_type();
   GeomContext::init_type();
   GeomLines::init_type();

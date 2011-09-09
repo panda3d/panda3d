@@ -52,6 +52,19 @@ private:
 private:  
   GeomCacheEntry *_prev, *_next;
 
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ReferenceCount::init_type();
+    register_type(_type_handle, "GeomCacheEntry",
+                  ReferenceCount::get_class_type());
+  }
+  
+private:
+  static TypeHandle _type_handle;
+
   friend class GeomCacheManager;
 };
 

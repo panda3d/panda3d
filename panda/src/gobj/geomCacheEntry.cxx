@@ -18,6 +18,8 @@
 #include "config_gobj.h"
 #include "clockObject.h"
 
+TypeHandle GeomCacheEntry::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomCacheEntry::Destructor
 //       Access: Public, Virtual

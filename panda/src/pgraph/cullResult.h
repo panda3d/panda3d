@@ -86,6 +86,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
+    ReferenceCount::init_type();
     register_type(_type_handle, "CullResult",
                   ReferenceCount::get_class_type());
   }

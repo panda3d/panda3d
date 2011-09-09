@@ -156,6 +156,7 @@ public:
   }
   static void init_type() {
 #ifdef DO_MEMORY_USAGE
+    ReferenceCount::init_type();
     register_type(_type_handle, "CullableObject",
                   ReferenceCount::get_class_type());
 #else
