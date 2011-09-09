@@ -27,6 +27,8 @@
 #include "clockObject.h"
 #include "config_pgraph.h"
 
+TypeHandle CullResult::_type_handle;
+
 // This value is used instead of 1.0 to represent the alpha level of a
 // pixel that is to be considered "opaque" for the purposes of M_dual.
 
@@ -63,6 +65,9 @@ CullResult(GraphicsStateGuardianBase *gsg,
   _gsg(gsg),
   _draw_region_pcollector(draw_region_pcollector)
 {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,6 +191,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                 check_flash_bin(transparent_part->_state, bin);
 #endif
                 bin->add_object(transparent_part, current_thread);
+              } else {
+                delete transparent_part;
               }
             }
           
@@ -225,6 +232,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     // already loaded.  We'll let the GSG ultimately decide whether to
     // render it.
     bin->add_object(object, current_thread);
+  } else {
+    delete object;
   }
 }
 

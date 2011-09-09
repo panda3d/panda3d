@@ -80,6 +80,18 @@ private:
   
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "CullResult",
+                  ReferenceCount::get_class_type());
+  }
+  
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "cullResult.I"

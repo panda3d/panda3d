@@ -30,6 +30,7 @@
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
 #include "cullBinAttrib.h"
+#include "cullResult.h"
 #include "cullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
@@ -449,6 +450,7 @@ init_libpgraph() {
   CullFaceAttrib::init_type();
   CullBin::init_type();
   CullBinAttrib::init_type();
+  CullResult::init_type();
   CullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();

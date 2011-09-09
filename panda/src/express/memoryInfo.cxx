@@ -121,20 +121,7 @@ determine_dynamic_type() {
       }
 
       TypeHandle orig_type = _dynamic_type;
-      if (update_type_handle(_dynamic_type, got_type)) {
-        if (orig_type != _dynamic_type) {
-          if (express_cat.is_spam()) {
-            express_cat.spam()
-              << "Updating " << get_void_ptr() << " from type "
-              << orig_type << " to type " << _dynamic_type << "\n";
-          }
-        }
-
-      } else {
-        express_cat.warning()
-          << "Pointer " << get_void_ptr() << " previously indicated as type "
-          << orig_type << " is now type " << got_type << "!\n";
-      }
+      update_type_handle(_dynamic_type, got_type);
     }    
   }
 }
@@ -163,12 +150,21 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
   } else if (destination.is_derived_from(refined)) {
     // Updating with a less-specific type, no problem.
 
-  } else if (refined.is_derived_from(destination)) {
+  } else if (destination == TypeHandle::none() || 
+             refined.is_derived_from(destination)) {
     // Updating with a more-specific type, no problem.
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Updating " << get_void_ptr() << " from type "
+        << destination << " to type " << refined << "\n";
+    }
     destination = refined;
 
   } else {
     // Unrelated types, which might or might not be a problem.
+    express_cat.warning()
+      << "Pointer " << get_void_ptr() << " previously indicated as type "
+      << destination << " is now type " << refined << "!\n";
     return false;
   }
   

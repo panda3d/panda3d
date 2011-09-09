@@ -22,6 +22,9 @@ INLINE CullableObject::
 CullableObject() :
   _fancy(false)
 {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +45,9 @@ CullableObject(const Geom *geom, const RenderState *state,
   _internal_transform(gsg->get_cs_transform()->compose(modelview_transform)),
   _fancy(false)
 {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +68,9 @@ CullableObject(const Geom *geom, const RenderState *state,
   _internal_transform(internal_transform),
   _fancy(false)
 {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
   
 
@@ -82,6 +91,9 @@ CullableObject(const CullableObject &copy) :
   _internal_transform(copy._internal_transform),
   _fancy(false)
 {
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

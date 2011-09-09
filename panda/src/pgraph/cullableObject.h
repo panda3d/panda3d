@@ -41,7 +41,11 @@ class CullTraverser;
 //               a number of Geoms to be drawn together, with a number
 //               of Geoms decalled onto them.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH CullableObject {
+class EXPCL_PANDA_PGRAPH CullableObject 
+#ifdef DO_MEMORY_USAGE
+  : public ReferenceCount   // We inherit from ReferenceCount just to get the memory type tracking that MemoryUsage provides.
+#endif  // DO_MEMORY_USAGE
+{
 public:
   INLINE CullableObject();
   INLINE CullableObject(const Geom *geom, const RenderState *state,
@@ -151,7 +155,12 @@ public:
     return _type_handle;
   }
   static void init_type() {
+#ifdef DO_MEMORY_USAGE
+    register_type(_type_handle, "CullableObject",
+                  ReferenceCount::get_class_type());
+#else
     register_type(_type_handle, "CullableObject");
+#endif  // DO_MEMORY_USAGE
   }
 
 private:
