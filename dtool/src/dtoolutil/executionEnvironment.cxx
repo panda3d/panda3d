@@ -261,6 +261,12 @@ ns_get_environment_variable(const string &var) const {
 #ifdef HAVE_PYTHON
     // If we're running from Python code, read out sys.argv.
     if (!ns_has_environment_variable("PANDA_INCOMPATIBLE_PYTHON") && Py_IsInitialized()) {
+      // Since we might have gotten to this point from a function call
+      // marked BLOCKING, which releases the Python thread state, we
+      // have to temporarily re-establish our thread state in the
+      // Python interpreter.
+      PyGILState_STATE state = PyGILState_Ensure();
+
       Filename main_dir;
       PyObject *obj = PySys_GetObject((char*) "argv");  // borrowed reference
       if (obj != NULL && PyList_Check(obj)) {
@@ -273,6 +279,9 @@ ns_get_environment_variable(const string &var) const {
           }
         }
       }
+      
+      PyGILState_Release(state);
+
       if (main_dir.empty()) {
         // We must be running in the Python interpreter directly, so return the CWD.
         return get_cwd().to_os_specific();
