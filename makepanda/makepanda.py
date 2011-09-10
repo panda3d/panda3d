@@ -3829,8 +3829,7 @@ if (RTDIST or RUNTIME):
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
   if (RTDIST):
-    TargetAdd("libp3d_plugin_static.lib", input='plugin_get_twirl_data.obj')
-    for fname in ("libp3d_plugin_static.ilb", "p3d_plugin.dll"):
+    for fname in ("p3d_plugin.dll", "libp3d_plugin_static.ilb"):
       TargetAdd(fname, input='plugin_plugin.obj')
       TargetAdd(fname, input='plugin_mkdir_complete.obj')
       TargetAdd(fname, input='plugin_wstring_encode.obj')
@@ -3846,6 +3845,7 @@ if (RTDIST or RUNTIME):
       if (sys.platform == "darwin"):
         TargetAdd(fname, input='libsubprocbuffer.ilb')
       TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+    TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
