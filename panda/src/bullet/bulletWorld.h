@@ -56,7 +56,7 @@ PUBLISHED:
   void set_gravity(float gx, float gy, float gz);
   const LVector3f get_gravity() const;
 
-  void do_physics(float dt, int substeps=10, float stepsize=1.0f/60.0f);
+  void do_physics(float dt, int substeps=1, float stepsize=1.0f/60.0f);
 
   void set_debug_node(BulletDebugNode *node);
   void clear_debug_node();

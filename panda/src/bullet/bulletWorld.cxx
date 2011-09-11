@@ -148,8 +148,16 @@ do_physics(float dt, int substeps, float stepsize) {
 
   // Simulation
   _pstat_simulation.start();
-  _world->stepSimulation(dt, substeps, stepsize);
+  int n = _world->stepSimulation(dt, substeps, stepsize);
   _pstat_simulation.stop();
+
+  if (!n) {
+    bullet_cat.warning() << "interpolated transforms!" << endl;
+  }
+
+  //if (dt > substeps * stepsize) {
+  //  bullet_cat.warning() << "lost simulation time!" << endl;
+  //}
 
   // Synchronize Bullet to Panda
   _pstat_b2p.start();

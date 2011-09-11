@@ -229,6 +229,7 @@ sync_p2b(float dt) {
 
   //_character->setVelocityForTimeInterval(v, dt);
   _character->setWalkDirection(v * dt);
+  //_character->setWalkDirection(v);
   _angular_velocity = 0.0f;
 }
 
