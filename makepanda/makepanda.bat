@@ -12,7 +12,14 @@ if defined MAKEPANDA_THIRDPARTY set thirdparty=%MAKEPANDA_THIRDPARTY%
 if not exist makepanda\makepanda.py goto :missing1
 
 if not exist %thirdparty%\win-python\python.exe goto :missing2
+
+if exist %thirdparty%\win-python-x64\python.exe goto :build64
 %thirdparty%\win-python\python.exe makepanda\makepanda.py %*
+if errorlevel 1 if x%1 == x--slavebuild exit 1
+goto done
+
+:build64
+%thirdparty%\win-python-x64\python.exe makepanda\makepanda.py %*
 if errorlevel 1 if x%1 == x--slavebuild exit 1
 goto done
 
