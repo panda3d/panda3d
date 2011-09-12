@@ -367,25 +367,6 @@
 // on DirectX rendering.
 #defer SUPPORT_IMMEDIATE_MODE $[<= $[OPTIMIZE], 3]
 
-// Do you want to compile in support for pipelining?  This enables
-// setting and accessing multiple different copies of frame-specific
-// data stored in nodes, etc.  This is necessary, in conjunction with
-// HAVE_THREADS, to implement threaded multistage rendering in Panda.
-// However, compiling this option in does add some additional runtime
-// overhead even if it is not used.  By default, we enable pipelining
-// whenever threads are enabled, assuming that if you have threads,
-// you also want to use pipelining.  We also enable it at OPTIMIZE
-// level 1, since that enables additional runtime checks.
-//#defer DO_PIPELINING $[or $[<= $[OPTIMIZE], 1],$[HAVE_THREADS]]
-
-// Actually, let's *not* assume that threading implies pipelining, at
-// least not until pipelining is less of a performance hit.
-//#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
-
-// Pipelining is a little broken right now.  Turn it off altogether
-// for now.
-#defer DO_PIPELINING
-
 // Panda contains some experimental code to compile for IPhone.  This
 // requires the Apple IPhone SDK, which is currently only available
 // for OS X platforms.  Set this to either "iPhoneSimulator" or
@@ -833,7 +814,7 @@
 // This will compile in a homespun cooperative threading
 // implementation that runs strictly on one CPU, adding very little
 // overhead over plain single-threaded code.
-#define SIMPLE_THREADS 1
+#define SIMPLE_THREADS
 
 // If this is defined true, then OS threading constructs will be used
 // (if available) to perform context switches in the SIMPLE_THREADS
@@ -853,6 +834,19 @@
 // mutex is not recursively locked.  There is, of course, additional
 // run-time overhead for these tests.
 #defer DEBUG_THREADS $[<= $[OPTIMIZE], 2]
+
+// Do you want to compile in support for pipelining?  This adds code
+// to maintain a different copy of the scene graph for each thread in
+// the render pipeline, so that app, cull, and draw may each safely
+// run in a separate thread, allowing maximum parallelization of CPU
+// processing for the frame.  Enabling this option does not *require*
+// you to use separate threads for rendering, but makes it possible.
+// However, compiling this option in does add some additional runtime
+// overhead even if it is not used.  By default, we enable pipelining
+// whenever threads are enabled, assuming that if you have threads,
+// you also want to use pipelining.  We also enable it at OPTIMIZE
+// level 1, since that enables additional runtime checks.
+#defer DO_PIPELINING $[or $[<= $[OPTIMIZE], 1],$[HAVE_THREADS]]
 
 // Define this true to implement mutexes and condition variables via
 // user-space spinlocks, instead of via OS-provided constructs.  This
