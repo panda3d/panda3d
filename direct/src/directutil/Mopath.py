@@ -1,7 +1,7 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGeometry import *
 
-from pandac.PandaModules import NodePath
+from panda3d.core import NodePath, LineSegs
 
 class Mopath(DirectObject):
 
@@ -144,19 +144,34 @@ class Mopath(DirectObject):
     def stop(self):
         taskMgr.remove(self.name + '-play')
 
-    def __playTask(self, state):
+    def __playTask(self, task):
         time = globalClock.getFrameTime()
-        dTime = time - state.lastTime
-        state.lastTime = time
+        dTime = time - task.lastTime
+        task.lastTime = time
         if (self.loop):
-            cTime = (state.currentTime + dTime) % self.getMaxT()
+            cTime = (task.currentTime + dTime) % self.getMaxT()
         else:
-            cTime = state.currentTime + dTime
+            cTime = task.currentTime + dTime
         if ((self.loop == 0) and (cTime > self.getMaxT())):
             self.stop()
             messenger.send(self.name + '-done')
             self.node = None
-            return Task.done
+            return task.done
         self.goTo(self.node, cTime)
-        state.currentTime = cTime
-        return Task.cont
+        task.currentTime = cTime
+        return task.cont
+
+    def draw(self, subdiv = 1000):
+        """ Draws a quick and cheesy visualization of the Mopath using
+        LineSegs.  Returns the NodePath representing the drawing. """
+
+        ls = LineSegs('mopath')
+        p = Point3()
+        for ti in range(subdiv):
+            t = float(ti) / float(subdiv) * self.maxT
+            tp = self.calcTime(t)
+            self.xyzNurbsCurve.getPoint(tp, p)
+            ls.drawTo(p)
+        
+        return NodePath(ls.create())
+    
