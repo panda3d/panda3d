@@ -18,6 +18,8 @@ class Mopath(DirectObject):
         self.hprPoint = Point3(0)
         self.tangentVec = Vec3(0)
         self.fFaceForward = 0
+        self.faceForwardDelta = None
+        self.faceForwardNode = None
         self.timeScale = 1
         self.upVectorNodePath = upVectorNodePath
         self.reverseUpVector = reverseUpVector
@@ -118,16 +120,27 @@ class Mopath(DirectObject):
             self.hprNurbsCurve.getPoint(self.playbackTime, self.hprPoint)
             node.setHpr(self.hprPoint)
         elif (self.fFaceForward and (self.xyzNurbsCurve != None)):
-            self.xyzNurbsCurve.getTangent(self.playbackTime, self.tangentVec)
-            #use the self.upVectorNodePath position if it exists to create an up vector for lookAt
+            if self.faceForwardDelta:
+                # Look at a point a bit ahead in parametric time.
+                t = min(self.playbackTime + self.faceForwardDelta, self.xyzNurbsCurve.getMaxT())
+                lookPoint = Point3()
+                self.xyzNurbsCurve.getPoint(t, lookPoint)
+                if self.faceForwardNode:
+                    self.faceForwardNode.setPos(lookPoint)
+            else:
+                self.xyzNurbsCurve.getTangent(self.playbackTime, self.tangentVec)
+                lookPoint = self.posPoint + self.tangentVec
+
+            # use the self.upVectorNodePath position if it exists to
+            # create an up vector for lookAt
             if (self.upVectorNodePath is None):
-                node.lookAt(Point3(self.posPoint + self.tangentVec))
+                node.lookAt(lookPoint)
             else:
                 if (self.reverseUpVector == False):
-                     node.lookAt(Point3(self.posPoint + self.tangentVec),
+                     node.lookAt(lookPoint,
                                  self.upVectorNodePath.getPos() - self.posPoint)
                 else:
-                     node.lookAt(Point3(self.posPoint + self.tangentVec),
+                     node.lookAt(lookPoint,
                                  self.posPoint - self.upVectorNodePath.getPos())
 
     def play(self, node, time = 0.0, loop = 0):
