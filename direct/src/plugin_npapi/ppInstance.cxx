@@ -353,21 +353,29 @@ set_window(NPWindow *window) {
 #endif  // MACOSX_HAS_EVENT_MODELS
   }
 
+#if defined(HAVE_GTK) && defined(HAVE_X11)
+  if (_use_xembed) {
+    if (!_got_window || _window.window != window->window) {
+      // The window has changed.  Destroy the old GtkPlug.
+      if (_plug != NULL) {
+        gtk_widget_destroy(_plug);
+        _plug = NULL;
+      }
+
+      // Create a new GtkPlug to bind to the XEmbed socket.
+      _plug = gtk_plug_new((GdkNativeWindow) reinterpret_cast<XID>(window->window));
+      gtk_widget_show(_plug);
+      
+      nout << "original XID is " << window->window << ", created X11 window "
+           << GDK_DRAWABLE_XID(_plug->window) << "\n";
+    }
+  }
+#endif  // HAVE_GTK && HAVE_X11
+
   _window = *window;
   _got_window = true;
 
 #ifdef HAVE_X11
-#ifdef HAVE_GTK
-  if (_use_xembed) {
-    // Create a GtkPlug to bind to the XEmbed socket.
-    _plug = gtk_plug_new((GdkNativeWindow) reinterpret_cast<XID>(_window.window));
-    gtk_widget_show(_plug);
-    
-    nout << "original XID is " << _window.window << ", created X11 window "
-         << GDK_DRAWABLE_XID(_plug->window) << "\n";
-  }
-#endif  // HAVE_GTK
-
   if (!_failed && !_started) {
     x11_start_twirl_subprocess();
   }
@@ -2837,7 +2845,7 @@ twirl_timer_callback() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 x11_start_twirl_subprocess() {
-  if (_twirl_subprocess_pid == -1) {
+  if (_twirl_subprocess_pid != -1) {
     // Already started.
     return;
   }
@@ -2857,7 +2865,7 @@ x11_start_twirl_subprocess() {
 
   // In the parent process.
   _twirl_subprocess_pid = child;
-  cerr << "Started twirl subprocess, pid " << _twirl_subprocess_pid
+  nout << "Started twirl subprocess, pid " << _twirl_subprocess_pid
        << "\n";
 }
 #endif  // HAVE_X11
@@ -2890,6 +2898,7 @@ x11_stop_twirl_subprocess() {
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
   }
+  _twirl_subprocess_pid = -1;
 }
 #endif  // HAVE_X11
 

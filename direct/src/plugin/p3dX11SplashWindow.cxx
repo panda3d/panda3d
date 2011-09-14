@@ -684,6 +684,11 @@ subprocess_run() {
     if (input_ready) {
       receive_command();
     }
+
+    struct timespec req;
+    req.tv_sec = 0;
+    req.tv_nsec = 50000000;  // 50 ms
+    nanosleep(&req, NULL);
   }
 
   close_window();
