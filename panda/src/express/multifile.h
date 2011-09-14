@@ -108,6 +108,7 @@ PUBLISHED:
   string get_signature_subject_name(int n) const;
   string get_signature_friendly_name(int n) const;
   string get_signature_public_key(int n) const;
+  void print_signature_certificate(int n, ostream &out) const;
   void write_signature_certificate(int n, ostream &out) const;
 
   int validate_signature_certificate(int n) const;

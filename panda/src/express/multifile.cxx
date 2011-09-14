@@ -988,6 +988,7 @@ get_num_signatures() const {
 ////////////////////////////////////////////////////////////////////
 const Multifile::CertChain &Multifile::
 get_signature(int n) const {
+  ((Multifile *)this)->check_signatures();
   static CertChain error_chain;
   nassertr(n >= 0 && n < (int)_signatures.size(), error_chain);
   return _signatures[n];
@@ -1129,11 +1130,34 @@ get_signature_public_key(int n) const {
 
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::print_signature_certificate
+//       Access: Published
+//  Description: Writes the certificate for the nth signature, in
+//               user-readable verbose form, to the indicated stream.
+//               See the comments in get_num_signatures().
+////////////////////////////////////////////////////////////////////
+void Multifile::
+print_signature_certificate(int n, ostream &out) const {
+  const CertChain &cert_chain = get_signature(n);
+  nassertv(!cert_chain.empty());
+
+  BIO *mbio = BIO_new(BIO_s_mem());
+  X509_print(mbio, cert_chain[0]._cert);
+
+  char *pp;
+  long pp_size = BIO_get_mem_data(mbio, &pp);
+  out.write(pp, pp_size);
+  BIO_free(mbio);
+}
+#endif  // HAVE_OPENSSL
+
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::write_signature_certificate
 //       Access: Published
 //  Description: Writes the certificate for the nth signature, in
-//               verbose form, to the indicated stream.  See the
-//               comments in get_num_signatures().
+//               PEM form, to the indicated stream.  See the comments
+//               in get_num_signatures().
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 write_signature_certificate(int n, ostream &out) const {
@@ -1141,7 +1165,13 @@ write_signature_certificate(int n, ostream &out) const {
   nassertv(!cert_chain.empty());
 
   BIO *mbio = BIO_new(BIO_s_mem());
-  X509_print(mbio, cert_chain[0]._cert);
+
+  CertChain::const_iterator ci;
+  for (ci = cert_chain.begin(); ci != cert_chain.end(); ++ci) {
+    X509 *c = (*ci)._cert;
+    X509_print(mbio, c);
+    PEM_write_bio_X509(mbio, c);
+  }
 
   char *pp;
   long pp_size = BIO_get_mem_data(mbio, &pp);
