@@ -368,7 +368,7 @@ set_window(NPWindow *window) {
   }
 #endif  // HAVE_GTK
 
-  if (!_failed && _p3d_inst == NULL) {
+  if (!_failed && !_started) {
     x11_start_twirl_subprocess();
   }
 #endif  // HAVE_X11
@@ -2837,7 +2837,10 @@ twirl_timer_callback() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 x11_start_twirl_subprocess() {
-  assert(_twirl_subprocess_pid == -1);
+  if (_twirl_subprocess_pid == -1) {
+    // Already started.
+    return;
+  }
 
   // Fork and exec.
   pid_t child = fork();
@@ -2849,11 +2852,13 @@ x11_start_twirl_subprocess() {
   if (child == 0) {
     // Here we are in the child process.
     x11_twirl_subprocess_run();
-    _exit(0);
+    _exit(99);
   }
 
   // In the parent process.
   _twirl_subprocess_pid = child;
+  cerr << "Started twirl subprocess, pid " << _twirl_subprocess_pid
+       << "\n";
 }
 #endif  // HAVE_X11
 
