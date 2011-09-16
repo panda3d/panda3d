@@ -29,7 +29,6 @@
 PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
-static const size_t alignment_size = 4096;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFileStreamBuf::Constructor
@@ -319,6 +318,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     size_t n = egptr() - gptr();
     gbump(n);
     _gpos -= n;
+    assert(_gpos >= 0);
     size_t cur_pos = _gpos;
     size_t new_pos = cur_pos;
     
@@ -358,6 +358,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     }
 
     _gpos = new_pos;
+    assert(_gpos >= 0);
     result = new_pos;
   }
 
@@ -400,6 +401,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     }
 
     _ppos = new_pos;
+    assert(_ppos >= 0);
     result = new_pos;
   }
 
@@ -490,6 +492,8 @@ int PandaFileStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
+    sync();
+
     // Mark the buffer filled (with buffer_size bytes).
     size_t buffer_size = egptr() - eback();
     gbump(-(int)buffer_size);
@@ -586,6 +590,7 @@ write_chars(const char *start, size_t length) {
   size_t n = egptr() - gptr();
   gbump(n);
   _gpos -= n;
+  assert(_gpos >= 0);
 
   // Windows case.
   if (_open_mode & ios::binary) {
@@ -718,6 +723,7 @@ read_chars_raw(char *start, size_t length) {
 #endif  // _WIN32
 
   _gpos += length;
+  assert(_gpos >= 0);
   return length;
 }
 
@@ -776,6 +782,7 @@ write_chars_raw(const char *start, size_t length) {
   }
   assert(bytes_written == length);
   _ppos += bytes_written;
+  assert(_ppos >= 0);
   
 #else
   // Posix case.
@@ -804,6 +811,7 @@ write_chars_raw(const char *start, size_t length) {
     start += result;
     remaining -= result;
     _ppos += result;
+    assert(_ppos >= 0);
   }
 #endif  // _WIN32
 
