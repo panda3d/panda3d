@@ -177,7 +177,7 @@ open_read_file(const Filename &file) const {
 //               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFileMountSystem::
-open_write_file(const Filename &file) {
+open_write_file(const Filename &file, bool truncate) {
 #ifdef WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
@@ -193,7 +193,109 @@ open_write_file(const Filename &file) {
     pathname.set_binary();
   }
   pofstream *stream = new pofstream;
-  if (!pathname.open_write(*stream)) {
+  if (!pathname.open_write(*stream, truncate)) {
+    // Couldn't open the file for some reason.
+    close_write_file(stream);
+    return NULL;
+  }
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::open_append_file
+//       Access: Published
+//  Description: Works like open_write_file(), but the file is opened
+//               in append mode.  Like open_write_file, the returned
+//               pointer should eventually be passed to
+//               close_write_file().
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileMountSystem::
+open_append_file(const Filename &file) {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  if (file.is_text()) {
+    pathname.set_text();
+  } else {
+    pathname.set_binary();
+  }
+  pofstream *stream = new pofstream;
+  if (!pathname.open_append(*stream)) {
+    // Couldn't open the file for some reason.
+    close_write_file(stream);
+    return NULL;
+  }
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::open_read_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated iostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileMountSystem::
+open_read_write_file(const Filename &file, bool truncate) {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  if (file.is_text()) {
+    pathname.set_text();
+  } else {
+    pathname.set_binary();
+  }
+  pfstream *stream = new pfstream;
+  if (!pathname.open_read_write(*stream, truncate)) {
+    // Couldn't open the file for some reason.
+    close_write_file(stream);
+    return NULL;
+  }
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::open_read_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_read_write_file(), but the file is opened
+//               in append mode.  Like open_read_write_file, the returned
+//               pointer should eventually be passed to
+//               close_read_write_file().
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileMountSystem::
+open_read_append_file(const Filename &file) {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  if (file.is_text()) {
+    pathname.set_text();
+  } else {
+    pathname.set_binary();
+  }
+  pfstream *stream = new pfstream;
+  if (!pathname.open_read_append(*stream)) {
     // Couldn't open the file for some reason.
     close_write_file(stream);
     return NULL;

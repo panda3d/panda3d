@@ -219,7 +219,20 @@ was_read_successful() const {
 //               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFile::
-open_write_file(bool auto_wrap) {
+open_write_file(bool auto_wrap, bool truncate) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::open_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_write_file(), but the file is opened
+//               in append mode.  Like open_write_file, the returned
+//               pointer should eventually be passed to
+//               close_write_file().
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFile::
+open_append_file() {
   return NULL;
 }
 
@@ -238,17 +251,43 @@ close_write_file(ostream *stream) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::was_write_successful
+//     Function: VirtualFile::open_read_write_file
 //       Access: Published, Virtual
-//  Description: Call this method after a writing the ostream returned
-//               by open_write_file() to completion.  If it returns
-//               true, the file was written completely and without
-//               error; if it returns false, there may have been some
-//               errors or a truncated file write.
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated iostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
-bool VirtualFile::
-was_write_successful() const {
-  return true;
+iostream *VirtualFile::
+open_read_write_file(bool truncate) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::open_read_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_read_write_file(), but the file is opened
+//               in append mode.  Like open_read_write_file, the returned
+//               pointer should eventually be passed to
+//               close_read_write_file().
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFile::
+open_read_append_file() {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::close_read_write_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_read_write_file().  This really just deletes the
+//               iostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFile::
+close_read_write_file(iostream *stream) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////

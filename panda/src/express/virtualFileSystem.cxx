@@ -911,16 +911,40 @@ __py__write_file(const Filename &filename, PyObject *data, bool auto_wrap) {
 //               ostream if the file exists and can be written, or
 //               NULL otherwise.  Does not return an invalid ostream.
 //
-//               If auto_wrap is true, an explicitly-named .pz file
-//               is automatically compressed while writing.
+//               If auto_wrap is true, an explicitly-named .pz file is
+//               automatically compressed while writing.  If truncate
+//               is true, the file is truncated to zero length before
+//               writing.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFileSystem::
-open_write_file(const Filename &filename, bool auto_wrap) {
+open_write_file(const Filename &filename, bool auto_wrap, bool truncate) {
   PT(VirtualFile) file = create_file(filename);
   if (file == (VirtualFile *)NULL) {
     return NULL;
   }
-  ostream *str = file->open_write_file(auto_wrap);
+  ostream *str = file->open_write_file(auto_wrap, truncate);
+  if (str != (ostream *)NULL && str->fail()) {
+    close_write_file(str);
+    str = (ostream *)NULL;
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_append_file
+//       Access: Published
+//  Description: Works like open_write_file(), but the file is opened
+//               in append mode.  Like open_write_file, the returned
+//               pointer should eventually be passed to
+//               close_write_file().
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileSystem::
+open_append_file(const Filename &filename) {
+  PT(VirtualFile) file = create_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  ostream *str = file->open_append_file();
   if (str != (ostream *)NULL && str->fail()) {
     close_write_file(str);
     str = (ostream *)NULL;
@@ -942,6 +966,70 @@ close_write_file(ostream *stream) {
   if (stream != (ostream *)NULL) {
 #if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_read_write_file
+//       Access: Published
+//  Description: Convenience function; returns a newly allocated
+//               iostream if the file exists and can be written, or
+//               NULL otherwise.  Does not return an invalid iostream.
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileSystem::
+open_read_write_file(const Filename &filename, bool truncate) {
+  PT(VirtualFile) file = create_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  iostream *str = file->open_read_write_file(truncate);
+  if (str != (iostream *)NULL && str->fail()) {
+    close_read_write_file(str);
+    str = (iostream *)NULL;
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_read_append_file
+//       Access: Published
+//  Description: Works like open_read_write_file(), but the file is opened
+//               in append mode.  Like open_read_write_file, the returned
+//               pointer should eventually be passed to
+//               close_read_write_file().
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileSystem::
+open_read_append_file(const Filename &filename) {
+  PT(VirtualFile) file = create_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  iostream *str = file->open_read_append_file();
+  if (str != (iostream *)NULL && str->fail()) {
+    close_read_write_file(str);
+    str = (iostream *)NULL;
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::close_read_write_file
+//       Access: Published, Static
+//  Description: Closes a file opened by a previous call to
+//               open_read_write_file().  This really just deletes the
+//               iostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+close_read_write_file(iostream *stream) {
+  if (stream != (iostream *)NULL) {
+#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+    stream->~iostream();
     (*global_operator_delete)(stream);
 #else
     delete stream;

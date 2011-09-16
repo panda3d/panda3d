@@ -61,9 +61,14 @@ public:
   istream *open_read_file(const Filename &file, bool do_uncompress) const;
   virtual void close_read_file(istream *stream) const;
 
-  virtual ostream *open_write_file(const Filename &file);
-  ostream *open_write_file(const Filename &file, bool do_compress);
+  virtual ostream *open_write_file(const Filename &file, bool truncate);
+  ostream *open_write_file(const Filename &file, bool do_compress, bool truncate);
+  virtual ostream *open_append_file(const Filename &file);
   virtual void close_write_file(ostream *stream);
+
+  virtual iostream *open_read_write_file(const Filename &file, bool truncate);
+  virtual iostream *open_read_append_file(const Filename &file);
+  virtual void close_read_write_file(iostream *stream);
 
   virtual off_t get_file_size(const Filename &file, istream *stream) const=0;
   virtual off_t get_file_size(const Filename &file) const=0;

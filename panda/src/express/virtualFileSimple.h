@@ -46,8 +46,13 @@ PUBLISHED:
 
   virtual istream *open_read_file(bool auto_unwrap) const;
   virtual void close_read_file(istream *stream) const;
-  virtual ostream *open_write_file(bool auto_wrap) const;
+  virtual ostream *open_write_file(bool auto_wrap, bool truncate);
+  virtual ostream *open_append_file();
   virtual void close_write_file(ostream *stream) const;
+  virtual iostream *open_read_write_file(bool truncate);
+  virtual iostream *open_read_append_file();
+  virtual void close_read_write_file(iostream *stream);
+
   virtual off_t get_file_size(istream *stream) const;
   virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;

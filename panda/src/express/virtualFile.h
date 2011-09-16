@@ -60,9 +60,13 @@ PUBLISHED:
   virtual bool was_read_successful() const;
 
   BLOCKING INLINE bool write_file(const string &data, bool auto_wrap);
-  BLOCKING virtual ostream *open_write_file(bool auto_wrap);
+  BLOCKING virtual ostream *open_write_file(bool auto_wrap, bool truncate);
+  BLOCKING virtual ostream *open_append_file();
   BLOCKING virtual void close_write_file(ostream *stream);
-  virtual bool was_write_successful() const;
+
+  BLOCKING virtual iostream *open_read_write_file(bool truncate);
+  BLOCKING virtual iostream *open_read_append_file();
+  BLOCKING virtual void close_read_write_file(iostream *stream);
 
   BLOCKING virtual off_t get_file_size(istream *stream) const;
   BLOCKING virtual off_t get_file_size() const;

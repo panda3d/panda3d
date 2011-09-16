@@ -150,11 +150,13 @@ close_read_file(istream *stream) const {
 //               eventually delete when you are done writing).
 //               Returns NULL on failure.
 //
-//               If auto_wrap is true, an explicitly-named .pz file
-//               is automatically compressed.
+//               If auto_wrap is true, an explicitly-named .pz file is
+//               automatically compressed while writing.  If truncate
+//               is true, the file is truncated to zero length before
+//               writing.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFileSimple::
-open_write_file(bool auto_wrap) const {
+open_write_file(bool auto_wrap, bool truncate) {
   // Will we be automatically wrapping a .pz file?
   bool do_compress = (_implicit_pz_file || (auto_wrap && _local_filename.get_extension() == "pz"));
 
@@ -164,7 +166,20 @@ open_write_file(bool auto_wrap) const {
     local_filename.set_binary();
   }
 
-  return _mount->open_write_file(local_filename, do_compress);
+  return _mount->open_write_file(local_filename, do_compress, truncate);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::open_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_write_file(), but the file is opened
+//               in append mode.  Like open_write_file, the returned
+//               pointer should eventually be passed to
+//               close_write_file().
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileSimple::
+open_append_file() {
+  return _mount->open_append_file(_local_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,6 +194,46 @@ open_write_file(bool auto_wrap) const {
 void VirtualFileSimple::
 close_write_file(ostream *stream) const {
   _mount->close_write_file(stream);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::open_read_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated iostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileSimple::
+open_read_write_file(bool truncate) {
+  return _mount->open_read_write_file(_local_filename, truncate);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::open_read_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_read_write_file(), but the file is opened
+//               in append mode.  Like open_read_write_file, the returned
+//               pointer should eventually be passed to
+//               close_read_write_file().
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileSimple::
+open_read_append_file() {
+  return _mount->open_read_append_file(_local_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::close_read_write_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_read_write_file().  This really just deletes the
+//               iostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSimple::
+close_read_write_file(iostream *stream) {
+  _mount->close_read_write_file(stream);
 }
 
 ////////////////////////////////////////////////////////////////////

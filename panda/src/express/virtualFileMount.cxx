@@ -143,7 +143,7 @@ read_file(const Filename &file, bool do_uncompress,
 bool VirtualFileMount::
 write_file(const Filename &file, bool do_compress,
            const unsigned char *data, size_t data_size) {
-  ostream *out = open_write_file(file, do_compress);
+  ostream *out = open_write_file(file, do_compress, true);
   if (out == (ostream *)NULL) {
     express_cat.info()
       << "Unable to write " << file << "\n";
@@ -210,7 +210,7 @@ close_read_file(istream *stream) const {
 //               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFileMount::
-open_write_file(const Filename &file) {
+open_write_file(const Filename &file, bool truncate) {
   return NULL;
 }
 
@@ -226,8 +226,8 @@ open_write_file(const Filename &file) {
 //               compressed on-the-fly using zlib.
 ////////////////////////////////////////////////////////////////////
 ostream *VirtualFileMount::
-open_write_file(const Filename &file, bool do_compress) {
-  ostream *result = open_write_file(file);
+open_write_file(const Filename &file, bool do_compress, bool truncate) {
+  ostream *result = open_write_file(file, truncate);
 
 #ifdef HAVE_ZLIB
   if (result != (ostream *)NULL && do_compress) {
@@ -238,6 +238,19 @@ open_write_file(const Filename &file, bool do_compress) {
 #endif  // HAVE_ZLIB
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_write_file(), but the file is opened
+//               in append mode.  Like open_write_file, the returned
+//               pointer should eventually be passed to
+//               close_write_file().
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileMount::
+open_append_file(const Filename &file) {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,6 +265,46 @@ open_write_file(const Filename &file, bool do_compress) {
 void VirtualFileMount::
 close_write_file(ostream *stream) {
   VirtualFileSystem::close_write_file(stream);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_read_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated iostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileMount::
+open_read_write_file(const Filename &file, bool truncate) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_read_append_file
+//       Access: Published, Virtual
+//  Description: Works like open_read_write_file(), but the file is opened
+//               in append mode.  Like open_read_write_file, the returned
+//               pointer should eventually be passed to
+//               close_read_write_file().
+////////////////////////////////////////////////////////////////////
+iostream *VirtualFileMount::
+open_read_append_file(const Filename &file) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::close_read_write_file
+//       Access: Public, Virtual
+//  Description: Closes a file opened by a previous call to
+//               open_read_write_file().  This really just deletes the
+//               iostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileMount::
+close_read_write_file(iostream *stream) {
+  VirtualFileSystem::close_read_write_file(stream);
 }
 
 ////////////////////////////////////////////////////////////////////

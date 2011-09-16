@@ -39,7 +39,11 @@ public:
   virtual bool is_writable(const Filename &file) const;
 
   virtual istream *open_read_file(const Filename &file) const;
-  virtual ostream *open_write_file(const Filename &file);
+  virtual ostream *open_write_file(const Filename &file, bool truncate);
+  virtual ostream *open_append_file(const Filename &file);
+  virtual iostream *open_read_write_file(const Filename &file, bool truncate);
+  virtual iostream *open_read_append_file(const Filename &file);
+
   virtual off_t get_file_size(const Filename &file, istream *stream) const;
   virtual off_t get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
