@@ -43,18 +43,28 @@ public:
   virtual PT(VirtualFile) make_virtual_file(const Filename &local_filename,
                                             const Filename &original_filename,
                                             bool implicit_pz_file,
-                                            bool status_only);
+                                            int open_flags);
 
   virtual bool has_file(const Filename &file) const=0;
+  virtual bool create_file(const Filename &file);
+  virtual bool make_directory(const Filename &file);
   virtual bool is_directory(const Filename &file) const=0;
   virtual bool is_regular_file(const Filename &file) const=0;
+  virtual bool is_writable(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
                          pvector<unsigned char> &result) const;
+  virtual bool write_file(const Filename &file, bool do_compress,
+                          const unsigned char *data, size_t data_size);
 
   virtual istream *open_read_file(const Filename &file) const=0;
   istream *open_read_file(const Filename &file, bool do_uncompress) const;
-  void close_read_file(istream *stream) const;
+  virtual void close_read_file(istream *stream) const;
+
+  virtual ostream *open_write_file(const Filename &file);
+  ostream *open_write_file(const Filename &file, bool do_compress);
+  virtual void close_write_file(ostream *stream);
+
   virtual off_t get_file_size(const Filename &file, istream *stream) const=0;
   virtual off_t get_file_size(const Filename &file) const=0;
   virtual time_t get_timestamp(const Filename &file) const=0;

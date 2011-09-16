@@ -174,6 +174,7 @@ PUBLISHED:
 
   bool exists() const;
   bool is_regular_file() const;
+  bool is_writable() const;
   bool is_directory() const;
   bool is_executable() const;
   int compare_timestamps(const Filename &other,

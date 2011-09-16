@@ -30,7 +30,8 @@ class EXPCL_PANDAEXPRESS VirtualFileSimple : public VirtualFile {
 public:
   INLINE VirtualFileSimple(VirtualFileMount *mount,
                            const Filename &local_filename,
-                           bool implicit_pz_file);
+                           bool implicit_pz_file,
+                           int open_flags);
 
 PUBLISHED:
   virtual VirtualFileSystem *get_file_system() const;
@@ -40,9 +41,13 @@ PUBLISHED:
   virtual bool has_file() const;
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
+  virtual bool is_writable() const;
   INLINE bool is_implicit_pz_file() const;
 
   virtual istream *open_read_file(bool auto_unwrap) const;
+  virtual void close_read_file(istream *stream) const;
+  virtual ostream *open_write_file(bool auto_wrap) const;
+  virtual void close_write_file(ostream *stream) const;
   virtual off_t get_file_size(istream *stream) const;
   virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;
@@ -50,6 +55,7 @@ PUBLISHED:
 
 public:
   virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+  virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 
@@ -59,6 +65,7 @@ private:
   VirtualFileMount *_mount;
   Filename _local_filename;
   bool _implicit_pz_file;
+  int _open_flags;
 
 public:
   virtual TypeHandle get_type() const {

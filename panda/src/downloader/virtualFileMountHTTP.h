@@ -45,7 +45,7 @@ public:
   virtual PT(VirtualFile) make_virtual_file(const Filename &local_filename,
                                             const Filename &original_filename, 
                                             bool implicit_pz_file,
-                                            bool status_only);
+                                            int open_flags);
 
   virtual bool has_file(const Filename &file) const;
   virtual bool is_directory(const Filename &file) const;

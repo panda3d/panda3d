@@ -32,10 +32,14 @@ PUBLISHED:
 
 public:
   virtual bool has_file(const Filename &file) const;
+  virtual bool create_file(const Filename &file);
+  virtual bool make_directory(const Filename &file);
   virtual bool is_directory(const Filename &file) const;
   virtual bool is_regular_file(const Filename &file) const;
+  virtual bool is_writable(const Filename &file) const;
 
   virtual istream *open_read_file(const Filename &file) const;
+  virtual ostream *open_write_file(const Filename &file);
   virtual off_t get_file_size(const Filename &file, istream *stream) const;
   virtual off_t get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;

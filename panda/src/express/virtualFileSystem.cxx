@@ -476,7 +476,7 @@ chdir(const Filename &new_directory) {
     return true;
   }
 
-  PT(VirtualFile) file = do_get_file(new_directory, true);
+  PT(VirtualFile) file = do_get_file(new_directory, OF_status_only);
   if (file != (VirtualFile *)NULL && file->is_directory()) {
     _cwd = file->get_filename();
     _lock.release();
@@ -500,6 +500,23 @@ get_cwd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::make_directory
+//       Access: Published
+//  Description: Attempts to create a directory within the file
+//               system.  Returns true on success, false on failure
+//               (for instance, because the parent directory does not
+//               exist, or is read-only).  If the directory already
+//               existed prior to this call, returns true.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+make_directory(const Filename &filename) {
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result->is_directory();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::get_file
 //       Access: Published
 //  Description: Looks up the file by the indicated name in the file
@@ -517,8 +534,27 @@ get_cwd() const {
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
 get_file(const Filename &filename, bool status_only) const {
+  int open_flags = status_only ? 0 : OF_status_only;
   ((VirtualFileSystem *)this)->_lock.acquire();
-  PT(VirtualFile) result = do_get_file(filename, status_only);
+  PT(VirtualFile) result = do_get_file(filename, open_flags);
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::create_file
+//       Access: Published
+//  Description: Attempts to create a file by the indicated name in
+//               the filesystem, if possible, and returns it.  If a
+//               file by this name already exists, returns the same
+//               thing as get_file().  If the filename is located
+//               within a read-only directory, or the directory
+//               doesn't exist, returns NULL.
+////////////////////////////////////////////////////////////////////
+PT(VirtualFile) VirtualFileSystem::
+create_file(const Filename &filename) {
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  PT(VirtualFile) result = do_get_file(filename, OF_create_file);
   ((VirtualFileSystem *)this)->_lock.release();
   return result;
 }
@@ -843,6 +879,76 @@ close_read_file(istream *stream) {
   }
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::__py__write_file
+//       Access: Published
+//  Description: Convenience function; writes the entire contents of
+//               the indicated file as a string.
+//
+//               This variant on write_file() is implemented directly
+//               for Python, as a small optimization, to avoid the
+//               double-construction of a string object that would be
+//               otherwise required.
+////////////////////////////////////////////////////////////////////
+PyObject *VirtualFileSystem::
+__py__write_file(const Filename &filename, PyObject *data, bool auto_wrap) {
+  char *buffer;
+  Py_ssize_t length;
+  if (PyString_AsStringAndSize(data, &buffer, &length) == -1) {
+    return NULL;
+  }
+   
+  bool result = write_file(filename, (const unsigned char *)buffer, length, auto_wrap);
+  return PyBool_FromLong(result);
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_write_file
+//       Access: Published
+//  Description: Convenience function; returns a newly allocated
+//               ostream if the file exists and can be written, or
+//               NULL otherwise.  Does not return an invalid ostream.
+//
+//               If auto_wrap is true, an explicitly-named .pz file
+//               is automatically compressed while writing.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileSystem::
+open_write_file(const Filename &filename, bool auto_wrap) {
+  PT(VirtualFile) file = create_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  ostream *str = file->open_write_file(auto_wrap);
+  if (str != (ostream *)NULL && str->fail()) {
+    close_write_file(str);
+    str = (ostream *)NULL;
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::close_write_file
+//       Access: Published, Static
+//  Description: Closes a file opened by a previous call to
+//               open_write_file().  This really just deletes the
+//               ostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+close_write_file(ostream *stream) {
+  if (stream != (ostream *)NULL) {
+#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+    stream->~ostream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::scan_mount_points
 //       Access: Public
@@ -948,11 +1054,12 @@ do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::do_get_file
 //       Access: Private
-//  Description: The private implementation of get_file().  Assumes
-//               the lock is already held.
+//  Description: The private implementation of get_file(),
+//               create_file(), and make_directory().  Assumes the
+//               lock is already held.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
-do_get_file(const Filename &filename, bool status_only) const {
+do_get_file(const Filename &filename, int open_flags) const {
   nassertr(!filename.empty(), NULL);
   Filename pathname(filename);
   if (pathname.is_local()) {
@@ -984,19 +1091,19 @@ do_get_file(const Filename &filename, bool status_only) const {
       // Here's an exact match on the mount point.  This filename is
       // the root directory of this mount object.
       if (consider_match(found_file, composite_file, mount, "", pathname,
-                         false, status_only)) {
+                         false, open_flags)) {
         return found_file;
       }
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
       if (consider_match(found_file, composite_file, mount, strpath, 
-                         pathname, false, status_only)) {
+                         pathname, false, open_flags)) {
         return found_file;
       }
 #ifdef HAVE_ZLIB
       if (vfs_implicit_pz) {
         if (consider_match(found_file, composite_file, mount, strpath_pz, 
-                           pathname, true, status_only)) {
+                           pathname, true, open_flags)) {
           return found_file;
         }
       }
@@ -1009,14 +1116,14 @@ do_get_file(const Filename &filename, bool status_only) const {
       Filename local_filename = strpath.substr(mount_point.length() + 1);
       Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
       if (consider_match(found_file, composite_file, mount, local_filename, 
-                         pathname, false, status_only)) {
+                         pathname, false, open_flags)) {
         return found_file;
       }
 #ifdef HAVE_ZLIB
       if (vfs_implicit_pz) {
         // Bingo!
         if (consider_match(found_file, composite_file, mount, local_filename_pz,
-                           pathname, true, status_only)) {
+                           pathname, true, open_flags)) {
           return found_file;
         }
       }
@@ -1040,7 +1147,7 @@ do_get_file(const Filename &filename, bool status_only) const {
     if (start_seq != _mount_seq) {
       // Yes, it was, or some nested file was.  Now that we've
       // implicitly mounted the .mf file, go back and look again.
-      return do_get_file(filename, status_only);
+      return do_get_file(filename, open_flags);
     }
   }
 
@@ -1064,9 +1171,9 @@ bool VirtualFileSystem::
 consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
                VirtualFileMount *mount, const Filename &local_filename,
                const Filename &original_filename, bool implicit_pz_file,
-               bool status_only) const {
+               int open_flags) const {
   PT(VirtualFile) vfile = 
-    mount->make_virtual_file(local_filename, original_filename, false, status_only);
+    mount->make_virtual_file(local_filename, original_filename, false, open_flags);
   if (!vfile->has_file()) {
     // Keep looking.
     return false;
@@ -1075,8 +1182,8 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
   if (found_file == (VirtualFile *)NULL) {
     // This was our first match.  Save it.
     found_file = vfile;
-    if (!found_file->is_directory()) {
-      // If it's not a directory, we're done.
+    if (!found_file->is_directory() || ((open_flags & OF_make_directory) != 0)) {
+      // If it's not a directory (or we wanted to make a directory), we're done.
       return true;
     }
     // It is a directory, so save it for later.

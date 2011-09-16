@@ -46,6 +46,7 @@ PUBLISHED:
   virtual bool has_file() const;
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
+  virtual bool is_writable() const;
 
   BLOCKING PT(VirtualFileList) scan_directory() const;
 
@@ -55,8 +56,14 @@ PUBLISHED:
 
   BLOCKING INLINE string read_file(bool auto_unwrap) const;
   BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
-  BLOCKING void close_read_file(istream *stream) const;
+  BLOCKING virtual void close_read_file(istream *stream) const;
   virtual bool was_read_successful() const;
+
+  BLOCKING INLINE bool write_file(const string &data, bool auto_wrap);
+  BLOCKING virtual ostream *open_write_file(bool auto_wrap);
+  BLOCKING virtual void close_write_file(ostream *stream);
+  virtual bool was_write_successful() const;
+
   BLOCKING virtual off_t get_file_size(istream *stream) const;
   BLOCKING virtual off_t get_file_size() const;
   BLOCKING virtual time_t get_timestamp() const;
@@ -67,10 +74,10 @@ public:
   INLINE void set_original_filename(const Filename &filename);
   bool read_file(string &result, bool auto_unwrap) const;
   virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+  virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
   static bool simple_read_file(istream *stream, pvector<unsigned char> &result);
   static bool simple_read_file(istream *stream, pvector<unsigned char> &result, size_t max_bytes);
-
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 

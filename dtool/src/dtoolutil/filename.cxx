@@ -1413,6 +1413,41 @@ is_regular_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_writable
+//       Access: Published
+//  Description: Returns true if the filename exists and is either a
+//               directory or a regular file that can be written to,
+//               or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+is_writable() const {
+  bool writable = false;
+
+#ifdef WIN32_VC
+  wstring os_specific = get_filename_index(0).to_os_specific_w();
+
+  DWORD results = GetFileAttributesW(os_specific.c_str());
+  if (results != -1) {
+    if ((results & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+      // Assume directories are writable.
+      writable = true;
+    } else if ((results & FILE_ATTRIBUTE_READONLY) == 0) {
+      // Not read-only means writable.
+      writable = true;
+    }
+  }
+#else  // WIN32_VC
+  string os_specific = get_filename_index(0).to_os_specific();
+
+  if (access(os_specific.c_str(), W_OK) == 0) {
+    writable = true;
+  }
+#endif
+
+  return writable;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_directory
 //       Access: Published
 //  Description: Returns true if the filename exists and is a

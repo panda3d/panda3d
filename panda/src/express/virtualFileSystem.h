@@ -68,11 +68,14 @@ PUBLISHED:
 
   BLOCKING bool chdir(const Filename &new_directory);
   BLOCKING Filename get_cwd() const;
+  BLOCKING bool make_directory(const Filename &filename);
 
   BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
+  BLOCKING PT(VirtualFile) create_file(const Filename &filename);
   BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
                                      const DSearchPath &searchpath,
                                      bool status_only = false) const;
+
   BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
                                  const string &default_extension = string()) const;
   BLOCKING int find_all_files(const Filename &filename, const DSearchPath &searchpath,
@@ -99,9 +102,17 @@ PUBLISHED:
   BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(istream *stream);
 
+#ifdef HAVE_PYTHON
+  BLOCKING PyObject *__py__write_file(const Filename &filename, PyObject *data, bool auto_wrap);
+#endif  // HAVE_PYTHON
+  BLOCKING INLINE bool write_file(const Filename &filename, const string &data, bool auto_wrap);
+  BLOCKING ostream *open_write_file(const Filename &filename, bool auto_wrap);
+  BLOCKING static void close_write_file(ostream *stream);
+
 public:
   INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
   INLINE bool read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const;
+  INLINE bool write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap);
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
@@ -109,6 +120,15 @@ public:
                            int &flags, string &password);
 
 public:
+  // These flags are passed to do_get_file() and
+  // VirtualFileMount::make_virtual_file() to quality the kind of
+  // VirtualFile pointer we want to get.
+  enum OpenFlags {
+    OF_status_only    = 0x0001,
+    OF_create_file    = 0x0002,
+    OF_make_directory = 0x0004,
+  };
+
   // These are declared as class instances, instead of as globals, to
   // guarantee they will be initialized by the time the
   // VirtualFileSystem's constructor runs.
@@ -119,11 +139,12 @@ public:
 private:
   Filename normalize_mount_point(const Filename &mount_point) const;
   bool do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
-  PT(VirtualFile) do_get_file(const Filename &filename, bool status_only) const;
+  PT(VirtualFile) do_get_file(const Filename &filename, int open_flags) const;
+
   bool consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
                       VirtualFileMount *mount, const Filename &local_filename,
                       const Filename &original_filename, bool implicit_pz_file,
-                      bool status_only) const;
+                      int open_flags) const;
   bool consider_mount_mf(const Filename &filename);
 
   MutexImpl _lock;

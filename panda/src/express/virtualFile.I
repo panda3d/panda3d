@@ -47,6 +47,17 @@ read_file(bool auto_unwrap) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::write_file
+//       Access: Public
+//  Description: Writes the entire contents of the file as a string,
+//               if it is writable.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFile::
+write_file(const string &data, bool auto_wrap) {
+  return write_file((const unsigned char *)data.data(), data.size(), auto_wrap);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::set_original_filename
 //       Access: Public
 //  Description: Stores the original filename that was used to locate

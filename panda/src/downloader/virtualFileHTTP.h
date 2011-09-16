@@ -36,7 +36,7 @@ public:
   VirtualFileHTTP(VirtualFileMountHTTP *mount,
                   const Filename &local_filename,
                   bool implicit_pz_file,
-                  bool status_only);
+                  int open_flags);
   virtual ~VirtualFileHTTP();
 
   virtual VirtualFileSystem *get_file_system() const;

@@ -123,6 +123,20 @@ read_file(const Filename &filename, bool auto_unwrap) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::write_file
+//       Access: Published
+//  Description: Convenience function; writes the entire contents of
+//               the indicated file as a string.
+//
+//               If auto_wrap is true, an explicitly-named .pz file
+//               is automatically compressed while writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFileSystem::
+write_file(const Filename &filename, const string &data, bool auto_wrap) {
+  return write_file(filename, (const unsigned char *)data.data(), data.size(), auto_wrap);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::read_file
 //       Access: Public
 //  Description: Convenience function; fills the string up with the
@@ -158,4 +172,19 @@ INLINE bool VirtualFileSystem::
 read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
   return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::write_file
+//       Access: Public
+//  Description: Convenience function; writes the entire contents of
+//               the indicated file as a block of data.
+//
+//               If auto_wrap is true, an explicitly-named .pz file
+//               is automatically compressed while writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFileSystem::
+write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap) {
+  PT(VirtualFile) file = create_file(filename);
+  return (file != (VirtualFile *)NULL && file->write_file(data, data_size, auto_wrap));
 }

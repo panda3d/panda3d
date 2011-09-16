@@ -53,6 +53,18 @@ is_regular_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::is_writable
+//       Access: Published, Virtual
+//  Description: Returns true if this file may be written to, which
+//               implies write_file() may be called (unless it is a
+//               directory instead of a regular file).
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+is_writable() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::scan_directory
 //       Access: Published
 //  Description: If the file represents a directory (that is,
@@ -170,6 +182,76 @@ open_read_file(bool auto_unwrap) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::close_read_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_read_file().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFile::
+close_read_file(istream *stream) const {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::was_read_successful
+//       Access: Published, Virtual
+//  Description: Call this method after a reading the istream returned
+//               by open_read_file() to completion.  If it returns
+//               true, the file was read completely and without error;
+//               if it returns false, there may have been some errors
+//               or a truncated file read.  This is particularly
+//               likely if the stream is a VirtualFileHTTP.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+was_read_successful() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::open_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated ostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFile::
+open_write_file(bool auto_wrap) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::close_write_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_write_file().  This really just deletes the
+//               ostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFile::
+close_write_file(ostream *stream) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::was_write_successful
+//       Access: Published, Virtual
+//  Description: Call this method after a writing the ostream returned
+//               by open_write_file() to completion.  If it returns
+//               true, the file was written completely and without
+//               error; if it returns false, there may have been some
+//               errors or a truncated file write.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+was_write_successful() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::get_file_size
 //       Access: Published, Virtual
 //  Description: Returns the current size on disk (or wherever it is)
@@ -229,46 +311,6 @@ get_system_info(SubfileInfo &info) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::close_read_file
-//       Access: Public
-//  Description: Closes a file opened by a previous call to
-//               open_read_file().  This really just deletes the
-//               istream pointer, but it is recommended to use this
-//               interface instead of deleting it explicitly, to help
-//               work around compiler issues.
-////////////////////////////////////////////////////////////////////
-void VirtualFile::
-close_read_file(istream *stream) const {
-  if (stream != (istream *)NULL) {
-    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
-    // the stream pointer does not call the appropriate global delete
-    // function; instead apparently calling the system delete
-    // function.  So we call the delete function by hand instead.
-#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
-    stream->~istream();
-    (*global_operator_delete)(stream);
-#else
-    delete stream;
-#endif
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::was_read_successful
-//       Access: Public
-//  Description: Call this method after a reading the istream returned
-//               by open_read_file() to completion.  If it returns
-//               true, the file was read completely and without error;
-//               if it returns false, there may have been some errors
-//               or a truncated file read.  This is particularly
-//               likely if the stream is a VirtualFileHTTP.
-////////////////////////////////////////////////////////////////////
-bool VirtualFile::
-was_read_successful() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::read_file
 //       Access: Public
 //  Description: Fills up the indicated string with the contents of
@@ -300,6 +342,17 @@ read_file(string &result, bool auto_unwrap) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
 read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::write_file
+//       Access: Public, Virtual
+//  Description: Writes the indicated data to the file, if it is
+//               writable.  Returns true on success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+write_file(const unsigned char *data, size_t data_size, bool auto_wrap) {
   return false;
 }
 

@@ -42,16 +42,60 @@ VirtualFileMount::
 PT(VirtualFile) VirtualFileMount::
 make_virtual_file(const Filename &local_filename,
                   const Filename &original_filename, bool implicit_pz_file,
-                  bool) {
+                  int open_flags) {
   Filename local(local_filename);
   if (original_filename.is_text()) {
     local.set_text();
   }
   PT(VirtualFileSimple) file =
-    new VirtualFileSimple(this, local, implicit_pz_file);
+    new VirtualFileSimple(this, local, implicit_pz_file, open_flags);
   file->set_original_filename(original_filename);
 
+  if ((open_flags & VirtualFileSystem::OF_create_file) != 0) {
+    create_file(local);
+  } else if ((open_flags & VirtualFileSystem::OF_make_directory) != 0) {
+    make_directory(local);
+  }
+
   return file.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::create_file
+//       Access: Public, Virtual
+//  Description: Attempts to create the indicated file within the
+//               mount, if it does not already exist.  Returns true on
+//               success (or if the file already exists), or false if
+//               it cannot be created.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMount::
+create_file(const Filename &file) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::make_directory
+//       Access: Public, Virtual
+//  Description: Attempts to create the indicated file within the
+//               mount, if it does not already exist.  Returns true on
+//               success, or false if it cannot be created.  If the
+//               directory already existed prior to this call, may
+//               return either true or false.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMount::
+make_directory(const Filename &file) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::is_writable
+//       Access: Public, Virtual
+//  Description: Returns true if the named file or directory may be
+//               written to, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMount::
+is_writable(const Filename &file) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +134,34 @@ read_file(const Filename &file, bool do_uncompress,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::write_file
+//       Access: Public, Virtual
+//  Description: Writes the indicated data to the file, if it is a
+//               writable file.  Returns true on success, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMount::
+write_file(const Filename &file, bool do_compress,
+           const unsigned char *data, size_t data_size) {
+  ostream *out = open_write_file(file, do_compress);
+  if (out == (ostream *)NULL) {
+    express_cat.info()
+      << "Unable to write " << file << "\n";
+    return false;
+  }
+
+  out->write((const char *)data, data_size);
+  bool okflag = (!out->fail());
+  close_write_file(out);
+
+  if (!okflag) {
+    express_cat.info()
+      << "Error while writing " << file << "\n";
+  }
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMount::open_read_file
 //       Access: Published, Virtual
 //  Description: Opens the file for reading.  Returns a newly
@@ -117,7 +189,7 @@ open_read_file(const Filename &file, bool do_uncompress) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMount::close_read_file
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Closes a file opened by a previous call to
 //               open_read_file().  This really just deletes the
 //               istream pointer, but it is recommended to use this
@@ -126,18 +198,60 @@ open_read_file(const Filename &file, bool do_uncompress) const {
 ////////////////////////////////////////////////////////////////////
 void VirtualFileMount::
 close_read_file(istream *stream) const {
-  if (stream != (istream *)NULL) {
-    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
-    // the stream pointer does not call the appropriate global delete
-    // function; instead apparently calling the system delete
-    // function.  So we call the delete function by hand instead.
-#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
-    stream->~istream();
-    (*global_operator_delete)(stream);
-#else
-    delete stream;
-#endif
+  VirtualFileSystem::close_read_file(stream);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated ostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileMount::
+open_write_file(const Filename &file) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::open_write_file
+//       Access: Published
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated ostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+//
+//               If do_compress is true, the file is also
+//               compressed on-the-fly using zlib.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileMount::
+open_write_file(const Filename &file, bool do_compress) {
+  ostream *result = open_write_file(file);
+
+#ifdef HAVE_ZLIB
+  if (result != (ostream *)NULL && do_compress) {
+    // We have to slip in a layer to compress the file on the fly.
+    OCompressStream *wrapper = new OCompressStream(result, true);
+    result = wrapper;
   }
+#endif  // HAVE_ZLIB
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::close_write_file
+//       Access: Public, Virtual
+//  Description: Closes a file opened by a previous call to
+//               open_write_file().  This really just deletes the
+//               ostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileMount::
+close_write_file(ostream *stream) {
+  VirtualFileSystem::close_write_file(stream);
 }
 
 ////////////////////////////////////////////////////////////////////

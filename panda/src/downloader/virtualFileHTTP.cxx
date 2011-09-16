@@ -29,11 +29,11 @@ TypeHandle VirtualFileHTTP::_type_handle;
 ////////////////////////////////////////////////////////////////////
 VirtualFileHTTP::
 VirtualFileHTTP(VirtualFileMountHTTP *mount, const Filename &local_filename,
-                bool implicit_pz_file, bool status_only) :
+                bool implicit_pz_file, int open_flags) :
   _mount(mount),
   _local_filename(local_filename),
   _implicit_pz_file(implicit_pz_file),
-  _status_only(status_only)
+  _status_only(open_flags != 0)
 {
   URLSpec url(_mount->get_root());
   url.set_path(_mount->get_root().get_path() + _local_filename.c_str());

@@ -88,6 +88,18 @@ is_regular_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::is_writable
+//       Access: Published, Virtual
+//  Description: Returns true if this file represents a writable
+//               regular file (and write_file() may be called), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+is_writable() const {
+  return _mount->is_writable(_local_filename);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::open_read_file
 //       Access: Published, Virtual
 //  Description: Opens the file for reading.  Returns a newly
@@ -114,6 +126,59 @@ open_read_file(bool auto_unwrap) const {
   }
 
   return _mount->open_read_file(local_filename, do_uncompress);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::close_read_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_read_file().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSimple::
+close_read_file(istream *stream) const {
+  _mount->close_read_file(stream);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::open_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated ostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+//
+//               If auto_wrap is true, an explicitly-named .pz file
+//               is automatically compressed.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileSimple::
+open_write_file(bool auto_wrap) const {
+  // Will we be automatically wrapping a .pz file?
+  bool do_compress = (_implicit_pz_file || (auto_wrap && _local_filename.get_extension() == "pz"));
+
+  Filename local_filename(_local_filename);
+  if (do_compress) {
+    // .pz files are always binary, of course.
+    local_filename.set_binary();
+  }
+
+  return _mount->open_write_file(local_filename, do_compress);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::close_write_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_write_file().  This really just deletes the
+//               ostream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSimple::
+close_write_file(ostream *stream) const {
+  _mount->close_write_file(stream);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,6 +263,26 @@ read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::write_file
+//       Access: Public, Virtual
+//  Description: Writes the indicated data to the file, if it is
+//               writable.  Returns true on success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+write_file(const unsigned char *data, size_t data_size, bool auto_wrap) {
+  // Will we be automatically wrapping a .pz file?
+  bool do_compress = (_implicit_pz_file || (auto_wrap && _local_filename.get_extension() == "pz"));
+
+  Filename local_filename(_local_filename);
+  if (do_compress) {
+    // .pz files are always binary, of course.
+    local_filename.set_binary();
+  }
+
+  return _mount->write_file(local_filename, do_compress, data, data_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::scan_local_directory
 //       Access: Protected, Virtual
 //  Description: Fills file_list up with the list of files that are
@@ -226,7 +311,7 @@ scan_local_directory(VirtualFileList *file_list,
     const string &basename = (*ni);
     if (mount_points.find(basename) == mount_points.end()) {
       Filename filename(_local_filename, basename);
-      VirtualFileSimple *file = new VirtualFileSimple(_mount, filename, false);
+      VirtualFileSimple *file = new VirtualFileSimple(_mount, filename, false, 0);
       file_list->add_file(file);
     }
   }

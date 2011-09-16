@@ -182,9 +182,9 @@ is_regular_file(const Filename &) const {
 PT(VirtualFile) VirtualFileMountHTTP::
 make_virtual_file(const Filename &local_filename,
                   const Filename &original_filename, bool implicit_pz_file,
-                  bool status_only) {
+                  int open_flags) {
   PT(VirtualFileHTTP) vfile = 
-    new VirtualFileHTTP(this, local_filename, implicit_pz_file, status_only);
+    new VirtualFileHTTP(this, local_filename, implicit_pz_file, open_flags);
   vfile->set_original_filename(original_filename);
 
   return vfile.p();

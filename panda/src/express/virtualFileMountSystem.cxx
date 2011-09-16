@@ -44,6 +44,37 @@ has_file(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::create_file
+//       Access: Public, Virtual
+//  Description: Attempts to create the indicated file within the
+//               mount, if it does not already exist.  Returns true on
+//               success (or if the file already exists), or false if
+//               it cannot be created.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+create_file(const Filename &file) {
+  Filename pathname(_physical_filename, file);
+  pathname.set_binary();
+  ofstream stream;
+  return pathname.open_write(stream, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::make_directory
+//       Access: Public, Virtual
+//  Description: Attempts to create the indicated file within the
+//               mount, if it does not already exist.  Returns true on
+//               success, or false if it cannot be created.  If the
+//               directory already existed prior to this call, may
+//               return either true or false.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+make_directory(const Filename &file) {
+  Filename pathname(_physical_filename, file);
+  return pathname.mkdir();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::is_directory
 //       Access: Public, Virtual
 //  Description: Returns true if the indicated file exists within the
@@ -84,6 +115,26 @@ is_regular_file(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::is_writable
+//       Access: Public, Virtual
+//  Description: Returns true if the named file or directory may be
+//               written to, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+is_writable(const Filename &file) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return false;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  return pathname.is_writable();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::open_read_file
 //       Access: Public, Virtual
 //  Description: Opens the file for reading, if it exists.  Returns a
@@ -111,6 +162,40 @@ open_read_file(const Filename &file) const {
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
     close_read_file(stream);
+    return NULL;
+  }
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::open_write_file
+//       Access: Published, Virtual
+//  Description: Opens the file for writing.  Returns a newly
+//               allocated ostream on success (which you should
+//               eventually delete when you are done writing).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+ostream *VirtualFileMountSystem::
+open_write_file(const Filename &file) {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  if (file.is_text()) {
+    pathname.set_text();
+  } else {
+    pathname.set_binary();
+  }
+  pofstream *stream = new pofstream;
+  if (!pathname.open_write(*stream)) {
+    // Couldn't open the file for some reason.
+    close_write_file(stream);
     return NULL;
   }
 

@@ -20,10 +20,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileSimple::
 VirtualFileSimple(VirtualFileMount *mount, const Filename &local_filename,
-                  bool implicit_pz_file) :
+                  bool implicit_pz_file, int open_flags) :
   _mount(mount),
   _local_filename(local_filename),
-  _implicit_pz_file(implicit_pz_file)
+  _implicit_pz_file(implicit_pz_file),
+  _open_flags(open_flags)
 {
 }
 
