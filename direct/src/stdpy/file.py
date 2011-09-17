@@ -91,59 +91,54 @@ class file:
 
             # Actually open the streams.
             if mode == 'w':
-                self.__stream = pm.OFileStream()
-                if not filename.openWrite(self.__stream, True):
+                self.__stream = _vfs.openWriteFile(filename, autoUnwrap, True)
+                if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 writeMode = True
                 
             elif mode == 'a':
-                self.__stream = pm.OFileStream()
-                if not filename.openAppend(self.__stream):
+                self.__stream = _vfs.openAppendFile(filename)
+                if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 writeMode = True
 
             elif mode == 'w+':
-                self.__stream = pm.FileStream()
-                if not filename.openReadWrite(self.__stream, True):
+                self.__stream = _vfs.openReadWriteFile(filename, True)
+                if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 readMode = True
                 writeMode = True
 
             elif mode == 'a+':
-                self.__stream = pm.FileStream()
-                if not filename.openReadAppend(self.__stream):
+                self.__stream = _vfs.openReadAppendFile(filename)
+                if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 readMode = True
                 writeMode = True
 
             elif mode == 'r+':
-                self.__stream = pm.FileStream()
-                if not filename.exists():
-                    message = 'No such file: %s' % (filename)
-                    raise IOError, message
-                if not filename.openReadWrite(self.__stream, False):
+                self.__stream = _vfs.openReadWriteFile(filename, False)
+                if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 readMode = True
                 writeMode = True
 
             elif mode == 'r':
-                # For strictly read mode (not write or read-write
-                # mode), we use Panda's VirtualFileSystem.
-                
                 self.__stream = _vfs.openReadFile(filename, autoUnwrap)
                 if not self.__stream:
-                    if not filename.exists():
+                    if not _vfs.exists(filename):
                         message = 'No such file: %s' % (filename)
                     else:
                         message = 'Could not open %s for reading' % (filename)
                     raise IOError, message
-                self.__needsVfsClose = True
                 readMode = True
+
+            self.__needsVfsClose = True
 
         if readMode:
             self.__reader = pm.StreamReader(self.__stream, False)
@@ -156,7 +151,13 @@ class file:
         
     def close(self):
         if self.__needsVfsClose:
-            _vfs.closeReadFile(self.__stream)
+            if self.__reader and self.__writer:
+                _vfs.closeReadWriteFile(self.__stream)
+            elif self.__reader:
+                _vfs.closeReadFile(self.__stream)
+            else:  # self.__writer:
+                _vfs.closeWriteFile(self.__stream)
+                
             self.__needsVfsClose = False
         self.__stream = None
         self.__needsVfsClose = False
@@ -165,6 +166,7 @@ class file:
         
     def flush(self):
         if self.__stream:
+            self.__stream.clear()  # clear eof flag
             self.__stream.flush()
 
     def __iter__(self):
@@ -186,15 +188,16 @@ class file:
             message = 'Attempt to read from write-only stream'
             raise IOError, message
         
+        self.__stream.clear()  # clear eof flag
         self.__lastWrite = False
         if size >= 0:
-            return self.__reader.extractBytes(size)
+            result = self.__reader.extractBytes(size)
         else:
             # Read to end-of-file.
             result = ''
             while not self.__stream.eof():
                 result += self.__reader.extractBytes(1024)
-            return result
+        return result
         
     def readline(self, size = -1):
         if not self.__reader:
@@ -206,6 +209,7 @@ class file:
             message = 'Attempt to read from write-only stream'
             raise IOError, message
 
+        self.__stream.clear()  # clear eof flag
         self.__lastWrite = False
         return self.__reader.readline()
         
@@ -220,6 +224,8 @@ class file:
     xreadlines = readlines
 
     def seek(self, offset, whence = 0):
+        if self.__stream:
+            self.__stream.clear()  # clear eof flag
         if self.__reader:
             self.__stream.seekg(offset, whence)
         if self.__writer:
@@ -249,6 +255,8 @@ class file:
             # The stream is open only in read mode.
             message = 'Attempt to write to read-only stream'
             raise IOError, message
+
+        self.__stream.clear()  # clear eof flag
         self.__writer.appendData(str)
         self.__lastWrite = True
 
@@ -261,6 +269,8 @@ class file:
             # The stream is open only in read mode.
             message = 'Attempt to write to read-only stream'
             raise IOError, message
+
+        self.__stream.clear()  # clear eof flag
         for line in lines:
             self.__writer.appendData(line)
         self.__lastWrite = True
