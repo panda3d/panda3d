@@ -237,30 +237,17 @@ write_egg(Filename filename) {
   filename.unlink();
   filename.set_text();
 
-#ifdef HAVE_ZLIB
-  bool pz_file = false;
-  if (filename.get_extension() == "pz") {
-    // The filename ends in .pz, which means to automatically compress
-    // the egg file that we write.
-    pz_file = true;
-    filename.set_binary();
-  }
-#endif  // HAVE_ZLIB
-
-  pofstream file;
-  if (!filename.open_write(file)) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    
+  ostream *file = vfs->open_write_file(filename, true, true);
+  if (file == (ostream *)NULL) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;
   }
 
-#ifdef HAVE_ZLIB
-  if (pz_file) {
-    OCompressStream compressor(&file, false);
-    return write_egg(compressor);
-  }
-#endif  // HAVE_ZLIB
-
-  return write_egg(file);
+  bool wrote_ok = write_egg(*file);
+  vfs->close_write_file(file);
+  return wrote_ok;
 }
 
 ////////////////////////////////////////////////////////////////////

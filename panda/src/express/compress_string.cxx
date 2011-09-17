@@ -77,8 +77,12 @@ decompress_string(const string &source) {
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDAEXPRESS bool 
 compress_file(const Filename &source, const Filename &dest, int compression_level) {
-  Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  Filename source_filename = source;
+  if (!source_filename.is_binary_or_text()) {
+    // The default is binary, if not specified otherwise.
+    source_filename.set_binary();
+  }
   istream *source_stream = vfs->open_read_file(source_filename, true);
   if (source_stream == NULL) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
@@ -86,15 +90,16 @@ compress_file(const Filename &source, const Filename &dest, int compression_leve
   }
   
   Filename dest_filename = Filename::binary_filename(dest);
-  pofstream dest_stream;
-  if (!dest_filename.open_write(dest_stream)) {
+  ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
+  if (dest_stream == NULL) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;
   }
     
-  bool result = compress_stream(*source_stream, dest_stream, compression_level);
+  bool result = compress_stream(*source_stream, *dest_stream, compression_level);
   vfs->close_read_file(source_stream);
+  vfs->close_write_file(dest_stream);
   return result;
 }
 
@@ -121,16 +126,21 @@ decompress_file(const Filename &source, const Filename &dest) {
     return false;
   }
   
-  Filename dest_filename = Filename::binary_filename(dest);
-  pofstream dest_stream;
-  if (!dest_filename.open_write(dest_stream)) {
+  Filename dest_filename = dest;
+  if (!dest_filename.is_binary_or_text()) {
+    // The default is binary, if not specified otherwise.
+    dest_filename.set_binary();
+  }
+  ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
+  if (dest_stream == NULL) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;
   }
     
-  bool result = decompress_stream(*source_stream, dest_stream);
+  bool result = decompress_stream(*source_stream, *dest_stream);
   vfs->close_read_file(source_stream);
+  vfs->close_write_file(dest_stream);
   return result;
 }
 

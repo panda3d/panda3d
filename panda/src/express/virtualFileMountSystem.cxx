@@ -153,11 +153,6 @@ open_read_file(const Filename &file) const {
   }
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
-  if (file.is_text()) {
-    pathname.set_text();
-  } else {
-    pathname.set_binary();
-  }
   pifstream *stream = new pifstream;
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
@@ -187,11 +182,6 @@ open_write_file(const Filename &file, bool truncate) {
   }
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
-  if (file.is_text()) {
-    pathname.set_text();
-  } else {
-    pathname.set_binary();
-  }
   pofstream *stream = new pofstream;
   if (!pathname.open_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
@@ -221,11 +211,6 @@ open_append_file(const Filename &file) {
   }
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
-  if (file.is_text()) {
-    pathname.set_text();
-  } else {
-    pathname.set_binary();
-  }
   pofstream *stream = new pofstream;
   if (!pathname.open_append(*stream)) {
     // Couldn't open the file for some reason.
@@ -255,15 +240,10 @@ open_read_write_file(const Filename &file, bool truncate) {
   }
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
-  if (file.is_text()) {
-    pathname.set_text();
-  } else {
-    pathname.set_binary();
-  }
   pfstream *stream = new pfstream;
   if (!pathname.open_read_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
-    close_write_file(stream);
+    close_read_write_file(stream);
     return NULL;
   }
 
@@ -289,15 +269,10 @@ open_read_append_file(const Filename &file) {
   }
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
-  if (file.is_text()) {
-    pathname.set_text();
-  } else {
-    pathname.set_binary();
-  }
   pfstream *stream = new pfstream;
   if (!pathname.open_read_append(*stream)) {
     // Couldn't open the file for some reason.
-    close_write_file(stream);
+    close_read_write_file(stream);
     return NULL;
   }
 

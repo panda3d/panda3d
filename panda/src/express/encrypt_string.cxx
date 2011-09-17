@@ -89,45 +89,30 @@ decrypt_string(const string &source, const string &password) {
 EXPCL_PANDAEXPRESS bool 
 encrypt_file(const Filename &source, const Filename &dest, const string &password,
              const string &algorithm, int key_length, int iteration_count) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename source_filename = source;
-  if (!source_filename.is_binary() && !source_filename.is_text()) {
+  if (!source_filename.is_binary_or_text()) {
     // The default is binary, if not specified otherwise.
     source_filename.set_binary();
   }
-  
-  Filename dest_filename = Filename::binary_filename(dest);
-  pofstream dest_stream;
-  if (!dest_filename.open_write(dest_stream)) {
-    express_cat.info() << "Couldn't open file " << dest_filename << "\n";
-    return false;
-  }
-
-  // Try to open the file from disk first, instead of using the vfs,
-  // so we can get the newline conversion with a text file.  This is a
-  // little weird if you have a vfs file shadowing a disk file, but
-  // whatever.
-  if (source_filename.is_text()) {
-    pifstream source_stream;
-    if (source_filename.open_read(source_stream)) {
-      bool result = encrypt_stream(source_stream, dest_stream, password,
-                                   algorithm, key_length, iteration_count);
-      return result;
-    }
-  }
-
-  // OK, couldn't read the disk file, or it wasn't set in text mode.
-  // Read the file from the vfs, and sorry--no text conversion for
-  // you.
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *source_stream = vfs->open_read_file(source_filename, true);
   if (source_stream == NULL) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
+  
+  Filename dest_filename = Filename::binary_filename(dest);
+  ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
+  if (dest_stream == NULL) {
+    express_cat.info() << "Couldn't open file " << dest_filename << "\n";
+    vfs->close_read_file(source_stream);
+    return false;
+  }
     
-  bool result = encrypt_stream(*source_stream, dest_stream, password,
+  bool result = encrypt_stream(*source_stream, *dest_stream, password,
                                algorithm, key_length, iteration_count);
   vfs->close_read_file(source_stream);
+  vfs->close_write_file(dest_stream);
   return result;
 }
 
@@ -149,22 +134,27 @@ EXPCL_PANDAEXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const string &password) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *source_stream = vfs->open_read_file(source_filename, true);
+  istream *source_stream = vfs->open_read_file(source_filename, false);
   if (source_stream == NULL) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
   
-  Filename dest_filename = Filename::binary_filename(dest);
-  pofstream dest_stream;
-  if (!dest_filename.open_write(dest_stream)) {
+  Filename dest_filename = dest;
+  if (!dest_filename.is_binary_or_text()) {
+    // The default is binary, if not specified otherwise.
+    dest_filename.set_binary();
+  }
+  ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
+  if (dest_stream == NULL) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;
   }
     
-  bool result = decrypt_stream(*source_stream, dest_stream, password);
+  bool result = decrypt_stream(*source_stream, *dest_stream, password);
   vfs->close_read_file(source_stream);
+  vfs->close_write_file(dest_stream);
   return result;
 }
 

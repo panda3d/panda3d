@@ -267,6 +267,7 @@ private:
 #endif
 
   void reset_download_to();
+  void close_download_stream();
   void reset_to_new();
   void reset_body_stream();
   void close_connection();
@@ -361,7 +362,6 @@ private:
   DownloadDest _download_dest;
   bool _subdocument_resumes;
   Filename _download_to_filename;
-  pofstream _download_to_file;
   Ramfile *_download_to_ramfile;
   ostream *_download_to_stream;
 

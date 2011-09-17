@@ -19,6 +19,7 @@
 #include "chunkedStream.h"
 #include "identityStream.h"
 #include "config_downloader.h"
+#include "virtualFileSystem.h"
 #include "virtualFileMountHTTP.h"
 #include "ramfile.h"
 #include "globPattern.h"
@@ -112,6 +113,7 @@ HTTPChannel(HTTPClient *client) :
   _last_status_code = 0;
   _last_run_time = 0.0f;
   _download_to_ramfile = NULL;
+  _download_to_stream = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -667,8 +669,6 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   reset_download_to();
   _download_to_filename = filename;
   _download_to_filename.set_binary();
-  _download_to_file.close();
-  _download_to_file.clear();
   _subdocument_resumes = subdocument_resumes;
 
   _download_dest = DD_file;
@@ -2361,7 +2361,7 @@ run_download_to_file() {
   _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
   size_t count = _body_stream->gcount();
   while (count != 0) {
-    _download_to_file.write(buffer, count);
+    _download_to_stream->write(buffer, count);
     _bytes_downloaded += count;
     if (do_throttle) {
       nassertr(count <= remaining_this_pass, false);
@@ -2377,7 +2377,7 @@ run_download_to_file() {
     count = _body_stream->gcount();
   }
 
-  if (_download_to_file.fail()) {
+  if (_download_to_stream->fail()) {
     downloader_cat.warning()
       << _NOTIFY_HTTP_CHANNEL_ID 
       << "Error writing to " << _download_to_filename << "\n";
@@ -2387,12 +2387,12 @@ run_download_to_file() {
     return false;
   }
 
-  _download_to_file.flush();
+  _download_to_stream->flush();
 
   if (_body_stream->is_closed()) {
     // Done.
     reset_body_stream();
-    _download_to_file.close();
+    close_download_stream();
     _started_download = false;
     return false;
   } else {
@@ -2444,6 +2444,7 @@ run_download_to_ram() {
   if (_body_stream->is_closed()) {
     // Done.
     reset_body_stream();
+    close_download_stream();
     _started_download = false;
     return false;
   } else {
@@ -2506,7 +2507,7 @@ run_download_to_stream() {
   if (_body_stream->is_closed()) {
     // Done.
     reset_body_stream();
-    _download_to_stream = NULL;
+    close_download_stream();
     _started_download = false;
     return false;
   } else {
@@ -2796,7 +2797,9 @@ open_download_file() {
   _subdocument_resumes = (_subdocument_resumes && _first_byte_delivered != 0);
 
   if (_download_dest == DD_file) {
-    if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    _download_to_stream = vfs->open_write_file(_download_to_filename, false, !_subdocument_resumes);
+    if (_download_to_stream == NULL) {
       downloader_cat.info()
         << _NOTIFY_HTTP_CHANNEL_ID 
         << "Could not open " << _download_to_filename << " for writing.\n";
@@ -2812,20 +2815,20 @@ open_download_file() {
       // file--it happily appends enough zero bytes to make the
       // difference.  Blecch.  That means we need to get the file size
       // first to check it ourselves.
-      _download_to_file.seekp(0, ios::end);
-      if (_first_byte_delivered > (size_t)_download_to_file.tellp()) {
+      _download_to_stream->seekp(0, ios::end);
+      if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
           << _NOTIFY_HTTP_CHANNEL_ID 
           << "Invalid starting position of byte " << _first_byte_delivered
           << " within " << _download_to_filename << " (which has " 
-          << _download_to_file.tellp() << " bytes)\n";
-        _download_to_file.close();
+          << _download_to_stream->tellp() << " bytes)\n";
+        close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
         _state = S_failure;
         return false;
       }
       
-      _download_to_file.seekp(_first_byte_delivered);
+      _download_to_stream->seekp(_first_byte_delivered);
       
     } else if (_download_dest == DD_ram) {
       if (_first_byte_delivered > _download_to_ramfile->_data.length()) {
@@ -2834,6 +2837,7 @@ open_download_file() {
           << "Invalid starting position of byte " << _first_byte_delivered 
           << " within Ramfile (which has " 
           << _download_to_ramfile->_data.length() << " bytes)\n";
+        close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
         _state = S_failure;
         return false;
@@ -2857,7 +2861,7 @@ open_download_file() {
           << "Invalid starting position of byte " << _first_byte_delivered
           << " within stream (which has " 
           << _download_to_stream->tellp() << " bytes)\n";
-        _download_to_stream = NULL;
+        close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
         _state = S_failure;
         return false;
@@ -2870,12 +2874,10 @@ open_download_file() {
     // If _subdocument_resumes is false, we should be sure to reset to
     // the beginning of the file, regardless of the value of
     // _first_byte_delivered.
-    if (_download_dest == DD_file) {
-      _download_to_file.seekp(0);
+    if (_download_dest == DD_file || _download_dest == DD_stream) {
+      _download_to_stream->seekp(0);
     } else if (_download_dest == DD_ram) {
       _download_to_ramfile->_data = string();
-    } else if (_download_dest == DD_stream) {
-      _download_to_stream->seekp(0);
     }
   }
 
@@ -3958,11 +3960,28 @@ show_send(const string &message) {
 void HTTPChannel::
 reset_download_to() {
   _started_download = false;
-  _download_to_file.close();
-  _download_to_ramfile = (Ramfile *)NULL;
-  _download_to_stream = NULL;
+  close_download_stream();
   _download_dest = DD_none;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::close_download_stream
+//       Access: Private
+//  Description: Ensures the file opened for receiving the download
+//               has been correctly closed.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+close_download_stream() {
+  if (_download_to_stream != NULL) {
+    _download_to_stream->flush();
+    if (_download_dest == DD_file) {
+      VirtualFileSystem::close_write_file(_download_to_stream);
+    }
+  }
+  _download_to_ramfile = (Ramfile *)NULL;
+  _download_to_stream = NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reset_to_new

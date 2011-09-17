@@ -46,6 +46,8 @@ make_virtual_file(const Filename &local_filename,
   Filename local(local_filename);
   if (original_filename.is_text()) {
     local.set_text();
+  } else {
+    local.set_binary();
   }
   PT(VirtualFileSimple) file =
     new VirtualFileSimple(this, local, implicit_pz_file, open_flags);
