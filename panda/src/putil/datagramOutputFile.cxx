@@ -32,19 +32,15 @@ open(const FileReference *file) {
   // DatagramOutputFiles are always binary.
   _filename.set_binary();
 
-  _out = &_out_file;
-  _owns_out = false;
-
-#ifdef HAVE_ZLIB
-  if (_filename.get_extension() == "pz") {
-    // The filename ends in .pz, which means to automatically
-    // compress the bam file that we write.
-    _out = new OCompressStream(_out, _owns_out);
-    _owns_out = true;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  _vfile = vfs->create_file(_filename);
+  if (_vfile == (VirtualFile *)NULL) {
+    // No such file.
+    return false;
   }
-#endif  // HAVE_ZLIB
-
-  return _filename.open_write(_out_file);
+  _out = _vfile->open_write_file(true, true);
+  _owns_out = (_out != (ostream *)NULL);
+  return _owns_out && !_out->fail();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,10 +75,11 @@ open(ostream &out, const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 void DatagramOutputFile::
 close() {
+  _vfile.clear();
   if (_owns_out) {
-    delete _out;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_write_file(_out);
   }
-  _out_file.close();
   _out = (ostream *)NULL;
   _owns_out = false;
 

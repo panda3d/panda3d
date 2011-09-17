@@ -3779,21 +3779,18 @@ do_store_one(PNMImage &pnmimage, int z, int n) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_write_txo_file(const Filename &fullpath) const {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename filename = Filename::binary_filename(fullpath);
-  pofstream out;
-  if (!filename.open_write(out)) {
+  ostream *out = vfs->open_write_file(filename, true, true);
+  if (out == NULL) {
     gobj_cat.error()
       << "Unable to open " << filename << "\n";
     return false;
   }
 
-#ifdef HAVE_ZLIB
-  if (fullpath.get_extension() == "pz") {
-    OCompressStream compressor(&out, false);
-    return do_write_txo(compressor, "stream");
-  }
-#endif  // HAVE_ZLIB
-  return do_write_txo(out, fullpath);
+  bool success = do_write_txo(*out, fullpath);
+  vfs->close_write_file(out);
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////

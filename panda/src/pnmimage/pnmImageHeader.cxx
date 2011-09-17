@@ -285,22 +285,11 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     }
 
   } else {
-    pofstream *new_ostream = new pofstream;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     Filename actual_name = Filename::binary_filename(filename);
-    if (!actual_name.open_write(*new_ostream)) {
-      delete new_ostream;
-      
-    } else {
+    file = vfs->open_write_file(actual_name, true, true);
+    if (file != NULL) {
       owns_file = true;
-      file = new_ostream;
-
-#ifdef HAVE_ZLIB
-      if (filename.get_extension() == "pz") {
-        // The filename ends in .pz, which means to automatically
-        // compress the image file that we write.
-        file = new OCompressStream(file, true);
-      }
-#endif  // HAVE_ZLIB
     }
   }
 

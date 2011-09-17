@@ -20,6 +20,7 @@
 #include "datagramSink.h"
 #include "filename.h"
 #include "fileReference.h"
+#include "virtualFile.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramOutputFile
@@ -54,7 +55,7 @@ private:
   bool _wrote_first_datagram;
   bool _error;
   CPT(FileReference) _file;
-  pofstream _out_file;
+  PT(VirtualFile) _vfile;
   ostream *_out;
   bool _owns_out;
   Filename _filename;

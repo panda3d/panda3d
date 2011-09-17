@@ -56,7 +56,6 @@ private:
   bool _error;
   CPT(FileReference) _file;
   PT(VirtualFile) _vfile;
-  pifstream _in_file;
   istream *_in;
   bool _owns_in;
   Filename _filename;

@@ -83,7 +83,6 @@ open(istream &in, const Filename &filename) {
 void DatagramInputFile::
 close() {
   _vfile.clear();
-  _in_file.close();
   if (_owns_in) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_in);
