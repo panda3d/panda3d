@@ -18,6 +18,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyArg_Parse(...);
   EXPCL_DTOOLCONFIG int PyArg_ParseTuple(...);
   EXPCL_DTOOLCONFIG int PyArg_ParseTupleAndKeywords(...);
+  EXPCL_DTOOLCONFIG int PyBool_FromLong(...);
   EXPCL_DTOOLCONFIG int PyCFunction_New(...);
   EXPCL_DTOOLCONFIG int PyCFunction_NewEx(...);
   EXPCL_DTOOLCONFIG int PyCallable_Check(...);
@@ -156,6 +157,7 @@ extern "C" {
 int PyArg_Parse(...) { return 0; };
 int PyArg_ParseTuple(...) { return 0; }
 int PyArg_ParseTupleAndKeywords(...) { return 0; }
+int PyBool_FromLong(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
