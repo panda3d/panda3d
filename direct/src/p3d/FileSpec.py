@@ -144,7 +144,7 @@ class FileSpec:
             return False
 
         if notify:
-            notify.info("hash check ok: %s" % (pathname))
+            notify.debug("hash check ok: %s" % (pathname))
 
         # The hash is OK after all.  Change the file's timestamp back
         # to what we expect it to be, so we can quick-verify it
@@ -191,7 +191,7 @@ class FileSpec:
             return False
 
         if notify:
-            notify.info("hash check ok: %s" % (pathname))
+            notify.debug("hash check ok: %s" % (pathname))
 
         # The hash is OK.  If the timestamp is wrong, change it back
         # to what we expect it to be, so we can quick-verify it

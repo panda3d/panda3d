@@ -1000,6 +1000,7 @@ class PackageInfo:
                 continue
 
             targetPathname = Filename(self.getPackageDir(), file.filename)
+            targetPathname.setBinary()
             targetPathname.unlink()
             if not mf.extractSubfile(i, targetPathname):
                 self.notify.warning("Couldn't extract: %s" % (file.filename))
