@@ -34,9 +34,10 @@ BulletCharacterControllerNode(BulletShape *shape, float step_height, const char 
   // Get convex shape (for ghost object)
   if (!shape->is_convex()) {
     bullet_cat.error() << "a convex shape is required!" << endl;
+    return;
   }
 
-  btConvexShape *convex = dynamic_cast<btConvexShape *>(shape->ptr());
+  btConvexShape *convex = (btConvexShape *)(shape->ptr());
 
   // Ghost object
   _ghost = new btPairCachingGhostObject();
