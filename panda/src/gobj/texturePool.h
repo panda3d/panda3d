@@ -81,6 +81,7 @@ PUBLISHED:
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
   INLINE static const Filename &get_fake_texture_image();
+  INLINE static PT(Texture) make_texture(const string &extension);
 
   static void write(ostream &out);
 
@@ -90,7 +91,6 @@ public:
   void register_filter(TexturePoolFilter *filter);
   
   MakeTextureFunc *get_texture_type(const string &extension) const;
-  PT(Texture) make_texture(const string &extension) const;
   void write_texture_types(ostream &out, int indent_level) const;
 
   static TexturePool *get_global_ptr();
@@ -128,6 +128,7 @@ private:
   void ns_list_contents(ostream &out) const;
   Texture *ns_find_texture(const string &name) const;
   TextureCollection ns_find_all_textures(const string &name) const;
+  PT(Texture) ns_make_texture(const string &extension) const;
 
   void resolve_filename(Filename &new_filename, const Filename &orig_filename);
 

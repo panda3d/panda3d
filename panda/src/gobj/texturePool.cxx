@@ -111,26 +111,6 @@ get_texture_type(const string &extension) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::make_texture
-//       Access: Public
-//  Description: Creates a new Texture object of the appropriate type
-//               for the indicated filename extension, according to
-//               the types that have been registered via
-//               register_texture_type().
-////////////////////////////////////////////////////////////////////
-PT(Texture) TexturePool::
-make_texture(const string &extension) const {
-  MakeTextureFunc *func = get_texture_type(extension);
-  if (func != NULL) {
-    return func();
-  }
-
-  // We don't know what kind of file type this is; return an ordinary
-  // Texture in case it's an image file with no extension.
-  return new Texture;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::write_texture_types
 //       Access: Public
 //  Description: Outputs a list of the available texture types to the
@@ -299,7 +279,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
         
     } else {
       // Read it the conventional way.
-      tex = make_texture(ext);
+      tex = ns_make_texture(ext);
       if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
                      0, 0, false, read_mipmaps, record, options)) {
         // This texture was not found or could not be read.
@@ -430,7 +410,7 @@ ns_load_texture(const Filename &orig_filename,
     gobj_cat.info()
       << "Loading texture " << filename << " and alpha component "
       << alpha_filename << endl;
-    tex = make_texture(filename.get_extension());
+    tex = ns_make_texture(filename.get_extension());
     if (!tex->read(filename, alpha_filename, primary_file_num_channels,
                    alpha_file_channel, 0, 0, false, read_mipmaps, NULL,
                    options)) {
@@ -550,7 +530,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
     // cache; it needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading 3-d texture " << filename << "\n";
-    tex = make_texture(filename.get_extension());
+    tex = ns_make_texture(filename.get_extension());
     tex->setup_3d_texture();
     if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
@@ -656,7 +636,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
     // cache; it needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading 2-d texture array " << filename << "\n";
-    tex = make_texture(filename.get_extension());
+    tex = ns_make_texture(filename.get_extension());
     tex->setup_2d_texture_array();
     if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
@@ -757,7 +737,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     // cache; it needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading cube map texture " << filename << "\n";
-    tex = make_texture(filename.get_extension());
+    tex = ns_make_texture(filename.get_extension());
     tex->setup_cube_map();
     if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
@@ -1042,6 +1022,26 @@ ns_find_all_textures(const string &name) const {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_make_texture
+//       Access: Public
+//  Description: Creates a new Texture object of the appropriate type
+//               for the indicated filename extension, according to
+//               the types that have been registered via
+//               register_texture_type().
+////////////////////////////////////////////////////////////////////
+PT(Texture) TexturePool::
+ns_make_texture(const string &extension) const {
+  MakeTextureFunc *func = get_texture_type(extension);
+  if (func != NULL) {
+    return func();
+  }
+
+  // We don't know what kind of file type this is; return an ordinary
+  // Texture in case it's an image file with no extension.
+  return new Texture;
 }
 
 ////////////////////////////////////////////////////////////////////

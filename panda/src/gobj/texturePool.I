@@ -338,3 +338,16 @@ INLINE const Filename &TexturePool::
 get_fake_texture_image() {
   return get_global_ptr()->_fake_texture_image;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::make_texture
+//       Access: Published, Static
+//  Description: Creates a new Texture object of the appropriate type
+//               for the indicated filename extension, according to
+//               the types that have been registered via
+//               register_texture_type().
+////////////////////////////////////////////////////////////////////
+PT(Texture) TexturePool::
+make_texture(const string &extension) {
+  return get_global_ptr()->ns_make_texture(extension);
+}
