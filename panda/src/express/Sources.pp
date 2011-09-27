@@ -63,8 +63,10 @@
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFileMount.I virtualFileMountMultifile.h \
-    virtualFileMountMultifile.I virtualFileMountSystem.h \
-    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileMountMultifile.I \
+    virtualFileMountRamdisk.h virtualFileMountRamdisk.I \
+    virtualFileMountSystem.h virtualFileMountSystem.I \
+    virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
     weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \
@@ -116,7 +118,9 @@
     vector_uchar.cxx vector_float.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
     virtualFileMount.cxx \
-    virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
+    virtualFileMountMultifile.cxx \
+    virtualFileMountRamdisk.cxx \
+    virtualFileMountSystem.cxx \
     virtualFileSimple.cxx virtualFileSystem.cxx \
     weakPointerCallback.cxx \
     weakPointerTo.cxx \
@@ -180,8 +184,10 @@
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFileMount.I virtualFileMountMultifile.h \
-    virtualFileMountMultifile.I virtualFileMountSystem.h \
-    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileMountMultifile.I \
+    virtualFileMountRamdisk.h virtualFileMountRamdisk.I \
+    virtualFileMountSystem.h virtualFileMountSystem.I \
+    virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
     weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \

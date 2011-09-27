@@ -17,6 +17,7 @@
 #include "virtualFileComposite.h"
 #include "virtualFileMount.h"
 #include "virtualFileMountMultifile.h"
+#include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
 #include "streamWrapper.h"
 #include "dSearchPath.h"
@@ -510,9 +511,37 @@ get_cwd() const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 make_directory(const Filename &filename) {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.acquire();
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.release();
+  return result->is_directory();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::make_directory_full
+//       Access: Published
+//  Description: Attempts to create a directory within the file
+//               system.  Will also create any intervening directories
+//               needed.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+make_directory_full(const Filename &filename) {
+  _lock.acquire();
+
+  // First, make sure everything up to the last path is known.  We
+  // don't care too much if any of these fail; maybe they failed
+  // because the directory was already there.
+  string dirname = filename;
+  size_t slash = dirname.find('/', 1);
+  while (slash != string::npos) {
+    Filename component(dirname.substr(0, slash));
+    do_get_file(component, OF_make_directory);
+    slash = dirname.find('/', slash + 1);
+  }
+
+  // Now make the last one, and check the return value.
+  PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
+  _lock.release();
   return result->is_directory();
 }
 
@@ -594,6 +623,82 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::delete_file
+//       Access: Public
+//  Description: Attempts to delete the indicated file or directory.
+//               This can remove a single file or an empty directory.
+//               It will not remove a nonempty directory.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+delete_file(const Filename &filename) {
+  PT(VirtualFile) file = get_file(filename, true);
+  if (file == (VirtualFile *)NULL) {
+    return false;
+  }
+
+  return file->delete_file();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::rename_file
+//       Access: Public
+//  Description: Attempts to move or rename the indicated file or
+//               directory.  If the original file is an ordinary file,
+//               it will quietly replace any already-existing file in
+//               the new filename (but not a directory).  If the
+//               original file is a directory, the new filename must
+//               not already exist.
+//
+//               If the file is a directory, the new filename must be
+//               within the same mount point.  If the file is an
+//               ordinary file, the new filename may be anywhere; but
+//               if it is not within the same mount point then the
+//               rename operation is automatically performed as a
+//               two-step copy-and-delete operation.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+rename_file(const Filename &orig_filename, const Filename &new_filename) {
+  _lock.acquire();
+  PT(VirtualFile) orig_file = do_get_file(orig_filename, OF_status_only);
+  if (orig_file == (VirtualFile *)NULL) {
+    _lock.release();
+    return false;
+  }
+
+  PT(VirtualFile) new_file = do_get_file(new_filename, OF_status_only | OF_allow_nonexist);
+  if (new_file == (VirtualFile *)NULL) {
+    _lock.release();
+    return false;
+  }
+
+  _lock.release();
+
+  return orig_file->rename_file(new_file);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::copy_file
+//       Access: Public
+//  Description: Attempts to copy the contents of the indicated file
+//               to the indicated file.  Returns true on success,
+//               false on failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+copy_file(const Filename &orig_filename, const Filename &new_filename) {
+  PT(VirtualFile) orig_file = get_file(orig_filename, true);
+  if (orig_file == (VirtualFile *)NULL) {
+    return false;
+  }
+
+  PT(VirtualFile) new_file = get_file(new_filename, true);
+  if (new_file == (VirtualFile *)NULL) {
+    return false;
+  }
+
+  return orig_file->copy_file(new_file);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::resolve_filename
@@ -779,22 +884,36 @@ get_global_ptr() {
         mount_desc = ExecutionEnvironment::expand_string(mount_desc);
         Filename physical_filename = Filename::from_os_specific(mount_desc);
         
-        int flags = 0;
+        int flags;
         string password;
-        
-        // Split the options up by commas.
-        size_t p = 0;
-        size_t q = options.find(',', p);
-        while (q != string::npos) {
-          parse_option(options.substr(p, q - p),
-                       flags, password);
-          p = q + 1;
-          q = options.find(',', p);
-        }
-        parse_option(options.substr(p), flags, password);
-        
+        parse_options(options, flags, password);
         _global_ptr->mount(physical_filename, mount_point, flags, password);
       }
+    }
+
+    ConfigVariableString vfs_mount_ramdisk
+      ("vfs-mount-ramdisk", "",
+       PRC_DESC("vfs-mount-ramdisk mount-point [options]"));
+    if (!vfs_mount_ramdisk.empty()) {
+      string mount_point = vfs_mount_ramdisk;
+      string options;
+        
+      size_t space = mount_point.rfind(' ');
+      if (space != string::npos) {
+        // If there's a space, we have the optional options field.
+        options = mount_point.substr(space + 1);
+        while (space > 0 && isspace(mount_point[space - 1])) {
+          --space;
+        }
+        mount_point = mount_point.substr(0, space);
+      }
+        
+      int flags;
+      string password;
+      parse_options(options, flags, password);
+
+      PT(VirtualFileMount) ramdisk = new VirtualFileMountRamdisk;
+      _global_ptr->mount(ramdisk, mount_point, flags);
     }
   }
 
@@ -1038,6 +1157,38 @@ close_read_write_file(iostream *stream) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::atomic_compare_and_exchange_contents
+//       Access: Public
+//  Description: See Filename::atomic_compare_and_exchange_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents,
+                                     const string &old_contents, 
+                                     const string &new_contents) {
+  PT(VirtualFile) file = create_file(filename);
+  if (file == NULL) {
+    return false;
+  }
+
+  return file->atomic_compare_and_exchange_contents(orig_contents, old_contents, new_contents);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::atomic_read_contents
+//       Access: Public
+//  Description: See Filename::atomic_read_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+atomic_read_contents(const Filename &filename, string &contents) const {
+  PT(VirtualFile) file = get_file(filename, false);
+  if (file == NULL) {
+    return false;
+  }
+
+  return file->atomic_read_contents(contents);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::scan_mount_points
 //       Access: Public
 //  Description: Adds to names a list of all the mount points in use
@@ -1080,6 +1231,30 @@ scan_mount_points(vector_string &names, const Filename &path) const {
     }
   }
 }
+
+        
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::parse_options
+//       Access: Public, Static
+//  Description: Parses all of the option flags in the options list on
+//               the vfs-mount Config.prc line.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+parse_options(const string &options, int &flags, string &password) {
+  flags = 0;
+  password = string();
+
+  // Split the options up by commas.
+  size_t p = 0;
+  size_t q = options.find(',', p);
+  while (q != string::npos) {
+    parse_option(options.substr(p, q - p),
+                 flags, password);
+    p = q + 1;
+    q = options.find(',', p);
+  }
+  parse_option(options.substr(p), flags, password);
+}      
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::parse_option
@@ -1148,7 +1323,9 @@ do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
 do_get_file(const Filename &filename, int open_flags) const {
-  nassertr(!filename.empty(), NULL);
+  if (filename.empty()) {
+    return NULL;
+  }
   Filename pathname(filename);
   if (pathname.is_local()) {
     pathname = Filename(_cwd, filename);
@@ -1262,7 +1439,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
                int open_flags) const {
   PT(VirtualFile) vfile = 
     mount->make_virtual_file(local_filename, original_filename, false, open_flags);
-  if (!vfile->has_file()) {
+  if (!vfile->has_file() && ((open_flags & OF_allow_nonexist) == 0)) {
     // Keep looking.
     return false;
   }

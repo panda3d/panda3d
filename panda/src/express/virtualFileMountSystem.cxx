@@ -60,6 +60,53 @@ create_file(const Filename &file) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::delete_file
+//       Access: Public, Virtual
+//  Description: Attempts to delete the indicated file or directory
+//               within the mount.  This can remove a single file or
+//               an empty directory.  It will not remove a nonempty
+//               directory.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+delete_file(const Filename &file) {
+  Filename pathname(_physical_filename, file);
+  return pathname.unlink() || pathname.rmdir();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::rename_file
+//       Access: Public
+//  Description: Attempts to rename the contents of the indicated file
+//               to the indicated file.  Both filenames will be within
+//               the mount.  Returns true on success, false on
+//               failure.  If this returns false, this will be
+//               attempted again with a copy-and-delete operation.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+rename_file(const Filename &orig_filename, const Filename &new_filename) {
+  Filename orig_pathname(_physical_filename, orig_filename);
+  Filename new_pathname(_physical_filename, new_filename);
+  return orig_pathname.rename_to(new_pathname);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::copy_file
+//       Access: Public
+//  Description: Attempts to copy the contents of the indicated file
+//               to the indicated file.  Both filenames will be within
+//               the mount.  Returns true on success, false on
+//               failure.  If this returns false, the copy will be
+//               performed by explicit read-and-write operations.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+copy_file(const Filename &orig_filename, const Filename &new_filename) {
+  Filename orig_pathname(_physical_filename, orig_filename);
+  Filename new_pathname(_physical_filename, new_filename);
+  return orig_pathname.copy_to(new_pathname);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::make_directory
 //       Access: Public, Virtual
 //  Description: Attempts to create the indicated file within the
@@ -382,6 +429,46 @@ scan_directory(vector_string &contents, const Filename &dir) const {
   return pathname.scan_directory(contents);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::atomic_compare_and_exchange_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_compare_and_exchange_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents,
+                                     const string &old_contents, 
+                                     const string &new_contents) {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  return pathname.atomic_compare_and_exchange_contents(orig_contents, old_contents, new_contents);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::atomic_read_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_read_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileMountSystem::
+atomic_read_contents(const Filename &file, string &contents) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
+  Filename pathname(_physical_filename, file);
+  return pathname.atomic_read_contents(contents);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::output

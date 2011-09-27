@@ -91,7 +91,9 @@ public:
   void write(const char *buffer, streamsize num_bytes);
   void write(const char *buffer, streamsize num_bytes, bool &fail);
   void seek_write(streamsize pos, const char *buffer, streamsize num_bytes, bool &fail);
+  void seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail);
   INLINE bool put(char c);
+  streamsize seek_ppos_eof();
 
 private:
   ostream *_ostream;

@@ -222,7 +222,8 @@ open_write(const Filename &bam_filename, bool report_errors) {
 
   loader_cat.info() << "Writing " << bam_filename << "\n";
 
-  bam_filename.unlink();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->delete_file(bam_filename);
   if (!_dout.open(bam_filename)) {
     if (report_errors) {
       loader_cat.error() << "Unable to open " << bam_filename << "\n";

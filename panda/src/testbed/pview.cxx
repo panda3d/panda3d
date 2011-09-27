@@ -22,6 +22,7 @@
 #include "partGroup.h"
 #include "cardMaker.h"
 #include "bamCache.h"
+#include "virtualFileSystem.h"
 #include "panda_getopt.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
@@ -324,11 +325,12 @@ main(int argc, char *argv[]) {
       window->load_models(framework.get_models(), argc, argv);
 
       if (delete_models) {
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
         for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
           Filename model = Filename::from_os_specific(argv[i]);
-          if (model.exists()) {
+          if (vfs->exists(model)) {
             nout << "Deleting " << model << "\n";
-            model.unlink();
+            vfs->delete_file(model);
           }
         }
       }

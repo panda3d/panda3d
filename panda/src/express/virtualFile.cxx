@@ -65,6 +65,53 @@ is_writable() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::delete_file
+//       Access: Public
+//  Description: Attempts to delete this file or directory.  This can
+//               remove a single file or an empty directory.  It will
+//               not remove a nonempty directory.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+delete_file() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::rename_file
+//       Access: Public
+//  Description: Attempts to move or rename this file or directory.
+//               If the original file is an ordinary file, it will
+//               quietly replace any already-existing file in the new
+//               filename (but not a directory).  If the original file
+//               is a directory, the new filename must not already
+//               exist.
+//
+//               If the file is a directory, the new filename must be
+//               within the same mount point.  If the file is an
+//               ordinary file, the new filename may be anywhere; but
+//               if it is not within the same mount point then the
+//               rename operation is automatically performed as a
+//               two-step copy-and-delete operation.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+rename_file(VirtualFile *new_file) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::copy_file
+//       Access: Public
+//  Description: Attempts to copy the contents of this file to the
+//               indicated file.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+copy_file(VirtualFile *new_file) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::scan_directory
 //       Access: Published
 //  Description: If the file represents a directory (that is,
@@ -346,6 +393,28 @@ get_timestamp() const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
 get_system_info(SubfileInfo &info) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::atomic_compare_and_exchange_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_compare_and_exchange_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+atomic_compare_and_exchange_contents(string &orig_contents,
+                                     const string &old_contents, 
+                                     const string &new_contents) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::atomic_read_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_read_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+atomic_read_contents(string &contents) const {
   return false;
 }
 

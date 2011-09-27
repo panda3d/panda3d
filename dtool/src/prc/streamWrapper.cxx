@@ -217,6 +217,42 @@ seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OStreamWrapper::seek_eof_write
+//       Access: Public
+//  Description: Atomically seeks to the end of the file, and writes a
+//               number of bytes to the stream.  Returns whether a
+//               failure condition was detected by the operation.
+////////////////////////////////////////////////////////////////////
+void OStreamWrapper::
+seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
+  acquire();
+  _ostream->clear();
+  _ostream->seekp(0, ios::end);
+  _ostream->write(buffer, num_bytes);
+  fail = _ostream->fail();
+  release();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OStreamWrapper::seek_ppos_eof
+//       Access: Public
+//  Description: Atomically seeks to EOF and returns the ppos there;
+//               that is, returns the file size.  Note that the EOF
+//               might have been moved in another thread by the time
+//               this method returns.
+////////////////////////////////////////////////////////////////////
+streamsize OStreamWrapper::
+seek_ppos_eof() {
+  streamsize pos;
+  acquire();
+  _ostream->seekp(0, ios::end);
+  pos = _ostream->tellp();
+  release();
+
+  return pos;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StreamWrapper::Destructor
 //       Access: Published
 //  Description: 

@@ -118,22 +118,19 @@ set_root(const Filename &root) {
   flush_index();
   _root = root;
 
-  // For now, the filename must be a directory.  Maybe eventually we
-  // will support writing caches to a Panda multifile (though maybe it
-  // would be better to implement this kind of thing at a lower level,
-  // via a writable VFS, in which case the specified root filename
-  // will still be a "directory").
-  if (!root.is_directory()) {
-    Filename dirname(_root, Filename("."));
-    dirname.make_dir();
+  // The root filename must be a directory.
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->is_directory(_root)) {
+    vfs->make_directory_full(_root);
   }
-  nassertv(root.is_directory());
 
   delete _index;
   _index = new BamCacheIndex;
   _index_stale_since = 0;
   read_index();
   check_cache_size();
+
+  nassertv(vfs->is_directory(_root));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,6 +190,7 @@ lookup(const Filename &source_filename, const string &cache_extension) {
 ////////////////////////////////////////////////////////////////////
 bool BamCache::
 store(BamCacheRecord *record) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   ReMutexHolder holder(_lock);
   nassertr(!record->_cache_pathname.empty(), false);
   nassertr(record->has_data(), false);
@@ -227,7 +225,7 @@ store(BamCacheRecord *record) {
   if (!dout.open(temp_pathname)) {
     util_cat.error()
       << "Could not write cache file: " << temp_pathname << "\n";
-    temp_pathname.unlink();
+    vfs->delete_file(temp_pathname);
     emergency_read_only();
     return false;
   }
@@ -235,14 +233,14 @@ store(BamCacheRecord *record) {
   if (!dout.write_header(_bam_header)) {
     util_cat.error()
       << "Unable to write to " << temp_pathname << "\n";
-    temp_pathname.unlink();
+    vfs->delete_file(temp_pathname);
     return false;
   }
 
   {
     BamWriter writer(&dout);
     if (!writer.init()) {
-      temp_pathname.unlink();
+      vfs->delete_file(temp_pathname);
       return false;
     }
     
@@ -257,12 +255,12 @@ store(BamCacheRecord *record) {
     }
     
     if (!writer.write_object(record)) {
-      temp_pathname.unlink();
+      vfs->delete_file(temp_pathname);
       return false;
     }
     
     if (!writer.write_object(record->get_data())) {
-      temp_pathname.unlink();
+      vfs->delete_file(temp_pathname);
       return false;
     }
 
@@ -275,13 +273,13 @@ store(BamCacheRecord *record) {
   dout.close();
 
   // Now move the file into place.
-  if (!temp_pathname.rename_to(cache_pathname) && temp_pathname.exists()) {
-    cache_pathname.unlink();
-    if (!temp_pathname.rename_to(cache_pathname)) {
+  if (!vfs->rename_file(temp_pathname, cache_pathname) && vfs->exists(temp_pathname)) {
+    vfs->delete_file(cache_pathname);
+    if (!vfs->rename_file(temp_pathname, cache_pathname)) {
       util_cat.error()
         << "Unable to rename " << temp_pathname << " to " 
         << cache_pathname << "\n";
-      temp_pathname.unlink();
+      vfs->delete_file(temp_pathname);
       return false;
     }
   }
@@ -351,15 +349,17 @@ flush_index() {
     
     // Now atomically write the name of this index file to the index
     // reference file.
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     Filename index_ref_pathname(_root, Filename("index_name.txt"));
     string old_index = _index_ref_contents;
     string new_index = temp_pathname.get_basename() + "\n";
     string orig_index;
-    if (index_ref_pathname.atomic_compare_and_exchange_contents(orig_index, old_index, new_index)) {
+
+    if (vfs->atomic_compare_and_exchange_contents(index_ref_pathname, orig_index, old_index, new_index)) {
       // We successfully wrote our version of the index, and no other
       // process beat us to it.  Our index is now the official one.
       // Remove the old index.
-      _index_pathname.unlink();
+      vfs->delete_file(_index_pathname);
       _index_pathname = temp_pathname;
       _index_ref_contents = new_index;
       _index_stale_since = 0;
@@ -369,7 +369,7 @@ flush_index() {
     // Shoot, some other process updated the index while we were
     // trying to update it, and they beat us to it.  We have to merge,
     // and try again.
-    temp_pathname.unlink();
+    vfs->delete_file(temp_pathname);
     _index_pathname = Filename(_root, Filename(trim(orig_index)));
     _index_ref_contents = orig_index;
     read_index();
@@ -411,7 +411,8 @@ read_index() {
     if (old_index_pathname == _index_pathname) {
       // Nope, we just couldn't read it.  Delete it and build a new
       // one.
-      _index_pathname.unlink();
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      vfs->delete_file(_index_pathname);
       rebuild_index();
       flush_index();
       return;
@@ -428,9 +429,10 @@ read_index() {
 ////////////////////////////////////////////////////////////////////
 bool BamCache::
 read_index_pathname(Filename &index_pathname, string &index_ref_contents) const {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   index_ref_contents.clear();
   Filename index_ref_pathname(_root, Filename("index_name.txt"));
-  if (!index_ref_pathname.atomic_read_contents(index_ref_contents)) {
+  if (!vfs->atomic_read_contents(index_ref_pathname, index_ref_contents)) {
     return false;
   }
 
@@ -555,8 +557,10 @@ merge_index(BamCacheIndex *new_index) {
 ////////////////////////////////////////////////////////////////////
 void BamCache::
 rebuild_index() {
-  vector_string contents;
-  if (!_root.scan_directory(contents)) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  PT(VirtualFileList) contents = vfs->scan_directory(_root);
+  if (contents == NULL) {
     util_cat.error()
       << "Unable to read directory " << _root << ", caching disabled.\n";
     set_active(false);
@@ -566,9 +570,10 @@ rebuild_index() {
   delete _index;
   _index = new BamCacheIndex;
 
-  vector_string::const_iterator ci;
-  for (ci = contents.begin(); ci != contents.end(); ++ci) {
-    Filename filename(*ci);
+  int num_files = contents->get_num_files();
+  for (int ci = 0; ci < num_files; ++ci) {
+    VirtualFile *file = contents->get_file(ci);
+    Filename filename = file->get_filename();
     if (filename.get_extension() == "bam" ||
         filename.get_extension() == "txo") {
       Filename pathname(_root, filename);
@@ -576,7 +581,7 @@ rebuild_index() {
       PT(BamCacheRecord) record = do_read_record(pathname, false);
       if (record == (BamCacheRecord *)NULL) {
         // Well, it was invalid, so blow it away.
-        pathname.unlink();
+        file->delete_file();
 
       } else {
         record->_record_access_time = record->_recorded_time;
@@ -585,7 +590,7 @@ rebuild_index() {
         if (!inserted) {
           util_cat.info()
             << "Multiple cache files defining " << record->get_source_pathname() << "\n";
-          pathname.unlink();
+          file->delete_file();
         }
       }
     }
@@ -646,8 +651,9 @@ check_cache_size() {
         // Never mind; the cache is empty.
         break;
       }
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
       Filename cache_pathname(_root, record->get_cache_filename());
-      cache_pathname.unlink();
+      vfs->delete_file(cache_pathname);
     }
     mark_index_stale();
   }
@@ -722,30 +728,31 @@ do_read_index(const Filename &index_pathname) {
 ////////////////////////////////////////////////////////////////////
 bool BamCache::
 do_write_index(const Filename &index_pathname, const BamCacheIndex *index) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   DatagramOutputFile dout;
   if (!dout.open(index_pathname)) {
     util_cat.error()
       << "Could not write index file: " << index_pathname << "\n";
-    index_pathname.unlink();
+    vfs->delete_file(index_pathname);
     return false;
   }
 
   if (!dout.write_header(_bam_header)) {
     util_cat.error()
       << "Unable to write to " << index_pathname << "\n";
-    index_pathname.unlink();
+    vfs->delete_file(index_pathname);
     return false;
   }
 
   {
     BamWriter writer(&dout);
     if (!writer.init()) {
-      index_pathname.unlink();
+      vfs->delete_file(index_pathname);
       return false;
     }
     
     if (!writer.write_object(index)) {
-      index_pathname.unlink();
+      vfs->delete_file(index_pathname);
       return false;
     }
   }
@@ -788,6 +795,7 @@ PT(BamCacheRecord) BamCache::
 read_record(const Filename &source_pathname, 
             const Filename &cache_filename,
             int pass) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename cache_pathname(_root, cache_filename);
   if (pass != 0) {
     ostringstream strm;
@@ -806,7 +814,7 @@ read_record(const Filename &source_pathname,
   PT(BamCacheRecord) record = do_read_record(cache_pathname, true);
   if (record == (BamCacheRecord *)NULL) {
     // Well, it was invalid, so blow it away, and make a new one.
-    cache_pathname.unlink();
+    vfs->delete_file(cache_pathname);
     remove_from_index(source_pathname);
 
     PT(BamCacheRecord) record =

@@ -23,6 +23,7 @@
 #include "virtualFileComposite.h"
 #include "virtualFileMount.h"
 #include "virtualFileMountMultifile.h"
+#include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
 #include "virtualFileSimple.h"
 #include "fileReference.h"
@@ -106,6 +107,7 @@ init_libexpress() {
   VirtualFileComposite::init_type();
   VirtualFileMount::init_type();
   VirtualFileMountMultifile::init_type();
+  VirtualFileMountRamdisk::init_type();
   VirtualFileMountSystem::init_type();
   VirtualFileSimple::init_type();
   FileReference::init_type();

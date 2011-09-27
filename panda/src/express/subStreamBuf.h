@@ -27,11 +27,11 @@ public:
   SubStreamBuf();
   virtual ~SubStreamBuf();
 
-  void open(IStreamWrapper *source, streampos start, streampos end);
+  void open(IStreamWrapper *source, OStreamWrapper *dest, streampos start, streampos end, bool append);
   void close();
 
-  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode mode);
-  virtual streampos seekpos(streampos pos, ios_openmode mode);
+  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual streampos seekpos(streampos pos, ios_openmode which);
 
 protected:
   virtual int overflow(int c);
@@ -40,10 +40,12 @@ protected:
 
 private:
   IStreamWrapper *_source;
+  OStreamWrapper *_dest;
   streampos _start;
   streampos _end;
-  streampos _cur;
-  size_t _unused;
+  bool _append;
+  streampos _gpos;
+  streampos _ppos;
   char *_buffer;
 };
 

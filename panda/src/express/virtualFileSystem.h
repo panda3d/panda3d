@@ -69,12 +69,16 @@ PUBLISHED:
   BLOCKING bool chdir(const Filename &new_directory);
   BLOCKING Filename get_cwd() const;
   BLOCKING bool make_directory(const Filename &filename);
+  BLOCKING bool make_directory_full(const Filename &filename);
 
   BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
   BLOCKING PT(VirtualFile) create_file(const Filename &filename);
   BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
                                      const DSearchPath &searchpath,
                                      bool status_only = false) const;
+  BLOCKING bool delete_file(const Filename &filename);
+  BLOCKING bool rename_file(const Filename &orig_filename, const Filename &new_filename);
+  BLOCKING bool copy_file(const Filename &orig_filename, const Filename &new_filename);
 
   BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
                                  const string &default_extension = string()) const;
@@ -115,14 +119,19 @@ PUBLISHED:
   BLOCKING static void close_read_write_file(iostream *stream);
 
 public:
+  bool atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents, const string &old_contents, const string &new_contents);
+  bool atomic_read_contents(const Filename &filename, string &contents) const;
+
   INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
   INLINE bool read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const;
   INLINE bool write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap);
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
-
+ 
+  static void parse_options(const string &options,
+                            int &flags, string &password);
   static void parse_option(const string &option,
-                           int &flags, string &password);
+                          int &flags, string &password);
 
 public:
   // These flags are passed to do_get_file() and
@@ -132,6 +141,7 @@ public:
     OF_status_only    = 0x0001,
     OF_create_file    = 0x0002,
     OF_make_directory = 0x0004,
+    OF_allow_nonexist = 0x0008,
   };
 
   // These are declared as class instances, instead of as globals, to

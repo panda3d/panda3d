@@ -234,11 +234,9 @@ collapse_equivalent_materials() {
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 write_egg(Filename filename) {
-  filename.unlink();
-  filename.set_text();
-
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    
+  filename.set_text();
+  vfs->delete_file(filename);
   ostream *file = vfs->open_write_file(filename, true, true);
   if (file == (ostream *)NULL) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";

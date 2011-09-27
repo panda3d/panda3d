@@ -48,6 +48,9 @@ public:
   virtual bool has_file(const Filename &file) const=0;
   virtual bool create_file(const Filename &file);
   virtual bool make_directory(const Filename &file);
+  virtual bool delete_file(const Filename &file);
+  virtual bool rename_file(const Filename &orig_filename, const Filename &new_filename);
+  virtual bool copy_file(const Filename &orig_filename, const Filename &new_filename);
   virtual bool is_directory(const Filename &file) const=0;
   virtual bool is_regular_file(const Filename &file) const=0;
   virtual bool is_writable(const Filename &file) const;
@@ -77,6 +80,9 @@ public:
 
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const=0;
+
+  virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);
+  virtual bool atomic_read_contents(const Filename &file, string &contents) const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;

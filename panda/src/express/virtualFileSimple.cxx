@@ -100,6 +100,115 @@ is_writable() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::delete_file
+//       Access: Public
+//  Description: Attempts to delete this file or directory.  This can
+//               remove a single file or an empty directory.  It will
+//               not remove a nonempty directory.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+delete_file() {
+  return _mount->delete_file(_local_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::rename_file
+//       Access: Public
+//  Description: Attempts to move or rename this file or directory.
+//               If the original file is an ordinary file, it will
+//               quietly replace any already-existing file in the new
+//               filename (but not a directory).  If the original file
+//               is a directory, the new filename must not already
+//               exist.
+//
+//               If the file is a directory, the new filename must be
+//               within the same mount point.  If the file is an
+//               ordinary file, the new filename may be anywhere; but
+//               if it is not within the same mount point then the
+//               rename operation is automatically performed as a
+//               two-step copy-and-delete operation.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+rename_file(VirtualFile *new_file) {
+  if (new_file->is_of_type(VirtualFileSimple::get_class_type())) {
+    VirtualFileSimple *new_file_simple = DCAST(VirtualFileSimple, new_file);
+    if (new_file_simple->_mount == _mount) {
+      // Same mount pount.
+      if (_mount->rename_file(_local_filename, new_file_simple->_local_filename)) {
+        return true;
+      }
+    }
+  }
+
+  // Different mount point, or the mount doesn't support renaming.  Do
+  // it by hand.
+  if (is_regular_file() && !new_file->is_directory()) {
+    // copy-and-delete.
+    new_file->delete_file();
+    if (copy_file(new_file)) {
+      delete_file();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::copy_file
+//       Access: Public
+//  Description: Attempts to copy the contents of this file to the
+//               indicated file.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+copy_file(VirtualFile *new_file) {
+  if (new_file->is_of_type(VirtualFileSimple::get_class_type())) {
+    VirtualFileSimple *new_file_simple = DCAST(VirtualFileSimple, new_file);
+    if (new_file_simple->_mount == _mount) {
+      // Same mount pount.
+      if (_mount->copy_file(_local_filename, new_file_simple->_local_filename)) {
+        return true;
+      }
+    }
+  }
+
+  // Different mount point, or the mount doesn't support copying.  Do
+  // it by hand.
+  ostream *out = new_file->open_write_file(false, true);
+  istream *in = open_read_file(false);
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in->read(buffer, buffer_size);
+  size_t count = in->gcount();
+  while (count != 0) {
+    out->write(buffer, count);
+    if (out->fail()) {
+      new_file->close_write_file(out);
+      close_read_file(in);
+      new_file->delete_file();
+      return false;
+    }
+    in->read(buffer, buffer_size);
+    count = in->gcount();
+  }
+
+  if (!in->eof()) {
+    new_file->close_write_file(out);
+    close_read_file(in);
+    new_file->delete_file();
+    return false;
+  }
+
+  new_file->close_write_file(out);
+  close_read_file(in);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::open_read_file
 //       Access: Published, Virtual
 //  Description: Opens the file for reading.  Returns a newly
@@ -192,7 +301,7 @@ open_append_file() {
 //               work around compiler issues.
 ////////////////////////////////////////////////////////////////////
 void VirtualFileSimple::
-close_write_file(ostream *stream) const {
+close_write_file(ostream *stream) {
   _mount->close_write_file(stream);
 }
 
@@ -293,6 +402,28 @@ get_timestamp() const {
 bool VirtualFileSimple::
 get_system_info(SubfileInfo &info) {
   return _mount->get_system_info(_local_filename, info);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::atomic_compare_and_exchange_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_compare_and_exchange_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+atomic_compare_and_exchange_contents(string &orig_contents,
+                                     const string &old_contents, 
+                                     const string &new_contents) {
+  return _mount->atomic_compare_and_exchange_contents(_local_filename, orig_contents, old_contents, new_contents);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::atomic_read_contents
+//       Access: Public, Virtual
+//  Description: See Filename::atomic_read_contents().
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+atomic_read_contents(string &contents) const {
+  return _mount->atomic_read_contents(_local_filename, contents);
 }
 
 ////////////////////////////////////////////////////////////////////

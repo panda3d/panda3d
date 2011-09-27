@@ -18,6 +18,7 @@
 #include "virtualFileList.cxx"
 #include "virtualFileMount.cxx"
 #include "virtualFileMountMultifile.cxx"
+#include "virtualFileMountRamdisk.cxx"
 #include "virtualFileMountSystem.cxx"
 #include "virtualFileSimple.cxx"
 #include "virtualFileSystem.cxx"

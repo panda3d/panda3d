@@ -48,6 +48,10 @@ PUBLISHED:
   virtual bool is_regular_file() const;
   virtual bool is_writable() const;
 
+  BLOCKING virtual bool delete_file();
+  BLOCKING virtual bool rename_file(VirtualFile *new_file);
+  BLOCKING virtual bool copy_file(VirtualFile *new_file);
+
   BLOCKING PT(VirtualFileList) scan_directory() const;
 
   void output(ostream &out) const;
@@ -75,6 +79,9 @@ PUBLISHED:
   virtual bool get_system_info(SubfileInfo &info);
 
 public:
+  virtual bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents);
+  virtual bool atomic_read_contents(string &contents) const;
+
   INLINE void set_original_filename(const Filename &filename);
   bool read_file(string &result, bool auto_unwrap) const;
   virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
