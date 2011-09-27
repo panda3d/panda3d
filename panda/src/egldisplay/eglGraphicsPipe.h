@@ -24,13 +24,17 @@
 
 #ifdef OPENGLES_2
   #include "gles2gsg.h"
+  #include "pre_x11_include.h"
   #include <EGL/egl.h>
+  #include "post_x11_include.h"
   #define NativeDisplayType EGLNativeDisplayType
   #define NativePixmapType EGLNativePixmapType
   #define NativeWindowType EGLNativeWindowType
 #else
   #include "glesgsg.h"
+  #include "pre_x11_include.h"
   #include <GLES/egl.h>
+  #include "post_x11_include.h"
 #endif
 
 class FrameBufferProperties;
