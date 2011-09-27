@@ -170,7 +170,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
       return EOF;
     }
 
-    if (_end != 0 && new_pos > _end) {
+    if (_end != (streampos)0 && new_pos > _end) {
       // Can't seek past end of file.
       return EOF;
     }
@@ -217,7 +217,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
       return EOF;
     }
 
-    if (_end != 0 && new_pos > _end) {
+    if (_end != (streampos)0 && new_pos > _end) {
       // Can't seek past end of file.
       return EOF;
     }
@@ -261,7 +261,7 @@ overflow(int ch) {
 
   size_t n = pptr() - pbase();
   if (n != 0) {
-    if (_end != 0 && _ppos + (streampos)n > _end) {
+    if (_end != (streampos)0 && _ppos + (streampos)n > _end) {
       // Don't allow reading past the end of the file.
       n = (size_t)(_end - _ppos);
       if (n == 0) {
@@ -347,7 +347,7 @@ underflow() {
     gbump(-(int)buffer_size);
 
     streamsize num_bytes = buffer_size;
-    if (_end != 0 && _gpos + (streampos)num_bytes > _end) {
+    if (_end != (streampos)0 && _gpos + (streampos)num_bytes > _end) {
       // Don't allow reading past the end of the file.
       streamsize new_num_bytes = _end - _gpos;
       if (new_num_bytes == 0) {

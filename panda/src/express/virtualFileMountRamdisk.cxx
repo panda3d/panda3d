@@ -521,7 +521,7 @@ do_find_file(const string &filename) const {
     // Search for a file within the local directory.
     FileBase tfile(filename);
     tfile.local_object();
-    Files::iterator fi = _files.find(&tfile);
+    Files::const_iterator fi = _files.find(&tfile);
     if (fi != _files.end()) {
       return (*fi);
     }
@@ -533,7 +533,7 @@ do_find_file(const string &filename) const {
   string remainder = filename.substr(slash + 1);
   FileBase tfile(dirname);
   tfile.local_object();
-  Files::iterator fi = _files.find(&tfile);
+  Files::const_iterator fi = _files.find(&tfile);
   if (fi != _files.end()) {
     PT(FileBase) file = (*fi);
     if (file->is_directory()) {
