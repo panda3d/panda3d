@@ -593,7 +593,7 @@ ns_record_pointer(ReferenceCount *ptr) {
     // calls by toggling _recursion_protect while we adjust it.
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, NULL));
+      _table.insert(Table::value_type((void *)ptr, (MemoryInfo *)NULL));
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -794,7 +794,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
 
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, NULL));
+      _table.insert(Table::value_type((void *)ptr, (MemoryInfo *)NULL));
 
     assert(insert_result.first != _table.end());
 
