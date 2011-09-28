@@ -562,6 +562,10 @@ pack_return_value(ostream &out, int indent_level,
         << return_expr << ".data(), " << return_expr << ".length());\n";
     }
 
+  } else if (TypeManager::is_bool(type)) {
+    indent(out, indent_level)
+      << "return PyBool_FromLong(" << return_expr << ");\n";
+
   } else if (TypeManager::is_unsigned_longlong(type)) {
     indent(out, indent_level)
       << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";

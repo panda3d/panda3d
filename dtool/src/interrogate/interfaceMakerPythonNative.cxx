@@ -2871,32 +2871,37 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
         << return_expr << ".data(), (int)" << return_expr << ".length());\n";
     }
 
+  } else if (TypeManager::is_bool(type)) {
+    indent(out, indent_level)
+      << "return PyBool_FromLong(" << return_expr << ");\n";
+
   } else if (TypeManager::is_unsigned_longlong(type)) {
     indent(out, indent_level)
       << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_longlong(type)) {
-      indent(out, indent_level)
-          << "return PyLong_FromLongLong(" << return_expr << ");\n";
+    indent(out, indent_level)
+      << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
-  }  else if(TypeManager::is_unsigned_integer(type)){
-      indent(out, indent_level)
-          << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
-
-  }else if (TypeManager::is_integer(type)) {
-      indent(out, indent_level)
-          << "return PyInt_FromLong(" << return_expr << ");\n";
+  } else if(TypeManager::is_unsigned_integer(type)){
+    indent(out, indent_level)
+      << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
+    
+  } else if (TypeManager::is_integer(type)) {
+    indent(out, indent_level)
+      << "return PyInt_FromLong(" << return_expr << ");\n";
+    
   } else if (TypeManager::is_float(type)) {
-      indent(out, indent_level)
-          << "return PyFloat_FromDouble(" << return_expr << ");\n";
-
+    indent(out, indent_level)
+      << "return PyFloat_FromDouble(" << return_expr << ");\n";
+    
   } else if (TypeManager::is_char_pointer(type)) {
-      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
-      indent(out, indent_level)<<"{\n";
-      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
-      indent(out, indent_level)<<"    return Py_None;\n";
-      indent(out, indent_level)<<"}\n";
-      indent(out, indent_level)
+    indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+    indent(out, indent_level)<<"{\n";
+    indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+    indent(out, indent_level)<<"    return Py_None;\n";
+    indent(out, indent_level)<<"}\n";
+    indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
 
   }
