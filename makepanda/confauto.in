@@ -102,8 +102,8 @@ egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> {
 cull-bin gui-popup 60 unsorted
 
 # The following two lines are a fix for flaky hardware clocks.
-
-lock-to-one-cpu #t
+# Nowadays, lock-to-one-cpu is probably more trouble than it's worth.
+#lock-to-one-cpu #t
 paranoid-clock 1
 
 # This default only comes into play if you try to load a model
