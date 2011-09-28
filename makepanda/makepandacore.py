@@ -1008,9 +1008,21 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     result = handle.read().strip()
     handle.close()
     libs = []
-    for l in result.split(" "):
+
+    # Walk through the result arguments carefully.  Look for -lname as
+    # well as -framework name.
+    r = result.split(' ')
+    ri = 0
+    while ri < len(r):
+        l = r[ri]
         if l.startswith("-l") or l.startswith("/"):
             libs.append(l)
+        elif l == '-framework':
+            libs.append(l)
+            ri += 1
+            libs.append(r[ri])
+        ri += 1
+
     return libs
 
 def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
