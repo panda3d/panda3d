@@ -29,8 +29,10 @@ TypeHandle DXVertexBufferContext9::_type_handle;
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXVertexBufferContext9::
-DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, DXScreenData &scrn) :
+CLP(VertexBufferContext)::
+CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
+                         PreparedGraphicsObjects *pgo,
+                         GeomVertexArrayData *data) :
   VertexBufferContext(pgo, data),
   _vbuffer(NULL)
 {
@@ -43,112 +45,11 @@ DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, 
   int n = 0;
   int num_columns = array_format->get_num_columns();
 
-  _vertex_element_type_array = 0;
-
-  VERTEX_ELEMENT_TYPE *vertex_element_type_array;
-
-//  if (scrn._dxgsg9 -> _current_shader_context)
-  {
-    int total_elements;
-    unsigned char vertex_element_type_counter_array [VS_TOTAL_TYPES];
-    VERTEX_ELEMENT_TYPE *vertex_element_type;
-
-    total_elements = num_columns + 2;
-    vertex_element_type_array = new VERTEX_ELEMENT_TYPE [total_elements];
-    memset (vertex_element_type_array, 0, total_elements * sizeof (VERTEX_ELEMENT_TYPE));
-    memset (vertex_element_type_counter_array, 0, sizeof (vertex_element_type_counter_array));
-
-    // create a simple vertex type mapping from the vertex elements
-    vertex_element_type = vertex_element_type_array;
-    for (index = 0; index < num_columns; index++)
-    {
-      int num_values;
-      const InternalName *name;
-
-      name = array_format -> get_column (index) -> get_name ( );
-      num_values = array_format -> get_column(index) -> get_num_values ( );
-
-      if (false) {
-
-      } else if (name -> get_top ( ) == InternalName::get_vertex ( )) {
-
-        switch (num_values)
-        {
-          case 3:
-            vertex_element_type -> vs_input_type = VS_POSITION_XYZ;
-            break;
-          case 4:
-            vertex_element_type -> vs_input_type = VS_POSITION_XYZW;
-            break;
-          default:
-            dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
-            break;
-        }
-
-      } else if (name -> get_top ( ) == InternalName::get_texcoord ( )) {
-
-        switch (num_values)
-        {
-          case 1:
-            vertex_element_type -> vs_input_type = VS_TEXTURE_U;
-            break;
-          case 2:
-            vertex_element_type -> vs_input_type = VS_TEXTURE_UV;
-            break;
-          case 3:
-            vertex_element_type -> vs_input_type = VS_TEXTURE_UVW;
-            break;
-          default:
-            dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
-            break;
-        }
-
-      } else if (name -> get_top ( ) == InternalName::get_normal ( )) {
-
-        vertex_element_type -> vs_input_type = VS_NORMAL;
-
-      } else if (name -> get_top ( ) == InternalName::get_binormal ( )) {
-
-        vertex_element_type -> vs_input_type = VS_BINORMAL;
-
-      } else if (name -> get_top ( ) == InternalName::get_tangent ( )) {
-
-        vertex_element_type -> vs_input_type = VS_TANGENT;
-
-      } else if (name -> get_top ( ) == InternalName::get_color ( )) {
-
-        vertex_element_type -> vs_input_type = VS_DIFFUSE;
-
-      } else {
-
-        dxgsg9_cat.error ( )
-          << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( )
-          << "\n";
-
-        vertex_element_type -> vs_input_type = VS_ERROR;
-      }
-
-      vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> vs_input_type];
-      vertex_element_type_counter_array [vertex_element_type -> vs_input_type]++;
-
-      // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
-      vertex_element_type -> stream = 0;
-      vertex_element_type -> offset = array_format -> get_column(index) -> get_start ( );
-
-      vertex_element_type++;
-    }
-  }
-
-  _vertex_element_type_array = vertex_element_type_array;
-
   _fvf = 0;
-  _managed = -1;
-
-  _direct_3d_vertex_declaration = 0;
-  _shader_context = 0;
 
   if (n < num_columns &&
       array_format->get_column(n)->get_name() == InternalName::get_vertex()) {
+    Geom::Contents contents = array_format->get_column(n)->get_contents();
     ++n;
 
     int num_blend_values = 0;
@@ -264,26 +165,6 @@ DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DXVertexBufferContext9::
-~DXVertexBufferContext9() {
-
-  if (_vertex_element_type_array) {
-    delete _vertex_element_type_array;
-    _vertex_element_type_array = 0;
-  }
-  if (_direct_3d_vertex_declaration) {
-    _direct_3d_vertex_declaration -> Release ( );
-    _direct_3d_vertex_declaration = 0;
-  }
-
-  free_vbuffer ( );
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXVertexBufferContext9::evict_lru
 //       Access: Public, Virtual
 //  Description: Evicts the page from the LRU.  Called internally when
@@ -298,162 +179,16 @@ DXVertexBufferContext9::
 //               case the eviction will be requested again much
 //               later).
 ////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext9::
+void CLP(VertexBufferContext)::
 evict_lru() {
   dequeue_lru();
-  free_vbuffer();
+
+  if ( _vbuffer != NULL ) {
+    _vbuffer->Release();
+    _vbuffer = NULL;
+  }
+
   update_data_size_bytes(0);
   mark_unloaded();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::free_vbuffer
-//       Access: Public
-//  Description: Frees vertex buffer memory.
-////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext9::
-free_vbuffer(void) {
-
-  if (_vbuffer != NULL) {
-    if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
-      dxgsg9_cat.debug()
-        << "deleting vertex buffer " << _vbuffer << "\n";
-    }
-
-    if (DEBUG_VERTEX_BUFFER) {
-      RELEASE(_vbuffer, dxgsg9, "vertex buffer", RELEASE_ONCE);
-    }
-    else {
-      _vbuffer -> Release ( );
-    }
-
-    _vbuffer = NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::allocate_vbuffer
-//       Access: Public
-//  Description: Allocates vertex buffer memory.
-////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext9::
-allocate_vbuffer(DXScreenData &scrn,
-                 const GeomVertexArrayDataHandle *reader) {
-
-  int data_size;
-  HRESULT hr;
-  DWORD usage;
-  D3DPOOL pool;
-
-  data_size = reader->get_data_size_bytes();
-
-  _managed = scrn._managed_vertex_buffers;
-  if (_managed) {
-    pool = D3DPOOL_MANAGED;
-    usage = D3DUSAGE_WRITEONLY;
-  }
-  else {
-    pool = D3DPOOL_DEFAULT;
-    usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
-  }
-
-  int attempts;
-
-  attempts = 0;
-  do
-  {
-    hr = scrn._d3d_device->CreateVertexBuffer
-        (data_size, usage, _fvf, pool, &_vbuffer, NULL);
-    attempts++;
-  }
-  while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.warning()
-      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
-      
-    printf ("data_size %d \n", data_size);
-    
-    _vbuffer = NULL;
-  } else {
-    if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
-      dxgsg9_cat.debug()
-        << "created vertex buffer " << _vbuffer << ": "
-        << reader->get_num_rows() << " vertices "
-        << *reader->get_array_format() << "\n";
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::create_vbuffer
-//       Access: Public
-//  Description: Creates a new vertex buffer (but does not upload data
-//               to it).
-////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext9::
-create_vbuffer(DXScreenData &scrn,
-               const GeomVertexArrayDataHandle *reader,
-               string name) {
-  nassertv(reader->get_object() == get_data());
-  Thread *current_thread = reader->get_current_thread();
-
-  free_vbuffer ( );
-
-  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector,
-                   current_thread);
-
-  int data_size;
-
-  data_size = reader->get_data_size_bytes();
-
-  this -> allocate_vbuffer(scrn, reader);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::upload_data
-//       Access: Public
-//  Description: Copies the latest data from the client store to
-//               DirectX.
-////////////////////////////////////////////////////////////////////
-bool DXVertexBufferContext9::
-upload_data(const GeomVertexArrayDataHandle *reader, bool force) {
-  nassertr(reader->get_object() == get_data(), false);
-  nassertr(_vbuffer != NULL, false);
-  Thread *current_thread = reader->get_current_thread();
-
-  const unsigned char *data_pointer = reader->get_read_pointer(force);
-  if (data_pointer == NULL) {
-    return false;
-  }
-  int data_size = reader->get_data_size_bytes();
-
-  if (dxgsg9_cat.is_spam()) {
-    dxgsg9_cat.spam()
-      << "copying " << data_size
-      << " bytes into vertex buffer " << _vbuffer << "\n";
-  }
-  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector,
-                   current_thread);
-
-  HRESULT hr;
-  BYTE *local_pointer;
-
-  if (_managed) {
-    hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, 0);
-  }
-  else {
-    hr = _vbuffer->Lock(0, data_size, (void **) &local_pointer, D3DLOCK_DISCARD);
-  }
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
-    return false;
-  }
-
-  GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, data_pointer, data_size);
-
-  _vbuffer->Unlock();
-  return true;
-}

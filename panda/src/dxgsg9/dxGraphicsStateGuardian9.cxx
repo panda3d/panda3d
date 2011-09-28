@@ -116,7 +116,6 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _overlay_windows_supported = false;
   _tex_stats_retrieval_impossible = false;
 
-  _active_vbuffer = NULL;
   _active_ibuffer = NULL;
 
   // This is a static member, but we initialize it here in the
@@ -131,21 +130,12 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // they copy framebuffer-to-texture.  Ok.
   _copy_texture_inverted = true;
 
-  // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
-  // texture coordinates via a texture matrix, so we don't advertise
-  // GR_point_sprite_tex_matrix.
-  _supported_geom_rendering =
-    Geom::GR_point | Geom::GR_point_uniform_size |
-    Geom::GR_point_perspective | Geom::GR_point_sprite |
-    Geom::GR_indexed_other |
-    Geom::GR_triangle_strip | Geom::GR_triangle_fan |
-    Geom::GR_flat_first_vertex;
-
   _gsg_managed_textures = dx_management | dx_texture_management;
   _gsg_managed_vertex_buffers = dx_management;
   _gsg_managed_index_buffers = dx_management;
 
   _last_fvf = 0;
+  _num_bound_streams = 0;
 
   _vertex_shader_version_major = 0;
   _vertex_shader_version_minor = 0;
@@ -464,10 +454,52 @@ release_shader(ShaderContext *sc) {
 //               This function should not be called directly to
 //               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
-VertexBufferContext *DXGraphicsStateGuardian9::
+VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
-  DXVertexBufferContext9 *dvbc = new DXVertexBufferContext9(_prepared_objects, data, *(this -> _screen));
-  return dvbc;
+  CLP(VertexBufferContext) *dvbc = new CLP(VertexBufferContext)(this, _prepared_objects, data);
+
+  DWORD usage;
+  D3DPOOL pool;
+  if (_screen->_managed_vertex_buffers) {
+    pool = D3DPOOL_MANAGED;
+    usage = D3DUSAGE_WRITEONLY;
+  } else {
+    pool = D3DPOOL_DEFAULT;
+    usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
+  }
+
+  int num_bytes = data->get_data_size_bytes();
+
+  PStatTimer timer(_create_vertex_buffer_pcollector, Thread::get_current_thread());
+
+  HRESULT hr;
+  int attempts = 0;
+  do
+  {
+    hr = _screen->_d3d_device->CreateVertexBuffer(num_bytes, usage, dvbc->_fvf, pool, &dvbc->_vbuffer, NULL);
+    attempts++;
+  }
+  while (check_dx_allocation(hr, num_bytes, attempts));
+
+  if (!FAILED(hr)) {
+    #if 0
+    if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+      dxgsg9_cat.debug()
+        << "creating vertex buffer " << dvbc->_vbuffer << ": "
+        << data->get_num_rows() << " vertices "
+        << *data->get_array_format() << "\n";
+    }
+    #endif
+
+    return dvbc;
+  } else {
+    dxgsg9_cat.error()
+      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+
+    dvbc->_vbuffer = NULL;
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -476,193 +508,61 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //  Description: Updates the vertex buffer with the current data, and
 //               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian9::
+bool CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc,
-                    CLP(ShaderContext) *shader_context,
-                    const GeomVertexArrayDataHandle *reader, 
-                    bool force,
-                    string name) {
-  DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
+                    const GeomVertexArrayDataHandle *reader, bool force ) {
 
-  bool set_stream_source;
-  HRESULT hr;
-  UINT stream;
-  UINT offset;
+  CLP(VertexBufferContext) *dvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  set_stream_source = false;
-  stream = 0;
-  offset = 0;
-
-  if (dvbc->_vbuffer == NULL) {
-    // Attempt to create a new vertex buffer.
-    if (vertex_buffers &&
-        reader->get_usage_hint() != Geom::UH_client) {
-      dvbc->create_vbuffer(*_screen, reader, name);
+  if (dvbc->was_modified(reader)) {
+    int num_bytes = reader->get_data_size_bytes();
+    #if 0
+    if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+      dxgsg9_cat.debug()
+        << "copying " << num_bytes
+        << " bytes into vertex buffer " << dvbc->_vbuffer << "\n";
     }
+    #endif
 
-    if (dvbc->_vbuffer != NULL) {
-      if (!dvbc->upload_data(reader, force)) {
+    if ( num_bytes != 0 ) {
+      const unsigned char *client_pointer = reader->get_read_pointer(force);
+      if (client_pointer == NULL) {
         return false;
       }
 
-      dvbc->mark_loaded(reader);
+      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
 
-      set_stream_source = true;
-
-    } else {
-      _active_vbuffer = NULL;
-    }
-
-  } else {
-    if (dvbc->was_modified(reader)) {
+      #if 0
       if (dvbc->changed_size(reader)) {
         // We have to destroy the old vertex buffer and create a new
         // one.
-        dvbc->create_vbuffer(*_screen, reader, name);
+        dvbc->create_vbuffer(*_screen, reader);
       }
+      #endif
 
-      if (!dvbc->upload_data(reader, force)) {
+      HRESULT hr;
+      BYTE *local_pointer;
+      if (_screen->_managed_vertex_buffers) {
+        hr = dvbc->_vbuffer->Lock(0, num_bytes, (void **) &local_pointer, 0);
+      } else {
+        hr = dvbc->_vbuffer->Lock(0, num_bytes, (void **) &local_pointer, D3DLOCK_DISCARD);
+      }
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
         return false;
       }
 
-      dvbc->mark_loaded(reader);
-      _active_vbuffer = NULL;
+      memcpy(local_pointer, client_pointer, num_bytes);
+
+      dvbc->_vbuffer->Unlock();
+
+      _data_transferred_pcollector.add_level(num_bytes);
     }
 
-    if (_active_vbuffer != dvbc) {
-      set_stream_source = true;
-    }
+    dvbc->mark_loaded(reader);
   }
   dvbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
-
-  if (shader_context == 0) {
-    // FVF MODE
-    if (set_stream_source) {
-      hr = _d3d_device->SetStreamSource
-        (stream, dvbc->_vbuffer, offset, reader->get_array_format()->get_stride());
-      if (FAILED(hr)) {
-        dxgsg9_cat.error()
-          << "SetStreamSource failed" << D3DERRORSTRING(hr);
-      }
-      _active_vbuffer = dvbc;
-      _active_ibuffer = NULL;
-      dvbc->set_active(true);
-    }
-
-    if ((dvbc->_fvf != _last_fvf)) {
-      hr = _d3d_device->SetFVF(dvbc->_fvf);
-      if (FAILED(hr)) {
-        dxgsg9_cat.error() << "SetFVF failed" << D3DERRORSTRING(hr);
-      }
-
-      _last_fvf = dvbc->_fvf;
-    }
-  }
-  else {
-    // SHADER MODE
-    if (set_stream_source) {
-      if (dvbc -> _direct_3d_vertex_declaration) {
-        if (dvbc -> _shader_context == shader_context) {
-          // same shader as before, no need to remap a new vertex declaration
-        }
-        else {
-          // need to make a new vertex declaration since the new shader may
-          // have a different mapping
-          dvbc -> _direct_3d_vertex_declaration -> Release ( );
-          dvbc -> _direct_3d_vertex_declaration = 0;
-          dvbc -> _shader_context = 0;
-        }
-      }
-
-      if (dvbc -> _direct_3d_vertex_declaration == 0 &&
-          dvbc -> _vertex_element_type_array) {
-        VertexElementArray *vertex_element_array;
-
-        vertex_element_array = shader_context -> _vertex_element_array;
-        if (vertex_element_array) {
-          int index;
-
-          for (index = 0; index < vertex_element_array->total_elements; index++) {
-            VERTEX_ELEMENT_TYPE *vertex_element_type;
-            VERTEX_ELEMENT_TYPE *source_vertex_element_type;
-
-            vertex_element_type =
-              &vertex_element_array -> vertex_element_type_array [index];
-
-            // MAP VERTEX ELEMENTS to VERTEX SHADER INPUTS
-            // get offsets from vertex data for certain types of vertex elements
-
-            offset = 0;
-            source_vertex_element_type = dvbc -> _vertex_element_type_array;
-            while (source_vertex_element_type -> vs_input_type != VS_END) {
-              if (source_vertex_element_type -> vs_input_type == vertex_element_type -> vs_input_type &&
-                  source_vertex_element_type -> index == vertex_element_type -> index) {
-                  offset = source_vertex_element_type -> offset;
-                  break;
-              }
-              source_vertex_element_type++;
-            }
-            if (source_vertex_element_type -> vs_input_type == VS_END) {
-              dxgsg9_cat.error()
-                << "unable to find a mapping for vertex shader input type="
-                << vertex_element_type -> vs_input_type
-                << " from vertex elements\n";
-            }
-
-            vertex_element_array -> set_vertex_element_offset (index, offset);
-          }
-
-          hr = _d3d_device -> CreateVertexDeclaration (
-            vertex_element_array -> vertex_element_array,
-            &dvbc -> _direct_3d_vertex_declaration);
-          if (FAILED (hr)) {
-            dxgsg9_cat.error()
-              << "CreateVertexDeclaration failed"
-              << D3DERRORSTRING(hr);
-
-            if (0) {
-              // DEBUG
-              printf ("TOTAL ELEMENTS: %d \n",  vertex_element_array -> total_elements);
-              for (index = 0; index < vertex_element_array -> total_elements; index++) 
-              {
-                DIRECT_3D_VERTEX_ELEMENT *vertex_element;
-                VERTEX_ELEMENT_TYPE *vertex_element_type;
-
-                vertex_element = &vertex_element_array -> vertex_element_array [index];
-                vertex_element_type = &vertex_element_array -> vertex_element_type_array [index];
-
-                printf ("  index %d Stream %d  Offset %d Type %d Method %d Usage %d UsageIndex %d \n", index, vertex_element -> Stream, vertex_element -> Offset, vertex_element -> Type, vertex_element -> Method, vertex_element -> Usage, vertex_element -> UsageIndex);
-              }
-            }
-          }
-
-          dvbc -> _shader_context = shader_context;
-        }
-        else {
-          dxgsg9_cat.error() << "apply_vertex_buffer ( ): shader_context vertex_element_array == 0\n";
-        }
-      }
-
-      offset = 0;
-      hr = _d3d_device->SetStreamSource
-        (stream, dvbc->_vbuffer, offset, reader->get_array_format()->get_stride());
-      if (FAILED(hr)) {
-        dxgsg9_cat.error()
-          << "SetStreamSource failed" << D3DERRORSTRING(hr);
-      }
-      _active_vbuffer = dvbc;
-      _active_ibuffer = NULL;
-      dvbc->set_active(true);
-    }
-
-    if (dvbc -> _direct_3d_vertex_declaration) {
-      hr = _d3d_device -> SetVertexDeclaration (dvbc -> _direct_3d_vertex_declaration);
-      if (FAILED(hr)) {
-        dxgsg9_cat.error()
-          << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
-      }
-    }
-  }
 
   return true;
 }
@@ -675,10 +575,56 @@ apply_vertex_buffer(VertexBufferContext *vbc,
 //               directly; instead, call Data::release() (or simply
 //               let the Data destruct).
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
+void CLP(GraphicsStateGuardian)::
 release_vertex_buffer(VertexBufferContext *vbc) {
-  DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
+
+  CLP(VertexBufferContext) *dvbc = DCAST(CLP(VertexBufferContext), vbc);
+
+  #if 0
+  if (dxgsg9_cat.is_debug() && CLP(debug_buffers)) {
+    dxgsg9_cat.debug()
+      << "deleting vertex buffer " << dvbc->_vbuffer << "\n";
+  }
+  #endif
+
+  dvbc->_vbuffer->Release();
+  dvbc->_vbuffer = NULL;
+
   delete dvbc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::setup_array_data
+//       Access: Public
+//  Description: Internal function to bind a buffer object for the
+//               indicated data array, if appropriate, or to unbind a
+//               buffer object if it should be rendered from client
+//               memory.
+//
+//               If the buffer object is bound, this function sets
+//               client_pointer to NULL (representing the start of the
+//               buffer object in server memory); if the buffer object
+//               is not bound, this function sets client_pointer the
+//               pointer to the data array in client memory, that is,
+//               the data array passed in.
+//
+//               If force is not true, the function may return false
+//               indicating the data is not currently available.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+setup_array_data(CLP(VertexBufferContext)*& dvbc,
+                 const GeomVertexArrayDataHandle* array_reader,
+                 bool force) {
+
+  // Prepare the buffer object and bind it.
+  VertexBufferContext* vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
+  nassertr(vbc != (VertexBufferContext *)NULL, false);
+  if (!apply_vertex_buffer(vbc, array_reader, force)) {
+    return false;
+  }
+
+  dvbc = (CLP(VertexBufferContext)*)vbc;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -864,6 +810,14 @@ clear(DrawableRegion *clearable) {
 
   DWORD main_flags = 0;
   DWORD aux_flags = 0;
+
+  if ((!clearable->get_clear_color_active())&&
+      (!clearable->get_clear_depth_active())&&
+      (!clearable->get_clear_stencil_active())) {
+    return;
+  }
+
+  set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   D3DCOLOR color_clear_value = Colorf_to_D3DCOLOR(clearable->get_clear_color());
   float depth_clear_value = clearable->get_clear_depth();
@@ -1252,148 +1206,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
-  string name;
-  const Geom *geom;
-  
-  name = "";
-  geom = geom_reader -> get_object ( );
-  if (geom)
-  {
-    CPT(GeomVertexData) geom_vertex_data;
-    geom_vertex_data = geom -> get_vertex_data();
-    
-    name = geom_vertex_data -> get_name();
-    
-//    cout << name << "\n";
-  }
-
-
-// SHADER
-  if (_vertex_array_shader_context==0) {
-    if (_current_shader_context==0) {
-//      ?????       update_standard_vertex_arrays();
-    } else {
-//      ?????       disable_standard_vertex_arrays();
-      _current_shader_context->update_shader_vertex_arrays(NULL,this);
-    }
-  } else {
-    if (_current_shader_context==0) {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-//      ?????       update_standard_vertex_arrays();
-    } else {
-      _current_shader_context->
-        update_shader_vertex_arrays(_vertex_array_shader_context,this);
-    }
-  }
-  _vertex_array_shader = _current_shader;
-  _vertex_array_shader_context = _current_shader_context;
-
-  const GeomVertexFormat *format = _data_reader->get_format ( );
-  const GeomVertexArrayDataHandle *data = NULL;
-  int number_of_arrays = _data_reader -> get_num_arrays ( );
-
-  if (_current_shader_context && number_of_arrays > 1) {
-
-    // find a matching vertex format for the vertex shader's input if possible
-    VertexElementArray *vertex_element_array;
-
-    vertex_element_array = _current_shader_context -> _vertex_element_array;
-    if (vertex_element_array)
-    {
-      bool match;
-      bool multiple_matches;
-      int index;
-      int first_index;
-
-      match = false;
-      multiple_matches = false;
-      first_index = -1;
-
-      // quick check for a match
-      // find the one array with the minimum number of elements if possible
-      {
-        for (index = 0; index < number_of_arrays; index++) {
-          data = _data_reader -> get_array_reader (index);
-
-          const GeomVertexArrayFormat *array_format = data->get_array_format();
-          int number_of_columns = array_format->get_num_columns();
-
-          if (number_of_columns >= vertex_element_array -> total_elements) {
-            if (first_index >= 0) {
-              multiple_matches = true;
-            }
-            else {
-              first_index = index;
-            }
-          }
-        }
-      }
-
-      if (multiple_matches)
-      {
-        // ugh slow, need to find which one
-        for (index = first_index; index < number_of_arrays; index++)
-        {
-          data = _data_reader -> get_array_reader (index);
-
-          const GeomVertexArrayFormat *array_format = data->get_array_format();
-          int number_of_columns = array_format->get_num_columns();
-
-          if (number_of_columns >= vertex_element_array -> total_elements)
-          {
-
-            // check not implemented yet
-            dxgsg9_cat.error ( ) << "vertex_element_type_array check not implemented yet\n";
-            
-            // build a vertex_element_type_array from data
-            
-            // compare both vertex_element_type_array for a match
-            vertex_element_array -> vertex_element_type_array;
-          }
-        }
-
-        // since the check is not implemented yet use first_index for now
-        data = _data_reader -> get_array_reader (first_index);
-
-        match = true;
-      }
-      else
-      {
-        if (first_index >= 0) {
-          data = _data_reader -> get_array_reader (first_index);
-          match = true;
-        }
-      }
-
-      if (match) {
-
-      }
-      else {
-        // ERROR
-        dxgsg9_cat.error ( ) << "could not find matching vertex element data for vertex shader\n";
-
-        // just use the 0 array
-        data = _data_reader->get_array_reader(0);
-      }
-    }
-    else {
-      // ERROR
-      dxgsg9_cat.error ( ) << "_current_shader_context -> _vertex_element_array == 0\n";
-    }
-  }
-  else {
-    // The munger should have put the FVF data in the first array.
-    data = _data_reader->get_array_reader(0);
-  }
-
-  nassertr(data != (GeomVertexArrayDataHandle *)NULL, false);
-  GeomVertexArrayData *data_obj = (GeomVertexArrayData *)data->get_object();
-  nassertr(data_obj != (GeomVertexArrayData *)NULL, false);
-  VertexBufferContext *vbc = data_obj->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, false);
-  if (!apply_vertex_buffer(vbc, _current_shader_context, data, force, name)) {
-    return false;
-  }
+  const GeomVertexFormat *format = _data_reader->get_format();
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
@@ -1477,7 +1290,102 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     _d3d_device->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
   }
 
+  if (_current_shader_context == 0 /*|| !_current_shader_context->uses_custom_vertex_arrays()*/) {
+    // No shader, or a non-Cg shader.
+    if (_vertex_array_shader_context != 0) {
+      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    }
+    if (!update_standard_vertex_arrays(force)) {
+      return false;
+    }
+  } else {
+    // Cg shader.
+    if (_vertex_array_shader_context == 0) {
+      disable_standard_vertex_arrays();
+      if (!_current_shader_context->update_shader_vertex_arrays(NULL, this, force)) {
+        return false;
+      }
+    } else {
+      if (!_current_shader_context->
+          update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
+        return false;
+      }
+    }
+  }
+
+  _vertex_array_shader = _current_shader;
+  _vertex_array_shader_context = _current_shader_context;
+
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::update_standard_vertex_arrays
+//       Access: Protected
+//  Description: Binds vertex buffers as stream sources and sets the
+//               correct FVF format for fixed-function rendering.
+//               Used only when the standard (non-shader) pipeline
+//               is about to be used - dxShaderContexts are responsible
+//               for setting up their own vertex arrays.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+update_standard_vertex_arrays(bool force) {
+
+  int fvf = 0;
+  HRESULT hr;
+
+  int number_of_arrays = _data_reader->get_num_arrays();
+  for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
+    const GeomVertexArrayDataHandle* array_reader = _data_reader->get_array_reader( array_index );
+    if ( array_reader == NULL ) {
+      dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
+      return false;
+    }
+  
+    // Get the vertex buffer for this array.
+    CLP(VertexBufferContext)* dvbc;
+    if (!setup_array_data(dvbc, array_reader, force)) {
+      dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
+      return false;
+    }
+  
+    // Bind this array as the data source for the corresponding stream.
+    const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
+    hr = _d3d_device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
+    if (FAILED(hr)) {
+      dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      return false;
+    }
+
+    // Update our combined set of FVF flags
+    fvf |= dvbc->_fvf;
+  }
+
+  hr = _d3d_device->SetFVF( fvf );
+  if (FAILED(hr)) {
+    dxgsg9_cat.error() << "SetFVF failed" << D3DERRORSTRING(hr);
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::disable_standard_vertex_arrays
+//       Access: Protected
+//  Description: Unbinds all of the streams that are currently enabled.
+//               dxShaderContexts are responsible for setting up their
+//               own streams, but before they can do so, the standard
+//               streams need to be disabled to get them "out of the
+//               way."  Called only from begin_draw_primitives.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+disable_standard_vertex_arrays() {
+  for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
+  {
+    _d3d_device->SetStreamSource( array_index, NULL, 0, 0 );
+  }
+  _num_bound_streams = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1491,65 +1399,59 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
   _vertices_tri_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
+
   if (reader->is_indexed()) {
     int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
     int max_vertex = reader->get_max_vertex();
 
-    if (_active_vbuffer != NULL) {
-      // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertr(ibc != (IndexBufferContext *)NULL, false);
-      if (!apply_index_buffer(ibc, reader, force)) {
-        return false;
-      }
-
-      _d3d_device->DrawIndexedPrimitive
-        (D3DPT_TRIANGLELIST, 0,
-         min_vertex, max_vertex - min_vertex + 1,
-         0, reader->get_num_primitives());
-
-    } else {
-      // Indexed, client arrays.
-
-      const unsigned char *index_pointer = reader->get_read_pointer(force);
-      if (index_pointer == NULL) {
-        return false;
-      }
-      D3DFORMAT index_type = get_index_type(reader->get_index_type());
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-
-      draw_indexed_primitive_up
-        (D3DPT_TRIANGLELIST,
-         min_vertex, max_vertex,
-         reader->get_num_primitives(),
-         index_pointer, index_type, vertex_pointer,
-         _data_reader->get_format()->get_array(0)->get_stride());
+    // Indexed, vbuffers.
+    IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
+    nassertr(ibc != (IndexBufferContext *)NULL, false);
+    if (!apply_index_buffer(ibc, reader, force)) {
+      return false;
     }
+
+    _d3d_device->DrawIndexedPrimitive( D3DPT_TRIANGLELIST,
+                                       0,
+                                       min_vertex, max_vertex - min_vertex + 1,
+                                       0, reader->get_num_primitives() );
+
+    #if 0
+    // Indexed, client arrays.
+    const unsigned char *index_pointer = reader->get_read_pointer(force);
+    if (index_pointer == NULL) {
+      return false;
+    }
+    D3DFORMAT index_type = get_index_type(reader->get_index_type());
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
+    }
+
+    draw_indexed_primitive_up( D3DPT_TRIANGLELIST,
+                               min_vertex, max_vertex,
+                               reader->get_num_primitives(),
+                               index_pointer, index_type, vertex_pointer,
+                               _data_reader->get_format()->get_array(0)->get_stride() );
+    #endif
   } else {
-    if (_active_vbuffer != NULL) {
-      // Nonindexed, vbuffers.
+    // Nonindexed, vbuffers.
+    _d3d_device->DrawPrimitive( D3DPT_TRIANGLELIST,
+                                reader->get_first_vertex(),
+                                reader->get_num_primitives() );
 
-      _d3d_device->DrawPrimitive
-        (D3DPT_TRIANGLELIST,
-         reader->get_first_vertex(),
-         reader->get_num_primitives());
-
-    } else {
-      // Nonindexed, client arrays.
-
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-
-      draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
-      reader->get_first_vertex(),
-      reader->get_num_vertices(), vertex_pointer,
-      _data_reader->get_format()->get_array(0)->get_stride());
+    #if 0
+    // Nonindexed, client arrays.
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
     }
+
+    draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
+    reader->get_first_vertex(),
+    reader->get_num_vertices(), vertex_pointer,
+    _data_reader->get_format()->get_array(0)->get_stride());
+    #endif
   }
 
   return true;
@@ -1569,75 +1471,64 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
     // that have already been set up within the primitive.
     _vertices_tristrip_pcollector.add_level(reader->get_num_vertices());
     _primitive_batches_tristrip_pcollector.add_level(1);
+
     if (reader->is_indexed()) {
       int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
       int max_vertex = reader->get_max_vertex();
 
-      if (_active_vbuffer != NULL) {
-        // Indexed, vbuffers, one line triangle strip.
-        IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-        nassertr(ibc != (IndexBufferContext *)NULL, false);
-        if (!apply_index_buffer(ibc, reader, force)) {
-          return false;
-        }
-
-//dxgsg9_cat.error ( ) << "DrawIndexedPrimitive D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
-
-        _d3d_device->DrawIndexedPrimitive
-          (D3DPT_TRIANGLESTRIP, 0,
-           min_vertex, max_vertex - min_vertex + 1,
-           0, reader->get_num_vertices() - 2);
-
-      } else {
-
-//dxgsg9_cat.error ( ) << "draw_indexed_primitive_up D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
-
-        // Indexed, client arrays, one long triangle strip.
-        const unsigned char *index_pointer = reader->get_read_pointer(force);
-        if (index_pointer == NULL) {
-          return false;
-        }
-        D3DFORMAT index_type = get_index_type(reader->get_index_type());
-        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-        if (vertex_pointer == NULL) {
-          return false;
-        }
-
-        draw_indexed_primitive_up
-          (D3DPT_TRIANGLESTRIP,
-           min_vertex, max_vertex,
-           reader->get_num_vertices() - 2,
-           index_pointer, index_type, vertex_pointer,
-           _data_reader->get_format()->get_array(0)->get_stride());
+      // Indexed, vbuffers, one long triangle strip.
+      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
+      nassertr(ibc != (IndexBufferContext *)NULL, false);
+      if (!apply_index_buffer(ibc, reader, force)) {
+        return false;
       }
+
+      _d3d_device->DrawIndexedPrimitive( D3DPT_TRIANGLESTRIP,
+                                         0,
+                                         min_vertex, max_vertex - min_vertex + 1,
+                                         0, reader->get_num_vertices() - 2 );
+
+      #if 0
+      // Indexed, client arrays, one long triangle strip.
+      const unsigned char *index_pointer = reader->get_read_pointer(force);
+      if (index_pointer == NULL) {
+        return false;
+      }
+      D3DFORMAT index_type = get_index_type(reader->get_index_type());
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
+
+      draw_indexed_primitive_up
+        (D3DPT_TRIANGLESTRIP,
+         min_vertex, max_vertex,
+         reader->get_num_vertices() - 2,
+         index_pointer, index_type, vertex_pointer,
+         _data_reader->get_format()->get_array(0)->get_stride());
+      #endif
     } else {
-      if (_active_vbuffer != NULL) {
-        // Nonindexed, vbuffers, one long triangle strip.
+      // Nonindexed, vbuffers, one long triangle strip.
+      _d3d_device->DrawPrimitive( D3DPT_TRIANGLESTRIP,
+                                  reader->get_first_vertex(),
+                                  reader->get_num_vertices() - 2 );
 
-//dxgsg9_cat.error ( ) << "DrawPrimitive D3DPT_TRIANGLESTRIP " << reader->get_first_vertex ( ) << " VERTICES: " << reader->get_num_vertices ( ) << "\n";
-
-        _d3d_device->DrawPrimitive
-          (D3DPT_TRIANGLESTRIP,
-           reader->get_first_vertex(),
-           reader->get_num_vertices() - 2);
-
-      } else {
-        // Indexed, client arrays, one long triangle strip.
-        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-        if (vertex_pointer == NULL) {
-          return false;
-        }
-        draw_primitive_up(D3DPT_TRIANGLESTRIP,
-        reader->get_num_vertices() - 2,
-        reader->get_first_vertex(),
-        reader->get_num_vertices(), vertex_pointer,
-        _data_reader->get_format()->get_array(0)->get_stride());
+      #if 0
+      // Indexed, client arrays, one long triangle strip.
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
       }
+      draw_primitive_up(D3DPT_TRIANGLESTRIP,
+      reader->get_num_vertices() - 2,
+      reader->get_first_vertex(),
+      reader->get_num_vertices(), vertex_pointer,
+      _data_reader->get_format()->get_array(0)->get_stride());
+      #endif
     }
 
   } else {
-    // Send the individual triangle strips, stepping over the
-    // degenerate vertices.
+    // Send the individual triangle strips, stepping over the degenerate vertices.
     CPTA_int ends = reader->get_ends();
     _primitive_batches_tristrip_pcollector.add_level(ends.size());
 
@@ -1651,90 +1542,85 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
       nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
                reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
-      if (_active_vbuffer != NULL) {
-        // Indexed, vbuffers, individual triangle strips.
-        IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-        nassertr(ibc != (IndexBufferContext *)NULL, false);
-        if (!apply_index_buffer(ibc, reader, force)) {
-          return false;
-        }
-
-        unsigned int start = 0;
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          unsigned int min = mins.get_data1i();
-          unsigned int max = maxs.get_data1i();
-          _d3d_device->DrawIndexedPrimitive
-            (D3DPT_TRIANGLESTRIP,
-             0,
-             min, max - min + 1,
-             start, ends[i] - start - 2);
-
-          start = ends[i] + 2;
-        }
-
-      } else {
-        // Indexed, client arrays, individual triangle strips.
-        int stride = _data_reader->get_format()->get_array(0)->get_stride();
-        const unsigned char *index_pointer = reader->get_read_pointer(force);
-        if (index_pointer == NULL) {
-          return false;
-        }
-        D3DFORMAT index_type = get_index_type(reader->get_index_type());
-        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-        if (vertex_pointer == NULL) {
-          return false;
-        }
-
-        unsigned int start = 0;
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          unsigned int min = mins.get_data1i();
-          unsigned int max = maxs.get_data1i();
-          draw_indexed_primitive_up
-            (D3DPT_TRIANGLESTRIP,
-             min, max,
-             ends[i] - start - 2,
-             index_pointer + start * index_stride, index_type,
-             vertex_pointer, stride);
-
-          start = ends[i] + 2;
-        }
+      // Indexed, vbuffers, individual triangle strips.
+      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
+      nassertr(ibc != (IndexBufferContext *)NULL, false);
+      if (!apply_index_buffer(ibc, reader, force)) {
+        return false;
       }
+
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        unsigned int min = mins.get_data1i();
+        unsigned int max = maxs.get_data1i();
+        _d3d_device->DrawIndexedPrimitive( D3DPT_TRIANGLESTRIP,
+                                           0,
+                                           min, max - min + 1,
+                                           start, ends[i] - start - 2 );
+        start = ends[i] + 2;
+      }
+
+      #if 0
+      // Indexed, client arrays, individual triangle strips.
+      int stride = _data_reader->get_format()->get_array(0)->get_stride();
+      const unsigned char *index_pointer = reader->get_read_pointer(force);
+      if (index_pointer == NULL) {
+        return false;
+      }
+      D3DFORMAT index_type = get_index_type(reader->get_index_type());
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
+
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        unsigned int min = mins.get_data1i();
+        unsigned int max = maxs.get_data1i();
+        draw_indexed_primitive_up
+          (D3DPT_TRIANGLESTRIP,
+           min, max,
+           ends[i] - start - 2,
+           index_pointer + start * index_stride, index_type,
+           vertex_pointer, stride);
+
+        start = ends[i] + 2;
+      }
+      #endif
     } else {
       unsigned int first_vertex = reader->get_first_vertex();
 
-      if (_active_vbuffer != NULL) {
-        // Nonindexed, vbuffers, individual triangle strips.
-        unsigned int start = 0;
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          _d3d_device->DrawPrimitive
-            (D3DPT_TRIANGLESTRIP,
-             first_vertex + start, ends[i] - start - 2);
-
-          start = ends[i] + 2;
-        }
-
-      } else {
-        // Nonindexed, client arrays, individual triangle strips.
-        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-        if (vertex_pointer == NULL) {
-          return false;
-        }
-        int stride = _data_reader->get_format()->get_array(0)->get_stride();
-
-        unsigned int start = 0;
-        for (size_t i = 0; i < ends.size(); i++) {
-          _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
-          first_vertex + start,
-          ends[i] - start,
-          vertex_pointer, stride);
-
-          start = ends[i] + 2;
-        }
+      // Nonindexed, vbuffers, individual triangle strips.
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        _d3d_device->DrawPrimitive( D3DPT_TRIANGLESTRIP,
+                                    first_vertex + start,
+                                    ends[i] - start - 2 );
+        start = ends[i] + 2;
       }
+
+      #if 0
+      // Nonindexed, client arrays, individual triangle strips.
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
+      int stride = _data_reader->get_format()->get_array(0)->get_stride();
+
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
+        first_vertex + start,
+        ends[i] - start,
+        vertex_pointer, stride);
+
+        start = ends[i] + 2;
+      }
+      #endif
     }
   }
   return true;
@@ -1765,89 +1651,85 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
     nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
              reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
-    if (_active_vbuffer != NULL) {
-      // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertr(ibc != (IndexBufferContext *)NULL, false);
-      if (!apply_index_buffer(ibc, reader, force)) {
-        return false;
-      }
-
-      unsigned int start = 0;
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_trifan_pcollector.add_level(ends[i] - start);
-        unsigned int min = mins.get_data1i();
-        unsigned int max = maxs.get_data1i();
-        _d3d_device->DrawIndexedPrimitive
-          (D3DPT_TRIANGLEFAN, 0,
-           min, max - min + 1,
-           start, ends[i] - start - 2);
-
-        start = ends[i];
-      }
-
-    } else {
-      // Indexed, client arrays.
-      int stride = _data_reader->get_format()->get_array(0)->get_stride();
-      const unsigned char *index_pointer = reader->get_read_pointer(force);
-      if (index_pointer == NULL) {
-        return false;
-      }
-      D3DFORMAT index_type = get_index_type(reader->get_index_type());
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-
-      unsigned int start = 0;
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_trifan_pcollector.add_level(ends[i] - start);
-        unsigned int min = mins.get_data1i();
-        unsigned int max = maxs.get_data1i();
-        draw_indexed_primitive_up
-          (D3DPT_TRIANGLEFAN,
-           min, max,
-           ends[i] - start - 2,
-           index_pointer + start * index_stride, index_type,
-           vertex_pointer, stride);
-
-        start = ends[i];
-      }
+    // Indexed, vbuffers.
+    IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
+    nassertr(ibc != (IndexBufferContext *)NULL, false);
+    if (!apply_index_buffer(ibc, reader, force)) {
+      return false;
     }
+
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      unsigned int min = mins.get_data1i();
+      unsigned int max = maxs.get_data1i();
+      _d3d_device->DrawIndexedPrimitive( D3DPT_TRIANGLEFAN,
+                                         0,
+                                         min, max - min + 1,
+                                         start, ends[i] - start - 2 );
+      start = ends[i];
+    }
+
+    #if 0
+    // Indexed, client arrays.
+    int stride = _data_reader->get_format()->get_array(0)->get_stride();
+    const unsigned char *index_pointer = reader->get_read_pointer(force);
+    if (index_pointer == NULL) {
+      return false;
+    }
+    D3DFORMAT index_type = get_index_type(reader->get_index_type());
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
+    }
+
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      unsigned int min = mins.get_data1i();
+      unsigned int max = maxs.get_data1i();
+      draw_indexed_primitive_up
+        (D3DPT_TRIANGLEFAN,
+         min, max,
+         ends[i] - start - 2,
+         index_pointer + start * index_stride, index_type,
+         vertex_pointer, stride);
+
+      start = ends[i];
+    }
+    #endif
   } else {
     unsigned int first_vertex = reader->get_first_vertex();
 
-    if (_active_vbuffer != NULL) {
-      // Nonindexed, vbuffers.
-      unsigned int start = 0;
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_trifan_pcollector.add_level(ends[i] - start);
-        _d3d_device->DrawPrimitive
-          (D3DPT_TRIANGLEFAN,
-           first_vertex + start, ends[i] - start - 2);
-
-        start = ends[i];
-      }
-
-    } else {
-      // Nonindexed, client arrays.
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-      int stride = _data_reader->get_format()->get_array(0)->get_stride();
-
-      unsigned int start = 0;
-      for (size_t i = 0; i < ends.size(); i++) {
-        _vertices_trifan_pcollector.add_level(ends[i] - start);
-        draw_primitive_up(D3DPT_TRIANGLEFAN,
-        ends[i] - start - 2,
-        first_vertex,
-        ends[i] - start,
-        vertex_pointer, stride);
-        start = ends[i];
-      }
+    // Nonindexed, vbuffers.
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      _d3d_device->DrawPrimitive( D3DPT_TRIANGLEFAN,
+                                  first_vertex + start,
+                                  ends[i] - start - 2 );
+      start = ends[i];
     }
+
+    #if 0
+    // Nonindexed, client arrays.
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
+    }
+    int stride = _data_reader->get_format()->get_array(0)->get_stride();
+
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_trifan_pcollector.add_level(ends[i] - start);
+      draw_primitive_up(D3DPT_TRIANGLEFAN,
+      ends[i] - start - 2,
+      first_vertex,
+      ends[i] - start,
+      vertex_pointer, stride);
+      start = ends[i];
+    }
+    #endif
   }
   return true;
 }
@@ -1860,6 +1742,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
 bool DXGraphicsStateGuardian9::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
+
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1867,58 +1750,54 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
     int max_vertex = reader->get_max_vertex();
 
-    if (_active_vbuffer != NULL) {
-      // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertr(ibc != (IndexBufferContext *)NULL, false);
-      if (!apply_index_buffer(ibc, reader, force)) {
-        return false;
-      }
-
-      _d3d_device->DrawIndexedPrimitive
-        (D3DPT_LINELIST,
-     0,
-         min_vertex, max_vertex - min_vertex + 1,
-         0, reader->get_num_primitives());
-
-    } else {
-      // Indexed, client arrays.
-      const unsigned char *index_pointer = reader->get_read_pointer(force);
-      if (index_pointer == NULL) {
-        return false;
-      }
-      D3DFORMAT index_type = get_index_type(reader->get_index_type());
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-
-      draw_indexed_primitive_up
-        (D3DPT_LINELIST,
-         min_vertex, max_vertex,
-         reader->get_num_primitives(),
-         index_pointer, index_type, vertex_pointer,
-         _data_reader->get_format()->get_array(0)->get_stride());
+    // Indexed, vbuffers.
+    IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
+    nassertr(ibc != (IndexBufferContext *)NULL, false);
+    if (!apply_index_buffer(ibc, reader, force)) {
+      return false;
     }
+
+    _d3d_device->DrawIndexedPrimitive( D3DPT_LINELIST,
+                                       0,
+                                       min_vertex, max_vertex - min_vertex + 1,
+                                       0, reader->get_num_primitives() );
+
+    #if 0
+    // Indexed, client arrays.
+    const unsigned char *index_pointer = reader->get_read_pointer(force);
+    if (index_pointer == NULL) {
+      return false;
+    }
+    D3DFORMAT index_type = get_index_type(reader->get_index_type());
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
+    }
+
+    draw_indexed_primitive_up
+      (D3DPT_LINELIST,
+       min_vertex, max_vertex,
+       reader->get_num_primitives(),
+       index_pointer, index_type, vertex_pointer,
+       _data_reader->get_format()->get_array(0)->get_stride());
+    #endif
   } else {
-    if (_active_vbuffer != NULL) {
-      // Nonindexed, vbuffers.
-      _d3d_device->DrawPrimitive
-        (D3DPT_LINELIST,
-         reader->get_first_vertex(),
-         reader->get_num_primitives());
+    // Nonindexed, vbuffers.
+    _d3d_device->DrawPrimitive( D3DPT_LINELIST,
+                                reader->get_first_vertex(),
+                                reader->get_num_primitives() );
 
-    } else {
-      // Nonindexed, client arrays.
-      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-      if (vertex_pointer == NULL) {
-        return false;
-      }
-      draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
-      reader->get_first_vertex(),
-      reader->get_num_vertices(), vertex_pointer,
-      _data_reader->get_format()->get_array(0)->get_stride());
+    #if 0
+    // Nonindexed, client arrays.
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
     }
+    draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
+    reader->get_first_vertex(),
+    reader->get_num_vertices(), vertex_pointer,
+    _data_reader->get_format()->get_array(0)->get_stride());
+    #endif
   }
   return true;
 }
@@ -1941,6 +1820,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
 bool DXGraphicsStateGuardian9::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
+
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1948,24 +1828,23 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   // doesn't support them.
   nassertr(!reader->is_indexed(), false);
 
-  if (_active_vbuffer != NULL) {
-    // Nonindexed, vbuffers.
-    _d3d_device->DrawPrimitive
-      (D3DPT_POINTLIST,
-       reader->get_first_vertex(),
-       reader->get_num_primitives());
+  // Nonindexed, vbuffers.
+  _d3d_device->DrawPrimitive( D3DPT_POINTLIST,
+                              reader->get_first_vertex(),
+                              reader->get_num_primitives() );
 
-  } else {
-    // Nonindexed, client arrays.
-    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
-    if (vertex_pointer == NULL) {
-      return false;
-    }
-    draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
-                      reader->get_first_vertex(),
-                      reader->get_num_vertices(), vertex_pointer,
-                      _data_reader->get_format()->get_array(0)->get_stride());
+  #if 0
+  // Nonindexed, client arrays.
+  const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+  if (vertex_pointer == NULL) {
+    return false;
   }
+  draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
+                    reader->get_first_vertex(),
+                    reader->get_num_vertices(), vertex_pointer,
+                    _data_reader->get_format()->get_array(0)->get_stride());
+  #endif
+
   return true;
 }
 
@@ -2384,6 +2263,42 @@ void DXGraphicsStateGuardian9::reset_render_states (void)
 void DXGraphicsStateGuardian9::
 reset() {
   GraphicsStateGuardian::reset();
+
+  // Build _inv_state_mask as a mask of 1's where we don't care, and
+  // 0's where we do care, about the state.
+  _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
+  // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the
+  // texture coordinates via a texture matrix, so we don't advertise
+  // GR_point_sprite_tex_matrix.
+  _supported_geom_rendering =
+    Geom::GR_point | Geom::GR_point_uniform_size |
+    Geom::GR_point_perspective | Geom::GR_point_sprite |
+    Geom::GR_indexed_other |
+    Geom::GR_triangle_strip | Geom::GR_triangle_fan |
+    Geom::GR_flat_first_vertex;
 
   _auto_rescale_normal = false;
 
@@ -3254,7 +3169,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_transform();
   }
 
-  if (target == _state_rs) {
+  if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
     return;
   }
   _target_rs = target;
@@ -4224,7 +4139,7 @@ free_nondx_resources() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 free_d3d_device() {
-  // don't want a full reset of gsg, just a state clear
+  // dont want a full reset of gsg, just a state clear
   _state_rs = RenderState::make_empty();
   _state_mask.clear();
 
@@ -4247,7 +4162,7 @@ free_d3d_device() {
 
   free_nondx_resources();
 
-  // obviously we don't release ID3D9, just ID3DDevice9
+  // obviously we dont release ID3D9, just ID3DDevice9
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5738,7 +5653,7 @@ get_supports_cg_profile(const string &name) const {
 #else
   CGprofile profile = cgGetProfile(name.c_str());
   
-  if (profile ==CG_PROFILE_UNKNOWN) {
+  if (profile == CG_PROFILE_UNKNOWN) {
     dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
     return false;
   }

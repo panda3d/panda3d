@@ -76,14 +76,17 @@ public:
   void issue_parameters(GSG *gsg, int altered);
   void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
-  void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
+  bool update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
+                                   bool force);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 
-  class VertexElementArray *_vertex_element_array;
+  class VertexElementArray* _vertex_element_array;
+  LPDIRECT3DVERTEXDECLARATION9 _vertex_declaration;
+
+  int _num_bound_streams;
 
   // FOR DEBUGGING
-  int _vertex_size;
   string _name;
   
 private:

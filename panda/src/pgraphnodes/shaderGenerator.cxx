@@ -622,7 +622,10 @@ synthesize_shader(const RenderState *rs) {
   analyze_renderstate(rs);
   reset_register_allocator();
 
-  pgraph_cat.info() << "Generating shader for render state " << rs << "\n";
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Generating shader for render state " << *rs << "\n";
+  }
 
   // These variables will hold the results of register allocation.
 
@@ -998,7 +1001,7 @@ synthesize_shader(const RenderState *rs) {
   if (_lighting) {
     text << "\t // Begin view-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
-    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;";
+    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
     if (_shadows && _auto_shadow_on) {
       text << "\t float lshad;\n";
     }

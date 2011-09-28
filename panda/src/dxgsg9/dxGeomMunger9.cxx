@@ -174,6 +174,21 @@ munge_format_impl(const GeomVertexFormat *orig,
     }
   }
 
+  // Now go through the remaining arrays and make sure they are
+  // tightly packed.  If not, repack them.
+  for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+    CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
+    if (orig_a->count_unused_space() != 0) {
+      PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
+      for (int j = 0; j < orig_a->get_num_columns(); ++j) {
+        const GeomVertexColumn *column = orig_a->get_column(j);
+        new_a->add_column(column->get_name(), column->get_num_components(),
+                          column->get_numeric_type(), column->get_contents());
+      }
+      new_format->set_array(i, new_a);
+    }
+  }
+
   // Make sure the FVF-style array we just built up is first in the
   // list.
   new_format->insert_array(0, new_array_format);
@@ -265,6 +280,21 @@ premunge_format_impl(const GeomVertexFormat *orig) {
         new_array_format->add_column(name, 2, NT_float32, C_texcoord);
       }
       new_format->remove_column(name);
+    }
+  }
+
+  // Now go through the remaining arrays and make sure they are
+  // tightly packed.  If not, repack them.
+  for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+    CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
+    if (orig_a->count_unused_space() != 0) {
+      PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
+      for (int j = 0; j < orig_a->get_num_columns(); ++j) {
+        const GeomVertexColumn *column = orig_a->get_column(j);
+        new_a->add_column(column->get_name(), column->get_num_components(),
+                          column->get_numeric_type(), column->get_contents());
+      }
+      new_format->set_array(i, new_a);
     }
   }
 

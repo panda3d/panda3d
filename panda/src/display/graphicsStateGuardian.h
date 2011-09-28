@@ -360,7 +360,11 @@ protected:
   // This bitmask contains a 1 bit everywhere that _state_rs has a
   // known value.  If a bit is 0, the corresponding state must be
   // re-sent.
+  // 
+  // Derived GSGs should initialize _inv_state_mask in reset() as a mask of
+  // 1's where they don't care, and 0's where they do care, about the state.
   RenderState::SlotMask _state_mask;
+  RenderState::SlotMask _inv_state_mask;
 
   // The current transform, as of the last call to
   // set_state_and_transform().

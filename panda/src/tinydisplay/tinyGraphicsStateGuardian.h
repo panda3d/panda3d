@@ -170,7 +170,6 @@ private:
   bool _texture_replace;
   bool _filled_flat;
   bool _auto_rescale_normal;
-  RenderState::SlotMask _inv_state_mask;
 
   CPT(TransformState) _scissor_mat;
 

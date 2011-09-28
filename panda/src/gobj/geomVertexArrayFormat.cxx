@@ -476,7 +476,7 @@ output(ostream &out) const {
   for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
     const GeomVertexColumn *column = (*ci);
     if (column->get_start() > last_pos) {
-      out << " ..." << (column->get_start() - last_pos) << "...";
+      out << " (..." << (column->get_start() - last_pos) << "...)";
     }
     out << " " << *column;
     last_pos = column->get_start() + column->get_total_bytes();

@@ -652,7 +652,7 @@ public:
   DeletedDisplayLists _deleted_display_lists;
   DeletedDisplayLists _deleted_queries;
 
-  RenderState::SlotMask _inv_state_mask;
+  //RenderState::SlotMask _inv_state_mask;
 
   bool _track_errors;
   bool _allow_flush;

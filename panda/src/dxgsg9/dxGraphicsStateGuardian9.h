@@ -33,12 +33,6 @@
 
 #include "lru.h"
 
-typedef LPDIRECT3DDEVICE9 DIRECT_3D_DEVICE;
-typedef D3DVERTEXELEMENT9 DIRECT_3D_VERTEX_ELEMENT;
-typedef LPDIRECT3DVERTEXDECLARATION9 DIRECT_3D_VERTEX_DECLARATION;
-typedef LPDIRECT3DVERTEXSHADER9 DIRECT_3D_VERTEX_SHADER;
-typedef LPDIRECT3DPIXELSHADER9 DIRECT_3D_PIXEL_SHADER;
-
 #include "vertexElementArray.h"
 #include "dxShaderContext9.h"
 
@@ -83,9 +77,14 @@ public:
   void release_shader(ShaderContext *sc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  bool apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context,
-                           const GeomVertexArrayDataHandle *reader, bool force, string name);
+  bool apply_vertex_buffer(VertexBufferContext *vbc,
+                           const GeomVertexArrayDataHandle *reader,
+                           bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
+
+  bool setup_array_data(CLP(VertexBufferContext)*& vbc,
+                        const GeomVertexArrayDataHandle* data,
+                        bool force);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   bool apply_index_buffer(IndexBufferContext *ibc,
@@ -206,8 +205,8 @@ protected:
 
   void do_auto_rescale_normal();
 
-//  void disable_standard_vertex_arrays();
-//  void update_standard_vertex_arrays();
+  void disable_standard_vertex_arrays();
+  bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 
@@ -301,7 +300,6 @@ protected:
   PT(Shader)  _texture_binding_shader;
   CLP(ShaderContext)  *_texture_binding_shader_context;
 
-  const DXVertexBufferContext9 *_active_vbuffer;
   const DXIndexBufferContext9 *_active_ibuffer;
 
   bool _overlay_windows_supported;
@@ -320,6 +318,7 @@ protected:
   UINT _available_texture_memory;
 
   DWORD _last_fvf;
+  int _num_bound_streams;
 
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have

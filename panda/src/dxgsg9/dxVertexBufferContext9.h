@@ -18,32 +18,26 @@
 #include "pandabase.h"
 #include "dxgsg9base.h"
 #include "vertexBufferContext.h"
+#include "deletedChain.h"
+
+class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXVertexBufferContext9
 // Description : Caches a GeomVertexArrayData in the DirectX device as
 //               a vertex buffer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXVertexBufferContext9 : public VertexBufferContext {
+class EXPCL_PANDADX CLP(VertexBufferContext) : public VertexBufferContext {
 public:
-  DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, DXScreenData &scrn);
-  virtual ~DXVertexBufferContext9();
+  CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
+                           PreparedGraphicsObjects *pgo,
+                           GeomVertexArrayData *data);
+  ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
 
   virtual void evict_lru();
 
-  void free_vbuffer();
-  void allocate_vbuffer(DXScreenData &scrn, const GeomVertexArrayDataHandle *reader);
-  void create_vbuffer(DXScreenData &scrn, const GeomVertexArrayDataHandle *reader, string name);
-  bool upload_data(const GeomVertexArrayDataHandle *reader, bool force);
-
-  IDirect3DVertexBuffer9 *_vbuffer;
+  LPDIRECT3DVERTEXBUFFER9 _vbuffer;
   int _fvf;
-
-  int _managed;
-
-  VERTEX_ELEMENT_TYPE *_vertex_element_type_array;
-  DIRECT_3D_VERTEX_DECLARATION _direct_3d_vertex_declaration;
-  CLP(ShaderContext) *_shader_context;
 
 public:
   static TypeHandle get_class_type() {

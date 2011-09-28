@@ -14,6 +14,7 @@
 
 #include "dxGraphicsStateGuardian9.h"
 #include "dxShaderContext9.h"
+#include "dxVertexBufferContext9.h"
 
 #include <io.h>
 #include <stdio.h>
@@ -37,8 +38,11 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
-  _vertex_size = 0;
-  _vertex_element_array = 0;
+  _vertex_element_array = NULL;
+  _vertex_declaration = NULL;
+
+  _num_bound_streams = 0;
+
   _name = s->get_filename ( );
 
 #ifdef HAVE_CG
@@ -131,9 +135,14 @@ CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   release_resources();
 
-  if (_vertex_element_array) {
+  if ( _vertex_declaration != NULL ) {
+    _vertex_declaration->Release();
+    _vertex_declaration = NULL;
+  }
+
+  if ( _vertex_element_array != NULL ) {
     delete _vertex_element_array;
-    _vertex_element_array = 0;
+    _vertex_element_array = NULL;
   }
 }
 
@@ -203,6 +212,10 @@ release_resources() {
     _cg_parameter_map.clear();
   }
 #endif
+
+  // I think we need to call SetStreamSource for _num_bound_streams -- basically the logic from
+  // disable_shader_vertex_arrays -- but to do that we need to introduce logic like the GL code
+  // has to manage _last_gsg, so we can get at the device.  Sigh.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -473,13 +486,14 @@ issue_parameters(GSG *gsg, int altered)
 //  Description: Disable all the vertex arrays used by this shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-disable_shader_vertex_arrays(GSG *gsg)
-{
-#ifdef HAVE_CG
-  if (_cg_context) {
-    // DO NOTHING, CURRENTLY USING ONLY ONE STREAM SOURCE
+disable_shader_vertex_arrays(GSG *gsg) {
+  LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
+
+  for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
+  {
+    device->SetStreamSource( array_index, NULL, 0, 0 );
   }
-#endif
+  _num_bound_streams = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -493,221 +507,249 @@ disable_shader_vertex_arrays(GSG *gsg)
 //               it may unnecessarily disable arrays then immediately
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
-
-// DEBUG
-#if DEBUG_SHADER
-VertexElementArray *global_vertex_element_array = 0;
-#endif
-
-void CLP(ShaderContext)::
-update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
-{
+bool CLP(ShaderContext)::
+update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (!_cg_context) {
+    return true;
+  }
 
-  #ifdef SUPPORT_IMMEDIATE_MODE
+#ifdef SUPPORT_IMMEDIATE_MODE
 /*
     if (gsg->_use_sender) {
       dxgsg9_cat.error() << "immediate mode shaders not implemented yet\n";
     } else
 */
-  #endif // SUPPORT_IMMEDIATE_MODE
-    {
-      if (_vertex_element_array == 0) {
-        bool error;
-        const GeomVertexArrayDataHandle *array_reader;
+#endif // SUPPORT_IMMEDIATE_MODE
+  {
+    int nvarying = _shader->_var_spec.size();
+    LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
+    HRESULT hr;
+
+    // Discard and recreate the VertexElementArray.  This thrashes pretty bad....
+    if ( _vertex_element_array != NULL ) {
+      delete _vertex_element_array;
+    }
+    _vertex_element_array = new VertexElementArray(nvarying + 2);
+    VertexElementArray* vertex_element_array = _vertex_element_array;
+
+    // Experimentally determined that DX doesn't like us crossing the streams!
+    // It seems to be okay with out-of-order offsets in both source and destination,
+    // but it wants all stream X entries grouped together, then all stream Y entries, etc.
+    // To accomplish this out outer loop processes arrays ("streams"), and we repeatedly
+    // iterate the parameters to pull out only those for a single stream.
+
+    int number_of_arrays = gsg->_data_reader->get_num_arrays();
+    for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
+      const GeomVertexArrayDataHandle* array_reader =
+        gsg->_data_reader->get_array_reader( array_index );
+      if ( array_reader == NULL ) {
+        dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
+        continue;
+      }
+
+      for ( int var_index = 0; var_index < nvarying; ++var_index ) {
+        CGparameter p = _cg_parameter_map[_shader->_var_spec[var_index]._id._seqno];
+        if ( p == NULL ) {
+          dxgsg9_cat.info() <<
+            "No parameter in map for parameter " << var_index <<
+            " (probably optimized away)\n";
+          continue;
+        }
+
+        InternalName *name = _shader->_var_spec[var_index]._name;
+
+        // This is copied from the GL version of this function, and I've yet to 100% convince
+        // myself that it works properly....
+        int texslot = _shader->_var_spec[var_index]._append_uv;
+        if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
+          TextureStage *stage = gsg->_state_texture->get_on_stage(texslot);
+          InternalName *texname = stage->get_texcoord_name();
+          if (name == InternalName::get_texcoord()) {
+            name = texname;
+          } else if (texname != InternalName::get_texcoord()) {
+            name = name->append(texname->get_basename());
+          }
+        }
+
+        const GeomVertexArrayDataHandle* param_array_reader;
         Geom::NumericType numeric_type;
-        int start, stride, num_values;
-        int nvarying = _shader->_var_spec.size();
+        int num_values;
+        int start;
+        int stride;
+        if ( gsg->_data_reader->get_array_info( name,
+                                                param_array_reader, num_values, numeric_type,
+                                                start, stride ) == false ) {
+          // This is apparently not an error (actually I think it is, just not a fatal one).
+          //
+          // The GL implementation fails silently in this case, but the net result is that we
+          // end up not supplying input for a shader parameter, which can cause Bad Things to
+          // happen so I'd like to at least get a hint as to what's gone wrong.
+          dxgsg9_cat.info() << "Geometry contains no data for shader parameter " << *name << "\n";
+          continue;
+        }
+        
+        // If not associated with the array we're working on, move on.
+        if ( param_array_reader != array_reader ) {
+          continue;
+        }
 
-        int stream_index;
-        VertexElementArray *vertex_element_array;
+        const char* semantic = cgGetParameterSemantic( p );
+        if ( semantic == NULL ) {
+          dxgsg9_cat.error() << "Unable to retrieve semantic for parameter " << var_index << "\n";
+          continue;
+        }
 
-        error = false;
-        // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
-        stream_index = 0;
-        vertex_element_array = new VertexElementArray (nvarying + 2);
-
-        #if DEBUG_SHADER
-        // DEBUG
-        global_vertex_element_array = vertex_element_array;
-        #endif
-
-        for (int i=0; i<nvarying; i++) {
-          CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-          if (p == NULL) {
-            continue;
-          }        
-          InternalName *name = _shader->_var_spec[i]._name;
-          int texslot = _shader->_var_spec[i]._append_uv;
-          if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
-            TextureStage *stage = gsg->_state_texture->get_on_stage(texslot);
-            InternalName *texname = stage->get_texcoord_name();
-            if (name == InternalName::get_texcoord()) {
-              name = texname;
-            } else if (texname != InternalName::get_texcoord()) {
-              name = name->append(texname->get_basename());
+        if ( strncmp( semantic, "POSITION", strlen( "POSITION" ) ) == 0 ) {
+          if (numeric_type == Geom::NT_float32) {
+            switch (num_values) {
+              case 3:
+                vertex_element_array->add_position_xyz_vertex_element(array_index, start);
+                break;
+              case 4:
+                vertex_element_array->add_position_xyzw_vertex_element(array_index, start);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid number of vertex coordinate elements " << num_values << "\n";
+                break;
             }
-          }
-          if (gsg->_data_reader->get_array_info(name, array_reader, num_values, numeric_type, start, stride)) {
-
-            if (false) {
-
-            } else if (name -> get_top ( ) == InternalName::get_vertex ( )) {
-
-              if (numeric_type == Geom::NT_float32) {
-                switch (num_values) {
-                  case 3:
-                    vertex_element_array -> add_position_xyz_vertex_element (stream_index);
-                    break;
-                  case 4:
-                    vertex_element_array -> add_position_xyzw_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid number of vertex coordinate elements " << num_values << "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid vertex type " << numeric_type << "\n";
-              }
-
-            } else if (name -> get_top ( ) == InternalName::get_texcoord ( )) {
-
-              if (numeric_type == Geom::NT_float32) {
-                switch (num_values)
-                {
-                  case 1:
-                    vertex_element_array -> add_u_vertex_element (stream_index);
-                    break;
-                  case 2:
-                    vertex_element_array -> add_uv_vertex_element (stream_index);
-                    break;
-                  case 3:
-                    vertex_element_array -> add_uvw_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid texture coordinate type " << numeric_type << "\n";
-              }
-
-            } else if (name -> get_top ( ) == InternalName::get_normal ( )) {
-
-              if (numeric_type == Geom::NT_float32) {
-                switch (num_values)
-                {
-                  case 3:
-                    vertex_element_array -> add_normal_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid number of normal coordinate elements " << num_values << "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid normal type " << numeric_type << "\n";
-              }
-
-            } else if (name -> get_top ( ) == InternalName::get_binormal ( )) {
-
-              if (numeric_type == Geom::NT_float32) {
-                switch (num_values)
-                {
-                  case 3:
-                    vertex_element_array -> add_binormal_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid number of binormal coordinate elements " << num_values << "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid binormal type " << numeric_type << "\n";
-              }
-
-            } else if (name -> get_top ( ) == InternalName::get_tangent ( )) {
-
-              if (numeric_type == Geom::NT_float32) {
-                switch (num_values)
-                {
-                  case 3:
-                    vertex_element_array -> add_tangent_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid number of tangent coordinate elements " << num_values << "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid tangent type " << numeric_type << "\n";
-              }
-
-            } else if (name -> get_top ( ) == InternalName::get_color ( )) {
-
-              if (numeric_type == Geom::NT_packed_dcba ||
-                  numeric_type == Geom::NT_packed_dabc ||
-                  numeric_type == Geom::NT_uint8) {
-                switch (num_values)
-                {
-                  case 4:
-                    vertex_element_array -> add_diffuse_color_vertex_element (stream_index);
-                    break;
-                  default:
-                    dxgsg9_cat.error ( ) << "VE ERROR: invalid color coordinates " << num_values << "\n";
-                    break;
-                }
-              } else {
-                dxgsg9_cat.error ( ) << "VE ERROR: invalid color type " << numeric_type << "\n";
-              }
-
-            } else {
-              dxgsg9_cat.error ( ) << "VE ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
-            }
-
           } else {
-            dxgsg9_cat.error ( )
-              << "get_array_info ( ) failed for shader "
-              << _name
-              << "\n"
-              << "  vertex element name = "
-              << name -> get_name ( )
-              << "\n";
-            error = true;
+            dxgsg9_cat.error() << "VE ERROR: invalid vertex type " << numeric_type << "\n";
           }
-        }
-
-        if (error) {
-          delete vertex_element_array;
-        }
-        else {
-          int state;
-
-          state = vertex_element_array -> add_end_vertex_element ( );
-          if (state) {
-            if (_cg_context) {
-              if (cgD3D9ValidateVertexDeclaration (_cg_vprogram,
-                    vertex_element_array -> vertex_element_array) == CG_TRUE) {
-                dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
-              }
-              else {
-              }
+        } else if ( strncmp( semantic, "TEXCOORD", strlen( "TEXCOORD" ) ) == 0 ) {
+          int slot = atoi( semantic + strlen( "TEXCOORD" ) );
+          if (numeric_type == Geom::NT_float32) {
+            switch (num_values) {
+              case 1:
+                vertex_element_array->add_u_vertex_element(array_index, start, slot);
+                break;
+              case 2:
+                vertex_element_array->add_uv_vertex_element(array_index, start, slot);
+                break;
+              case 3:
+                vertex_element_array->add_uvw_vertex_element(array_index, start, slot);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
+                break;
             }
-            else {
-
+          } else {
+            dxgsg9_cat.error() << "VE ERROR: invalid texture coordinate type " << numeric_type << "\n";
+          }
+        } else if ( strncmp( semantic, "COLOR", strlen( "COLOR" ) ) == 0 ) {
+          if (numeric_type == Geom::NT_packed_dcba ||
+              numeric_type == Geom::NT_packed_dabc ||
+              numeric_type == Geom::NT_uint8) {
+            switch (num_values) {
+              case 4:
+                vertex_element_array->add_diffuse_color_vertex_element(array_index, start);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid color coordinates " << num_values << "\n";
+                break;
             }
-
-            _vertex_size = vertex_element_array -> offset;
-            _vertex_element_array = vertex_element_array;
+          } else {
+            dxgsg9_cat.error() << "VE ERROR: invalid color type " << numeric_type << "\n";
           }
-          else {
-            dxgsg9_cat.error ( ) << "VertexElementArray creation failed\n";
-            delete vertex_element_array;
+        } else if ( strncmp( semantic, "NORMAL", strlen( "NORMAL" ) ) == 0 ) {
+          if (numeric_type == Geom::NT_float32) {
+            switch (num_values) {
+              case 3:
+                vertex_element_array->add_normal_vertex_element(array_index, start);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid number of normal coordinate elements " << num_values << "\n";
+                break;
+            }
+          } else {
+            dxgsg9_cat.error() << "VE ERROR: invalid normal type " << numeric_type << "\n";
           }
+        } else if ( strncmp( semantic, "BINORMAL", strlen( "BINORMAL" ) ) == 0 ) {
+          if (numeric_type == Geom::NT_float32) {
+            switch (num_values) {
+              case 3:
+                vertex_element_array->add_binormal_vertex_element(array_index, start);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid number of binormal coordinate elements " << num_values << "\n";
+                break;
+            }
+          } else {
+            dxgsg9_cat.error() << "VE ERROR: invalid binormal type " << numeric_type << "\n";
+          }
+        } else if ( strncmp( semantic, "TANGENT", strlen( "TANGENT" ) ) == 0 ) {
+          if (numeric_type == Geom::NT_float32) {
+            switch (num_values) {
+              case 3:
+                vertex_element_array->add_tangent_vertex_element(array_index, start);
+                break;
+              default:
+                dxgsg9_cat.error() << "VE ERROR: invalid number of tangent coordinate elements " << num_values << "\n";
+                break;
+            }
+          } else {
+            dxgsg9_cat.error() << "VE ERROR: invalid tangent type " << numeric_type << "\n";
+          }
+        } else {
+          dxgsg9_cat.error() << "Unsupported semantic " << semantic << " for parameter " << var_index << "\n";
         }
       }
+
+      // Get the vertex buffer for this array.
+      CLP(VertexBufferContext)* dvbc;
+      if (!gsg->setup_array_data(dvbc, array_reader, force)) {
+        dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
+        continue;
+      }
+
+      // Bind this array as the data source for the corresponding stream.
+      const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
+      hr = device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+    }
+
+    _num_bound_streams = number_of_arrays;
+
+    if (( _vertex_element_array != NULL ) &&
+        ( _vertex_element_array->add_end_vertex_element() != false )) {
+      if ( dxgsg9_cat.is_debug() ) {
+        // Note that the currently generated vertex declaration works but never validates.
+        // My theory is that this is due to the shader programs always using float4 whereas
+        // the vertex declaration correctly sets the number of inputs (float2, float3, etc.).
+        if (cgD3D9ValidateVertexDeclaration(_cg_vprogram,
+                                            _vertex_element_array->_vertex_element_array) == CG_TRUE) {
+          dxgsg9_cat.debug() << "cgD3D9ValidateVertexDeclaration succeeded\n";
+        } else {
+          dxgsg9_cat.debug() << "cgD3D9ValidateVertexDeclaration failed\n";
+        }
+      }
+
+      // Discard the old VertexDeclaration.  This thrashes pretty bad....
+      if ( _vertex_declaration != NULL ) {
+        _vertex_declaration->Release();
+        _vertex_declaration = NULL;
+      }
+
+      hr = device->CreateVertexDeclaration( _vertex_element_array->_vertex_element_array,
+                                            &_vertex_declaration );
+      if (FAILED (hr)) {
+        dxgsg9_cat.error() << "CreateVertexDeclaration failed" << D3DERRORSTRING(hr);
+      } else {
+        hr = device->SetVertexDeclaration( _vertex_declaration );
+        if (FAILED(hr)) {
+          dxgsg9_cat.error() << "SetVertexDeclaration failed" << D3DERRORSTRING(hr);
+        }
+      }
+    } else {
+      dxgsg9_cat.error() << "VertexElementArray creation failed\n";
     }
   }
 #endif // HAVE_CG
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

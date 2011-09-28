@@ -341,7 +341,7 @@ reset() {
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and
   // 0's where we do care, about the state.
-  _inv_state_mask = RenderState::SlotMask::all_on();
+  //_inv_state_mask = RenderState::SlotMask::all_on();
   _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
   _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
