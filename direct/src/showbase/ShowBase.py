@@ -303,6 +303,10 @@ class ShowBase(DirectObject.DirectObject):
                 # Windows XP supports a 32-bit affinity mask
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
+        # Make sure we're not making more than one ShowBase.
+        if hasattr(__builtin__, 'base'):
+            raise StandardError, "Attempt to spawn multiple ShowBase instances!"
+        
         __builtin__.base = self
         __builtin__.render2d = self.render2d
         __builtin__.aspect2d = self.aspect2d
