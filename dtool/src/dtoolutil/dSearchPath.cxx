@@ -16,6 +16,7 @@
 #include "filename.h"
 
 #include <algorithm>
+#include <iterator>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Constructor

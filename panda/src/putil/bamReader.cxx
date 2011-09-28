@@ -1625,7 +1625,7 @@ finalize() {
         // Move the NULL data to the new table; remove the rest.
         AuxDataTable new_aux_data;
         AuxDataTable::iterator nti = 
-          new_aux_data.insert(AuxDataTable::value_type(NULL, AuxDataNames())).first;
+          new_aux_data.insert(AuxDataTable::value_type((TypedWritable *)NULL, AuxDataNames())).first;
         (*nti).second.swap((*ti).second);
         _aux_data.swap(new_aux_data);
       }

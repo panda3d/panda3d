@@ -24,6 +24,7 @@
 #include "virtualFile.h"
 
 #include <algorithm>
+#include <iterator>
 #include <time.h>
 
 // This sequence of bytes begins each Multifile to identify it as a

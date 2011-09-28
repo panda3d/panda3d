@@ -17,6 +17,7 @@
 #include "virtualFileList.h"
 #include "config_express.h"
 #include "pvector.h"
+#include <iterator>
 
 TypeHandle VirtualFile::_type_handle;
 

@@ -23,6 +23,7 @@
 #include "config_pgraph.h"
 #include "attribNodeRegistry.h"
 #include "indent.h"
+#include <iterator>
 
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 int LightAttrib::_attrib_slot;

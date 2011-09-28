@@ -1366,7 +1366,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           DisplayRegionPipelineReader *dr_reader = 
             new DisplayRegionPipelineReader(dr, current_thread);
           NodePath camera = dr_reader->get_camera();
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, NULL)).first;
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.

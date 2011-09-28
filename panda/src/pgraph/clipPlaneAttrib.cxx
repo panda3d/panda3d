@@ -21,6 +21,7 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 #include "attribNodeRegistry.h"
+#include <iterator>
 
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
