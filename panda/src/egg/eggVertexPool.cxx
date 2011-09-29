@@ -15,6 +15,7 @@
 #include "eggVertexPool.h"
 #include "eggPrimitive.h"
 #include "eggUtilities.h"
+#include <iterator>
 
 #include "indent.h"
 
