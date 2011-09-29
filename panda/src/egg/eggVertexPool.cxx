@@ -19,6 +19,8 @@
 
 #include "indent.h"
 
+#include <iterator>
+
 TypeHandle EggVertexPool::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

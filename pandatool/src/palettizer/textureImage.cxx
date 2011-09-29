@@ -30,6 +30,8 @@
 #include "indirectCompareNames.h"
 #include "pvector.h"
 
+#include <iterator>
+
 TypeHandle TextureImage::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

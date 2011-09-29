@@ -28,6 +28,7 @@
 
 #include "config_express.h"
 #include <algorithm>
+#include <iterator>
 
 MemoryUsage *MemoryUsage::_global_ptr;
 
