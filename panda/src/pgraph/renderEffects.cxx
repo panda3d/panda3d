@@ -27,8 +27,9 @@
 #include "lightReMutexHolder.h"
 #include "lightMutexHolder.h"
 #include "thread.h"
+
 #include <iterator>
-  
+
 LightReMutex *RenderEffects::_states_lock = NULL;
 RenderEffects::States *RenderEffects::_states = NULL;
 CPT(RenderEffects) RenderEffects::_empty_state;
