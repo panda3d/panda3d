@@ -149,7 +149,7 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
   // First, we set the property locally.
   if (value != NULL) {
     Properties::iterator pi;
-    pi = _properties.insert(Properties::value_type(property, NULL)).first;
+    pi = _properties.insert(Properties::value_type(property, (P3D_object *)NULL)).first;
     assert(pi != _properties.end());
     P3D_object *orig_value = (*pi).second;
     if (orig_value != value) {
@@ -673,7 +673,7 @@ read_log_file(const string &log_pathname,
   if (full_bytes > 0) {
     log.seekg(0, ios::beg);
     log.read(buffer, full_bytes);
-    size_t read_bytes = log.gcount();
+    streamsize read_bytes = log.gcount();
     assert(read_bytes < buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Full Start";
@@ -687,7 +687,7 @@ read_log_file(const string &log_pathname,
   if (head_bytes > 0) {
     log.seekg(0, ios::beg);
     log.read(buffer, head_bytes);
-    size_t read_bytes = log.gcount();
+    streamsize read_bytes = log.gcount();
     assert(read_bytes < buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Head Start";
@@ -707,7 +707,7 @@ read_log_file(const string &log_pathname,
   if (tail_bytes > 0) {
     log.seekg(file_size - tail_bytes, ios::beg);
     log.read(buffer, tail_bytes);
-    size_t read_bytes = log.gcount();
+    streamsize read_bytes = log.gcount();
     assert(read_bytes < buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Tail Start";

@@ -798,7 +798,7 @@ copy_file(const string &from_filename, const string &to_filename) {
   char buffer[buffer_size];
   
   in.read(buffer, buffer_size);
-  size_t count = in.gcount();
+  streamsize count = in.gcount();
   while (count != 0) {
     out.write(buffer, count);
     if (out.fail()) {

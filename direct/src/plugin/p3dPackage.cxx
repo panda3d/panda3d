@@ -1903,11 +1903,11 @@ thread_step() {
   int flush = 0;
 
   source.read(decompress_buffer, decompress_buffer_size);
-  size_t read_count = source.gcount();
+  streamsize read_count = source.gcount();
   eof = (read_count == 0 || source.eof() || source.fail());
   
   z.next_in = (Bytef *)decompress_buffer;
-  z.avail_in = read_count;
+  z.avail_in = (size_t)read_count;
 
   int result = inflateInit(&z);
   if (result < 0) {
@@ -1918,11 +1918,11 @@ thread_step() {
   while (true) {
     if (z.avail_in == 0 && !eof) {
       source.read(decompress_buffer, decompress_buffer_size);
-      size_t read_count = source.gcount();
+      streamsize read_count = source.gcount();
       eof = (read_count == 0 || source.eof() || source.fail());
         
       z.next_in = (Bytef *)decompress_buffer;
-      z.avail_in = read_count;
+      z.avail_in = (size_t)read_count;
     }
 
     z.next_out = (Bytef *)write_buffer;

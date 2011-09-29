@@ -375,12 +375,12 @@ bool P3DMultifileReader::
 extract_subfile(ostream &out, const Subfile &s) {
   _in.seekg(s._data_start + _read_offset);
 
-  static const size_t buffer_size = 4096;
+  static const streamsize buffer_size = 4096;
   char buffer[buffer_size];
   
-  size_t remaining_data = s._data_length;
+  streamsize remaining_data = s._data_length;
   _in.read(buffer, min(buffer_size, remaining_data));
-  size_t count = _in.gcount();
+  streamsize count = _in.gcount();
   while (count != 0) {
     remaining_data -= count;
     out.write(buffer, count);
@@ -485,13 +485,13 @@ check_signatures() {
       // _last_data_byte.
       _in.seekg(_read_offset);
       streampos bytes_remaining = (streampos)_last_data_byte;
-      static const size_t buffer_size = 4096;
+      static const streamsize buffer_size = 4096;
       char buffer[buffer_size];
       _in.read(buffer, min((streampos)buffer_size, bytes_remaining));
-      size_t count = _in.gcount();
+      streamsize count = _in.gcount();
       while (count != 0) {
         assert(count <= buffer_size);
-        EVP_VerifyUpdate(md_ctx, buffer, count);
+        EVP_VerifyUpdate(md_ctx, buffer, (size_t)count);
         bytes_remaining -= count;
         _in.read(buffer, min((streampos)buffer_size, bytes_remaining));
         count = _in.gcount();

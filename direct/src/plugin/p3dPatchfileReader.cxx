@@ -271,12 +271,12 @@ copy_bytes(istream &in, size_t copy_byte_count) {
   static const size_t buffer_size = 8192;
   char buffer[buffer_size];
 
-  size_t read_size = min(copy_byte_count, buffer_size);
+  streamsize read_size = min(copy_byte_count, buffer_size);
   in.read(buffer, read_size);
-  size_t count = in.gcount();
+  streamsize count = in.gcount();
   while (count != 0) {
     _target_out.write(buffer, count);
-    _bytes_written += count;
+    _bytes_written += (size_t)count;
     if (_bytes_written > _target_length) {
       nout << "Runaway patchfile.\n";
       return false;
@@ -284,7 +284,7 @@ copy_bytes(istream &in, size_t copy_byte_count) {
     if (count != read_size) {
       return false;
     }
-    copy_byte_count -= count;
+    copy_byte_count -= (size_t)count;
     count = 0;
     if (copy_byte_count != 0) {
       read_size = min(copy_byte_count, buffer_size);
