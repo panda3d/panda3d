@@ -331,8 +331,11 @@ SdkAutoDisableMax()
 SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
-if (RTDIST and SDK["PYTHONVERSION"] != "python2.6" and DISTRIBUTOR == "cmu"):
-    exit("The CMU rtdist distribution must be built against Python 2.6!")
+if (RTDIST and DISTRIBUTOR == "cmu"):
+    if (RTDIST_VERSION == "cmu_1.7" and SDK["PYTHONVERSION"] != "python2.6"):
+        exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
+    elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
+        exit("The CMU 1.8 runtime distribution must be built against Python 2.7!")
 
 ########################################################################
 ##
