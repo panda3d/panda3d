@@ -47,7 +47,7 @@ DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
 RPMRELEASE="1"
-P3DSUFFIX=""
+P3DSUFFIX=None
 MAJOR_VERSION=None
 COREAPI_VERSION=None
 PLUGIN_VERSION=None
@@ -247,6 +247,9 @@ if (DEBVERSION is None):
 
 MAJOR_VERSION = VERSION[:3]
 
+if (P3DSUFFIX is None):
+    P3DSUFFIX = MAJOR_VERSION
+
 if (RUNTIME or RTDIST):
     # Compiling Maya/Max is pointless in rtdist build
     for ver in MAYAVERSIONS + MAXVERSIONS:
@@ -261,7 +264,7 @@ if (RUNTIME or RTDIST):
         elif (RUNTIME):
             SetOutputDir("built_" + DISTRIBUTOR.strip() + "_rt")
 
-    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + VERSION[:3]
+    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
 elif (DISTRIBUTOR == ""):
     DISTRIBUTOR = "makepanda"
 
