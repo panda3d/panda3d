@@ -78,8 +78,8 @@ class pil(package):
     config(display_name = "Python Imaging Library")
     require('panda3d')
 
-    module('PIL', required = True)
-    module('ArgImagePlugin', 'BdfFontFile',
+    module('Image', required = True)
+    module('PIL', 'ArgImagePlugin', 'BdfFontFile',
            'BmpImagePlugin', 'BufrStubImagePlugin', 'ContainerIO',
            'CurImagePlugin', 'DcxImagePlugin', 'EpsImagePlugin',
            'ExifTags', 'FitsStubImagePlugin', 'FliImagePlugin',
@@ -87,7 +87,7 @@ class pil(package):
            'GifImagePlugin', 'GimpGradientFile', 'GimpPaletteFile',
            'GribStubImagePlugin', 'Hdf5StubImagePlugin',
            'IcnsImagePlugin', 'IcoImagePlugin', 'ImImagePlugin',
-           'Image', 'ImageChops', 'ImageCms', 'ImageColor', 'ImageDraw',
+           'ImageChops', 'ImageCms', 'ImageColor', 'ImageDraw',
            'ImageDraw2', 'ImageEnhance', 'ImageFile', 'ImageFileIO',
            'ImageFilter', 'ImageFont', 'ImageGL', 'ImageGrab',
            'ImageMath', 'ImageMode', 'ImageOps', 'ImagePalette',
@@ -123,4 +123,3 @@ class box2d(package):
     require('panda3d')
 
     module('Box2D', required = True)
-
