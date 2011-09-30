@@ -42,7 +42,7 @@ private:
 public:
   INLINE bool operator < (const ConfigDeclaration &other) const;
 
-public:
+PUBLISHED:
   INLINE ConfigPage *get_page() const;
   INLINE ConfigVariableCore *get_variable() const;
 

@@ -41,7 +41,7 @@ private:
   ConfigVariableCore(const ConfigVariableCore &templ, const string &name);
   ~ConfigVariableCore();
 
-public:
+PUBLISHED:
   INLINE const string &get_name() const;
   INLINE bool is_used() const;
 

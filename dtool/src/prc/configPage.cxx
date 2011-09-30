@@ -338,6 +338,20 @@ get_declaration(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigPage::modify_declaration
+//       Access: Published
+//  Description: Returns a modifiable pointer to the nth declaration
+//               on the page.  Any modifications will appear in the
+//               output, if the page is written out with
+//               ConfigPage::write().
+////////////////////////////////////////////////////////////////////
+ConfigDeclaration *ConfigPage::
+modify_declaration(int n) {
+  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
+  return _declarations[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigPage::get_variable_name
 //       Access: Published
 //  Description: Returns the variable named by the nth declaration on

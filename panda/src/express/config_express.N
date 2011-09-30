@@ -31,6 +31,8 @@ forcetype DConfig
 forcetype ConfigFlags
 forcetype ConfigPage
 forcetype ConfigPageManager
+forcetype ConfigDeclaration
+forcetype ConfigVariableCore
 forcetype ConfigVariable
 forcetype ConfigVariableBase
 forcetype ConfigVariableBool

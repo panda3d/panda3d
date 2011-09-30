@@ -65,6 +65,7 @@ PUBLISHED:
 
   int get_num_declarations() const;
   const ConfigDeclaration *get_declaration(int n) const;
+  ConfigDeclaration *modify_declaration(int n);
   string get_variable_name(int n) const;
   string get_string_value(int n) const;
   bool is_variable_used(int n) const;
