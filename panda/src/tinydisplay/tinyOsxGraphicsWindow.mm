@@ -490,9 +490,9 @@ TinyOsxGraphicsWindow::TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPip
   _is_fullscreen(false),
   _pending_icon(NULL),
   _current_icon(NULL),
-  _originalMode(NULL),
-  _ID(id_seed++) {
-  GraphicsWindowInputDevice device =
+  _ID(id_seed++),
+  _originalMode(NULL) {
+ GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
   _input_devices.push_back(device);
   _input_devices[0].set_pointer_in_window(0, 0);
@@ -753,8 +753,7 @@ void TinyOsxGraphicsWindow::close_window() {
 
   ReleaseSystemResources();
   _gsg.clear();
-  _active = false;
-  GraphicsWindow::close_window();
+ GraphicsWindow::close_window();
 }
 
 //////////////////////////////////////////////////////////
@@ -1248,8 +1247,7 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
   WindowRef            window = NULL;
   OSStatus            result = eventNotHandledErr;
   UInt32                 kind = GetEventKind (event);
-  EventMouseButton    button = 0;
-  Point qdGlobalPoint = {0, 0};
+ Point qdGlobalPoint = {0, 0};
   UInt32                modifiers = 0;
   Rect                 rectPort;
   SInt32 this_wheel_delta;

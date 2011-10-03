@@ -84,7 +84,6 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 
   _shared_depth_buffer = 0;
-  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,29 +286,37 @@ rebuild_bitplanes() {
 
     // Sort the textures list into appropriate slots.
 
-    for (int i=0; i<count_textures(); i++) {
-      if (get_rtm_mode(i) != RTM_bind_or_copy) {
-        continue;
-      }
-      Texture *tex = get_texture(i);
-      RenderTexturePlane plane = get_texture_plane(i);
+    {
+      CDLockedReader cdata(_cycler);
+      for (size_t i = 0; i != cdata->_textures.size(); ++i) {
+        const RenderTexture &rt = cdata->_textures[i];
+        RenderTextureMode rtm_mode = rt._rtm_mode;
+        if (rtm_mode != RTM_bind_or_copy) {
+          continue;
+        }
+        Texture *tex = rt._texture;
+        RenderTexturePlane plane = rt._plane;
 
-      // If it's a not a 2D texture or a cube map, punt it.
-      if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
-          (tex->get_texture_type() != Texture::TT_cube_map)) {
-        _textures[i]._rtm_mode = RTM_copy_texture;
-        continue;
+        // If it's a not a 2D texture or a cube map, punt it.
+        if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
+            (tex->get_texture_type() != Texture::TT_cube_map)) {
+          CDWriter cdataw(_cycler, cdata, false);
+          nassertv(cdata->_textures.size() == cdataw->_textures.size());
+          cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
+          continue;
+        }
+        // If I can't find an appropriate slot, or if there's
+        // already a texture bound to this slot, then punt
+        // this texture.
+        if (attach[plane]) {
+          CDWriter cdataw(_cycler, cdata, false);
+          nassertv(cdata->_textures.size() == cdataw->_textures.size());
+          cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
+          continue;
+        }
+        // Assign the texture to this slot.
+        attach[plane] = tex;
       }
-      // If I can't find an appropriate slot, or if there's
-      // already a texture bound to this slot, then punt
-      // this texture.
-
-      if (attach[plane]) {
-        _textures[i]._rtm_mode = RTM_copy_texture;
-        continue;
-      }
-      // Assign the texture to this slot.
-      attach[plane] = tex;
     }
 
     // Having both a depth texture and a depth_stencil texture is invalid: depth_stencil implies
@@ -1019,7 +1026,6 @@ close_buffer() {
   check_host_valid();
   report_my_gl_errors();
 
-  _active = false;
   if (_gsg == 0) {
     return;
   }
@@ -1200,7 +1206,6 @@ void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
     _is_valid = false;
-    _active = false;
     _gsg.clear();
     _host.clear();
   }

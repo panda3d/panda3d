@@ -259,8 +259,6 @@ rebuild_bitplanes() {
           (get_texture(i)->get_format() != Texture::F_depth_component)&&
           (color_tex_index < 0)) {
         color_tex_index = i;
-      } else {
-        _textures[i]._rtm_mode = RTM_copy_texture;
       }
     }
   }
@@ -424,8 +422,6 @@ select_cube_map(int cube_map_index) {
           (get_texture(i)->get_format() != Texture::F_depth_component)&&
           (color_tex_index < 0)) {
         color_tex_index = i;
-      } else {
-        _textures[i]._rtm_mode = RTM_copy_texture;
       }
     }
   }
@@ -506,7 +502,6 @@ close_buffer() {
     _depth_backing_store = NULL;
   }
 
-  _active = false;
   _cube_map_index = -1;
   _is_valid = false;
 }

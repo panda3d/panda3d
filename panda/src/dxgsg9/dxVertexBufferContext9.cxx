@@ -41,7 +41,6 @@ CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
 
   // We have to start with the vertex data, and work up from there in
   // order, since that's the way the FVF is defined.
-  int index;
   int n = 0;
   int num_columns = array_format->get_num_columns();
 

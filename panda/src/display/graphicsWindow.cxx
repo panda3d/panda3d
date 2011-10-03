@@ -184,7 +184,7 @@ request_properties(const WindowProperties &requested_properties) {
 bool GraphicsWindow::
 is_active() const {
   // Make this smarter?
-  return _active && _properties.get_open() && !_properties.get_minimized();
+  return GraphicsOutput::is_active() && _properties.get_open() && !_properties.get_minimized();
 }
 
 ////////////////////////////////////////////////////////////////////

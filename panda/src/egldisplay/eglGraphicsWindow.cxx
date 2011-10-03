@@ -591,7 +591,6 @@ close_window() {
         << get_egl_error_string(eglGetError()) << "\n";
     }
     _gsg.clear();
-    _active = false;
   }
 
   if (_ic != (XIC)NULL) {

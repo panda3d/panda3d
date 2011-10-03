@@ -114,7 +114,7 @@ set_size_and_recalc(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 bool ParasiteBuffer::
 is_active() const {
-  return _active && _host->is_active();
+  return GraphicsOutput::is_active() && _host->is_active();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,11 +186,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
   
   if (mode == FM_render) {
-    for (int i=0; i<count_textures(); i++) {
-      if (get_rtm_mode(i) == RTM_bind_or_copy) {
-        _textures[i]._rtm_mode = RTM_copy_texture;
-      }
-    }
+    promote_to_copy_texture();
     copy_to_textures();
     if (_one_shot) {
       prepare_for_deletion();

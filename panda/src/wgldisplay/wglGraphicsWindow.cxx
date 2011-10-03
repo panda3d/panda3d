@@ -186,7 +186,6 @@ close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     wglGraphicsPipe::wgl_make_current(_hdc, NULL, &_make_current_pcollector);
     _gsg.clear();
-    _active = false;
   }
   ReleaseDC(_hWnd, _hdc);
   _hdc = (HDC)0;

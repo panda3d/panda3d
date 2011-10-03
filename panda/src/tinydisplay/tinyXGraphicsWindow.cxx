@@ -413,7 +413,6 @@ close_window() {
     DCAST_INTO_V(tinygsg, _gsg);
     tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
-    _active = false;
   }
   
   x11GraphicsWindow::close_window();

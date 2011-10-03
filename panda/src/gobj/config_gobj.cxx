@@ -128,13 +128,10 @@ ConfigVariableBool driver_compress_textures
           "of this setting."));
 
 ConfigVariableBool driver_generate_mipmaps
-("driver-generate-mipmaps", false,
+("driver-generate-mipmaps", true,
  PRC_DESC("Set this true to use the hardware to generate mipmaps "
           "automatically in all cases, if supported.  Set it false "
-          "to generate mipmaps in software when possible.  This is "
-          "false by default because some drivers (Intel) seem to do a "
-          "poor job of generating mipmaps when needed; also, generating "
-          "mipmaps in software may allow smoother texture loads."));
+          "to generate mipmaps in software when possible."));
 
 ConfigVariableBool vertex_buffers
 ("vertex-buffers", true,

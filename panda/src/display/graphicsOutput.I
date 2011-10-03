@@ -80,7 +80,8 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 count_textures() const {
-  return _textures.size();
+  CDReader cdata(_cycler);
+  return cdata->_textures.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +92,8 @@ count_textures() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 has_texture() const {
-  return (_textures.size() > 0);
+  CDReader cdata(_cycler);
+  return (cdata->_textures.size() > 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,10 +111,11 @@ has_texture() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *GraphicsOutput::
 get_texture(int i) const {
-  if ((i < 0) || (i >= ((int)_textures.size()))) {
+  CDReader cdata(_cycler);
+  if ((i < 0) || (i >= ((int)cdata->_textures.size()))) {
     return (Texture *)NULL;
   }
-  return _textures[i]._texture;
+  return cdata->_textures[i]._texture;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,10 +127,11 @@ get_texture(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsOutput::RenderTexturePlane GraphicsOutput::
 get_texture_plane(int i) const {
-  if ((i < 0) || (i >= ((int)_textures.size()))) {
+  CDReader cdata(_cycler);
+  if ((i < 0) || (i >= ((int)cdata->_textures.size()))) {
     return (RenderTexturePlane)0;
   }
-  return _textures[i]._plane;
+  return cdata->_textures[i]._plane;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,10 +143,11 @@ get_texture_plane(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsOutput::RenderTextureMode GraphicsOutput::
 get_rtm_mode(int i) const {
-  if ((i < 0) || (i >= ((int)_textures.size()))) {
+  CDReader cdata(_cycler);
+  if ((i < 0) || (i >= ((int)cdata->_textures.size()))) {
     return RTM_none;
   }
-  return _textures[i]._rtm_mode;
+  return cdata->_textures[i]._rtm_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -325,9 +330,8 @@ set_one_shot(bool one_shot) {
 //       Access: Published
 //  Description: Returns the current setting of the one-shot flag.
 //               When this is true, the GraphicsOutput will
-//               automatically detach its texture (if it has one) and
-//               remove itself from the GraphicsEngine after it
-//               renders the next frame.
+//               automatically set itself inactive after the next
+//               frame.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 get_one_shot() const {
@@ -485,26 +489,6 @@ is_stereo() const {
 INLINE void GraphicsOutput::
 clear_delete_flag() {
   _delete_flag = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_delete_flag
-//       Access: Published
-//  Description: Returns the current setting of the delete flag.  When
-//               this is true, the GraphicsOutput will automatically
-//               be removed before the beginning of the next frame by
-//               the GraphicsEngine.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsOutput::
-get_delete_flag() const {
-  // We only delete the window or buffer automatically when it is
-  // no longer associated with a texture.
-  for (int i=0; i<(int)_hold_textures.size(); i++) {
-    if (_hold_textures[i].is_valid_pointer()) {
-      return false;
-    }
-  }
-  return _delete_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,8 +800,10 @@ INLINE void GraphicsOutput::
 determine_display_regions() const {
   // This function isn't strictly speaking const, but we pretend it is
   // because it only updates a transparent cache value.
-  if (_display_regions_stale) {
-    ((GraphicsOutput *)this)->do_determine_display_regions();
+  CDLockedReader cdata(_cycler);
+  if (cdata->_active_display_regions_stale) {
+    CDWriter cdataw(((GraphicsOutput *)this)->_cycler, cdata, false);
+    ((GraphicsOutput *)this)->do_determine_display_regions(cdataw);
   }
 }
 
@@ -830,7 +816,8 @@ determine_display_regions() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
 win_display_regions_changed() {
-  _display_regions_stale = true;
+  CDWriter cdata(_cycler, true);
+  cdata->_active_display_regions_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////

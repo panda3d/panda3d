@@ -184,7 +184,6 @@ close_window() {
     DCAST_INTO_V(tinygsg, _gsg);
     tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
-    _active = false;
   }
 
   ReleaseDC(_hWnd, _hdc);

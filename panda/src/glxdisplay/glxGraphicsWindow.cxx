@@ -143,7 +143,6 @@ close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     glXMakeCurrent(_display, None, NULL);
     _gsg.clear();
-    _active = false;
   }
   
   x11GraphicsWindow::close_window();

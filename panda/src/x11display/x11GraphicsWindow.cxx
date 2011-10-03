@@ -759,7 +759,6 @@ void x11GraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     _gsg.clear();
-    _active = false;
   }
   
   if (_ic != (XIC)NULL) {

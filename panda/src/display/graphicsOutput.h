@@ -35,6 +35,11 @@
 #include "pvector.h"
 #include "weakPointerTo.h"
 #include "nodePath.h"
+#include "cycleData.h"
+#include "cycleDataLockedReader.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
 
 class PNMImage;
 class GraphicsEngine;
@@ -147,7 +152,7 @@ PUBLISHED:
   INLINE bool is_stereo() const;
 
   INLINE void clear_delete_flag();
-  INLINE bool get_delete_flag() const;
+  bool get_delete_flag() const;
 
   virtual void set_sort(int sort);
   INLINE int get_sort() const;
@@ -246,12 +251,15 @@ public:
 protected:
   virtual void pixel_factor_changed();
   void prepare_for_deletion();
+  void promote_to_copy_texture();
   bool copy_to_textures();
   
   INLINE void begin_frame_spam(FrameMode mode);
   INLINE void end_frame_spam(FrameMode mode);
   INLINE void clear_cube_map_selection();
   INLINE void trigger_flip();
+
+  class CData;
 
 private:
   PT(GeomVertexData) create_texture_card_vdata(int x, int y);
@@ -262,17 +270,11 @@ private:
   INLINE void win_display_regions_changed();
 
   INLINE void determine_display_regions() const;
-  void do_determine_display_regions();
+  void do_determine_display_regions(CData *cdata);
 
   static unsigned int parse_color_mask(const string &word);
 
 protected:
-  class RenderTexture {
-  public:
-    PT(Texture) _texture;
-    RenderTexturePlane _plane;
-    RenderTextureMode _rtm_mode;
-  };
   PT(GraphicsStateGuardian) _gsg;
   GraphicsEngine *_engine;
   PT(GraphicsPipe) _pipe;
@@ -280,12 +282,19 @@ protected:
   FrameBufferProperties _fb_properties;
   bool _stereo;
   string _name;
-  pvector<RenderTexture> _textures;
   bool _flip_ready;
   int _cube_map_index;
   DisplayRegion *_cube_map_dr;
   PT(Geom) _texture_card;
   bool _trigger_copy;
+
+  class RenderTexture {
+  public:
+    PT(Texture) _texture;
+    RenderTexturePlane _plane;
+    RenderTextureMode _rtm_mode;
+  };
+  typedef pvector<RenderTexture> RenderTextures;
   
 private:
   int _sort;
@@ -294,7 +303,6 @@ private:
   unsigned int _internal_sort_index;
 
 protected:
-  bool _active;
   bool _one_shot;
   bool _inverted;
   bool _red_blue_stereo;
@@ -306,9 +314,9 @@ protected:
   bool _delete_flag;
 
   // These weak pointers are used to keep track of whether the
-  // buffer's bound Texture has been deleted or not.  Until they have,
-  // we don't auto-close the buffer (since that would deallocate the
-  // memory associated with the texture).
+  // buffer's bound Textures have been deleted or not.  Until they
+  // have, we don't auto-close the buffer (since that would deallocate
+  // the memory associated with the texture).
   pvector<WPT(Texture)> _hold_textures;
   
 protected:
@@ -318,8 +326,29 @@ protected:
   typedef pvector< PT(DisplayRegion) > TotalDisplayRegions;
   TotalDisplayRegions _total_display_regions;
   typedef pvector<DisplayRegion *> ActiveDisplayRegions;
-  ActiveDisplayRegions _active_display_regions;
-  bool _display_regions_stale;
+
+  // This is the data that is associated with the GraphicsOutput that
+  // needs to be cycled every frame.  Mostly we don't cycle this data,
+  // but we do cycle the textures list, and the active flag.
+  class EXPCL_PANDA_DISPLAY CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return GraphicsOutput::get_class_type();
+    }
+
+    RenderTextures _textures;
+    bool _active;
+    ActiveDisplayRegions _active_display_regions;
+    bool _active_display_regions_stale;
+  };
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 protected:
   int _creation_flags;

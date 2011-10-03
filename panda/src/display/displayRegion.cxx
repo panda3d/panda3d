@@ -174,8 +174,11 @@ is_stereo() const {
 void DisplayRegion::
 set_camera(const NodePath &camera) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
+
+  // We allow set_camera(NodePath()) to happen in cleanup(), which can
+  // be called from any pipeline stage.
+  nassertv(pipeline_stage == 0 || camera.is_empty());
+  CDStageWriter cdata(_cycler, 0);
 
   Camera *camera_node = (Camera *)NULL;
   if (!camera.is_empty()) {
@@ -561,10 +564,10 @@ get_screenshot() {
   Thread *current_thread = Thread::get_current_thread();
 
   GraphicsOutput *window = get_window();
-  nassertr(window != (GraphicsOutput *)NULL, false);
+  nassertr(window != (GraphicsOutput *)NULL, NULL);
   
   GraphicsStateGuardian *gsg = window->get_gsg();
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, false);
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
   
   if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
     return NULL;
@@ -622,11 +625,8 @@ make_cull_result_graph() {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels() {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-
   if (_window != (GraphicsOutput *)NULL) {
-    CDWriter cdata(_cycler);
+    CDWriter cdata(_cycler, false);
     do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
                       cdata);
   }
@@ -663,9 +663,7 @@ compute_pixels_all_stages() {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels(int x_size, int y_size) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, false);
   do_compute_pixels(x_size, y_size, cdata);
 }
 

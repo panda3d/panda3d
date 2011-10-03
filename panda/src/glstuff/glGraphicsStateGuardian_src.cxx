@@ -9778,7 +9778,7 @@ get_supports_cg_profile(const string &name) const {
     GLCAT.error() << name <<", unknown Cg-profile\n";
     return false;
   }
-  return cgGLIsProfileSupported(profile);
+  return (cgGLIsProfileSupported(profile) != 0);
 #endif
 }
 

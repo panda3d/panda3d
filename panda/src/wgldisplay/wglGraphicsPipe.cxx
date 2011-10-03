@@ -213,7 +213,6 @@ make_output(const string &name,
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        cerr << "b\n";
         return NULL;
       }
     }
@@ -225,10 +224,8 @@ make_output(const string &name,
         (wglgsg->pfnum_supports_pbuffer()) &&
         (wglgsg->get_fb_properties().subsumes(fb_prop))&&
         (wglgsg->get_fb_properties().is_single_buffered())) {
-      cerr << "c\n";
       precertify = true;
     }
-    cerr << "d\n";
     return new wglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }

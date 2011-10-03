@@ -254,7 +254,6 @@ close_window() {
 
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     _gsg.clear();
-    _active = false;
   }
 
   DXGraphicsStateGuardian9::set_cg_device(NULL);

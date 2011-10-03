@@ -104,7 +104,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _child_sort = 0;
   _got_child_sort = false;
   _internal_sort_index = 0;
-  _active = true;
   _one_shot = false;
   _inverted = window_inverted;
   _red_blue_stereo = false;
@@ -146,7 +145,11 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _overlay_display_region = make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
   _overlay_display_region->set_active(false);
 
-  _display_regions_stale = false;
+  // Make sure the "active" flag is set true for pipeline stage 0.
+  {
+    CDWriter cdata(_cycler, true);
+    cdata->_active = true;
+  }
 
   // By default, each new GraphicsOutput is set up to clear color and
   // depth.
@@ -226,7 +229,6 @@ GraphicsOutput::
   }
 
   _total_display_regions.clear();
-  _active_display_regions.clear();
   _overlay_display_region = NULL;
 }
 
@@ -239,9 +241,9 @@ GraphicsOutput::
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 clear_render_textures() {
-  LightMutexHolder holder(_lock);
+  CDWriter cdata(_cycler, true);
+  cdata->_textures.clear();
   throw_event("render-texture-targets-changed");
-  _textures.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,8 +295,6 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
     return;
   }
   LightMutexHolder holder(_lock);
-
-  throw_event("render-texture-targets-changed");
 
   // Create texture if necessary.
   if (tex == (Texture *)NULL) {
@@ -385,11 +385,14 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
     tex->set_render_to_texture(true);
   }
 
+  CDWriter cdata(_cycler, true);
   RenderTexture result;
   result._texture = tex;
   result._plane = plane;
   result._rtm_mode = mode;
-  _textures.push_back(result);
+  cdata->_textures.push_back(result);
+
+  throw_event("render-texture-targets-changed");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -424,7 +427,11 @@ setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 set_active(bool active) {
-  _active = active;
+  CDLockedReader cdata(_cycler);
+  if (cdata->_active != active) {
+    CDWriter cdataw(((GraphicsOutput *)this)->_cycler, cdata, true);
+    cdataw->_active = active;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,7 +442,12 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 is_active() const {
-  return _active && is_valid();
+  if (!is_valid()) {
+    return false;
+  }
+
+  CDReader cdata(_cycler);
+  return cdata->_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -528,6 +540,27 @@ set_side_by_side_stereo(bool side_by_side_stereo,
     _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
     _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_delete_flag
+//       Access: Published
+//  Description: Returns the current setting of the delete flag.  When
+//               this is true, the GraphicsOutput will automatically
+//               be removed before the beginning of the next frame by
+//               the GraphicsEngine.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+get_delete_flag() const {
+  // We only delete the window or buffer automatically when it is
+  // no longer associated with a texture.
+  for (int i = 0; i < (int)_hold_textures.size(); i++) {
+    if (_hold_textures[i].is_valid_pointer()) {
+      return false;
+    }
+  }
+
+  return _delete_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -683,6 +716,9 @@ void GraphicsOutput::
 remove_all_display_regions() {
   LightMutexHolder holder(_lock);
 
+  CDWriter cdata(_cycler, true);
+  cdata->_active_display_regions_stale = true;
+
   TotalDisplayRegions::iterator dri;
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
@@ -696,7 +732,6 @@ remove_all_display_regions() {
   }
   _total_display_regions.clear();
   _total_display_regions.push_back(_overlay_display_region);
-  _display_regions_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -774,12 +809,8 @@ get_display_region(int n) const {
 int GraphicsOutput::
 get_num_active_display_regions() const {
   determine_display_regions();
-  int result;
-  {
-    LightMutexHolder holder(_lock);
-    result = _active_display_regions.size();
-  }
-  return result;
+  CDReader cdata(_cycler);
+  return cdata->_active_display_regions.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -794,16 +825,12 @@ get_num_active_display_regions() const {
 PT(DisplayRegion) GraphicsOutput::
 get_active_display_region(int n) const {
   determine_display_regions();
-  PT(DisplayRegion) result;
-  {
-    LightMutexHolder holder(_lock);
-    if (n >= 0 && n < (int)_active_display_regions.size()) {
-      result = _active_display_regions[n];
-    } else {
-      result = NULL;
-    }
+
+  CDReader cdata(_cycler);
+  if (n >= 0 && n < (int)cdata->_active_display_regions.size()) {
+    return cdata->_active_display_regions[n];
   }
-  return result;
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -837,9 +864,7 @@ get_active_display_region(int n) const {
 //               created for some reason.
 //
 //               When you are done using the buffer, you should remove
-//               it with a call to GraphicsEngine::remove_window() (or
-//               set the one_shot flag so it removes itself after one
-//               frame).
+//               it with a call to GraphicsEngine::remove_window().
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
@@ -997,8 +1022,10 @@ get_texture_card() {
   // render-to-texture output texture.  Depth and stencil
   // textures are ignored.  The user can freely alter the
   // card's texture attrib.
-  for (int i=0; i<count_textures(); i++) {
-    Texture *texture = get_texture(i);
+  CDReader cdata(_cycler);
+  RenderTextures::const_iterator ri;
+  for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+    Texture *texture = (*ri)._texture;
     if ((texture->get_format() != Texture::F_depth_stencil)) {
       path.set_texture(texture, 0);
       break;
@@ -1204,9 +1231,11 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
     _cube_map_index = new_cube_map_index;
     _cube_map_dr = new_dr->get_object();
 
-    for (int i=0; i<count_textures(); i++) {
-      Texture *texture = get_texture(i);
-      RenderTextureMode rtm_mode = get_rtm_mode(i);
+    CDReader cdata(_cycler);
+    RenderTextures::const_iterator ri;
+    for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+      RenderTextureMode rtm_mode = (*ri)._rtm_mode;
+      Texture *texture = (*ri)._texture;
       if (rtm_mode != RTM_none) {
         if (rtm_mode == RTM_bind_or_copy) {
           // In render-to-texture mode, switch the rendering backend to
@@ -1334,7 +1363,19 @@ pixel_factor_changed() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 prepare_for_deletion() {
-  _active = false;
+  CDWriter cdata(_cycler, true);
+  cdata->_active = false;
+
+  // If we were rendering directly to texture, we can't delete the
+  // buffer until all the textures are gone too.
+  RenderTextures::iterator ri;
+  for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+    if ((*ri)._rtm_mode == RTM_bind_or_copy) {
+      _hold_textures.push_back((*ri)._texture);
+    }
+  }
+  cdata->_textures.clear();
+
   _delete_flag = true;
 
   // We have to be sure to remove all of the display regions
@@ -1342,18 +1383,35 @@ prepare_for_deletion() {
   // up (each display region keeps a pointer to a CullResult,
   // which can hold all sorts of pointers).
   remove_all_display_regions();
+}
 
-  // If we were rendering directly to texture, we can't delete the
-  // buffer until the texture is gone too.
-  for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      _hold_textures.push_back(get_texture(i));
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::promote_to_copy_texture
+//       Access: Protected
+//  Description: If any textures are marked RTM_bind_or_copy, change
+//               them to RTM_copy_texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+promote_to_copy_texture() {
+  CDLockedReader cdata(_cycler);
+  RenderTextures::const_iterator ri;
+
+  bool any_bind = false;
+  for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+    if ((*ri)._rtm_mode == RTM_bind_or_copy) {
+      any_bind = true;
+      break;
     }
   }
-
-  // We have to be sure to clear the _textures pointers, though, or
-  // we'll end up holding a reference to the textures forever.
-  clear_render_textures();
+  if (any_bind) {
+    CDWriter cdataw(((GraphicsOutput *)this)->_cycler, cdata, true);
+    RenderTextures::iterator ri;
+    for (ri = cdataw->_textures.begin(); ri != cdataw->_textures.end(); ++ri) {
+      if ((*ri)._rtm_mode == RTM_bind_or_copy) {
+        (*ri)._rtm_mode = RTM_copy_texture;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1369,15 +1427,17 @@ prepare_for_deletion() {
 bool GraphicsOutput::
 copy_to_textures() {
   bool okflag = true;
-  for (int i = 0; i < count_textures(); ++i) {
-    RenderTextureMode rtm_mode = get_rtm_mode(i);
+
+  CDReader cdata(_cycler);
+  RenderTextures::const_iterator ri;
+  for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+    RenderTextureMode rtm_mode = (*ri)._rtm_mode;
     if ((rtm_mode == RTM_none) || (rtm_mode == RTM_bind_or_copy)) {
       continue;
     }
 
-    Texture *texture = get_texture(i);
+    Texture *texture = (*ri)._texture;
     PStatTimer timer(_copy_texture_pcollector);
-    nassertr(has_texture(), false);
 
     if ((rtm_mode == RTM_copy_texture)||
         (rtm_mode == RTM_copy_ram)||
@@ -1389,7 +1449,7 @@ copy_to_textures() {
         display_cat.debug()
           << "cube_map_index = " << _cube_map_index << "\n";
       }
-      int plane = get_texture_plane(i);
+      RenderTexturePlane plane = (*ri)._plane;
       RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(plane));
       if (plane == RTP_color) {
         buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
@@ -1481,8 +1541,10 @@ create_texture_card_vdata(int x, int y) {
 DisplayRegion *GraphicsOutput::
 add_display_region(DisplayRegion *display_region) {
   LightMutexHolder holder(_lock);
+  CDWriter cdata(_cycler, true);
+  cdata->_active_display_regions_stale = true;
+  
   _total_display_regions.push_back(display_region);
-  _display_regions_stale = true;
 
   return display_region;
 }
@@ -1502,12 +1564,12 @@ do_remove_display_region(DisplayRegion *display_region) {
     find(_total_display_regions.begin(), _total_display_regions.end(), drp);
   if (dri != _total_display_regions.end()) {
     // Let's aggressively clean up the display region too.
+    CDWriter cdata(_cycler, true);
     display_region->cleanup();
     display_region->_window = NULL;
     _total_display_regions.erase(dri);
-    if (display_region->is_active()) {
-      _display_regions_stale = true;
-    }
+
+    cdata->_active_display_regions_stale = true;
 
     return true;
   }
@@ -1522,12 +1584,11 @@ do_remove_display_region(DisplayRegion *display_region) {
 //               the window.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-do_determine_display_regions() {
-  LightMutexHolder holder(_lock);
-  _display_regions_stale = false;
+do_determine_display_regions(GraphicsOutput::CData *cdata) {
+  cdata->_active_display_regions_stale = false;
 
-  _active_display_regions.clear();
-  _active_display_regions.reserve(_total_display_regions.size());
+  cdata->_active_display_regions.clear();
+  cdata->_active_display_regions.reserve(_total_display_regions.size());
 
   int index = 0;
   TotalDisplayRegions::const_iterator dri;
@@ -1536,7 +1597,7 @@ do_determine_display_regions() {
        ++dri) {
     DisplayRegion *display_region = (*dri);
     if (display_region->is_active()) {
-      _active_display_regions.push_back(display_region);
+      cdata->_active_display_regions.push_back(display_region);
       display_region->set_active_index(index);
       ++index;
     } else {
@@ -1544,7 +1605,7 @@ do_determine_display_regions() {
     }
   }
 
-  stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
+  stable_sort(cdata->_active_display_regions.begin(), cdata->_active_display_regions.end(), IndirectLess<DisplayRegion>());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1595,6 +1656,44 @@ parse_color_mask(const string &word) {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::CData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsOutput::CData::
+CData() {
+  // The default is *not* active, so the entire pipeline stage is
+  // initially populated with inactive outputs.  Pipeline stage 0 is
+  // set to active in the constructor.
+  _active = false;
+  _active_display_regions_stale = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::CData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsOutput::CData::
+CData(const GraphicsOutput::CData &copy) :
+  _textures(copy._textures),
+  _active(copy._active),
+  _active_display_regions(copy._active_display_regions),
+  _active_display_regions_stale(copy._active_display_regions_stale)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *GraphicsOutput::CData::
+make_copy() const {
+  return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////

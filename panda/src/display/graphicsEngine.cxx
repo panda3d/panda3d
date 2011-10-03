@@ -1407,7 +1407,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 void GraphicsEngine::
 cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
-  nassertv(gsg != (GraphicsStateGuardian *)NULL);
+  if (gsg == (GraphicsStateGuardian *)NULL) {
+    return;
+  }
 
   PT(CullResult) cull_result;
   PT(SceneSetup) scene_setup;

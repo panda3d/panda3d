@@ -288,7 +288,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       }
       delete[] param_name;
       
-      int attrib_idx = 0;
       // Now we've processed the uniforms, we'll process the attribs.
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);

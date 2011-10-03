@@ -995,8 +995,7 @@ close_window() {
 
   release_system_resources(false);
   _gsg.clear();
-  _active = false;
-  GraphicsWindow::close_window();
+ GraphicsWindow::close_window();
 }
 
 //////////////////////////////////////////////////////////

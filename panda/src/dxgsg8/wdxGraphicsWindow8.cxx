@@ -253,7 +253,6 @@ close_window() {
 
   if (_gsg != (GraphicsStateGuardian*)NULL) {
     _gsg.clear();
-    _active = false;
   }
 
   _dxgsg->release_swap_chain(&_wcontext);
