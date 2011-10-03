@@ -924,6 +924,7 @@ open_window() {
     }
   }
 
+  cerr << "cursor_filename = " << _properties.get_cursor_filename() << "\n";
   if (_properties.get_cursor_hidden()) {
     XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
 
@@ -1874,9 +1875,10 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
 X11_Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
 #ifndef HAVE_XCURSOR
+  x11display_cat.info()
+    << "XCursor support not enabled in build; cannot change mouse cursor.\n";
   return None;
-}
-#else
+#else  // HAVE_XCURSOR
   // First, look for the unresolved filename in our index.
   pmap<Filename, X11_Cursor>::iterator fi = _cursor_filenames.find(filename);
   if (fi != _cursor_filenames.end()) {
@@ -1951,8 +1953,10 @@ get_cursor(const Filename &filename) {
 
   _cursor_filenames[resolved] = h;
   return h;
+#endif  // HAVE_XCURSOR
 }
 
+#ifdef HAVE_XCURSOR
 ////////////////////////////////////////////////////////////////////
 //     Function: x11GraphicsWindow::load_ico
 //       Access: Private
