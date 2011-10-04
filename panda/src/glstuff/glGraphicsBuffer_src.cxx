@@ -924,9 +924,6 @@ void CLP(GraphicsBuffer)::end_frame(FrameMode mode, Thread *current_thread) {
 
   if (mode == FM_render) {
     trigger_flip();
-    if (_one_shot) {
-      prepare_for_deletion();
-    }
     clear_cube_map_selection();
   }
   report_my_gl_errors();

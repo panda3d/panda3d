@@ -673,10 +673,7 @@ void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
 
     trigger_flip();
-    if (_one_shot) {
-      prepare_for_deletion();
-    }
-    clear_cube_map_selection();
+   clear_cube_map_selection();
   }
 }
 

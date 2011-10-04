@@ -300,45 +300,6 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_one_shot
-//       Access: Published
-//  Description: Changes the current setting of the one-shot flag.
-//               When this is true, the GraphicsOutput will render one
-//               frame and then automatically set itself inactive.
-//               This is particularly useful for buffers that are
-//               created for the purposes of render-to-texture, for
-//               static textures that don't need to be continually
-//               re-rendered once they have been rendered the first
-//               time.
-//
-//               Setting the buffer inactive is not the same thing as
-//               destroying it.  You are still responsible for passing
-//               this buffer to GraphicsEngine::remove_window() when
-//               you no longer need the texture, in order to clean up
-//               fully.  (However, you should not call remove_window()
-//               on this buffer while the texture is still needed,
-//               because depending on the render-to-texture mechanism
-//               in use, this may invalidate the texture contents.)
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsOutput::
-set_one_shot(bool one_shot) {
-  _one_shot = one_shot;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_one_shot
-//       Access: Published
-//  Description: Returns the current setting of the one-shot flag.
-//               When this is true, the GraphicsOutput will
-//               automatically set itself inactive after the next
-//               frame.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsOutput::
-get_one_shot() const {
-  return _one_shot;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_inverted
 //       Access: Published
 //  Description: Returns the current setting of the inverted flag.

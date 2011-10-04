@@ -104,7 +104,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _child_sort = 0;
   _got_child_sort = false;
   _internal_sort_index = 0;
-  _one_shot = false;
   _inverted = window_inverted;
   _red_blue_stereo = false;
   _left_eye_color_mask = 0x0f;
@@ -447,7 +446,59 @@ is_active() const {
   }
 
   CDReader cdata(_cycler);
+  if (cdata->_one_shot_frame != -1) {
+    // If one_shot is in effect, then we are active only for the one
+    // indicated frame.
+    if (cdata->_one_shot_frame != ClockObject::get_global_clock()->get_frame_count()) {
+      return false;
+    }
+  }
   return cdata->_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_one_shot
+//       Access: Published
+//  Description: Changes the current setting of the one-shot flag.
+//               When this is true, the GraphicsOutput will render the
+//               current frame and then automatically set itself
+//               inactive.  This is particularly useful for buffers
+//               that are created for the purposes of
+//               render-to-texture, for static textures that don't
+//               need to be continually re-rendered once they have
+//               been rendered the first time.
+//
+//               Setting the buffer inactive is not the same thing as
+//               destroying it.  You are still responsible for passing
+//               this buffer to GraphicsEngine::remove_window() when
+//               you no longer need the texture, in order to clean up
+//               fully.  (However, you should not call remove_window()
+//               on this buffer while the texture is still needed,
+//               because depending on the render-to-texture mechanism
+//               in use, this may invalidate the texture contents.)
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_one_shot(bool one_shot) {
+  CDWriter cdata(_cycler, true);
+  if (one_shot) {
+    cdata->_one_shot_frame = ClockObject::get_global_clock()->get_frame_count();
+  } else {
+    cdata->_one_shot_frame = -1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_one_shot
+//       Access: Published
+//  Description: Returns the current setting of the one-shot flag.
+//               When this is true, the GraphicsOutput will
+//               automatically set itself inactive after the next
+//               frame.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+get_one_shot() const {
+  CDReader cdata(_cycler);
+  return (cdata->_one_shot_frame == ClockObject::get_global_clock()->get_frame_count());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1669,6 +1720,7 @@ CData() {
   // initially populated with inactive outputs.  Pipeline stage 0 is
   // set to active in the constructor.
   _active = false;
+  _one_shot_frame = -1;
   _active_display_regions_stale = false;
 }
 
@@ -1681,6 +1733,7 @@ GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :
   _textures(copy._textures),
   _active(copy._active),
+  _one_shot_frame(copy._one_shot_frame),
   _active_display_regions(copy._active_display_regions),
   _active_display_regions_stale(copy._active_display_regions_stale)
 {

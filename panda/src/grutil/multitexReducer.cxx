@@ -276,7 +276,11 @@ flatten(GraphicsOutput *window) {
 
     GraphicsOutput *buffer = window->make_texture_buffer
       (multitex_name_strm.str(), x_size, y_size, NULL, false);
+
+    // TODO: this no longer automatically deletes the buffer.  We need
+    // to take care of this explicitly now.
     buffer->set_one_shot(true);
+
     Texture *tex = buffer->get_texture();
     tex->set_anisotropic_degree(aniso_degree);
     tex->set_minfilter(minfilter);

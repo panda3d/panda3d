@@ -188,9 +188,6 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     promote_to_copy_texture();
     copy_to_textures();
-    if (_one_shot) {
-      prepare_for_deletion();
-    }
     clear_cube_map_selection();
   }
 }

@@ -127,8 +127,8 @@ PUBLISHED:
   void set_active(bool active);
   virtual bool is_active() const;
 
-  INLINE void set_one_shot(bool one_shot);
-  INLINE bool get_one_shot() const;
+  void set_one_shot(bool one_shot);
+  bool get_one_shot() const;
 
   void set_inverted(bool inverted);
   INLINE bool get_inverted() const;
@@ -303,7 +303,6 @@ private:
   unsigned int _internal_sort_index;
 
 protected:
-  bool _one_shot;
   bool _inverted;
   bool _red_blue_stereo;
   unsigned int _left_eye_color_mask;
@@ -342,6 +341,7 @@ protected:
 
     RenderTextures _textures;
     bool _active;
+    int _one_shot_frame;
     ActiveDisplayRegions _active_display_regions;
     bool _active_display_regions_stale;
   };
