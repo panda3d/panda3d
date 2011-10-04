@@ -71,9 +71,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   mesagsg->reset_if_new();
 
   if (mode == FM_render) {
-    for (int i=0; i<count_textures(); i++) {
-      if (get_rtm_mode(i) == RTM_bind_or_copy) {
-        _textures[i]._rtm_mode = RTM_copy_texture;
+    CDLockedReader cdata(_cycler);
+    for (size_t i = 0; i != cdata->_textures.size(); ++i) {
+      const RenderTexture &rt = cdata->_textures[i];
+      RenderTextureMode rtm_mode = rt._rtm_mode;
+      if (rtm_mode == RTM_bind_or_copy) {
+        CDWriter cdataw(_cycler, cdata, false);
+        nassertr(cdata->_textures.size() == cdataw->_textures.size(), false);
+        cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
       }
     }
     clear_cube_map_selection();
