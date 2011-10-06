@@ -109,6 +109,11 @@ PUBLISHED:
   INLINE const LVecBase3f &get_data3f();
   INLINE const LVecBase4f &get_data4f();
 
+  INLINE double get_data1d();
+  INLINE const LVecBase2d &get_data2d();
+  INLINE const LVecBase3d &get_data3d();
+  INLINE const LVecBase4d &get_data4d();
+
   INLINE int get_data1i();
   INLINE const int *get_data2i();
   INLINE const int *get_data3i();

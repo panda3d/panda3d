@@ -122,6 +122,14 @@ PUBLISHED:
   INLINE void set_data4f(float x, float y, float z, float w);
   INLINE void set_data4f(const LVecBase4f &data);
 
+  INLINE void set_data1d(double data);
+  INLINE void set_data2d(double x, double y);
+  INLINE void set_data2d(const LVecBase2d &data);
+  INLINE void set_data3d(double x, double y, double z);
+  INLINE void set_data3d(const LVecBase3d &data);
+  INLINE void set_data4d(double x, double y, double z, double w);
+  INLINE void set_data4d(const LVecBase4d &data);
+
   INLINE void set_data1i(int data);
   INLINE void set_data2i(int a, int b);
   INLINE void set_data2i(const int data[2]);
@@ -137,6 +145,14 @@ PUBLISHED:
   INLINE void add_data3f(const LVecBase3f &data);
   INLINE void add_data4f(float x, float y, float z, float w);
   INLINE void add_data4f(const LVecBase4f &data);
+
+  INLINE void add_data1d(double data);
+  INLINE void add_data2d(double x, double y);
+  INLINE void add_data2d(const LVecBase2d &data);
+  INLINE void add_data3d(double x, double y, double z);
+  INLINE void add_data3d(const LVecBase3d &data);
+  INLINE void add_data4d(double x, double y, double z, double w);
+  INLINE void add_data4d(const LVecBase4d &data);
 
   INLINE void add_data1i(int data);
   INLINE void add_data2i(int a, int b);

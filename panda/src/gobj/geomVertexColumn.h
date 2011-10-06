@@ -103,10 +103,17 @@ private:
   class Packer {
   public:
     virtual ~Packer();
+
     virtual float get_data1f(const unsigned char *pointer);
     virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+
+    virtual double get_data1d(const unsigned char *pointer);
+    virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
+
     virtual int get_data1i(const unsigned char *pointer);
     virtual const int *get_data2i(const unsigned char *pointer);
     virtual const int *get_data3i(const unsigned char *pointer);
@@ -116,6 +123,11 @@ private:
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
+
+    virtual void set_data1d(unsigned char *pointer, double data);
+    virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
+    virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
     
     virtual void set_data1i(unsigned char *pointer, int a);
     virtual void set_data2i(unsigned char *pointer, int a, int b);
@@ -142,6 +154,9 @@ private:
     LVecBase2f _v2;
     LVecBase3f _v3;
     LVecBase4f _v4;
+    LVecBase2d _v2d;
+    LVecBase3d _v3d;
+    LVecBase4d _v4d;
     int _i[4];
     unsigned int _a, _b, _c, _d;
   };
@@ -158,10 +173,18 @@ private:
     virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+    virtual double get_data1d(const unsigned char *pointer);
+    virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
+    virtual void set_data1d(unsigned char *pointer, double data);
+    virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
+    virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
 
     virtual const char *get_name() const {
       return "Packer_point";
@@ -174,9 +197,13 @@ private:
   class Packer_color : public Packer {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
+    virtual void set_data1d(unsigned char *pointer, double data);
+    virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
+    virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
 
     virtual const char *get_name() const {
       return "Packer_color";
@@ -260,6 +287,82 @@ private:
 
     virtual const char *get_name() const {
       return "Packer_point_nativefloat_4";
+    }
+  };
+
+  class Packer_float64_3 : public Packer {
+  public:
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+    virtual void set_data3d(unsigned char *pointer, const LVecBase3d &value);
+
+    virtual const char *get_name() const {
+      return "Packer_float64_3";
+    }
+  };
+
+  class Packer_point_float64_2 : public Packer_point {
+  public:
+    virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
+    virtual void set_data2d(unsigned char *pointer, const LVecBase2d &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float64_2";
+    }
+  };
+
+  class Packer_point_float64_3 : public Packer_point {
+  public:
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+    virtual void set_data3d(unsigned char *pointer, const LVecBase3d &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float64_3";
+    }
+  };
+
+  class Packer_point_float64_4 : public Packer_point {
+  public:
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float64_4";
+    }
+  };
+
+  class Packer_nativedouble_3 : public Packer_float64_3 {
+  public:
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_nativedouble_3";
+    }
+  };
+
+  class Packer_point_nativedouble_2 : public Packer_point_float64_2 {
+  public:
+    virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_nativedouble_2";
+    }
+  };
+
+  class Packer_point_nativedouble_3 : public Packer_point_float64_3 {
+  public:
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_point_nativedouble_3";
+    }
+  };
+
+  class Packer_point_nativedouble_4 : public Packer_point_float64_4 {
+  public:
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_point_nativedouble_4";
     }
   };
 

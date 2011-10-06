@@ -622,8 +622,8 @@ show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
     LPoint3d pos = vert->get_pos3();
 
     if (vert->has_normal()) {
-      vertex.add_data3f(LCAST(float, pos));
-      vertex.add_data3f(LCAST(float, pos + vert->get_normal() * egg_normal_scale));
+      vertex.add_data3d(pos);
+      vertex.add_data3d(pos + vert->get_normal() * egg_normal_scale);
       color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
       color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
       primitive->add_next_vertices(2);
@@ -636,16 +636,16 @@ show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
     for (uvi = vert->uv_begin(); uvi != vert->uv_end(); ++uvi) {
       EggVertexUV *uv_obj = (*uvi);
       if (uv_obj->has_tangent()) {
-        vertex.add_data3f(LCAST(float, pos));
-        vertex.add_data3f(LCAST(float, pos + uv_obj->get_tangent() * egg_normal_scale));
+        vertex.add_data3d(pos);
+        vertex.add_data3d(pos + uv_obj->get_tangent() * egg_normal_scale);
         color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
         color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
         primitive->add_next_vertices(2);
         primitive->close_primitive();
       }
       if (uv_obj->has_binormal()) {
-        vertex.add_data3f(LCAST(float, pos));
-        vertex.add_data3f(LCAST(float, pos + uv_obj->get_binormal() * egg_normal_scale));
+        vertex.add_data3d(pos);
+        vertex.add_data3d(pos + uv_obj->get_binormal() * egg_normal_scale);
         color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
         color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
         primitive->add_next_vertices(2);
@@ -2199,10 +2199,15 @@ make_vertex_data(const EggRenderState *render_state,
   }
 
   // Decide on the format for the vertices.
+  Geom::NumericType vertex_numeric_type = Geom::NT_float32;
+  if (egg_float64_vertices) {
+    vertex_numeric_type = Geom::NT_float64;
+  }
+
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     Geom::NT_float32, Geom::C_point);
+     vertex_numeric_type, Geom::C_point);
 
   if (vertex_pool->has_normals()) {
     array_format->add_column
@@ -2335,7 +2340,7 @@ make_vertex_data(const EggRenderState *render_state,
     GeomVertexFormat::register_format(temp_format);
 
   // Now create a new GeomVertexData using the indicated format.  It
-  // is actually correct to create it with UH_static even it
+  // is actually correct to create it with UH_static even though it
   // represents a dynamic object, because the vertex data itself won't
   // be changing--just the result of applying the animation is
   // dynamic.
@@ -2348,7 +2353,7 @@ make_vertex_data(const EggRenderState *render_state,
     vertex_data->set_slider_table(SliderTable::register_table(slider_table));
   }
 
-  // And fill the data from the vertex pool.
+  // And fill in the data from the vertex pool.
   EggVertexPool::const_iterator vi;
   for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
     GeomVertexWriter gvw(vertex_data);
@@ -2356,7 +2361,7 @@ make_vertex_data(const EggRenderState *render_state,
     gvw.set_row(vertex->get_index());
 
     gvw.set_column(InternalName::get_vertex());
-    gvw.add_data4f(LCAST(float, vertex->get_pos4() * transform));
+    gvw.add_data4d(vertex->get_pos4() * transform);
 
     if (is_dynamic) {
       EggMorphVertexList::const_iterator mvi;
@@ -2365,7 +2370,7 @@ make_vertex_data(const EggRenderState *render_state,
         CPT(InternalName) delta_name = 
           InternalName::get_morph(InternalName::get_vertex(), morph.get_name());
         gvw.set_column(delta_name);
-        gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+        gvw.add_data3d(morph.get_offset() * transform);
       }
     }
 
@@ -2373,7 +2378,7 @@ make_vertex_data(const EggRenderState *render_state,
       gvw.set_column(InternalName::get_normal());
       Normald orig_normal = vertex->get_normal();
       Normald transformed_normal = normalize(orig_normal * transform);
-      gvw.add_data3f(LCAST(float, transformed_normal));
+      gvw.add_data3d(transformed_normal);
 
       if (is_dynamic) {
         EggMorphNormalList::const_iterator mni;
@@ -2385,7 +2390,7 @@ make_vertex_data(const EggRenderState *render_state,
           Normald morphed_normal = orig_normal + morph.get_offset();
           Normald transformed_morphed_normal = normalize(morphed_normal * transform);
           LVector3d delta = transformed_morphed_normal - transformed_normal;
-          gvw.add_data3f(LCAST(float, delta));
+          gvw.add_data3d(delta);
         }
       }
     }
@@ -2422,7 +2427,7 @@ make_vertex_data(const EggRenderState *render_state,
         uvw = uvw * (*buv).second->get_transform3d();
       }
 
-      gvw.set_data3f(LCAST(float, uvw));
+      gvw.set_data3d(uvw);
 
       if (is_dynamic) {
         EggMorphTexCoordList::const_iterator mti;
@@ -2437,7 +2442,7 @@ make_vertex_data(const EggRenderState *render_state,
             duvw = (new_uvw * (*buv).second->get_transform3d()) - uvw;
           }
           
-          gvw.add_data3f(LCAST(float, duvw));
+          gvw.add_data3d(duvw);
         }
       }
 
@@ -2448,9 +2453,9 @@ make_vertex_data(const EggRenderState *render_state,
         if (gvw.has_column()) {
           LVector3d tangent = egg_uv->get_tangent();
           LVector3d binormal = egg_uv->get_binormal();
-          gvw.add_data3f(LCAST(float, tangent));
+          gvw.add_data3d(tangent);
           gvw.set_column(InternalName::get_binormal_name(name));
-          gvw.add_data3f(LCAST(float, binormal));
+          gvw.add_data3d(binormal);
         }          
       }
     }
@@ -2751,7 +2756,7 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
         radius2 = max(radius2, v.length_squared());
       }
 
-      center = LCAST(float,d_center);
+      center = LCAST(float, d_center);
       radius = sqrtf(radius2);
 
       //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";

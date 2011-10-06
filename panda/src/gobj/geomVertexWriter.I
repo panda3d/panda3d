@@ -512,6 +512,108 @@ set_data4f(const LVecBase4f &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data1d
+//       Access: Published
+//  Description: Sets the write row to a particular 1-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data1d(double data) {
+  nassertv(has_column());
+  _packer->set_data1d(inc_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data2d
+//       Access: Published
+//  Description: Sets the write row to a particular 2-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data2d(double x, double y) {
+  set_data2d(LVecBase2d(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data2d
+//       Access: Published
+//  Description: Sets the write row to a particular 2-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data2d(const LVecBase2d &data) {
+  nassertv(has_column());
+  _packer->set_data2d(inc_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data3d
+//       Access: Published
+//  Description: Sets the write row to a particular 3-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data3d(double x, double y, double z) {
+  set_data3d(LVecBase3d(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data3d
+//       Access: Published
+//  Description: Sets the write row to a particular 3-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data3d(const LVecBase3d &data) {
+  nassertv(has_column());
+  _packer->set_data3d(inc_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data4d
+//       Access: Published
+//  Description: Sets the write row to a particular 4-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data4d(double x, double y, double z, double w) {
+  set_data4d(LVecBase4d(x, y, z, w));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_data4d
+//       Access: Published
+//  Description: Sets the write row to a particular 4-component
+//               value, and advances the write row.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_data4d(const LVecBase4d &data) {
+  nassertv(has_column());
+  _packer->set_data4d(inc_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::set_data1i
 //       Access: Published
 //  Description: Sets the write row to a particular 1-component
@@ -713,6 +815,108 @@ INLINE void GeomVertexWriter::
 add_data4f(const LVecBase4f &data) {
   nassertv(has_column());
   _packer->set_data4f(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data1d
+//       Access: Published
+//  Description: Sets the write row to a particular 1-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data1d(double data) {
+  nassertv(has_column());
+  _packer->set_data1d(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data2d
+//       Access: Published
+//  Description: Sets the write row to a particular 2-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data2d(double x, double y) {
+  add_data2d(LVecBase2d(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data2d
+//       Access: Published
+//  Description: Sets the write row to a particular 2-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data2d(const LVecBase2d &data) {
+  nassertv(has_column());
+  _packer->set_data2d(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data3d
+//       Access: Published
+//  Description: Sets the write row to a particular 3-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data3d(double x, double y, double z) {
+  add_data3d(LVecBase3d(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data3d
+//       Access: Published
+//  Description: Sets the write row to a particular 3-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data3d(const LVecBase3d &data) {
+  nassertv(has_column());
+  _packer->set_data3d(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data4d
+//       Access: Published
+//  Description: Sets the write row to a particular 4-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data4d(double x, double y, double z, double w) {
+  add_data4d(LVecBase4d(x, y, z, w));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data4d
+//       Access: Published
+//  Description: Sets the write row to a particular 4-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data4d(const LVecBase4d &data) {
+  nassertv(has_column());
+  _packer->set_data4d(inc_add_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////

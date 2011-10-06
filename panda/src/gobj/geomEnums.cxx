@@ -95,6 +95,9 @@ operator << (ostream &out, GeomEnums::NumericType numeric_type) {
     
   case GeomEnums::NT_float32:
     return out << "float32";
+    
+  case GeomEnums::NT_float64:
+    return out << "float64";
   }
 
   return out << "**invalid numeric type (" << (int)numeric_type << ")**";

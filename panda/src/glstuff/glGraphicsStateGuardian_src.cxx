@@ -5736,6 +5736,9 @@ get_numeric_type(Geom::NumericType numeric_type) {
 
   case Geom::NT_float32:
     return GL_FLOAT;
+
+  case Geom::NT_float64:
+    return GL_DOUBLE;
   }
 
   GLCAT.error()

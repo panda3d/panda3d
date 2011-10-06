@@ -2262,6 +2262,16 @@ set_num_rows(int n) {
         pointer += stride;
       }
       break;
+
+    case NT_float64:
+      while (pointer < stop) {
+        PN_float64 *pi = (PN_float64 *)pointer;
+        for (int i = 0; i < num_values; i++) {
+          pi[i] = 1.0f;
+        }
+        pointer += stride;
+      }
+      break;
     }          
   }
 

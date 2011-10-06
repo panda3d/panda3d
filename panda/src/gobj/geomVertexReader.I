@@ -500,6 +500,58 @@ get_data4f() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data1d
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 1-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE double GeomVertexReader::
+get_data1d() {
+  nassertr(has_column(), 0.0f);
+  return _packer->get_data1d(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data2d
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 2-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2d &GeomVertexReader::
+get_data2d() {
+  nassertr(has_column(), LVecBase2d::zero());
+  return _packer->get_data2d(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data3d
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 3-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase3d &GeomVertexReader::
+get_data3d() {
+  nassertr(has_column(), LVecBase3d::zero());
+  return _packer->get_data3d(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data4d
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 4-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4d &GeomVertexReader::
+get_data4d() {
+  nassertr(has_column(), LVecBase4d::zero());
+  return _packer->get_data4d(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::get_data1i
 //       Access: Published
 //  Description: Returns the data associated with the read row,
