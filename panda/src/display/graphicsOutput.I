@@ -724,17 +724,6 @@ get_screenshot() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::flip_ready
-//       Access: Public
-//  Description: Returns true if a frame has been rendered and needs
-//               to be flipped, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsOutput::
-flip_ready() const {
-  return _flip_ready;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::operator <
 //       Access: Public
 //  Description: The sorting operator is used to order the

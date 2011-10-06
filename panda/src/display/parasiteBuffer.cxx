@@ -69,6 +69,17 @@ ParasiteBuffer::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::is_active
+//       Access: Published, Virtual
+//  Description: Returns true if the window is ready to be rendered
+//               into, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParasiteBuffer::
+is_active() const {
+  return GraphicsOutput::is_active() && _host->is_active();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParasiteBuffer::set_size
 //       Access: Public, Virtual
 //  Description: This is called by the GraphicsEngine to request that
@@ -107,28 +118,69 @@ set_size_and_recalc(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ParasiteBuffer::is_active
-//       Access: Published, Virtual
-//  Description: Returns true if the window is ready to be rendered
-//               into, false otherwise.
+//     Function: ParasiteBuffer::flip_ready
+//       Access: Public, Virtual
+//  Description: Returns true if a frame has been rendered and needs
+//               to be flipped, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ParasiteBuffer::
-is_active() const {
-  return GraphicsOutput::is_active() && _host->is_active();
+flip_ready() const {
+  nassertr(_host != NULL, false);
+  return _host->flip_ready();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ParasiteBuffer::get_host
+//     Function: ParasiteBuffer::begin_flip
 //       Access: Public, Virtual
-//  Description: This is normally called only from within
-//               make_texture_buffer().  When called on a
-//               ParasiteBuffer, it returns the host of that buffer;
-//               but when called on some other buffer, it returns the
-//               buffer itself.
+//  Description: This function will be called within the draw thread
+//               after end_frame() has been called on all windows, to
+//               initiate the exchange of the front and back buffers.
+//
+//               This should instruct the window to prepare for the
+//               flip at the next video sync, but it should not wait.
+//
+//               We have the two separate functions, begin_flip() and
+//               end_flip(), to make it easier to flip all of the
+//               windows at the same time.
 ////////////////////////////////////////////////////////////////////
-GraphicsOutput *ParasiteBuffer::
-get_host() {
-  return _host;
+void ParasiteBuffer::
+begin_flip() {
+  nassertv(_host != NULL);
+  _host->begin_flip();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::ready_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after end_frame() has been called on all windows, to
+//               initiate the exchange of the front and back buffers.
+//
+//               This should instruct the window to prepare for the
+//               flip when it is command but not actually flip
+//
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+ready_flip() {
+  nassertv(_host != NULL);
+  _host->ready_flip();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::end_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
+//
+//               This should cause the window to wait for the flip, if
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+end_flip() {
+  nassertv(_host != NULL);
+  _host->end_flip();
+  _flip_ready = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,5 +242,19 @@ end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
     clear_cube_map_selection();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::get_host
+//       Access: Public, Virtual
+//  Description: This is normally called only from within
+//               make_texture_buffer().  When called on a
+//               ParasiteBuffer, it returns the host of that buffer;
+//               but when called on some other buffer, it returns the
+//               buffer itself.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *ParasiteBuffer::
+get_host() {
+  return _host;
 }
 

@@ -61,6 +61,11 @@ PUBLISHED:
 
 public:
   void set_size_and_recalc(int x, int y);
+  virtual bool flip_ready() const;
+  virtual void begin_flip();
+  virtual void ready_flip();
+  virtual void end_flip();
+
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual GraphicsOutput *get_host();

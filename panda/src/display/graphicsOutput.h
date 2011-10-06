@@ -210,7 +210,7 @@ PUBLISHED:
 
 public:
   // These are not intended to be called directly by the user.
-  INLINE bool flip_ready() const;
+  virtual bool flip_ready() const;
 
   INLINE bool operator < (const GraphicsOutput &other) const;
 

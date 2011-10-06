@@ -1108,6 +1108,17 @@ unshare_depth_buffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::flip_ready
+//       Access: Public, Virtual
+//  Description: Returns true if a frame has been rendered and needs
+//               to be flipped, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+flip_ready() const {
+  return _flip_ready;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_host
 //       Access: Public, Virtual
 //  Description: This is normally called only from within
