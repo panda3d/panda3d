@@ -146,7 +146,8 @@ if not options.nsis:
                     makensis = None
             except ImportError: pass
         if not makensis:
-            makensis = os.path.join("thirdparty", "win-nsis", "makensis.exe")
+            thirdparty = os.environ.get("MAKEPANDA_THIRDPARTY", "thirdparty")
+            makensis = os.path.join(thirdparty, "win-nsis", "makensis.exe")
             if not os.path.isfile(makensis):
                 makensis = None
         options.nsis = makensis
