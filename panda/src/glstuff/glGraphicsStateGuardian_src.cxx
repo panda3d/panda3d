@@ -5737,8 +5737,10 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_float32:
     return GL_FLOAT;
 
+#ifndef OPENGLES
   case Geom::NT_float64:
     return GL_DOUBLE;
+#endif
   }
 
   GLCAT.error()
