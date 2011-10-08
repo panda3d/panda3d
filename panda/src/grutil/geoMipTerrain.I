@@ -1,7 +1,5 @@
 // Filename: geoMipTerrain.I
-// Created by:  pro-rsoft (29jun07)
-// Modified by: CMU ETC Summer 2010 team (03aug10) (added getters
-//   for _auto_flatten, _near, _far).
+// Created by:  rdb (29Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -52,7 +50,7 @@ GeoMipTerrain(const string &name) {
 //               call remove_node() prior to destruction.
 ////////////////////////////////////////////////////////////////////
 INLINE GeoMipTerrain::
-~GeoMipTerrain() { 
+~GeoMipTerrain() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,7 +362,7 @@ get_near() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_flatten_mode
 //       Access: Published
-//  Description: Returns the automatic-flatten mode (e.g., off, 
+//  Description: Returns the automatic-flatten mode (e.g., off,
 //               flatten_light, flatten_medium, or flatten_strong)
 ////////////////////////////////////////////////////////////////////
 INLINE int GeoMipTerrain::
@@ -420,7 +418,7 @@ get_block_from_pos(double x, double y) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned short GeoMipTerrain::
 lod_decide(unsigned short mx, unsigned short my) {
-  float cx = mx; 
+  float cx = mx;
   float cy = my;
   cx = (cx * _block_size + _block_size / 2) * _root.get_sx();
   cy = (cy * _block_size + _block_size / 2) * _root.get_sy();
@@ -520,7 +518,7 @@ set_color_map(const string &path) {
 //  Description: Returns whether a color map has been set.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeoMipTerrain::
-has_color_map() {
+has_color_map() const {
   return _has_color_map;
 }
 
