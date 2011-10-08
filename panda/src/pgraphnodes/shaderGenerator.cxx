@@ -442,10 +442,10 @@ analyze_renderstate(const RenderState *rs) {
     _auto_shadow_on = shader_attrib->auto_shadow_on();
   }
 
-  // Check for unimplemented features and issue warnings.
+  // Check for fog.
   const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
   if (!fog->is_off()) {
-    pgraph_cat.error() << "Shader Generator does not support Fog yet.\n";
+    _fog = true;
   }
 }
 
@@ -462,6 +462,7 @@ clear_analysis() {
   _flat_colors = false;
   _lighting = false;
   _shadows = false;
+  _fog = false;
   _have_ambient = false;
   _have_diffuse = false;
   _have_emission = false;
@@ -608,10 +609,10 @@ update_shadow_buffer(NodePath light_np) {
 //               - most texgen modes
 //               - texmatrix
 //               - 1D/2D/3D textures, cube textures
+//               - linear/exp/exp2 fog
 //
 //               Not yet supported:
 //               - dot3_rgb and dot3_rgba combine modes
-//               - fog
 //
 //               Potential optimizations
 //               - omit attenuation calculations if attenuation off
@@ -643,6 +644,7 @@ synthesize_shader(const RenderState *rs) {
   char *world_normal_freg = 0;
   char *eye_position_freg = 0;
   char *eye_normal_freg = 0;
+  char *hpos_freg = 0;
 
   if (_vertex_colors) {
     _vcregs_used = 1;
@@ -734,12 +736,19 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
+  if (_fog) {
+    hpos_freg = alloc_freg();
+    text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
+  }
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
+  if (_fog) {
+    text << "\t l_hpos = l_position;\n";
+  }
   if (_need_world_position) {
     text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
   }
@@ -789,7 +798,14 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "}\n\n";
 
+  // Fragment shader
+
   text << "void fshader(\n";
+  if (_fog) {
+    text << "\t in float4 l_hpos : " << hpos_freg << ",\n";
+    text << "\t in uniform float4 attr_fog,\n";
+    text << "\t in uniform float4 attr_fogcolor,\n";
+  }
   if (_need_world_position) {
     text << "\t in float4 l_world_position : " << world_position_freg << ",\n";
   }
@@ -1375,6 +1391,24 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = result / (result + 1);\n";
       break;
     default: break;
+    }
+  }
+
+  // Apply fog.
+  if (_fog) {
+    const FogAttrib *fog_attr = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
+    Fog *fog = fog_attr->get_fog();
+
+    switch (fog->get_mode()) {
+    case Fog::M_linear:
+      text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate((attr_fog.z - l_hpos.z) * attr_fog.w));\n";
+      break;
+    case Fog::M_exponential:
+      text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate(exp2(attr_fog.x * l_hpos.z * -1.442695f)));\n";
+      break;
+    case Fog::M_exponential_squared:
+      text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate(exp2(attr_fog.x * attr_fog.x * l_hpos.z * l_hpos.z * -1.442695f)));\n";
+      break;
     }
   }
 

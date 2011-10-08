@@ -109,6 +109,7 @@ protected:
 
   bool _lighting;
   bool _shadows;
+  bool _fog;
 
   bool _have_ambient;
   bool _have_diffuse;
