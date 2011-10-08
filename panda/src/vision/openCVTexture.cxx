@@ -70,15 +70,17 @@ consider_update() {
   if (this_frame != _last_frame_update) {
     int frame = get_frame();
     if (_current_frame != frame) {
-      update_frame(frame);
+      Texture::CDWriter cdata(Texture::_cycler, false);
+      do_update_frame(cdata, frame);
       _current_frame = frame;
     } else {
       // Loop through the pages to see if there's any camera stream to update.
-      int max_z = max(_z_size, (int)_pages.size());
+      Texture::CDWriter cdata(Texture::_cycler, false);
+      int max_z = max(cdata->_z_size, (int)_pages.size());
       for (int z = 0; z < max_z; ++z) {
         VideoPage &page = _pages[z];
         if (!page._color.is_from_file() || !page._alpha.is_from_file()) {
-          update_frame(frame, z);
+          do_update_frame(cdata, frame, z);
         }
       }
     }
@@ -87,7 +89,7 @@ consider_update() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_make_copy
+//     Function: OpenCVTexture::make_copy_impl
 //       Access: Protected, Virtual
 //  Description: Returns a new copy of the same Texture.  This copy,
 //               if applied to geometry, will be copied into texture
@@ -100,11 +102,13 @@ consider_update() {
 //               original.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) OpenCVTexture::
-do_make_copy() {
-  PT(OpenCVTexture) tex = new OpenCVTexture(get_name());
-  tex->do_assign(*this);
+make_copy_impl() {
+  Texture::CDReader cdata_tex(Texture::_cycler);
+  PT(OpenCVTexture) copy = new OpenCVTexture(get_name());
+  Texture::CDWriter cdata_copy_tex(copy->Texture::_cycler, true);
+  copy->do_assign(cdata_copy_tex, this, cdata_tex);
 
-  return tex.p();
+  return copy.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,9 +117,10 @@ do_make_copy() {
 //  Description: Implements make_copy().
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
-do_assign(const OpenCVTexture &copy) {
-  VideoTexture::do_assign(copy);
-  _pages = copy._pages;
+do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy, 
+          const Texture::CData *cdata_copy_tex) {
+  VideoTexture::do_assign(cdata_tex, copy, cdata_copy_tex);
+  _pages = copy->_pages;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,14 +139,15 @@ do_assign(const OpenCVTexture &copy) {
 bool OpenCVTexture::
 from_camera(int camera_index, int z, int alpha_file_channel,
             const LoaderOptions &options) {
-  if (!do_reconsider_z_size(z, options)) {
+  Texture::CDWriter cdata(Texture::_cycler, true);
+  if (!do_reconsider_z_size(cdata, z, options)) {
     return false;
   }
-  nassertr(z >= 0 && z < get_z_size(), false);
+  nassertr(z >= 0 && z < cdata->_z_size, false);
 
-  _alpha_file_channel = alpha_file_channel;
+  cdata->_alpha_file_channel = alpha_file_channel;
 
-  VideoPage &page = modify_page(z);
+  VideoPage &page = do_modify_page(cdata, z);
   if (alpha_file_channel == 0) {
     // A normal RGB texture.
     page._alpha.clear();
@@ -149,7 +155,7 @@ from_camera(int camera_index, int z, int alpha_file_channel,
       return false;
     }
 
-    if (!do_reconsider_video_properties(page._color, 3, z, options)) {
+    if (!do_reconsider_video_properties(cdata, page._color, 3, z, options)) {
       page._color.clear();
       return false;
     }
@@ -160,21 +166,21 @@ from_camera(int camera_index, int z, int alpha_file_channel,
       return false;
     }
 
-    if (!do_reconsider_video_properties(page._alpha, 1, z, options)) {
+    if (!do_reconsider_video_properties(cdata, page._alpha, 1, z, options)) {
       page._alpha.clear();
       return false;
     }
-    do_set_format(F_alpha);
+    do_set_format(cdata, F_alpha);
   }
 
-  set_loaded_from_image();
+  cdata->_loaded_from_image = true;
   clear_current_frame();
-  update_frame(0);
+  do_update_frame(cdata, 0);
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::modify_page
+//     Function: OpenCVTexture::do_modify_page
 //       Access: Private
 //  Description: Returns a reference to the zth VideoPage (level) of
 //               the texture.  In the case of a 2-d texture, there is
@@ -182,8 +188,8 @@ from_camera(int camera_index, int z, int alpha_file_channel,
 //               textures have more.
 ////////////////////////////////////////////////////////////////////
 OpenCVTexture::VideoPage &OpenCVTexture::
-modify_page(int z) {
-  nassertr(z < _z_size, _pages[0]);
+do_modify_page(const Texture::CData *cdata, int z) {
+  nassertr(z < cdata->_z_size, _pages[0]);
   while (z >= (int)_pages.size()) {
     _pages.push_back(VideoPage());
   }
@@ -198,7 +204,8 @@ modify_page(int z) {
 //               is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream, 
+do_reconsider_video_properties(Texture::CData *cdata,
+                               const OpenCVTexture::VideoStream &stream, 
                                int num_components, int z, 
                                const LoaderOptions &options) {
   double frame_rate = 0.0f;
@@ -239,12 +246,12 @@ do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
       << y_size << " texels.\n";
   }
 
-  if (!do_reconsider_image_properties(x_size, y_size, num_components,
+  if (!do_reconsider_image_properties(cdata, x_size, y_size, num_components,
                                       T_unsigned_byte, z, options)) {
     return false;
   }
 
-  if (_loaded_from_image && 
+  if (cdata->_loaded_from_image && 
       (get_video_width() != width || get_video_height() != height ||
        get_num_frames() != num_frames || get_frame_rate() != frame_rate)) {
     vision_cat.error()
@@ -276,27 +283,27 @@ make_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::update_frame
+//     Function: OpenCVTexture::do_update_frame
 //       Access: Protected, Virtual
 //  Description: Called once per frame, as needed, to load the new
 //               image contents.
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
-update_frame(int frame) {
-  int max_z = max(_z_size, (int)_pages.size());
+do_update_frame(Texture::CData *cdata, int frame) {
+  int max_z = max(cdata->_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
-    update_frame(frame, z);
+    do_update_frame(cdata, frame, z);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::update_frame
+//     Function: OpenCVTexture::do_update_frame
 //       Access: Protected, Virtual
 //  Description: This variant of update_frame updates the
 //               indicated page only.
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
-update_frame(int frame, int z) {
+do_update_frame(Texture::CData *cdata, int frame, int z) {
   if (vision_cat.is_spam()) {
     vision_cat.spam()
       << "Updating OpenCVTexture page " << z << "\n";
@@ -304,11 +311,11 @@ update_frame(int frame, int z) {
 
   VideoPage &page = _pages[z];
   if (page._color.is_valid() || page._alpha.is_valid()) {
-    do_modify_ram_image();
-    ++_image_modified;
+    do_modify_ram_image(cdata);
+    ++(cdata->_image_modified);
   }
-  ssize_t dest_x_pitch = _num_components * _component_width;
-  ssize_t dest_y_pitch = _x_size * dest_x_pitch;
+  ssize_t dest_x_pitch = cdata->_num_components * cdata->_component_width;
+  ssize_t dest_y_pitch = cdata->_x_size * dest_x_pitch;
 
   if (page._color.is_valid()) {
     nassertv(get_num_components() >= 3 && get_component_width() == 1);
@@ -316,10 +323,11 @@ update_frame(int frame, int z) {
     const unsigned char *r, *g, *b;
     ssize_t x_pitch, y_pitch;
     if (page._color.get_frame_data(frame, r, g, b, x_pitch, y_pitch)) {
-      nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-      unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
+      nassertv(get_video_width() <= cdata->_x_size && get_video_height() <= cdata->_y_size);
+      nassertv(!cdata->_ram_images.empty())
+      unsigned char *dest = cdata->_ram_images[0]._image.p() + do_get_expected_ram_page_size(cdata) * z;
 
-      if (_num_components == 3 && x_pitch == 3) {
+      if (cdata->_num_components == 3 && x_pitch == 3) {
         // The easy case--copy the whole thing in, row by row.
         ssize_t copy_bytes = get_video_width() * dest_x_pitch;
         nassertv(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch));
@@ -359,21 +367,22 @@ update_frame(int frame, int z) {
     ssize_t x_pitch, y_pitch;
     if (page._alpha.get_frame_data(frame, source[0], source[1], source[2],
                                    x_pitch, y_pitch)) {
-      nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-      unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
+      nassertv(get_video_width() <= cdata->_x_size && get_video_height() <= cdata->_y_size);
+      nassertv(!cdata->_ram_images.empty())
+      unsigned char *dest = cdata->_ram_images[0]._image.p() + do_get_expected_ram_page_size(cdata) * z;
 
       // Interleave the alpha in with the color, pixel by pixel.
       // Even though the alpha will probably be a grayscale video,
       // the OpenCV library presents it as RGB.
       const unsigned char *sch = source[0];
-      if (_alpha_file_channel >= 1 && _alpha_file_channel <= 3) {
-        sch = source[_alpha_file_channel - 1];
+      if (cdata->_alpha_file_channel >= 1 && cdata->_alpha_file_channel <= 3) {
+        sch = source[cdata->_alpha_file_channel - 1];
       }
       
       for (int y = 0; y < get_video_height(); ++y) {
         // Start dx at _num_components - 1, which writes to the last
         // channel, i.e. the alpha channel.
-        ssize_t dx = (_num_components - 1) * _component_width; 
+        ssize_t dx = (cdata->_num_components - 1) * cdata->_component_width; 
         ssize_t sx = 0;
         for (int x = 0; x < get_video_width(); ++x) {
           dest[dx] = sch[sx];
@@ -395,7 +404,8 @@ update_frame(int frame, int z) {
 //               video with similar properties.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+do_read_one(Texture::CData *cdata,
+            const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
@@ -404,9 +414,9 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   }
 
   nassertr(n == 0, false);
-  nassertr(z >= 0 && z < _z_size, false);
+  nassertr(z >= 0 && z < cdata->_z_size, false);
 
-  VideoPage &page = modify_page(z);
+  VideoPage &page = do_modify_page(cdata, z);
   if (!page._color.read(fullpath)) {
     vision_cat.error()
       << "OpenCV couldn't read " << fullpath << " as video.\n";
@@ -426,36 +436,36 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       set_name(fullpath.get_basename_wo_extension());
     }
     // Don't use has_filename() here, it will cause a deadlock
-    if (_filename.empty()) {
-      _filename = fullpath;
-      _alpha_filename = alpha_fullpath;
+    if (cdata->_filename.empty()) {
+      cdata->_filename = fullpath;
+      cdata->_alpha_filename = alpha_fullpath;
     }
 
-    _fullpath = fullpath;
-    _alpha_fullpath = alpha_fullpath;
+    cdata->_fullpath = fullpath;
+    cdata->_alpha_fullpath = alpha_fullpath;
   }
 
-  _primary_file_num_channels = 3;
-  _alpha_file_channel = 0;
+  cdata->_primary_file_num_channels = 3;
+  cdata->_alpha_file_channel = 0;
 
   if (alpha_fullpath.empty()) {
     // Only one RGB movie.
-    if (!do_reconsider_video_properties(page._color, 3, z, options)) {
+    if (!do_reconsider_video_properties(cdata, page._color, 3, z, options)) {
       page._color.clear();
       return false;
     }
 
   } else {
     // An RGB movie combined with an alpha movie.
-    _alpha_file_channel = alpha_file_channel;
+    cdata->_alpha_file_channel = alpha_file_channel;
 
-    if (!do_reconsider_video_properties(page._color, 4, z, options)) {
+    if (!do_reconsider_video_properties(cdata, page._color, 4, z, options)) {
       page._color.clear();
       page._alpha.clear();
       return false;
     }
     
-    if (!do_reconsider_video_properties(page._alpha, 4, z, options)) {
+    if (!do_reconsider_video_properties(cdata, page._alpha, 4, z, options)) {
       page._color.clear();
       page._alpha.clear();
       return false;
@@ -464,7 +474,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
   set_loaded_from_image();
   clear_current_frame();
-  update_frame(0);
+  do_update_frame(cdata, 0);
   return true;
 }
 
@@ -475,15 +485,16 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               texture) to the indicated static image.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-do_load_one(const PNMImage &pnmimage, const string &name,
+do_load_one(Texture::CData *cdata,
+            const PNMImage &pnmimage, const string &name,
             int z, int n, const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
-    VideoPage &page = modify_page(z);
+    VideoPage &page = do_modify_page(cdata, z);
     page._color.clear();
     page._alpha.clear();
   }
 
-  return Texture::do_load_one(pnmimage, name, z, n, options);
+  return Texture::do_load_one(cdata, pnmimage, name, z, n, options);
 }
 
 ////////////////////////////////////////////////////////////////////

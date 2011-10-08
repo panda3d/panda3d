@@ -18,7 +18,6 @@
 #include "meshDrawer.h"
 #include "meshDrawer2D.h"
 #include "geoMipTerrain.h"
-#include "ffmpegTexture.h"
 #include "movieTexture.h"
 #include "pandaSystem.h"
 #include "texturePool.h"
@@ -116,23 +115,11 @@ init_libgrutil() {
 #endif  // HAVE_AUDIO
 
 #ifdef HAVE_FFMPEG
-  av_register_all();
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
-  FFMpegTexture::init_type();
-  FFMpegTexture::register_with_read_factory();
-
-  ConfigVariableBool use_movietexture
-    ("use-movietexture", true,
-     PRC_DESC("Prefer the newer MovieTexture interface over the older "
-              "FFMpegTexture interface when loading movie textures."));
 
   TexturePool *ts = TexturePool::get_global_ptr();
-  if (use_movietexture) {
-    ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
-  } else {
-    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
-  }
+  ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
 #endif  // HAVE_FFMPEG
 }
 

@@ -31,7 +31,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 {
   // Since the texture might change frequently, don't try to compress
   // it by default.
-  _compression = CM_off;
+  set_compression(CM_off);
 
   // It's usually pretty important for text to look its best, and it
   // doesn't usually have a high fill factor.

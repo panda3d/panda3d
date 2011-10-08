@@ -46,16 +46,16 @@ public:
 protected:
   void set_video_size(int video_width, int video_height);
 
-  virtual bool do_has_ram_image() const;
+  virtual bool do_has_ram_image(const Texture::CData *cdata) const;
 
   virtual void reconsider_dirty();
-  virtual void do_unlock_and_reload_ram_image(bool allow_compression);
-  virtual void do_reload_ram_image(bool allow_compression);
-  virtual bool do_can_reload();
+  virtual Texture::CData *unlocked_ensure_ram_image(bool allow_compression);
+  virtual void do_reload_ram_image(Texture::CData *cdata, bool allow_compression);
+  virtual bool do_can_reload(const Texture::CData *cdata) const;
 
   virtual void consider_update();
   INLINE void clear_current_frame();
-  virtual void update_frame(int frame)=0;
+  virtual void do_update_frame(Texture::CData *cdata_tex, int frame)=0;
 
 protected:
   int _video_width;

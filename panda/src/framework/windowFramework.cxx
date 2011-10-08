@@ -45,8 +45,6 @@
 #include "pgTop.h"
 #include "geomNode.h"
 #include "texture.h"
-#include "videoTexture.h"
-#include "movieTexture.h"
 #include "texturePool.h"
 #include "loaderFileTypeRegistry.h"
 #include "pnmImage.h"

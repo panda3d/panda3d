@@ -312,6 +312,10 @@ filter_to_max(int max_texture_stages) const {
 
   // Finally, record this newly-created attrib in the map for next
   // time.
+
+  // TODO: if new_attrib == this, have we just created a circular
+  // reference count?  Whoops!  Fix this!
+
   CPT(TextureAttrib) tex_attrib = (const TextureAttrib *)new_attrib.p();
   ((TextureAttrib *)this)->_filtered[max_texture_stages] = tex_attrib;
   return tex_attrib;

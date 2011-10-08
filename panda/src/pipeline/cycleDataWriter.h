@@ -44,6 +44,9 @@ public:
                          Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
                          Thread *current_thread = Thread::get_current_thread());
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, 
+                         CycleDataType *locked_cdata,
+                         Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
   INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
 

@@ -30,7 +30,8 @@ VideoTexture(const string &name) :
   Texture(name) 
 {
   // We don't want to try to compress each frame as it's loaded.
-  _compression = CM_off;
+  Texture::CDWriter cdata(Texture::_cycler, true);
+  cdata->_compression = CM_off;
 
   _video_width = 0;
   _video_height = 0;
@@ -118,11 +119,12 @@ void VideoTexture::
 set_video_size(int video_width, int video_height) {
   _video_width = video_width;
   _video_height = video_height;
-  _orig_file_x_size = video_width;
-  _orig_file_y_size = video_height;
+  set_orig_file_size(video_width, video_height);
 
-  do_set_pad_size(max(_x_size - _video_width, 0), 
-                  max(_y_size - _video_height, 0),
+  Texture::CDWriter cdata(Texture::_cycler, true);
+  do_set_pad_size(cdata,
+                  max(cdata->_x_size - _video_width, 0), 
+                  max(cdata->_y_size - _video_height, 0),
                   0);
 }
 
@@ -134,12 +136,12 @@ set_video_size(int video_width, int video_height) {
 //               texture memory or in the prepared GSG context.
 ////////////////////////////////////////////////////////////////////
 bool VideoTexture::
-do_has_ram_image() const {
+do_has_ram_image(const Texture::CData *cdata) const {
   int this_frame = ClockObject::get_global_clock()->get_frame_count();
   if (this_frame != _last_frame_update) {
     return false;
   }
-  return !_ram_images.empty() && !_ram_images[0]._image.empty();
+  return !cdata->_ram_images.empty() && !cdata->_ram_images[0]._image.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,20 +155,34 @@ reconsider_dirty() {
   consider_update();
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::do_unlock_and_reload_ram_image
+//     Function: VideoTexture::unlocked_ensure_ram_image
 //       Access: Protected, Virtual
-//  Description: This is similar to do_reload_ram_image(), except that
-//               the lock is released during the actual operation, to
-//               allow normal queries into the Texture object to
-//               continue during what might be a slow operation.
+//  Description: If the texture has a ram image already, this acquires
+//               the CData write lock and returns it.
 //
-//               In the case of a VideoTexture, this is exactly the
-//               same as do_reload_ram_image().
+//               If the texture lacks a ram image, this performs
+//               do_reload_ram_image(), but without holding the lock
+//               on this particular Texture object, to avoid holding
+//               the lock across what might be a slow operation.
+//               Instead, the reload is performed in a copy of the
+//               texture object, and then the lock is acquired and the
+//               data is copied in.
+//
+//               In any case, the return value is a locked CData
+//               object, which must be released with an explicit call
+//               to release_write().  The CData object will have a ram
+//               image unless for some reason do_reload_ram_image()
+//               fails.
 ////////////////////////////////////////////////////////////////////
-void VideoTexture::
-do_unlock_and_reload_ram_image(bool) {
+Texture::CData *VideoTexture::
+unlocked_ensure_ram_image(bool allow_compression) {
   consider_update();
+
+  Thread *current_thread = Thread::get_current_thread();
+  Texture::CData *cdata = Texture::_cycler.write_upstream(false, current_thread);
+  return cdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,7 +194,7 @@ do_unlock_and_reload_ram_image(bool) {
 //               available, if possible.
 ////////////////////////////////////////////////////////////////////
 void VideoTexture::
-do_reload_ram_image(bool) {
+do_reload_ram_image(Texture::CData *cdata, bool) {
   consider_update();
 }
 
@@ -192,7 +208,7 @@ do_reload_ram_image(bool) {
 //               wouldn't work anyway).
 ////////////////////////////////////////////////////////////////////
 bool VideoTexture::
-do_can_reload() {
+do_can_reload(const Texture::CData *cdata) const {
   return true;
 }
 
@@ -208,7 +224,8 @@ consider_update() {
   if (this_frame != _last_frame_update) {
     int frame = get_frame();
     if (_current_frame != frame) {
-      update_frame(frame);
+      Texture::CDWriter cdata(Texture::_cycler, false);
+      do_update_frame(cdata, frame);
       _current_frame = frame;
     }
     _last_frame_update = this_frame;

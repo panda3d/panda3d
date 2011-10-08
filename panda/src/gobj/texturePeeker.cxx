@@ -24,8 +24,8 @@
 //               and assumes the texture's lock is already held.
 ////////////////////////////////////////////////////////////////////
 TexturePeeker::
-TexturePeeker(Texture *tex) {
-  if (tex->_texture_type == Texture::TT_cube_map) {
+TexturePeeker(Texture *tex, Texture::CData *cdata) {
+  if (cdata->_texture_type == Texture::TT_cube_map) {
     // Cube map texture.  We'll need to map from (u, v, w) to (u, v)
     // within the appropriate page, where w indicates the page.
 
@@ -36,22 +36,22 @@ TexturePeeker(Texture *tex) {
     // Regular 1-d, 2-d, or 3-d texture.  The coordinates map
     // directly.  Simple ram images are possible if it is a 2-d
     // texture.
-    if (tex->do_has_ram_image() && tex->_ram_image_compression == Texture::CM_off) {
+    if (tex->do_has_ram_image(cdata) && cdata->_ram_image_compression == Texture::CM_off) {
       // Get the regular RAM image if it is available.
-      _image = tex->do_get_ram_image();
-      _x_size = tex->_x_size;
-      _y_size = tex->_y_size;
-      _z_size = tex->_z_size;
-      _component_width = tex->_component_width;
-      _num_components = tex->_num_components;
-      _format = tex->_format;
-      _component_type = tex->_component_type;
+      _image = tex->do_get_ram_image(cdata);
+      _x_size = cdata->_x_size;
+      _y_size = cdata->_y_size;
+      _z_size = cdata->_z_size;
+      _component_width = cdata->_component_width;
+      _num_components = cdata->_num_components;
+      _format = cdata->_format;
+      _component_type = cdata->_component_type;
 
-    } else if (!tex->_simple_ram_image._image.empty()) {
+    } else if (!cdata->_simple_ram_image._image.empty()) {
       // Get the simple RAM image if *that* is available.
-      _image = tex->_simple_ram_image._image;
-      _x_size = tex->_simple_x_size;
-      _y_size = tex->_simple_y_size;
+      _image = cdata->_simple_ram_image._image;
+      _x_size = cdata->_simple_x_size;
+      _y_size = cdata->_simple_y_size;
       _z_size = 1;
 
       _component_width = 1;
@@ -61,14 +61,14 @@ TexturePeeker(Texture *tex) {
 
     } else {
       // Failing that, reload and get the uncompressed RAM image.
-      _image = tex->do_get_uncompressed_ram_image();
-      _x_size = tex->_x_size;
-      _y_size = tex->_y_size;
-      _z_size = tex->_z_size;
-      _component_width = tex->_component_width;
-      _num_components = tex->_num_components;
-      _format = tex->_format;
-      _component_type = tex->_component_type;
+      _image = tex->do_get_uncompressed_ram_image(cdata);
+      _x_size = cdata->_x_size;
+      _y_size = cdata->_y_size;
+      _z_size = cdata->_z_size;
+      _component_width = cdata->_component_width;
+      _num_components = cdata->_num_components;
+      _format = cdata->_format;
+      _component_type = cdata->_component_type;
     }
   }
 

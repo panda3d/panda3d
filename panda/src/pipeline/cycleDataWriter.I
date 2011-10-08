@@ -56,6 +56,29 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (full)
+//       Access: Public
+//  Description: This special constructor "steals" a reference count
+//               from the already-locked cdata object.  It does not
+//               increment the lock count of this object, but will
+//               release it when the destructor is called.
+//
+//               This is designed for special functions that return an
+//               already-locked cdata object and expect the caller to
+//               unlock it.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataType *locked_cdata, 
+                Thread *current_thread) :
+  _cycler(&cycler),
+  _current_thread(current_thread)
+{
+  _pointer = locked_cdata;
+  nassertv(_pointer != (CycleDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataWriter::Copy Constructor (full)
 //       Access: Public
 //  Description:

@@ -52,33 +52,3 @@ get_video_height() const {
   return cdata->_video_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::get_tex_scale
-//       Access: Published
-//  Description: Returns a scale pair that is suitable for applying to
-//               geometry via NodePath::set_tex_scale(), which will
-//               convert texture coordinates on the geometry from the
-//               range 0..1 into the appropriate range to render the
-//               video part of the texture.
-//
-//               This is necessary in the event the video source is
-//               not a power of two and set_power_2() is true.  In
-//               this case, the video image will be mapped to the
-//               lower-left corner of the texture, and the rest of the
-//               texture space will be unused; so we will need to
-//               remap any texture coordinates to fill the space
-//               correctly.
-////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f MovieTexture::
-get_tex_scale() const {
-  CDReader cdata(_cycler);
-  if (cdata->_video_width == 0 ||
-      cdata->_video_height == 0 ||
-      _x_size == 0 ||
-      _y_size == 0) {
-    return LVecBase2f(1.0f, 1.0f);
-  }
-  return LVecBase2f((float)cdata->_video_width / _x_size,
-                    (float)cdata->_video_height / _y_size);
-}
-

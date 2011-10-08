@@ -51,7 +51,8 @@ MovieTexture::
 MovieTexture(MovieVideo *video) : 
   Texture(video->get_name())
 {
-  do_load_one(video->open(), NULL, 0, LoaderOptions());
+  Texture::CDWriter cdata_tex(Texture::_cycler, true);
+  do_load_one(cdata_tex, video->open(), NULL, 0, LoaderOptions());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +146,7 @@ make_texture() {
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
+do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const LoaderOptions &options) {
   int x_max = 1;
   int y_max = 1;
   bool alpha = false;
@@ -172,16 +173,17 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   cdata->_video_height = y_max;
   cdata->_video_length = len;
 
-  do_adjust_this_size(x_max, y_max, get_name(), true);
+  do_adjust_this_size(cdata_tex, x_max, y_max, get_name(), true);
   
-  do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
+  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3, 
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
-  _orig_file_x_size = cdata->_video_width;
-  _orig_file_y_size = cdata->_video_height;
+  cdata_tex->_orig_file_x_size = cdata->_video_width;
+  cdata_tex->_orig_file_y_size = cdata->_video_height;
 
-  do_set_pad_size(max(_x_size - _orig_file_x_size, 0), 
-                  max(_y_size - _orig_file_y_size, 0),
+  do_set_pad_size(cdata_tex, 
+                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0), 
+                  max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
                   0);
 }
 
@@ -193,9 +195,10 @@ do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
 //               pad outwards, never scale down.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_adjust_this_size(int &x_size, int &y_size, const string &name,
-                    bool for_padding) {
-  if (_texture_type == TT_cube_map) {
+do_adjust_this_size(const Texture::CData *cdata_tex,
+                    int &x_size, int &y_size, const string &name,
+                    bool for_padding) const {
+  if (cdata_tex->_texture_type == TT_cube_map) {
     // Texture must be square.
     x_size = y_size = max(x_size, y_size);
   }
@@ -216,15 +219,16 @@ do_adjust_this_size(int &x_size, int &y_size, const string &name,
 //               video with similar properties.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+do_read_one(Texture::CData *cdata_tex,
+            const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
   nassertr(n == 0, false);
-  if (!do_reconsider_z_size(z, options)) {
+  if (!do_reconsider_z_size(cdata_tex, z, options)) {
     return false;
   }
-  nassertr(z >= 0 && z < _z_size * _num_views, false);
+  nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
   
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
@@ -249,23 +253,23 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       set_name(fullpath.get_basename_wo_extension());
     }
     // Don't use has_filename() here, it will cause a deadlock
-    if (_filename.empty()) {
-      _filename = fullpath;
-      _alpha_filename = alpha_fullpath;
+    if (cdata_tex->_filename.empty()) {
+      cdata_tex->_filename = fullpath;
+      cdata_tex->_alpha_filename = alpha_fullpath;
     }
     
-    _fullpath = fullpath;
-    _alpha_fullpath = alpha_fullpath;
+    cdata_tex->_fullpath = fullpath;
+    cdata_tex->_alpha_fullpath = alpha_fullpath;
   }
 
-  _primary_file_num_channels = primary_file_num_channels;
-  _alpha_file_channel = alpha_file_channel;
+  cdata_tex->_primary_file_num_channels = primary_file_num_channels;
+  cdata_tex->_alpha_file_channel = alpha_file_channel;
   
-  if (!do_load_one(color, alpha, z, options)) {
+  if (!do_load_one(cdata_tex, color, alpha, z, options)) {
     return false;
   }
   
-  set_loaded_from_image();
+  cdata_tex->_loaded_from_image = true;
   set_loop(true);
   play();
   return true;
@@ -277,15 +281,14 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //  Description: Loads movie objects into the texture.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
+do_load_one(Texture::CData *cdata_tex,
+            PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
             const LoaderOptions &options) {
-  {
-    CDWriter cdata(_cycler);
-    cdata->_pages.resize(z + 1);
-    cdata->_pages[z]._color = color;
-    cdata->_pages[z]._alpha = alpha;
-    do_recalculate_image_properties(cdata, options);
-  }
+  CDWriter cdata(_cycler);
+  cdata->_pages.resize(z + 1);
+  cdata->_pages[z]._color = color;
+  cdata->_pages[z]._alpha = alpha;
+  do_recalculate_image_properties(cdata, cdata_tex, options);
   
   return true;
 }
@@ -297,7 +300,8 @@ do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
 //               an error.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
+do_load_one(Texture::CData *cdata_tex,
+            const PNMImage &pnmimage, const string &name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
@@ -313,7 +317,7 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_allocate_pages() {
+do_allocate_pages(Texture::CData *cdata_tex) {
   // We don't actually do anything here; the allocation is made in
   // do_load_one(), above.
 }
@@ -343,6 +347,7 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
+  Texture::CDReader cdata_tex(Texture::_cycler);
   CDReader cdata(_cycler);
   
   double offset;
@@ -376,7 +381,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       }
       if ((offset >= alpha->next_start())||
           ((offset < alpha->last_start()) && (alpha->can_seek()))) {
-        alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, _alpha_file_channel);
+        alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
       }
     } else if (color) {
       if ((offset >= color->next_start())||
@@ -389,7 +394,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::do_make_copy
+//     Function: MovieTexture::make_copy_impl
 //       Access: Protected, Virtual
 //  Description: Returns a new copy of the same Texture.  This copy,
 //               if applied to geometry, will be copied into texture
@@ -397,16 +402,20 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 //               be duplicated in texture memory (and may be
 //               independently modified if desired).
 //               
-//               If the Texture is an MovieTexture, the resulting
+//               If the Texture is a MovieTexture, the resulting
 //               duplicate may be animated independently of the
 //               original.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) MovieTexture::
-do_make_copy() {
-  PT(MovieTexture) tex = new MovieTexture(get_name());
-  tex->do_assign(*this);
+make_copy_impl() {
+  Texture::CDReader cdata_tex(Texture::_cycler);
+  CDReader cdata(_cycler);
+  PT(MovieTexture) copy = new MovieTexture(get_name());
+  Texture::CDWriter cdata_copy_tex(copy->Texture::_cycler, true);
+  CDWriter cdata_copy(copy->_cycler, true);
+  copy->do_assign(cdata_copy, cdata_copy_tex, this, cdata, cdata_tex);
 
-  return tex.p();
+  return copy.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,37 +424,29 @@ do_make_copy() {
 //  Description: Implements make_copy().
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_assign(const MovieTexture &copy) {
-  Texture::do_assign(copy);
+do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy, 
+          const CData *cdata_copy, const Texture::CData *cdata_copy_tex) {
+  Texture::do_assign(cdata_tex, copy, cdata_copy_tex);
 
-  // Since 'make_copy' can be a slow operation, 
-  // I release the read lock before calling make_copy.
-  
   pvector<MovieVideoCursor *> color;
   pvector<MovieVideoCursor *> alpha;
-  {
-    CDReader copy_cdata(copy._cycler);
-    color.resize(copy_cdata->_pages.size());
-    alpha.resize(copy_cdata->_pages.size());
-    for (int i=0; i<(int)(color.size()); i++) {
-      color[i] = copy_cdata->_pages[i]._color;
-      alpha[i] = copy_cdata->_pages[i]._alpha;
-    }
+  color.resize(cdata_copy->_pages.size());
+  alpha.resize(cdata_copy->_pages.size());
+  for (int i=0; i<(int)(color.size()); i++) {
+    color[i] = cdata_copy->_pages[i]._color;
+    alpha[i] = cdata_copy->_pages[i]._alpha;
   }
   
-  {
-    CDWriter cdata(_cycler);
-    cdata->_pages.resize(color.size());
-    for (int i=0; i<(int)(color.size()); i++) {
-      if (color[i]) {
-        cdata->_pages[i]._color = color[i]->get_source()->open();
-      }
-      if (alpha[i]) {
-        cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
-      }
+  cdata->_pages.resize(color.size());
+  for (int i=0; i<(int)(color.size()); i++) {
+    if (color[i]) {
+      cdata->_pages[i]._color = color[i]->get_source()->open();
     }
-    do_recalculate_image_properties(cdata, LoaderOptions());
+    if (alpha[i]) {
+      cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
+    }
   }
+  do_recalculate_image_properties(cdata, cdata_tex, LoaderOptions());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -456,7 +457,7 @@ do_assign(const MovieTexture &copy) {
 //               source MovieVideo.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_reload_ram_image() {
+do_reload_ram_image(Texture::CData *cdata, bool allow_compression) {
   // A MovieTexture should never dump its RAM image.
   // Therefore, this is not needed.
 }
@@ -484,7 +485,7 @@ get_keep_ram_image() const {
 //               it differently.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_has_bam_rawdata() const {
+do_has_bam_rawdata(const Texture::CData *cdata) const {
   return true;
 }
 
@@ -495,7 +496,7 @@ do_has_bam_rawdata() const {
 //               to reload the rawdata image if possible.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_get_bam_rawdata() {
+do_get_bam_rawdata(Texture::CData *cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -508,7 +509,7 @@ do_get_bam_rawdata() {
 //               wouldn't work anyway).
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_can_reload() {
+do_can_reload(const Texture::CData *cdata) const {
   return false;
 }
 
@@ -763,12 +764,12 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //               Datagram.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_write_datagram_rawdata(BamWriter *manager, Datagram &dg) {
+do_write_datagram_rawdata(Texture::CData *cdata_tex, BamWriter *manager, Datagram &dg) {
   CDReader cdata(_cycler);
 
-  dg.add_uint16(_z_size);
-  dg.add_uint16(_num_views);
-  nassertv(cdata->_pages.size() == (size_t)(_z_size * _num_views));
+  dg.add_uint16(cdata_tex->_z_size);
+  dg.add_uint16(cdata_tex->_num_views);
+  nassertv(cdata->_pages.size() == (size_t)(cdata_tex->_z_size * cdata_tex->_num_views));
   for (size_t n = 0; n < cdata->_pages.size(); ++n) {
     const VideoPage &page = cdata->_pages[n];
     manager->write_pointer(dg, page._color);
@@ -783,16 +784,16 @@ do_write_datagram_rawdata(BamWriter *manager, Datagram &dg) {
 //               with do_write_datagram_rawdata().
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
+do_fillin_rawdata(Texture::CData *cdata_tex, DatagramIterator &scan, BamReader *manager) {
   CDWriter cdata(_cycler);
 
-  _z_size = scan.get_uint16();
-  _num_views = 1;
+  cdata_tex->_z_size = scan.get_uint16();
+  cdata_tex->_num_views = 1;
   if (manager->get_file_minor_ver() >= 26) {
-    _num_views = scan.get_uint16();
+    cdata_tex->_num_views = scan.get_uint16();
   }
 
-  size_t num_pages = (size_t)(_z_size * _num_views);
+  size_t num_pages = (size_t)(cdata_tex->_z_size * cdata_tex->_num_views);
   cdata->_pages.reserve(num_pages);
   for (size_t n = 0; n < num_pages; ++n) {
     cdata->_pages.push_back(VideoPage());
@@ -815,6 +816,7 @@ do_fillin_rawdata(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
 finalize(BamReader *manager) {
+  Texture::CDWriter cdata_tex(Texture::_cycler);
   CDWriter cdata(_cycler);
 
   // Insist that each of our video pages gets finalized before we do.
@@ -825,7 +827,7 @@ finalize(BamReader *manager) {
     manager->finalize_now(page._alpha);
   }
 
-  do_recalculate_image_properties(cdata, LoaderOptions());
+  do_recalculate_image_properties(cdata, cdata_tex, LoaderOptions());
 
   set_loaded_from_image();
   set_loop(true);

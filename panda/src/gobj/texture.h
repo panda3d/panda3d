@@ -32,6 +32,13 @@
 #include "conditionVarFull.h"
 #include "loaderOptions.h"
 #include "string_utils.h"
+#include "cycleData.h"
+#include "cycleDataLockedReader.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
+#include "pipelineCycler.h"
 
 class PNMImage;
 class TextureContext;
@@ -328,8 +335,8 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
-  void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
-                     size_t page_size = 0);
+  INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
+                            size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const string &provided_format);
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
@@ -351,8 +358,8 @@ PUBLISHED:
   INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_view_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
-  CPTA_uchar get_ram_mipmap_image(int n);
-  void *get_ram_mipmap_pointer(int n);
+  CPTA_uchar get_ram_mipmap_image(int n) const;
+  void *get_ram_mipmap_pointer(int n) const;
   INLINE PTA_uchar modify_ram_mipmap_image(int n);
   INLINE PTA_uchar make_ram_mipmap_image(int n);
   void set_ram_mipmap_pointer(int n, void *image, size_t page_size = 0);
@@ -498,119 +505,133 @@ public:
   static bool adjust_size(int &x_size, int &y_size, const string &name,
                           bool for_padding);
   INLINE bool adjust_this_size(int &x_size, int &y_size, const string &name,
-                               bool for_padding);
+                               bool for_padding) const;
 
 protected:
+  class CData;
+
   virtual void reconsider_dirty();
 
   // All of the functions in this class that begin "do_" are protected
   // methods.  Many of them are implementations of public-facing
   // versions of the same methods.
 
-  // All of these assume the lock is already held; generally, they
-  // also avoid adjusting the _properties_modified and _image_modified
+  // All of these assume the CData lock is already held (and receive a
+  // CData pointer representing that lock); generally, they also avoid
+  // adjusting the _properties_modified and _image_modified
   // semaphores.
-  virtual bool do_adjust_this_size(int &x_size, int &y_size, const string &name, 
-                                   bool for_padding);
+  virtual bool do_adjust_this_size(const CData *cdata, 
+                                   int &x_size, int &y_size, const string &name, 
+                                   bool for_padding) const;
 
-  virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
+  virtual bool do_read(CData *cdata,
+                       const Filename &fullpath, const Filename &alpha_fullpath,
                        int primary_file_num_channels, int alpha_file_channel,
                        int z, int n, bool read_pages, bool read_mipmaps,
                        const LoaderOptions &options, BamCacheRecord *record);
-  virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+  virtual bool do_read_one(CData *cdata,
+                           const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
-  virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
+  virtual bool do_load_one(CData *cdata,
+                           const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
-  bool do_read_txo_file(const Filename &fullpath);
-  bool do_read_txo(istream &in, const string &filename);
-  bool do_read_dds_file(const Filename &fullpath, bool header_only);
-  bool do_read_dds(istream &in, const string &filename, bool header_only);
+  bool do_read_txo_file(CData *cdata, const Filename &fullpath);
+  bool do_read_txo(CData *cdata, istream &in, const string &filename);
+  bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
+  bool do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only);
 
-  bool do_write(const Filename &fullpath, int z, int n, 
-                bool write_pages, bool write_mipmaps) const;
-  bool do_write_one(const Filename &fullpath, int z, int n) const;
-  bool do_store_one(PNMImage &pnmimage, int z, int n) const;
-  bool do_write_txo_file(const Filename &fullpath) const;
-  bool do_write_txo(ostream &out, const string &filename) const;
+  bool do_write(CData *cdata, const Filename &fullpath, int z, int n, 
+                bool write_pages, bool write_mipmaps);
+  bool do_write_one(CData *cdata, const Filename &fullpath, int z, int n);
+  bool do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n);
+  bool do_write_txo_file(const CData *cdata, const Filename &fullpath) const;
+  bool do_write_txo(const CData *cdata, ostream &out, const string &filename) const;
 
-  virtual void do_unlock_and_reload_ram_image(bool allow_compression);
-  virtual void do_reload_ram_image(bool allow_compression);
-  PTA_uchar do_modify_ram_image();
-  PTA_uchar do_make_ram_image();
-  PTA_uchar do_modify_ram_mipmap_image(int n);
-  PTA_uchar do_make_ram_mipmap_image(int n);
-  void do_set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size);
+  virtual CData *unlocked_ensure_ram_image(bool allow_compression);
+  virtual void do_reload_ram_image(CData *cdata, bool allow_compression);
 
-  bool consider_auto_process_ram_image(bool generate_mipmaps, 
-                                       bool allow_compression);
-  bool do_compress_ram_image(CompressionMode compression,
+  PTA_uchar do_modify_ram_image(CData *cdata);
+  PTA_uchar do_make_ram_image(CData *cdata);
+  void do_set_ram_image(CData *cdata, CPTA_uchar image, 
+                        CompressionMode compression = CM_off, size_t page_size = 0);
+  PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
+  PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
+  void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
+
+  bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
+  bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps, 
+                                          bool allow_compression);
+  bool do_compress_ram_image(CData *cdata, CompressionMode compression,
                              QualityLevel quality_level,
                              GraphicsStateGuardianBase *gsg);
-  bool do_uncompress_ram_image();
-  bool do_has_all_ram_mipmap_images() const;
+  bool do_uncompress_ram_image(CData *cdata);
+  bool do_has_all_ram_mipmap_images(const CData *cdata) const;
 
-  bool do_reconsider_z_size(int z, const LoaderOptions &options);
-  virtual void do_allocate_pages();
-  bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
+  bool do_reconsider_z_size(CData *cdata, int z, const LoaderOptions &options);
+  virtual void do_allocate_pages(CData *cdata);
+  bool do_reconsider_image_properties(CData *cdata, 
+                                      int x_size, int y_size, int num_components,
                                       ComponentType component_type, int z,
                                       const LoaderOptions &options);
-  bool do_rescale_texture();
+  bool do_rescale_texture(CData *cdata);
 
-  virtual PT(Texture) do_make_copy() const;
-  void do_assign(const Texture &copy);
-  virtual void do_clear();
-  void do_setup_texture(TextureType texture_type, int x_size, int y_size,
+  virtual PT(Texture) make_copy_impl() const;
+  PT(Texture) do_make_copy(const CData *cdata) const;
+  void do_assign(CData *cdata, const Texture *copy, const CData *cdata_copy);
+  virtual void do_clear(CData *cdata);
+  void do_setup_texture(CData *cdata, 
+                        TextureType texture_type, int x_size, int y_size,
                         int z_size, ComponentType component_type,
                         Format format);
-  void do_set_num_views(int num_views);
-  void do_set_format(Format format);
-  void do_set_component_type(ComponentType component_type);
-  void do_set_x_size(int x_size);
-  void do_set_y_size(int y_size);
-  void do_set_z_size(int z_size);
+  void do_set_num_views(CData *cdata, int num_views);
+  void do_set_format(CData *cdata, Format format);
+  void do_set_component_type(CData *cdata, ComponentType component_type);
+  void do_set_x_size(CData *cdata, int x_size);
+  void do_set_y_size(CData *cdata, int y_size);
+  void do_set_z_size(CData *cdata, int z_size);
 
-  void do_set_wrap_u(WrapMode wrap);
-  void do_set_wrap_v(WrapMode wrap);
-  void do_set_wrap_w(WrapMode wrap);
-  void do_set_minfilter(FilterType filter);
-  void do_set_magfilter(FilterType filter);
-  void do_set_anisotropic_degree(int anisotropic_degree);
-  void do_set_border_color(const Colorf &color);
-  void do_set_compression(CompressionMode compression);
-  void do_set_quality_level(QualityLevel quality_level);
+  void do_set_wrap_u(CData *cdata, WrapMode wrap);
+  void do_set_wrap_v(CData *cdata, WrapMode wrap);
+  void do_set_wrap_w(CData *cdata, WrapMode wrap);
+  void do_set_minfilter(CData *cdata, FilterType filter);
+  void do_set_magfilter(CData *cdata, FilterType filter);
+  void do_set_anisotropic_degree(CData *cdata, int anisotropic_degree);
+  void do_set_border_color(CData *cdata, const Colorf &color);
+  void do_set_compression(CData *cdata, CompressionMode compression);
+  void do_set_quality_level(CData *cdata, QualityLevel quality_level);
 
-  bool do_has_compression() const;
-  virtual bool do_has_ram_image() const;
-  virtual bool do_has_uncompressed_ram_image() const;
-  CPTA_uchar do_get_ram_image();
-  CPTA_uchar do_get_uncompressed_ram_image();
-  void do_set_simple_ram_image(CPTA_uchar image, int x_size, int y_size);
-  INLINE size_t do_get_ram_image_size() const;
-  INLINE bool do_has_ram_mipmap_image(int n) const;
-  int do_get_expected_num_mipmap_levels() const;
-  INLINE size_t do_get_expected_ram_image_size() const;
-  INLINE size_t do_get_expected_ram_view_size() const;
-  INLINE size_t do_get_expected_ram_page_size() const;
-  size_t do_get_ram_mipmap_page_size(int n) const;
-  INLINE size_t do_get_expected_ram_mipmap_image_size(int n) const;
-  INLINE size_t do_get_expected_ram_mipmap_view_size(int n) const;
-  INLINE size_t do_get_expected_ram_mipmap_page_size(int n) const;
-  int do_get_expected_mipmap_x_size(int n) const;
-  int do_get_expected_mipmap_y_size(int n) const;
-  int do_get_expected_mipmap_z_size(int n) const;
-  INLINE int do_get_expected_mipmap_num_pages(int n) const;
-  INLINE void do_clear_ram_image();
-  void do_clear_simple_ram_image();
-  void do_clear_ram_mipmap_images();
-  void do_generate_ram_mipmap_images();
-  void do_set_pad_size(int x, int y, int z);
-  virtual bool do_can_reload();
-  bool do_reload();
+  bool do_has_compression(const CData *cdata) const;
+  virtual bool do_has_ram_image(const CData *cdata) const;
+  virtual bool do_has_uncompressed_ram_image(const CData *cdata) const;
+  CPTA_uchar do_get_ram_image(CData *cdata);
+  CPTA_uchar do_get_uncompressed_ram_image(CData *cdata);
+  void do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size);
+  INLINE size_t do_get_ram_image_size(const CData *cdata) const;
+  INLINE bool do_has_ram_mipmap_image(const CData *cdata, int n) const;
+  int do_get_expected_num_mipmap_levels(const CData *cdata) const;
+  INLINE size_t do_get_expected_ram_image_size(const CData *cdata) const;
+  INLINE size_t do_get_expected_ram_view_size(const CData *cdata) const;
+  INLINE size_t do_get_expected_ram_page_size(const CData *cdata) const;
+  size_t do_get_ram_mipmap_page_size(const CData *cdata, int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_image_size(const CData *cdata, int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_view_size(const CData *cdata, int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_page_size(const CData *cdata, int n) const;
+  int do_get_expected_mipmap_x_size(const CData *cdata, int n) const;
+  int do_get_expected_mipmap_y_size(const CData *cdata, int n) const;
+  int do_get_expected_mipmap_z_size(const CData *cdata, int n) const;
+  INLINE int do_get_expected_mipmap_num_pages(const CData *cdata, int n) const;
+  INLINE void do_clear_ram_image(CData *cdata);
+  void do_clear_simple_ram_image(CData *cdata);
+  void do_clear_ram_mipmap_images(CData *cdata);
+  void do_generate_ram_mipmap_images(CData *cdata);
+  void do_set_pad_size(CData *cdata, int x, int y, int z);
+  virtual bool do_can_reload(const CData *cdata) const;
+  bool do_reload(CData *cdata);
 
-  virtual bool do_has_bam_rawdata() const;
-  virtual void do_get_bam_rawdata();
+  virtual bool do_has_bam_rawdata(const CData *cdata) const;
+  virtual void do_get_bam_rawdata(CData *cdata);
 
   // This nested class declaration is used below.
   class RamImage {
@@ -633,27 +654,27 @@ private:
                                   int num_components, int component_width,
                                   CPTA_uchar image, size_t page_size, 
                                   int z);
-  static PTA_uchar read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_rgb8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, 
+  static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata, 
                                                        const DDSHeader &header, 
                                                        int n, istream &in);
-  static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, 
+  static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata, 
                                                          const DDSHeader &header, 
                                                          int n, istream &in);
-  static PTA_uchar read_dds_level_dxt1(Texture *tex, 
+  static PTA_uchar read_dds_level_dxt1(Texture *tex, CData *cdata, 
                                        const DDSHeader &header, 
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_dxt23(Texture *tex, 
+  static PTA_uchar read_dds_level_dxt23(Texture *tex, CData *cdata, 
                                         const DDSHeader &header, 
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_dxt45(Texture *tex, 
+  static PTA_uchar read_dds_level_dxt45(Texture *tex, CData *cdata, 
                                         const DDSHeader &header, 
                                         int n, istream &in);
 
@@ -673,11 +694,13 @@ private:
   INLINE static bool is_txo_filename(const Filename &fullpath);
   INLINE static bool is_dds_filename(const Filename &fullpath);
 
-  void filter_2d_mipmap_pages(RamImage &to, const RamImage &from,
-                              int x_size, int y_size);
+  void do_filter_2d_mipmap_pages(const CData *cdata,
+                                 RamImage &to, const RamImage &from,
+                                 int x_size, int y_size) const;
 
-  void filter_3d_mipmap_level(RamImage &to, const RamImage &from,
-                              int x_size, int y_size, int z_size);
+  void do_filter_3d_mipmap_level(const CData *cdata,
+                                 RamImage &to, const RamImage &from,
+                                 int x_size, int y_size, int z_size) const;
 
   typedef void Filter2DComponent(unsigned char *&p, 
                                  const unsigned char *&q,
@@ -704,68 +727,123 @@ private:
                                        size_t pixel_size, size_t row_size,
                                        size_t page_size);
   
-  bool do_squish(CompressionMode compression, int squish_flags);
-  bool do_unsquish(int squish_flags);
+  bool do_squish(CData *cdata, CompressionMode compression, int squish_flags);
+  bool do_unsquish(CData *cdata, int squish_flags);
 
 protected:
-  // Protects all of the members of this class.
+  typedef pvector<RamImage> RamImages;
+
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return Texture::get_class_type();
+    }
+
+    void do_assign(const CData *copy);
+
+    Filename _filename;
+    Filename _alpha_filename;
+    Filename _fullpath;
+    Filename _alpha_fullpath;
+    
+    // The number of channels of the primary file we use.  1, 2, 3, or 4.
+    int _primary_file_num_channels;
+    
+    // If we have a separate alpha file, this designates which channel
+    // in the alpha file provides the alpha channel.  0 indicates the
+    // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
+    // valid.
+    int _alpha_file_channel;
+    
+    int _x_size;
+    int _y_size;
+    int _z_size;
+    int _num_views;
+    int _num_components;
+    int _component_width;
+    TextureType _texture_type;
+    Format _format;
+    ComponentType _component_type;
+    
+    bool _loaded_from_image;
+    bool _loaded_from_txo;
+    bool _has_read_pages;
+    bool _has_read_mipmaps;
+    int _num_mipmap_levels_read;
+    
+    WrapMode _wrap_u;
+    WrapMode _wrap_v;
+    WrapMode _wrap_w;
+    FilterType _minfilter;
+    FilterType _magfilter;
+    int _anisotropic_degree;
+    bool _keep_ram_image;
+    Colorf _border_color;
+    CompressionMode _compression;
+    bool _render_to_texture;
+    bool _match_framebuffer_format;
+    bool _post_load_store_cache;
+    QualityLevel _quality_level;
+    
+    int _pad_x_size;
+    int _pad_y_size;
+    int _pad_z_size;
+    
+    int _orig_file_x_size;
+    int _orig_file_y_size;
+  
+    CompressionMode _ram_image_compression;
+
+    // There is usually one RamImage for the mipmap level 0 (the base
+    // image).  There may or may not also be additional images for the
+    // additional mipmap levels.
+    RamImages _ram_images;
+
+    // This is the simple image, which may be loaded before the texture
+    // is loaded from disk.  It exists only for 2-d textures.
+    RamImage _simple_ram_image;
+    int _simple_x_size;
+    int _simple_y_size;
+    PN_int32 _simple_image_date_generated;
+  
+    UpdateSeq _properties_modified;
+    UpdateSeq _image_modified;
+    UpdateSeq _simple_image_modified;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "Geom::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+  };
+ 
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
+
+  // Protects the remaining members of this class.
   Mutex _lock;
-  // Used to implement do_unlock_and_reload_ram_image()
+
+  // Used to implement unlocked_reload_ram_image().
   ConditionVarFull _cvar;  // condition: _reloading is true.
   bool _reloading;
-
-  Filename _filename;
-  Filename _alpha_filename;
-  Filename _fullpath;
-  Filename _alpha_fullpath;
-  Filename _texture_pool_key;
-
-  // The number of channels of the primary file we use.  1, 2, 3, or 4.
-  int _primary_file_num_channels;
-
-  // If we have a separate alpha file, this designates which channel
-  // in the alpha file provides the alpha channel.  0 indicates the
-  // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
-  // valid.
-  int _alpha_file_channel;
-
-  int _x_size;
-  int _y_size;
-  int _z_size;
-  int _num_views;
-  int _num_components;
-  int _component_width;
-  TextureType _texture_type;
-  Format _format;
-  ComponentType _component_type;
-
-  bool _loaded_from_image;
-  bool _loaded_from_txo;
-  bool _has_read_pages;
-  bool _has_read_mipmaps;
-  int _num_mipmap_levels_read;
-
-  WrapMode _wrap_u;
-  WrapMode _wrap_v;
-  WrapMode _wrap_w;
-  FilterType _minfilter;
-  FilterType _magfilter;
-  int _anisotropic_degree;
-  bool _keep_ram_image;
-  Colorf _border_color;
-  CompressionMode _compression;
-  bool _render_to_texture;
-  bool _match_framebuffer_format;
-  bool _post_load_store_cache;
-  QualityLevel _quality_level;
-
-  int _pad_x_size;
-  int _pad_y_size;
-  int _pad_z_size;
-
-  int _orig_file_x_size;
-  int _orig_file_y_size;
-  
+    
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Textures that
@@ -782,25 +860,9 @@ protected:
   // lookup of the special maps given the diffuse map and the suffix.
   typedef pmap<CPT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
-  
-  CompressionMode _ram_image_compression;
 
-  // There is usually one RamImage for the mipmap level 0 (the base
-  // image).  There may or may not also be additional images for the
-  // additional mipmap levels.
-  typedef pvector<RamImage> RamImages;
-  RamImages _ram_images;
-
-  // This is the simple image, which may be loaded before the texture
-  // is loaded from disk.  It exists only for 2-d textures.
-  RamImage _simple_ram_image;
-  int _simple_x_size;
-  int _simple_y_size;
-  PN_int32 _simple_image_date_generated;
-  
-  UpdateSeq _properties_modified;
-  UpdateSeq _image_modified;
-  UpdateSeq _simple_image_modified;
+  // The TexturePool finds this useful.
+  Filename _texture_pool_key;
   
 private:
   // The auxiliary data is not recorded to a bam file.
@@ -818,14 +880,14 @@ public:
   virtual void finalize(BamReader *manager);
 
 protected:
-  void do_write_datagram_header(BamWriter *manager, Datagram &me, bool &has_rawdata);
-  virtual void do_write_datagram_body(BamWriter *manager, Datagram &me);
-  virtual void do_write_datagram_rawdata(BamWriter *manager, Datagram &me);
+  void do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &has_rawdata);
+  virtual void do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me);
+  virtual void do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me);
   static TypedWritable *make_from_bam(const FactoryParams &params);
   virtual TypedWritable *make_this_from_bam(const FactoryParams &params);
-  virtual void do_fillin_body(DatagramIterator &scan, BamReader *manager);
-  virtual void do_fillin_rawdata(DatagramIterator &scan, BamReader *manager);
-  virtual void do_fillin_from(Texture *dummy);
+  virtual void do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager);
+  virtual void do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager);
+  virtual void do_fillin_from(CData *cdata, const Texture *dummy);
 
 public:
   static TypeHandle get_class_type() {

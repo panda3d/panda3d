@@ -3321,9 +3321,7 @@ prepare_texture(Texture *tex, int view) {
     break;
   }
 
-  report_my_gl_errors();
   CLP(TextureContext) *gtc = new CLP(TextureContext)(_prepared_objects, tex, view);
-  report_my_gl_errors();
   GLP(GenTextures)(1, &gtc->_index);
   report_my_gl_errors();
 
@@ -8354,7 +8352,13 @@ apply_texture(TextureContext *tc) {
   if (target == GL_NONE) {
     return false;
   }
-  report_my_gl_errors();
+
+  if (gtc->_target != target) {
+    // The target has changed.  That means we have to re-bind a new
+    // texture object.
+    gtc->reset_data();
+    gtc->_target = target;
+  }
   GLP(BindTexture)(target, gtc->_index);
 
   report_my_gl_errors();
@@ -8543,6 +8547,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 
   bool success = true;
 
+  GLenum target = get_texture_target(tex->get_texture_type());
   if (tex->get_texture_type() == Texture::TT_cube_map) {
     // A cube map must load six different 2-d images (which are stored
     // as the six pages of the system ram image).
@@ -8550,6 +8555,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
       report_my_gl_errors();
       return false;
     }
+    nassertr(target == GL_TEXTURE_CUBE_MAP, false);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, mipmap_bias,
@@ -8589,7 +8595,6 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 
   } else {
     // Any other kind of texture can be loaded all at once.
-    GLenum target = get_texture_target(tex->get_texture_type());
     success = upload_texture_image
       (gtc, uses_mipmaps, mipmap_bias, target, target,
        internal_format, external_format, component_type,
@@ -9311,9 +9316,13 @@ bool CLP(GraphicsStateGuardian)::
 do_extract_texture_data(CLP(TextureContext) *gtc) {
   report_my_gl_errors();
 
-  Texture *tex = gtc->get_texture();
-  GLenum target = get_texture_target(tex->get_texture_type());
+  GLenum target = gtc->_target;
+  if (target == GL_NONE) {
+    return false;
+  }
   GLP(BindTexture)(target, gtc->_index);
+
+  Texture *tex = gtc->get_texture();
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;

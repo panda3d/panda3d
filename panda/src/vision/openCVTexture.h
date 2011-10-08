@@ -48,25 +48,29 @@ public:
 
 protected:
   virtual void consider_update();
-  virtual PT(Texture) do_make_copy();
-  void do_assign(const OpenCVTexture &copy);
+  virtual PT(Texture) make_copy_impl();
+  void do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy, 
+                 const Texture::CData *cdata_copy_tex);
 
-  virtual void update_frame(int frame);
-  virtual void update_frame(int frame, int z);
+  virtual void do_update_frame(Texture::CData *cdata_tex, int frame);
+  virtual void do_update_frame(Texture::CData *cdata_tex, int frame, int z);
 
-  virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+  virtual bool do_read_one(Texture::CData *cdata,
+                           const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
-  virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
+  virtual bool do_load_one(Texture::CData *cdata,
+                           const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
 
 private:    
   class VideoPage;
   class VideoStream;
 
-  VideoPage &modify_page(int z);
-  bool do_reconsider_video_properties(const VideoStream &stream, 
+  VideoPage &do_modify_page(const Texture::CData *cdata, int z);
+  bool do_reconsider_video_properties(Texture::CData *cdata, 
+                                      const VideoStream &stream, 
                                       int num_components, int z, 
                                       const LoaderOptions &options);
   void do_update();

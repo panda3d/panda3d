@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ TexturePeeker : public ReferenceCount {
 private:
-  TexturePeeker(Texture *tex);
+  TexturePeeker(Texture *tex, Texture::CData *cdata);
 
 public:
   INLINE bool is_valid() const;

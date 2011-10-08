@@ -35,7 +35,19 @@ TypeHandle CLP(TextureContext)::_type_handle;
 void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
+  reset_data();
+  update_data_size_bytes(0);
+  mark_unloaded();
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::reset_data
+//       Access: Public
+//  Description: Resets the texture object to a new one so a new GL
+//               texture object can be uploaded.
+////////////////////////////////////////////////////////////////////
+void CLP(TextureContext)::
+reset_data() {
   // Free the texture resources.
   GLP(DeleteTextures)(1, &_index);
 
@@ -44,6 +56,4 @@ evict_lru() {
   GLP(GenTextures)(1, &_index);
 
   _already_applied = false;
-  update_data_size_bytes(0);
-  mark_unloaded();
 }

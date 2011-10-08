@@ -29,4 +29,5 @@ CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   _width = 0;
   _height = 0;
   _depth = 0;
+  _target = GL_NONE;
 }
