@@ -54,6 +54,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "fogAttrib.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -1040,6 +1041,27 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     }
     LVecBase4f cs = target_color->get_scale();
     t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,cs[0],cs[1],cs[2],cs[3]);
+    return &t;
+  }
+  case Shader::SMO_attr_fog: {
+    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    Fog *fog = target_fog->get_fog();
+    if (fog == (Fog*) NULL) {
+      return &LMatrix4f::ones_mat();
+    }
+    float start, end;
+    fog->get_linear_range(start, end);
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,fog->get_exp_density(),start,end,1.0f/(end-start));
+    return &t;
+  }
+  case Shader::SMO_attr_fogcolor: {
+    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    Fog *fog = target_fog->get_fog();
+    if (fog == (Fog*) NULL) {
+      return &LMatrix4f::ones_mat();
+    }
+    LVecBase4f c = fog->get_color();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
     return &t;
   }
   case Shader::SMO_alight_x: {

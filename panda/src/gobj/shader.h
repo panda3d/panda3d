@@ -150,6 +150,9 @@ public:
 
     SMO_apiclip_x_to_view,
     SMO_view_to_apiclip_x,
+
+    SMO_attr_fog,
+    SMO_attr_fogcolor,
     
     SMO_INVALID
   };
@@ -224,6 +227,7 @@ public:
     SSD_colorscale    =  8,
     SSD_material      = 16,
     SSD_shaderinputs  = 32,
+    SSD_fog           = 64,
   };
 
   enum ShaderBug {

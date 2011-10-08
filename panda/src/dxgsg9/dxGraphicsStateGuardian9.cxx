@@ -3352,6 +3352,9 @@ set_state_and_transform(const RenderState *target,
     //PStatTimer timer(_draw_set_state_fog_pcollector);
     do_issue_fog();
     _state_mask.set_bit(fog_slot);
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_fog);
+    }
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
